@@ -25,7 +25,6 @@ org.cesecore.certificates.ca.CVCCAInfo,
 org.cesecore.certificates.ca.catoken.CAToken,
 org.cesecore.certificates.ca.CAConstants,
 org.cesecore.certificates.ca.catoken.CATokenConstants,
-org.cesecore.certificates.ca.catoken.CAToken,
 org.cesecore.certificates.certificate.IllegalKeyException,
 org.cesecore.certificates.certificate.request.PKCS10RequestMessage,
 org.cesecore.certificates.certificate.request.RequestMessage,
@@ -36,7 +35,6 @@ org.cesecore.certificates.certificateprofile.CertificatePolicy,
 org.cesecore.certificates.ca.CAExistsException,
 org.cesecore.certificates.ca.CADoesntExistsException,
 org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo,
-org.cesecore.certificates.ca.catoken.CATokenConstants,
 org.cesecore.certificates.util.DNFieldExtractor,
 org.cesecore.certificates.util.DnComponents,
 org.cesecore.keys.token.CryptoToken,
@@ -166,6 +164,7 @@ org.ejbca.ui.web.ParameterException
   static final String CHECKBOX_USECERTREQHISTORY                  = "checkboxusecertreqhistory";
   static final String CHECKBOX_USEUSERSTORAGE                     = "checkboxuseuserstorage";
   static final String CHECKBOX_USECERTIFICATESTORAGE              = "checkboxusecertificatestorage";
+  static final String CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY = "checkboxacceptrevocationsnonexistingentry";
   static final String CHECKBOX_USEUTF8POLICYTEXT                  = "checkboxuseutf8policytext";
   static final String CHECKBOX_USEPRINTABLESTRINGSUBJECTDN        = "checkboxuseprintablestringsubjectdn";
   static final String CHECKBOX_USELDAPDNORDER                     = "checkboxuseldapdnorder";
@@ -364,6 +363,7 @@ org.ejbca.ui.web.ParameterException
                 final boolean useCertReqHistory = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTREQHISTORY));
                 final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
+                final boolean checkboxAcceptRevocationsNonExistingEntry = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY));
                 final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
                 final String policyid = requestMap.get(TEXTFIELD_POLICYID);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
@@ -558,6 +558,7 @@ org.ejbca.ui.web.ParameterException
                 final boolean useCertReqHistory = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTREQHISTORY));
                 final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
+                final boolean checkboxAcceptRevocationsNonExistingEntry = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY));
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
                 final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEVALIDATORS);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
@@ -604,7 +605,7 @@ org.ejbca.ui.web.ParameterException
             		keySequenceFormatParam, keySequence, signedByString, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
-            		useCertReqHistory, useUserStorage, useCertificateStorage, 
+            		useCertReqHistory, useUserStorage, useCertificateStorage, checkboxAcceptRevocationsNonExistingEntry,
             		approvals,
             		availablePublisherValues, availableKeyValidatorValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, 

@@ -365,7 +365,7 @@ function toggleCANameChange(){
 
 <div class="main-wrapper">
 <div class="container">
-<div align="center"> 
+<div align="center">
   <% if (editca && hasEditRights) { //Editing %> 
   <h2><%= ejbcawebbean.getText("EDITCA") %></h2>
   <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= cainfo.getName() %>"/></h3>
@@ -808,7 +808,7 @@ function toggleCANameChange(){
         <%= ejbcawebbean.getText("DOENFORCEUNIQUEPUBLICKEYS") %>
         <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Enforce_unique_public_keys") %> <br />
       </td>
-      <td width="50%"> 
+      <td width="50%">
         <input type="checkbox" name="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS %>" value="<%=CHECKBOX_VALUE %>" 
             <% if((editca && cainfo.isDoEnforceUniquePublicKeys()) || !editca)
                  out.write("CHECKED");%> id="<%=CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS%>" <%= (hasEditRights ? "" : "disabled") %>>
@@ -886,7 +886,20 @@ function toggleCANameChange(){
                <label for="<%=CHECKBOX_USECERTIFICATESTORAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
-    
+
+      <tr id="Row<%=row++%2%>">
+          <td width="50%"  align="right">
+              <%= ejbcawebbean.getText("ACCEPTREVOCATIONSNONEXISTINGENTRY") %><br />
+          </td>
+          <td width="50%">
+              <input type="checkbox" name="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY %>" value="<%=CHECKBOX_VALUE %>"
+                  <% if(editca) {
+            	  if (cainfo.isAcceptRevocationNonExistingEntry()) out.write("CHECKED"); // edit CA
+               } %> id="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>" <%= (hasEditRights ? "" : "disabled") %>>
+              <label for="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>"><c:out value="<%= ejbcawebbean.getText(\"ACCEPT\") %>" /></label>
+          </td>
+      </tr>
+
     <% } %>
 
     <%-- ---------- CA certificate data -------------------- --%>

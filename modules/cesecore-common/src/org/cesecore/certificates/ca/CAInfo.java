@@ -117,6 +117,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean useCertReqHistory;
     protected boolean useUserStorage;
     protected boolean useCertificateStorage;
+    protected boolean acceptRevocationNonExistingEntry;
 
     public String getSubjectDN() {
         return subjectdn;
@@ -457,6 +458,16 @@ public abstract class CAInfo implements Serializable {
     /** @param useCertificateStorage true means that the issued certificate should be kept in the database. */
     public void setUseCertificateStorage(boolean useCertificateStorage) {
         this.useCertificateStorage = useCertificateStorage;
+    }
+
+    /** @return true if revocation for non existing entries is accepted */
+    public boolean isAcceptRevocationNonExistingEntry() {
+        return acceptRevocationNonExistingEntry;
+    }
+
+    /** @param acceptRevocationNonExistingEntry true means that revocation for non existing entry is accepted. */
+    public void setAcceptRevocationNonExistingEntry(boolean acceptRevocationNonExistingEntry) {
+        this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
     }
 
     /**

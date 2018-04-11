@@ -115,6 +115,7 @@ public class X509CAInfo extends CAInfo {
              false, // useCertReqHistory
              true, // useUserStorage
              true, // useCertificateStorage
+             false, // acceptRevocationNonExistingEntry
              null, // cmpRaAuthSecret
              false // keepExpiredCertsOnCRL
         );
@@ -172,6 +173,7 @@ public class X509CAInfo extends CAInfo {
      * @param _useCertReqHistory
      * @param _useUserStorage
      * @param _useCertificateStorage
+     * @param _acceptRevocationNonExistingEntry
      * @param _cmpRaAuthSecret
      * @param keepExpiredCertsOnCRL
      */
@@ -190,7 +192,8 @@ public class X509CAInfo extends CAInfo {
     		final boolean useUTF8PolicyText, final Map<ApprovalRequestType, Integer> approvals, final boolean usePrintableStringSubjectDN,
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
-    		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
+    		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry,
+            final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
         this.name = name;
@@ -252,6 +255,7 @@ public class X509CAInfo extends CAInfo {
         this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
+        this.acceptRevocationNonExistingEntry = _acceptRevocationNonExistingEntry;
         setCmpRaAuthSecret(_cmpRaAuthSecret);
         this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
         this.authorityInformationAccess = authorityInformationAccess;
@@ -273,7 +277,7 @@ public class X509CAInfo extends CAInfo {
             final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
             final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName,
             final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, final boolean _useUserStorage,
-            final boolean _useCertificateStorage, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
+            final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
         this.caid = caid;
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
@@ -307,6 +311,7 @@ public class X509CAInfo extends CAInfo {
         this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
+        this.acceptRevocationNonExistingEntry = _acceptRevocationNonExistingEntry;
         setCmpRaAuthSecret(_cmpRaAuthSecret);
         this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
         this.authorityInformationAccess = crlAuthorityInformationAccess;
