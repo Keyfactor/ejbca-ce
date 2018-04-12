@@ -405,3 +405,29 @@ alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminG
 
 alter table AdminEntityData add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData;
 
+CREATE TABLE NoConflictCertificateData (
+    id VARCHAR(256) NOT NULL,
+    fingerprint VARCHAR(256) NOT NULL,
+    base64Cert TEXT,
+    cAFingerprint VARCHAR(256),
+    certificateProfileId INTEGER NOT NULL,
+    endEntityProfileId INTEGER,
+    expireDate BIGINT NOT NULL,
+    issuerDN VARCHAR(256) NOT NULL,
+    notBefore BIGINT,
+    revocationDate BIGINT NOT NULL,
+    revocationReason INTEGER NOT NULL,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    serialNumber VARCHAR(256) NOT NULL,
+    status INTEGER NOT NULL,
+    subjectAltName VARCHAR(2000),
+    subjectDN VARCHAR(400) NOT NULL,
+    subjectKeyId VARCHAR(256),
+    tag VARCHAR(256),
+    type INTEGER NOT NULL,
+    updateTime BIGINT NOT NULL,
+    username VARCHAR(256),
+    timeCreated BIGINT NOT NULL,
+    PRIMARY KEY (id)
+);

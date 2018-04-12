@@ -31,3 +31,4 @@ drop table RoleMemberData cascade constraints;
 drop table ServiceData cascade constraints;
 drop table UserData cascade constraints;
 drop table UserDataSourceData cascade constraints;
+drop table NoConflictCertificateData cascade constraints;
