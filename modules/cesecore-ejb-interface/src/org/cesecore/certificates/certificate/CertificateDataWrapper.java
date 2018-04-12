@@ -83,12 +83,35 @@ public class CertificateDataWrapper implements CertificateWrapper, Comparable<Ce
         this.base64CertData = null;
     }
     
+    /**
+     * Returns the BaseCertificateData entity object, may be CertificateData or NoConflictCertificateData entity object.
+     * 
+     * Note that the NoConflictCertificateData table is append only, so no updates to existing objects!
+     */
     public BaseCertificateData getBaseCertificateData() {
         return certificateData;
     }
 
+    /**
+     * Returns the CertificateData entity object, or throws if the certificate is stored in NoConflictCertificateData
+     * @throws ClassCastException If certificate is stored in NoConflictCertificateData
+     */
     public CertificateData getCertificateData() {
         return (CertificateData) certificateData;
+    }
+    
+    /**
+     * Returns the CertificateData object, or a copy converted to CertificateData, if it was a NoConflictCertificateData entity object.
+     * @returns CertificateData object. Do not modify the returned object! Modifications might not be written back to the database.
+     */
+    public CertificateData getCertificateDataOrCopy() {
+        if (certificateData instanceof CertificateData) {
+            return (CertificateData) certificateData;
+        } else if (certificateData instanceof NoConflictCertificateData) {
+            return new CertificateData(certificateData); 
+        } else {
+            throw new IllegalStateException("Unexpected subclass");
+        }
     }
 
     public Base64CertData getBase64CertData() {
