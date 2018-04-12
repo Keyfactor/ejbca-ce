@@ -1362,7 +1362,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private void importOcspExtensions() {
         final List<String> ocspExtensionOids = OcspConfiguration.getExtensionOids();
         if (ocspExtensionOids.isEmpty()) {
-            log.debug("No OCSP extensions for import was found in ocsp.properties");
+            log.debug("No OCSP extensions for import were found in ocsp.properties");
             return;
         }
         final List<Integer> ocspKbIds = internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS);
