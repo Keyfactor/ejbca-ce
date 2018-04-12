@@ -834,7 +834,7 @@
 			 rendered="#{certProfileBean.certificateProfile.useQCStatement}" disabled="#{certProfilesBean.viewOnly}"/>
 
 		<h:outputLabel for="textfieldqcstatementraname" value="#{web.text.EXT_PKIX_QCS_NAMERAS}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
-		<h:inputText id="textfieldqcstatementraname" value="#{certProfileBean.certificateProfile.QCStatementRAName}" size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"
+		<h:inputText id="textfieldqcstatementraname" value="#{certProfileBean.certificateProfile.QCStatementRAName}" size="45" maxlength="255" title="#{web.text.FORMAT_GENERALNAMES}"
 			 rendered="#{certProfileBean.certificateProfile.useQCStatement}" disabled="#{certProfilesBean.viewOnly}"/>
 
 		<h:outputLabel for="checkqcetsiqcompliancegroup" value="#{web.text.EXT_ETSI_QCS_QCCOMPLIANCE}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
