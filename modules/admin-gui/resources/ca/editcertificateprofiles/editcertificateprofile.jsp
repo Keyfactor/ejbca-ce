@@ -833,7 +833,7 @@
 		<h:inputText id="textfieldqcsemanticsid" value="#{certProfileBean.certificateProfile.QCSemanticsId}" size="20" maxlength="255" title="#{web.text.FORMAT_OID}"
 			 rendered="#{certProfileBean.certificateProfile.useQCStatement}" disabled="#{certProfilesBean.viewOnly}"/>
 
-		<h:outputLabel for="textfieldqcstatementraname" value="#{web.text.EXT_PKIX_QCS_NAMERA}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
+		<h:outputLabel for="textfieldqcstatementraname" value="#{web.text.EXT_PKIX_QCS_NAMERAS}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
 		<h:inputText id="textfieldqcstatementraname" value="#{certProfileBean.certificateProfile.QCStatementRAName}" size="45" maxlength="255" title="#{web.text.FORMAT_STRING}"
 			 rendered="#{certProfileBean.certificateProfile.useQCStatement}" disabled="#{certProfilesBean.viewOnly}"/>
 
