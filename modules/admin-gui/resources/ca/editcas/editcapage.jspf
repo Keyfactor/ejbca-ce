@@ -1066,7 +1066,7 @@ function toggleCANameChange(){
                 <c:out value="<%= x509cainfo.getSubjectAltName() %>"/>
               <% }
             } else { %>
-         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="45" maxlength="255"
+         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_GENERALNAMES") %>"
              value="<c:out value="<%= isUninitialized ? x509cainfo.getSubjectAltName() : \"\" %>"/>" <%= (hasEditRights ? "" : "disabled") %> />
          <% } %>
       </td>
