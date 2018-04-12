@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
@@ -24,6 +25,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -75,6 +77,63 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         return new CertificateDataWrapper(certificateData);
     }
     
+    @Override
+    public CertificateStatus getStatus(final String issuerDN, final BigInteger serno) {
+        if (log.isTraceEnabled()) {
+            log.trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+        }
+        // First, try to look up in CertificateData
+        final String dn = CertTools.stringToBCDNString(issuerDN);
+        CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serno);
+        if (status != CertificateStatus.NOT_AVAILABLE) {
+            log.trace("<getStatus()");
+            return status;
+        }
+        // If not found, take most recent certificate from NoConflictCertificateData
+        final NoConflictCertificateData noConflictCert = findMostRecentCertData(dn, serno); 
+        if (noConflictCert == null) {
+            if (log.isTraceEnabled()) {
+                log.trace("<getStatus() did not find certificate with dn " + dn + " and serno " + serno.toString(16));
+            }
+            return CertificateStatus.NOT_AVAILABLE;
+        }
+        status = CertificateStatusHelper.getCertificateStatus(noConflictCert);
+        if (log.isTraceEnabled()) {
+            log.trace("<getStatus() returned " + status + " for cert number " + serno.toString(16));
+        }
+        return status;
+        
+    }
+    
+    private NoConflictCertificateData findMostRecentCertData(final String dn, final BigInteger serno) {
+        final Collection<NoConflictCertificateData> certDatas = NoConflictCertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
+        if (CollectionUtils.isEmpty(certDatas)) {
+            log.trace("<findMostRecentCertData(): no certificates found");
+            return null;
+        }
+        NoConflictCertificateData mostRecentData = null;
+        for (final NoConflictCertificateData data : certDatas) {
+            if (mostRecentData == null) {
+                mostRecentData = data;
+                continue;
+            }
+            if (data.getStatus() == CertificateConstants.CERT_REVOKED && data.getRevocationReason() != RevocationReasons.CERTIFICATEHOLD.getDatabaseValue()) {
+                // Permanently revoked certificate always takes precedence over non-permanently revoked one
+                if (mostRecentData.getStatus() != CertificateConstants.CERT_REVOKED || mostRecentData.getRevocationReason() == RevocationReasons.CERTIFICATEHOLD.getDatabaseValue()) {
+                    mostRecentData = data;
+                    continue;
+                }
+            }
+            // Otherwise, most recent status takes precedence
+            long timestampThis =   data.getUpdateTime() != null ? data.getUpdateTime() : 0;
+            long timestampRecent = data.getUpdateTime() != null ? data.getUpdateTime() : 0;
+            if (timestampThis > timestampRecent) {
+                mostRecentData = data;
+            }
+        }
+        return mostRecentData;
+    }
+
     @Override
     public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
