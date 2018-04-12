@@ -1248,6 +1248,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         try {
             Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
+            
+            
             if (coll.size() > 1) {
                 final String msg = INTRES.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));
                 log.error(msg);
