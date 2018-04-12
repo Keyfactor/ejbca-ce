@@ -231,14 +231,14 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * This is why it is important that this method is _local only_. 
      * 
      * @param admin Administrator performing the operation
-     * @param fingerprint the fingerprint of the certificate to revoke or activate.
+     * @param certificateData the certificate to change status of. May also be a new NoConflictCertificateData row to store in the database (generally, a throw away certificate to revoke).
      * @param revokeDate when it was revoked
      * @param reason the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
      * 
      * @throws CertificateRevokeException (rollback) if certificate does not exist
      */
-    boolean setRevokeStatusNoAuth(AuthenticationToken admin, CertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException;
+    boolean setRevokeStatusNoAuth(AuthenticationToken admin, BaseCertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException;
 
     /**
      * Changes a certificate from CERT_ROLLOVERPENDING to CERT_ACTIVE. If the certificate status is already CERT_ACTIVE, then it does nothing.

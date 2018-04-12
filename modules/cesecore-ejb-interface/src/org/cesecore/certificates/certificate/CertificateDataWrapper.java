@@ -30,7 +30,7 @@ public class CertificateDataWrapper implements CertificateWrapper, Comparable<Ce
 
     private static final long serialVersionUID = 1L;
 
-    private final CertificateData certificateData;
+    private final BaseCertificateData certificateData;
     private final Base64CertData base64CertData;
     private final byte[] certificateBytes;
     private transient Certificate certificate = null;
@@ -76,9 +76,19 @@ public class CertificateDataWrapper implements CertificateWrapper, Comparable<Ce
             this.base64CertData = null;
         }
     }
+    
+    public CertificateDataWrapper(final NoConflictCertificateData noConflictCertData) {
+        this.certificateData = noConflictCertData;
+        this.certificateBytes = null;
+        this.base64CertData = null;
+    }
+    
+    public BaseCertificateData getBaseCertificateData() {
+        return certificateData;
+    }
 
     public CertificateData getCertificateData() {
-        return certificateData;
+        return (CertificateData) certificateData;
     }
 
     public Base64CertData getBase64CertData() {
