@@ -43,7 +43,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CRLData;
@@ -422,9 +422,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     public boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation) throws PublisherException {
         if (publisher.isFullEntityPublishingSupported()) {
-            return publisher.storeCertificate(admin, certWrapper.getCertificateData(), certWrapper.getBase64CertData());
+            return publisher.storeCertificate(admin, certWrapper.getCertificateDataOrCopy(), certWrapper.getBase64CertData());
         } else {
-            final CertificateData certificateData = certWrapper.getCertificateData();
+            final BaseCertificateData certificateData = certWrapper.getBaseCertificateData();
             final String cAFingerprint = certificateData.getCaFingerprint();
             final int status = certificateData.getStatus();
             final int type = certificateData.getType();
