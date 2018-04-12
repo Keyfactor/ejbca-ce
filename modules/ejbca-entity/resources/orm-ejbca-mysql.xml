@@ -73,8 +73,8 @@
     </entity>
     <entity class="org.cesecore.certificates.certificate.NoConflictCertificateData" access="PROPERTY" metadata-complete="false">
         <attributes>
-             <id name="id"><column name="id" column-definition="VARCHAR(250) BINARY"/></id>
-             <basic name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY"/></basic>
+            <id name="id"><column name="id" column-definition="VARCHAR(250) BINARY"/></id>
+            <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(400) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(250) BINARY"/></basic>
@@ -92,6 +92,7 @@
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="INT(11)" nullable="false"/></basic>
             <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INT(11)" nullable="true"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="timeCreated"><column name="timeCreated" column-definition="BIGINT(20)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000) BINARY" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
