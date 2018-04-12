@@ -332,7 +332,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @param field
      *            the DN component, one of the constants DNFieldExtractor.CN, ...
      * 
-     * @return number of componenets available for a fiels, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
+     * @return number of components available for a field, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
     public int getNumberOfFields(final int field) {
         Integer ret = fieldnumbers.get(Integer.valueOf(field));
