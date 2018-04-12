@@ -196,6 +196,7 @@ org.ejbca.ui.web.ParameterException
   static final String SELECT_AVAILABLECRLPUBLISHERS               = "selectavailablecrlpublishers";
   static final String SELECT_AVAILABLEVALIDATORS                  = "selectavailablevalidators";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
+  static final String SELECT_DEFAULTCERTPROFILE                   = "selectdefaultcertificateprofile";
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
   static final String SELECT_APPROVALSETTINGS                     = "approvalsettings";
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "numofrequiredapprovals";
@@ -344,6 +345,7 @@ org.ejbca.ui.web.ParameterException
                 catype = Integer.parseInt(requestMap.get(HIDDEN_CATYPE));
                 final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
                 final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
+                final String defaultCertificateProfileIdString = requestMap.get(SELECT_DEFAULTCERTPROFILE);
                 final String signedByString = requestMap.get(SELECT_SIGNEDBY);
                 final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
                 String validityString = requestMap.get(TEXTFIELD_VALIDITY);
@@ -405,7 +407,7 @@ org.ejbca.ui.web.ParameterException
                 try {
                     illegaldnoraltname = cabean.actionCreateCaMakeRequest(caname, signatureAlgorithmParam,
                      signkeyspec, keySequenceFormatParam, keySequence,
-               		 catype, subjectdn, certificateProfileIdString, signedByString, description, validityString,
+               		 catype, subjectdn, certificateProfileIdString, defaultCertificateProfileIdString, signedByString, description, validityString,
                		 approvals, finishUser, isDoEnforceUniquePublicKeys,
                		 isDoEnforceUniqueDistinguishedName,
                		 isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
@@ -559,6 +561,8 @@ org.ejbca.ui.web.ParameterException
                 final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
                 final boolean checkboxAcceptRevocationsNonExistingEntry = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY));
+                final String defaultCertificateProfileIdString = requestMap.get(SELECT_DEFAULTCERTPROFILE);
+                int defaultCertprofileId = (defaultCertificateProfileIdString==null ? 0 : Integer.parseInt(defaultCertificateProfileIdString));
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
                 final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEVALIDATORS);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
@@ -606,7 +610,7 @@ org.ejbca.ui.web.ParameterException
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
             		useCertReqHistory, useUserStorage, useCertificateStorage, checkboxAcceptRevocationsNonExistingEntry,
-            		approvals,
+                        defaultCertprofileId, approvals,
             		availablePublisherValues, availableKeyValidatorValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, 
             		authorityInformationAccess,
@@ -663,6 +667,7 @@ org.ejbca.ui.web.ParameterException
                     int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
                     if (signedby == caid) { signedby = CAInfo.SELFSIGNED; }
                     cainfo.setCertificateProfileId(certprofileid);
+                    cainfo.setDefaultCertificateProfileId(defaultCertprofileId);
                     cainfo.setSignedBy(signedby);
                     
                     final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
@@ -698,6 +703,7 @@ org.ejbca.ui.web.ParameterException
                     int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
                     cainfo.setSignedBy(signedby);
                     cainfo.setCertificateProfileId(certprofileid);
+                    cainfo.setDefaultCertificateProfileId(defaultCertprofileId);
                     try {
                         cadatahandler.initializeCA(cainfo);
                     } catch (CryptoTokenOfflineException ctoe) {
