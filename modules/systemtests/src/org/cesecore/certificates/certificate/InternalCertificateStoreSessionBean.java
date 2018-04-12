@@ -81,6 +81,11 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
                 this.entityManager.remove(b64cert);
             }
         }
+        
+        final Collection<NoConflictCertificateData> noConflictCertDatas = NoConflictCertificateData.findBySerialNumber(this.entityManager, serno.toString());
+        for (final NoConflictCertificateData certificateData : noConflictCertDatas) {
+            this.entityManager.remove(certificateData);
+        }
     }
 
     private int deleteRow(final String tableName, final String fingerPrint) {
@@ -135,7 +140,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 	@Override
 	public Collection<Certificate> findCertificatesByIssuer(String issuerDN) {
 		if (null == issuerDN || issuerDN.length() <= 0) {
-			return new ArrayList<Certificate>();
+			return new ArrayList<>();
 		}
 		final Query query = this.entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN");
 		query.setParameter("issuerDN", issuerDN);

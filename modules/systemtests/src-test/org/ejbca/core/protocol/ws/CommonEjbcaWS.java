@@ -1637,18 +1637,18 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                 {
                     final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
-                    assertNotNull(revokestatus);
-                    assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-                    assertTrue(revokestatus.getCertificateSN().equals(serialNumber));
-                    assertTrue(revokestatus.getIssuerDN().equals(issuerDn));
-                    assertNotNull(revokestatus.getRevocationDate());
+                    assertNotNull("Certificate status should be available.", revokestatus);
+                    assertEquals("Certificate should be 'on hold'.", RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, revokestatus.getReason());
+                    assertEquals(serialNumber, revokestatus.getCertificateSN());
+                    assertEquals(issuerDn, revokestatus.getIssuerDN());
+                    assertNotNull("Revocation date should not be null.", revokestatus.getRevocationDate());
                 }
                 
                 this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.NOT_REVOKED);
                 {
                     final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
-                    assertNotNull(revokestatus);
-                    assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+                    assertNotNull("Certificate status should exist after unrevoking.", revokestatus);
+                    assertEquals("Certificate status should be 'not revoked'.", RevokedCertInfo.NOT_REVOKED, revokestatus.getReason());
                 }
             } catch (NotFoundException_Exception e) {
                 fail("Unexpected behaviour: Revocation of throw away cert required certificate in database");
@@ -1660,7 +1660,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
             caInfoToRestore.setUseUserStorage(originalUseUserStorage);
             caSession.editCA(authenticationToken, caInfoToRestore);
-            internalCertStoreSession.removeCertificate(serialNumber);
+            internalCertStoreSession.removeCertificate(new BigInteger(serialNumber, 16));
         }
     }
     
