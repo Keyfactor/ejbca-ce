@@ -34,6 +34,7 @@
         <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
         <class>org.cesecore.certificates.ca.CAData</class>
         <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.certificate.NoConflictCertificateData</class>
         <class>org.cesecore.certificates.certificate.Base64CertData</class>
         <class>org.cesecore.certificates.certificateprofile.CertificateProfileData</class>
         <class>org.cesecore.certificates.crl.CRLData</class>
@@ -75,6 +76,7 @@
     <persistence-unit name="ca" transaction-type="RESOURCE_LOCAL">
         <mapping-file>META-INF/orm-ejbca-mysql.xml</mapping-file>
         <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.certificate.NoConflictCertificateData</class>
         <class>org.cesecore.certificates.certificate.Base64CertData</class>
         <class>org.cesecore.certificates.crl.CRLData</class>
         <class>org.cesecore.keys.token.CryptoTokenData</class>
@@ -91,6 +93,7 @@
     <persistence-unit name="ocsp1" transaction-type="RESOURCE_LOCAL">
         <mapping-file>META-INF/orm-ejbca-mysql.xml</mapping-file>
         <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.certificate.NoConflictCertificateData</class>
         <class>org.cesecore.certificates.certificate.Base64CertData</class>
         <class>org.cesecore.certificates.crl.CRLData</class>
         <class>org.cesecore.keys.token.CryptoTokenData</class>
