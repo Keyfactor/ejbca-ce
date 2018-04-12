@@ -33,3 +33,4 @@ drop table RoleMemberData if exists;
 drop table ServiceData if exists;
 drop table UserData if exists;
 drop table UserDataSourceData if exists;
+drop table NoConflictCertificateData if exists;
