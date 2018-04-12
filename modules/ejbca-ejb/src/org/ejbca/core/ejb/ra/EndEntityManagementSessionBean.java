@@ -65,6 +65,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -1646,7 +1647,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.info(msg);
             throw new NoSuchEndEntityException(msg);
         }
-        final CertificateData certificateData = cdw.getCertificateData();
+        final BaseCertificateData certificateData = cdw.getBaseCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
         final String username = certificateData.getUsername();
         assertAuthorizedToCA(admin, caid);

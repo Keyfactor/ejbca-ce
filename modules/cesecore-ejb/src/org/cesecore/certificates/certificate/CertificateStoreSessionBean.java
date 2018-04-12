@@ -1072,14 +1072,14 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (cdw == null) {
             throw new IllegalArgumentException("Passed certificate data may not be null.");
         }
-        final CertificateData certificateData = cdw.getCertificateData();
+        final BaseCertificateData certificateData = cdw.getBaseCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
         authorizedToCA(admin, caid);
         return setRevokeStatusNoAuth(admin, certificateData, revokedDate, reason);
     }
 
     @Override
-    public boolean setRevokeStatusNoAuth(AuthenticationToken admin, CertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException {
+    public boolean setRevokeStatusNoAuth(AuthenticationToken admin, BaseCertificateData certificateData, Date revokeDate, int reason) throws CertificateRevokeException {
         String serialNumber = "unknown";
         try {
             // This will work for X.509
@@ -1130,7 +1130,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         if (returnVal) {
             // Persist changes
-            entityManager.merge(certificateData);
+            if (certificateData instanceof NoConflictCertificateData) {
+                entityManager.persist(certificateData);
+            } else {
+                entityManager.merge(certificateData);
+            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<private setRevokeStatusNoAuth(), issuerdn=" + issuerDn + ", serno=" + serialNumber);

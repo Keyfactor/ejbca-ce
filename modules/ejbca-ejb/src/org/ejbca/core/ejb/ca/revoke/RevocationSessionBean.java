@@ -33,7 +33,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -109,7 +109,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     	if (waschanged) {
     	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
     	    // that is part if the transaction in the EntityManager, so we need to get the object from the EntityManager.
-    	    final CertificateData certificateData = cdw.getCertificateData();
+    	    final BaseCertificateData certificateData = cdw.getBaseCertificateData();
     	    final String username = certificateData.getUsername();
     	    final String password = null;
     		if (!RevokedCertInfo.isRevoked(reason)) {

@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Date;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
@@ -47,6 +48,12 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract long getRevocationDate();
     public abstract Long getUpdateTime();
     public abstract Integer getEndEntityProfileId();
+    
+    public abstract void setStatus(int status);
+    public abstract void setRevocationDate(long revocationDate);
+    public abstract void setRevocationDate(Date revocationDate);
+    public abstract void setRevocationReason(int revocationReason);
+    public abstract void setUpdateTime(Long updateTime);
     
     private static final Logger log = Logger.getLogger(BaseCertificateData.class);
     
