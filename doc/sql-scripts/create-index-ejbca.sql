@@ -56,9 +56,9 @@ CREATE INDEX rolemember_idx1 ON RoleMemberData (tokenType,roleId);
 CREATE INDEX blacklist_idx1 ON BlacklistData (type,value);
 
 -- indices for NoConflictCertificateData
-CREATE INDEX certificatedata_idx2 ON NoConflictCertificateData (username);
-CREATE INDEX certificatedata_idx4 ON NoConflictCertificateData (subjectDN);
-CREATE INDEX certificatedata_idx5 ON NoConflictCertificateData (type);
-CREATE INDEX certificatedata_idx6 ON NoConflictCertificateData (issuerDN,status);
-CREATE INDEX certificatedata_idx7 ON NoConflictCertificateData(certificateProfileId);
-CREATE INDEX certificatedata_idx11 ON NoConflictCertificateData (subjectKeyId);
+CREATE INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData (username);
+CREATE INDEX noconflictcertificatedata_idx4 ON NoConflictCertificateData (subjectDN);
+CREATE INDEX noconflictcertificatedata_idx5 ON NoConflictCertificateData (type);
+CREATE INDEX noconflictcertificatedata_idx6 ON NoConflictCertificateData (issuerDN,status);
+CREATE INDEX noconflictcertificatedata_idx7 ON NoConflictCertificateData(certificateProfileId);
+CREATE INDEX noconflictcertificatedata_idx11 ON NoConflictCertificateData (subjectKeyId);

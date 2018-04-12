@@ -33,3 +33,4 @@ drop table if exists RoleMemberData cascade;
 drop table if exists ServiceData cascade;
 drop table if exists UserData cascade;
 drop table if exists UserDataSourceData cascade;
+drop table if exists NoConflictCertificateData cascade;

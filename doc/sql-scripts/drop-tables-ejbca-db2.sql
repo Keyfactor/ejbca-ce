@@ -31,3 +31,4 @@ drop table RoleMemberData;
 drop table ServiceData;
 drop table UserData;
 drop table UserDataSourceData;
+drop table NoConflictCertificateData;
