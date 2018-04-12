@@ -1660,6 +1660,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
             caInfoToRestore.setUseUserStorage(originalUseUserStorage);
             caSession.editCA(authenticationToken, caInfoToRestore);
+            internalCertStoreSession.removeCertificate(serialNumber);
         }
     }
     
