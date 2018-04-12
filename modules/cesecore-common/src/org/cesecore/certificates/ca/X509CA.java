@@ -256,7 +256,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
         
-        final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getEncodedValidity(),
+        final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getDefaultCertificateProfileId(), getEncodedValidity(),
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getValidators(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),

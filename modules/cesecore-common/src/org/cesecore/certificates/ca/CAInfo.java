@@ -76,6 +76,7 @@ public abstract class CAInfo implements Serializable {
     protected int revocationReason;
     protected Date revocationDate;
     protected int certificateprofileid;
+    protected int defaultCertificateProfileId;
     /** Default value 1 day */
     protected long crlperiod = 1 * SimpleTime.MILLISECONDS_PER_DAY;
     /** Default value 0 */
@@ -277,6 +278,14 @@ public abstract class CAInfo implements Serializable {
 
     public int getCertificateProfileId() {
         return this.certificateprofileid;
+    }
+
+    public int getDefaultCertificateProfileId() {
+        return defaultCertificateProfileId;
+    }
+
+    public void setDefaultCertificateProfileId(int defaultCertificateProfileId) {
+        this.defaultCertificateProfileId = defaultCertificateProfileId;
     }
 
     public long getCRLPeriod() {

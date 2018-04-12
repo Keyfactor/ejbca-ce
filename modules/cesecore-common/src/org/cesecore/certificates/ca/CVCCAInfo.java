@@ -43,6 +43,7 @@ public class CVCCAInfo extends CAInfo {
     public CVCCAInfo(String subjectdn, String name, int status, int certificateprofileid, String encodedValidity, int signedby,
             List<Certificate> certificatechain, CAToken catoken) {
         this(subjectdn, name, status, new Date(), certificateprofileid,
+                -1, // defaultCertprofileId
                 encodedValidity, null, // expire time
                 CAInfo.CATYPE_CVC, signedby,
                 certificatechain, // Certificate chain
@@ -74,7 +75,7 @@ public class CVCCAInfo extends CAInfo {
 	 * Constructor that should be used when creating CA and retrieving CA info.
 	 * Please use the shorter form if you do not need to set all of the values.
 	 */
-	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid,
+	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, int defaultCertprofileId,
             String encodedValidity, Date expiretime, int catype, int signedby, List<Certificate> certificatechain,
 			CAToken catoken, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
@@ -106,6 +107,7 @@ public class CVCCAInfo extends CAInfo {
 		this.validators = keyValidators;
 		this.finishuser = finishuser;
 		this.certificateprofileid = certificateprofileid;
+		this.defaultCertificateProfileId = defaultCertprofileId;
 		this.extendedcaserviceinfos = extendedcaserviceinfos;
 		setApprovals(approvals);
 		this.includeInHealthCheck = includeInHealthCheck;
@@ -129,7 +131,8 @@ public class CVCCAInfo extends CAInfo {
 			Map<ApprovalRequestType, Integer> approvals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, boolean _acceptRevocationNonExistingEntry) {
+			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, boolean _acceptRevocationNonExistingEntry,
+			int defaultCertprofileId) {
 		this.caid = caid;
 		setEncodedValidity(encodedValidity);
 		this.catoken = catoken;
@@ -151,5 +154,6 @@ public class CVCCAInfo extends CAInfo {
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
         this.acceptRevocationNonExistingEntry = _acceptRevocationNonExistingEntry;
+        this.defaultCertificateProfileId = defaultCertprofileId;
 	}
 }
