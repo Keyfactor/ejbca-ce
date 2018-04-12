@@ -93,6 +93,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
@@ -244,6 +245,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private KeyRecoverySessionLocal keyRecoverySessionLocal;
     @EJB
     private KeyStoreCreateSessionLocal keyStoreCreateSessionLocal;
+    @EJB
+    private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
     @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
     @EJB
@@ -2067,7 +2070,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new AuthorizationDeniedException(msg);
         }
         
-        return certificateStoreSession.getStatus(issuerdn, serno);
+        return noConflictCertificateStoreSession.getStatus(issuerdn, serno);
     }
     
     private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {

@@ -847,6 +847,13 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     //
     
     /** @return return the query results as a List. */
+    public static List<NoConflictCertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
+        final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery("SELECT a FROM NoConflictCertificateData a WHERE a.serialNumber=:serialNumber", NoConflictCertificateData.class);
+        query.setParameter("serialNumber", serialNumber);
+        return query.getResultList();
+    }
+    
+    /** @return return the query results as a List. */
     public static List<NoConflictCertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
         String sql = "SELECT a FROM NoConflictCertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber";
         final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery(sql, NoConflictCertificateData.class);

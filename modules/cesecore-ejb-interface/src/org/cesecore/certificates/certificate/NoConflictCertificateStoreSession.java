@@ -28,6 +28,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 @Remote
 public interface NoConflictCertificateStoreSession  {
 
+    CertificateStatus getStatus(String issuerDN, BigInteger serno);
+    
     CertificateDataWrapper getCertificateDataByIssuerAndSerno(String issuerdn, BigInteger certserno);
     
     boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
