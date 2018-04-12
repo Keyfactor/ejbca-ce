@@ -563,7 +563,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         revokeCert();
     }
 
-    @Ignore // TODO Add when ECA-6727 is ready
+    @Ignore
     @Test
     public void test0601RevokeThrowAwayCert () throws Exception {
         revokeThrowAwayCert();
