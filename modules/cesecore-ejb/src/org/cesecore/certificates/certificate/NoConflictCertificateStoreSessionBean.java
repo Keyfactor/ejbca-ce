@@ -105,8 +105,16 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         
     }
     
-    private NoConflictCertificateData findMostRecentCertData(final String dn, final BigInteger serno) {
-        final Collection<NoConflictCertificateData> certDatas = NoConflictCertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
+    /**
+     * Locates the most recent entry in NoConflictCertificateData for a given issuerdn/serial number combination.
+     * Permanent revocations always take precedence over other updates, the first one wins.
+     * Otherwise, the most recent update wins.
+     * @param issuerdn Issuer DN
+     * @param serno Certificate serial number
+     * @return NoConflictCertificateData entry, or null if not found. Entity is append-only, so do not modify it.
+     */
+    private NoConflictCertificateData findMostRecentCertData(final String issuerdn, final BigInteger serno) {
+        final Collection<NoConflictCertificateData> certDatas = NoConflictCertificateData.findByIssuerDNSerialNumber(entityManager, issuerdn, serno.toString());
         if (CollectionUtils.isEmpty(certDatas)) {
             log.trace("<findMostRecentCertData(): no certificates found");
             return null;
@@ -117,16 +125,18 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
                 mostRecentData = data;
                 continue;
             }
+            long timestampThis = data.getUpdateTime() != null ? data.getUpdateTime() : 0;
+            long timestampRecent = mostRecentData.getUpdateTime() != null ? mostRecentData.getUpdateTime() : 0;
             if (data.getStatus() == CertificateConstants.CERT_REVOKED && data.getRevocationReason() != RevocationReasons.CERTIFICATEHOLD.getDatabaseValue()) {
-                // Permanently revoked certificate always takes precedence over non-permanently revoked one
-                if (mostRecentData.getStatus() != CertificateConstants.CERT_REVOKED || mostRecentData.getRevocationReason() == RevocationReasons.CERTIFICATEHOLD.getDatabaseValue()) {
+                // Permanently revoked certificate always takes precedence over non-permanently revoked one.
+                // Older permanent revocations take precedence over newer ones.
+                if (mostRecentData.getStatus() != CertificateConstants.CERT_REVOKED || mostRecentData.getRevocationReason() == RevocationReasons.CERTIFICATEHOLD.getDatabaseValue() ||
+                        timestampRecent > timestampThis) {
                     mostRecentData = data;
                     continue;
                 }
             }
             // Otherwise, most recent status takes precedence
-            long timestampThis =   data.getUpdateTime() != null ? data.getUpdateTime() : 0;
-            long timestampRecent = data.getUpdateTime() != null ? data.getUpdateTime() : 0;
             if (timestampThis > timestampRecent) {
                 mostRecentData = data;
             }
@@ -137,47 +147,46 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     @Override
     public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
-        final BaseCertificateData certificateData = cdw.getBaseCertificateData();
-        final String issuerdn = certificateData.getIssuerDN();
-        final int caid = issuerdn.hashCode();
-        final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-        if (cainfo == null || !cainfo.getSubjectDN().equals(issuerdn) || cainfo.isUseCertificateStorage()) {
-            // Not a throw away certificate. Go ahead with standard CertificateData logic.
-            if (cainfo == null && log.isDebugEnabled()) {
-                log.debug("Certificate " + cdw.getCertificateData().getSubjectDN() +" references a CA that does not exist. CA Id: " + caid + ". Issuer DN: '" + issuerdn + "'");
+        if (cdw.getBaseCertificateData() instanceof NoConflictCertificateData) {
+            if (entityManager.contains(cdw.getBase64CertData())) {
+                throw new IllegalStateException("Cannot update existing row in NoConflictCertificateData. It is append-only.");
             }
-            return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
         }
-//        throw new UnsupportedOperationException("Throw away case is not implemented"); // TODO
-        return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);  // XXX Works with CertificateData, but remains to be tested with NoConflictCertificateData
+        return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
     }
     
     /**
-     * Returns a new row in the append-only NoConflictCertificateData table.
+     * Returns a row in the append-only NoConflictCertificateData table, or a new row that can be added.
      * The row is initialized with the data from the most recent entry in the table,
      * or as a new unrevoked entry if non-existent.
      * @param cainfo Issuer.
      * @param certserno Certificate serial number.
-     * @return Always a new row.
+     * @return New row, or copy of an existing row. Always has a fresh UUID and timestamp, so it can be appended directly.
      */
     private NoConflictCertificateData getLimitedNoConflictCertDataRow(final CAInfo cainfo, final BigInteger certserno) {
-        // FIXME should try to look up in NoConflictCertificateData also, and take the latest result
-        final NoConflictCertificateData certificateData = new NoConflictCertificateData();
+        NoConflictCertificateData certificateData = findMostRecentCertData(cainfo.getSubjectDN(), certserno);
+        if (certificateData != null) {
+            // Make a copy, to prevent overwrites
+            certificateData = new NoConflictCertificateData(certificateData);
+        } else {
+            certificateData = new NoConflictCertificateData();
+            // See org.cesecore.certificates.certificate.CertificateStoreSessionBean.updateLimitedCertificateDataStatus
+            certificateData.setSerialNumber(certserno.toString());
+            // A fingerprint is needed by the publisher session, so we put a dummy fingerprint here
+            certificateData.setFingerprint(generateDummyFingerprint(cainfo.getSubjectDN(), certserno));
+            certificateData.setIssuerDN(cainfo.getSubjectDN());
+            certificateData.setSubjectDN("CN=limited");
+            certificateData.setUsername(null);
+            certificateData.setCertificateProfileId(CertificateProfileConstants.NO_CERTIFICATE_PROFILE); // TODO Should be configurable per CA (ECA-6743)
+            certificateData.setStatus(CertificateConstants.CERT_ACTIVE);
+            certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
+            certificateData.setRevocationDate(-1L);
+            certificateData.setCaFingerprint(CertTools.getFingerprintAsString(cainfo.getCertificateChain().get(0)));
+            certificateData.setEndEntityProfileId(-1);
+        }
+        // Always generate new UUID and timestamp, so updates are stored as a new row
         certificateData.setId(UUID.randomUUID().toString());
-        // See org.cesecore.certificates.certificate.CertificateStoreSessionBean.updateLimitedCertificateDataStatus
-        certificateData.setSerialNumber(certserno.toString());
-        // A fingerprint is needed by the publisher session, so we put a dummy fingerprint here
-        certificateData.setFingerprint(generateDummyFingerprint(cainfo.getSubjectDN(), certserno));
-        certificateData.setIssuerDN(cainfo.getSubjectDN());
-        certificateData.setSubjectDN("CN=limited");
-        certificateData.setUsername(null);
-        certificateData.setCertificateProfileId(CertificateProfileConstants.NO_CERTIFICATE_PROFILE); // TODO Should be configurable per CA (ECA-6743)
-        certificateData.setStatus(CertificateConstants.CERT_ACTIVE);
-        certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
-        certificateData.setRevocationDate(-1L);
-        certificateData.setUpdateTime(Long.valueOf(System.currentTimeMillis()));
-        certificateData.setCaFingerprint(CertTools.getFingerprintAsString(cainfo.getCertificateChain().get(0)));
-        certificateData.setEndEntityProfileId(-1);
+        certificateData.setUpdateTime(System.currentTimeMillis());
         return certificateData;
     }
     
