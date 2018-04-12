@@ -143,7 +143,7 @@ public class CertificateView implements Serializable {
             return certificateData.getIssuerDN();
         }
         return CertTools.getIssuerDN(certificate);
-      }
+    }
 
     public String getIssuerDNField(int field, int number) {
       return HTMLTools.htmlescape(issuerDnFieldExtractor.getField(field, number));
@@ -154,6 +154,17 @@ public class CertificateView implements Serializable {
             return HTMLTools.htmlescape(certificateData.getSubjectDnNeverNull());
         }
     	return HTMLTools.htmlescape(CertTools.getSubjectDN(certificate));
+    }
+
+    /**
+     *
+     * @return subjectDN in unescaped format to be passed later to custom publishers.
+     */
+    public String getSubjecDNUnescaped() {
+        if (certificate == null) {
+            return certificateData.getSubjectDN();
+        }
+        return CertTools.getSubjectDN(certificate);
     }
 
     /**

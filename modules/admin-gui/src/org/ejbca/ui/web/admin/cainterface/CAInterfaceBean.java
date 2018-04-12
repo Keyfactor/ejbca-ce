@@ -496,7 +496,8 @@ public class CAInterfaceBean implements Serializable {
 			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId);
 			if (certprofile != null) {
 				if (certprofile.getPublisherList().size() > 0) {
-                    if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), cdw, password, dn, ei)) {
+				    // Passing unescaped subjectDN to the publisher to avoid causing issues in custom publishers (see ECA-6761)
+                    if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), cdw, password, certificateView.getSubjecDNUnescaped(), ei)) {
                         returnval = "CERTREPUBLISHEDSUCCESS";
                     }
 				} else {
