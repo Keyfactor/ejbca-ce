@@ -71,6 +71,36 @@
             <transient name="rowProtection"/>
         </attributes>
     </entity>
+    <entity class="org.cesecore.certificates.certificate.NoConflictCertificateData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+             <id name="id"><column name="id" column-definition="VARCHAR(250) BINARY"/></id>
+             <basic name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(400) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="INT(11)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="type"><column name="type" column-definition="INT(11)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="notBefore"><column name="notBefore" column-definition="BIGINT(20)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="expireDate"><column name="expireDate" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="INT(11)" nullable="false"/></basic>
+            <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
+            <basic fetch="EAGER" name="zzzBase64Cert"><column name="base64Cert" column-definition="LONGTEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="tag"><column name="tag" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="INT(11)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INT(11)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000) BINARY" nullable="true"/></basic>
+            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
+            <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
+            <transient name="base64Cert"/>
+            <transient name="rowProtection"/>
+        </attributes>
+    </entity>
     <entity class="org.cesecore.certificates.certificate.Base64CertData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY"/></id>
