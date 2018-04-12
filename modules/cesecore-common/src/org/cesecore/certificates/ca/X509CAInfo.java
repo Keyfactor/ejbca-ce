@@ -74,6 +74,7 @@ public class X509CAInfo extends CAInfo {
              new Date(), // update time
              "", // Subject Alternative name
              certificateProfileId, // CA certificate profile
+                -1, // default ca profile
              encodedValidity, null, // Expiretime
              CAInfo.CATYPE_X509, // CA type (X509/CVC)
              signedby, // Signed by CA
@@ -130,6 +131,7 @@ public class X509CAInfo extends CAInfo {
      * @param updateTime the last time this CA was updated, normally the current date and time
      * @param subjectaltname the Subject Alternative Name (SAN) of the CA, as found in the certificate
      * @param certificateprofileid the ID of the certificate profile for this CA
+     * @param defaultCertprofileId the id of default cetificate profile for certificates this CA issues
      * @param encodedValidity the validity of this CA as a human-readable string, e.g. 25y
      * @param expiretime the date when this CA expires
      * @param catype the type of CA, in this case CAInfo.CATYPE_X509
@@ -178,7 +180,7 @@ public class X509CAInfo extends CAInfo {
      * @param keepExpiredCertsOnCRL
      */
     public X509CAInfo(final String subjectdn, final String name, final int status, final Date updateTime, final String subjectaltname,
-            final int certificateprofileid, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
+            final int certificateprofileid, final int defaultCertprofileId, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
             final Collection<Certificate> certificatechain, final CAToken catoken,
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
@@ -241,6 +243,7 @@ public class X509CAInfo extends CAInfo {
         this.finishuser = finishuser;
         this.subjectaltname = subjectaltname;
         this.certificateprofileid = certificateprofileid;
+        this.defaultCertificateProfileId = defaultCertprofileId;
         this.extendedcaserviceinfos = extendedcaserviceinfos;
         this.useUTF8PolicyText = useUTF8PolicyText;
         setApprovals(approvals);
@@ -277,7 +280,8 @@ public class X509CAInfo extends CAInfo {
             final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
             final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName,
             final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, final boolean _useUserStorage,
-            final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
+            final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL,
+            final int defaultCertprofileId) {
         this.caid = caid;
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
@@ -318,6 +322,7 @@ public class X509CAInfo extends CAInfo {
         this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
+        this.defaultCertificateProfileId = defaultCertprofileId;
     }
 
   public List<CertificatePolicy> getPolicies() {

@@ -189,6 +189,13 @@ function isExternalGeneric(){
    } 
 }
 <% } %>
+function selectDefaultCertificateProfile(){
+	if (document.ca.<%=CHECKBOX_USECERTIFICATESTORAGE%>.checked) {
+		document.ca.<%=SELECT_DEFAULTCERTPROFILE%>.disabled = true;
+	} else {
+		document.ca.<%=SELECT_DEFAULTCERTPROFILE%>.disabled = false;
+	}
+}
 function gendefaultcrldistpoint(){
  <% if(!editca){ %>
     document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() %>" + encodeURI(document.ca.<%=TEXTFIELD_SUBJECTDN%>.value);	
@@ -877,7 +884,7 @@ function toggleCANameChange(){
         <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_Certificate_Storage") %> <br />
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" onclick="selectDefaultCertificateProfile();"
             <% if(editca) {
             	  if (cainfo.isUseCertificateStorage()) out.write("CHECKED"); // edit CA
                } else {
@@ -886,16 +893,34 @@ function toggleCANameChange(){
                <label for="<%=CHECKBOX_USECERTIFICATESTORAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
-
+    <tr id="Row<%=row++%2%>">
+        <td width="50%" align="right"><%= ejbcawebbean.getText("DEFAULTCERTIFICATEPROFILE")%></td>
+        <td>
+            <% boolean isDefaultProfileDisabled = !hasEditRights || !editca || isUninitialized || cainfo.isUseCertificateStorage(); %>
+          <select name="<%=SELECT_DEFAULTCERTPROFILE %>" size="1" <%= (isDefaultProfileDisabled  ? "disabled" : "") %> >
+              <% TreeMap allp = ejbcawebbean.getAuthorizedEndEntityCertificateProfileNames();
+                  Iterator iter = allp.keySet().iterator();
+                  String currentCertProfileId = editca ? String.valueOf(cainfo.getDefaultCertificateProfileId()) : "" ;
+                  while(iter.hasNext()){
+                      String nextprofilename = (String) iter.next();
+                      int certprofid = ((Integer) allp.get(nextprofilename)).intValue();%>
+              <option value="<%=certprofid %>"
+                      <% if(editca && Integer.toString(certprofid).equals(currentCertProfileId)) { %> selected <%}%>
+              ><%= nextprofilename %></option>
+              <% } %>
+          </select>
+        </td>
+      </tr>
       <tr id="Row<%=row++%2%>">
           <td width="50%"  align="right">
               <%= ejbcawebbean.getText("ACCEPTREVOCATIONSNONEXISTINGENTRY") %><br />
           </td>
           <td width="50%">
               <input type="checkbox" name="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY %>" value="<%=CHECKBOX_VALUE %>"
-                  <% if(editca) {
-            	  if (cainfo.isAcceptRevocationNonExistingEntry()) out.write("CHECKED"); // edit CA
-               } %> id="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>" <%= (hasEditRights ? "" : "disabled") %>>
+                  <% if(editca && cainfo.isAcceptRevocationNonExistingEntry()) {
+                      out.write("CHECKED"); // edit CA
+               } %>
+                     id="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>" <%= (hasEditRights ? "" : "disabled") %>>
               <label for="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>"><c:out value="<%= ejbcawebbean.getText(\"ACCEPT\") %>" /></label>
           </td>
       </tr>

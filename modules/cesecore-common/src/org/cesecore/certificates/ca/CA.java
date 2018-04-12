@@ -103,6 +103,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String REVOCATIONREASON = "revokationreason";
     protected static final String REVOCATIONDATE = "revokationdate";
     protected static final String CERTIFICATEPROFILEID = "certificateprofileid";
+    protected static final String DEFAULTCERTIFICATEPROFILEID = "defaultcertificateprofileid";
     protected static final String CRLPERIOD = "crlperiod";
     protected static final String DELTACRLPERIOD = "deltacrlperiod";
     protected static final String CRLISSUEINTERVAL = "crlIssueInterval";
@@ -167,6 +168,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(REVOCATIONREASON, Integer.valueOf(-1));
         data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
+        if (!cainfo.isUseCertificateStorage()) {
+            data.put(DEFAULTCERTIFICATEPROFILEID, Integer.valueOf(cainfo.getDefaultCertificateProfileId()));
+        }
         setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
         setCRLPeriod(cainfo.getCRLPeriod());
         setCRLIssueInterval(cainfo.getCRLIssueInterval());
@@ -414,6 +418,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     public int getCertificateProfileId() {
         return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();
+    }
+    public int getDefaultCertificateProfileId() {
+        Integer defaultCertificateProfileId = (Integer) data.get(DEFAULTCERTIFICATEPROFILEID);
+        if (defaultCertificateProfileId != null) {
+            return defaultCertificateProfileId.intValue();
+        } else {
+            return -1;
+        }
     }
 
     /** @return the CAs token reference. */
@@ -876,6 +888,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(APPROVALS, cainfo.getApprovals());
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
+        }
+        if (cainfo.getDefaultCertificateProfileId() > 0 && !cainfo.isUseCertificateStorage()) {
+            data.put(DEFAULTCERTIFICATEPROFILEID, Integer.valueOf(cainfo.getDefaultCertificateProfileId()));
         }
         setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
 
