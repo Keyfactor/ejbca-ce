@@ -183,7 +183,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     /**
      * Copy Constructor
      */
-    public CertificateData(final CertificateData copy) {
+    public CertificateData(final BaseCertificateData copy) {
         setBase64Cert(copy.getBase64Cert());
         setFingerprint(copy.getFingerprint());
         setSubjectDN(copy.getSubjectDN());

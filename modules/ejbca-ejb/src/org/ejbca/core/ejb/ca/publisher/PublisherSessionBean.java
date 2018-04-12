@@ -40,7 +40,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -109,7 +109,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, CertificateDataWrapper certWrapper,
             String password, String userDN, ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
-        final CertificateData certificateData = certWrapper.getCertificateData();
+        final BaseCertificateData certificateData = certWrapper.getBaseCertificateData();
         final int caid = certificateData.getIssuerDN().hashCode();
         if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
             final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);

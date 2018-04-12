@@ -31,7 +31,7 @@ public abstract class CertificateStatusHelper {
      * 
      * @return CertificateStatus, can be compared (==) with CertificateStatus.OK, CertificateStatus.REVOKED and CertificateStatus.NOT_AVAILABLE
      */
-    public static CertificateStatus getCertificateStatus(final CertificateData certificateData) {
+    public static CertificateStatus getCertificateStatus(final BaseCertificateData certificateData) {
         if (certificateData == null) {
             return CertificateStatus.NOT_AVAILABLE;
         }

@@ -42,12 +42,20 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract String getIssuerDN();
     public abstract String getSerialNumber();
     public abstract String getUsername();
+    public abstract String getSubjectAltName();
     public abstract Integer getCertificateProfileId();
     public abstract int getStatus();
+    public abstract Long getNotBefore();
+    public abstract long getExpireDate();
     public abstract int getRevocationReason();
     public abstract long getRevocationDate();
+    public abstract String getSubjectKeyId();
     public abstract Long getUpdateTime();
     public abstract Integer getEndEntityProfileId();
+    public abstract String getCaFingerprint();
+    public abstract int getType();
+    public abstract String getTag();
+    public abstract int getRowVersion();
     
     public abstract void setStatus(int status);
     public abstract void setRevocationDate(long revocationDate);
