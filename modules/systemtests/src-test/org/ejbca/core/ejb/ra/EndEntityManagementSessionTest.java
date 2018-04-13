@@ -85,6 +85,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherTestSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -133,6 +134,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
+    private PublisherTestSessionRemote publisherTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
@@ -898,7 +900,10 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     }
     
     
-    /** Test revocation of a throw away certificate with publishing enabled. */
+    /**
+     * Test revocation of a throw away certificate with publishing enabled.
+     * This test does not use the publisher queue.
+     */
     @Test
     public void testRevokeThrowAwayCertAndPublish() throws Exception {
         final BigInteger testSerial = new BigInteger("123456788A43197E", 16);
@@ -921,9 +926,14 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             caAdminSession.editCA(admin, cainfo);
             // Revoke
             endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
+            assertEquals("Publisher should have been called with 'on hold' revocation reason.",
+                    RevocationReasons.CERTIFICATEHOLD.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
             endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.NOT_REVOKED.getDatabaseValue());
+            assertEquals("Publisher should have been called with 'not revoked' revocation reason.",
+                    RevocationReasons.NOT_REVOKED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
             endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.SUPERSEDED.getDatabaseValue());
-            // TODO check publisher
+            assertEquals("Publisher should have been called with 'superseeded' revocation reason.",
+                    RevocationReasons.SUPERSEDED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
         } finally {
             // Clean up
             final CAInfo cainfo = caSession.getCAInfo(admin, caid);
