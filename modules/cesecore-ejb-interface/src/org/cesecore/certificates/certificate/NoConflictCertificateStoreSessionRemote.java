@@ -15,7 +15,7 @@ package org.cesecore.certificates.certificate;
 import javax.ejb.Remote;
 
 /**
- * Remote interface for NoConflictCertificateStoreSession.
+ * Remote interface for {@link NoConflictCertificateStoreSession}.
  * 
  * @version $Id$
  */

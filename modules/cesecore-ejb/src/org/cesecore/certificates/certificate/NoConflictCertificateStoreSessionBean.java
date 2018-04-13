@@ -39,6 +39,13 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 
 /**
+ * These methods call CertificateStoreSession for certificates that are plain CertificateData entities.
+ * See {@link CertificateStoreSession} for method descriptions.
+ * 
+ * <p>For NoConflictCertificateData the methods perform additional logic to check that it gets the most recent
+ * entry if there's more than one (taking permanent revocations into account), and for updates it
+ * appends new entries instead of updating existing ones. 
+ * 
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
@@ -57,7 +64,6 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
 
     @Override
     public CertificateDataWrapper getCertificateDataByIssuerAndSerno(final String issuerdn, final BigInteger certserno) {
-        // TODO should it be allowed to have a certificate in both tables? (in that case we should probably take the revocation information from the most recent one in NoConflictCertificateData)
         CertificateDataWrapper cdw = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerdn, certserno);
         if (cdw != null) {
             // Full certificate is available, return it
@@ -190,6 +196,10 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         return certificateData;
     }
     
+    /**
+     * EJBCA expects all certificate entities to have a fingerprint. This method generates a dummy fingerprint, which is unique per issuerdn/serial.
+     * @return Hex encoded fingerprint, to be stored in a NoConflictCertificateData entity.
+     */
     private static String generateDummyFingerprint(final String issuerdn, final BigInteger certserno) {
         final byte[] fingerprintBytes = CertTools.generateSHA1Fingerprint((certserno.toString()+';'+issuerdn).getBytes(StandardCharsets.UTF_8));
         return new String(Hex.encode(fingerprintBytes));

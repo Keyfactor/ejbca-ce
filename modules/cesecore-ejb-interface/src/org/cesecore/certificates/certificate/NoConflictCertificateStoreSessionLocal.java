@@ -12,14 +12,22 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import java.util.Date;
+
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+
 /**
- * Local interface for NoConflictCertificateStoreSession.
+ * Local interface for {@link NoConflictCertificateStoreSession}.
  * 
  * @version $Id$
  */
 @Local
 public interface NoConflictCertificateStoreSessionLocal extends NoConflictCertificateStoreSession {
 
+    /** @see CertificateStoreSessionLocal#setRevokeStatus */
+    boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
+    
 }
