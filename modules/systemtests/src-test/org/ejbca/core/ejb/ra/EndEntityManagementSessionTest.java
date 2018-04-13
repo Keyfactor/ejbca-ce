@@ -55,9 +55,11 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -89,8 +91,11 @@ import org.ejbca.core.ejb.ca.publisher.PublisherTestSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -113,6 +118,10 @@ public class EndEntityManagementSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(EndEntityManagementSessionTest.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("EndEntityManagementSessionTest");
+    private static final BigInteger THROWAWAY_CERT_SERIAL = new BigInteger("123456788A43197E", 16);
+    private static final String THROWAWAY_CERT_PROFILE = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationProfile";
+    private static final String THROWAWAY_PUBLISHER = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationPublisher";
+    
     private int caid = getTestCAId();
 
     private static String username;
@@ -128,6 +137,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private NoConflictCertificateStoreSessionRemote noConflictCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(NoConflictCertificateStoreSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
@@ -906,43 +916,89 @@ public class EndEntityManagementSessionTest extends CaTestCase {
      */
     @Test
     public void testRevokeThrowAwayCertAndPublish() throws Exception {
-        final BigInteger testSerial = new BigInteger("123456788A43197E", 16);
-        final String testProfileName = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationProfile";
-        final String testPublisherName = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationPublisher";
         try {
-            // Set up publishing
-            final CustomPublisherContainer publisher = new CustomPublisherContainer();
-            publisher.setClassPath(MockedThrowAwayRevocationPublisher.class.getName());
-            publisher.setDescription("Used in Junit Test, Remove this one");
-            final int publisherId = publisherSession.addPublisher(admin, testPublisherName, publisher);
-            final CertificateProfile certProf = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
-            certProf.setPublisherList(Arrays.asList(publisherId));
-            int certProfId = certificateProfileSession.addCertificateProfile(admin, testProfileName, certProf);
-            // Set throw away flag on test CA
-            final CAInfo cainfo = caSession.getCAInfo(admin, caid);
-            cainfo.setUseCertificateStorage(false);
-            cainfo.setUseUserStorage(false);
-            cainfo.setDefaultCertificateProfileId(certProfId);
-            caAdminSession.editCA(admin, cainfo);
-            // Revoke
-            endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
+            final CAInfo cainfo = setUpThrowAwayPublishingTest(false); // don't use publisher queue
+            publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
             assertEquals("Publisher should have been called with 'on hold' revocation reason.",
                     RevocationReasons.CERTIFICATEHOLD.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
-            endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.NOT_REVOKED.getDatabaseValue());
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.NOT_REVOKED.getDatabaseValue());
             assertEquals("Publisher should have been called with 'not revoked' revocation reason.",
                     RevocationReasons.NOT_REVOKED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
-            endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.SUPERSEDED.getDatabaseValue());
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.SUPERSEDED.getDatabaseValue());
             assertEquals("Publisher should have been called with 'superseeded' revocation reason.",
                     RevocationReasons.SUPERSEDED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
         } finally {
-            // Clean up
-            final CAInfo cainfo = caSession.getCAInfo(admin, caid);
-            cainfo.setUseCertificateStorage(true);
-            cainfo.setUseUserStorage(true);
-            caAdminSession.editCA(admin, cainfo);
-            certificateProfileSession.removeCertificateProfile(admin, testProfileName);
-            publisherSession.removePublisher(admin, testPublisherName);
-            internalCertStoreSession.removeCertificate(testSerial);
+            cleanUpThrowArayPublishingTest();
         }
+    }
+    
+    /**
+     * Test revocation of a throw away certificate with publishing enabled.
+     * This test uses the publisher queue.
+     */
+    @Test
+    public void testRevokeThrowAwayCertAndPublishViaQueue() throws Exception {
+        try {
+            final CAInfo cainfo = setUpThrowAwayPublishingTest(true); // use publisher queue!
+            final BasePublisher publisher = publisherSession.getPublisher(THROWAWAY_PUBLISHER);
+            // Place on hold
+            publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
+            assertEquals("Publisher should not have been called.", -123, publisherTestSession.getLastMockedThrowAwayRevocationReason());
+            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher.getPublisherId(), publisher);
+            assertEquals("Publisher should have been called with 'on hold' revocation reason.",
+                    RevocationReasons.CERTIFICATEHOLD.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
+            // Activate again
+            publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
+            assertEquals("Publisher should not have been called.", -123, publisherTestSession.getLastMockedThrowAwayRevocationReason());
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.NOT_REVOKED.getDatabaseValue());
+            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher.getPublisherId(), publisher);
+            assertEquals("Publisher should have been called THROW_AWAY_CERT_SERIAL 'not revoked' revocation reason.",
+                    RevocationReasons.NOT_REVOKED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
+            // Revoke permanently
+            publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
+            assertEquals("Publisher should not have been called.", -123, publisherTestSession.getLastMockedThrowAwayRevocationReason());
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.SUPERSEDED.getDatabaseValue());
+            publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisher.getPublisherId(), publisher);
+            assertEquals("Publisher should have been called with 'superseeded' revocation reason.",
+                    RevocationReasons.SUPERSEDED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
+        } finally {
+            cleanUpThrowArayPublishingTest();
+            final String fingerprint = noConflictCertificateStoreSession.generateDummyFingerprint("CN="+getTestCAName(), THROWAWAY_CERT_SERIAL);
+            for (final PublisherQueueData entry : publisherQueueSession.getEntriesByFingerprint(fingerprint)) {
+                log.debug("Removing publisher queue entry");
+                publisherQueueSession.removeQueueData(entry.getPk());
+            }
+        }
+    }
+    
+    private CAInfo setUpThrowAwayPublishingTest(boolean useQueue) throws PublisherExistsException, AuthorizationDeniedException, CertificateProfileExistsException {
+        // Set up publishing
+        final CustomPublisherContainer publisher = new CustomPublisherContainer();
+        publisher.setClassPath(MockedThrowAwayRevocationPublisher.class.getName());
+        publisher.setDescription("Used in Junit Test, Remove this one");
+        publisher.setOnlyUseQueue(useQueue);
+        final int publisherId = publisherSession.addPublisher(admin, THROWAWAY_PUBLISHER, publisher);
+        final CertificateProfile certProf = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
+        certProf.setPublisherList(Arrays.asList(publisherId));
+        int certProfId = certificateProfileSession.addCertificateProfile(admin, THROWAWAY_CERT_PROFILE, certProf);
+        // Set throw away flag on test CA
+        final CAInfo cainfo = caSession.getCAInfo(admin, caid);
+        cainfo.setUseCertificateStorage(false);
+        cainfo.setUseUserStorage(false);
+        cainfo.setDefaultCertificateProfileId(certProfId);
+        caAdminSession.editCA(admin, cainfo);
+        return cainfo;
+    }
+    
+    private void cleanUpThrowArayPublishingTest() throws AuthorizationDeniedException {
+        final CAInfo cainfo = caSession.getCAInfo(admin, caid);
+        cainfo.setUseCertificateStorage(true);
+        cainfo.setUseUserStorage(true);
+        caAdminSession.editCA(admin, cainfo);
+        certificateProfileSession.removeCertificateProfile(admin, THROWAWAY_CERT_PROFILE);
+        publisherSession.removePublisher(admin, THROWAWAY_PUBLISHER);
+        internalCertStoreSession.removeCertificate(THROWAWAY_CERT_SERIAL);
     }
 }
