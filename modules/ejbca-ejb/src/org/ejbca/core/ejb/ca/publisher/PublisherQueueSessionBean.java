@@ -45,7 +45,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
@@ -79,7 +79,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     private SessionContext sessionContext;
     
     @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
+    private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
 
     /** not injected but created in ejbCreate, since it is ourself */
     private PublisherQueueSessionLocal publisherQueueSession;
@@ -330,7 +330,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                         // again
                         // TODO: we might need change fetch-type for all but the
                         // actual cert or a native query w SqlResultSetMapping..
-                        final CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(fingerprint);
+                        final CertificateDataWrapper certificateDataWrapper = noConflictCertificateStoreSession.getCertificateData(fingerprint);
                         if (certificateDataWrapper==null) {
                             throw new FinderException();
                         }
