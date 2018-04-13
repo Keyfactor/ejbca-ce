@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.Principal;
 import java.security.cert.Certificate;
@@ -55,7 +56,10 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -80,14 +84,17 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.mock.publisher.MockedThrowAwayRevocationPublisher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -109,11 +116,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
 
     private static String username;
     private static String pwd;
-    private static ArrayList<String> usernames = new ArrayList<String>();
+    private static ArrayList<String> usernames = new ArrayList<>();
     private static String serialnumber;
 
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -124,6 +132,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
@@ -135,11 +144,13 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
     @After
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
         for (final String username : usernames) {
@@ -154,6 +165,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         } catch (Exception e) {} // NOPMD, ignore errors
     }
     
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
@@ -638,7 +650,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     @Test
     public void test08Authorization() throws Exception {
         
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(new X500Principal("C=SE,O=Test,CN=Test EndEntityManagementSessionNoAuth"));
         
         TestX509CertificateAuthenticationToken adminTokenNoAuth  = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
@@ -882,6 +894,45 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             for (final CertificateDataWrapper cdw : cdws) {
                 internalCertStoreSession.removeCertificate(cdw.getCertificateData().getFingerprint());
             }
+        }
+    }
+    
+    
+    /** Test revocation of a throw away certificate with publishing enabled. */
+    @Test
+    public void testRevokeThrowAwayCertAndPublish() throws Exception {
+        final BigInteger testSerial = new BigInteger("123456788A43197E", 16);
+        final String testProfileName = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationProfile";
+        final String testPublisherName = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationPublisher";
+        try {
+            // Set up publishing
+            final CustomPublisherContainer publisher = new CustomPublisherContainer();
+            publisher.setClassPath(MockedThrowAwayRevocationPublisher.class.getName());
+            publisher.setDescription("Used in Junit Test, Remove this one");
+            final int publisherId = publisherSession.addPublisher(admin, testPublisherName, publisher);
+            final CertificateProfile certProf = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
+            certProf.setPublisherList(Arrays.asList(publisherId));
+            int certProfId = certificateProfileSession.addCertificateProfile(admin, testProfileName, certProf);
+            // Set throw away flag on test CA
+            final CAInfo cainfo = caSession.getCAInfo(admin, caid);
+            cainfo.setUseCertificateStorage(false);
+            cainfo.setUseUserStorage(false);
+            cainfo.setDefaultCertificateProfileId(certProfId);
+            caAdminSession.editCA(admin, cainfo);
+            // Revoke
+            endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
+            endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.NOT_REVOKED.getDatabaseValue());
+            endEntityManagementSession.revokeCert(admin, testSerial, cainfo.getSubjectDN(), RevocationReasons.SUPERSEDED.getDatabaseValue());
+            // TODO check publisher
+        } finally {
+            // Clean up
+            final CAInfo cainfo = caSession.getCAInfo(admin, caid);
+            cainfo.setUseCertificateStorage(true);
+            cainfo.setUseUserStorage(true);
+            caAdminSession.editCA(admin, cainfo);
+            certificateProfileSession.removeCertificateProfile(admin, testProfileName);
+            publisherSession.removePublisher(admin, testPublisherName);
+            internalCertStoreSession.removeCertificate(testSerial);
         }
     }
 }
