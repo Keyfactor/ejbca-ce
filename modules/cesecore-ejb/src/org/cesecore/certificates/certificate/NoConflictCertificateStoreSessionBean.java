@@ -183,7 +183,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             certificateData.setIssuerDN(cainfo.getSubjectDN());
             certificateData.setSubjectDN("CN=limited");
             certificateData.setUsername(null);
-            certificateData.setCertificateProfileId(CertificateProfileConstants.NO_CERTIFICATE_PROFILE); // TODO Should be configurable per CA (ECA-6743)
+            certificateData.setCertificateProfileId(cainfo.getDefaultCertificateProfileId());
             certificateData.setStatus(CertificateConstants.CERT_ACTIVE);
             certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
             certificateData.setRevocationDate(-1L);
