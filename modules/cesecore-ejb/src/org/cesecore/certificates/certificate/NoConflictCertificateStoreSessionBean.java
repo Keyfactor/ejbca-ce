@@ -110,16 +110,38 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         
     }
     
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public CertificateDataWrapper getCertificateData(final String fingerprint) {
+        CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
+        if (cdw != null) {
+            return cdw;
+        }
+        // If not found, take most recent certificate from NoConflictCertificateData
+        final Collection<NoConflictCertificateData> certDatas = NoConflictCertificateData.findByFingerprint(entityManager, fingerprint);
+        return new CertificateDataWrapper(filterMostRecentCertData(certDatas));
+    }
+    
     /**
      * Locates the most recent entry in NoConflictCertificateData for a given issuerdn/serial number combination.
-     * Permanent revocations always take precedence over other updates, the first one wins.
-     * Otherwise, the most recent update wins.
      * @param issuerdn Issuer DN
      * @param serno Certificate serial number
      * @return NoConflictCertificateData entry, or null if not found. Entity is append-only, so do not modify it.
      */
     private NoConflictCertificateData findMostRecentCertData(final String issuerdn, final BigInteger serno) {
         final Collection<NoConflictCertificateData> certDatas = NoConflictCertificateData.findByIssuerDNSerialNumber(entityManager, issuerdn, serno.toString());
+        return filterMostRecentCertData(certDatas);
+    }
+    
+    /**
+     * Filters out the most recent entry in NoConflictCertificateData for a given issuerdn/serial number combination.
+     * Permanent revocations always take precedence over other updates, the first one wins.
+     * Otherwise, the most recent update wins.
+     * @param certDatas Collection of NoConflictCertificateData to filter.
+     * @param serno Certificate serial number
+     * @return NoConflictCertificateData entry, or null if not found. Entity is append-only, so do not modify it.
+     */
+    private NoConflictCertificateData filterMostRecentCertData(final Collection<NoConflictCertificateData> certDatas) {
         if (CollectionUtils.isEmpty(certDatas)) {
             log.trace("<findMostRecentCertData(): no certificates found");
             return null;
@@ -150,6 +172,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
         if (cdw.getBaseCertificateData() instanceof NoConflictCertificateData) {
@@ -195,11 +218,8 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         return certificateData;
     }
     
-    /**
-     * EJBCA expects all certificate entities to have a fingerprint. This method generates a dummy fingerprint, which is unique per issuerdn/serial.
-     * @return Hex encoded fingerprint, to be stored in a NoConflictCertificateData entity.
-     */
-    private static String generateDummyFingerprint(final String issuerdn, final BigInteger certserno) {
+    @Override
+    public String generateDummyFingerprint(final String issuerdn, final BigInteger certserno) {
         final byte[] fingerprintBytes = CertTools.generateSHA1Fingerprint((certserno.toString()+';'+issuerdn).getBytes(StandardCharsets.UTF_8));
         return new String(Hex.encode(fingerprintBytes));
     }

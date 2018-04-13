@@ -33,5 +33,12 @@ public interface NoConflictCertificateStoreSession  {
     
     /** @see CertificateStoreSession#getCertificateDataByIssuerAndSerno */
     CertificateDataWrapper getCertificateDataByIssuerAndSerno(String issuerdn, BigInteger certserno);
-    
+
+    /**
+     * EJBCA expects all certificate entities to have a fingerprint.
+     * This method generates a dummy fingerprint, to be used in NoConflictCertificateData and for associated publisher queue entries.
+     * @return Hex encoded fingerprint. It is unique per issuerdn/serial.
+     */
+    String generateDummyFingerprint(String issuerdn, BigInteger certserno);
+
 }

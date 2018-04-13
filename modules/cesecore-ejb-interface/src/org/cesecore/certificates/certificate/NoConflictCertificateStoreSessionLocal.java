@@ -30,4 +30,6 @@ public interface NoConflictCertificateStoreSessionLocal extends NoConflictCertif
     /** @see CertificateStoreSessionLocal#setRevokeStatus */
     boolean setRevokeStatus(AuthenticationToken admin, CertificateDataWrapper cdw, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
     
+    /** @see CertificateStoreSessionLocal#getCertificateData(String) */
+    public CertificateDataWrapper getCertificateData(final String fingerprint);
 }

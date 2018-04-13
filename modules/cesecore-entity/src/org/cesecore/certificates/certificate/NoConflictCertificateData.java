@@ -756,6 +756,11 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     //
     // Search functions.
     //
+    public static List<NoConflictCertificateData> findByFingerprint(EntityManager entityManager, String fingerprint) {
+        final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery("SELECT a FROM NoConflictCertificateData a WHERE a.fingerprint=:fingerprint", NoConflictCertificateData.class);
+        query.setParameter("fingerprint", fingerprint);
+        return query.getResultList();
+    }
     
     /** @return return the query results as a List. */
     public static List<NoConflictCertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
