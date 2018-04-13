@@ -79,7 +79,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			try {
 			    result = getEjb().getRaMasterApiProxyBean().cmpDispatch(authenticationToken, cmpTcpMessage.message, "tcp");
 			} catch (NoSuchAliasException e) {
-                LOG.error(e.getMessage(), e);
+                LOG.info(e.getMessage());
                 handler.closeConnection();
                 return;
             }
