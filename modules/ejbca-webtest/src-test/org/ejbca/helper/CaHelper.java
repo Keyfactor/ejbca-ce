@@ -3,12 +3,12 @@ package org.ejbca.helper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.NoSuchElementException;
-
 import org.ejbca.utils.WebTestUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -77,7 +77,8 @@ public class CaHelper {
      */
     public static void assertExists(WebDriver webDriver, String caName) {
         try {
-            webDriver.findElement(By.xpath("//select/option[text()='" + caName + "']"));
+            Select caList = new Select(webDriver.findElement(By.xpath("//select[@name='selectcas']")));
+            caList.selectByVisibleText(caName + ", (Active)");
         } catch (NoSuchElementException e) {
             fail(caName + " was not found in the List of Certificate Authorities");
         }
