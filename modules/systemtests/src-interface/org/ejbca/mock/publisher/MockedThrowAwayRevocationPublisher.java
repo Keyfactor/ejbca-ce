@@ -37,6 +37,11 @@ public class MockedThrowAwayRevocationPublisher implements ICustomPublisher, Ful
     public static int getLastTestRevocationReason() {
         return lastTestRevocationReason;
     }
+    
+    /** Called by test EJB to set to a dummy value */
+    public static void setLastTestRevocationReason(int revocationReason) {
+        lastTestRevocationReason = revocationReason;
+    }
 
     @Override
     public boolean willPublishCertificate(int status, int revocationReason) {

@@ -22,7 +22,9 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
@@ -76,6 +78,11 @@ public class PublisherQueueProxySessionBean implements PublisherQueueProxySessio
     @Override
     public Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId) {
         return queueSession.getPendingEntriesForPublisher(publisherId);
+    }
+    
+    @Override
+    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
+        queueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisherId, publisher);
     }
     
 
