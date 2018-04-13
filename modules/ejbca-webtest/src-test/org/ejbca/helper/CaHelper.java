@@ -42,10 +42,25 @@ public class CaHelper {
      * @param caName the name of the CA
      */
     public static void add(WebDriver webDriver, String caName) {
-        // Add Certificate Profile
         WebElement nameInput = webDriver.findElement(By.xpath("//input[@name='textfieldcaname']"));
         nameInput.sendKeys(caName);
         webDriver.findElement(By.xpath("//input[@name='buttoncreateca']")).click();
+    }
+    
+    /**
+     * Selects CA from the list of CAs and clicks on 'Edit CA'
+     * 
+     * @param webDriver the WebDriver to use
+     * @param caName the name of the CA to edit
+     */
+    public static void edit(WebDriver webDriver, String caName) {
+        try {
+            Select caList = new Select(webDriver.findElement(By.xpath("//select[@name='selectcas']")));
+            caList.selectByVisibleText(caName + ", (Active)");
+        } catch (NoSuchElementException e) {
+            fail("Could not edit ca: " + caName + ". Was not found in list of CAs");
+        }
+        webDriver.findElement(By.xpath("//input[@name='buttoneditca']")).click();
     }
     
     /**
