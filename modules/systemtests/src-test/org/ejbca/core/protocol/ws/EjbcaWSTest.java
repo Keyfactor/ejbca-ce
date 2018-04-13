@@ -563,7 +563,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         revokeCert();
     }
 
-    @Ignore
     @Test
     public void test0601RevokeThrowAwayCert () throws Exception {
         revokeThrowAwayCert();
