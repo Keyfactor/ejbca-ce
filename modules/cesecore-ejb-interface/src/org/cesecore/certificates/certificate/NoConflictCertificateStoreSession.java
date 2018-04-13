@@ -14,8 +14,6 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 
-import javax.ejb.Remote;
-
 /**
  * Interface for NoConflictCertificateStoreSession.
  * 
@@ -28,7 +26,6 @@ import javax.ejb.Remote;
  * 
  * @version $Id$
  */
-@Remote
 public interface NoConflictCertificateStoreSession  {
 
     /** @see CertificateStoreSession#getStatus */
