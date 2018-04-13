@@ -47,7 +47,7 @@ import org.cesecore.util.CertTools;
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "NoConflictCertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class NoConflictCertificateStoreSessionBean implements NoConflictCertificateStoreSessionRemote, NoConflictCertificateStoreSessionLocal {
 
