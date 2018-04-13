@@ -20,8 +20,9 @@ import javax.ejb.Remote;
 @Remote
 public interface PublisherTestSessionRemote {
 
-    /**
-     * The most recently passed revocationReason passed to MockedThrowAwayRevocationPublisher.
-     */
+    /** The most recently passed revocationReason passed to MockedThrowAwayRevocationPublisher. */
     int getLastMockedThrowAwayRevocationReason();
+
+    /** Used to reset the last revocation reason to a dummy value like -123 */
+    void setLastMockedThrowAwayRevocationReason(int revocationReason);
 }

@@ -17,6 +17,8 @@ import java.util.Collection;
 import javax.ejb.CreateException;
 import javax.ejb.Remote;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
@@ -27,19 +29,21 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 @Remote
 public interface PublisherQueueProxySessionRemote {
 
-    public void addQueueData(int publisherId, int publishType, String fingerprint,
+    void addQueueData(int publisherId, int publishType, String fingerprint,
             PublisherQueueVolatileInformation queueData, int publishStatus) throws CreateException;
 
-    public void removeQueueData(java.lang.String pk);
+    void removeQueueData(java.lang.String pk);
 
-    public void updateData(java.lang.String pk, int status, int tryCounter);
+    void updateData(java.lang.String pk, int status, int tryCounter);
 
-    public Collection<PublisherQueueData> getEntriesByFingerprint(String fingerprint);
+    Collection<PublisherQueueData> getEntriesByFingerprint(String fingerprint);
 
-    public int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] lowerBounds, int[] upperBounds);
+    int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] lowerBounds, int[] upperBounds);
 
-    public int getPendingEntriesCountForPublisher(int publisherId);
+    int getPendingEntriesCountForPublisher(int publisherId);
 
-    public Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId);
+    Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId);
+    
+    void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher);
 
 }

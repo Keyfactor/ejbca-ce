@@ -31,4 +31,9 @@ public class PublisherTestSessionBean implements PublisherTestSessionRemote {
         return MockedThrowAwayRevocationPublisher.getLastTestRevocationReason();
     }
 
+    @Override
+    public void setLastMockedThrowAwayRevocationReason(int revocationReason) {
+        MockedThrowAwayRevocationPublisher.setLastTestRevocationReason(revocationReason);
+    }
+
 }
