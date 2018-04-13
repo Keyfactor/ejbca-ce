@@ -32,7 +32,7 @@ public class MockedThrowAwayRevocationPublisher implements ICustomPublisher, Ful
 
     private static final Logger log = Logger.getLogger(MockedThrowAwayRevocationPublisher.class);
     
-    private static int lastTestRevocationReason;
+    private static int lastTestRevocationReason; // Totally non-threadsafe, but fine since this is test code
     
     public static int getLastTestRevocationReason() {
         return lastTestRevocationReason;
@@ -49,6 +49,9 @@ public class MockedThrowAwayRevocationPublisher implements ICustomPublisher, Ful
             ExtendedInformation extendedinformation) throws PublisherException {
         log.debug("storeCertificate called (old variant)");
         lastTestRevocationReason = revocationReason;
+        if (log.isDebugEnabled()) {
+            log.debug("Revocation reason: " + revocationReason);
+        }
         return true;
     }
     
@@ -58,6 +61,10 @@ public class MockedThrowAwayRevocationPublisher implements ICustomPublisher, Ful
         checkNotNull("authenticationToken", authenticationToken);
         checkNotNull("certificateData", certificateData);
         checkNotNull("certificateData.getSubjectDN", certificateData.getSubjectDN());
+        lastTestRevocationReason = certificateData.getRevocationReason();
+        if (log.isDebugEnabled()) {
+            log.debug("Revocation reason: " + certificateData.getRevocationReason());
+        }
         return true;
     }
 
