@@ -929,7 +929,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             assertEquals("Publisher should have been called with 'superseeded' revocation reason.",
                     RevocationReasons.SUPERSEDED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
         } finally {
-            cleanUpThrowArayPublishingTest();
+            cleanUpThrowAwayPublishingTest();
         }
     }
     
@@ -964,7 +964,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             assertEquals("Publisher should have been called with 'superseeded' revocation reason.",
                     RevocationReasons.SUPERSEDED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
         } finally {
-            cleanUpThrowArayPublishingTest();
+            cleanUpThrowAwayPublishingTest();
             final String fingerprint = noConflictCertificateStoreSession.generateDummyFingerprint("CN="+getTestCAName(), THROWAWAY_CERT_SERIAL);
             for (final PublisherQueueData entry : publisherQueueSession.getEntriesByFingerprint(fingerprint)) {
                 log.debug("Removing publisher queue entry");
@@ -992,7 +992,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         return cainfo;
     }
     
-    private void cleanUpThrowArayPublishingTest() throws AuthorizationDeniedException {
+    private void cleanUpThrowAwayPublishingTest() throws AuthorizationDeniedException {
         final CAInfo cainfo = caSession.getCAInfo(admin, caid);
         cainfo.setUseCertificateStorage(true);
         cainfo.setUseUserStorage(true);
