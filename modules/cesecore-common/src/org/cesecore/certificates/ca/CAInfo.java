@@ -276,10 +276,12 @@ public abstract class CAInfo implements Serializable {
         this.certificateprofileid = _certificateprofileid;
     }
 
+    /** @return  the ID of the certificate profile for this CA    */
     public int getCertificateProfileId() {
         return this.certificateprofileid;
     }
 
+    /** @return  the id of default cetificate profile for certificates this CA issues    */
     public int getDefaultCertificateProfileId() {
         return defaultCertificateProfileId;
     }
