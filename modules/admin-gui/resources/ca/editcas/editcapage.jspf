@@ -1,6 +1,7 @@
 <%@page import="org.cesecore.keys.token.CryptoTokenFactory"%>
 <%@page import="org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo"%>
 <%@page import="org.apache.commons.lang.StringUtils"%>
+<%@ page import="org.ejbca.util.HTMLTools" %>
 
 <%               
   TreeMap<String,Integer> rootcaprofiles = ejbcawebbean.getAuthorizedRootCACertificateProfileNames();
@@ -105,7 +106,7 @@
       while(iter.hasNext()){
         String next = (String) iter.next();  %> 
     rootcaprofiles[<%=i%>] = new Array(2);
-    rootcaprofiles[<%=i%>][NAME] = "<%= next %>";      
+    rootcaprofiles[<%=i%>][NAME] = "<%= HTMLTools.javascriptEscape(next) %>";
     rootcaprofiles[<%=i%>][ID] = <%= rootcaprofiles.get(next) %>;
    <%   i++; 
       }
@@ -115,9 +116,9 @@
       while(iter.hasNext()){
         String next = (String) iter.next();  %> 
     subcaprofiles[<%=i%>] = new Array(2);
-    subcaprofiles[<%=i%>][NAME] = "<%= next %>";      
+    subcaprofiles[<%=i%>][NAME] = "<%= HTMLTools.javascriptEscape(next) %>";
     subcaprofiles[<%=i%>][ID] = <%= subcaprofiles.get(next) %>;
-   <%   i++; 
+   <%   i++;
       }
 %>
       
@@ -904,9 +905,9 @@ function toggleCANameChange(){
                   while(iter.hasNext()){
                       String nextprofilename = (String) iter.next();
                       int certprofid = ((Integer) allp.get(nextprofilename)).intValue();%>
-              <option value="<%=certprofid %>"
+              <option value="<c:out value="<%= certprofid %>"/>"
                       <% if(editca && Integer.toString(certprofid).equals(currentCertProfileId)) { %> selected <%}%>
-              ><%= nextprofilename %></option>
+              ><c:out value="<%= nextprofilename %>"/></option>
               <% } %>
           </select>
         </td>
@@ -1025,7 +1026,7 @@ function toggleCANameChange(){
             <td>
                 <% if (editca && !isUninitialized) {
                     if (cainfo.getCertificateProfileId() != 0) {
-                        out.write(ejbcawebbean.getCertificateProfileName(cainfo.getCertificateProfileId()));
+                        %><c:out value="<%= ejbcawebbean.getCertificateProfileName(cainfo.getCertificateProfileId()) %>"/> <%
                     } else {
                         out.write(ejbcawebbean.getText("NOTUSED"));
                     }
@@ -1034,14 +1035,14 @@ function toggleCANameChange(){
                     <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>
                     <%  for (final Entry<String,String> entry : cabean.getAvailableCaCertificateProfiles()) { %>
                             <option value="<%=entry.getKey() %>" <% if(entry.getKey().equals(currentCertProfileId)) { %> selected <%}%>>
-                                <%= entry.getValue() %>
+                                <c:out value="<%= entry.getValue() %>"/>
                             </option>
                     <%  } %>
                  </select>
                  <%  } else{ %>
 	                <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1" <%= (hasEditRights ? "" : "disabled") %>>
                     <%  for (final Entry<String,String> entry : cabean.getAvailableCaCertificateProfiles()) { %>
-                            <option value="<%=entry.getKey() %>"><%= entry.getValue() %></option>
+                            <option value="<%=entry.getKey() %>"><c:out value="<%= entry.getValue() %>"/></option>
                     <%  } %>
 	                </select>
                 <% } %> 
