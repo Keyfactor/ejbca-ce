@@ -72,11 +72,17 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         // Throw away CA or missing certificate
         final int caid = issuerdn.hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-        if (cainfo == null || !cainfo.getSubjectDN().equals(issuerdn) || cainfo.isUseCertificateStorage()) {
+        if (cainfo == null || !cainfo.getSubjectDN().equals(issuerdn) || !cainfo.isAcceptRevocationNonExistingEntry()) {
             if (cainfo == null && log.isDebugEnabled()) {
                 log.debug("Tried to look up certificate " + certserno.toString(16) +", but neither certificate nor CA was found. CA Id: " + caid + ". Issuer DN: '" + issuerdn + "'");
             }
             return null; // Certificate is non-existent
+        }
+        if (cainfo.isUseCertificateStorage()) {
+            if (log.isDebugEnabled()) {
+                log.debug("CA '" + cainfo.getName() + "' is misconfigured. Revocation of non-existing certificates is currently only supported for 'throw away CAs'.");
+            }
+            return null;
         }
         final NoConflictCertificateData certificateData = getLimitedNoConflictCertDataRow(cainfo, certserno);
         return new CertificateDataWrapper(certificateData);

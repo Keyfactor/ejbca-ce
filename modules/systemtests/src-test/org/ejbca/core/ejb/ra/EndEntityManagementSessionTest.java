@@ -987,6 +987,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         final CAInfo cainfo = caSession.getCAInfo(admin, caid);
         cainfo.setUseCertificateStorage(false);
         cainfo.setUseUserStorage(false);
+        cainfo.setAcceptRevocationNonExistingEntry(true);
         cainfo.setDefaultCertificateProfileId(certProfId);
         caAdminSession.editCA(admin, cainfo);
         return cainfo;
@@ -996,6 +997,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         final CAInfo cainfo = caSession.getCAInfo(admin, caid);
         cainfo.setUseCertificateStorage(true);
         cainfo.setUseUserStorage(true);
+        cainfo.setAcceptRevocationNonExistingEntry(false);
         caAdminSession.editCA(admin, cainfo);
         certificateProfileSession.removeCertificateProfile(admin, THROWAWAY_CERT_PROFILE);
         publisherSession.removePublisher(admin, THROWAWAY_PUBLISHER);
