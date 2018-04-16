@@ -1099,10 +1099,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         final boolean originalUseCertificateStorage = caInfo.isUseCertificateStorage();
         final boolean originalUseCertReqHistory = caInfo.isUseCertReqHistory();
         final boolean originalUseUserStorage = caInfo.isUseUserStorage();
+        final boolean originalAcceptRevokeNonExisting = caInfo.isAcceptRevocationNonExistingEntry();
         try {
             caInfo.setUseCertificateStorage(false);
             caInfo.setUseCertReqHistory(false);
             caInfo.setUseUserStorage(false);
+            caInfo.setAcceptRevocationNonExistingEntry(true);
             caSession.editCA(authenticationToken, caInfo);
             // Setup user data to make the request
             final UserDataVOWS userDataVOWS = new UserDataVOWS();
@@ -1151,6 +1153,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             caInfoToRestore.setUseCertificateStorage(originalUseCertificateStorage);
             caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
             caInfoToRestore.setUseUserStorage(originalUseUserStorage);
+            caInfoToRestore.setAcceptRevocationNonExistingEntry(originalAcceptRevokeNonExisting);
             caSession.editCA(authenticationToken, caInfoToRestore);
             if (endEntityManagementSession.existsUser(username)) {
                 endEntityManagementSession.deleteUser(authenticationToken, username);
@@ -1627,10 +1630,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         final boolean originalUseCertificateStorage = caInfo.isUseCertificateStorage();
         final boolean originalUseCertReqHistory = caInfo.isUseCertReqHistory();
         final boolean originalUseUserStorage = caInfo.isUseUserStorage();
+        final boolean originalAcceptRevokeNonExisting = caInfo.isAcceptRevocationNonExistingEntry();
         try {
             caInfo.setUseCertificateStorage(false);
             caInfo.setUseCertReqHistory(false);
             caInfo.setUseUserStorage(false);
+            caInfo.setAcceptRevocationNonExistingEntry(true);
             caSession.editCA(authenticationToken, caInfo);
             
             try {
@@ -1659,6 +1664,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             caInfoToRestore.setUseCertificateStorage(originalUseCertificateStorage);
             caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
             caInfoToRestore.setUseUserStorage(originalUseUserStorage);
+            caInfoToRestore.setAcceptRevocationNonExistingEntry(originalAcceptRevokeNonExisting);
             caSession.editCA(authenticationToken, caInfoToRestore);
             internalCertStoreSession.removeCertificate(new BigInteger(serialNumber, 16));
         }
