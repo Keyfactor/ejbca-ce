@@ -74,7 +74,7 @@ public class X509CAInfo extends CAInfo {
              new Date(), // update time
              "", // Subject Alternative name
              certificateProfileId, // CA certificate profile
-                -1, // default ca profile
+                0, // default ca profile
              encodedValidity, null, // Expiretime
              CAInfo.CATYPE_X509, // CA type (X509/CVC)
              signedby, // Signed by CA

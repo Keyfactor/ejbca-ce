@@ -43,7 +43,7 @@ public class CVCCAInfo extends CAInfo {
     public CVCCAInfo(String subjectdn, String name, int status, int certificateprofileid, String encodedValidity, int signedby,
             List<Certificate> certificatechain, CAToken catoken) {
         this(subjectdn, name, status, new Date(), certificateprofileid,
-                -1, // defaultCertprofileId
+                0, // defaultCertprofileId
                 encodedValidity, null, // expire time
                 CAInfo.CATYPE_CVC, signedby,
                 certificatechain, // Certificate chain
