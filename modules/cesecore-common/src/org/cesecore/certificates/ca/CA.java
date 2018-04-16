@@ -424,7 +424,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         if (defaultCertificateProfileId != null) {
             return defaultCertificateProfileId.intValue();
         } else {
-            return -1;
+            return 0;
         }
     }
 
