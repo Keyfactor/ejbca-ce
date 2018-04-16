@@ -455,21 +455,23 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                 final ApprovalStep approvalStep = approvalProfile.getStep(getCurrentStep().getStepIdentifier());
                 for (Integer approvalPartitionId : getCurrentStep().getPartitions().keySet()) {
                     ApprovalPartition approvalPartition = approvalStep.getPartition(approvalPartitionId);
-                    try {
-                        if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
-                            final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition.getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
-                            authorizedPartitions.add(
-                                    new ApprovalPartitionProfileGuiObject(approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
-                                            approvalPartition.getPartitionIdentifier(),
-                                            nameProperty != null ? nameProperty.getValueAsString() : "-",
-                                            getPartitionProperties(approvalPartition)));
+                    if (approvalPartition != null) {
+                        try {
+                            if (approvalDataVOView.getApprovalProfile().canViewPartition(getAdmin(), approvalPartition)) {
+                                final DynamicUiProperty<? extends Serializable> nameProperty = approvalPartition
+                                        .getProperty(PartitionedApprovalProfile.PROPERTY_NAME);
+                                authorizedPartitions.add(new ApprovalPartitionProfileGuiObject(
+                                        approvalDataVOView.getApprovalProfile().getApprovalProfileTypeIdentifier(),
+                                        approvalPartition.getPartitionIdentifier(), nameProperty != null ? nameProperty.getValueAsString() : "-",
+                                        getPartitionProperties(approvalPartition)));
+                            }
+                            if (approvalDataVOView.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
+                                partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
+                            }
+                        } catch (AuthenticationFailedException e) {
+                            //We shouldn't have gotten here in the UI with an invalid token
+                            throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
                         }
-                        if (approvalDataVOView.getApprovalProfile().canApprovePartition(getAdmin(), approvalPartition)) {
-                            partitionsAuthorizedToApprove.add(approvalPartition.getPartitionIdentifier());
-                        }
-                    } catch (AuthenticationFailedException e) {
-                        //We shouldn't have gotten here in the UI with an invalid token
-                        throw new IllegalStateException("Trying to perform an approval with an invalid authenticatin token.", e);
                     }
                 }
             }
