@@ -470,7 +470,6 @@ public class CAInterfaceBean implements Serializable {
 		String returnval = "CERTREPUBLISHFAILED";
 		int certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
 		String password = null;
-		String dn = certificateView.getSubjectDN();
 		ExtendedInformation ei = null;
 		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(certificateView.getSerialNumberBigInt(), certificateView.getIssuerDN());
 		if (certreqhist != null) {
@@ -478,7 +477,6 @@ public class CAInterfaceBean implements Serializable {
 			// We need this since the certificate subjectDN might be a subset of the subjectDN in the template
 			certificateProfileId = certreqhist.getEndEntityInformation().getCertificateProfileId();
 			password = certreqhist.getEndEntityInformation().getPassword();
-			dn = certreqhist.getEndEntityInformation().getCertificateDN();
 			ei = certreqhist.getEndEntityInformation().getExtendedInformation();
 		}
 		final String fingerprint = certificateView.getSHA1Fingerprint().toLowerCase();
