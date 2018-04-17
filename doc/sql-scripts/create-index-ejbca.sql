@@ -58,3 +58,5 @@ CREATE INDEX blacklist_idx1 ON BlacklistData (type,value);
 -- indices for NoConflictCertificateData (we don't need username, subjectDN, type, subjectKeyId indexes for revoked throw away certificates)
 CREATE INDEX noconflictcertificatedata_idx1 ON NoConflictCertificateData (serialNumber, issuerDN);
 CREATE INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData (fingerprint);
+CREATE INDEX noconflictcertificatedata_idx3 ON NoConflictCertificateData (issuerDN,status);
+CREATE INDEX noconflictcertificatedata_idx4 ON NoConflictCertificateData (certificateProfileId);
