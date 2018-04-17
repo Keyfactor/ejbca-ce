@@ -428,6 +428,5 @@ CREATE TABLE NoConflictCertificateData (
     type INTEGER NOT NULL,
     updateTime DECIMAL(20,0) NOT NULL,
     username VARCHAR(255),
-    timeCreated DECIMAL(20,0) NOT NULL,
     PRIMARY KEY (id)
 );
