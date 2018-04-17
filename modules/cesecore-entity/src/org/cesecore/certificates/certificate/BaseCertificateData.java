@@ -18,11 +18,9 @@ import java.security.cert.CertificateException;
 import java.util.Date;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectedData;
@@ -66,7 +64,14 @@ public abstract class BaseCertificateData extends ProtectedData {
     private static final Logger log = Logger.getLogger(BaseCertificateData.class);
     
 
-    protected abstract String getClassName();
+    /**
+     * return the current class name
+     *  
+     * @return name (without package info) of the current class
+     */
+    protected final String getClassName() {
+        return ClassUtils.getShortCanonicalName(this.getClass());
+    }
     
     /**
      * Return the certificate. From this table if contained here. From {link Base64CertData} if contained there.
@@ -81,17 +86,15 @@ public abstract class BaseCertificateData extends ProtectedData {
         // try the other table.
         final Base64CertData res = Base64CertData.findByFingerprint(entityManager, getFingerprint());
         if (res == null) {
-            String message = new StringBuilder()
-                    .append("No ")
-                    .append(getClassName())
-                    .append(" found with fingerprint ")
-                    .append(getFingerprint())
-                    .append(" for '")
-                    .append(getSubjectDN())
-                    .append("' issued by '") 
-                    .append(getIssuerDN())
-                    .append("'.")
-                    .toString();
+            String message = "No " + 
+                    getClassName() + 
+                    " found with fingerprint " + 
+                    getFingerprint() + 
+                    " for '" + 
+                    getSubjectDN() + 
+                    "' issued by '" +  
+                    getIssuerDN() + 
+                    "'.";
             log.info(message);
             return null;
         }
@@ -179,37 +182,4 @@ public abstract class BaseCertificateData extends ProtectedData {
         final String subjectDn = getSubjectDN();
         return subjectDn == null ? "" : subjectDn;
     }
-    
-    
-    //
-    // Start Database integrity protection methods
-    //
-    
-    @Transient
-    @Override
-    protected int getProtectVersion() {
-        return 3;
-    }
-
-    @PrePersist
-    @PreUpdate
-    @Override
-    protected void protectData() {
-        super.protectData();
-    }
-
-    @PostLoad
-    @Override
-    protected void verifyData() {
-        super.verifyData();
-    }
-
-    @Override
-    @Transient
-    protected String getRowId() {
-        return getFingerprint();
-    }
-    //
-    // End Database integrity protection methods
-    //
 }
