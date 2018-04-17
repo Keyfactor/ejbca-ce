@@ -471,6 +471,8 @@ public class CAInterfaceBean implements Serializable {
 		int certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
 		String password = null;
 		ExtendedInformation ei = null;
+		// Unescaped subjectDN is used to avoid causing issues in custom publishers (see ECA-6761)
+		String dn = certificateView.getSubjecDNUnescaped(); 
 		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(certificateView.getSerialNumberBigInt(), certificateView.getIssuerDN());
 		if (certreqhist != null) {
 			// First try to look up all info using the Certificate Request History from when the certificate was issued
@@ -478,6 +480,7 @@ public class CAInterfaceBean implements Serializable {
 			certificateProfileId = certreqhist.getEndEntityInformation().getCertificateProfileId();
 			password = certreqhist.getEndEntityInformation().getPassword();
 			ei = certreqhist.getEndEntityInformation().getExtendedInformation();
+			dn = certreqhist.getEndEntityInformation().getCertificateDN();
 		}
 		final String fingerprint = certificateView.getSHA1Fingerprint().toLowerCase();
 		final CertificateDataWrapper cdw = certificatesession.getCertificateData(fingerprint);
@@ -494,8 +497,7 @@ public class CAInterfaceBean implements Serializable {
 			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId);
 			if (certprofile != null) {
 				if (certprofile.getPublisherList().size() > 0) {
-				    // Passing unescaped subjectDN to the publisher to avoid causing issues in custom publishers (see ECA-6761)
-                    if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), cdw, password, certificateView.getSubjecDNUnescaped(), ei)) {
+                    if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), cdw, password, dn, ei)) {
                         returnval = "CERTREPUBLISHEDSUCCESS";
                     }
 				} else {
