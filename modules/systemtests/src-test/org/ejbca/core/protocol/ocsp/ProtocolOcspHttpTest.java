@@ -1609,6 +1609,7 @@ Content-Type: text/html; charset=iso-8859-1
         log.debug("Size of data to send: " + input.length);
         // Create the socket.
         Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
+        socket.setSoTimeout(10000); // The write() call can block for hours if the server doesn't read the data and/or silently drops the connection
         // Send data byte for byte.
         OutputStream os = socket.getOutputStream();
         if (writeByteByByte) {
