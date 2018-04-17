@@ -60,6 +60,34 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     private CaSessionLocal caSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    
+    /**
+     * Returns true if the CA allows revocation of non-existing certificates.
+     * @param issuerDN Subject DN of CA.
+     */
+    private boolean canRevokeNonExisting(final String issuerDN) {
+        final int caid = issuerDN.hashCode();
+        final CAInfo cainfo = caSession.getCAInfoInternal(caid);
+        return canRevokeNonExisting(cainfo, issuerDN);
+    }
+
+    /**
+     * Returns true if the CA allows revocation of non-existing certificates.
+     * @param cainfo CA
+     * @param issuerDN Subject DN of CA, for safety check against CAId collisions.
+     */
+    private boolean canRevokeNonExisting(final CAInfo cainfo, final String issuerDN) {
+        if (cainfo == null || !cainfo.getSubjectDN().equals(issuerDN) || !cainfo.isAcceptRevocationNonExistingEntry()) {
+            return false;
+        }
+        if (cainfo.isUseCertificateStorage()) {
+            if (log.isDebugEnabled()) {
+                log.debug("CA '" + cainfo.getName() + "' is misconfigured. Revocation of non-existing certificates is currently only supported for 'throw away CAs'.");
+            }
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public CertificateDataWrapper getCertificateDataByIssuerAndSerno(final String issuerdn, final BigInteger certserno) {
@@ -72,15 +100,9 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         // Throw away CA or missing certificate
         final int caid = issuerdn.hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-        if (cainfo == null || !cainfo.getSubjectDN().equals(issuerdn) || !cainfo.isAcceptRevocationNonExistingEntry()) {
+        if (!canRevokeNonExisting(cainfo, issuerdn)) {
             if (cainfo == null && log.isDebugEnabled()) {
                 log.debug("Tried to look up certificate " + certserno.toString(16) +", but neither certificate nor CA was found. CA Id: " + caid + ". Issuer DN: '" + issuerdn + "'");
-            }
-            return null; // Certificate is non-existent
-        }
-        if (cainfo.isUseCertificateStorage()) {
-            if (log.isDebugEnabled()) {
-                log.debug("CA '" + cainfo.getName() + "' is misconfigured. Revocation of non-existing certificates is currently only supported for 'throw away CAs'.");
             }
             return null;
         }
@@ -96,7 +118,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         // First, try to look up in CertificateData
         final String dn = CertTools.stringToBCDNString(issuerDN);
         CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serno);
-        if (status != CertificateStatus.NOT_AVAILABLE) {
+        if (!canRevokeNonExisting(issuerDN) || status != CertificateStatus.NOT_AVAILABLE) {
             log.trace("<getStatus()");
             return status;
         }
@@ -106,7 +128,8 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             if (log.isTraceEnabled()) {
                 log.trace("<getStatus() did not find certificate with dn " + dn + " and serno " + serno.toString(16));
             }
-            return CertificateStatus.NOT_AVAILABLE;
+            // For throw-away CAs that allow revocation of non-existing certificates, we pretend that non-existing is OK
+            return CertificateStatus.OK;
         }
         status = CertificateStatusHelper.getCertificateStatus(noConflictCert);
         if (log.isTraceEnabled()) {
@@ -115,7 +138,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         return status;
         
     }
-    
+
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public CertificateDataWrapper getCertificateData(final String fingerprint) {

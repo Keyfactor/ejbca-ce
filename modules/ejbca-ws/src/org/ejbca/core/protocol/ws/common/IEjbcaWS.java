@@ -724,6 +724,8 @@ public interface IEjbcaWS {
 	 * @param issuerDN
 	 * @param certificateSN a hexa decimal string
 	 * @return the revocation status or null if certificate does not exist.
+	 *         For CAs in throw-away mode and with the option "accept revocation of
+	 *         non-existing entries", this function returns OK for non-existing entries.
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws EjbcaException
