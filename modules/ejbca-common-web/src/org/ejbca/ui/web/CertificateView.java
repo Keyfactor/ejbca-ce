@@ -162,7 +162,7 @@ public class CertificateView implements Serializable {
      */
     public String getSubjecDNUnescaped() {
         if (certificate == null) {
-            return certificateData.getSubjectDN();
+            return certificateData.getSubjectDnNeverNull();
         }
         return CertTools.getSubjectDN(certificate);
     }
