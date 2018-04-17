@@ -471,7 +471,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 // Store certificate in the database, if this CA is configured to do so.
                 if (!ca.isUseCertificateStorage() || !certProfile.getUseCertificateStorage()) {
-                    result = new CertificateDataWrapper(cert, null, null);
+                    // We still need to return a CertificateData object for publishers
+                    final CertificateData throwAwayCertData = new CertificateData(cert, cert.getPublicKey(), endEntityInformation.getUsername(),
+                            cafingerprint, CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId,
+                            endEntityInformation.getEndEntityProfileId(), null, updateTime, false, certProfile.getStoreSubjectAlternativeName());
+                    result = new CertificateDataWrapper(cert, throwAwayCertData, null);
                     break; // We have our cert and we don't need to store it.. Move on..
                 }
                 try {
