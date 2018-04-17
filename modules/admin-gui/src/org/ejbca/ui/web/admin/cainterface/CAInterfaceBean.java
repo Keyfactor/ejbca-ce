@@ -542,7 +542,7 @@ public class CAInterfaceBean implements Serializable {
             String certificateProfileIdString, String defaultCertificateProfileIdString, String signedByString, String description, String validityString,
             Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
             boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
-            boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
+            boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationsNonExistingEntry, String subjectaltname,
             String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
             long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
             String availablePublisherValues, String availableKeyValidatorValues, boolean usecrlnumber, boolean crlnumbercritical,
@@ -611,7 +611,7 @@ public class CAInterfaceBean implements Serializable {
                     keySequenceFormat, keySequence, catype, subjectdn, certificateProfileIdString, defaultCertificateProfileIdString, signedByString,
                     description, validityString, approvals, finishUser,
                     isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
-                    useCertReqHistory, useUserStorage, useCertificateStorage, subjectaltname, policyid,
+                    useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry, subjectaltname, policyid,
                     useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
                     crlOverlapTime, deltacrlperiod, availablePublisherValues, availableKeyValidatorValues, usecrlnumber, crlnumbercritical,
                     defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, 
@@ -641,7 +641,7 @@ public class CAInterfaceBean implements Serializable {
 	        String certificateProfileIdString, String defaultCertificateProfileIdString, String signedByString, String description, String validityString,
 	        Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
 	        boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
-	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
+	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationsNonExistingEntry, String subjectaltname,
 	        String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
             long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
             String availablePublisherValues, String availableKeyValidatorValues, boolean usecrlnumber, boolean crlnumbercritical,
@@ -802,7 +802,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useCertReqHistory,
 	                            useUserStorage,
 	                            useCertificateStorage,
-	                            false,
+	                            acceptRevocationsNonExistingEntry,
 	                            sharedCmpRaSecret,
 	                            keepExpiredCertsOnCRL);
                         try {
@@ -849,7 +849,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useCertReqHistory,
 	                            useUserStorage,
 	                            useCertificateStorage,
-	                            false,
+	                            acceptRevocationsNonExistingEntry,
 	                            null,
 	                            keepExpiredCertsOnCRL);
 	                    saveRequestInfo(x509cainfo);                
@@ -886,7 +886,7 @@ public class CAInterfaceBean implements Serializable {
 	                        useCertReqHistory,
 	                        useUserStorage,
 	                        useCertificateStorage,
-                            false);
+                            acceptRevocationsNonExistingEntry);
 	                if (buttonCreateCa) {
 	                    cadatahandler.createCA(cvccainfo);
 	                } else if (buttonMakeRequest) {

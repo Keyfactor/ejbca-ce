@@ -365,7 +365,7 @@ org.ejbca.ui.web.ParameterException
                 final boolean useCertReqHistory = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTREQHISTORY));
                 final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
-                final boolean checkboxAcceptRevocationsNonExistingEntry = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY));
+                final boolean acceptRevocationsNonExistingEntry = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY));
                 final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
                 final String policyid = requestMap.get(TEXTFIELD_POLICYID);
                 final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
@@ -410,7 +410,7 @@ org.ejbca.ui.web.ParameterException
                		 catype, subjectdn, certificateProfileIdString, defaultCertificateProfileIdString, signedByString, description, validityString,
                		 approvals, finishUser, isDoEnforceUniquePublicKeys,
                		 isDoEnforceUniqueDistinguishedName,
-               		 isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
+               		 isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry,
                		 subjectaltname, policyid, useauthoritykeyidentifier, authoritykeyidentifiercritical,
                		 crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, availablePublisherValues, availableKeyValidatorValues,
                		 usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator,
