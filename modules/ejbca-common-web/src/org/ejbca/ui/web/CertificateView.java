@@ -160,7 +160,7 @@ public class CertificateView implements Serializable {
      *
      * @return subjectDN in unescaped format to be passed later to custom publishers.
      */
-    public String getSubjecDNUnescaped() {
+    public String getSubjectDNUnescaped() {
         if (certificate == null) {
             return certificateData.getSubjectDnNeverNull();
         }

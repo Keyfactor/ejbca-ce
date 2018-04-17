@@ -472,7 +472,7 @@ public class CAInterfaceBean implements Serializable {
 		String password = null;
 		ExtendedInformation ei = null;
 		// Unescaped subjectDN is used to avoid causing issues in custom publishers (see ECA-6761)
-		String dn = certificateView.getSubjecDNUnescaped(); 
+		String dn = certificateView.getSubjectDNUnescaped(); 
 		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(certificateView.getSerialNumberBigInt(), certificateView.getIssuerDN());
 		if (certreqhist != null) {
 			// First try to look up all info using the Certificate Request History from when the certificate was issued
