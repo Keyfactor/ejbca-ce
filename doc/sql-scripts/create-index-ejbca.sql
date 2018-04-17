@@ -55,10 +55,6 @@ CREATE INDEX rolemember_idx1 ON RoleMemberData (tokenType,roleId);
 -- When using a blacklist with many entries
 CREATE INDEX blacklist_idx1 ON BlacklistData (type,value);
 
--- indices for NoConflictCertificateData
-CREATE INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData (username);
-CREATE INDEX noconflictcertificatedata_idx4 ON NoConflictCertificateData (subjectDN);
-CREATE INDEX noconflictcertificatedata_idx5 ON NoConflictCertificateData (type);
-CREATE INDEX noconflictcertificatedata_idx6 ON NoConflictCertificateData (issuerDN,status);
-CREATE INDEX noconflictcertificatedata_idx7 ON NoConflictCertificateData(certificateProfileId);
-CREATE INDEX noconflictcertificatedata_idx11 ON NoConflictCertificateData (subjectKeyId);
+-- indices for NoConflictCertificateData (we don't need username, subjectDN, type, subjectKeyId indexes for revoked throw away certificates)
+CREATE INDEX noconflictcertificatedata_idx1 ON NoConflictCertificateData (serialNumber, issuerDN);
+CREATE INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData (fingerprint);

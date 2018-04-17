@@ -432,6 +432,5 @@ CREATE TABLE NoConflictCertificateData (
     type INT(11) NOT NULL,
     updateTime BIGINT(20) NOT NULL,
     username VARCHAR(250) BINARY,
-    timeCreated BIGINT(20) NOT NULL,
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;

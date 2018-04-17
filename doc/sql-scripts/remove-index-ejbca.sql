@@ -31,9 +31,5 @@ DROP INDEX rolemember_idx1 ON RoleMemberData;
 
 DROP INDEX blacklist_idx1 ON BlacklistData;
 
+DROP INDEX noconflictcertificatedata_idx1 ON NoConflictCertificateData;
 DROP INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData;
-DROP INDEX noconflictcertificatedata_idx4 ON NoConflictCertificateData;
-DROP INDEX noconflictcertificatedata_idx5 ON NoConflictCertificateData;
-DROP INDEX noconflictcertificatedata_idx6 ON NoConflictCertificateData;
-DROP INDEX noconflictcertificatedata_idx7 ON NoConflictCertificateData;
-DROP INDEX noconflictcertificatedata_idx11 ON NoConflictCertificateData;

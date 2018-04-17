@@ -27,6 +27,9 @@ import java.util.Set;
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Query;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
@@ -34,7 +37,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 
-import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
@@ -209,18 +211,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     public CertificateData() {
         
-    }
-    
-    
-    /**
-     * return the current class name
-     *  
-     * @return name (without package info) of the current class
-     */
-    @Override
-    @Transient
-    protected final String getClassName() {
-        return ClassUtils.getShortCanonicalName(this.getClass());
     }
     
     /**
@@ -1349,6 +1339,31 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return build.toString();
     }
 
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 3;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+        return getFingerprint();
+    }
+    
     //
     // End Database integrity protection methods
     //

@@ -13,16 +13,15 @@
 package org.cesecore.certificates.certificate;
 
 import java.io.Serializable;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
@@ -31,10 +30,7 @@ import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.keys.util.KeyTools;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 
@@ -90,7 +86,6 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     private String subjectKeyId;
     private int rowVersion = 0;
     private String rowProtection;
-    private long timeCreated = 0;
     
     
     /**
@@ -119,23 +114,10 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         setTag(copy.getTag());
         setRowVersion(copy.getRowVersion());
         setRowProtection(copy.getRowProtection());
-        setTimeCreated(copy.getTimeCreated());
     }
 
     public NoConflictCertificateData() {
         
-    }
-
-
-    /**
-     * return the current class name
-     *  
-     * @return name (without package info) of the current class
-     */
-    @Override
-    @Transient
-    protected final String getClassName() {
-        return ClassUtils.getShortCanonicalName(this.getClass());
     }
     
     /**
@@ -516,23 +498,6 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         this.rowProtection = zzzRowProtection;
     }
     
-    /**
-     * entry's creation timestamp
-     * 
-     * @return timeCreated
-     */
-    public long getTimeCreated() {
-        return timeCreated;
-    }
-
-    /**
-     * entry's creation timestamp
-     * 
-     * @param timeCreated
-     */
-    public void setTimeCreated(long timeCreated) {
-        this.timeCreated = timeCreated;
-    }
 
     /**
      * DN of issuer of certificate
@@ -625,9 +590,6 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     private boolean equalsNonSensitive(NoConflictCertificateData certificateData, boolean strictStatus) {
         
         if (!id.equals(certificateData.id)) {
-            return false;
-        }
-        if (timeCreated != certificateData.timeCreated) {
             return false;
         }
         if (!issuerDN.equals(certificateData.issuerDN)) {
@@ -748,7 +710,6 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         updateTime = certificateData.updateTime;
         base64Cert = inclusionMode ? null : certificateData.base64Cert;
         id = certificateData.id;
-        timeCreated = certificateData.timeCreated;
     }
 
     
@@ -818,6 +779,31 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
             }
         }
         return build.toString();
+    }
+
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 3;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+        return getFingerprint();
     }
     
     //
