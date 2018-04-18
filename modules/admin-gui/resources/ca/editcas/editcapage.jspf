@@ -905,7 +905,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>">
         <td width="50%" align="right"><%= ejbcawebbean.getText("DEFAULTCERTIFICATEPROFILE")%></td>
         <td>
-            <% boolean isDefaultProfileDisabled = !hasEditRights || !editca || cainfo.isUseCertificateStorage(); %>
+            <% boolean isDefaultProfileDisabled = !hasEditRights || cainfo.isUseCertificateStorage(); %>
           <select name="<%=SELECT_DEFAULTCERTPROFILE %>" size="1" <%= (isDefaultProfileDisabled  ? "disabled" : "") %> >
               <% TreeMap allp = ejbcawebbean.getAuthorizedEndEntityCertificateProfileNames();
                   Iterator iter = allp.keySet().iterator();
@@ -928,7 +928,11 @@ function toggleCANameChange(){
               <input type="checkbox" name="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY %>" value="<%=CHECKBOX_VALUE %>"
                   <% if(editca && cainfo.isAcceptRevocationNonExistingEntry()) {
                       out.write("CHECKED"); // edit CA
-               } %>
+               }
+               if (!hasEditRights || cainfo.isUseCertificateStorage()) {
+                      out.write(" DISABLED");
+               }
+               %>
                      id="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>" <%= (!hasEditRights || !editca || cainfo.isUseCertificateStorage() ? "disabled" : "") %>>
               <label for="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>"><c:out value="<%= ejbcawebbean.getText(\"ACCEPT\") %>" /></label>
           </td>
