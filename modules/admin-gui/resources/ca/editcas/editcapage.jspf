@@ -905,7 +905,7 @@ function toggleCANameChange(){
     <tr id="Row<%=row++%2%>">
         <td width="50%" align="right"><%= ejbcawebbean.getText("DEFAULTCERTIFICATEPROFILE")%></td>
         <td>
-            <% boolean isDefaultProfileDisabled = !hasEditRights || cainfo.isUseCertificateStorage(); %>
+            <% boolean isDefaultProfileDisabled = !hasEditRights || !editca || cainfo.isUseCertificateStorage(); %>
           <select name="<%=SELECT_DEFAULTCERTPROFILE %>" size="1" <%= (isDefaultProfileDisabled  ? "disabled" : "") %> >
               <% TreeMap allp = ejbcawebbean.getAuthorizedEndEntityCertificateProfileNames();
                   Iterator iter = allp.keySet().iterator();
@@ -929,7 +929,7 @@ function toggleCANameChange(){
                   <% if(editca && cainfo.isAcceptRevocationNonExistingEntry()) {
                       out.write("CHECKED"); // edit CA
                }
-               if (!hasEditRights || cainfo.isUseCertificateStorage()) {
+               if (!hasEditRights || !editca || cainfo.isUseCertificateStorage()) {
                       out.write(" DISABLED");
                }
                %>
