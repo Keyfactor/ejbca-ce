@@ -257,6 +257,12 @@
 		<echo message="runone-internal.classpath=${runone-internal.classpath}"/>
 		<!-- needed by the cesecore tests -->
 		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
+		<!-- conditional property for remote debugging -->
+		<condition property="remoteDebugJvmArgs"
+				   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				   else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
 		<!-- set a default -->
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
@@ -266,6 +272,7 @@
 			</classpath>
 			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
 			<jvmarg line="${tests.jvmargs}"/>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.test.dir}" includes="**/${test.runone}.class" excludes="**/${test.runoneexclude}.class"/>
