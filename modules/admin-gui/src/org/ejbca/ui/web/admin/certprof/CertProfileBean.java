@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
@@ -1294,5 +1295,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private void redirectToComponent(final String componentId) throws IOException {
         final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
         ec.redirect(getEjbcaWebBean().getBaseUrl()+getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()+"ca/editcertificateprofiles/editcertificateprofile.jsf#cpf:"+componentId);
+    }
+
+    public String getGcEtsiTypeEsign() {
+        return CertificateProfileConstants.QC_ETSI_TYPE_ESIGN;
+    }
+    public String getGcEtsiTypeEseal() {
+        return CertificateProfileConstants.QC_ETSI_TYPE_ESEAL;
+    }
+    public String getGcEtsiTypeWebauth() {
+        return CertificateProfileConstants.QC_ETSI_TYPE_WEBAUTH;
     }
 }
