@@ -19,11 +19,11 @@ import static org.junit.Assert.fail;
 
 import java.util.Date;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.cesecore.util.ValidityDate;
 import org.ejbca.utils.WebTestUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
