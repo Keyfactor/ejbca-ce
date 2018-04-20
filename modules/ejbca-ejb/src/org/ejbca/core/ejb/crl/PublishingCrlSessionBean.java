@@ -32,8 +32,6 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
@@ -56,12 +54,13 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -85,20 +84,21 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
-    private EntityManager entityManager;
-    
     @Resource
     private SessionContext sessionContext;
     
     @EJB
     private CaSessionLocal caSession;
     @EJB
+    private CertificateDataSessionLocal certificateDataSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CrlCreateSessionLocal crlCreateSession;
     @EJB
     private CrlStoreSessionLocal crlSession;
+    @EJB
+    private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
@@ -173,7 +173,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 // Continue working with the others, but log a warning message in system logs.
                 final String msg = intres.getLocalizedMessage("createcrl.errorcreate", caid, e.getMessage());
                 log.error(msg, e);                  
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);              
             }
@@ -421,22 +421,22 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     final long freeMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
                     log.debug("Listing revoked certificates. Free memory=" + freeMemory);
                 }
-                revokedCertificates = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
+                revokedCertificates = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
                 
                 //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
                     log.info("The CA with SubjectDN " + ca.getSubjectDN() + " has been gone through ICAO Name Change. Collecting all revocation information published by this CA with previous names has started.");
                     Collection<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
-                    Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<RevokedCertInfo>();
+                    Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<>();
                     if(renewedCertificateChain != null){
-                        Collection<String> differentSubjectDNs = new HashSet<String>();
+                        Collection<String> differentSubjectDNs = new HashSet<>();
                         differentSubjectDNs.add(caCertSubjectDN);
                         for(Certificate renewedCertificate : renewedCertificateChain){
                             String renewedCertificateSubjectDN = CertTools.getSubjectDN(renewedCertificate);
                             if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
                                 log.info("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
-                                Collection<RevokedCertInfo> revokedCertInfo = certificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
+                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
@@ -445,7 +445,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     }    
                     //Make sure new compressed collection is created if revokedCertificatesBeforeLastCANameChange need to be added!
                     Collection<RevokedCertInfo> revokedCertificatesAfterLastCANameChange = revokedCertificates;
-                    revokedCertificates = new CompressedCollection<RevokedCertInfo>();
+                    revokedCertificates = new CompressedCollection<>();
                     if(!revokedCertificatesBeforeLastCANameChange.isEmpty()){
                         revokedCertificates.addAll(revokedCertificatesBeforeLastCANameChange);
                     }
@@ -485,16 +485,19 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             final long freeMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
                             log.debug("Archiving certificate with fp="+revokedCertInfo.getCertificateFingerprint()+". Free memory=" + freeMemory);
                         }
-                        certificateStoreSession.setStatus(archiveAdmin, revokedCertInfo.getCertificateFingerprint(), CertificateConstants.CERT_ARCHIVED);
+                        noConflictCertificateStoreSession.setStatus(archiveAdmin, revokedCertInfo.getCertificateFingerprint(), CertificateConstants.CERT_ARCHIVED);
                     } else {
                         if (!revokedCertInfo.isRevocationDateSet()) {
                             revokedCertInfo.setRevocationDate(now);
-                            CertificateData certdata = CertificateData.findByFingerprint(entityManager, revokedCertInfo.getCertificateFingerprint());
+                            // FIXME should use noConflictCertificateStoreSession! (or can we skip this code? when can isRevocationDateSet return false?)
+//                            noConflictCertificateStoreSession.setRevocationData(revokedCertInfo.getCertificateFingerprint(), now);
+                            CertificateData certdata = certificateDataSession.findByFingerprint(revokedCertInfo.getCertificateFingerprint());
                             if (certdata == null) {
                                 throw new FinderException("No certificate with fingerprint " + revokedCertInfo.getCertificateFingerprint());
                             }
                             // Set revocation date in the database
                             certdata.setRevocationDate(now);
+                            // FIXME update to database!
                         }
                     }
                 }
@@ -570,7 +573,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             // We can not create a CRL for a CA that is waiting for certificate response
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE ) {
                 // Find all revoked certificates
-                revcertinfos = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, lastBaseCrlInfo.getCreateDate().getTime());
+                revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, lastBaseCrlInfo.getCreateDate().getTime());
                 
                 // if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
@@ -578,9 +581,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                         log.debug("Gathering all revocation information published by this CA ("+ca.getName()+":"+ca.getCAId()+") since its beginning. Important only if CA has gone undergone name change");
                     }
                     Collection<Certificate> renewedCertificateChain = ca.getRenewedCertificateChain();
-                    Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<RevokedCertInfo>();
+                    Collection<RevokedCertInfo> revokedCertificatesBeforeLastCANameChange = new ArrayList<>();
                     if(renewedCertificateChain != null){
-                        Collection<String> differentSubjectDNs = new HashSet<String>();
+                        Collection<String> differentSubjectDNs = new HashSet<>();
                         differentSubjectDNs.add(caCertSubjectDN);
                         for(Certificate renewedCertificate : renewedCertificateChain){
                             String renewedCertificateSubjectDN = CertTools.getSubjectDN(renewedCertificate);
@@ -590,7 +593,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                     log.debug("Collecting revocation information for renewed certificate '" + renewedCertificateSubjectDN + "' and merging them with ones for " + caCertSubjectDN);
                                 }
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
-                                Collection<RevokedCertInfo> revokedCertInfo = certificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
+                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
@@ -599,7 +602,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     }    
                     //Make sure new compressed collection is created if revokedCertificatesBeforeLastCANameChange need to be added!
                     Collection<RevokedCertInfo> revokedCertificatesAfterLastCANameChange = revcertinfos;
-                    revcertinfos = new CompressedCollection<RevokedCertInfo>();
+                    revcertinfos = new CompressedCollection<>();
                     if(!revokedCertificatesBeforeLastCANameChange.isEmpty()){
                         revcertinfos.addAll(revokedCertificatesBeforeLastCANameChange);
                     }
@@ -610,7 +613,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     log.debug("Found "+revcertinfos.size()+" revoked certificates.");
                 }
                 // Go through them and create a CRL, i.e. add to cert list to be included in CRL
-                certs = new CompressedCollection<RevokedCertInfo>();
+                certs = new CompressedCollection<>();
                 for (final RevokedCertInfo ci : revcertinfos) {
                     if (ci.getRevocationDate() == null) {
                         ci.setRevocationDate(new Date());
