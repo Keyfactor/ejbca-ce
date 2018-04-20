@@ -1297,13 +1297,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         ec.redirect(getEjbcaWebBean().getBaseUrl()+getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()+"ca/editcertificateprofiles/editcertificateprofile.jsf#cpf:"+componentId);
     }
 
-    public String getGcEtsiTypeEsign() {
+    public String getQcEtsiTypeEsign() {
         return CertificateProfileConstants.QC_ETSI_TYPE_ESIGN;
     }
-    public String getGcEtsiTypeEseal() {
+    public String getQcEtsiTypeEseal() {
         return CertificateProfileConstants.QC_ETSI_TYPE_ESEAL;
     }
-    public String getGcEtsiTypeWebauth() {
+    public String getQcEtsiTypeWebauth() {
         return CertificateProfileConstants.QC_ETSI_TYPE_WEBAUTH;
     }
 }
