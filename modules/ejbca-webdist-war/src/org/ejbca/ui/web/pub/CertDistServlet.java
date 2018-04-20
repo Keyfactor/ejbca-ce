@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.pub;
 
 import java.io.ByteArrayOutputStream;
@@ -70,14 +70,14 @@ import org.ejbca.util.HTMLTools;
  * <code>command=&lt;command&gt;</code>.
  * <p>The following commands are supported:<br>
  * <ul>
- * <li>crl - gets the latest CRL.
- * <li>deltacrl - gets the latest delta CRL.
- * <li>lastcert - gets latest certificate of a user, takes argument 'subject=<subjectDN>'.
- * <li>listcerts - lists all certificates of a user, takes argument 'subject=<subjectDN>'.
- * <li>revoked - checks if a certificate is revoked, takes arguments 'subject=<subjectDN>&serno=<serial number>'.
- * <li>cacert - returns ca certificate in PEM-format, takes argument 'issuer=<issuerDN>&level=<ca-level, 0=root>'
- * <li>nscacert - returns ca certificate for Firefox, same args as above
- * <li>iecacert - returns ca certificate for Internet Explorer, same args as above
+ *   <li>crl - gets the latest CRL.
+ *   <li>deltacrl - gets the latest delta CRL.
+ *   <li>lastcert - gets latest certificate of a user, takes argument 'subject=<subjectDN>'.
+ *   <li>listcerts - lists all certificates of a user, takes argument 'subject=<subjectDN>'.
+ *   <li>revoked - checks if a certificate is revoked, takes arguments 'subject=<subjectDN>&serno=<serial number>'.
+ *   <li>cacert - returns ca certificate in PEM-format, takes argument 'issuer=<issuerDN>&level=<ca-level, 0=root>'
+ *   <li>nscacert - returns ca certificate for Firefox, same args as above
+ *   <li>iecacert - returns ca certificate for Internet Explorer, same args as above
  * </ul>
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
@@ -92,7 +92,7 @@ public class CertDistServlet extends HttpServlet {
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CRL = "crl";
-    private static final String COMMAND_DELTACRL = "deltacrl"; 
+    private static final String COMMAND_DELTACRL = "deltacrl";
     private static final String COMMAND_REVOKED = "revoked";
     private static final String COMMAND_EECERT = "eecert";
     private static final String COMMAND_CERTBYFP = "certbyfp";
@@ -102,7 +102,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_IECACERT = "iecacert";
     private static final String COMMAND_CACERT = "cacert";
     private static final String COMMAND_CACHAIN = "cachain";
-    
+
     private static final String SUBJECT_PROPERTY = "subject";
     private static final String FINGERPRINT_PROPERTY = "fingerprint";
 	private static final String CAID_PROPERTY = "caid";
@@ -113,7 +113,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String MOZILLA_PROPERTY = "moz";
     private static final String FORMAT_PROPERTY = "format";
     private static final String CRLNUMBER_PROPERTY = "crlnumber";
-    
+
     private static final String INSTALLTOBROWSER_PROPERTY = "installtobrowser";
 
     @EJB
@@ -161,25 +161,25 @@ public class CertDistServlet extends HttpServlet {
         final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new PublicWebPrincipal(remoteAddr));
 
         RequestHelper.setDefaultCharacterEncoding(req);
-        String issuerdn = null; 
+        String issuerdn = null;
         if(req.getParameter(ISSUER_PROPERTY) != null){
             // HttpServetRequets.getParameter URLDecodes the value for you
             // No need to do it manually, that will cause problems with + characters
             issuerdn = req.getParameter(ISSUER_PROPERTY);
             issuerdn = CertTools.stringToBCDNString(issuerdn);
-        }    
-		int caid = 0; 
+        }
+		int caid = 0;
 		try {
 		    if(req.getParameter(CAID_PROPERTY) != null){
 		        caid = Integer.parseInt(req.getParameter(CAID_PROPERTY));
-		    }    
+		    }
 		} catch (NumberFormatException e) {
 		    log.debug("Invalid CAId: ", e);
 		    res.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid CAId.");
 		    return;
 		}
         // See if the client wants the response cert or CRL in PEM format (default is DER)
-        String format = req.getParameter(FORMAT_PROPERTY); 
+        String format = req.getParameter(FORMAT_PROPERTY);
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null) {
             command = "";
@@ -201,7 +201,7 @@ public class CertDistServlet extends HttpServlet {
                         crl = crlSession.getLastCRL(issuerdn, false); // CRL
                     } else {
                         crl = crlSession.getLastCRL(issuerdn, true); // deltaCRL
-                    } 
+                    }
                 }
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
@@ -212,16 +212,16 @@ public class CertDistServlet extends HttpServlet {
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 if (command.equalsIgnoreCase(COMMAND_DELTACRL)) {
                 	filename = "delta_"+filename;
-                }                 
+                }
                 if ((moz == null) || !moz.equalsIgnoreCase("y")) {
-                    res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");                    
+                    res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");
                 }
                 res.setContentType("application/x-x509-crl");
                 if (StringUtils.equals(format, "PEM")) {
                     RequestHelper.sendNewB64File(Base64.encode(crl, true), res, filename, RequestHelper.BEGIN_CRL_WITH_NL, RequestHelper.END_CRL_WITH_NL);
                 } else {
                     res.setContentLength(crl.length);
-                    res.getOutputStream().write(crl);                    
+                    res.getOutputStream().write(crl);
                 }
                 if (log.isDebugEnabled()) {
                     log.debug("Sent latest CRL to client at " + remoteAddr);
@@ -532,7 +532,7 @@ public class CertDistServlet extends HttpServlet {
             ending = ".crt";
         }
         String filename = RequestHelper.getFileNameFromCertNoEnding(certcert, "ca");
-        filename = filename+ending;                        
+        filename = filename+ending;
         // We must remove cache headers for IE
         ServletUtils.removeCacheHeaders(res);
         if ("netscape".equals(req.getParameter(INSTALLTOBROWSER_PROPERTY))) {
@@ -566,7 +566,7 @@ public class CertDistServlet extends HttpServlet {
         certificateChain.addFirst(certificate);
         return certificateChain;
     }
-    
+
 	private Certificate[] getCertificateChain(final int caId, final String issuerDn) {
 		final Certificate[] chain;
 		if (caId != 0) {
@@ -592,7 +592,7 @@ public class CertDistServlet extends HttpServlet {
             } else {
                 filename = RequestHelper.getFileNameFromCertNoEnding(chain[0], "ca") + "-chain." + format.toLowerCase();
             }
-		
+
 
 				byte[] outbytes = new byte[0];
 				// Encode and send back
@@ -626,7 +626,7 @@ public class CertDistServlet extends HttpServlet {
 				res.setContentType("application/octet-stream");
 				res.setContentLength(outbytes.length);
 				res.getOutputStream().write(outbytes);
-				log.debug("Sent CA certificate chain to client, len="+outbytes.length+".");						
+				log.debug("Sent CA certificate chain to client, len="+outbytes.length+".");
             } catch (CertificateEncodingException e) {
                 log.debug("Error getting CA certificate chain: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificate chain.");
@@ -644,7 +644,7 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "CA does not exist: "+HTMLTools.htmlescape(e.getMessage()));
 			}
 	}
-    
+
     private void printHtmlHeader(String title, PrintWriter pout) {
                 pout.println("<html><head>");
                 pout.println("<title>"+title+"</title>");

@@ -39,8 +39,8 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 /**
- * Backing bean for Certificate and CRLs download page. 
- * 
+ * Backing bean for Certificate and CRLs download page.
+ *
  * @version $Id$
  */
 @ManagedBean
@@ -57,7 +57,7 @@ public class RaCasPageBean implements Serializable {
         private final int position;
         private final List<String> chainNames;
         private boolean x509 = false;
-        
+
         CaAndCrl(final String name, final String subjectDn, final int caId, final int position, final List<String> chainNames) {
             this.name = name;
             this.subjectDn = subjectDn;
@@ -65,7 +65,7 @@ public class RaCasPageBean implements Serializable {
             this.position = position;
             this.chainNames = chainNames;
         }
-        
+
         public String getName() { return name; }
         public String getSubjectDn() { return subjectDn; }
         public int getCaId() { return caId; }
@@ -73,7 +73,7 @@ public class RaCasPageBean implements Serializable {
         public String getDeltaCrlLink() { return deltaCrlLink; }
         public int getPosition() { return position; }
         public boolean isX509() { return x509; }
-        
+
         @Override
         public int hashCode() { return subjectDn.hashCode(); }
         @Override

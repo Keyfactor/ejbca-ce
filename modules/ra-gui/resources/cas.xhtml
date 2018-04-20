@@ -113,7 +113,14 @@
 	                </h:column>
 	            </h:dataTable>
 	            <h:outputText styleClass="bodyText" value="¹ #{msg.cas_page_link_download_cachain_jks_hint}" rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}"/>	            
-   			</h:panelGroup>	                
+   			</h:panelGroup>
+   			<div>
+   			    <h:outputLink value="cert">
+   			        <f:param name="fpsheet" value="yaml" />
+   			        <h:commandButton id="downloadFingerprints" value="#{msg.cas_page_download_fingerprints}" 
+                        rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" styleClass="pure-button ra-button"/>
+                </h:outputLink>
+   			</div>	                
         </ui:define>
     </ui:composition>
 </html>
