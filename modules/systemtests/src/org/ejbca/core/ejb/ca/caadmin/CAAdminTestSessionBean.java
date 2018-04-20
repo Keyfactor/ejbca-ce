@@ -23,8 +23,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CA;
@@ -34,6 +32,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -51,10 +50,10 @@ import org.cesecore.util.CertTools;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
 
-    @PersistenceContext(unitName="ejbca")
-    private EntityManager entityManager;
     @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CertificateDataSessionLocal certificateDataSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     
@@ -82,7 +81,7 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
     @Override
     public void clearCertData(Certificate cert) {
         final String fingerprint = CertTools.getFingerprintAsString(cert);
-        CertificateData data = CertificateData.findByFingerprint(entityManager, fingerprint);
+        CertificateData data = certificateDataSession.findByFingerprint(fingerprint);
         data.setBase64Cert("");
     }
 

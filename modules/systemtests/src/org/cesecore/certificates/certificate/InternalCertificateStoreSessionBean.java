@@ -64,7 +64,11 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
+    private CertificateDataSessionLocal certificateDataSession;
+    @EJB
     private CertificateStoreSessionLocal certStore;
+    @EJB
+    private NoConflictCertificateDataSessionLocal noConflictCertificateDataSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
 
@@ -73,7 +77,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         if ( serno==null ) {
             return;
         }
-        final Collection<CertificateData> coll = CertificateData.findBySerialNumber(this.entityManager, serno.toString());
+        final Collection<CertificateData> coll = certificateDataSession.findBySerialNumber(serno.toString());
         for (CertificateData certificateData : coll) {
             this.entityManager.remove(certificateData);
             final Base64CertData b64cert = Base64CertData.findByFingerprint(this.entityManager, certificateData.getFingerprint());
@@ -82,7 +86,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             }
         }
         
-        final Collection<NoConflictCertificateData> noConflictCertDatas = NoConflictCertificateData.findBySerialNumber(this.entityManager, serno.toString());
+        final Collection<NoConflictCertificateData> noConflictCertDatas = noConflictCertificateDataSession.findBySerialNumber(serno.toString());
         for (final NoConflictCertificateData certificateData : noConflictCertDatas) {
             this.entityManager.remove(certificateData);
         }
@@ -144,7 +148,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 		}
 		final Query query = this.entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN");
 		query.setParameter("issuerDN", issuerDN);
-		return CertificateData.getCertificateList( query.getResultList(), this.entityManager );
+		return certificateDataSession.getCertificateList(query.getResultList());
 	}
 
 	@Override
@@ -172,7 +176,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws IllegalArgumentException, AuthorizationDeniedException {
-        CertificateData data = CertificateData.findByFingerprint(entityManager, fingerprint);
+        CertificateData data = certificateDataSession.findByFingerprint(fingerprint);
         if (data != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Set status " + status + " for certificate with fp: " + fingerprint);
@@ -297,7 +301,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
         authorizedToCA(admin, caid);
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
-        final CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
+        final CertificateData certificateData = certificateDataSession.findByFingerprint(fingerprint);
         if (certificateData == null) {
             final String serialNumber = CertTools.getSerialNumberAsString(certificate);
             String msg = INTRES.getLocalizedMessage("store.errorfindcertfp", fingerprint, serialNumber);

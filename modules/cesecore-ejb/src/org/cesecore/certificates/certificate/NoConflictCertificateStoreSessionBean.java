@@ -33,6 +33,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -60,6 +61,8 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     private CaSessionLocal caSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private NoConflictCertificateDataSessionLocal noConflictCertificateDataSession;
     
     /**
      * Returns true if the CA allows revocation of non-existing certificates.
@@ -80,6 +83,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         if (cainfo == null || !cainfo.getSubjectDN().equals(issuerDN) || !cainfo.isAcceptRevocationNonExistingEntry()) {
             return false;
         }
+        // XXX this option can be set in the certificate profile as well! does it make sense to have mixed locations? it would make CRL generation more complex!
         if (cainfo.isUseCertificateStorage()) {
             if (log.isDebugEnabled()) {
                 log.debug("CA '" + cainfo.getName() + "' is misconfigured. Revocation of non-existing certificates is currently only supported for 'throw away CAs'.");
@@ -147,8 +151,21 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             return cdw;
         }
         // If not found, take most recent certificate from NoConflictCertificateData
-        final Collection<NoConflictCertificateData> certDatas = NoConflictCertificateData.findByFingerprint(entityManager, fingerprint);
+        final Collection<NoConflictCertificateData> certDatas = noConflictCertificateDataSession.findByFingerprint(fingerprint);
         return new CertificateDataWrapper(filterMostRecentCertData(certDatas));
+    }
+    
+    @Override
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, long lastbasecrldate) {
+        if (log.isTraceEnabled()) {
+            log.trace(">listRevokedCertInfo()");
+        }
+        final Collection<RevokedCertInfo> revokedFromCertData = certificateStoreSession.listRevokedCertInfo(issuerdn, lastbasecrldate);
+        // XXX the method below is a bit complex. factor out to base class?
+        //return CertificateData.getRevokedCertInfos(entityManager, CertTools.stringToBCDNString(StringTools.strip(issuerdn)), lastbasecrldate);
+        // Merge revokedFromCertData and revokedFromNoConflictCertData
+        // TODO
+        return revokedFromCertData;
     }
     
     /**
@@ -158,7 +175,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
      * @return NoConflictCertificateData entry, or null if not found. Entity is append-only, so do not modify it.
      */
     private NoConflictCertificateData findMostRecentCertData(final String issuerdn, final BigInteger serno) {
-        final Collection<NoConflictCertificateData> certDatas = NoConflictCertificateData.findByIssuerDNSerialNumber(entityManager, issuerdn, serno.toString());
+        final Collection<NoConflictCertificateData> certDatas = noConflictCertificateDataSession.findByIssuerDNSerialNumber(issuerdn, serno.toString());
         return filterMostRecentCertData(certDatas);
     }
     
@@ -205,11 +222,18 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     public boolean setRevokeStatus(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revokedDate, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
         if (cdw.getBaseCertificateData() instanceof NoConflictCertificateData) {
-            if (entityManager.contains(cdw.getBase64CertData())) {
+            if (entityManager.contains(cdw.getBaseCertificateData())) {
                 throw new IllegalStateException("Cannot update existing row in NoConflictCertificateData. It is append-only.");
             }
         }
         return certificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
+    }
+    
+    @Override
+    public boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException {
+        // TODO
+        // TODO move last
+        return certificateStoreSession.setStatus(admin, fingerprint, status);
     }
     
     /**

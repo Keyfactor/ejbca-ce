@@ -28,7 +28,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 
-import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.CertTools;
@@ -142,6 +141,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return fingerprint
      */
+    @Override
     public String getFingerprint() {
         return fingerprint;
     }
@@ -160,6 +160,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return issuer dn
      */
+    @Override
     public String getIssuerDN() {
         return issuerDN;
     }
@@ -179,6 +180,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return value as it is stored in the database
      */
+    @Override
     public String getSubjectDN() {
         return subjectDN;
     }
@@ -205,6 +207,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return value as it is stored in the database
      */
+    @Override
     public String getSubjectAltName() {
         return subjectAltName;
     }
@@ -217,6 +220,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return fingerprint
      */
+    @Override
     public String getCaFingerprint() {
         return cAFingerprint;
     }
@@ -237,6 +241,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return status
      */
+    @Override
     public int getStatus() {
         return status;
     }
@@ -246,6 +251,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @param status status
      */
+    @Override
     public void setStatus(int status) {
         this.status = status;
     }
@@ -255,6 +261,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return user type
      */
+    @Override
     public int getType() {
         return type;
     }
@@ -273,6 +280,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return serial number
      */
+    @Override
     public String getSerialNumber() {
         return serialNumber;
     }
@@ -287,6 +295,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     }
 
     /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate was issued or null if the information is not known. */
+    @Override
     public Long getNotBefore() {
         return notBefore;
     }
@@ -295,6 +304,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     }
 
     /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate expires. */
+    @Override
     public long getExpireDate() {
         return expireDate;
     }
@@ -313,6 +323,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return revocation date
      */
+    @Override
     public long getRevocationDate() {
         return revocationDate;
     }
@@ -331,6 +342,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return revocation reason
      */
+    @Override
     public int getRevocationReason() {
         return revocationReason;
     }
@@ -384,6 +396,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return username
      */
+    @Override
     public String getUsername() {
         return username;
     }
@@ -402,6 +415,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return tag
      */
+    @Override
     public String getTag() {
         return tag;
     }
@@ -420,6 +434,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return certificateProfileId
      */
+    @Override
     public Integer getCertificateProfileId() {
         return certificateProfileId;
     }
@@ -438,6 +453,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
      *
      * @return updateTime
      */
+    @Override
     public Long getUpdateTime() {
         return updateTime;
     }
@@ -453,6 +469,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     /**
      * The ID of the public key of the certificate
      */
+    @Override
     public String getSubjectKeyId() {
         return subjectKeyId;
     }
@@ -548,6 +565,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     }
     
     /** @return the end entity profile this certificate was issued under or null if the information is not available. */
+    @Override
     public Integer getEndEntityProfileId() {
         return endEntityProfileId;
     }
@@ -717,20 +735,24 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     //
     // Search functions.
     //
+    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
+    @Deprecated
     public static List<NoConflictCertificateData> findByFingerprint(EntityManager entityManager, String fingerprint) {
         final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery("SELECT a FROM NoConflictCertificateData a WHERE a.fingerprint=:fingerprint", NoConflictCertificateData.class);
         query.setParameter("fingerprint", fingerprint);
         return query.getResultList();
     }
     
-    /** @return return the query results as a List. */
+    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
+    @Deprecated
     public static List<NoConflictCertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
         final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery("SELECT a FROM NoConflictCertificateData a WHERE a.serialNumber=:serialNumber", NoConflictCertificateData.class);
         query.setParameter("serialNumber", serialNumber);
         return query.getResultList();
     }
     
-    /** @return return the query results as a List. */
+    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
+    @Deprecated
     public static List<NoConflictCertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
         String sql = "SELECT a FROM NoConflictCertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber";
         final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery(sql, NoConflictCertificateData.class);
