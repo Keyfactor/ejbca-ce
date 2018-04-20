@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +23,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -42,10 +45,12 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Servlet for download of CA certificates and chains.
- * 
+ *
  * @version $Id$
  */
 @WebServlet("/cert")
@@ -53,6 +58,7 @@ public class RaCertDistServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaCertDistServlet.class);
+    private static final String PARAMETER_FINGERPRINTSHEET = "fpsheet";
     private static final String PARAMETER_CAID = "caid";
     private static final String PARAMETER_FINGERPRINT = "fp";
     private static final String PARAMETER_FORMAT = "format";
@@ -75,6 +81,10 @@ public class RaCertDistServlet extends HttpServlet {
         if (raAuthenticationHelper==null) {
             // Initialize the authentication helper function
             raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession);
+        }
+        if (httpServletRequest.getParameter(PARAMETER_FINGERPRINTSHEET) != null) {
+            downloadFingerprintSheet(httpServletRequest, httpServletResponse);
+            return;
         }
         final boolean fullChain = Boolean.valueOf(httpServletRequest.getParameter(PARAMETER_CHAIN));
         if (httpServletRequest.getParameter(PARAMETER_CAID) != null) {
@@ -177,7 +187,7 @@ public class RaCertDistServlet extends HttpServlet {
             }
         } else if (httpServletRequest.getParameter(PARAMETER_FINGERPRINT) != null) {
             final String fingerprint = httpServletRequest.getParameter(PARAMETER_FINGERPRINT);
-            // Serving regular leaf certificate (optionally with full chain) 
+            // Serving regular leaf certificate (optionally with full chain)
             final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
             final List<CAInfo> caInfos = raMasterApi.getAuthorizedCas(authenticationToken);
             // Only process request if there is a chance the client is authorized to the CA that issued it
@@ -241,5 +251,51 @@ public class RaCertDistServlet extends HttpServlet {
         httpServletResponse.setContentType(contentType);
         httpServletResponse.setContentLength(response.length);
         httpServletResponse.getOutputStream().write(response);
+    }
+
+    /**
+     * Creates and outputs a YAML document containing the CA certificate fingerprints of all active Certification Authorities
+     * on this system to which the current user has access. The CA certificate fingerprints are computed using SHA-256.
+     * <p>Certification Authorities without a certificate, i.e. CAs with status {@link #CaConstants.CA_UNINITIALIZED} or
+     * {@link #CaConstants.CA_WAITING_CERTIFICATE_RESPONSE} are excluded.
+     * @param httpServletRequest the HTTP request from the client
+     * @param httpServletResponse the HTTP response from the server
+     * @return a YAML document with CA certificate fingerprints
+     * @throws IOException if UTF-8 encoding of the HTTP response failed
+     */
+    public void downloadFingerprintSheet(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse)
+            throws IOException {
+        final Map<String, Object> entries = new LinkedHashMap<>();
+        final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
+        for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
+            if (caInfo.getCertificateChain() == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not computing CA certificate fingerprint for CA " + caInfo.getName()
+                            + " because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
+                }
+                continue;
+            }
+            try {
+                final Certificate caCertificate = caInfo.getCertificateChain().get(0);
+                final String caFingerprint = CertTools.getFingerprintAsString(CertTools.generateSHA256Fingerprint(caCertificate.getEncoded()));
+                final Map<String, String> caEntry = new LinkedHashMap<>();
+                caEntry.put("Subject DN", caInfo.getSubjectDN());
+                caEntry.put("CA Certificate Fingerprint", caFingerprint);
+                entries.put(caInfo.getName(), caEntry);
+                if (log.isDebugEnabled()) {
+                    log.debug("Computed Ca certificate fingerprint for CA " + caInfo.getName() + ".");
+                }
+            } catch (final CertificateEncodingException e) {
+                log.warn("Cannot compute CA certificate fingerprint for CA " + caInfo.getName()
+                        + " because the CA certificate could not be encoded. The error was description: " + e.getMessage());
+                continue;
+            }
+        }
+        final DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        dumperOptions.setPrettyFlow(true);
+        final Yaml yaml = new Yaml(dumperOptions);
+        log.info("User " + httpServletRequest.getRemoteAddr() + " requested a CA certificate fingerprint file.");
+        writeResponseBytes(httpServletResponse, "fingerprints.yaml", "application/text", yaml.dumpAsMap(entries).getBytes(Charset.forName("UTF-8")));
     }
 }
