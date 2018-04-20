@@ -891,9 +891,9 @@
 			<h:selectOneMenu id="qcetsitype" value="#{certProfileBean.certificateProfile.QCEtsiType}"
 				disabled="#{certProfilesBean.viewOnly}">
 				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_unused}" itemValue="#{null}"/>
-				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_esign}" itemValue="#{certProfileBean.gcEtsiTypeEsign}"/>
-				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_eseal}" itemValue="#{certProfileBean.gcEtsiTypeEseal}"/>
-				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_web}" itemValue="#{certProfileBean.gcEtsiTypeWebauth}"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_esign}" itemValue="#{certProfileBean.qcEtsiTypeEsign}"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_eseal}" itemValue="#{certProfileBean.qcEtsiTypeEseal}"/>
+				<f:selectItem itemLabel="#{web.text.EXT_ETSI_QCS_TYPE_web}" itemValue="#{certProfileBean.qcEtsiTypeWebauth}"/>
 			</h:selectOneMenu>
 		</h:panelGroup>
 			
