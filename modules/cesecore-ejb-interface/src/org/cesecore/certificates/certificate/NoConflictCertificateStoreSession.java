@@ -13,6 +13,11 @@
 package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
+import java.util.Collection;
+
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
  * Interface for NoConflictCertificateStoreSession.
@@ -40,5 +45,11 @@ public interface NoConflictCertificateStoreSession  {
      * @return Hex encoded fingerprint. It is unique per issuerdn/serial.
      */
     String generateDummyFingerprint(String issuerdn, BigInteger certserno);
+
+    /** @see CertificateStoreSession#listRevokedCertInfo */
+    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, long lastbasecrldate);
+    
+    /** @see CertificateStoreSession#setStatus */
+    boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
 
 }

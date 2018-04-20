@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -28,7 +29,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
@@ -52,6 +53,8 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
+    @EJB
+    private CertificateDataSessionLocal certificateDataSession;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
@@ -116,7 +119,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public List<CertReqHistory> retrieveCertReqHistory(String username){
-    	ArrayList<CertReqHistory> retval = new ArrayList<CertReqHistory>();
+    	ArrayList<CertReqHistory> retval = new ArrayList<>();
     	Collection<CertReqHistoryData> result = CertReqHistoryData.findByUsername(entityManager, username);
     	Iterator<CertReqHistoryData> iter = result.iterator();
     	while(iter.hasNext()) {
@@ -127,7 +130,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     
     @Override
     public CertificateInfo findFirstCertificateInfo(final String issuerDN, final BigInteger serno) {
-    	return CertificateData.findFirstCertificateInfo(entityManager, CertTools.stringToBCDNString(issuerDN), serno.toString());
+    	return certificateDataSession.findFirstCertificateInfo(CertTools.stringToBCDNString(issuerDN), serno.toString());
     }
 
 }

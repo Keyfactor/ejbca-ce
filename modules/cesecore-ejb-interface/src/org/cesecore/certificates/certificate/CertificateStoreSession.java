@@ -136,6 +136,7 @@ public interface CertificateStoreSession {
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
      * @return List of maximum 500 certificates (java.security.cert.Certificate), never null
      */
+    // FIXME not used? can it be removed?
     List<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN);
     
     /**
@@ -164,6 +165,7 @@ public interface CertificateStoreSession {
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_HARDTOKEN
      * @return List of maximum 500 certificates, never null
      */
+    // FIXME not used? can it be removed?
     List<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType);
     
    /** 
@@ -213,6 +215,7 @@ public interface CertificateStoreSession {
      * @param subjectKeyId subject key ID of the sought certificate
      * @return the list Certificates if found, or an empty list (never null)
      */
+    // FIXME not used? can it be removed?
     Collection<Certificate> findCertificatesBySubjectKeyId(byte[] subjectKeyId);
     
     /**
