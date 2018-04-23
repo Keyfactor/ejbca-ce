@@ -236,8 +236,19 @@ public class HSMKeyTool extends ClientToolBox {
             }
             System.out.println("Using Slot Reference Type: "+slotType+'.');
             final KeyStoreTools store = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter, "priv-"+keyEntryName);
-            store.generateKeyPair(args[3], keyEntryName);
-            System.out.println("Created certificate with entry "+keyEntryName+'.');
+            final boolean existsKeyEntryName = KeyStoreToolsFactory.getInstance(args[2], storeId, slotType, null, protectionParameter).getKeyStore().isKeyEntry(keyEntryName);// Undmark
+            if (!existsKeyEntryName){
+                store.generateKeyPair(args[3], keyEntryName);
+                System.out.println("Created certificate with entry "+keyEntryName+'.');
+            } else {
+                if(args.length > 6 && args[6].toLowerCase().trim().equals("--force")){
+                    System.err.println("WARNING: Overwriting existing key with key entry name "+keyEntryName+".");
+                    store.generateKeyPair(args[3], keyEntryName);
+                    System.out.println("Created certificate with entry "+keyEntryName+'.');
+                } else {
+                    System.out.println("Entry "+keyEntryName+" already exists. To overwrite, add --force as last argument.");
+                }
+            }
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
