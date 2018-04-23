@@ -242,7 +242,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.out.println("Created certificate with entry "+keyEntryName+'.');
             } else {
                 if(args.length > 6 && args[6].toLowerCase().trim().equals("--force")){
-                    System.err.println("WARNING: Overwriting existing key with key entry name "+keyEntryName+".");
+                    System.err.println("Warning: Overwriting existing key with key entry name "+keyEntryName+"!");
                     store.generateKeyPair(args[3], keyEntryName);
                     System.out.println("Created certificate with entry "+keyEntryName+'.');
                 } else {
