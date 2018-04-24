@@ -1,7 +1,6 @@
 
 package org.ejbca.core.protocol.ws.client.gen;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.jws.WebMethod;
@@ -695,28 +694,6 @@ public interface EjbcaWS {
         throws AlreadyRevokedException_Exception, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, DateNotValidException_Exception, EjbcaException_Exception, NotFoundException_Exception, RevokeBackDateNotAllowedForProfileException_Exception, WaitingForApprovalException_Exception
     ;
 
-    
-    @WebMethod
-    @RequestWrapper(localName = "revokeCertWithMetadata", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCertWithMetadata")
-    @ResponseWrapper(localName = "revokeCertWithMetadataResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCertWithMetadataResponse")
-    public void revokeCertWithMetadata(
-            @WebParam(name = "arg0", targetNamespace = "")
-            String arg0,
-            @WebParam(name = "arg1", targetNamespace = "")
-            String arg1,
-            @WebParam(name = "arg2", targetNamespace = "")
-            int arg2,
-            @WebParam(name = "arg3", targetNamespace = "")
-            String arg3,
-            @WebParam(name = "arg4", targetNamespace = "")
-            int arg4,
-            @WebParam(name = "arg5", targetNamespace = "")
-            String arg5)
-            throws AlreadyRevokedException_Exception, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, 
-            DateNotValidException_Exception, EjbcaException_Exception, NotFoundException_Exception, RevokeBackDateNotAllowedForProfileException_Exception, 
-            WaitingForApprovalException_Exception;
-    
-    
     /**
      * 
      * @param arg2
