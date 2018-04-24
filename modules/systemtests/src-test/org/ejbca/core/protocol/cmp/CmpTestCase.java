@@ -292,6 +292,14 @@ public abstract class CmpTestCase extends CaTestCase {
                 extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
     }
     
+    public static PKIMessage genCertReqWithSAN(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
+            AlgorithmIdentifier pAlg, DEROctetString senderKID)
+            throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
+        return genCertReq(issuerDN, userDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com,directoryName=CN=foobar\\,C=SE", keys, null, null, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno, pAlg, senderKID, false);
+    }
+    
     public static PKIMessage genCertReqAssertNotNull(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno, 
             AlgorithmIdentifier pAlg, DEROctetString senderKID)
