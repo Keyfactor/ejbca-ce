@@ -197,103 +197,59 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     public String getRoleName() {
         return this.getClass().getSimpleName();
     }
-
+    
     @Test
     public void test01CrmfHttpOkUser() throws Exception {
-        try {
-            byte[] nonce = CmpMessageHelper.createSenderNonce();
-            byte[] transid = CmpMessageHelper.createSenderNonce();
 
-            // We should be able to back date the start time when allow validity
-            // override is enabled in the certificate profile
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_WEEK, -1);
-            cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
-            // in validity
-            Date notBefore = cal.getTime();
-            cal.add(Calendar.DAY_OF_WEEK, 3);
-            cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
-            // in validity
-            Date notAfter = cal.getTime();
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
 
-            // In this we also test validity override using notBefore and notAfter
-            // from above
-            // In this test userDN contains special, escaped characters to verify
-            // that that works with CMP RA as well
-            PKIMessage one = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
-            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
-            assertNotNull(req);
-            
-            CertReqMessages ir = (CertReqMessages) req.getBody().getContent(); 
-            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            ByteArrayOutputStream bao = new ByteArrayOutputStream();
-            DEROutputStream out = new DEROutputStream(bao);
-            out.writeObject(req);
-            byte[] ba = bao.toByteArray();
-            // Wait 1 ms so the notBefore time of the CA becomes different from the current time, so we can check that validity override works
-            try { Thread.sleep(1); }
-            catch (InterruptedException ie) { throw new IllegalStateException(ie); }
-            // Send request and receive response
-            byte[] resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
-            // Check that validity override works
-            assertTrue(cert.getNotBefore().equals(cacert.getNotBefore())); // not before is limited by the CA not before date in this case
-            assertTrue(cert.getNotAfter().equals(notAfter));
-            String altNames = CertTools.getSubjectAlternativeName(cert);
-            assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
-            assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
+        // We should be able to back date the start time when allow validity
+        // override is enabled in the certificate profile
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_WEEK, -1);
+        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+        // in validity
+        Date notBefore = cal.getTime();
+        cal.add(Calendar.DAY_OF_WEEK, 3);
+        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+        // in validity
+        Date notAfter = cal.getTime();
 
-            // Send a confirm message to the CA
-            String hash = "foo123";
-            PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId);
-            assertNotNull(confirm);
-            PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
-            bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
-            out.writeObject(req1);
-            ba = bao.toByteArray();
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
-
-            // Now revoke the bastard including the CMPv2 reason code extension!
-            PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), this.cacert, nonce, transid, false, null, null);
-            PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
-            assertNotNull(revReq);
-            bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
-            out.writeObject(revReq);
-            ba = bao.toByteArray();
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, true);
-            int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
-            assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-
-            // Create a revocation request for a non existing cert, should fail (revocation response with status failure)!
-            rev = genRevReq(issuerDN, userDN, new BigInteger("1"), this.cacert, nonce, transid, true, null, null);
-            revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
-            assertNotNull(revReq);
-            bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
-            out.writeObject(revReq);
-            ba = bao.toByteArray();
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200, ALIAS);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, false);
-        } finally {
-            try {
-                this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
-            } catch (NoSuchEndEntityException e) {
-                // NOPMD: ignore
-            }
-        }
+        // In this we also test validity override using notBefore and notAfter
+        // from above
+        // In this test userDN contains special, escaped characters to verify
+        // that that works with CMP RA as well
+        final PKIMessage certRequest = genCertReq(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
+        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, false);
     }
 
+    @Test
+    public void test01CrmfHttpOkUserWithSAN() throws Exception {
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        // We should be able to back date the start time when allow validity
+        // override is enabled in the certificate profile
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_WEEK, -1);
+        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+        // in validity
+        Date notBefore = cal.getTime();
+        cal.add(Calendar.DAY_OF_WEEK, 3);
+        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+        // in validity
+        Date notAfter = cal.getTime();
+
+        // In this we also test validity override using notBefore and notAfter
+        // from above
+        // In this test userDN contains special, escaped characters to verify
+        // that that works with CMP RA as well
+        final PKIMessage certRequest = genCertReqWithSAN(issuerDN, userDN, this.keys, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null,
+                null);
+        runCrmfHttpOkUser(certRequest, nonce, transid, notAfter, true);
+    }
+    
     /** Tests a revocation without revocation reasons and without KeyId */
     @Test
     public void test01CrmfHttpOkUser2NoRevocationReason() throws Exception {
@@ -671,4 +627,90 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         }
         return approvedRevocations;
     } // approveRevocation
+    
+    private void runCrmfHttpOkUser(final PKIMessage one, final byte[] nonce, final byte[] transid, final Date notAfter, final boolean SANTest) throws Exception {
+        try {
+            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+            assertNotNull(req);
+
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Wait 1 ms so the notBefore time of the CA becomes different from the current time, so we can check that validity override works
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException ie) {
+                throw new IllegalStateException(ie);
+            }
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            X509Certificate cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+            // Check that validity override works
+            assertTrue(cert.getNotBefore().equals(cacert.getNotBefore())); // not before is limited by the CA not before date in this case
+            assertTrue(cert.getNotAfter().equals(notAfter));
+            String altNames = CertTools.getSubjectAlternativeName(cert);
+
+            assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
+            assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
+            if (SANTest) {
+                assertTrue(altNames.indexOf("directoryName=c=SE\\,cn=foobar") != -1);
+            }
+
+            // Send a confirm message to the CA
+            String hash = "foo123";
+            PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId);
+            assertNotNull(confirm);
+            PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(req1);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
+
+            // Now revoke the bastard including the CMPv2 reason code extension!
+            PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), this.cacert, nonce, transid, false, null, null);
+            PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
+            assertNotNull(revReq);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(revReq);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, true);
+            int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
+            assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+
+            // Create a revocation request for a non existing cert, should fail (revocation response with status failure)!
+            rev = genRevReq(issuerDN, userDN, new BigInteger("1"), this.cacert, nonce, transid, true, null, null);
+            revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
+            assertNotNull(revReq);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(revReq);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200, ALIAS);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD,
+                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, false);
+        } finally {
+            try {
+                this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
+            } catch (NoSuchEndEntityException e) {
+                // NOPMD: ignore
+            }
+        }
+    }
 }
