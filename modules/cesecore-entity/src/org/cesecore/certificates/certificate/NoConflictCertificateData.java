@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.persistence.ColumnResult;
@@ -85,7 +86,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     private String subjectKeyId;
     private int rowVersion = 0;
     private String rowProtection;
-    
+    private LinkedHashMap<String, Object> metadata;
     
     /**
      * Copy Constructor
@@ -113,6 +114,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         setTag(copy.getTag());
         setRowVersion(copy.getRowVersion());
         setRowProtection(copy.getRowProtection());
+        setMetadata(copy.getMetadata());
     }
 
     public NoConflictCertificateData() {
@@ -489,6 +491,14 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         this.rowVersion = rowVersion;
     }
     
+    public LinkedHashMap<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(LinkedHashMap<String, Object> metadata) {
+        this.metadata = metadata;
+    }
+
     @Override
     public String getRowProtection() {
         return this.getZzzRowProtection();

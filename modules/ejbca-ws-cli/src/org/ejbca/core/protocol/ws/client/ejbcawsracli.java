@@ -32,13 +32,17 @@ public class ejbcawsracli  {
      */
     public static void main(String[] args) {
         try {
+            
+            // testing code. TODO remove later
+            System.out.println("testing testing 1"); // yes reached here! :)
+            
             IAdminCommand cmd = EJBCAWSRACommandFactory.getCommand(args);
 
             if (cmd != null) {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | " +
+                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | revokecertwithmetadata" +
                     "getpublisherqueuelength | revoketoken | revokeuser | checkrevocationstatus | generatenewuser | " +
                     "createcrl | cacertrequest | cacertresponse | customlog | getprofile | createcryptotoken | " + 
                     "generatectkeys | createca | importcacert | updatecacert | addadmintorole | removeadminfromrole | getexpiredcerts | " +

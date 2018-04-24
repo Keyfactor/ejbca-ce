@@ -138,6 +138,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -1373,19 +1374,28 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 	}
 
-	private void revokeCert(final String issuerDN, final String certificateSN, final int reason, Date date, IPatternLogger logger) throws CADoesntExistsException, AuthorizationDeniedException,
-			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException {
+	private void revokeCert(CertRevocationDto certRevocationDto, IPatternLogger logger) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, 
+	        ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException {
+	    
 		if (log.isDebugEnabled()) {
-			log.debug("Revoke cert with serial number '"+certificateSN+"' from issuer '"+issuerDN+"' with reason '"+reason+"'.");
+			log.debug("Revoke cert with serial number '" + certRevocationDto.getCertificateSN() + 
+			        "' from issuer '" + certRevocationDto.getIssuerDN() + 
+			        "' with reason '" + certRevocationDto.getReason() + "'.");
 		}
+		
 		try {
 			final AuthenticationToken admin = getAdmin();
-			logAdminName(admin,logger);
-			final BigInteger serno = new BigInteger(certificateSN, 16);
+			logAdminName(admin, logger);
+			final BigInteger serno = new BigInteger(certRevocationDto.getCertificateSN(), 16);
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
 			// The method over RA Master API will also check if the CA (issuer DN) is something we handle and throw a CADoesntExistsException if not
-			raMasterApiProxyBean.revokeCert(admin, serno, date, issuerDN, reason, true);
+			certRevocationDto.setCheckDate(true);
+			raMasterApiProxyBean.revokeCert(admin, serno, 
+			        certRevocationDto.getRevocationDate(), 
+			        certRevocationDto.getIssuerDN(), 
+			        certRevocationDto.getReason(), 
+			        certRevocationDto.isCheckDate());
 		} catch (NoSuchEndEntityException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (RuntimeException e) {	// EJBException, ClassCastException, ...
@@ -1398,11 +1408,9 @@ public class EjbcaWS implements IEjbcaWS {
 	CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
 		final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
-			try {
-				revokeCert( issuerDN, certificateSN, reason, (Date)null, logger);
-			} catch (RevokeBackDateNotAllowedForProfileException e) {
-				throw new Error("This is should not happen since there is no back dating.",e);
-			}
+		    CertRevocationDto certRevocationDto = new CertRevocationDto(issuerDN, certificateSN, reason);
+            
+            revokeCert(certRevocationDto, logger);
 		} finally {
 			logger.writeln();
 			logger.flush();
@@ -1412,29 +1420,60 @@ public class EjbcaWS implements IEjbcaWS {
 	@Override
 	public void revokeCertBackdated(final String issuerDN, final String certificateSN, final int reason, String sDate) throws CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException {
+	    
 		final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
-			if ( sDate==null ) {
-				revokeCert(issuerDN, certificateSN, reason);
-				return;
-			}
-			final Date date;
-			try {
-				date = DatatypeConverter.parseDateTime(sDate).getTime();
-			} catch (IllegalArgumentException e) {
-				throw new DateNotValidException( intres.getLocalizedMessage("ra.bad.date", sDate) );
-			}
-			if ( date.after(new Date()) ) {
-				throw new DateNotValidException("Revocation date in the future: '"+sDate+"'.");
-			}
-			revokeCert(issuerDN, certificateSN, reason, date, logger);
+		    CertRevocationDto certRevocationDto = new CertRevocationDto(issuerDN, certificateSN, reason);
+            
+            final Date date = getValidatedDate(sDate);
+            certRevocationDto.setRevocationDate(date);
+            
+            revokeCert(certRevocationDto, logger);
 		} finally {
 			logger.writeln();
 			logger.flush();
 		}
 	}
 
+	@Override
+    public void revokeCertWithMetadata(final String issuerDN, final String certificateSN, final int reason, String sDate, int certificateProfileId, String metadata) 
+            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, 
+                   WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException 
+	{
+	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
+	    try {
+    	    CertRevocationDto certRevocationDto = new CertRevocationDto(issuerDN, certificateSN, reason);
+    	    
+    	    final Date date = getValidatedDate(sDate);
+    	    certRevocationDto.setRevocationDate(date);
+    	    
+    	    certRevocationDto.setCertificateProfileId(certificateProfileId);
+    	    LinkedHashMap<String, Object> metadataMap = new LinkedHashMap<String, Object>();
+    	    metadataMap.put("TestKey", metadata);
+    	    certRevocationDto.setMetadata(metadataMap);
+    	    
+            revokeCert(certRevocationDto, logger);
+	    } finally {
+            logger.writeln();
+            logger.flush();
+        }
+	}
 
+	private Date getValidatedDate(String sDate) throws DateNotValidException {
+	    Date date = null;
+	    if (sDate != null) {
+            try {
+                date = DatatypeConverter.parseDateTime(sDate).getTime();
+            } catch (IllegalArgumentException e) {
+                throw new DateNotValidException( intres.getLocalizedMessage("ra.bad.date", sDate));
+            }
+            if (date.after(new Date())) {
+                throw new DateNotValidException("Revocation date in the future: '" + sDate + "'.");
+            }
+	    }
+        return date;
+	}
+	
     @Override
 	public void revokeUser(String username, int reason, boolean deleteUser)
 			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
