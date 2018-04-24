@@ -548,13 +548,6 @@ public class JAXWSDocAndConvTools {
 					}
 				}
 			}
-			
-			// debugging debugging. remove later
-			System.out.println("sssssssssssss 1");
-			System.out.println(s);
-			System.out.println("sssssssssssss 2");
-			System.out.println(server.methods.get(s));
-			
 			String jdoc = server.methods.get(s).java_doc;
 			if (jdoc == null) { 
 				bad ("missing javadoc for " + s);
