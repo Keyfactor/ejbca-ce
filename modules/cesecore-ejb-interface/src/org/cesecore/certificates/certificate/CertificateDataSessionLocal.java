@@ -71,35 +71,6 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     /** @return return the query results as a List<String>. */
     List<String> findFingerprintsByIssuerDN(String issuerDN);
     
-    /**
-     * Get next batchSize row ordered by fingerprint
-     *
-     * @param certificateProfileId
-     * @param currentFingerprint
-     * @param batchSize
-     * @return List of certificates
-     */
-    List<CertificateData> getNextBatch(int certificateProfileId, String currentFingerprint, int batchSize);
-    
-    /**
-     * Get next batchSize row ordered by fingerprint
-     *
-     * @param certificateProfileId
-     * @param currentFingerprint
-     * @param batchSize
-     * @return List of certificates
-     */
-    List<CertificateData> getNextBatch(String currentFingerprint, int batchSize);
-
-    /** @return the number of entries with the given parameter */
-    long getCount(int certificateProfileId);
-
-    /** @return the number of entries with the given parameter */
-    long getCount();
-    
-    /** @return return the query results as a List. */
-    List<Integer> getUsedCertificateProfileIds();
-
     /** @return return the query results as a Collection<RevokedCertInfo>. */
     Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, long lastbasecrldate);
     
