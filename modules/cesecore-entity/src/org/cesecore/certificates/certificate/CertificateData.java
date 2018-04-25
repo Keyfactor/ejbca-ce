@@ -13,16 +13,11 @@
 package org.cesecore.certificates.certificate;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
@@ -35,19 +30,14 @@ import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.CompressedCollection;
-import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.StringTools;
-import org.cesecore.util.ValueExtractor;
 
 /**
  * Representation of a certificate and related information.
@@ -812,185 +802,13 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     
     //
-    // Search functions.
+    // Search functions (deprecated, use methods in CertificateDataSession instead)
     //
 
     /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
     @Deprecated
     public static CertificateData findByFingerprint(EntityManager entityManager, String fingerprint) {
         return entityManager.find(CertificateData.class, fingerprint);
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static Set<String> findUsernamesBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
-            final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
-            query.setParameter("subjectDN", subjectDN);
-            query.setParameter("issuerDN", issuerDN);
-            return new HashSet<String>(query.getResultList());
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static List<CertificateData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
-        final TypedQuery<CertificateData> query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN", CertificateData.class);
-        query.setParameter("subjectDN", subjectDN);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static List<CertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
-        final TypedQuery<CertificateData> query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.serialNumber=:serialNumber", CertificateData.class);
-        query.setParameter("serialNumber", serialNumber);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static List<CertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-        final TypedQuery<CertificateData> query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber", CertificateData.class);
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("serialNumber", serialNumber);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static CertificateInfo findFirstCertificateInfo(EntityManager entityManager, String issuerDN, String serialNumber) {
-        CertificateInfo ret = null;
-        final Query query = entityManager
-                .createNativeQuery(
-                        "SELECT a.fingerprint, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.notBefore, a.expireDate, a.revocationDate, a.revocationReason, "
-                                + "a.username, a.tag, a.certificateProfileId, a.endEntityProfileId, a.updateTime, a.subjectKeyId, a.subjectAltName FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber",
-                        "CertificateInfoSubset2");
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("serialNumber", serialNumber);
-        query.setMaxResults(1);
-        @SuppressWarnings("unchecked")
-        final List<Object[]> resultList = query.getResultList();
-        if (!resultList.isEmpty()) {
-            final Object[] fields = resultList.get(0);
-            // The order of the results are defined by the SqlResultSetMapping annotation
-            final String fingerprint = (String) fields[0];
-            final String subjectDN = (String) fields[1];
-            final String cafp = (String) fields[2];
-            final int status = ValueExtractor.extractIntValue(fields[3]);
-            final int type = ValueExtractor.extractIntValue(fields[4]);
-            final Long notBefore;
-            if (fields[5] == null) {
-                notBefore = null;
-            } else {
-                notBefore = ValueExtractor.extractLongValue(fields[5]);
-            }
-            final long expireDate = ValueExtractor.extractLongValue(fields[6]);
-            final long revocationDate = ValueExtractor.extractLongValue(fields[7]);
-            final int revocationReason = ValueExtractor.extractIntValue(fields[8]);
-            final String username = (String) fields[9];
-            final String tag = (String) fields[10];
-            final int certificateProfileId = ValueExtractor.extractIntValue(fields[11]);
-            final Integer endEntityProfileId;
-            if (fields[12] == null) {
-                endEntityProfileId = null;
-            } else {
-                endEntityProfileId = ValueExtractor.extractIntValue(fields[12]);
-            }
-            final long updateTime;
-            if (fields[13] == null) {
-                updateTime = 0; // Might be null in an upgraded installation
-            } else {
-                updateTime = ValueExtractor.extractLongValue(fields[13]);
-            }
-            final String subjectKeyId = (String)fields[14];
-            final String subjectAltName = (String)fields[15];
-            ret = new CertificateInfo(fingerprint, cafp, serialNumber, issuerDN, subjectDN, status, type, notBefore, expireDate, revocationDate,
-                    revocationReason, username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName);
-        }
-        return ret;
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static String findLastUsernameByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-        final Query query = entityManager
-                .createQuery("SELECT a.username FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("serialNumber", serialNumber);
-        // Since no ordering is done this seems a bit strange, but this is what it was like in previous versions..
-        return QueryResultWrapper.getLastResult(query);
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> findByUsernameOrdered(EntityManager entityManager, String username) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username ORDER BY a.expireDate DESC, a.serialNumber DESC");
-        query.setParameter("username", username);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> findByUsernameAndStatus(EntityManager entityManager, String username, int status) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status=:status ORDER BY a.expireDate DESC, a.serialNumber DESC");
-        query.setParameter("username", username);
-        query.setParameter("status", status);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> findByUsernameAndStatusAfterExpireDate(EntityManager entityManager, String username, int status, long afterExpireDate) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status=:status AND a.expireDate>=:afterExpireDate ORDER BY a.expireDate DESC, a.serialNumber DESC");
-        query.setParameter("username", username);
-        query.setParameter("status", status);
-        query.setParameter("afterExpireDate", afterExpireDate);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static Set<String> findUsernamesByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
-        final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("subjectKeyId", subjectKeyId);
-        return new HashSet<String>(query.getResultList());
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static final String findUsernameByIssuerDnAndSerialNumber(EntityManager entityManager, String issuerDn, String serialNumber) {
-        final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
-        query.setParameter("issuerDN", issuerDn);
-        query.setParameter("serialNumber", serialNumber);
-        return (String) query.getSingleResult();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static Set<String> findUsernamesBySubjectKeyIdOrDnAndIssuer(EntityManager entityManager, String issuerDN, String subjectKeyId, String subjectDN) {
-        final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE (a.subjectKeyId=:subjectKeyId OR a.subjectDN=:subjectDN) AND a.issuerDN=:issuerDN");
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("subjectKeyId", subjectKeyId);
-        query.setParameter("subjectDN", subjectDN);
-        return new HashSet<String>(query.getResultList());
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<String> findFingerprintsByIssuerDN(EntityManager entityManager, String issuerDN) {
-        final Query query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN");
-        query.setParameter("issuerDN", issuerDN);
-        return query.getResultList();
     }
 
     /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
@@ -1007,28 +825,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
     @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> getNextBatch(EntityManager entityManager, String currentFingerprint, int batchSize) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint ORDER BY a.fingerprint ASC");
-        query.setParameter("currentFingerprint", currentFingerprint);
-        query.setMaxResults(batchSize);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
     public static long getCount(EntityManager entityManager, int certificateProfileId) {
         final Query countQuery = entityManager
                 .createQuery("SELECT COUNT(a) FROM CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
         countQuery.setParameter("certificateProfileId", certificateProfileId);
-        return ((Long) countQuery.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static long getCount(EntityManager entityManager) {
-        final Query countQuery = entityManager.createQuery("SELECT COUNT(a) FROM CertificateData a");
         return ((Long) countQuery.getSingleResult()).longValue(); // Always returns a result
     }
 
@@ -1039,268 +839,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
         final Query query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM CertificateData a ORDER BY a.certificateProfileId");
         return query.getResultList();
     }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static Collection<RevokedCertInfo> getRevokedCertInfos(EntityManager entityManager, String issuerDN, long lastbasecrldate) {
-        Query query;
-        if (lastbasecrldate > 0) {
-            query = entityManager.createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM CertificateData a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)",
-                    "RevokedCertInfoSubset");
-            query.setParameter("issuerDN", issuerDN);
-            query.setParameter("revocationDate", lastbasecrldate);
-            query.setParameter("status1", CertificateConstants.CERT_REVOKED);
-            query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
-            query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
-        } else {
-            query = entityManager.createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM CertificateData a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.status=:status",
-                    "RevokedCertInfoSubset");
-            query.setParameter("issuerDN", issuerDN);
-            query.setParameter("status", CertificateConstants.CERT_REVOKED);
-        }
-        final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
-        query.setMaxResults(maxResults);
-        int firstResult = 0;
-        final CompressedCollection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<RevokedCertInfo>();
-        while (true) {
-            query.setFirstResult(firstResult);
-            @SuppressWarnings("unchecked")
-            final List<Object[]> incompleteCertificateDatas = query.getResultList();
-            if (incompleteCertificateDatas.size()==0) {
-                break;
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Read batch of " + incompleteCertificateDatas.size() + " RevokedCertInfo.");
-            }
-            for (final Object[] current : incompleteCertificateDatas) {
-                // The order of the results are defined by the SqlResultSetMapping annotation
-                final byte[] fingerprint = ((String)current[0]).getBytes();
-                final byte[] serialNumber = new BigInteger((String)current[1]).toByteArray();
-                final long expireDate = ValueExtractor.extractLongValue(current[2]);
-                final long revocationDate = ValueExtractor.extractLongValue(current[3]);
-                int revocationReason = ValueExtractor.extractIntValue(current[4]);
-                if (revocationReason == -1) {
-                    revocationReason = RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
-                }
-                revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
-            }
-            firstResult += maxResults;
-        }
-        revokedCertInfos.closeForWrite();
-        return revokedCertInfos;
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate, int maxNumberOfResults) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2)");
-        query.setParameter("expireDate", expireDate);
-        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
-        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setMaxResults(maxNumberOfResults);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> findByExpireDateAndIssuerWithLimit(EntityManager entityManager, long expireDate, String issuerDN, int maxNumberOfResults) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2) AND issuerDN=:issuerDN");
-        query.setParameter("expireDate", expireDate);
-        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
-        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setParameter("issuerDN", issuerDN);
-        query.setMaxResults(maxNumberOfResults);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<CertificateData> findByExpireDateAndTypeWithLimit(EntityManager entityManager, long expireDate, int certificateType, int maxNumberOfResults) {
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2) AND a.type=:ctype");
-        query.setParameter("expireDate", expireDate);
-        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
-        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setParameter("ctype", certificateType);
-        query.setMaxResults(maxNumberOfResults);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime, int maxResults) {
-        // TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
-        final Query query = entityManager
-                .createQuery("SELECT DISTINCT a.username FROM CertificateData a WHERE a.expireDate>=:minExpireTime AND a.expireDate<:maxExpireTime AND (a.status=:status1 OR a.status=:status2) AND a.username IS NOT NULL");
-        query.setParameter("minExpireTime", minExpireTime);
-        query.setParameter("maxExpireTime", maxExpireTime);
-        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
-        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setMaxResults(maxResults);
-        return query.getResultList();
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static List<Certificate> getCertificateList(List<CertificateData> cdl, EntityManager entityManager) {
-        final List<Certificate> cl = new LinkedList<Certificate>();
-        for ( CertificateData cd : cdl) {
-            final Certificate cert = cd.getCertificate(entityManager);
-            if ( cert==null ) {
-                continue;
-            }
-            cl.add(cert);
-        }
-        return cl;
-    }
-    
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<Certificate> findCertificatesByIssuerDnAndSerialNumbers(EntityManager entityManager, String issuerDN,
-            Collection<BigInteger> serialNumbers) {
-        final StringBuilder sb = new StringBuilder();
-        for(final BigInteger serno : serialNumbers) {
-            sb.append(", '");
-            sb.append(serno.toString());
-            sb.append("'");
-        }
-        // to save the repeating if-statement in the above closure not to add ', ' as the first characters in the StringBuilder we remove the two chars
-        // here :)
-        sb.delete(0, ", ".length());
-        // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
-        // because comparisons are not supported for that type.
-        // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
-        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber IN ("
-                + sb.toString() + ")");
-        query.setParameter("issuerDN", issuerDN);
-        return getCertificateList(query.getResultList(), entityManager);
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static CertificateInfo getCertificateInfo(EntityManager entityManager, String fingerprint) {
-        CertificateInfo ret = null;
-        final Query query = entityManager.createNativeQuery(
-                "SELECT a.issuerDN as issuerDN, a.subjectDN as subjectDN, a.cAFingerprint as cAFingerprint, a.status as status, a.type as type, a.serialNumber as serialNumber, "
-                        + "a.notBefore as notBefore, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason, "
-                        + "a.username as username, a.tag as tag, a.certificateProfileId as certificateProfileId, a.endEntityProfileId as endEntityProfileId, a.updateTime as updateTime, "
-                        + "a.subjectKeyId as subjectKeyId, a.subjectAltName as subjectAltName FROM CertificateData a WHERE a.fingerprint=:fingerprint",
-                "CertificateInfoSubset");
-        query.setParameter("fingerprint", fingerprint);
-        @SuppressWarnings("unchecked")
-        final List<Object[]> resultList = query.getResultList();
-        if (!resultList.isEmpty()) {
-            final Object[] fields = resultList.get(0);
-            // The order of the results are defined by the SqlResultSetMapping annotation
-            final String issuerDN = (String) fields[0];
-            final String subjectDN = (String) fields[1];
-            final String cafp = (String) fields[2];
-            final int status = ValueExtractor.extractIntValue(fields[3]);
-            final int type = ValueExtractor.extractIntValue(fields[4]);
-            final String serno = (String) fields[5];
-            final Long notBefore;
-            if (fields[6] == null) {
-                notBefore = null;
-            } else {
-                notBefore = ValueExtractor.extractLongValue(fields[6]);
-            }
-            final long expireDate = ValueExtractor.extractLongValue(fields[7]);
-            final long revocationDate = ValueExtractor.extractLongValue(fields[8]);
-            final int revocationReason = ValueExtractor.extractIntValue(fields[9]);
-            final String username = (String) fields[10];
-            final String tag = (String) fields[11];
-            final int certificateProfileId = ValueExtractor.extractIntValue(fields[12]);
-            final Integer endEntityProfileId;
-            if (fields[13] == null) {
-                endEntityProfileId = null;
-            } else {
-                endEntityProfileId = ValueExtractor.extractIntValue(fields[13]);
-            }
-            final long updateTime;
-            if (fields[14] == null) {
-                updateTime = 0; // Might be null in an upgraded installation
-            } else {
-                updateTime = ValueExtractor.extractLongValue(fields[14]);
-            }
-            final String subjectKeyId = (String)fields[15];
-            final String subjectAltName = (String)fields[16];
-            ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, notBefore, expireDate, revocationDate, revocationReason,
-                    username, tag, certificateProfileId, endEntityProfileId, updateTime, subjectKeyId, subjectAltName);
-        }
-        return ret;
-    }
-    
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<Certificate> findActiveCertificatesByType(EntityManager entityManager, Collection<Integer> certificateTypes) {
-        // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
-        // because comparisons are not supported for that type.
-        // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes)");
-        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
-        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setParameter("ctypes", certificateTypes);
-        return getCertificateList( query.getResultList(), entityManager );
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<Certificate> findActiveCertificatesByTypeAndIssuer(EntityManager entityManager, final Collection<Integer> certificateTypes, String issuerDN) {
-        // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
-        // because comparisons are not supported for that type.
-        // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
-        final Query query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes) AND a.issuerDN=:issuerDN");
-        query.setParameter("ctypes", certificateTypes);
-        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
-        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setParameter("issuerDN", issuerDN);
-        return getCertificateList(query.getResultList(), entityManager);
-    }
-
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public static List<Object[]> findExpirationInfo(EntityManager entityManager, Collection<String> cas, Collection<Integer> certificateProfiles,
-            long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin) {
-        // We don't select the base64 certificate data here, because it may be a LONG data type which we can't simply select, or we don't want to read all the data.
-        final Query query = entityManager.createNativeQuery("SELECT DISTINCT fingerprint as fingerprint, username as username"
-                + " FROM CertificateData WHERE "
-                + "issuerDN IN (:cas) AND "
-                // If the list of certificate profiles is empty, ignore it as a parameter
-                + (!certificateProfiles.isEmpty() ? "certificateProfileId IN (:certificateProfiles) AND" : "")
-                + "(expireDate>:activeNotifiedExpireDateMin) AND " + "(expireDate<:activeNotifiedExpireDateMax) AND (status=:status1"
-                + " OR status=:status2) AND (expireDate>=:activeExpireDateMin OR " + "status=:status3)", "FingerprintUsernameSubset");
-        query.setParameter("cas", cas);
-        if(!certificateProfiles.isEmpty()) {
-            query.setParameter("certificateProfiles", certificateProfiles);
-        }
-        query.setParameter("activeNotifiedExpireDateMin", activeNotifiedExpireDateMin);
-        query.setParameter("activeNotifiedExpireDateMax", activeNotifiedExpireDateMax);
-        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
-        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
-        query.setParameter("activeExpireDateMin", activeExpireDateMin);
-        query.setParameter("status3", CertificateConstants.CERT_ACTIVE);
-        // How to debug log the SQL query:
-        // log.debug("findExpirationInfo: "+query.unwrap(org.hibernate.Query.class).getQueryString());
-        return query.getResultList();
-    }
-    
-    
     
     //
     // Start Database integrity protection methods
