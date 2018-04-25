@@ -14,11 +14,9 @@ package org.cesecore.certificates.certificate;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -26,7 +24,6 @@ import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -729,38 +726,6 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         base64Cert = inclusionMode ? null : certificateData.base64Cert;
         id = certificateData.id;
     }
-
-    
-    
-    //
-    // Search functions.
-    //
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static List<NoConflictCertificateData> findByFingerprint(EntityManager entityManager, String fingerprint) {
-        final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery("SELECT a FROM NoConflictCertificateData a WHERE a.fingerprint=:fingerprint", NoConflictCertificateData.class);
-        query.setParameter("fingerprint", fingerprint);
-        return query.getResultList();
-    }
-    
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static List<NoConflictCertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
-        final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery("SELECT a FROM NoConflictCertificateData a WHERE a.serialNumber=:serialNumber", NoConflictCertificateData.class);
-        query.setParameter("serialNumber", serialNumber);
-        return query.getResultList();
-    }
-    
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
-    public static List<NoConflictCertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-        String sql = "SELECT a FROM NoConflictCertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber";
-        final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery(sql, NoConflictCertificateData.class);
-        query.setParameter("issuerDN", issuerDN);
-        query.setParameter("serialNumber", serialNumber);
-        return query.getResultList();
-    }
-    
     
 
     //
