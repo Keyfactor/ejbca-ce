@@ -220,51 +220,6 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         return query.getResultList();
     }
 
-    // FIXME not used? can it be removed?
-    @Override
-    public List<CertificateData> getNextBatch(final int certificateProfileId, final String currentFingerprint, final int batchSize) {
-        final TypedQuery<CertificateData> query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint AND a.certificateProfileId=:certificateProfileId ORDER BY a.fingerprint ASC",
-                        CertificateData.class);
-        query.setParameter("certificateProfileId", certificateProfileId);
-        query.setParameter("currentFingerprint", currentFingerprint);
-        query.setMaxResults(batchSize);
-        return query.getResultList();
-    }
-
-    // FIXME not used? can it be removed?
-    @Override
-    public List<CertificateData> getNextBatch(final String currentFingerprint, final int batchSize) {
-        final TypedQuery<CertificateData> query = entityManager
-                .createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint ORDER BY a.fingerprint ASC", CertificateData.class);
-        query.setParameter("currentFingerprint", currentFingerprint);
-        query.setMaxResults(batchSize);
-        return query.getResultList();
-    }
-
-    // FIXME not used? can it be removed?
-    @Override
-    public long getCount(final int certificateProfileId) {
-        final Query countQuery = entityManager
-                .createQuery("SELECT COUNT(a) FROM CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
-        countQuery.setParameter("certificateProfileId", certificateProfileId);
-        return ((Long) countQuery.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    // FIXME not used? can it be removed?
-    @Override
-    public long getCount() {
-        final Query countQuery = entityManager.createQuery("SELECT COUNT(a) FROM CertificateData a");
-        return ((Long) countQuery.getSingleResult()).longValue(); // Always returns a result
-    }
-
-    // FIXME not used? can it be removed?
-    @Override
-    public List<Integer> getUsedCertificateProfileIds() {
-        final TypedQuery<Integer> query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM CertificateData a ORDER BY a.certificateProfileId", Integer.class);
-        return query.getResultList();
-    }
-
     @Override
     public Collection<RevokedCertInfo> getRevokedCertInfos(final String issuerDN, final long lastbasecrldate) {
         Query query;
