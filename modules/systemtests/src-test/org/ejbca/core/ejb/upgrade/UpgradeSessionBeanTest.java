@@ -96,7 +96,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
-import org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.After;
 import org.junit.Before;
@@ -900,6 +899,10 @@ public class UpgradeSessionBeanTest {
             globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
             upgradeSession.upgrade(null, "6.11.0", false);
             
+            // we cant use OcspCtSctListExtension.OCSP_SCTLIST_OID, 
+            // because org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension is not included in Community edition
+            final String OCSP_SCTLIST_OID = "1.3.6.1.4.1.11129.2.4.5";
+            
             // Verify upgraded OcspKeyBinding
             final InternalKeyBindingInfo ocspTestKeyBindingPostUpgrade = internalKeyBindingSession.getInternalKeyBindingInfo(alwaysAllowtoken, internalKeyBindingId);
             assertNotNull("Could not find ocsp key binding after upgrade", ocspTestKeyBindingPostUpgrade);
@@ -907,7 +910,7 @@ public class UpgradeSessionBeanTest {
             assertEquals("Unexpected amount of extensionOids imported from ocsp.properties", 3, ocspKeyExtensionOids.size());
             assertTrue("IKB did not contain Unid extension after upgrade", ocspKeyExtensionOids.contains(OCSPUnidExtension.OCSP_UNID_OID));
             assertTrue("IKB did not contain CertHash extension after upgrade", ocspKeyExtensionOids.contains(OcspCertHashExtension.CERT_HASH_OID));
-            assertTrue("IKB did not contain CtSct extension after upgrade", ocspKeyExtensionOids.contains(OcspCtSctListExtension.OCSP_SCTLIST_OID));
+            assertTrue("IKB did not contain CtSct extension after upgrade", ocspKeyExtensionOids.contains(OCSP_SCTLIST_OID));
         } finally {
             // Delete test key binding and restore previous ocsp.extensionoid value
             internalKeyBindingSession.deleteInternalKeyBinding(alwaysAllowtoken, internalKeyBindingId);

@@ -39,7 +39,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
-import org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -138,8 +137,13 @@ public class OcspExtensionsTest {
      */
     @Test
     public void testRetrieveOcspCtSstListExtension() {
+        
+        // we cant use OcspCtSctListExtension.OCSP_SCTLIST_OID, 
+        // because org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension is not included in Community edition
+        final String OCSP_SCTLIST_OID = "1.3.6.1.4.1.11129.2.4.5";
+        
         Map<String, OCSPExtension> extensions = OcspExtensionsCache.INSTANCE.getExtensions();
-        OCSPExtension ocspCtSstListExtension = extensions.get(OcspCtSctListExtension.OCSP_SCTLIST_OID);
+        OCSPExtension ocspCtSstListExtension = extensions.get(OCSP_SCTLIST_OID);
         assertNotNull("OCSP CtSct extension was not loaded", ocspCtSstListExtension);
     }
 
