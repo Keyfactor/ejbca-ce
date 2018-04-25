@@ -811,8 +811,14 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return entityManager.find(CertificateData.class, fingerprint);
     }
 
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
+    /**
+     * Get next batchSize row ordered by fingerprint. Used by OcspMonitoringTool.
+     *
+     * @param certificateProfileId
+     * @param currentFingerprint
+     * @param batchSize
+     * @return List of certificates
+     */
     @SuppressWarnings("unchecked")
     public static List<CertificateData> getNextBatch(EntityManager entityManager, int certificateProfileId, String currentFingerprint, int batchSize) {
         final Query query = entityManager
@@ -823,8 +829,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return query.getResultList();
     }
 
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
+    /** Returns the number of entries with the given certificate profile. Used by OcspMonitoringTool. */
     public static long getCount(EntityManager entityManager, int certificateProfileId) {
         final Query countQuery = entityManager
                 .createQuery("SELECT COUNT(a) FROM CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
@@ -832,8 +837,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return ((Long) countQuery.getSingleResult()).longValue(); // Always returns a result
     }
 
-    /** @deprecated Since 6.13.0. Use method in CertificateDataSession instead */
-    @Deprecated
+    /** Returns a list of Certificate Profile IDs that are used in certificates. Used by OcspMonitoringTool. */
     @SuppressWarnings("unchecked")
     public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
         final Query query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM CertificateData a ORDER BY a.certificateProfileId");
