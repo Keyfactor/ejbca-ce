@@ -14,7 +14,12 @@ package org.cesecore.certificates.crl;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cesecore.util.CompressedCollection;
 
 /**
  * Holds information about a revoked certificate. The information kept here is the
@@ -155,7 +160,7 @@ public class RevokedCertInfo implements Serializable {
      *    aACompromise(10)
      * }
      * </pre>
-     * @see {@link RevokedCertInfo#REVOCATION_REASON_UNSPECIFIED}
+     * @see #REVOCATION_REASON_UNSPECIFIED
      **/
     public int getReason() {
         return this.reason;
@@ -182,8 +187,19 @@ public class RevokedCertInfo implements Serializable {
     	return isRevoked(reason);
     }
     
+    /**
+     * Returns true if the certificate is permanently revoked (i.e. revoked and not just "on hold")
+     */
+    public boolean isPermanentlyRevoked() {
+        return isPermanentlyRevoked(reason);
+    }
+    
     public static boolean isRevoked(int revocationReason) {
         return revocationReason != NOT_REVOKED && revocationReason != REVOCATION_REASON_REMOVEFROMCRL;
+    }
+    
+    public static boolean isPermanentlyRevoked(int revocationReason) {
+        return isRevoked(revocationReason) && revocationReason != REVOCATION_REASON_CERTIFICATEHOLD;
     }
     
     /**
@@ -200,5 +216,64 @@ public class RevokedCertInfo implements Serializable {
         } else {
             return "unknown";
         }
+    }
+    
+    /**
+     * Merges two collections of RevokedCertInfo. Note that the parameters are slightly different. Duplicates are removed according to these rules:
+     * <ul>
+     * <li>Older permanent status changes win over newer ones
+     * <li>Permanent status changes always win over temporary ones ("on hold" / "re-activate")
+     * <li>More recent temporary status changes win over older ones
+     * </ul>
+     * 
+     * @param a First collection of RevokedCertInfo. May <b>not</b> contain duplicates for the same serial number.
+     * @param b Second collection of RevokedCertInfo. May contain duplicates
+     * @return CompressionCollection of certificates. May simply be a reference to <code>a</code> if <code>b</code> is empty, or a new merged CompressedCollection with any duplicates removed.
+     */
+    public static Collection<RevokedCertInfo> mergeByDateAndStatus(final Collection<RevokedCertInfo> a, final Collection<RevokedCertInfo> b) {
+        // We can optimize this case, but not the reverse, since b can contain duplicates that should be filtered.
+        if (b.isEmpty()) {
+            return a;
+        }
+        // Merge revocation information
+        final Map<BigInteger,RevokedCertInfo> permRevoked = new HashMap<>();
+        final Map<BigInteger,RevokedCertInfo> tempRevoked = new HashMap<>();
+        for (final RevokedCertInfo revoked : a) {
+            final BigInteger serial = revoked.getUserCertificate();
+            if (revoked.isPermanentlyRevoked()) {
+                permRevoked.put(serial, revoked);
+            } else {
+                tempRevoked.put(serial, revoked);
+            }
+        }
+        for (final RevokedCertInfo revoked : b) {
+            final BigInteger serial = revoked.getUserCertificate();
+            final Date revdate = revoked.getRevocationDate();
+            final RevokedCertInfo permDate = permRevoked.get(serial);
+            if (permDate != null) {
+                // Older permanent status changes win over newer ones
+                if (permDate.getRevocationDate().after(revdate) && revoked.isPermanentlyRevoked()) {
+                    permRevoked.put(serial, revoked);
+                    tempRevoked.remove(serial);
+                }
+                continue;
+            }
+            if (revoked.isPermanentlyRevoked()) {
+                // Permanently revoked wins over temporary revoked/re-activated
+                permRevoked.put(serial, revoked);
+                tempRevoked.remove(serial);
+                continue;
+            }
+            final RevokedCertInfo tempDate = tempRevoked.get(serial);
+            // More recent temporary status changes win over older ones 
+            if (tempDate == null || tempDate.getRevocationDate().before(revdate)) {
+                tempRevoked.put(serial, revoked);
+            }
+        }
+        final CompressedCollection<RevokedCertInfo> mergedRevokedData = new CompressedCollection<>();
+        mergedRevokedData.addAll(permRevoked.values());
+        mergedRevokedData.addAll(tempRevoked.values());
+        mergedRevokedData.closeForWrite();
+        return mergedRevokedData;
     }
 }
