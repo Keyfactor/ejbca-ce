@@ -114,6 +114,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String REQUESTCERTCHAIN = "requestcertchain";
     protected static final String EXTENDEDCASERVICES = "extendedcaservices";
     protected static final String EXTENDEDCASERVICE = "extendedcaservice";
+    protected static final String CERTIFICATEDATATOWRITETO = "certificatedatatowriteto";
+
     /**
      * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
      */
@@ -168,6 +170,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(REVOCATIONREASON, Integer.valueOf(-1));
         data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
+        data.put(CERTIFICATEDATATOWRITETO, cainfo.getSelectedCertificateData());
         if (!cainfo.isUseCertificateStorage()) {
             data.put(DEFAULTCERTIFICATEPROFILEID, Integer.valueOf(cainfo.getDefaultCertificateProfileId()));
         }
@@ -886,6 +889,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
         data.put(VALIDATORS, cainfo.getValidators());
         data.put(APPROVALS, cainfo.getApprovals());
+        data.put(CERTIFICATEDATATOWRITETO, cainfo.getSelectedCertificateData());
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
         }

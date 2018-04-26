@@ -26,6 +26,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
+import org.cesecore.util.MapTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 
@@ -90,6 +91,9 @@ public abstract class CAInfo implements Serializable {
     protected boolean keepExpiredCertsOnCRL = false;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
+    protected static final Map<String, String> certificateDataList = MapTools.unmodifiableMap("CertificateData", "Normal certificate table", "NoConflictCertificateData", "No conflict certificate table");
+    protected String selectedCertificateData = "CertificateData"; // Default is normal certificate data table.
+    
     /**
      * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
      */
@@ -126,6 +130,21 @@ public abstract class CAInfo implements Serializable {
 
     public void setSubjectDN(final String subjectdn) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
+    }
+    
+    public static Map<String, String> getCertificateDataMap() {
+        return certificateDataList;
+    }
+    
+    public String getSelectedCertificateData() {
+        return selectedCertificateData;
+    }
+    
+    public void setSelectedCertificateData(final String certificateData) {
+        if (!certificateDataList.containsValue(certificateData)) {
+            throw new IllegalArgumentException("Certificate data " + certificateData + " is not valid.");
+        }
+        selectedCertificateData = certificateData;
     }
 
     public int getCAId() {

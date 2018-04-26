@@ -199,6 +199,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String EXTERNALCDP = "externalcdp";
     protected static final String NAMECHANGED = "namechanged";
 
+
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
     // Public Methods
@@ -256,7 +257,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
         
-        final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getDefaultCertificateProfileId(), getEncodedValidity(),
+        final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getDefaultCertificateProfileId(), getcertificateDataToWriteTo(), getEncodedValidity(),
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getValidators(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
@@ -276,6 +277,10 @@ public class X509CA extends CA implements Serializable {
         info.setApprovalSettings(getApprovalSettings());
         super.setCAInfo(info);
         setCAId(caId);
+    }
+
+    private String getcertificateDataToWriteTo() {
+        return (String) data.get(CERTIFICATEDATATOWRITETO);
     }
 
     // Public Methods.

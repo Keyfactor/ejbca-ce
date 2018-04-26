@@ -1,7 +1,7 @@
 <%@page import="org.cesecore.keys.token.CryptoTokenFactory"%>
 <%@page import="org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo"%>
 <%@page import="org.apache.commons.lang.StringUtils"%>
-<%@ page import="org.ejbca.util.HTMLTools" %>
+<%@page import="org.ejbca.util.HTMLTools" %>
 
 <%               
   TreeMap<String,Integer> rootcaprofiles = ejbcawebbean.getAuthorizedRootCACertificateProfileNames();
@@ -198,6 +198,18 @@ function selectDefaultCertificateProfile(){
 	}
 }
 
+function selectCertificateDataToWriteTo(){
+    <% if (catype == CAInfo.CATYPE_CVC) { %>
+		document.ca.<%=SELECT_CERTDBTOWRITETO%>.disabled = true;
+    <% } else { %>
+	if (document.ca.<%=CHECKBOX_USECERTIFICATESTORAGE%>.checked) {
+		document.ca.<%=SELECT_CERTDBTOWRITETO%>.disabled = true;
+	} else {
+		document.ca.<%=SELECT_CERTDBTOWRITETO%>.disabled = false;
+	}
+	<% } %>
+}
+
 function checkAcceptNonExistingEntries(){
 	if (document.ca.<%=CHECKBOX_USECERTIFICATESTORAGE%>.checked) {
 		document.ca.<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>.disabled = true;
@@ -278,7 +290,6 @@ function checkusefield(usefield, criticalfield){
     cribox.disabled = true;
   }
 }
-
 
 function checkallfields(){
     var illegalfields = 0;
@@ -893,7 +904,7 @@ function toggleCANameChange(){
         <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_Certificate_Storage") %> <br />
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" onclick="selectDefaultCertificateProfile();checkAcceptNonExistingEntries();"
+        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" onclick="selectDefaultCertificateProfile();checkAcceptNonExistingEntries();selectCertificateDataToWriteTo();"
             <% if(editca) {
             	  if (cainfo.isUseCertificateStorage()) out.write("CHECKED"); // edit CA
                } else {
@@ -933,6 +944,22 @@ function toggleCANameChange(){
                      id="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>" <%= (!hasEditRights || !editca || cainfo.isUseCertificateStorage() ? "disabled" : "") %>>
               <label for="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>"><c:out value="<%= ejbcawebbean.getText(\"ACCEPT\") %>" /></label>
           </td>
+      </tr>
+      
+      
+     <tr id="Row<%=row++%2%>">
+        <td width="50%" align="right"><%= ejbcawebbean.getText("CERTIFICATEDATATABLETOWRITETO")%></td>
+        <td>
+          <select name="<%=SELECT_CERTDBTOWRITETO %>" size="1" <%= (!hasEditRights || !editca || cainfo.isUseCertificateStorage() || (cainfo.getCAType() == CAInfo.CATYPE_CVC)  ? "disabled" : "") %> >
+          <% Map<String, String> certificateDataMap  = cainfo.getCertificateDataMap(); 
+             for (final Map.Entry<String, String> certificateData : certificateDataMap.entrySet()) { %>
+             	<option value="<c:out value="<%= certificateData.getValue() %>"/>"
+	                   <% if(editca && certificateData.getValue().equals(cainfo.getSelectedCertificateData())) { %> selected <%}%>
+             	><c:out value="<%= certificateData.getValue() %>"/>
+             	</option>
+           <% } %>  
+          </select>
+        </td>
       </tr>
 
     <% } %>
