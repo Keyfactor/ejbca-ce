@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -21,8 +23,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.ValidityDate;
 
 /**
  * Low level CRUD functions to access NoConflictCertificateData 
@@ -37,6 +42,16 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
+    
+    @Override
+    protected String getTableName() {
+        return "NoConflictCertificateData";
+    }
+    
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
+    }
     
     //
     // Search functions.
@@ -74,6 +89,14 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
             log.trace("findByIssuerDNSerialNumber(" + issuerDN + ", " + serialNumber + ") yielded " + result.size() + " results.");
         }
         return result;
+    }
+    
+    @Override
+    public Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(final String issuerDN, final long lastbasecrldate) {
+        if (log.isDebugEnabled()) {
+            log.debug("Quering for revoked certificates in append-only table. IssuerDN: '" + issuerDN + "', Last Base CRL Date: " +  FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastbasecrldate));
+        }
+        return getRevokedCertInfosInternal(issuerDN, lastbasecrldate);
     }
     
 }
