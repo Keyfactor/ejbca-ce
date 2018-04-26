@@ -12,9 +12,12 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Local;
+
+import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
  * Local interface for NoConflictCertificateDataSession.
@@ -31,5 +34,11 @@ public interface NoConflictCertificateDataSessionLocal extends NoConflictCertifi
 
     /** @return return the query results as a List. */
     List<NoConflictCertificateData> findByIssuerDNSerialNumber(String issuerDN, String serialNumber);
+
+    /**
+     * Returns a list with information about revoked certificates. Since the NoConflictCertificateData table is append-only, the result
+     * may contain duplicate entries, that should be filtered by date and revocation status.
+     */
+    Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(String issuerDN, long lastbasecrldate);
     
 }

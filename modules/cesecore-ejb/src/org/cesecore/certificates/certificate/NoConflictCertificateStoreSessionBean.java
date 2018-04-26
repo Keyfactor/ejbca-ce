@@ -167,12 +167,9 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo()");
         }
-        final Collection<RevokedCertInfo> revokedFromCertData = certificateStoreSession.listRevokedCertInfo(issuerdn, lastbasecrldate);
-        // XXX the method below is a bit complex. factor out to base class?
-        //return CertificateData.getRevokedCertInfos(entityManager, CertTools.stringToBCDNString(StringTools.strip(issuerdn)), lastbasecrldate);
-        // Merge revokedFromCertData and revokedFromNoConflictCertData
-        // TODO
-        return revokedFromCertData;
+        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerdn, lastbasecrldate);
+        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerdn, lastbasecrldate);
+        return RevokedCertInfo.mergeByDateAndStatus(revokedInCertData, revokedInNoConflictData);
     }
     
     /**

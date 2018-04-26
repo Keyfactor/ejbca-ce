@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -28,11 +29,12 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.CompressedCollection;
 import org.cesecore.util.QueryResultWrapper;
+import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ValueExtractor;
 
 /**
@@ -44,10 +46,20 @@ import org.cesecore.util.ValueExtractor;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateDataSessionBean extends BaseCertificateDataSessionBean implements CertificateDataSessionLocal {
 
-    private final static Logger log = Logger.getLogger(CertificateDataSessionBean.class);
+    private static final Logger log = Logger.getLogger(CertificateDataSessionBean.class);
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
+    
+    @Override
+    protected String getTableName() {
+        return "CertificateData";
+    }
+    
+    @Override
+    protected EntityManager getEntityManager() {
+        return entityManager;
+    }
     
     //
     // Search functions.
@@ -222,55 +234,10 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
 
     @Override
     public Collection<RevokedCertInfo> getRevokedCertInfos(final String issuerDN, final long lastbasecrldate) {
-        Query query;
-        if (lastbasecrldate > 0) {
-            query = entityManager.createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM CertificateData a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)",
-                    "RevokedCertInfoSubset");
-            query.setParameter("issuerDN", issuerDN);
-            query.setParameter("revocationDate", lastbasecrldate);
-            query.setParameter("status1", CertificateConstants.CERT_REVOKED);
-            query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
-            query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
-        } else {
-            query = entityManager.createNativeQuery(
-                    "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM CertificateData a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.status=:status",
-                    "RevokedCertInfoSubset");
-            query.setParameter("issuerDN", issuerDN);
-            query.setParameter("status", CertificateConstants.CERT_REVOKED);
+        if (log.isDebugEnabled()) {
+            log.debug("Quering for revoked certificates. IssuerDN: '" + issuerDN + "', Last Base CRL Date: " + FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(lastbasecrldate));
         }
-        final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
-        query.setMaxResults(maxResults);
-        int firstResult = 0;
-        final CompressedCollection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<>();
-        while (true) {
-            query.setFirstResult(firstResult);
-            @SuppressWarnings("unchecked")
-            final List<Object[]> incompleteCertificateDatas = query.getResultList();
-            if (incompleteCertificateDatas.size()==0) {
-                break;
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Read batch of " + incompleteCertificateDatas.size() + " RevokedCertInfo.");
-            }
-            for (final Object[] current : incompleteCertificateDatas) {
-                // The order of the results are defined by the SqlResultSetMapping annotation
-                final byte[] fingerprint = ((String)current[0]).getBytes();
-                final byte[] serialNumber = new BigInteger((String)current[1]).toByteArray();
-                final long expireDate = ValueExtractor.extractLongValue(current[2]);
-                final long revocationDate = ValueExtractor.extractLongValue(current[3]);
-                int revocationReason = ValueExtractor.extractIntValue(current[4]);
-                if (revocationReason == -1) {
-                    revocationReason = RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
-                }
-                revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
-            }
-            firstResult += maxResults;
-        }
-        revokedCertInfos.closeForWrite();
-        return revokedCertInfos;
+        return getRevokedCertInfosInternal(issuerDN, lastbasecrldate);
     }
 
     @Override
