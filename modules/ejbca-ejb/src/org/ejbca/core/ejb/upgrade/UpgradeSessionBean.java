@@ -1371,7 +1371,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             List<String> currentExtensions = ikbToEdit.getOcspExtensions();
             for (String extension : ocspExtensionOids) {
                 if (!currentExtensions.contains(extension)) {
-                    currentExtensions.add(extension);
+                    currentExtensions.add(extension.replaceAll("\\*", ""));
                 }
             }
             ikbToEdit.setOcspExtensions(currentExtensions);
