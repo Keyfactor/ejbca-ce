@@ -132,41 +132,12 @@ public interface CertificateStoreSession {
      * status "active" or "notifiedaboutexpiration".
      * @param expireTime The time by which the certificates will be expired
      * @param issuerDN The SubjectDN of the CA that issued the certificates that will expire within the given time
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @return List of maximum 500 certificates (java.security.cert.Certificate), never null
-     */
-    // FIXME not used? can it be removed?
-    List<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN);
-    
-    /**
-     * Finds certificates  expiring within a specified time, issued by a specified issuer and have
-     * status "active" or "notifiedaboutexpiration".
-     * @param expireTime The time by which the certificates will be expired
-     * @param issuerDN The SubjectDN of the CA that issued the certificates that will expire within the given time
      * @param maxNumberOfResults The maximum number of certificates to be returned
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
      * @return List of certificates (java.security.cert.Certificate), never null
      */
     List<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN, int maxNumberOfResults);
-        
-    /**
-     * Finds certificates  expiring within a specified time, of a specified type and have
-     * status "active" or "notifiedaboutexpiration".
-     * @param expireTime The time by which the certificates will be expired
-     * @param certificateType The type of the certificates that will expire within the given time
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_UNKNOWN
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ENDENTITY
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_SUBCA
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_ROOTCA
-     * @see org.cesecore.certificates.certificate.CertificateConstants#CERTTYPE_HARDTOKEN
-     * @return List of maximum 500 certificates, never null
-     */
-    // FIXME not used? can it be removed?
-    List<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType);
     
    /** 
     * Finds certificates  expiring within a specified time, of a specified type and have
@@ -215,7 +186,6 @@ public interface CertificateStoreSession {
      * @param subjectKeyId subject key ID of the sought certificate
      * @return the list Certificates if found, or an empty list (never null)
      */
-    // FIXME not used? can it be removed?
     Collection<Certificate> findCertificatesBySubjectKeyId(byte[] subjectKeyId);
     
     /**

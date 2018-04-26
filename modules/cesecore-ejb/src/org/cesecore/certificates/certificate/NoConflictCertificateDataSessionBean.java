@@ -29,11 +29,11 @@ import org.cesecore.config.CesecoreConfiguration;
  *  
  * @version $Id$
  */
-@Stateless //(mappedName = JndiConstants.APP_JNDI_PREFIX + "NoConfliictCertificateDataSessionRemote")
+@Stateless // Local only bean, no remote interface
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSessionBean implements NoConflictCertificateDataSessionLocal {
 
-//    private final static Logger log = Logger.getLogger(NoConflictCertificateDataSessionBean.class);
+    private final static Logger log = Logger.getLogger(NoConflictCertificateDataSessionBean.class);
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -45,14 +45,22 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
     public List<NoConflictCertificateData> findByFingerprint(final String fingerprint) {
         final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery("SELECT a FROM NoConflictCertificateData a WHERE a.fingerprint=:fingerprint", NoConflictCertificateData.class);
         query.setParameter("fingerprint", fingerprint);
-        return query.getResultList();
+        final List<NoConflictCertificateData> result = query.getResultList();
+        if (log.isTraceEnabled()) {
+            log.trace("findByFingerprint(" + fingerprint + ") yielded " + result.size() + " results.");
+        }
+        return result;
     }
     
     @Override
     public List<NoConflictCertificateData> findBySerialNumber(final String serialNumber) {
         final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery("SELECT a FROM NoConflictCertificateData a WHERE a.serialNumber=:serialNumber", NoConflictCertificateData.class);
         query.setParameter("serialNumber", serialNumber);
-        return query.getResultList();
+        final List<NoConflictCertificateData> result = query.getResultList();
+        if (log.isTraceEnabled()) {
+            log.trace("findBySerialNumber(" + serialNumber + ") yielded " + result.size() + " results.");
+        }
+        return result;
     }
     
     @Override
@@ -61,7 +69,11 @@ public class NoConflictCertificateDataSessionBean extends BaseCertificateDataSes
         final TypedQuery<NoConflictCertificateData> query = entityManager.createQuery(sql, NoConflictCertificateData.class);
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("serialNumber", serialNumber);
-        return query.getResultList();
+        final List<NoConflictCertificateData> result = query.getResultList();
+        if (log.isTraceEnabled()) {
+            log.trace("findByIssuerDNSerialNumber(" + issuerDN + ", " + serialNumber + ") yielded " + result.size() + " results.");
+        }
+        return result;
     }
     
 }
