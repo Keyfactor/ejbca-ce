@@ -132,7 +132,8 @@ public class CVCCAInfo extends CAInfo {
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, boolean _acceptRevocationNonExistingEntry,
-			int defaultCertprofileId) {
+			int defaultCertprofileId,
+			String certificateDataToWriteTo) {
 		this.caid = caid;
 		setEncodedValidity(encodedValidity);
 		this.catoken = catoken;
@@ -155,5 +156,6 @@ public class CVCCAInfo extends CAInfo {
         this.useCertificateStorage = _useCertificateStorage;
         this.acceptRevocationNonExistingEntry = _acceptRevocationNonExistingEntry;
         this.defaultCertificateProfileId = defaultCertprofileId;
+        this.selectedCertificateData = certificateDataToWriteTo;
 	}
 }

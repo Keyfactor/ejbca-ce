@@ -75,6 +75,7 @@ public class X509CAInfo extends CAInfo {
              "", // Subject Alternative name
              certificateProfileId, // CA certificate profile
                 0, // default ca profile
+             "CertificateData", // default certificate data table   
              encodedValidity, null, // Expiretime
              CAInfo.CATYPE_X509, // CA type (X509/CVC)
              signedby, // Signed by CA
@@ -180,7 +181,7 @@ public class X509CAInfo extends CAInfo {
      * @param keepExpiredCertsOnCRL
      */
     public X509CAInfo(final String subjectdn, final String name, final int status, final Date updateTime, final String subjectaltname,
-            final int certificateprofileid, final int defaultCertprofileId, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
+            final int certificateprofileid, final int defaultCertprofileId, final String certificateDataToWriteTo, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
             final Collection<Certificate> certificatechain, final CAToken catoken,
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
@@ -265,6 +266,7 @@ public class X509CAInfo extends CAInfo {
         this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
+        this.selectedCertificateData = certificateDataToWriteTo;
     }
 
     /** Constructor that should be used when updating CA data. */
@@ -281,7 +283,7 @@ public class X509CAInfo extends CAInfo {
             final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName,
             final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, final boolean _useUserStorage,
             final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL,
-            final int defaultCertprofileId) {
+            final int defaultCertprofileId, final String certificateDataToWriteTo) {
         this.caid = caid;
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
@@ -323,6 +325,7 @@ public class X509CAInfo extends CAInfo {
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
         this.defaultCertificateProfileId = defaultCertprofileId;
+        this.selectedCertificateData = certificateDataToWriteTo;
     }
 
   public List<CertificatePolicy> getPolicies() {
