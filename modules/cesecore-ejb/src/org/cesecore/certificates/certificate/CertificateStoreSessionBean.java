@@ -1088,7 +1088,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (returnVal) {
             // Persist changes
             if (certificateData instanceof NoConflictCertificateData) {
-                entityManager.persist(certificateData);
+                entityManager.persist(certificateData); // Ensure append-only operation
             } else {
                 entityManager.merge(certificateData);
             }
