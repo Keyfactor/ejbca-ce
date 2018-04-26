@@ -39,10 +39,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
+ * In this test case all possible fields of ENDUSER End Entity with End Entity Profile
+ * 'OnHold' are filled in to verify that they work.
+ *
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQ60_EEPOnHold extends WebTestBase {
+public class EcaQa60_EEPOnHold extends WebTestBase {
 
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
 
