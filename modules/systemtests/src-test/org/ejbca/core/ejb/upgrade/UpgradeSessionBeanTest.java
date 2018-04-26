@@ -888,7 +888,7 @@ public class UpgradeSessionBeanTest {
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         List<String> ocspExtensionBackup = OcspConfiguration.getExtensionOids();
         // Set OCSP extensions in conf file (OcspUnid, OcspCertHash, OcspCtSct -extension)
-        cesecoreConfigSession.setConfigurationValue("ocsp.extensionoid", "2.16.578.1.16.3.2;1.3.36.8.3.13;1.3.6.1.4.1.11129.2.4.5");
+        cesecoreConfigSession.setConfigurationValue("ocsp.extensionoid", "*2.16.578.1.16.3.2;1.3.36.8.3.13;1.3.6.1.4.1.11129.2.4.5");
         // Create test key binding and persist it
         final int cryptoTokenId = cryptoTokenManagementSession.getCryptoTokenIds(alwaysAllowtoken).get(0);
         final int internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(alwaysAllowtoken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
