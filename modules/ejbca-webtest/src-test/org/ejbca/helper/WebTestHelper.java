@@ -16,9 +16,13 @@ package org.ejbca.helper;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * Helper class containing miscellaneous operations for EJBCA Web Tests.
@@ -57,5 +61,26 @@ public final class WebTestHelper {
             alertExists = false;
         }
         assertTrue("Expected an alert but there was none", alertExists);
+    }
+
+    /**
+     * Selects options by name in a Select element.
+     * 
+     * @param select the Select element
+     * @param options the options to be selected (strings with the visible names) 
+     */
+    public static void selectOptions(Select select, List<String> options) {
+        select.deselectAll();
+        for (String option : options) {
+            select.selectByVisibleText(option);
+            // Assert that there is a selected option with the name
+            boolean isSelected = false;
+            for (WebElement selected : select.getAllSelectedOptions()) {
+                if (selected.getText().equals(option)) {
+                    isSelected = true;
+                }
+            }
+            assertTrue("The option " + option + " was not found", isSelected);
+        }
     }
 }
