@@ -203,50 +203,26 @@ public class CertificateData extends BaseCertificateData implements Serializable
         
     }
     
-    /**
-     * Fingerprint of certificate
-     *
-     * @return fingerprint
-     */
     @Override
     public String getFingerprint() {
         return fingerprint;
     }
 
-    /**
-     * Fingerprint of certificate
-     *
-     * @param fingerprint fingerprint
-     */
+    @Override
     public void setFingerprint(String fingerprint) {
         this.fingerprint = fingerprint;
     }
 
-    /**
-     * DN of issuer of certificate
-     *
-     * @return issuer dn
-     */
     @Override
     public String getIssuerDN() {
         return issuerDN;
     }
 
-    /**
-     * Use setIssuer instead
-     *
-     * @param issuerDN issuer dn
-     * @see #setIssuer(String)
-     */
+    @Override
     public void setIssuerDN(String issuerDN) {
         this.issuerDN = issuerDN;
     }
 
-    /**
-     * Use getSubjectDnNeverNull() for consistent access, since Oracle will treat empty Strings as NULL.
-     *
-     * @return value as it is stored in the database
-     */
     @Override
     public String getSubjectDN() {
         return subjectDN;
@@ -269,11 +245,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return subjectAltName == null ? "" : subjectAltName;
     }
 
-    /**
-     * Use getSubjectAltNameNeverNull() for consistent access, since Oracle will treat empty Strings as null.
-     *
-     * @return value as it is stored in the database
-     */
     @Override
     public String getSubjectAltName() {
         return subjectAltName;
@@ -283,51 +254,26 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.subjectAltName = subjectAltName;
     }
 
-    /**
-     * Fingerprint of CA certificate
-     *
-     * @return fingerprint
-     */
     @Override
     public String getCaFingerprint() {
         return cAFingerprint;
     }
 
-    /**
-     * Fingerprint of CA certificate
-     *
-     * @param cAFingerprint fingerprint
-     */
+    @Override
     public void setCaFingerprint(String cAFingerprint) {
         this.cAFingerprint = cAFingerprint;
     }
 
-    /**
-     * status of certificate, ex CertificateConstants.CERT_ACTIVE
-     *
-     * @see CertificateConstants#CERT_ACTIVE etc
-     *
-     * @return status
-     */
     @Override
     public int getStatus() {
         return status;
     }
 
-    /**
-     * status of certificate, ex CertificateConstants.CERT_ACTIVE
-     *
-     * @param status status
-     */
+    @Override
     public void setStatus(int status) {
         this.status = status;
     }
 
-    /**
-     * What type of user the certificate belongs to, ex CertificateConstants.CERTTYPE_ENDENTITY
-     *
-     * @return user type
-     */
     @Override
     public int getType() {
         return type;
@@ -342,26 +288,16 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.type = type;
     }
 
-    /**
-     * Serialnumber formated as BigInteger.toString()
-     *
-     * @return serial number
-     */
     @Override
     public String getSerialNumber() {
         return serialNumber;
     }
     
-    /**
-     * Sets serial number (formated as BigInteger.toString())
-     *
-     * @param serialNumber serial number formated as BigInteger.toString()
-     */
+    @Override
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
     }
 
-    /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate was issued or null if the information is not known. */
     @Override
     public Long getNotBefore() {
         return notBefore;
@@ -371,7 +307,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.notBefore = notBefore;
     }
 
-    /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate expires. */
     @Override
     public long getExpireDate() {
         return expireDate;
@@ -386,49 +321,26 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.expireDate = expireDate;
     }
 
-    /**
-     * Set to date when revocation occured if status == CERT_REVOKED. Format == Date.getTime()
-     *
-     * @return revocation date
-     */
     @Override
     public long getRevocationDate() {
         return revocationDate;
     }
 
-    /**
-     * Set to date when revocation occurred if status == CERT_REVOKED. Format == Date.getTime()
-     *
-     * @param revocationDate revocation date
-     */
+    @Override
     public void setRevocationDate(long revocationDate) {
         this.revocationDate = revocationDate;
     }
 
-    /**
-     * Set to revocation reason if status == CERT_REVOKED
-     *
-     * @return revocation reason
-     */
     @Override
     public int getRevocationReason() {
         return revocationReason;
     }
 
-    /**
-     * Set to revocation reason if status == CERT_REVOKED
-     *
-     * @param revocationReason revocation reason
-     */
+    @Override
     public void setRevocationReason(int revocationReason) {
         this.revocationReason = revocationReason;
     }
 
-    /**
-     * The certificate itself
-     *
-     * @return base64 encoded certificate
-     */
     @Override
     public String getBase64Cert() {
         return this.getZzzBase64Cert();
@@ -460,30 +372,16 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.base64Cert = zzzBase64Cert;
     }
 
-    /**
-     * username in database
-     *
-     * @return username
-     */
     @Override
     public String getUsername() {
         return username;
     }
 
-    /**
-     * username in database
-     *
-     * @param username username
-     */
+    @Override
     public void setUsername(String username) {
         this.username = StringTools.stripUsername(username);
     }
 
-    /**
-     * tag in database. This field was added for the 3.9.0 release, but is not used yet.
-     *
-     * @return tag
-     */
     @Override
     public String getTag() {
         return tag;
@@ -492,52 +390,33 @@ public class CertificateData extends BaseCertificateData implements Serializable
     /**
      * tag in database. This field was added for the 3.9.0 release, but is not used yet.
      *
-     * @param username tag
+     * @param tag tag
      */
     public void setTag(String tag) {
         this.tag = tag;
     }
 
-    /**
-     * Certificate Profile Id that was used to issue this certificate.
-     *
-     * @return certificateProfileId
-     */
     @Override
     public Integer getCertificateProfileId() {
         return certificateProfileId;
     }
 
-    /**
-     * Certificate Profile Id that was used to issue this certificate.
-     *
-     * @param certificateProfileId certificateProfileId
-     */
+    @Override
     public void setCertificateProfileId(Integer certificateProfileId) {
         this.certificateProfileId = certificateProfileId;
     }
 
-    /**
-     * The time this row was last updated.
-     *
-     * @return updateTime
-     */
     @Override
     public Long getUpdateTime() {
         return updateTime;
     }
 
-    /**
-     * The time this row was last updated.
-     */
     // Hibernate + Oracle ignores nullable=false so we can expect null-objects as input after upgrade. TODO: Verify if still true!
+    @Override
     public void setUpdateTime(Long updateTime) {
         this.updateTime = (updateTime == null ? this.updateTime : updateTime);
     }
 
-    /**
-     * The ID of the public key of the certificate
-     */
     @Override
     public String getSubjectKeyId() {
         return subjectKeyId;
@@ -550,6 +429,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.subjectKeyId = subjectKeyId;
     }
     
+    @Override
     public int getRowVersion() {
         return rowVersion;
     }
@@ -591,21 +471,12 @@ public class CertificateData extends BaseCertificateData implements Serializable
     // Public business methods used to help us manage certificates
     //
     
-
-    /**
-     * DN of issuer of certificate
-     *
-     * @param dn issuer dn
-     */
+    @Override
     public void setIssuer(String dn) {
         setIssuerDN(CertTools.stringToBCDNString(dn));
     }
 
-    /**
-     * DN of subject in certificate
-     *
-     * @param dn subject dn
-     */
+    @Override
     public void setSubject(String dn) {
         setSubjectDN(CertTools.stringToBCDNString(dn));
     }
@@ -623,11 +494,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         }
     }
 
-    /**
-     * date the certificate was revoked
-     *
-     * @param revocationDate revocation date
-     */
+    @Override
     public void setRevocationDate(Date revocationDate) {
         if (revocationDate == null) {
             setRevocationDate(-1L);
@@ -636,11 +503,11 @@ public class CertificateData extends BaseCertificateData implements Serializable
         }
     }
 
+    @Override
     public void setEndEntityProfileId(final Integer endEntityProfileId) {
         this.endEntityProfileId = endEntityProfileId;
     }
     
-    /** @return the end entity profile this certificate was issued under or null if the information is not available. */
     @Override
     public Integer getEndEntityProfileId() {
         return endEntityProfileId;
@@ -759,27 +626,9 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return true;
     }
 
-    /**
-     * Compare the status field of this and another CertificateData object.
-     *
-     * @param strict will treat NOTIFIED as ACTIVE and ARCHIVED as REVOKED if set to false
-     */
-    public boolean equalsStatus(CertificateData certificateData, boolean strict) {
-        if (strict) {
-            return status == certificateData.status;
-        }
-        if (status == certificateData.status) {
-            return true;
-        }
-        if ((status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)
-                && (certificateData.status == CertificateConstants.CERT_ACTIVE || certificateData.status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
-            return true;
-        }
-        if ((status == CertificateConstants.CERT_REVOKED || status == CertificateConstants.CERT_ARCHIVED)
-                && (certificateData.status == CertificateConstants.CERT_REVOKED || certificateData.status == CertificateConstants.CERT_ARCHIVED)) {
-            return true;
-        }
-        return false;
+    @Override
+    public int hashCode() {
+        return fingerprint.hashCode() * 11;
     }
 
     public void updateWith(CertificateData certificateData, boolean inclusionMode) {

@@ -177,6 +177,11 @@ public class Base64CertData extends ProtectedData implements Serializable {
         }
         return true;
     }
+    
+    @Override
+    public int hashCode() {
+        return fingerprint.hashCode() * 11;
+    }
 
     //
     // Search functions.

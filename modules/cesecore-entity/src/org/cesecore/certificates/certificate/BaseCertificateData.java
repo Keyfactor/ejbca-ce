@@ -33,35 +33,230 @@ import org.cesecore.util.CertTools;
  * @version $Id: ProtectedCertificateData.java 28264 2018-04-09 15:56:54Z tarmo $
  */
 public abstract class BaseCertificateData extends ProtectedData {
-    
+
+    private static final Logger log = Logger.getLogger(BaseCertificateData.class);
+
+    /**
+     * The certificate itself
+     *
+     * @return base64 encoded certificate
+     */
     public abstract String getBase64Cert();
+    
+    /**
+     * Fingerprint of certificate
+     *
+     * @return fingerprint
+     */
     public abstract String getFingerprint();
+    
+    /**
+     * Use getSubjectDnNeverNull() for consistent access, since Oracle will treat empty Strings as NULL.
+     *
+     * @return value as it is stored in the database
+     */
     public abstract String getSubjectDN();
+    
+    /**
+     * DN of issuer of certificate
+     *
+     * @return issuer dn
+     */
     public abstract String getIssuerDN();
+    
+    /**
+     * Serialnumber formated as BigInteger.toString()
+     *
+     * @return serial number
+     */
     public abstract String getSerialNumber();
+    
+    /**
+     * username in database
+     *
+     * @return username
+     */
     public abstract String getUsername();
+    
+    /**
+     * Use getSubjectAltNameNeverNull() for consistent access, since Oracle will treat empty Strings as null.
+     *
+     * @return value as it is stored in the database
+     */
     public abstract String getSubjectAltName();
+    
+    /**
+     * Certificate Profile Id that was used to issue this certificate.
+     *
+     * @return certificateProfileId
+     */
     public abstract Integer getCertificateProfileId();
+    
+    /**
+     * status of certificate, ex CertificateConstants.CERT_ACTIVE
+     *
+     * @see CertificateConstants#CERT_ACTIVE etc
+     *
+     * @return status
+     */
     public abstract int getStatus();
+    
+    /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate was issued or null if the information is not known. */
     public abstract Long getNotBefore();
+    
+    /** @returns the number of milliseconds since 1970-01-01 00:00:00 GMT until the certificate expires. */
     public abstract long getExpireDate();
+    
+    /**
+     * Set to revocation reason if status == CERT_REVOKED
+     *
+     * @return revocation reason
+     */
     public abstract int getRevocationReason();
+    
+    /**
+     * Set to date when revocation occured if status == CERT_REVOKED. Format == Date.getTime()
+     *
+     * @return revocation date
+     */
     public abstract long getRevocationDate();
+    
+    /**
+     * The ID of the public key of the certificate
+     */
     public abstract String getSubjectKeyId();
+    
+    /**
+     * The time this row was last updated.
+     *
+     * @return updateTime
+     */
     public abstract Long getUpdateTime();
+    
+    /** @return the end entity profile this certificate was issued under or null if the information is not available. */
     public abstract Integer getEndEntityProfileId();
+    
+    /**
+     * Fingerprint of CA certificate
+     *
+     * @return fingerprint
+     */
     public abstract String getCaFingerprint();
+    
+    /**
+     * What type of user the certificate belongs to, ex CertificateConstants.CERTTYPE_ENDENTITY
+     *
+     * @return user type
+     */
     public abstract int getType();
+    
+    /**
+     * tag in database. This field was added for the 3.9.0 release, but is not used yet.
+     *
+     * @return tag
+     */
     public abstract String getTag();
+    
     public abstract int getRowVersion();
     
+    //
+    // Setters to call when changing revocation status
+    //
+    
+    /**
+     * status of certificate, ex CertificateConstants.CERT_ACTIVE
+     *
+     * @param status status
+     */
     public abstract void setStatus(int status);
+    
+    /**
+     * Set to date when revocation occurred if status == CERT_REVOKED. Format == Date.getTime()
+     *
+     * @param revocationDate revocation date
+     */
     public abstract void setRevocationDate(long revocationDate);
+    
+    /**
+     * date the certificate was revoked
+     *
+     * @param revocationDate revocation date
+     */
     public abstract void setRevocationDate(Date revocationDate);
+    
+    /**
+     * Set to revocation reason if status == CERT_REVOKED
+     *
+     * @param revocationReason revocation reason
+     */
     public abstract void setRevocationReason(int revocationReason);
+    
+    /**
+     * The time this row was last updated.
+     */
     public abstract void setUpdateTime(Long updateTime);
     
-    private static final Logger log = Logger.getLogger(BaseCertificateData.class);
+    //
+    // The setters below should in general only be used when adding the certificate data entry
+    //
+    
+    /**
+     * Sets serial number (formated as BigInteger.toString())
+     *
+     * @param serialNumber serial number formated as BigInteger.toString()
+     */
+    public abstract void setSerialNumber(String serialNumber);
+    
+    /**
+     * Fingerprint of certificate
+     *
+     * @param fingerprint fingerprint
+     */
+    public abstract void setFingerprint(String fingerprint);
+    
+    /**
+     * DN of issuer of certificate
+     *
+     * @param issuerDN issuer dn
+     */
+    public abstract void setIssuer(String issuerDN);
+    
+    /**
+     * Use setIssuer instead
+     *
+     * @param issuerDN issuer dn
+     * @see #setIssuer(String)
+     */
+    public abstract void setIssuerDN(String issuerDN);
+    
+    /**
+     * DN of subject in certificate
+     *
+     * @param subjectDN subject dn
+     */
+    public abstract void setSubject(String subjectDN);
+    
+    /**
+     * username in database
+     *
+     * @param username username
+     */
+    public abstract void setUsername(String username);
+    
+    /**
+     * Certificate Profile Id that was used to issue this certificate.
+     *
+     * @param certificateProfileId certificateProfileId
+     */
+    public abstract void setCertificateProfileId(Integer certificateProfileId);
+    public abstract void setEndEntityProfileId(Integer endEntityProfileId);
+    
+    /**
+     * Fingerprint of CA certificate
+     *
+     * @param cafp fingerprint
+     */
+    public abstract void setCaFingerprint(String cafp);
     
 
     /**
@@ -181,5 +376,30 @@ public abstract class BaseCertificateData extends ProtectedData {
     public String getSubjectDnNeverNull() {
         final String subjectDn = getSubjectDN();
         return subjectDn == null ? "" : subjectDn;
+    }
+    
+    /**
+     * Compare the status field of this and another CertificateData object.
+     *
+     * @param strict will treat NOTIFIED as ACTIVE and ARCHIVED as REVOKED if set to false
+     */
+    public boolean equalsStatus(final BaseCertificateData certificateData, final boolean strict) {
+        final int status = getStatus();
+        final int otherStatus = certificateData.getStatus();
+        if (strict) {
+            return status == otherStatus;
+        }
+        if (status == otherStatus) {
+            return true;
+        }
+        if ((status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)
+                && (otherStatus == CertificateConstants.CERT_ACTIVE || otherStatus == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
+            return true;
+        }
+        if ((status == CertificateConstants.CERT_REVOKED || status == CertificateConstants.CERT_ARCHIVED)
+                && (otherStatus == CertificateConstants.CERT_REVOKED || otherStatus == CertificateConstants.CERT_ARCHIVED)) {
+            return true;
+        }
+        return false;
     }
 }

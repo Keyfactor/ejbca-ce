@@ -110,8 +110,15 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             }
             return null;
         }
-        final NoConflictCertificateData certificateData = getLimitedNoConflictCertDataRow(cainfo, certserno);
-        return new CertificateDataWrapper(certificateData);
+        if (/*cainfo.is*/ true) {
+            final NoConflictCertificateData certificateData = getLimitedNoConflictCertDataRow(cainfo, certserno);
+            return new CertificateDataWrapper(certificateData);
+        } else {
+            final CertificateData certificateData = new CertificateData();
+            fillInLimitedCertificateData(certificateData, cainfo, certserno);
+            certificateData.setUpdateTime(System.currentTimeMillis());
+            return new CertificateDataWrapper(certificateData, null);
+        }
     }
     
     @Override
@@ -251,24 +258,28 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             certificateData = new NoConflictCertificateData(certificateData);
         } else {
             certificateData = new NoConflictCertificateData();
-            // See org.cesecore.certificates.certificate.CertificateStoreSessionBean.updateLimitedCertificateDataStatus
-            certificateData.setSerialNumber(certserno.toString());
-            // A fingerprint is needed by the publisher session, so we put a dummy fingerprint here
-            certificateData.setFingerprint(generateDummyFingerprint(cainfo.getSubjectDN(), certserno));
-            certificateData.setIssuerDN(cainfo.getSubjectDN());
-            certificateData.setSubjectDN("CN=limited");
-            certificateData.setUsername(null);
-            certificateData.setCertificateProfileId(cainfo.getDefaultCertificateProfileId());
-            certificateData.setStatus(CertificateConstants.CERT_ACTIVE);
-            certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
-            certificateData.setRevocationDate(-1L);
-            certificateData.setCaFingerprint(CertTools.getFingerprintAsString(cainfo.getCertificateChain().get(0)));
-            certificateData.setEndEntityProfileId(-1);
+            fillInLimitedCertificateData(certificateData, cainfo, certserno);
         }
         // Always generate new UUID and timestamp, so updates are stored as a new row
         certificateData.setId(UUID.randomUUID().toString());
         certificateData.setUpdateTime(System.currentTimeMillis());
         return certificateData;
+    }
+    
+    /** @see org.cesecore.certificates.certificate.CertificateStoreSessionBean#updateLimitedCertificateDataStatus(AuthenticationToken, int, String, String, String, BigInteger, int, Date, int, String) */
+    private void fillInLimitedCertificateData(final BaseCertificateData certificateData, final CAInfo cainfo, final BigInteger certserno) {
+        certificateData.setSerialNumber(certserno.toString());
+        // A fingerprint is needed by the publisher session, so we put a dummy fingerprint here
+        certificateData.setFingerprint(generateDummyFingerprint(cainfo.getSubjectDN(), certserno));
+        certificateData.setIssuerDN(cainfo.getSubjectDN());
+        certificateData.setSubject("CN=limited");
+        certificateData.setUsername(null);
+        certificateData.setCertificateProfileId(cainfo.getDefaultCertificateProfileId());
+        certificateData.setStatus(CertificateConstants.CERT_ACTIVE);
+        certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
+        certificateData.setRevocationDate(-1L);
+        certificateData.setCaFingerprint(CertTools.getFingerprintAsString(cainfo.getCertificateChain().get(0)));
+        certificateData.setEndEntityProfileId(-1);
     }
     
     @Override
