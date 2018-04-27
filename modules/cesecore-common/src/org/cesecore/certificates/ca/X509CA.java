@@ -257,7 +257,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
         
-        final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getDefaultCertificateProfileId(), getcertificateDataToWriteTo(), getEncodedValidity(),
+        final CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getDefaultCertificateProfileId(), isUseNoConflictCertificateData(), getEncodedValidity(),
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getValidators(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
@@ -279,8 +279,8 @@ public class X509CA extends CA implements Serializable {
         setCAId(caId);
     }
 
-    private String getcertificateDataToWriteTo() {
-        return (String) data.get(CERTIFICATEDATATOWRITETO);
+    private boolean isUseNoConflictCertificateData() {
+        return getBoolean(USENOCONFLICTCERTIFICATEDATA, false);
     }
 
     // Public Methods.

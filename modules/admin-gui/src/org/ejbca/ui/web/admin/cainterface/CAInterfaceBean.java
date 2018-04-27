@@ -539,7 +539,7 @@ public class CAInterfaceBean implements Serializable {
     public boolean actionCreateCaMakeRequest(String caName, String signatureAlgorithm,
             String extendedServiceSignatureKeySpec,
             String keySequenceFormat, String keySequence, int catype, String subjectdn,
-            String certificateProfileIdString, String defaultCertificateProfileIdString, String certificateDataToWriteTo, 
+            String certificateProfileIdString, String defaultCertificateProfileIdString, boolean useNoConflictCertificateData, 
             String signedByString, String description, String validityString,
             Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
             boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
@@ -610,7 +610,7 @@ public class CAInterfaceBean implements Serializable {
             }
             return actionCreateCaMakeRequestInternal(caName, signatureAlgorithm, extendedServiceSignatureKeySpec,
                     keySequenceFormat, keySequence, catype, subjectdn, certificateProfileIdString, defaultCertificateProfileIdString, 
-                    certificateDataToWriteTo, signedByString,
+                    useNoConflictCertificateData, signedByString,
                     description, validityString, approvals, finishUser,
                     isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
                     useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry, subjectaltname, policyid,
@@ -640,7 +640,7 @@ public class CAInterfaceBean implements Serializable {
 	private boolean actionCreateCaMakeRequestInternal(String caName, String signatureAlgorithm,
 	        String extendedServiceSignatureKeySpec,
 	        String keySequenceFormat, String keySequence, int catype, String subjectdn,
-	        String certificateProfileIdString, String defaultCertificateProfileIdString, String certificateDataToWriteTo, 
+	        String certificateProfileIdString, String defaultCertificateProfileIdString, boolean useNoConflictCertificateData, 
 	        String signedByString, String description, String validityString,
 	        Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
 	        boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
@@ -776,7 +776,7 @@ public class CAInterfaceBean implements Serializable {
 	                if (buttonCreateCa) {
 	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
 	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
-	                            certprofileid, defaultCertprofileId, certificateDataToWriteTo, validityString,
+	                            certprofileid, defaultCertprofileId, useNoConflictCertificateData, validityString,
 	                            null, catype, signedby,
 	                            null, catoken, description, -1, null,
 	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators,
@@ -823,7 +823,7 @@ public class CAInterfaceBean implements Serializable {
 	                if (buttonMakeRequest) {
 	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
 	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
-	                            certprofileid, defaultCertprofileId, certificateDataToWriteTo, validityString,
+	                            certprofileid, defaultCertprofileId, useNoConflictCertificateData, validityString,
 	                            null, catype, CAInfo.SIGNEDBYEXTERNALCA,
 	                            null, catoken, description, -1, null, 
 	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators, 
@@ -1013,7 +1013,7 @@ public class CAInterfaceBean implements Serializable {
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationNonExistingEntry,
-            int defaultCertprofileId, String certificateDataToWriteTo, 
+            int defaultCertprofileId, boolean useNoConflictCertificateData, 
 	        Map<ApprovalRequestType, Integer> approvals,
 	        String availablePublisherValues, String availableKeyValidatorValues,
 	        boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
@@ -1098,7 +1098,7 @@ public class CAInterfaceBean implements Serializable {
                         useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck,
                         isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory,
                         useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry, sharedCmpRaSecret, keepExpiredCertsOnCRL, defaultCertprofileId, 
-                        certificateDataToWriteTo);
+                        useNoConflictCertificateData);
             }
            // Info specific for CVC CA
            if (catype == CAInfo.CATYPE_CVC) {
