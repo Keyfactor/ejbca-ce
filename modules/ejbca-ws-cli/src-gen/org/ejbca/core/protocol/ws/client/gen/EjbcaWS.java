@@ -694,19 +694,47 @@ public interface EjbcaWS {
         throws AlreadyRevokedException_Exception, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, DateNotValidException_Exception, EjbcaException_Exception, NotFoundException_Exception, RevokeBackDateNotAllowedForProfileException_Exception, WaitingForApprovalException_Exception
     ;
 
-    /**
-     * 
-     * @param arg2
-     * @param arg1
-     * @param arg0
-     * @throws WaitingForApprovalException_Exception
-     * @throws AlreadyRevokedException_Exception
-     * @throws NotFoundException_Exception
-     * @throws ApprovalException_Exception
-     * @throws CADoesntExistsException_Exception
-     * @throws EjbcaException_Exception
-     * @throws AuthorizationDeniedException_Exception
-     */
+	/**
+	* 
+	* @param arg2
+	* @param arg1
+	* @param arg0
+	* @throws CADoesntExistsException_Exception
+	* @throws NotFoundException_Exception
+	* @throws AuthorizationDeniedException_Exception
+	* @throws WaitingForApprovalException_Exception
+	* @throws ApprovalException_Exception
+	* @throws EjbcaException_Exception
+	* @throws DateNotValidException_Exception
+	* @throws RevokeBackDateNotAllowedForProfileException_Exception
+	* @throws AlreadyRevokedException_Exception
+	*/
+    @WebMethod
+    @RequestWrapper(localName = "revokeCertWithMetadata", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCertWithMetadata")
+    @ResponseWrapper(localName = "revokeCertWithMetadataResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCertWithMetadataResponse")
+    public void revokeCertWithMetadata(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0,
+        @WebParam(name = "arg1", targetNamespace = "")
+        String arg1,
+        @WebParam(name = "arg2", targetNamespace = "")
+        List<KeyValuePair> arg2)
+        throws AlreadyRevokedException_Exception, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, DateNotValidException_Exception, EjbcaException_Exception, NotFoundException_Exception, RevokeBackDateNotAllowedForProfileException_Exception, WaitingForApprovalException_Exception
+    ;
+    
+	/**
+	* 
+	* @param arg2
+	* @param arg1
+	* @param arg0
+	* @throws WaitingForApprovalException_Exception
+	* @throws AlreadyRevokedException_Exception
+	* @throws NotFoundException_Exception
+	* @throws ApprovalException_Exception
+	* @throws CADoesntExistsException_Exception
+	* @throws EjbcaException_Exception
+	* @throws AuthorizationDeniedException_Exception
+	*/
     @WebMethod
     @RequestWrapper(localName = "revokeUser", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeUser")
     @ResponseWrapper(localName = "revokeUserResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeUserResponse")
