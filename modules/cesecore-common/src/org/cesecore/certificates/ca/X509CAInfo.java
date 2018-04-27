@@ -75,7 +75,7 @@ public class X509CAInfo extends CAInfo {
              "", // Subject Alternative name
              certificateProfileId, // CA certificate profile
                 0, // default ca profile
-             "CertificateData", // default certificate data table   
+             false, // default is certificate data table   
              encodedValidity, null, // Expiretime
              CAInfo.CATYPE_X509, // CA type (X509/CVC)
              signedby, // Signed by CA
@@ -133,7 +133,7 @@ public class X509CAInfo extends CAInfo {
      * @param subjectaltname the Subject Alternative Name (SAN) of the CA, as found in the certificate
      * @param certificateprofileid the ID of the certificate profile for this CA
      * @param defaultCertprofileId the id of default cetificate profile for certificates this CA issues
-     * @param certificateDataToWriteTo certificate data table to write to
+     * @param useNoConflictCertificateData should use NoConflictCertificate data table to write to
      * @param encodedValidity the validity of this CA as a human-readable string, e.g. 25y
      * @param expiretime the date when this CA expires
      * @param catype the type of CA, in this case CAInfo.CATYPE_X509
@@ -182,7 +182,7 @@ public class X509CAInfo extends CAInfo {
      * @param keepExpiredCertsOnCRL
      */
     public X509CAInfo(final String subjectdn, final String name, final int status, final Date updateTime, final String subjectaltname,
-            final int certificateprofileid, final int defaultCertprofileId, final String certificateDataToWriteTo, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
+            final int certificateprofileid, final int defaultCertprofileId, final boolean useNoConflictCertificateData, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
             final Collection<Certificate> certificatechain, final CAToken catoken,
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
@@ -267,7 +267,7 @@ public class X509CAInfo extends CAInfo {
         this.certificateAiaDefaultCaIssuerUri = certificateAiaDefaultCaIssuerUri;
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
-        this.selectedCertificateData = certificateDataToWriteTo;
+        this.useNoConflictCertificateData = useNoConflictCertificateData;
     }
 
     /** Constructor that should be used when updating CA data. */
@@ -284,7 +284,7 @@ public class X509CAInfo extends CAInfo {
             final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName,
             final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, final boolean _useUserStorage,
             final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry, final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL,
-            final int defaultCertprofileId, final String certificateDataToWriteTo) {
+            final int defaultCertprofileId, final boolean useNoConflictCertificateData) {
         this.caid = caid;
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
@@ -326,7 +326,7 @@ public class X509CAInfo extends CAInfo {
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
         this.defaultCertificateProfileId = defaultCertprofileId;
-        this.selectedCertificateData = certificateDataToWriteTo;
+        this.useNoConflictCertificateData = useNoConflictCertificateData;
     }
 
   public List<CertificatePolicy> getPolicies() {

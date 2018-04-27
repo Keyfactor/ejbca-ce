@@ -200,12 +200,12 @@ function selectDefaultCertificateProfile(){
 
 function selectCertificateDataToWriteTo(){
     <% if (catype == CAInfo.CATYPE_CVC) { %>
-		document.ca.<%=SELECT_CERTDBTOWRITETO%>.disabled = true;
+		document.ca.<%=CHECKBOX_CERTDBTOWRITETO%>.disabled = true;
     <% } else { %>
 	if (document.ca.<%=CHECKBOX_USECERTIFICATESTORAGE%>.checked) {
-		document.ca.<%=SELECT_CERTDBTOWRITETO%>.disabled = true;
+		document.ca.<%=CHECKBOX_CERTDBTOWRITETO%>.disabled = true;
 	} else {
-		document.ca.<%=SELECT_CERTDBTOWRITETO%>.disabled = false;
+		document.ca.<%=CHECKBOX_CERTDBTOWRITETO%>.disabled = false;
 	}
 	<% } %>
 }
@@ -950,15 +950,10 @@ function toggleCANameChange(){
      <tr id="Row<%=row++%2%>">
         <td width="50%" align="right"><%= ejbcawebbean.getText("CERTIFICATEDATATABLETOWRITETO")%></td>
         <td>
-          <select name="<%=SELECT_CERTDBTOWRITETO %>" size="1" <%= (!hasEditRights || !editca || cainfo.isUseCertificateStorage() || (cainfo.getCAType() == CAInfo.CATYPE_CVC)  ? "disabled" : "") %> >
-          <% Map<String, String> certificateDataMap  = cainfo.getCertificateDataMap(); 
-             for (final Map.Entry<String, String> certificateData : certificateDataMap.entrySet()) { %>
-             	<option value="<c:out value="<%= certificateData.getValue() %>"/>"
-	                   <% if(editca && certificateData.getValue().equals(cainfo.getSelectedCertificateData())) { %> selected <%}%>
-             	><c:out value="<%= certificateData.getValue() %>"/>
-             	</option>
-           <% } %>  
-          </select>
+          <input type="checkbox" name="<%=CHECKBOX_CERTDBTOWRITETO %>" value="<%=CHECKBOX_VALUE %>" 
+	          <% if(editca && cainfo.isUseNoConflictCertificateData()) { out.write("CHECKED"); } %>  
+    	           id="<%=CHECKBOX_CERTDBTOWRITETO%>" <%= (!hasEditRights || !editca || cainfo.isUseCertificateStorage() || (cainfo.getCAType() == CAInfo.CATYPE_CVC)  ? "disabled" : "") %>>
+              <label for="<%=CHECKBOX_CERTDBTOWRITETO%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
         </td>
       </tr>
 
