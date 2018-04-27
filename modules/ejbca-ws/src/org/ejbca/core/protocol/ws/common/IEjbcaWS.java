@@ -578,7 +578,24 @@ public interface IEjbcaWS {
 			int reason) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException, ApprovalException, WaitingForApprovalException,
 			AlreadyRevokedException;
-
+	
+	 /**
+     * Revokes a user certificate. Allows to specify column values via metadata input param
+     * 
+     * @throws CADoesntExistsException if a referenced CA does not exist
+     * @throws AuthorizationDeniedException if client isn't authorized.
+     * @throws NotFoundException if certificate doesn't exist
+     * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
+     * @throws ApprovalException There already exists an approval request for this task
+     * @throws AlreadyRevokedException The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate
+     * @throws EjbcaException internal error
+     * @throws RevokeBackDateNotAllowedForProfileException if back date is not allowed in the certificate profile
+     * @throws DateNotValidException if the date is not a valid ISO 8601 string or if it is in the future.
+     */
+	void revokeCertWithMetadata(String issuerDN, String certificateSN, List<KeyValuePair> metadata)
+            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException,
+            WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException;
+	
 	/**
 	 * Revokes all of a user's certificates.
 	 *

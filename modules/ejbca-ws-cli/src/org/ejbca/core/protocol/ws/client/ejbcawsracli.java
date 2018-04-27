@@ -38,7 +38,7 @@ public class ejbcawsracli  {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | " +
+                    "Usage: edituser | finduser | findcerts | pkcs10req | pkcs12req | certreq | revokecert | revokecertwithmetadata" +
                     "getpublisherqueuelength | revoketoken | revokeuser | checkrevocationstatus | generatenewuser | " +
                     "createcrl | cacertrequest | cacertresponse | customlog | getprofile | createcryptotoken | " + 
                     "generatectkeys | createca | importcacert | updatecacert | addadmintorole | removeadminfromrole | getexpiredcerts | " +
