@@ -279,11 +279,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return type;
     }
 
-    /**
-     * What type of user the certificate belongs to, ex CertificateConstants.CERTTYPE_ENDENTITY
-     *
-     * @param type type
-     */
+    @Override
     public void setType(int type) {
         this.type = type;
     }
@@ -312,11 +308,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return expireDate;
     }
 
-    /**
-     * Date formated as milliseconds since 1970 (== Date.getTime())
-     *
-     * @param expireDate expire date
-     */
+    @Override
     public void setExpireDate(long expireDate) {
         this.expireDate = expireDate;
     }
@@ -479,28 +471,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
     @Override
     public void setSubject(String dn) {
         setSubjectDN(CertTools.stringToBCDNString(dn));
-    }
-
-    /**
-     * expire date of certificate
-     *
-     * @param expireDate expire date
-     */
-    public void setExpireDate(Date expireDate) {
-        if (expireDate == null) {
-            setExpireDate(-1L);
-        } else {
-            setExpireDate(expireDate.getTime());
-        }
-    }
-
-    @Override
-    public void setRevocationDate(Date revocationDate) {
-        if (revocationDate == null) {
-            setRevocationDate(-1L);
-        } else {
-            setRevocationDate(revocationDate.getTime());
-        }
     }
 
     @Override
