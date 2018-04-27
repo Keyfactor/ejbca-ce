@@ -91,7 +91,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean keepExpiredCertsOnCRL = false;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
-    protected static final Map<String, String> certificateDataList = MapTools.unmodifiableMap("CertificateData", "Normal certificate table", "NoConflictCertificateData", "No conflict certificate table");
+    protected static final Map<String, String> certificateDataList = MapTools.unmodifiableMap("CertificateData", "Default table", "NoConflictCertificateData", "Table for revoked throw-away certificates");
     protected String selectedCertificateData = "CertificateData"; // Default is normal certificate data table.
     
     /**
