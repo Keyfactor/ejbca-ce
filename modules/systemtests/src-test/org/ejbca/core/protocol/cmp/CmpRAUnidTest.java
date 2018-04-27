@@ -70,6 +70,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assume.assumeTrue;
+
 /**
  * Tests the unid-fnr plugin. Read the assert printout {@link #test01()} to understand how to set things up for the test.
  * 
@@ -107,7 +109,7 @@ public class CmpRAUnidTest extends CmpTestCase {
 
     @BeforeClass
     public static void beforeClass() {
-        org.junit.Assume.assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         CryptoProviderTools.installBCProvider();
     }
 
