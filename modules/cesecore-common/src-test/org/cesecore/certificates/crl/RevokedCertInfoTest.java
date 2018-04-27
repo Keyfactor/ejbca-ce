@@ -56,7 +56,7 @@ public class RevokedCertInfoTest {
         final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>();
         a.add(REVINFO_2_NOTREVOKED);
         final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
-        assertSame("Empty 'b' collection should cause 'a' to be returned.", a, RevokedCertInfo.mergeByDateAndStatus(a, b));
+        assertSame("Empty 'b' collection should cause 'a' to be returned.", a, RevokedCertInfo.mergeByDateAndStatus(a, b, 0));
     }
     
     @Test
@@ -66,9 +66,9 @@ public class RevokedCertInfoTest {
         b.add(REVINFO_2_NOTREVOKED);
         b.add(REVINFO_4_UNSPECIFIED); // permanent revocation => wins
         b.add(REVINFO_5_REMOVEFROMCRL);
-        final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b);
+        final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
         assertEquals("Items should have been de-duplicated.", 1, res.size());
-        assertRCIEquals("Should contain entry B.", REVINFO_4_UNSPECIFIED, res.iterator().next());
+        assertRCIEquals("Should contain entry REVINFO_4_UNSPECIFIED.", REVINFO_4_UNSPECIFIED, res.iterator().next());
     }
     
     @Test
@@ -78,9 +78,9 @@ public class RevokedCertInfoTest {
         final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
         b.add(REVINFO_2_NOTREVOKED);
         b.add(REVINFO_5_REMOVEFROMCRL);
-        final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b);
+        final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, System.currentTimeMillis());
         assertEquals("Items should have been de-duplicated.", 1, res.size());
-        assertRCIEquals("Should contain entry B.", REVINFO_4_UNSPECIFIED, res.iterator().next());
+        assertRCIEquals("Should contain entry REVINFO_4_UNSPECIFIED.", REVINFO_4_UNSPECIFIED, res.iterator().next());
     }
     
     @Test
@@ -89,9 +89,9 @@ public class RevokedCertInfoTest {
         final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
         b.add(REVINFO_2_NOTREVOKED); // only temporary revocations, and most recent entry => wins
         b.add(REVINFO_1_ONHOLD);
-        final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b);
+        final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
         assertEquals("Items should have been de-duplicated.", 1, res.size());
-        assertRCIEquals("Should contain entry B.", REVINFO_2_NOTREVOKED, res.iterator().next());
+        assertRCIEquals("Should contain entry REVINFO_2_NOTREVOKED.", REVINFO_2_NOTREVOKED, res.iterator().next());
     }
     
     @Test
@@ -100,9 +100,25 @@ public class RevokedCertInfoTest {
         final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
         b.add(REVINFO_4_UNSPECIFIED);
         b.add(REVINFO_3_UNSPECIFIED); // permanent revocation with oldest date wins
-        final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b);
+        final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
         assertEquals("Items should have been de-duplicated.", 1, res.size());
-        assertRCIEquals("Should contain entry B.", REVINFO_3_UNSPECIFIED, res.iterator().next());
+        assertRCIEquals("Should contain entry REVINFO_3_UNSPECIFIED.", REVINFO_3_UNSPECIFIED, res.iterator().next());
+    }
+    
+    @Test
+    public void mergeWithRemoveFromCrl1() {
+        final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>();
+        final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
+        b.add(REVINFO_5_REMOVEFROMCRL); // should be skipped
+        Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
+        assertEquals("REMOVEFROMCRL should be removed in Base CRL.", 0, res.size());
+        
+        res = RevokedCertInfo.mergeByDateAndStatus(a, b, date("2001-01-01"));
+        assertEquals("REMOVEFROMCRL should not be removed when Base CRL is older than revocation date.", 1, res.size());
+        assertRCIEquals("Should contain entry REVINFO_5_REMOVEFROMCRL", REVINFO_5_REMOVEFROMCRL, res.iterator().next());
+        
+        res = RevokedCertInfo.mergeByDateAndStatus(a, b, date("2017-12-31"));
+        assertEquals("REMOVEFROMCRL should be removed when Base CRL is more recent than revocation date.", 0, res.size());
     }
     
 }

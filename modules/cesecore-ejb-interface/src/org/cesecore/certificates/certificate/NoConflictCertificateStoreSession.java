@@ -52,4 +52,10 @@ public interface NoConflictCertificateStoreSession  {
     /** @see CertificateStoreSession#setStatus */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
 
+    /**
+     * Returns true if the CA is a throw-away CA which allow revocation of non-existing entries.
+     * @param issuerDN Subject DN of CA to check.
+     */
+    boolean canRevokeNonExisting(String issuerDN);
+
 }

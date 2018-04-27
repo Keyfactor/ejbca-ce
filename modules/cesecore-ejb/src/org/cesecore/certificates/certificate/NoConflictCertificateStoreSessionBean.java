@@ -16,6 +16,9 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.ejb.EJB;
@@ -28,15 +31,26 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ValidityDate;
 
 /**
  * These methods call CertificateStoreSession for certificates that are plain CertificateData entities.
@@ -53,22 +67,39 @@ import org.cesecore.util.CertTools;
 public class NoConflictCertificateStoreSessionBean implements NoConflictCertificateStoreSessionRemote, NoConflictCertificateStoreSessionLocal {
 
     private final static Logger log = Logger.getLogger(NoConflictCertificateStoreSessionBean.class);
+    
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
     
     @EJB
+    private AuthorizationSessionLocal authorizationSession;
+    @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
+    private SecurityEventsLoggerSessionLocal logSession;
+    @EJB
     private NoConflictCertificateDataSessionLocal noConflictCertificateDataSession;
+    
+    private void authorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
     
     /**
      * Returns true if the CA allows revocation of non-existing certificates.
      * @param issuerDN Subject DN of CA.
      */
-    private boolean canRevokeNonExisting(final String issuerDN) {
+    @Override
+    public boolean canRevokeNonExisting(final String issuerDN) {
         final int caid = issuerDN.hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
         return canRevokeNonExisting(cainfo, issuerDN);
@@ -165,11 +196,14 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     @Override
     public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, long lastbasecrldate) {
         if (log.isTraceEnabled()) {
-            log.trace(">listRevokedCertInfo()");
+            log.trace(">listRevokedCertInfo('" + issuerdn + "', " + lastbasecrldate + ")");
         }
         final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerdn, lastbasecrldate);
         final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerdn, lastbasecrldate);
-        return RevokedCertInfo.mergeByDateAndStatus(revokedInCertData, revokedInNoConflictData);
+        if (log.isDebugEnabled()) {
+            log.debug("listRevokedCertInfo: Got " + revokedInCertData.size() + " entries from CertificateData and " + revokedInNoConflictData.size() + " entries from NoConflictCertificateData");
+        }
+        return RevokedCertInfo.mergeByDateAndStatus(revokedInCertData, revokedInNoConflictData, lastbasecrldate);
     }
     
     /**
@@ -184,7 +218,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     /**
-     * Filters out the most recent entry in NoConflictCertificateData for a given issuerdn/serial number combination.
+     * Filters out the most recent entry in NoConflictCertificateData for a given issuerDN/serial number combination.
      * Permanent revocations always take precedence over other updates, the first one wins.
      * Otherwise, the most recent update wins.
      * @param certDatas Collection of NoConflictCertificateData to filter.
@@ -204,14 +238,17 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             }
             long timestampThis = data.getUpdateTime() != null ? data.getUpdateTime() : 0;
             long timestampRecent = mostRecentData.getUpdateTime() != null ? mostRecentData.getUpdateTime() : 0;
-            if (data.getStatus() == CertificateConstants.CERT_REVOKED && data.getRevocationReason() != RevocationReasons.CERTIFICATEHOLD.getDatabaseValue()) {
+            if (RevokedCertInfo.isPermanentlyRevoked(data.getRevocationReason())) {
                 // Permanently revoked certificate always takes precedence over non-permanently revoked one.
                 // Older permanent revocations take precedence over newer ones.
-                if (mostRecentData.getStatus() != CertificateConstants.CERT_REVOKED || mostRecentData.getRevocationReason() == RevocationReasons.CERTIFICATEHOLD.getDatabaseValue() ||
-                        timestampRecent > timestampThis) {
+                if (!RevokedCertInfo.isPermanentlyRevoked(mostRecentData.getRevocationReason()) || timestampRecent > timestampThis) {
                     mostRecentData = data;
                     continue;
                 }
+            }
+            // Permanent revocations take precedence over temporary ones
+            if (RevokedCertInfo.isPermanentlyRevoked(mostRecentData.getRevocationReason())) {
+                continue;
             }
             // Otherwise, most recent status takes precedence
             if (timestampThis > timestampRecent) {
@@ -234,10 +271,38 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     @Override
-    public boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException {
-        // TODO
-        // TODO move last
-        return certificateStoreSession.setStatus(admin, fingerprint, status);
+    public boolean setStatus(final AuthenticationToken admin, final String fingerprint, final int status) throws AuthorizationDeniedException {
+        if (!certificateStoreSession.setStatus(admin, fingerprint, status)) {
+            // Perhaps stored in NoConflictCertificateData
+            final List<NoConflictCertificateData> certDatas = noConflictCertificateDataSession.findByFingerprint(fingerprint);
+            NoConflictCertificateData certData = filterMostRecentCertData(certDatas);
+            if (certData != null) {
+                changeStatus(admin, certData, status);
+            }
+        }
+        return false;
+    }
+    
+    private void changeStatus(final AuthenticationToken admin, final NoConflictCertificateData certificateData, final int status) throws AuthorizationDeniedException {
+        if (log.isDebugEnabled()) {
+            log.debug("Set status " + status + " for certificate with serial: " + certificateData.getSerialNumberHex());
+        }
+
+        // Must be authorized to CA in order to change status is certificates issued by the CA
+        String bcdn = CertTools.stringToBCDNString(certificateData.getIssuerDN());
+        int caid = bcdn.hashCode();
+        authorizedToCA(admin, caid);
+        
+        final NoConflictCertificateData newCertData = new NoConflictCertificateData(certificateData);
+        newCertData.setStatus(status);
+        setUniqueIdAndUpdateTime(newCertData);
+        entityManager.persist(newCertData);
+        
+        final String serialNo = certificateData.getSerialNumberHex();
+        final String msg = intres.getLocalizedMessage("store.setstatus", certificateData.getUsername(), certificateData.getFingerprint(), status, certificateData.getSubjectDnNeverNull(), certificateData.getIssuerDN(), serialNo);
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", msg);
+        logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, certificateData.getUsername(), details);
     }
     
     /**
@@ -257,26 +322,40 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             certificateData = new NoConflictCertificateData();
             fillInLimitedCertificateData(certificateData, cainfo, certserno);
         }
-        // Always generate new UUID and timestamp, so updates are stored as a new row
-        certificateData.setId(UUID.randomUUID().toString());
-        certificateData.setUpdateTime(System.currentTimeMillis());
+        setUniqueIdAndUpdateTime(certificateData);
         return certificateData;
     }
     
+    private void setUniqueIdAndUpdateTime(final NoConflictCertificateData certificateData) {
+        // Always generate new UUID and timestamp, so updates are stored as a new row
+        certificateData.setId(UUID.randomUUID().toString());
+        certificateData.setUpdateTime(System.currentTimeMillis());
+    }
+
     /** @see org.cesecore.certificates.certificate.CertificateStoreSessionBean#updateLimitedCertificateDataStatus(AuthenticationToken, int, String, String, String, BigInteger, int, Date, int, String) */
     private void fillInLimitedCertificateData(final BaseCertificateData certificateData, final CAInfo cainfo, final BigInteger certserno) {
+        final int certProfId = cainfo.getDefaultCertificateProfileId();
         certificateData.setSerialNumber(certserno.toString());
         // A fingerprint is needed by the publisher session, so we put a dummy fingerprint here
         certificateData.setFingerprint(generateDummyFingerprint(cainfo.getSubjectDN(), certserno));
         certificateData.setIssuerDN(cainfo.getSubjectDN());
         certificateData.setSubject("CN=limited");
         certificateData.setUsername(null);
-        certificateData.setCertificateProfileId(cainfo.getDefaultCertificateProfileId());
+        certificateData.setCertificateProfileId(certProfId);
         certificateData.setStatus(CertificateConstants.CERT_ACTIVE);
         certificateData.setRevocationReason(RevocationReasons.NOT_REVOKED.getDatabaseValue());
         certificateData.setRevocationDate(-1L);
         certificateData.setCaFingerprint(CertTools.getFingerprintAsString(cainfo.getCertificateChain().get(0)));
         certificateData.setEndEntityProfileId(-1);
+        // Set expire date to the maximum possible expire date this certificate could have (now + cert profile validity) 
+        final CertificateProfile certProf = certificateProfileSession.getCertificateProfile(certProfId);
+        if (certProf == null) {
+            log.info("Missing certificate profile ID: " + certProfId);
+        } else {
+            final String encodedValidity = certProf.getEncodedValidity();
+            final Date expireDate = ValidityDate.getDate(encodedValidity, new Date());
+            certificateData.setExpireDate(expireDate);
+        }
     }
     
     @Override

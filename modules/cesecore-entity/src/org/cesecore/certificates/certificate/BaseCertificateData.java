@@ -171,18 +171,25 @@ public abstract class BaseCertificateData extends ProtectedData {
     public abstract void setStatus(int status);
     
     /**
+     * What type of user the certificate belongs to, ex CertificateConstants.CERTTYPE_ENDENTITY
+     *
+     * @param type type
+     */
+    public abstract void setType(int type);
+    
+    /**
+     * Date formated as milliseconds since 1970 (== Date.getTime())
+     *
+     * @param expireDate expire date
+     */
+    public abstract void setExpireDate(long expireDate);
+    
+    /**
      * Set to date when revocation occurred if status == CERT_REVOKED. Format == Date.getTime()
      *
      * @param revocationDate revocation date
      */
     public abstract void setRevocationDate(long revocationDate);
-    
-    /**
-     * date the certificate was revoked
-     *
-     * @param revocationDate revocation date
-     */
-    public abstract void setRevocationDate(Date revocationDate);
     
     /**
      * Set to revocation reason if status == CERT_REVOKED
@@ -258,6 +265,32 @@ public abstract class BaseCertificateData extends ProtectedData {
      */
     public abstract void setCaFingerprint(String cafp);
     
+    
+    /**
+     * expire date of certificate
+     *
+     * @param expireDate expire date
+     */
+    public void setExpireDate(Date expireDate) {
+        if (expireDate == null) {
+            setExpireDate(-1L);
+        } else {
+            setExpireDate(expireDate.getTime());
+        }
+    }
+    
+    /**
+     * date the certificate was revoked
+     *
+     * @param revocationDate revocation date
+     */
+    public void setRevocationDate(Date revocationDate) {
+        if (revocationDate == null) {
+            setRevocationDate(-1L);
+        } else {
+            setRevocationDate(revocationDate.getTime());
+        }
+    }
 
     /**
      * return the current class name

@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.cesecore.util.CompressedCollection;
 
 /**
@@ -32,6 +33,8 @@ public class RevokedCertInfo implements Serializable {
 
 	/** Version number for serialization */
 	private static final long serialVersionUID = 1L;
+	
+	private static final Logger log = Logger.getLogger(RevokedCertInfo.class);
 
 	/** Constants defining different revocation reasons. */
     public static final int NOT_REVOKED                            = RevocationReasons.NOT_REVOKED.getDatabaseValue();
@@ -228,9 +231,10 @@ public class RevokedCertInfo implements Serializable {
      * 
      * @param a First collection of RevokedCertInfo. May <b>not</b> contain duplicates for the same serial number.
      * @param b Second collection of RevokedCertInfo. May contain duplicates
+     * @param lastBaseCrlDate Entries in unrevoked state will only be included if they are more recent than this date. (<= 0 means never include them)
      * @return CompressionCollection of certificates. May simply be a reference to <code>a</code> if <code>b</code> is empty, or a new merged CompressedCollection with any duplicates removed.
      */
-    public static Collection<RevokedCertInfo> mergeByDateAndStatus(final Collection<RevokedCertInfo> a, final Collection<RevokedCertInfo> b) {
+    public static Collection<RevokedCertInfo> mergeByDateAndStatus(final Collection<RevokedCertInfo> a, final Collection<RevokedCertInfo> b, final long lastBaseCrlDate) {
         // We can optimize this case, but not the reverse, since b can contain duplicates that should be filtered.
         if (b.isEmpty()) {
             return a;
@@ -271,9 +275,17 @@ public class RevokedCertInfo implements Serializable {
             }
         }
         final CompressedCollection<RevokedCertInfo> mergedRevokedData = new CompressedCollection<>();
-        mergedRevokedData.addAll(permRevoked.values());
-        mergedRevokedData.addAll(tempRevoked.values());
+        mergedRevokedData.addAll(permRevoked.values()); // Permanently revoked entries are always added
+        for (final RevokedCertInfo revoked : tempRevoked.values()) {
+            if (!revoked.isRevoked() && (lastBaseCrlDate <= 0 || revoked.getRevocationDate().getTime() <= lastBaseCrlDate)) {
+                continue; // REMOVEFROMCRL entries are not added in Base CRLs (lastBaseCrlDate=0) or if already removed from the latest Base CRL
+            }
+            mergedRevokedData.add(revoked);
+        }
         mergedRevokedData.closeForWrite();
+        if (log.isDebugEnabled()) {
+            log.debug("mergeByDateAndStatus: Merged to " + mergedRevokedData.size() + " entries");
+        }
         return mergedRevokedData;
     }
 }
