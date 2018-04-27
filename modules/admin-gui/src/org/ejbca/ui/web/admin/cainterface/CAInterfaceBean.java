@@ -1118,7 +1118,7 @@ public class CAInterfaceBean implements Serializable {
                        useCertReqHistory,
                        useUserStorage,
                        useCertificateStorage,
-                       acceptRevocationNonExistingEntry, defaultCertprofileId, certificateDataToWriteTo);
+                       acceptRevocationNonExistingEntry, defaultCertprofileId);
            }
             cainfo.setSubjectDN(subjectDn);
             cainfo.setStatus(infoView.getCAInfo().getStatus());
