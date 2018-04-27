@@ -90,7 +90,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			case BASIC:
 				return new Command[]{
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
-									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
+									 new Pkcs10RequestCommand(ejbcaWS, kpg, jobData) };
 			case BASICSINGLETRANS:
 				return new Command[]{
 									 new CertificateRequestCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN, kpg.generateKeyPair())
@@ -99,12 +99,12 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			case REVOKE:
 				return new Command[]{
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
-									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData),
+									 new Pkcs10RequestCommand(ejbcaWS, kpg, jobData),
 									 new FindUserCommand(ejbcaWS, jobData),
 									 new ListCertsCommand(ejbcaWS, jobData),
 									 this.testType.equals(TestType.REVOKE_BACKDATED) ? new RevokeCertBackdatedCommand(ejbcaWS, jobData) : new RevokeCertCommand(ejbcaWS, jobData),
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, false, -1),
-									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
+									 new Pkcs10RequestCommand(ejbcaWS, kpg, jobData) };
 			case REVOKEALOT:
 				return new Command[]{
 									 new MultipleCertsRequestsForAUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, kpg),
@@ -145,17 +145,19 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	}
 	private class Pkcs10RequestCommand extends BaseCommand implements Command {
 		final private EjbcaWS ejbcaWS;
-		final private PKCS10CertificationRequest pkcs10;
-		Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPair keys, JobData _jobData) throws Exception {
+		final private KeyPairGenerator kpg;
+		Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPairGenerator kpg, JobData _jobData) throws Exception {
 			super(_jobData);
-			this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(),
-	                keys.getPrivate(), null);
+			this.kpg= kpg;
 			this.ejbcaWS = _ejbcaWS;
 		}
 		@Override
 		public boolean doIt() throws Exception {
+			KeyPair keys = kpg.generateKeyPair();
+			PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(),
+					keys.getPrivate(), null);
 			final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(this.jobData.userName, this.jobData.passWord,
-																					   new String(Base64.encode(this.pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+																					   new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
 			return checkAndLogCertificateResponse(certificateResponse, this.jobData);
 		}
 		@Override
@@ -213,7 +215,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					return false;
 				}
 				createUser = false;
-				Pkcs10RequestCommand pkcs10RequestCommand = new Pkcs10RequestCommand(this.ejbcaWS, this.kpg.generateKeyPair(), this.jobData);
+				Pkcs10RequestCommand pkcs10RequestCommand = new Pkcs10RequestCommand(this.ejbcaWS, this.kpg, this.jobData);
 				if (!pkcs10RequestCommand.doIt()) {
 					StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this.jobData.userName);
 					return false;
