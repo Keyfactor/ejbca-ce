@@ -28,8 +28,8 @@ import org.junit.Test;
  */
 public class RevokedCertInfoTest {
 
-    private static final RevokedCertInfo REVINFO_1_ONHOLD = revCertInfo(0x1234ABCDL, "2017-01-15", RevocationReasons.CERTIFICATEHOLD);
-    private static final RevokedCertInfo REVINFO_2_NOTREVOKED = revCertInfo(0x1234ABCDL, "2017-01-31", RevocationReasons.NOT_REVOKED);
+    private static final RevokedCertInfo REVINFO_1_NOTREVOKED = revCertInfo(0x1234ABCDL, "2017-01-15", RevocationReasons.NOT_REVOKED);
+    private static final RevokedCertInfo REVINFO_2_ONHOLD = revCertInfo(0x1234ABCDL, "2017-01-31", RevocationReasons.CERTIFICATEHOLD);
     private static final RevokedCertInfo REVINFO_3_UNSPECIFIED = revCertInfo(0x1234ABCDL, "2017-02-20", RevocationReasons.UNSPECIFIED);
     private static final RevokedCertInfo REVINFO_4_UNSPECIFIED = revCertInfo(0x1234ABCDL, "2017-03-31", RevocationReasons.UNSPECIFIED);
     private static final RevokedCertInfo REVINFO_5_REMOVEFROMCRL = revCertInfo(0x1234ABCDL, "2017-05-31", RevocationReasons.REMOVEFROMCRL);
@@ -54,7 +54,7 @@ public class RevokedCertInfoTest {
     @Test
     public void mergeEmpty() {
         final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>();
-        a.add(REVINFO_2_NOTREVOKED);
+        a.add(REVINFO_1_NOTREVOKED);
         final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
         assertSame("Empty 'b' collection should cause 'a' to be returned.", a, RevokedCertInfo.mergeByDateAndStatus(a, b, 0));
     }
@@ -63,7 +63,7 @@ public class RevokedCertInfoTest {
     public void mergeWithDuplicates() {
         final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>();
         final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
-        b.add(REVINFO_2_NOTREVOKED);
+        b.add(REVINFO_1_NOTREVOKED);
         b.add(REVINFO_4_UNSPECIFIED); // permanent revocation => wins
         b.add(REVINFO_5_REMOVEFROMCRL);
         final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
@@ -76,7 +76,7 @@ public class RevokedCertInfoTest {
         final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>();
         a.add(REVINFO_4_UNSPECIFIED); // permanent revocation => wins
         final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
-        b.add(REVINFO_2_NOTREVOKED);
+        b.add(REVINFO_1_NOTREVOKED);
         b.add(REVINFO_5_REMOVEFROMCRL);
         final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, System.currentTimeMillis());
         assertEquals("Items should have been de-duplicated.", 1, res.size());
@@ -87,11 +87,11 @@ public class RevokedCertInfoTest {
     public void mergeWithDuplicates3() {
         final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>();
         final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>();
-        b.add(REVINFO_2_NOTREVOKED); // only temporary revocations, and most recent entry => wins
-        b.add(REVINFO_1_ONHOLD);
+        b.add(REVINFO_2_ONHOLD); // only temporary revocations, and most recent entry => wins
+        b.add(REVINFO_1_NOTREVOKED);
         final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
         assertEquals("Items should have been de-duplicated.", 1, res.size());
-        assertRCIEquals("Should contain entry REVINFO_2_NOTREVOKED.", REVINFO_2_NOTREVOKED, res.iterator().next());
+        assertRCIEquals("Should contain entry REVINFO_2_ONHOLD.", REVINFO_2_ONHOLD, res.iterator().next());
     }
     
     @Test
