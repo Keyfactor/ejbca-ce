@@ -133,6 +133,7 @@ public class X509CAInfo extends CAInfo {
      * @param subjectaltname the Subject Alternative Name (SAN) of the CA, as found in the certificate
      * @param certificateprofileid the ID of the certificate profile for this CA
      * @param defaultCertprofileId the id of default cetificate profile for certificates this CA issues
+     * @param certificateDataToWriteTo certificate data table to write to
      * @param encodedValidity the validity of this CA as a human-readable string, e.g. 25y
      * @param expiretime the date when this CA expires
      * @param catype the type of CA, in this case CAInfo.CATYPE_X509
