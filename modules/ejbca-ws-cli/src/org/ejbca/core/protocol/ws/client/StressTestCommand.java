@@ -23,6 +23,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -122,6 +123,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		String passWord;
 		final String subjectDN;
 		X509Certificate userCertsToBeRevoked[];
+		List<X509Certificate> userCertsGenerated = new ArrayList<>();
 		public JobData(String subjectDN) {
 			this.subjectDN = subjectDN;
 		}
@@ -186,6 +188,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
 			return false;
 		}
+		jobData.userCertsGenerated.add(cert);
 		StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
 		StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
 		return true;
@@ -274,6 +277,10 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			for( int j=0; i.hasNext(); j++ ) {
 				this.jobData.userCertsToBeRevoked[j] = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(Base64.decode(i.next().getCertificateData())));
 			}
+			if ( this.jobData.userCertsToBeRevoked.length < 1 ) {
+				this.jobData.userCertsToBeRevoked = this.jobData.userCertsGenerated.toArray(new X509Certificate[this.jobData.userCertsGenerated.size()]);
+			}
+			this.jobData.userCertsGenerated.clear();
 			if ( this.jobData.userCertsToBeRevoked.length < 1 ) {
 				StressTestCommand.this.performanceTest.getLog().error("no cert found for user "+this.jobData.userName);
 				return false;
@@ -454,7 +461,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	} // CertificateRequestCommand
 	
 	/**
-	 * @param args
+	 * @param _args
 	 */
 	public StressTestCommand(String[] _args) {
 		super(_args);
