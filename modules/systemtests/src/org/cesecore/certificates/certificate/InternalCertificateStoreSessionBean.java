@@ -70,6 +70,8 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     @EJB
     private NoConflictCertificateDataSessionLocal noConflictCertificateDataSession;
     @EJB
+    private NoConflictCertificateStoreSessionLocal noConflictCertificateStoreSession;
+    @EJB
     private SecurityEventsLoggerSessionLocal logSession;
 
     @Override
@@ -122,7 +124,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         Collection<Certificate> certs = certStore.findCertificatesBySubject(subjectDN);
         for (Certificate certificate : certs) {
             removeCertificate(certificate);
-        }  
+        }
     }
     
     @Override
@@ -130,7 +132,19 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         Collection<CertificateWrapper> certs = certStore.findCertificatesByUsername(username);
         for (CertificateWrapper certificate : certs) {
             removeCertificate(certificate.getCertificate());
-        }  
+        }
+    }
+    
+    @Override
+    public void removeLimitedCertificatesByIssuer(final String issuerDN) {
+        Query query = entityManager.createQuery("DELETE FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectDN=:subjectDN");
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("subjectDN", "CN=limited");
+        query.executeUpdate();
+        query = entityManager.createQuery("DELETE FROM NoConflictCertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectDN=:subjectDN");
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("subjectDN", "CN=limited");
+        query.executeUpdate();
     }
     
     @Override
@@ -302,13 +316,24 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         authorizedToCA(admin, caid);
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
         final CertificateData certificateData = certificateDataSession.findByFingerprint(fingerprint);
+        final CertificateDataWrapper cdw;
         if (certificateData == null) {
-            final String serialNumber = CertTools.getSerialNumberAsString(certificate);
-            String msg = INTRES.getLocalizedMessage("store.errorfindcertfp", fingerprint, serialNumber);
-            log.info(msg);
-            throw new CertificateRevokeException(msg);
+            final String issuerDN = CertTools.getIssuerDN(certificate);
+            if (noConflictCertificateStoreSession.canRevokeNonExisting(issuerDN)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Setting revoke status of non-existing certificate.");
+                }
+                cdw = noConflictCertificateStoreSession.getCertificateDataByIssuerAndSerno(issuerDN, CertTools.getSerialNumber(certificate));
+            } else {
+                final String serialNumber = CertTools.getSerialNumberAsString(certificate);
+                String msg = INTRES.getLocalizedMessage("store.errorfindcertfp", fingerprint, serialNumber);
+                log.info(msg);
+                throw new CertificateRevokeException(msg);
+            }
+        } else {
+            cdw = new CertificateDataWrapper(certificateData, null);
         }
-        return certStore.setRevokeStatusNoAuth(admin, certificateData, revokedDate, reason);
+        return noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, revokedDate, reason);
     }
 
     @Override

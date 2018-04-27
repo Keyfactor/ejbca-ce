@@ -42,7 +42,7 @@ public interface InternalCertificateStoreSessionRemote {
 
     /**
      * This method removes the given certificate(s) by fingerprint (primary key).
-     * @see org.cesecore.util.CertTools#getFingerprintAsString(java.lang.String)
+     * @see org.cesecore.util.CertTools#getFingerprintAsString
      * 
      * @param fingerprint fingerprint of the certificate(s) to remove.
      * @return number of rows (certificates) removed from the Base64CertTable
@@ -102,7 +102,7 @@ public interface InternalCertificateStoreSessionRemote {
      * @param revokeDate when it was revoked
      * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
-     * @throws CertificaterevokeException (rollback) if certificate does not exist
+     * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
     boolean setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokedDate, int reason) throws CertificateRevokeException, AuthorizationDeniedException;
@@ -115,7 +115,7 @@ public interface InternalCertificateStoreSessionRemote {
      * @param revokeDate when it was revoked
      * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @return true if status was changed in the database, false if not, for example if the certificate was already revoked 
-     * @throws CertificaterevokeException (rollback) if certificate does not exist
+     * @throws CertificateRevokeException (rollback) if certificate does not exist
      * @throws AuthorizationDeniedException (rollback)
      */
     boolean setRevokeStatus(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason)
@@ -162,4 +162,7 @@ public interface InternalCertificateStoreSessionRemote {
 
     /** Access to DatabaseIndexUtil.getDatabaseIndexFromTable() using the default EJBCA DataSource. */
     List<DatabaseIndex> getDatabaseIndexFromTable(String tableName, boolean requireUnique);
+
+    /** Removes all limited certificates (without certificates and certificate details) that matches the given issuer. */
+    void removeLimitedCertificatesByIssuer(String issuerDN);
 }
