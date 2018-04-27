@@ -26,7 +26,6 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
-import org.cesecore.util.MapTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 
@@ -91,8 +90,7 @@ public abstract class CAInfo implements Serializable {
     protected boolean keepExpiredCertsOnCRL = false;
     protected boolean finishuser;
     protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
-    protected static final Map<String, String> certificateDataList = MapTools.unmodifiableMap("CertificateData", "Default table", "NoConflictCertificateData", "Table for revoked throw-away certificates");
-    protected String selectedCertificateData = "CertificateData"; // Default is normal certificate data table.
+    protected boolean useNoConflictCertificateData = false; // By Default we use normal certificate data table.
     
     /**
      * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
@@ -130,21 +128,6 @@ public abstract class CAInfo implements Serializable {
 
     public void setSubjectDN(final String subjectdn) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-    }
-    
-    public static Map<String, String> getCertificateDataMap() {
-        return certificateDataList;
-    }
-    
-    public String getSelectedCertificateData() {
-        return selectedCertificateData;
-    }
-    
-    public void setSelectedCertificateData(final String certificateData) {
-        if (!certificateDataList.containsValue(certificateData)) {
-            throw new IllegalArgumentException("Certificate data " + certificateData + " is not valid.");
-        }
-        selectedCertificateData = certificateData;
     }
 
     public int getCAId() {
@@ -456,6 +439,20 @@ public abstract class CAInfo implements Serializable {
         this.approvalSettings = approvalSettings;
     }
 
+    /**
+     * @return true if the NoConflictCertificateData used.
+     */
+    public boolean isUseNoConflictCertificateData() {
+        return this.useNoConflictCertificateData;
+    }
+
+    /**
+     * @param useNoConflictCertificateData true means that the NoConflictCertificateData will be used instead of CertificateData.
+     */
+    public void setUseNoConflictCertificateData(final boolean useNoConflictCertificateData) {
+        this.useNoConflictCertificateData = useNoConflictCertificateData;
+    }
+    
     /**
      * @return true if the UserData used to issue a certificate should be kept in the database.
      */
