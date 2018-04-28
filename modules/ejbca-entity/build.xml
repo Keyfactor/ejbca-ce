@@ -161,7 +161,7 @@
 			<test name="org.ejbca.database.DatabaseSchemaTest" todir="${reports.dir}"/>
 		</junit>
     	<condition property="databaseschemarest.ok" value="true"><not><isset property="databaseschemarest.failed"/></not></condition>
-    	<echo message="If your test runs our of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
+    	<echo message="If your test runs out of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
     </target>
 	
 	<target name="test-cli-commands" description="Test Database CLI commands." depends="compile-test, ejbca-db-cli">
