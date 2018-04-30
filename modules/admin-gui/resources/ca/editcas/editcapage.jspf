@@ -43,6 +43,7 @@
   boolean isUninitialized = false;
   boolean hasEditRights = cabean.hasEditRight();
   boolean hasCreateRights = cabean.hasCreateRight();
+  boolean acceptRevocationsNonExistingEntries = false;
   
   CmsCAServiceInfo cmscainfo = null; 
   java.security.cert.X509Certificate cmscert = null; 
@@ -198,14 +199,16 @@ function selectDefaultCertificateProfile(){
 	}
 }
 
-function selectCertificateDataToWriteTo(){
+function updateCertificateDataTableToUseFieldStatus() {
     <% if (catype == CAInfo.CATYPE_CVC) { %>
+	document.ca.<%=CHECKBOX_CERTDBTOWRITETO%>.disabled = true;
+<% } else { %>
+	if (document.ca.<%=CHECKBOX_USECERTIFICATESTORAGE%>.checked || !document.ca.<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>.checked) {
 		document.ca.<%=CHECKBOX_CERTDBTOWRITETO%>.disabled = true;
-    <% } else { %>
-	if (document.ca.<%=CHECKBOX_USECERTIFICATESTORAGE%>.checked) {
-		document.ca.<%=CHECKBOX_CERTDBTOWRITETO%>.disabled = true;
+        acceptRevocationsNonExistingEntries = false;
 	} else {
 		document.ca.<%=CHECKBOX_CERTDBTOWRITETO%>.disabled = false;
+        acceptRevocationsNonExistingEntries = true;
 	}
 	<% } %>
 }
@@ -904,7 +907,7 @@ function toggleCANameChange(){
         <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_Certificate_Storage") %> <br />
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" onclick="selectDefaultCertificateProfile();checkAcceptNonExistingEntries();selectCertificateDataToWriteTo();"
+        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" onclick="selectDefaultCertificateProfile();checkAcceptNonExistingEntries();updateCertificateDataTableToUseFieldStatus();"
             <% if(editca) {
             	  if (cainfo.isUseCertificateStorage()) out.write("CHECKED"); // edit CA
                } else {
@@ -936,9 +939,10 @@ function toggleCANameChange(){
               <%= ejbcawebbean.getText("ACCEPTREVOCATIONSNONEXISTINGENTRY") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Accept_Revocations_of_non_existing_entry") %><br />
           </td>
           <td width="50%">
-              <input type="checkbox" name="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY %>" value="<%=CHECKBOX_VALUE %>"
+              <input type="checkbox" name="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY %>" value="<%=CHECKBOX_VALUE %>" onchange="updateCertificateDataTableToUseFieldStatus();"
                   <% if(editca && cainfo.isAcceptRevocationNonExistingEntry()) {
                       out.write("CHECKED"); // edit CA
+                      acceptRevocationsNonExistingEntries = true;
                }
                %>
                      id="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>" <%= (!hasEditRights || !editca || cainfo.isUseCertificateStorage() ? "disabled" : "") %>>
@@ -952,7 +956,7 @@ function toggleCANameChange(){
         <td>
           <input type="checkbox" name="<%=CHECKBOX_CERTDBTOWRITETO %>" value="<%=CHECKBOX_VALUE %>" 
 	          <% if(editca && cainfo.isUseNoConflictCertificateData()) { out.write("CHECKED"); } %>  
-    	           id="<%=CHECKBOX_CERTDBTOWRITETO%>" <%= (!hasEditRights || !editca || cainfo.isUseCertificateStorage() || (cainfo.getCAType() == CAInfo.CATYPE_CVC)  ? "disabled" : "") %>>
+    	           id="<%=CHECKBOX_CERTDBTOWRITETO%>" <%= (!hasEditRights || !editca || cainfo.isUseCertificateStorage() || (cainfo.getCAType() == CAInfo.CATYPE_CVC) || !acceptRevocationsNonExistingEntries ? "disabled" : "") %>>
               <label for="<%=CHECKBOX_CERTDBTOWRITETO%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
         </td>
       </tr>
