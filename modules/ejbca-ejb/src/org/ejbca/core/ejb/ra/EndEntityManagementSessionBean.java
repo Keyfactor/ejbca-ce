@@ -1796,7 +1796,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         assert(certificateProfileIdParam != null);
         CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileIdParam);
         if (certificateProfile == null) {
-            throw new IllegalArgumentException("There is no certificate profile with id " + certificateProfileIdParam);
+            final String msg = intres.getLocalizedMessage("ra.errornocertificateprofile", certificateProfileIdParam);
+            throw new IllegalArgumentException(msg);
         }
     }
 
