@@ -914,7 +914,7 @@ function toggleCANameChange(){
       </td>
     </tr>
     <tr id="Row<%=row++%2%>">
-        <td width="50%" align="right"><%= ejbcawebbean.getText("DEFAULTCERTIFICATEPROFILE")%></td>
+        <td width="50%" align="right"><%= ejbcawebbean.getText("DEFAULTCERTIFICATEPROFILE")%> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Default_Certificate_Profile") %></td>
         <td>
             <% boolean isDefaultProfileDisabled = !hasEditRights || !editca || cainfo.isUseCertificateStorage(); %>
           <select name="<%=SELECT_DEFAULTCERTPROFILE %>" size="1" <%= (isDefaultProfileDisabled  ? "disabled" : "") %> >
@@ -933,7 +933,7 @@ function toggleCANameChange(){
       </tr>
       <tr id="Row<%=row++%2%>">
           <td width="50%"  align="right">
-              <%= ejbcawebbean.getText("ACCEPTREVOCATIONSNONEXISTINGENTRY") %><br />
+              <%= ejbcawebbean.getText("ACCEPTREVOCATIONSNONEXISTINGENTRY") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Accept_Revocations_of_non_existing_entry") %><br />
           </td>
           <td width="50%">
               <input type="checkbox" name="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY %>" value="<%=CHECKBOX_VALUE %>"
@@ -948,7 +948,7 @@ function toggleCANameChange(){
       
       
      <tr id="Row<%=row++%2%>">
-        <td width="50%" align="right"><%= ejbcawebbean.getText("CERTIFICATEDATATABLETOWRITETO")%></td>
+        <td width="50%" align="right"><%= ejbcawebbean.getText("CERTIFICATEDATATABLETOWRITETO")%> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_Append_Only_Table") %></td>
         <td>
           <input type="checkbox" name="<%=CHECKBOX_CERTDBTOWRITETO %>" value="<%=CHECKBOX_VALUE %>" 
 	          <% if(editca && cainfo.isUseNoConflictCertificateData()) { out.write("CHECKED"); } %>  
