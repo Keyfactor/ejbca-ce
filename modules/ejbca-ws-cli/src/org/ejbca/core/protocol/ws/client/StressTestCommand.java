@@ -91,7 +91,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			case BASIC:
 				return new Command[]{
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
-									 new Pkcs10RequestCommand(ejbcaWS, kpg, jobData) };
+									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
 			case BASICSINGLETRANS:
 				return new Command[]{
 									 new CertificateRequestCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN, kpg.generateKeyPair())
@@ -100,12 +100,12 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			case REVOKE:
 				return new Command[]{
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
-									 new Pkcs10RequestCommand(ejbcaWS, kpg, jobData),
+									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData),
 									 new FindUserCommand(ejbcaWS, jobData),
 									 new ListCertsCommand(ejbcaWS, jobData),
 									 this.testType.equals(TestType.REVOKE_BACKDATED) ? new RevokeCertBackdatedCommand(ejbcaWS, jobData) : new RevokeCertCommand(ejbcaWS, jobData),
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, false, -1),
-									 new Pkcs10RequestCommand(ejbcaWS, kpg, jobData) };
+									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
 			case REVOKEALOT:
 				return new Command[]{
 									 new MultipleCertsRequestsForAUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, kpg),
@@ -147,19 +147,17 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	}
 	private class Pkcs10RequestCommand extends BaseCommand implements Command {
 		final private EjbcaWS ejbcaWS;
-		final private KeyPairGenerator kpg;
-		Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPairGenerator kpg, JobData _jobData) throws Exception {
+		final private PKCS10CertificationRequest pkcs10;
+		Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPair keys, JobData _jobData) throws Exception {
 			super(_jobData);
-			this.kpg= kpg;
+			this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(),
+	                keys.getPrivate(), null);
 			this.ejbcaWS = _ejbcaWS;
 		}
 		@Override
 		public boolean doIt() throws Exception {
-			KeyPair keys = kpg.generateKeyPair();
-			PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(),
-					keys.getPrivate(), null);
 			final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(this.jobData.userName, this.jobData.passWord,
-																					   new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+																					   new String(Base64.encode(this.pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
 			return checkAndLogCertificateResponse(certificateResponse, this.jobData);
 		}
 		@Override
@@ -218,7 +216,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 					return false;
 				}
 				createUser = false;
-				Pkcs10RequestCommand pkcs10RequestCommand = new Pkcs10RequestCommand(this.ejbcaWS, this.kpg, this.jobData);
+				Pkcs10RequestCommand pkcs10RequestCommand = new Pkcs10RequestCommand(this.ejbcaWS, this.kpg.generateKeyPair(), this.jobData);
 				if (!pkcs10RequestCommand.doIt()) {
 					StressTestCommand.this.performanceTest.getLog().error("MultiplePkcs10RequestsCommand failed for "+this.jobData.userName);
 					return false;
@@ -482,6 +480,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		getPrintStream().println("Here is an example of how the test could be started:");
 		getPrintStream().println("./ejbcawsracli.sh stress ManagementCA 20 5000");
 		getPrintStream().println("20 threads is started. After adding a user the thread waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA ManagementCA.");
+		getPrintStream().println("You should use the CA with 'Enforce unique public keys' unchecked to avoid 'User ... is not allowed to use same key as another user is using.' error");
 		getPrintStream().println();
 		getPrintStream().println("To define a template for the subject DN of each new user use the java system property 'subjectDN'.");
 		getPrintStream().println("If the property value contains one or several '<userName>' string these strings will be substituted with the user name.");
