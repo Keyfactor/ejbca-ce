@@ -917,7 +917,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     @Test
     public void testRevokeThrowAwayCertAndPublish() throws Exception {
         try {
-            final CAInfo cainfo = setUpThrowAwayPublishingTest(false); // don't use publisher queue
+            final CAInfo cainfo = setUpThrowAwayPublishingTest(false, false); // don't use publisher queue
             publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
             endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
             assertEquals("Publisher should have been called with 'on hold' revocation reason.",
@@ -935,12 +935,35 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     
     /**
      * Test revocation of a throw away certificate with publishing enabled.
-     * This test uses the publisher queue.
+     * This test does not use the publisher queue. Data is stored in the NoConflictCertificateData table.
+     */
+    @Test
+    public void testRevokeThrowAwayCertAndPublishWithNoConflictTable() throws Exception {
+        try {
+            final CAInfo cainfo = setUpThrowAwayPublishingTest(false, true); // don't use publisher queue. use no conflict table
+            publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.CERTIFICATEHOLD.getDatabaseValue());
+            assertEquals("Publisher should have been called with 'on hold' revocation reason.",
+                    RevocationReasons.CERTIFICATEHOLD.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.NOT_REVOKED.getDatabaseValue());
+            assertEquals("Publisher should have been called with 'not revoked' revocation reason.",
+                    RevocationReasons.NOT_REVOKED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
+            endEntityManagementSession.revokeCert(admin, THROWAWAY_CERT_SERIAL, cainfo.getSubjectDN(), RevocationReasons.SUPERSEDED.getDatabaseValue());
+            assertEquals("Publisher should have been called with 'superseeded' revocation reason.",
+                    RevocationReasons.SUPERSEDED.getDatabaseValue(), publisherTestSession.getLastMockedThrowAwayRevocationReason());
+        } finally {
+            cleanUpThrowAwayPublishingTest();
+        }
+    }
+    
+    /**
+     * Test revocation of a throw away certificate with publishing enabled.
+     * This test uses the publisher queue. Data is stored in the NoConflictCertificateData table.
      */
     @Test
     public void testRevokeThrowAwayCertAndPublishViaQueue() throws Exception {
         try {
-            final CAInfo cainfo = setUpThrowAwayPublishingTest(true); // use publisher queue!
+            final CAInfo cainfo = setUpThrowAwayPublishingTest(true, true); // use publisher queue. use no conflict table.
             final BasePublisher publisher = publisherSession.getPublisher(THROWAWAY_PUBLISHER);
             // Place on hold
             publisherTestSession.setLastMockedThrowAwayRevocationReason(-123);
@@ -973,7 +996,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         }
     }
     
-    private CAInfo setUpThrowAwayPublishingTest(boolean useQueue) throws PublisherExistsException, AuthorizationDeniedException, CertificateProfileExistsException {
+    private CAInfo setUpThrowAwayPublishingTest(final boolean useQueue, final boolean useNoConflictCertificateData) throws PublisherExistsException, AuthorizationDeniedException, CertificateProfileExistsException {
         // Set up publishing
         final CustomPublisherContainer publisher = new CustomPublisherContainer();
         publisher.setClassPath(MockedThrowAwayRevocationPublisher.class.getName());
@@ -988,6 +1011,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         cainfo.setUseCertificateStorage(false);
         cainfo.setUseUserStorage(false);
         cainfo.setAcceptRevocationNonExistingEntry(true);
+        cainfo.setUseNoConflictCertificateData(useNoConflictCertificateData);
         cainfo.setDefaultCertificateProfileId(certProfId);
         caAdminSession.editCA(admin, cainfo);
         return cainfo;
@@ -998,6 +1022,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         cainfo.setUseCertificateStorage(true);
         cainfo.setUseUserStorage(true);
         cainfo.setAcceptRevocationNonExistingEntry(false);
+        cainfo.setUseNoConflictCertificateData(false);
         caAdminSession.editCA(admin, cainfo);
         certificateProfileSession.removeCertificateProfile(admin, THROWAWAY_CERT_PROFILE);
         publisherSession.removePublisher(admin, THROWAWAY_PUBLISHER);
