@@ -106,6 +106,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -1556,7 +1557,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     serialNumber = CertTools.getSerialNumber(certificate);
                 }
                 try {
-                    revokeCert(admin, serialNumber, null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin);
+                    revokeCert(admin, serialNumber, null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin, null);
                 } catch (RevokeBackDateNotAllowedForProfileException e) {
                     throw new IllegalStateException("This should not happen since there is no back dating.",e);
                 }
@@ -1612,23 +1613,36 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final int approvalRequestID, final AuthenticationToken lastApprovingAdmin)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         try {
-            revokeCert(admin, certserno, null, issuerdn, reason, false, null, approvalRequestID, lastApprovingAdmin);
+            revokeCert(admin, certserno, null, issuerdn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("This should not happen since there is no back dating.",e);
         }
     }
+    
     @Override
     public void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
-        revokeCert(admin, certserno, revocationdate, issuerdn, reason, checkDate, null, 0, null);
+        revokeCert(admin, certserno, revocationdate, issuerdn, reason, checkDate, null, 0, null, null);
+    }
+    
+    @Override
+    public void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
+        
+        
+        BigInteger certificateSn = new BigInteger(certRevocationDto.getCertificateSN(), 16);
+        
+        revokeCert(admin, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(), 
+                null, 0, null, certRevocationDto.getCertificateProfileId());
     }
 
     private void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate,
-            final EndEntityInformation endEntityInformationParam, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin) 
+            final EndEntityInformation endEntityInformationParam, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin, final Integer certificateProfileIdParam) 
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
-     if (log.isTraceEnabled()) {
+        if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno.toString(16) + ", IssuerDN: " + issuerdn + ")");
         }
         // Check that the admin has revocation rights.
@@ -1640,6 +1654,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     certserno.toString(16).toUpperCase(), null, details);
             throw new AuthorizationDeniedException(msg);
         }
+        
         // To be fully backwards compatible we just use the first fingerprint found..
         final CertificateDataWrapper cdw = noConflictCertificateStoreSession.getCertificateDataByIssuerAndSerno(issuerdn, certserno);
         if (cdw == null) {
@@ -1652,7 +1667,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final String username = certificateData.getUsername();
         assertAuthorizedToCA(admin, caid);
         final int revocationReason = certificateData.getRevocationReason();
+        
+        if (certificateProfileIdParam != null) {
+            validateCertificateProfileExists(certificateProfileIdParam);
+            certificateData.setCertificateProfileId(certificateProfileIdParam);
+        }
         int certificateProfileId = certificateData.getCertificateProfileId();
+        
         String certificateSubjectDN = certificateData.getSubjectDnNeverNull();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
         int endEntityProfileId = certificateData.getEndEntityProfileId()==null ? -1 : certificateData.getEndEntityProfileIdOrZero();
@@ -1768,6 +1789,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         if (log.isTraceEnabled()) {
             log.trace("<revokeCert()");
+        }
+    }
+
+    private void validateCertificateProfileExists(Integer certificateProfileIdParam) {
+        assert(certificateProfileIdParam != null);
+        CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileIdParam);
+        if (certificateProfile == null) {
+            throw new IllegalArgumentException("There is no certificate profile with id " + certificateProfileIdParam);
         }
     }
 
