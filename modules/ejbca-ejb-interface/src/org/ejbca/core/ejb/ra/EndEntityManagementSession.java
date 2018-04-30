@@ -26,6 +26,7 @@ import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -466,7 +467,27 @@ public interface EndEntityManagementSession {
      */
     void revokeCert(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
-
+    
+    
+    /**
+     * Method that revokes a certificate for a user. It can also be used to
+     * un-revoke a certificate that has been revoked with reason ON_HOLD. This
+     * is done by giving reason RevokedCertInfo.NOT_REVOKED (or
+     * RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
+     * 
+     * @param admin token of the administrator performing the action
+     * @param certRevocationDto wrapper object of the input parameters for the revoke.
+     * 
+     * @throws AlreadyRevokedException if the certificate was already revoked
+     * @throws NoSuchEndEntityException if certificate to revoke can not be found
+     * @throws ApprovalException if an approval already exists for this request.
+     * @throws WaitingForApprovalException
+     * @throws AlreadyRevokedException
+     */
+    void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException,
+            RevokeBackDateNotAllowedForProfileException;
+    
     /**
      * Method that revokes a certificate for a user. It can also be used to
      * un-revoke a certificate that has been revoked with reason ON_HOLD. This

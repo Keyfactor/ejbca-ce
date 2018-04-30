@@ -1,8 +1,12 @@
 package org.ejbca.core.ejb.dto;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class CertRevocationDto {
+public class CertRevocationDto implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
     String issuerDN;
     String certificateSN;
     int reason;
