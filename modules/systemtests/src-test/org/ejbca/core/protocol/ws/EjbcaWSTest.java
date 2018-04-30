@@ -54,6 +54,7 @@ import java.util.TimeZone;
 import javax.ejb.RemoveException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
@@ -2321,7 +2322,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
         
         String resultingSubjectDN = cert.getSubjectDN().toString();
-        assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")", expectedSubjectDN,
+//        assertEquals("'"+requestedSubjectDN + "'\n was transformed into \n'" + resultingSubjectDN + "'\n (not the expected \n'" + expectedSubjectDN + "'\n)", expectedSubjectDN,
+//                resultingSubjectDN);
+        requestedSubjectDN = StringEscapeUtils.escapeJava(requestedSubjectDN);
+        resultingSubjectDN = StringEscapeUtils.escapeJava(resultingSubjectDN);
+        expectedSubjectDN = StringEscapeUtils.escapeJava(expectedSubjectDN);
+        assertEquals("'"+requestedSubjectDN + "' \nwas transformed into \n'" + resultingSubjectDN + "' \n(not the expected \n'" + expectedSubjectDN + "'\n)", expectedSubjectDN,
                 resultingSubjectDN);
         try {
             endEntityManagementSession.deleteUser(intAdmin, userName);
