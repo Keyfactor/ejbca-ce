@@ -2321,13 +2321,15 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
         
         String resultingSubjectDN = cert.getSubjectDN().toString();
-//        assertEquals("'"+requestedSubjectDN + "'\n was transformed into \n'" + resultingSubjectDN + "'\n (not the expected \n'" + expectedSubjectDN + "'\n)", expectedSubjectDN,
-//                resultingSubjectDN);
-        requestedSubjectDN = StringEscapeUtils.escapeJava(requestedSubjectDN);
-        resultingSubjectDN = StringEscapeUtils.escapeJava(resultingSubjectDN);
-        expectedSubjectDN = StringEscapeUtils.escapeJava(expectedSubjectDN);
-        assertEquals("'"+requestedSubjectDN + "' \nwas transformed into \n'" + resultingSubjectDN + "' \n(not the expected \n'" + expectedSubjectDN + "'\n)", expectedSubjectDN,
-                resultingSubjectDN);
+        try {
+            assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")", expectedSubjectDN,
+                    resultingSubjectDN);
+        } catch (AssertionError e){
+            resultingSubjectDN = resultingSubjectDN.replace("\\r", "\\n");
+            expectedSubjectDN = expectedSubjectDN.replace("\\r", "\\n");
+            assertEquals(e.getMessage(), expectedSubjectDN, resultingSubjectDN);
+        }
+
         try {
             endEntityManagementSession.deleteUser(intAdmin, userName);
         } catch (NoSuchEndEntityException e) {
