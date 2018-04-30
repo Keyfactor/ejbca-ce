@@ -120,6 +120,11 @@
    			        <h:commandButton id="downloadFingerprints" value="#{msg.cas_page_download_fingerprints}" 
                         rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" styleClass="pure-button ra-button"/>
                 </h:outputLink>
+                <h:outputLink value="cert">
+                    <f:param name="certbundle" value="zip" />
+                    <h:commandButton id="downloadCertificateBundle" value="#{msg.cas_page_download_certificate_bundle}" 
+                        rendered="#{raAccessBean.authorizedToCas and not empty raCasPageBean.casAndCrlItems}" styleClass="pure-button ra-button"/>
+                </h:outputLink>
    			</div>	                
         </ui:define>
     </ui:composition>

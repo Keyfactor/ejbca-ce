@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -59,6 +61,7 @@ public class RaCertDistServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaCertDistServlet.class);
     private static final String PARAMETER_FINGERPRINTSHEET = "fpsheet";
+    private static final String PARAMETER_CERT_BUNDLE = "certbundle";
     private static final String PARAMETER_CAID = "caid";
     private static final String PARAMETER_FINGERPRINT = "fp";
     private static final String PARAMETER_FORMAT = "format";
@@ -84,6 +87,10 @@ public class RaCertDistServlet extends HttpServlet {
         }
         if (httpServletRequest.getParameter(PARAMETER_FINGERPRINTSHEET) != null) {
             downloadFingerprintSheet(httpServletRequest, httpServletResponse);
+            return;
+        }
+        if (httpServletRequest.getParameter(PARAMETER_CERT_BUNDLE) != null) {
+            downloadCertificateBundle(httpServletRequest, httpServletResponse);
             return;
         }
         final boolean fullChain = Boolean.valueOf(httpServletRequest.getParameter(PARAMETER_CHAIN));
@@ -258,10 +265,9 @@ public class RaCertDistServlet extends HttpServlet {
      * on this system to which the current user has access. The CA certificate fingerprints are computed using SHA-256.
      * <p>Certification Authorities without a certificate, i.e. CAs with status {@link #CaConstants.CA_UNINITIALIZED} or
      * {@link #CaConstants.CA_WAITING_CERTIFICATE_RESPONSE} are excluded.
-     * @param httpServletRequest the HTTP request from the client
-     * @param httpServletResponse the HTTP response from the server
-     * @return a YAML document with CA certificate fingerprints
-     * @throws IOException if UTF-8 encoding of the HTTP response failed
+     * @param httpServletRequest the HTTP request for CA certificate fingerprints
+     * @param httpServletResponse the HTTP response to which the fingerprint sheet should be written
+     * @throws IOException if an error occurred when creating the response
      */
     public void downloadFingerprintSheet(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse)
             throws IOException {
@@ -283,11 +289,11 @@ public class RaCertDistServlet extends HttpServlet {
                 caEntry.put("CA Certificate Fingerprint", caFingerprint);
                 entries.put(caInfo.getName(), caEntry);
                 if (log.isDebugEnabled()) {
-                    log.debug("Computed Ca certificate fingerprint for CA " + caInfo.getName() + ".");
+                    log.debug("Computed CA certificate fingerprint for CA " + caInfo.getName() + ".");
                 }
             } catch (final CertificateEncodingException e) {
                 log.warn("Cannot compute CA certificate fingerprint for CA " + caInfo.getName()
-                        + " because the CA certificate could not be encoded. The error was description: " + e.getMessage());
+                        + " because the CA certificate could not be encoded. The error was: " + e.getMessage());
                 continue;
             }
         }
@@ -295,7 +301,50 @@ public class RaCertDistServlet extends HttpServlet {
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         dumperOptions.setPrettyFlow(true);
         final Yaml yaml = new Yaml(dumperOptions);
-        log.info("User " + httpServletRequest.getRemoteAddr() + " requested a CA certificate fingerprint file.");
+        log.info("User " + authenticationToken.toString() + " requested a CA certificate fingerprint file.");
         writeResponseBytes(httpServletResponse, "fingerprints.yaml", "application/text", yaml.dumpAsMap(entries).getBytes(Charset.forName("UTF-8")));
+    }
+
+    /**
+     * Creates and outputs a compressed certificate bundle containing the CA certificates of all active Certification Authorities
+     * on this system to which the current user has access. The certificate bundle is provided as a zip file of DER-encoded certificates.
+     * <p>Certification Authorities without a certificate, i.e. CAs with status {@link #CaConstants.CA_UNINITIALIZED} or
+     * {@link #CaConstants.CA_WAITING_CERTIFICATE_RESPONSE} are excluded.
+     * @param httpServletRequest the HTTP request for a certificate bundle
+     * @param httpServletResponse the HTTP response to which the certificate bundle should be written
+     * @throws IOException if an error occurred when creating the response
+     */
+    private void downloadCertificateBundle(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse)
+            throws IOException {
+        try (final ByteArrayOutputStream zipContent = new ByteArrayOutputStream()) {
+            final ZipOutputStream certificateBundle = new ZipOutputStream(zipContent);
+            final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
+            for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
+                if (caInfo.getCertificateChain() == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Not adding CA certificate for CA " + caInfo.getName()
+                                + " to certificate bundle because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
+                    }
+                    continue;
+                }
+                try {
+                    final byte[] encodedCertificate = caInfo.getCertificateChain().get(0).getEncoded();
+                    final String filename = caInfo.getName() + ".crt";
+                    certificateBundle.putNextEntry(new ZipEntry(filename));
+                    certificateBundle.write(encodedCertificate);
+                    certificateBundle.closeEntry();
+                    if (log.isDebugEnabled()) {
+                        log.debug("Added CA certificate for CA " + caInfo.getName() + " to certificate bundle.");
+                    }
+                } catch (final CertificateEncodingException e) {
+                    log.warn("Cannot add CA certificate for CA " + caInfo.getName()
+                            + " to certificate bundle because the CA certificate could not be encoded. The error was: " + e.getMessage());
+                    continue;
+                }
+            }
+            certificateBundle.close();
+            log.info("User " + authenticationToken.toString() + " requested a CA certificate bundle.");
+            writeResponseBytes(httpServletResponse, "certbundle.zip", "application/octet-stream", zipContent.toByteArray());
+        }
     }
 }
