@@ -141,7 +141,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             }
             return null;
         }
-        if (/*cainfo.is*/ true) {
+        if (cainfo.isUseNoConflictCertificateData()) {
             final NoConflictCertificateData certificateData = getLimitedNoConflictCertDataRow(cainfo, certserno);
             return new CertificateDataWrapper(certificateData);
         } else {
