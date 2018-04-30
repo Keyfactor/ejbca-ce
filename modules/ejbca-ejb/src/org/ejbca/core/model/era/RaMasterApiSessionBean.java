@@ -136,6 +136,7 @@ import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -2059,6 +2060,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         endEntityManagementSessionLocal.revokeCert(authenticationToken, certserno, revocationdate, issuerdn, reason, checkDate);
     }
 
+    @Override
+    public void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException {
+        // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
+        
+        final int caId = CertTools.stringToBCDNString(certRevocationDto.getIssuerDN()).hashCode();
+        caSession.verifyExistenceOfCA(caId);
+        endEntityManagementSessionLocal.revokeCertWithMetadata(authenticationToken, certRevocationDto);
+    }
+    
     @Override
     public CertificateStatus getCertificateStatus(AuthenticationToken authenticationToken, String issuerdn, BigInteger serno) throws CADoesntExistsException, AuthorizationDeniedException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)

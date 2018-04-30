@@ -41,13 +41,6 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 
 	private static final int ARG_ISSUERDN			= 1;
 	private static final int ARG_CERTSN				= 2;
-	
-	//private static final int ARG_REASON				= 3;
-	//private static final int ARG_TIME				= 4;
-	
-	//private static final int ARG_CERT_PROFILE_ID    = 5;
-	//private static final int ARG_METADATA           = 6;
-
 
 	/**
 	 * Creates a new instance of RevokeCertCommand
@@ -62,14 +55,10 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {
-
-            // testing code. TODO remove later
-            System.out.println("testing testing 3"); // yes reached here! :)
 			if(this.args.length < 3){
 				usage();
 				System.exit(-1); // NOPMD, it's not a JEE app
 			}
-			System.out.println("testing testing 3.1");
 
 			String REASON_KEY = "reason";
 
@@ -148,8 +137,7 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 	protected void usage() {
 		getPrintStream().println("Command used to revoke or unrevoke a certificate.");
 		getPrintStream().println("Unrevocation is done using the reason REV_REMOVEFROMCRL, and can only be done if the certificate is revoked with reason REV_CERTIFICATEHOLD.");
-		// TODO revocationdate etc...
-		getPrintStream().println("Usage : revokecert <issuerdn> <certificatesn (HEX)> <reason> [revocationdate=<revocation date>] [<certificateProfileId>] [<metadata>]");
+		getPrintStream().println("Usage : revokecert <issuerdn> <certificatesn(HEX)> reason=<reason> [revocationdate=<revocation date>] [certificateProfileId=<certificateProfileId>]");
 		getPrintStream().println();
 		getPrintStream().println();
 		getPrintStream().println("Reason should be one of : ");
@@ -160,6 +148,7 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 		getPrintStream().println();
 		getPrintStream().println("Revocation date is optional. If specified it must be in the past and must be a valid ISO8601 string");
 		getPrintStream().println("Example: 2012-06-07T23:55:59+02:00");
+		getPrintStream().println("Certificate profile id is optional.");
 	}
 
 

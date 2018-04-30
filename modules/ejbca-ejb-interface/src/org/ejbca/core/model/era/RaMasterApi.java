@@ -56,6 +56,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
+import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -473,6 +474,22 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException;
 
+    /**
+     * Request status change of a certificate (revoke or reactivate).
+     * Requires authorization to CA, EEP for the certificate and '/ra_functionality/revoke_end_entity'.
+     * 
+     * @param authenticationToken of the requesting administrator or client
+     * @param certRevocationDto wrapper objects for input parameters for the revoke
+     * 
+     * @return true if the operation was successful, false if the certificate could not be revoked for example since it did not exist
+     * @throws ApprovalException if there was a problem creating the approval request
+     * @throws WaitingForApprovalException if the request has been sent for approval
+     * @throws IllegalArgumentException if the certificate profile with id given in input doesn't exist
+     */
+    void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
+            throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException;
+    
     /** 
      * @see CertificateStoreSession#getStatus(String, BigInteger)
      * @throws CADoesntExistsException in addition to the above throws if the CA (from issuerdn) is not handled by this instance, fail-fast 

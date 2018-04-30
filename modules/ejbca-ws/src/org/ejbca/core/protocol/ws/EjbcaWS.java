@@ -1391,11 +1391,7 @@ public class EjbcaWS implements IEjbcaWS {
 			// that was permanently revoked
 			// The method over RA Master API will also check if the CA (issuer DN) is something we handle and throw a CADoesntExistsException if not
 			certRevocationDto.setCheckDate(true);
-			raMasterApiProxyBean.revokeCert(admin, serno, 
-			        certRevocationDto.getRevocationDate(), 
-			        certRevocationDto.getIssuerDN(), 
-			        certRevocationDto.getReason(), 
-			        certRevocationDto.isCheckDate());
+			raMasterApiProxyBean.revokeCertWithMetadata(admin, certRevocationDto);
 		} catch (NoSuchEndEntityException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (RuntimeException e) {	// EJBException, ClassCastException, ...
