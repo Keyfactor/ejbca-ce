@@ -274,7 +274,7 @@ public class RaCertDistServlet extends HttpServlet {
         final Map<String, Object> entries = new LinkedHashMap<>();
         final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
         for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
-            if (caInfo.getCertificateChain() == null) {
+            if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().size() == 0) {
                 if (log.isDebugEnabled()) {
                     log.debug("Not computing CA certificate fingerprint for CA " + caInfo.getName()
                             + " because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
@@ -316,11 +316,11 @@ public class RaCertDistServlet extends HttpServlet {
      */
     private void downloadCertificateBundle(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse)
             throws IOException {
-        try (final ByteArrayOutputStream zipContent = new ByteArrayOutputStream()) {
-            final ZipOutputStream certificateBundle = new ZipOutputStream(zipContent);
+        try (final ByteArrayOutputStream zipContent = new ByteArrayOutputStream();
+                final ZipOutputStream certificateBundle = new ZipOutputStream(zipContent)) {
             final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
             for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
-                if (caInfo.getCertificateChain() == null) {
+                if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().size() == 0) {
                     if (log.isDebugEnabled()) {
                         log.debug("Not adding CA certificate for CA " + caInfo.getName()
                                 + " to certificate bundle because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
@@ -342,7 +342,6 @@ public class RaCertDistServlet extends HttpServlet {
                     continue;
                 }
             }
-            certificateBundle.close();
             log.info("User " + authenticationToken.toString() + " requested a CA certificate bundle.");
             writeResponseBytes(httpServletResponse, "certbundle.zip", "application/octet-stream", zipContent.toByteArray());
         }
