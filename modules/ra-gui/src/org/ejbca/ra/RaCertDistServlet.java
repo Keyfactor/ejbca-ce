@@ -302,7 +302,8 @@ public class RaCertDistServlet extends HttpServlet {
         dumperOptions.setPrettyFlow(true);
         final Yaml yaml = new Yaml(dumperOptions);
         log.info("User " + authenticationToken.toString() + " requested a CA certificate fingerprint file.");
-        writeResponseBytes(httpServletResponse, "fingerprints.yaml", "application/text", yaml.dumpAsMap(entries).getBytes(Charset.forName("UTF-8")));
+        writeResponseBytes(httpServletResponse, "fingerprints.yaml", "text/plain; charset=utf-8",
+                yaml.dumpAsMap(entries).getBytes(Charset.forName("UTF-8")));
     }
 
     /**
