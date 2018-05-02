@@ -9,11 +9,10 @@ public class CertRevocationDto implements Serializable {
     
     String issuerDN;
     String certificateSN;
-    int reason;
+    Integer reason;
     Date revocationDate; 
-    int certificateProfileId;
-    boolean checkDate;
-    
+    Integer certificateProfileId;
+    boolean checkDate;    
     
     public CertRevocationDto(String issuerDN, String certificateSN, int reason) {
         this.issuerDN = issuerDN;
@@ -25,31 +24,31 @@ public class CertRevocationDto implements Serializable {
         this.issuerDN = issuerDN;
         this.certificateSN = certificateSN;
     }
-    
+
     public String getIssuerDN() {
         return issuerDN;
     }
-    
+
     public void setIssuerDN(String issuerDN) {
         this.issuerDN = issuerDN;
     }
-    
+
     public String getCertificateSN() {
         return certificateSN;
     }
-    
+
     public void setCertificateSN(String certificateSN) {
         this.certificateSN = certificateSN;
     }
-    
-    public int getReason() {
+
+    public Integer getReason() {
         return reason;
     }
-    
-    public void setReason(int reason) {
+
+    public void setReason(Integer reason) {
         this.reason = reason;
     }
-    
+
     public Date getRevocationDate() {
         return revocationDate;
     }
@@ -58,18 +57,18 @@ public class CertRevocationDto implements Serializable {
         this.revocationDate = revocationDate;
     }
 
-    public int getCertificateProfileId() {
+    public Integer getCertificateProfileId() {
         return certificateProfileId;
     }
-    
-    public void setCertificateProfileId(int certificateProfileId) {
+
+    public void setCertificateProfileId(Integer certificateProfileId) {
         this.certificateProfileId = certificateProfileId;
     }
-    
+
     public boolean isCheckDate() {
         return checkDate;
     }
-    
+
     public void setCheckDate(boolean checkDate) {
         this.checkDate = checkDate;
     }

@@ -55,7 +55,7 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {
-			if(this.args.length < 3){
+			if(this.args.length < 3) {
 				usage();
 				System.exit(-1); // NOPMD, it's not a JEE app
 			}
