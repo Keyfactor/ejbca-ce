@@ -164,6 +164,7 @@ org.ejbca.ui.web.ParameterException
   static final String CHECKBOX_USECERTREQHISTORY                  = "checkboxusecertreqhistory";
   static final String CHECKBOX_USEUSERSTORAGE                     = "checkboxuseuserstorage";
   static final String CHECKBOX_USECERTIFICATESTORAGE              = "checkboxusecertificatestorage";
+  static final String CHECKBOX_USEAPPENDONLYTABLE                 = "checkboxuseappendonlytable";
   static final String CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY = "checkboxacceptrevocationsnonexistingentry";
   static final String CHECKBOX_USEUTF8POLICYTEXT                  = "checkboxuseutf8policytext";
   static final String CHECKBOX_USEPRINTABLESTRINGSUBJECTDN        = "checkboxuseprintablestringsubjectdn";
@@ -197,7 +198,6 @@ org.ejbca.ui.web.ParameterException
   static final String SELECT_AVAILABLEVALIDATORS                  = "selectavailablevalidators";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
   static final String SELECT_DEFAULTCERTPROFILE                   = "selectdefaultcertificateprofile";
-  static final String CHECKBOX_CERTDBTOWRITETO                   	  = "selectcertificatedbtowriteto";
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
   static final String SELECT_APPROVALSETTINGS                     = "approvalsettings";
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "numofrequiredapprovals";
@@ -347,7 +347,7 @@ org.ejbca.ui.web.ParameterException
                 final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
                 final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
                 final String defaultCertificateProfileIdString = requestMap.get(SELECT_DEFAULTCERTPROFILE);
-                final boolean useNoConflictCertificateData = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CERTDBTOWRITETO));
+                final boolean useNoConflictCertificateData = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEAPPENDONLYTABLE));
                 final String signedByString = requestMap.get(SELECT_SIGNEDBY);
                 final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
                 String validityString = requestMap.get(TEXTFIELD_VALIDITY);
@@ -565,7 +565,7 @@ org.ejbca.ui.web.ParameterException
                 final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
                 final boolean checkboxAcceptRevocationsNonExistingEntry = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY));
                 final String defaultCertificateProfileIdString = requestMap.get(SELECT_DEFAULTCERTPROFILE);
-                final boolean useNoConflictCertificateData = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CERTDBTOWRITETO));
+                final boolean useNoConflictCertificateData = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEAPPENDONLYTABLE));
                 int defaultCertprofileId = (defaultCertificateProfileIdString==null ? 0 : Integer.parseInt(defaultCertificateProfileIdString));
                 final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
                 final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEVALIDATORS);
