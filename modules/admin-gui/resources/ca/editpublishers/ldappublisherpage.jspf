@@ -9,7 +9,7 @@
     <tr id="Row<%=row++%2%>" class="section"> 
       <td width="45%" valign="top" align="right"> 
          <strong><%= ejbcawebbean.getText("LDAPSETTINGS") %></strong>
-         <%= ejbcawebbean.getHelpReference("/LDAP_and_Publishers.html#Configure_LDAP_Publishers") %>
+         <%= ejbcawebbean.getHelpReference("/LDAP_Publisher_LDAP_Search_Publisher.html") %>
       </td>
       <td width="55%" valign="top"> 
          &nbsp;
