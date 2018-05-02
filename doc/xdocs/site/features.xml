@@ -137,7 +137,7 @@
 <li><a href="docs/SCEP.html">SCEP RA mode</a>, using SCEP controlling entity creation from an RA.</li>
 <li><a href="docs/SCEP.html">SCEP Client Certificate Renewal</a>, allowing client certificate renewal using SCEP</li>
 <li><a href="docs/Certificate_Transparency.html">Certificate Transparency</a>, RFC6962.</li>
-<li><a href="docs/LDAP_and_Publishers.html">CertSafe</a> publisher to send, and revoke, certificates from a CertSafe server.</li>
+<li><a href="docs/Publishers.html">CertSafe</a> publisher to send, and revoke, certificates from a CertSafe server.</li>
 <li><a href="docs/Peer_Systems.html">Peer Connectors</a> for managing Peer Systems, such as OCSP Responders.</li>
 <li>Proxy CMP and Windows Autoenrollment through the <a href="docs/EJBCA_RA.html">RA</a> (using Peers) to avoid direct communication with the CA.</li>
 <li>Direct Validation Authority (OCSP responder) updates from CA to VA. Ideal for low latency revocation and white listing.</li>
