@@ -263,8 +263,8 @@ public class RaCertDistServlet extends HttpServlet {
     /**
      * Creates and outputs a YAML document containing the CA certificate fingerprints of all active Certification Authorities
      * on this system to which the current user has access. The CA certificate fingerprints are computed using SHA-256.
-     * <p>Certification Authorities without a certificate, i.e. CAs with status {@link #CaConstants.CA_UNINITIALIZED} or
-     * {@link #CaConstants.CA_WAITING_CERTIFICATE_RESPONSE} are excluded.
+     * <p>Certification Authorities without a certificate, i.e. CAs with status {@link org.cesecore.certificates.ca.CAConstants#CA_UNINITIALIZED} or
+     * {@link org.cesecore.certificates.ca.CAConstants#CA_WAITING_CERTIFICATE_RESPONSE} are excluded.
      * @param httpServletRequest the HTTP request for CA certificate fingerprints
      * @param httpServletResponse the HTTP response to which the fingerprint sheet should be written
      * @throws IOException if an error occurred when creating the response
@@ -309,41 +309,42 @@ public class RaCertDistServlet extends HttpServlet {
     /**
      * Creates and outputs a compressed certificate bundle containing the CA certificates of all active Certification Authorities
      * on this system to which the current user has access. The certificate bundle is provided as a zip file of DER-encoded certificates.
-     * <p>Certification Authorities without a certificate, i.e. CAs with status {@link #CaConstants.CA_UNINITIALIZED} or
-     * {@link #CaConstants.CA_WAITING_CERTIFICATE_RESPONSE} are excluded.
+     * <p>Certification Authorities without a certificate, i.e. CAs with status {@link org.cesecore.certificates.ca.CAConstants#CA_UNINITIALIZED} or
+     * {@link org.cesecore.certificates.ca.CAConstants#CA_WAITING_CERTIFICATE_RESPONSE} are excluded.
      * @param httpServletRequest the HTTP request for a certificate bundle
      * @param httpServletResponse the HTTP response to which the certificate bundle should be written
      * @throws IOException if an error occurred when creating the response
      */
     private void downloadCertificateBundle(final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse)
             throws IOException {
-        try (final ByteArrayOutputStream zipContent = new ByteArrayOutputStream();
-                final ZipOutputStream certificateBundle = new ZipOutputStream(zipContent)) {
-            final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
-            for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
-                if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().size() == 0) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Not adding CA certificate for CA " + caInfo.getName()
-                                + " to certificate bundle because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
+        try (final ByteArrayOutputStream zipContent = new ByteArrayOutputStream()) {
+            try (final ZipOutputStream certificateBundle = new ZipOutputStream(zipContent)) {
+                final AuthenticationToken authenticationToken = raAuthenticationHelper.getAuthenticationToken(httpServletRequest, httpServletResponse);
+                for (final CAInfo caInfo : raMasterApi.getAuthorizedCas(authenticationToken)) {
+                    if (caInfo.getCertificateChain() == null || caInfo.getCertificateChain().size() == 0) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Not adding CA certificate for CA " + caInfo.getName()
+                                    + " to certificate bundle because no CA certificate is available. Status of this CA is " + caInfo.getStatus());
+                        }
+                        continue;
                     }
-                    continue;
-                }
-                try {
-                    final byte[] encodedCertificate = caInfo.getCertificateChain().get(0).getEncoded();
-                    final String filename = caInfo.getName() + ".crt";
-                    certificateBundle.putNextEntry(new ZipEntry(filename));
-                    certificateBundle.write(encodedCertificate);
-                    certificateBundle.closeEntry();
-                    if (log.isDebugEnabled()) {
-                        log.debug("Added CA certificate for CA " + caInfo.getName() + " to certificate bundle.");
+                    try {
+                        final byte[] encodedCertificate = caInfo.getCertificateChain().get(0).getEncoded();
+                        final String filename = caInfo.getName() + ".crt";
+                        certificateBundle.putNextEntry(new ZipEntry(filename));
+                        certificateBundle.write(encodedCertificate);
+                        certificateBundle.closeEntry();
+                        if (log.isDebugEnabled()) {
+                            log.debug("Added CA certificate for CA " + caInfo.getName() + " to certificate bundle.");
+                        }
+                    } catch (final CertificateEncodingException e) {
+                        log.warn("Cannot add CA certificate for CA " + caInfo.getName()
+                                + " to certificate bundle because the CA certificate could not be encoded. The error was: " + e.getMessage());
+                        continue;
                     }
-                } catch (final CertificateEncodingException e) {
-                    log.warn("Cannot add CA certificate for CA " + caInfo.getName()
-                            + " to certificate bundle because the CA certificate could not be encoded. The error was: " + e.getMessage());
-                    continue;
                 }
+                log.info("User " + authenticationToken.toString() + " requested a CA certificate bundle.");
             }
-            log.info("User " + authenticationToken.toString() + " requested a CA certificate bundle.");
             writeResponseBytes(httpServletResponse, "certbundle.zip", "application/octet-stream", zipContent.toByteArray());
         }
     }
