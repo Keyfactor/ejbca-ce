@@ -951,7 +951,7 @@ function pageLoad() {
           </td>
       </tr>
       <tr id="Row<%=row%2%>" class="onlyShowForThrowAwayCA">
-        <td width="50%" align="right"><%= ejbcawebbean.getText("CERTIFICATEPROFILEFORNONEXISTING")%> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Default_Certificate_Profile for Non-Existing Entries") %></td>
+        <td width="50%" align="right"><%= ejbcawebbean.getText("CERTIFICATEPROFILEFORNONEXISTING")%> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Default_Certificate_Profile_for_Non-Existing_Entries") %></td>
         <td>
             <% boolean isDefaultProfileDisabled = !hasEditRights || !editca || cainfo.isUseCertificateStorage() || !acceptRevocationsNonExistingEntries; %>
           <select name="<%=SELECT_DEFAULTCERTPROFILE %>" size="1" <%= (isDefaultProfileDisabled  ? "disabled" : "") %> >
