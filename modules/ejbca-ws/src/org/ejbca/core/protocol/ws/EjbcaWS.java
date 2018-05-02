@@ -1442,27 +1442,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    
 	    try {
     	    CertRevocationDto certRevocationDto = new CertRevocationDto(issuerDN, certificateSN);
-    	    
-    	    final String REASON_KEY = "reason";
-    	    final String REVOCATION_DATE_KEY = "revocationdate";
-    	    final String CERT_PROFILE_ID_KEY = "certificateprofileid";
-    	    
-    	    for (KeyValuePair keyValuePair : metadata) {
-    	        switch (keyValuePair.getKey().toLowerCase()) {
-    	        case REASON_KEY:
-    	            int reason = Integer.parseInt(keyValuePair.getValue());
-                    certRevocationDto.setReason(reason);
-                    break;
-    	        case REVOCATION_DATE_KEY:
-    	            Date date = getValidatedDate(keyValuePair.getValue());
-                    certRevocationDto.setRevocationDate(date);
-                    break;
-    	        case CERT_PROFILE_ID_KEY:
-    	            int certificateProfileId = Integer.parseInt(keyValuePair.getValue());
-                    certRevocationDto.setCertificateProfileId(certificateProfileId);
-                    break;
-    	        }
-            }
+    	    certRevocationDto = parseRevocationMetadata(certRevocationDto, metadata);
             revokeCert(certRevocationDto, logger);
             
 	    } finally {
@@ -1470,6 +1450,32 @@ public class EjbcaWS implements IEjbcaWS {
             logger.flush();
         }
 	}
+
+    CertRevocationDto parseRevocationMetadata(CertRevocationDto certRevocationDto, final List<KeyValuePair> metadata) throws DateNotValidException {
+        final String REASON_KEY = "reason";
+        final String REVOCATION_DATE_KEY = "revocationdate";
+        final String CERT_PROFILE_ID_KEY = "certificateprofileid";
+
+        if (metadata != null) {
+            for (KeyValuePair keyValuePair : metadata) {
+                switch (keyValuePair.getKey().toLowerCase()) {
+                    case REASON_KEY:
+                        int reason = Integer.parseInt(keyValuePair.getValue());
+                        certRevocationDto.setReason(reason);
+                        break;
+                    case REVOCATION_DATE_KEY:
+                        Date date = getValidatedDate(keyValuePair.getValue());
+                        certRevocationDto.setRevocationDate(date);
+                        break;
+                    case CERT_PROFILE_ID_KEY:
+                        int certificateProfileId = Integer.parseInt(keyValuePair.getValue());
+                        certRevocationDto.setCertificateProfileId(certificateProfileId);
+                        break;
+                }
+            }
+        }
+        return certRevocationDto;
+    }
 
 	private Date getValidatedDate(String sDate) throws DateNotValidException {
 	    Date date = null;
