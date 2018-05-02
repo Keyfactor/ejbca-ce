@@ -2327,7 +2327,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         } catch (AssertionError e){
             resultingSubjectDN = resultingSubjectDN.replace("\\r", "\\n");
             expectedSubjectDN = expectedSubjectDN.replace("\\r", "\\n");
-            assertEquals(e.getMessage(), expectedSubjectDN, resultingSubjectDN);
+            requestedSubjectDN = StringEscapeUtils.escapeJava(requestedSubjectDN);
+            resultingSubjectDN = StringEscapeUtils.escapeJava(resultingSubjectDN);
+            expectedSubjectDN = StringEscapeUtils.escapeJava(expectedSubjectDN);
+            assertEquals(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "')", expectedSubjectDN, resultingSubjectDN);
         }
 
         try {
