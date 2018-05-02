@@ -191,6 +191,16 @@ function isExternalGeneric(){
    } 
 }
 <% } %>
+function hideShowThrowAwayCAItems() {
+    <% if (catype == CAInfo.CATYPE_X509) { %>
+        var shown = !document.ca.<%=CHECKBOX_USECERTIFICATESTORAGE%>.checked;
+        var items = document.getElementsByClassName("onlyShowForThrowAwayCA");
+        for (var i = 0; i < items.length; i++) {
+            items[i].style.display = shown ? '' : 'none';
+        }
+    <% } %>
+}
+
 function selectDefaultCertificateProfile(){
     <% if (catype == CAInfo.CATYPE_X509) { %>
 	if (document.ca.<%=CHECKBOX_USECERTIFICATESTORAGE%>.checked || !document.ca.<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>.checked) {
@@ -388,10 +398,15 @@ function toggleCANameChange(){
 	var value =  document.getElementById('<%=ID_CHECKBOX_CANAMECHANGE%>').checked ? false : true;
 	document.getElementById('<%=ID_NEWSUBJECTDN%>').disabled = value;
 }
+
+function pageLoad() {
+	<% if(!editca || isUninitialized) out.write("fillCertProfileField();"); %>
+	hideShowThrowAwayCAItems();
+}
 -->
 
 </script>
-<body <% if(!editca || isUninitialized) out.write(" onload='fillCertProfileField()' "); %>> 
+<body onload="pageLoad()"> 
 <jsp:include page="../../adminmenu.jsp" />
 
 
@@ -909,18 +924,18 @@ function toggleCANameChange(){
         <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_Certificate_Storage") %> <br />
       </td>
       <td width="50%"> 
-        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" onclick="checkAcceptNonExistingEntries();selectDefaultCertificateProfile();updateCertificateDataTableToUseFieldStatus();"
+        <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATESTORAGE %>" value="<%=CHECKBOX_VALUE %>" onclick="hideShowThrowAwayCAItems();checkAcceptNonExistingEntries();selectDefaultCertificateProfile();updateCertificateDataTableToUseFieldStatus();"
             <% if(editca) {
             	  if (cainfo.isUseCertificateStorage()) out.write("CHECKED"); // edit CA
                } else {
             	  out.write("CHECKED"); // new CA default to true
                }%> id="<%=CHECKBOX_USECERTIFICATESTORAGE%>" <%= (hasEditRights ? "" : "disabled") %>>
-               <label for="<%=CHECKBOX_USECERTIFICATESTORAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
+               <label for="<%=CHECKBOX_USECERTIFICATESTORAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" />...</label>      
       </td>
     </tr>
     
     <% if (catype == CAInfo.CATYPE_X509) { %>
-      <tr id="Row<%=row%2%>">
+      <tr id="Row<%=row%2%>" class="onlyShowForThrowAwayCA">
           <td width="50%"  align="right">
               <%= ejbcawebbean.getText("ACCEPTREVOCATIONSNONEXISTINGENTRY") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Accept_Revocations_of_Non-Existing_Entries") %><br />
           </td>
@@ -935,7 +950,7 @@ function toggleCANameChange(){
               <label for="<%=CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY%>"><c:out value="<%= ejbcawebbean.getText(\"ACCEPT\") %>" /></label>
           </td>
       </tr>
-      <tr id="Row<%=row%2%>">
+      <tr id="Row<%=row%2%>" class="onlyShowForThrowAwayCA">
         <td width="50%" align="right"><%= ejbcawebbean.getText("CERTIFICATEPROFILEFORNONEXISTING")%> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Default_Certificate_Profile for Non-Existing Entries") %></td>
         <td>
             <% boolean isDefaultProfileDisabled = !hasEditRights || !editca || cainfo.isUseCertificateStorage() || !acceptRevocationsNonExistingEntries; %>
@@ -955,7 +970,7 @@ function toggleCANameChange(){
       </tr>
       
       
-     <tr id="Row<%=row++%2%>">
+     <tr id="Row<%=row++%2%>" class="onlyShowForThrowAwayCA">
         <td width="50%" align="right"><%= ejbcawebbean.getText("USEAPPENDONLYTABLE")%> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#Use_Append-Only_Table") %></td>
         <td>
           <input type="checkbox" name="<%=CHECKBOX_USEAPPENDONLYTABLE %>" value="<%=CHECKBOX_VALUE %>" 
