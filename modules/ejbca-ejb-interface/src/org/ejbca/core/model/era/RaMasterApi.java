@@ -482,8 +482,6 @@ public interface RaMasterApi {
      * @param authenticationToken of the requesting administrator or client
      * @param certRevocationDto wrapper objects for input parameters for the revoke
      * 
-     * @return true if the operation was successful, false if the certificate could not be revoked for example since it did not exist
-     * 
      * @throws AuthorizationDeniedException
      * @throws NoSuchEndEntityException if certificate to revoke can not be found
      * @throws ApprovalException if revocation has been requested and is waiting for approval.
