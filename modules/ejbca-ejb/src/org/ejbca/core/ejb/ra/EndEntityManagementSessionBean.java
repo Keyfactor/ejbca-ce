@@ -75,6 +75,7 @@ import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLo
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -1560,6 +1561,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     revokeCert(admin, serialNumber, null, cdw.getCertificateData().getIssuerDN(), reason, false, endEntityInformation, 0, lastApprovingAdmin, null);
                 } catch (RevokeBackDateNotAllowedForProfileException e) {
                     throw new IllegalStateException("This should not happen since there is no back dating.",e);
+                } catch (CertificateProfileDoesNotExistException e) {
+                    throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
                 }
             } catch (AlreadyRevokedException e) {
                 if (log.isDebugEnabled()) {
@@ -1616,6 +1619,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             revokeCert(admin, certserno, null, issuerdn, reason, false, null, approvalRequestID, lastApprovingAdmin, null);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
             throw new IllegalStateException("This should not happen since there is no back dating.",e);
+        } catch (CertificateProfileDoesNotExistException e) {
+            throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
         }
     }
     
@@ -1623,17 +1628,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
-        revokeCert(admin, certserno, revocationdate, issuerdn, reason, checkDate, null, 0, null, null);
+        try {
+            revokeCert(admin, certserno, revocationdate, issuerdn, reason, checkDate, null, 0, null, null);
+        } catch (CertificateProfileDoesNotExistException e) {
+            throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
+        }
     }
     
     @Override
     public void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
-        
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException {
         
         BigInteger certificateSn = new BigInteger(certRevocationDto.getCertificateSN(), 16);
-        
         revokeCert(admin, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(), 
                 null, 0, null, certRevocationDto.getCertificateProfileId());
     }
@@ -1641,7 +1648,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate,
             final EndEntityInformation endEntityInformationParam, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin, final Integer certificateProfileIdParam) 
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno.toString(16) + ", IssuerDN: " + issuerdn + ")");
         }
@@ -1792,12 +1799,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
     }
 
-    private void validateCertificateProfileExists(Integer certificateProfileIdParam) {
+    private void validateCertificateProfileExists(Integer certificateProfileIdParam) throws CertificateProfileDoesNotExistException {
         assert(certificateProfileIdParam != null);
         CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certificateProfileIdParam);
         if (certificateProfile == null) {
             final String msg = intres.getLocalizedMessage("ra.errornocertificateprofile", certificateProfileIdParam);
-            throw new IllegalArgumentException(msg);
+            throw new CertificateProfileDoesNotExistException(msg);
         }
     }
 
