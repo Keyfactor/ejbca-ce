@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.ws.client;
 
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
