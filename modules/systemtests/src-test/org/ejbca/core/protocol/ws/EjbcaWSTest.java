@@ -2321,12 +2321,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
         
         String resultingSubjectDN = cert.getSubjectDN().toString();
-        // on Red Hat 6.4 with OpenJDK-8 64-Bit '\r' symbol is automaticcally replaced with '\n'. So try to check again, if difference between expected and actual
-        // is in that symbol (than test succeeds) otherwise test fails
+        // on RedHat 6.4 with OpenJDK-8 64-Bit '\r' symbol is automatically replaced with '\n'. So try to check again, if difference between expected and actual
+        // is in that symbol then test succeeds, otherwise test fails
         try {
             assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")", expectedSubjectDN,
                     resultingSubjectDN);
         } catch (AssertionError e){
+            log.info(requestedSubjectDN + " was transformed into '" + resultingSubjectDN + "' (not the expected '" + expectedSubjectDN + "'). Re-checking if it was a \\r replaced by \\n that happens on some platforms.");
             expectedSubjectDN = StringEscapeUtils.escapeJava(expectedSubjectDN);
             requestedSubjectDN = StringEscapeUtils.escapeJava(requestedSubjectDN);
             resultingSubjectDN = StringEscapeUtils.escapeJava(resultingSubjectDN);
