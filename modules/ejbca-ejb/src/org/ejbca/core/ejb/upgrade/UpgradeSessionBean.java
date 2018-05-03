@@ -526,6 +526,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastUpgradedToVersion("6.12.0");
         }
+        if (isLesserThan(oldVersion, "6.14.0")) {
+            try {
+                upgradeSession.migrateDatabase6140();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.14.0");
+        }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -1355,6 +1363,26 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         importUnidFnrTrustDir();
     }
     
+    /**
+     * Upgrade to EJBCA 6.14.0 
+     * Provides all current Peer connector roles with the new rules, controlling access to SCEP (same procedure as 
+     * migrateDatabase6110) on remote RA instances. Should be allowed by default to not cause any regressions. 
+     * This rules is only relevant for RA Peer connector roles.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase6140() throws UpgradeFailedException {
+        log.debug("migrateDatabase6140: Adding new rule for SCEP protocol access on remote RA instances.");
+        List<Role> allRoles = roleDataSession.getAllRoles();
+        for (Role role : allRoles) {
+            boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
+            if (isRaRequestRole) {
+                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP, Role.STATE_ALLOW);
+                roleDataSession.persistRole(role);
+            }
+        }
+    }
+
     /**
      * From EJBCA 6.12.0, all extensions defined in ocsp.properties are selected for each key binding instead. Since this
      * setting was global previously, it should be fair to add each extension to every OCSP key binding.
