@@ -1375,7 +1375,7 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
 	private void revokeCert(CertRevocationDto certRevocationDto, IPatternLogger logger) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, 
-	        ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException {
+	        ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, CertificateProfileDoesNotExistException {
 	    
 		if (log.isDebugEnabled()) {
 			log.debug("Revoke cert with serial number '" + certRevocationDto.getCertificateSN() + 
@@ -1408,7 +1408,9 @@ public class EjbcaWS implements IEjbcaWS {
             	revokeCert(certRevocationDto, logger);
 			} catch (RevokeBackDateNotAllowedForProfileException e) {
 				throw new Error("This is should not happen since there is no back dating.",e);
-			}
+			} catch (CertificateProfileDoesNotExistException e) {
+	            throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
+	        }
 		} finally {
 			logger.writeln();
 			logger.flush();
@@ -1427,7 +1429,9 @@ public class EjbcaWS implements IEjbcaWS {
             certRevocationDto.setRevocationDate(date);
             
             revokeCert(certRevocationDto, logger);
-		} finally {
+		} catch (CertificateProfileDoesNotExistException e) {
+            throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
+        } finally {
 			logger.writeln();
 			logger.flush();
 		}
@@ -1436,7 +1440,7 @@ public class EjbcaWS implements IEjbcaWS {
 	@Override
     public void revokeCertWithMetadata(final String issuerDN, final String certificateSN, final List<KeyValuePair> metadata) 
             throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, 
-                   WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException 
+                   WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException, CertificateProfileDoesNotExistException 
 	{
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    
