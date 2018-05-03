@@ -3,46 +3,53 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
-	<!-- Console output -->
-	<appender name="console" class="org.apache.log4j.ConsoleAppender"> 
-		<param name="Target" value="System.out"/>
-		<param name="Threshold" value="INFO"/>
-		<layout class="org.apache.log4j.PatternLayout"> 
-			<param name="ConversionPattern" value="%m%n"/> 
-		</layout> 
-	</appender> 
+    <!-- Console output -->
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out"/>
+        <param name="Threshold" value="INFO"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n"/>
+        </layout>
+    </appender>
 
-	<!-- Debug console output -->
-	<appender name="debug-console" class="org.apache.log4j.ConsoleAppender"> 
-		<param name="Target" value="System.out"/>
-		<param name="Threshold" value="TRACE"/>
-		<layout class="org.apache.log4j.PatternLayout"> 
-			<param name="ConversionPattern" value="%d %-5p [%c] %m%n"/> 
-		</layout> 
-	</appender> 
+    <!-- Debug console output -->
+    <appender name="debug-console" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out"/>
+        <param name="Threshold" value="TRACE"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+        </layout>
+    </appender>
 
-	<!-- Limit the JBoss EJB remoting output -->
-	<category name="org.xnio" additivity="false">
-		<priority value="WARN"/>
-	</category>
-	<category name="org.jboss" additivity="false">
-		<priority value="ERROR"/>
-	</category>
+    <!-- Limit the JBoss EAP/Wildfly EJB remoting output -->
+    <category name="org.xnio" additivity="false">
+        <priority value="WARN"/>
+    </category>
+    <category name="org.jboss" additivity="false">
+        <priority value="ERROR"/>
+    </category>
+    <category name="org.wildfly" additivity="false">
+        <priority value="WARN"/>
+    </category>
 
-	<category name="org.ejbca" additivity="false">
-		<priority value="TRACE"/>
-		<!-- Change this to 'debug-console' for full debug info -->
-		<appender-ref ref="console"/>
-	</category>
-		<category name="org.ejbca.config" additivity="false">
-		<priority value="OFF"/>
-		<appender-ref ref="console"/>
-	</category>
+    <category name="org.ejbca" additivity="false">
+        <priority value="TRACE"/>
+        <!-- Change this to 'debug-console' for full debug info -->
+        <appender-ref ref="console"/>
+    </category>
+    <category name="org.ejbca.config.EjbcaConfigurationHolder" additivity="false">
+        <priority value="WARN"/>
+        <appender-ref ref="console"/>
+    </category>
+    <category name="org.cesecore.config.ConfigurationHolder" additivity="false">
+        <priority value="WARN"/>
+        <appender-ref ref="console"/>
+    </category>
 
-	<root> 
-		<!-- Set basic limit for console -->
-		<priority value="INFO" />
-		<appender-ref ref="console"/>
-	</root> 
+    <root>
+        <!-- Set basic limit for console -->
+        <priority value="INFO" />
+        <appender-ref ref="console"/>
+    </root>
 
 </log4j:configuration>
