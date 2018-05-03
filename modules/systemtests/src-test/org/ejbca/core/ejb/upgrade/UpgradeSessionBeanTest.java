@@ -883,6 +883,7 @@ public class UpgradeSessionBeanTest {
         }     
     }
     
+    
     @Test
     public void testUpgradeOcspExtensions6120() throws Exception {
         GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
@@ -922,6 +923,58 @@ public class UpgradeSessionBeanTest {
         }
     }
 
+    /**
+     * Tests upgrade to 6.14.0. Expected behavior is roles with access to /ra_master/invoke_api before upgrade
+     * should be granted 'Allow' access to the rule '/protocol/scep' controlling protocol access of remote RA 
+     * instances.
+     * @throws RoleExistsException
+     * @throws AuthorizationDeniedException
+     */
+    @Test
+    public void testUpgradeProtocolAccess6140() throws RoleExistsException, AuthorizationDeniedException {
+        GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        String roleNameInvokeApi = "roleInvokeApi";
+        String roleNameSuperAdmin = "roleSuperAdmin";
+        String roleNameLowAccess = "roleLowAccess";
+        Role roleInvokeApiPreUpgrade = new Role(null, roleNameInvokeApi);
+        Role roleSuperAdminPreUpgrade = new Role(null, roleNameSuperAdmin);
+        Role roleLowAccessPreUpgrade = new Role(null, roleNameLowAccess);
+        roleInvokeApiPreUpgrade.getAccessRules().put(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI, Role.STATE_ALLOW);
+        roleSuperAdminPreUpgrade.getAccessRules().put(StandardRules.ROLE_ROOT.resource(), Role.STATE_ALLOW);
+        roleLowAccessPreUpgrade.getAccessRules().put(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, Role.STATE_ALLOW);
+        try {
+            Role roleInvokeApiPersisted = roleSession.persistRole(alwaysAllowtoken, roleInvokeApiPreUpgrade);
+            Role roleSuperAdminPersisted = roleSession.persistRole(alwaysAllowtoken, roleSuperAdminPreUpgrade);
+            Role roleLowAccessPersisted = roleSession.persistRole(alwaysAllowtoken, roleLowAccessPreUpgrade);
+            // Perform upgrade 6.13.0 --> 6.14.0
+            guc.setUpgradedFromVersion("6.13.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            upgradeSession.upgrade(null, "6.13.0", false);
+            
+            Role roleInvokeApiPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleInvokeApiPersisted.getRoleId());
+            Role roleSuperAdminPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleSuperAdminPersisted.getRoleId());
+            Role roleLowAccessPostUpgrade = roleSession.getRole(alwaysAllowtoken, roleLowAccessPersisted.getRoleId());
+            // Make sure roles survived upgrade at all
+            assertNotNull("Role '" + roleInvokeApiPostUpgrade.getRoleName() + "' vanished during upgrade", roleInvokeApiPostUpgrade);
+            assertNotNull("Role '" + roleSuperAdminPostUpgrade.getRoleName() + "' vanished during upgrade", roleSuperAdminPostUpgrade);
+            assertNotNull("Role '" + roleLowAccessPostUpgrade.getRoleName() + "'  vanished during upgrade", roleLowAccessPostUpgrade);
+            
+            assertTrue("Role lost old access rules during upgrade", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI));
+            assertTrue("Denied access to new access rule", roleInvokeApiPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP));
+            
+            assertTrue("Role lost old access rules during upgrade", roleSuperAdminPostUpgrade.hasAccessToResource(StandardRules.ROLE_ROOT.resource()));
+            assertTrue("Denied access to new access rule", roleSuperAdminPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP));
+            
+            assertTrue("Role lost old access rules during upgrade", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_RAFUNCTIONALITY));
+            assertFalse("Unexpected rule allowed", roleLowAccessPostUpgrade.hasAccessToResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP));
+        } finally {
+            // Clean up
+            deleteRole(null, roleNameInvokeApi);
+            deleteRole(null, roleNameSuperAdmin);
+            deleteRole(null, roleNameLowAccess);
+        }     
+    }
+    
     @Test
     public void testExternalScriptsSetting() throws AuthorizationDeniedException, PublisherExistsException {
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);

@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -42,6 +43,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -76,7 +78,8 @@ public class ScepServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(ScepServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
+    /** Only intended to check if Peer connected instance is authorized to SCEP at all. This will not affect user authorization */
+    private final AuthenticationToken raScepAuthCheckToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("scepProtocolAuthCheck"));
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
@@ -114,6 +117,14 @@ public class ScepServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         log.trace(">SCEP doPost()");
+        final boolean isProtocolAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raScepAuthCheckToken,
+                AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP);
+        if (!isProtocolAuthorized) {
+            log.info("SCEP Protocol not authorized for this Peer");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "SCEP Protocol not authorized for this Peer");
+            return;
+        }
+        
         /* 
          If the remote CA supports it, any of the PKCS#7-encoded SCEP messages
          may be sent via HTTP POST instead of HTTP GET.   This is allowed for
@@ -153,7 +164,14 @@ public class ScepServlet extends HttpServlet {
         if (log.isDebugEnabled()) {
             log.debug("query string=" + request.getQueryString());
         }
-
+        final boolean isProtocolAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raScepAuthCheckToken,
+                AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP);
+        if (!isProtocolAuthorized) {
+            log.info("SCEP Protocol not authorized for this Peer");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "SCEP Protocol not authorized for this Peer");
+            return;
+        }
+        
         // These are mandatory in SCEP GET
         /*
          GET /cgi-bin/pkiclient.exe?operation=PKIOperation&message=MIAGCSqGSIb3D

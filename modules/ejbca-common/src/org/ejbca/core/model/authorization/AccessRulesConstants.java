@@ -97,7 +97,8 @@ public abstract class AccessRulesConstants {
      **/
     //public static final String REGULAR_PEERPROTOCOL_ACME                  = "/protocol/acme"; // org.ejbca.peerconnector.PeerProtocolAccessRules.ACME
     public static final String REGULAR_PEERPROTOCOL_CMP                   = "/protocol/cmp";  // org.ejbca.peerconnector.PeerProtocolAccessRules.CMP
-    public static final String REGULAR_PEERPROTOCOL_EST                   = "/protocol/est";  // org.ejbca.peerconnector.PeerProtocolAccessRules. EST
+    public static final String REGULAR_PEERPROTOCOL_EST                   = "/protocol/est";  // org.ejbca.peerconnector.PeerProtocolAccessRules.EST
+    public static final String REGULAR_PEERPROTOCOL_SCEP                  = "/protocol/scep";  // org.ejbca.peerconnector.PeerProtocolAccessRules.SCEP
     public static final String REGULAR_PEERPROTOCOL_WS                    = "/protocol/web_services"; // org.ejbca.peerconnector.PeerProtocolAccessRules.WS
     
     public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY           = "/hardtoken_functionality";
