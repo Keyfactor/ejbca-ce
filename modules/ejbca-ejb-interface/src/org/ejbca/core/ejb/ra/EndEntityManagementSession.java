@@ -24,6 +24,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
@@ -483,10 +484,11 @@ public interface EndEntityManagementSession {
      * @throws ApprovalException if an approval already exists for this request.
      * @throws WaitingForApprovalException
      * @throws AlreadyRevokedException
+     * @throws CertificateProfileDoesNotExistException if no profile was found with certRevocationDto.certificateProfileId input parameter.
      */
     void revokeCertWithMetadata(AuthenticationToken admin, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException,
-            RevokeBackDateNotAllowedForProfileException;
+            RevokeBackDateNotAllowedForProfileException, CertificateProfileDoesNotExistException;
     
     /**
      * Method that revokes a certificate for a user. It can also be used to

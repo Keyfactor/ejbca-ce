@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -482,13 +483,20 @@ public interface RaMasterApi {
      * @param certRevocationDto wrapper objects for input parameters for the revoke
      * 
      * @return true if the operation was successful, false if the certificate could not be revoked for example since it did not exist
-     * @throws ApprovalException if there was a problem creating the approval request
-     * @throws WaitingForApprovalException if the request has been sent for approval
-     * @throws IllegalArgumentException if the certificate profile with id given in input doesn't exist
+     * 
+     * @throws AuthorizationDeniedException
+     * @throws NoSuchEndEntityException if certificate to revoke can not be found
+     * @throws ApprovalException if revocation has been requested and is waiting for approval.
+     * @throws WaitingForApprovalException
+     * @throws RevokeBackDateNotAllowedForProfileException
+     * @throws AlreadyRevokedException
+     * @throws CADoesntExistsException in addition to the above throws if the CA (from issuerdn) is not handled by this instance, fail-fast
+     * @throws CertificateProfileDoesNotExistException if no profile was found with certRevocationDto.certificateProfileId input parameter.
      */
     void revokeCertWithMetadata(AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
-            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException;
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, IllegalArgumentException, 
+            CertificateProfileDoesNotExistException;
     
     /** 
      * @see CertificateStoreSession#getStatus(String, BigInteger)
