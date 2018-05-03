@@ -476,6 +476,9 @@ public interface EndEntityManagementSession {
      * is done by giving reason RevokedCertInfo.NOT_REVOKED (or
      * RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
      * 
+     * reason, certificateProfileId and revocationdate can be included as 
+     * input parameters wrapped into CertRevocationDto dto class.
+     * 
      * @param admin token of the administrator performing the action
      * @param certRevocationDto wrapper object of the input parameters for the revoke.
      * 
