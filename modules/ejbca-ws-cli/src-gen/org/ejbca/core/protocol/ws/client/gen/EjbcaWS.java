@@ -708,6 +708,7 @@ public interface EjbcaWS {
 	* @throws DateNotValidException_Exception
 	* @throws RevokeBackDateNotAllowedForProfileException_Exception
 	* @throws AlreadyRevokedException_Exception
+	* @throws CertificateProfileDoesNotExistException_Exception
 	*/
     @WebMethod
     @RequestWrapper(localName = "revokeCertWithMetadata", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCertWithMetadata")
@@ -719,7 +720,9 @@ public interface EjbcaWS {
         String arg1,
         @WebParam(name = "arg2", targetNamespace = "")
         List<KeyValuePair> arg2)
-        throws AlreadyRevokedException_Exception, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, DateNotValidException_Exception, EjbcaException_Exception, NotFoundException_Exception, RevokeBackDateNotAllowedForProfileException_Exception, WaitingForApprovalException_Exception
+        throws AlreadyRevokedException_Exception, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, 
+        DateNotValidException_Exception, EjbcaException_Exception, NotFoundException_Exception, RevokeBackDateNotAllowedForProfileException_Exception, 
+        WaitingForApprovalException_Exception, CertificateProfileDoesNotExistException_Exception
     ;
     
 	/**
