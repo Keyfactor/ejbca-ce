@@ -4,10 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
-import javax.ejb.EJB;
 import javax.xml.bind.DatatypeConverter;
 
 import org.ejbca.core.ejb.dto.CertRevocationDto;
@@ -17,9 +15,9 @@ import org.junit.Test;
 /**
  * Tests EjbcaWS helper methods.
  * 
- * @version $Id: EjbcaTest.java 22930 2016-03-04 14:02:35Z tarmo_r_helmes $
+ * @version $Id: EjbcaWSHelperMethodsTest.java 22930 2016-03-04 14:02:35Z tarmo_r_helmes $
  */
-public class EjbcaTest {
+public class EjbcaWSHelperMethodsTest {
 
     private EjbcaWS ejbcaWS = new EjbcaWS();
     
