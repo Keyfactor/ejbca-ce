@@ -476,8 +476,10 @@ public interface RaMasterApi {
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException;
 
     /**
-     * Request status change of a certificate (revoke or reactivate).
+     * Request status change of a certificate (revoke or reactivate). 
      * Requires authorization to CA, EEP for the certificate and '/ra_functionality/revoke_end_entity'.
+     * Difference with normal RevokeCertCommand is that 
+     * this one here allows to include reason, certificateProfileId and revocationdate as input parameters wrapped into CertRevocationDto dto class
      * 
      * @param authenticationToken of the requesting administrator or client
      * @param certRevocationDto wrapper objects for input parameters for the revoke
