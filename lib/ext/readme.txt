@@ -1,25 +1,10 @@
-
-These are jars used for external activities, not needed for running EJBCA.
-
-External dependencies used just for building (java classes):
-mailapi.jar (javaMail v1.5.5)
-
-Used to build html docs (license apache):
-jdom-b9.jar (I think)
-velocity-dep-1.4.jar
-
-Used to run regular JUnit tests (license CPL):
-junit-4.11.jar
-
-Dependencies required to run some ExternalRA Tests
-geronimo-osgi-locator-1.1.jar (Apache 2.0)
-slf4j-api-1.7.25.jar (Apache/MIT/BSD/CDDL)
-
-Only used to get rid of warnings when running some CLIs 
-(EJB CLI and Statedump), on versions of JBoss/WildFly that uses SLF4j.
-slf4j-log4j12-1.7.25.jar (Apache/MIT/BSD/CDDL)
-
-httpclient (here) is only used by SigningDailyRollingFileAppender and is from the Apache Http Components project, using the Apache license:
-commons-httpclient-3.1.jar
-
-ServiceManifestBuilder is a homegrown lib used to compile service manifests. LGPL. 
+"Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
+"Apache Http Components";       "commons-httpclient-3.1";                       "ALv2";                 "LICENSE-APACHE-2.0";           "https://hc.apache.org/httpclient-legacy/";                         "Only used by SigningDailyRollingFileAppender.";
+"Geronimo";                     "geronimo-osgi-locator-1.1";                    "ALv2";                 "LICENSE-APACHE-2.0";           "https://geronimo.apache.org/";                                     "Dependencies required to run some ExternalRA tests.";
+"JDOM";                         "jdom-b9";                                      "BSD";                  "LICENSE-JDOM";                 "http://www.jdom.org/";                                             "Legacy doc build?";
+"JUnit";                        "junit-4.11";                                   "CPLv1.0";              "LICENSE-JUNIT";                "https://junit.org/junit4/";                                        "Used to run regular JUnit tests.";
+"JavaMail";                     "mailapi";                                      "CDDL,GPL2+CPE";        "LICENSE-CCDL-1.0-GPL2CPE";     "https://javaee.github.io/javamail/";                               "v1.5.5. External dependencies only used for building (java classes).";
+"EJBCA Build Tools";            "servicemanifestbuilder-1.0.0";                 "LGPLv2.1";             "LICENSE-LGPL-2.1";             "https://svn.cesecore.eu/svn/ejbca/trunk/buildtools/";              "Used to compile service manifests.";
+"SLF4J";                        "slf4j-api-1.7.25";                             "MIT";                  "LICENSE-MIT-SL4J";             "https://www.slf4j.org/";                                           "Used to get rid of warnings when running some CLIs with JBoss/WildFly deps.";
+"SLF4J";                        "slf4j-log4j12-1.7.25";                         "MIT";                  "LICENSE-MIT-SL4J";             "https://www.slf4j.org/";                                           "Used to get rid of warnings when running some CLIs with JBoss/WildFly deps.";
+"Apache Velocity Project";      "velocity-dep-1.4";                             "ALv2";                 "LICENSE-APACHE-2.0";           "https://velocity.apache.org/";                                     "Legacy doc build?";
