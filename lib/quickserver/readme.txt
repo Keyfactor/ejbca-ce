@@ -1,3 +1,3 @@
-
-Quickserver v 2.0.0, http://www.quickserver.org/, License is LGPLv2.1 or later.
-All jars in this directory are from this distribution.
+"Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
+"Apache Commons";               "commons-pool";                                 "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-pool/";                  "v1.5.6. Generic object pooling component.";
+"Quickserver";                  "QuickServer";                                  "LGPLv2.1";             "LICENSE-LGPL-2.1";             "http://www.quickserver.org/";                                      "v2.0.0.";

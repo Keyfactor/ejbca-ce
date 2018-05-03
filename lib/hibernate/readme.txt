@@ -1,10 +1,11 @@
-
-Hibernate jars are from Hibernate (http://hibernate.org), License is LGPLv2.1.
-This applies to all hibernate and javassist jars in this directory.
-
-Dependency required to run some ExternalRA Tests
-hibernate-validator
-
-Some hibernate jars are under Apache/MIT/BSD/CDDL like licenses and have a license file included. These jars are:
-- antlr
-- dom4j
+"Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
+"ANTLR";                        "antlr-2.7.7";                                  "BSD";                  "LICENSE-BSD-ANTLR";            "http://www.antlr2.org/";                                           "ANother Tool for Language Recognition";
+"dom4j";                        "dom4j-1.6.1";                                  "BSD";                  "LICENSE-BSD-DOM4J";            "https://dom4j.github.io/";                                         "Flexible XML framework for Java.";
+"Hibernate";                    "hibernate-commons-annotations-4.0.1.Final";    "LGPLv2.1";             "LICENSE-LGPL-2.1";             "http://hibernate.org/";                                            "JPA provider.";
+"Hibernate";                    "hibernate-core-4.1.1.Final";                   "LGPLv2.1";             "LICENSE-LGPL-2.1";             "http://hibernate.org/";                                            "JPA provider.";
+"Hibernate";                    "hibernate-entitymanager-4.1.1.Final";          "LGPLv2.1";             "LICENSE-LGPL-2.1";             "http://hibernate.org/";                                            "JPA provider.";
+"Hibernate";                    "hibernate-jpa-2.0-api-1.0.1.Final";            "LGPLv2.1";             "LICENSE-LGPL-2.1";             "http://hibernate.org/";                                            "JPA provider.";
+"Hibernate";                    "hibernate-validator-4.1.0.Final";              "LGPLv2.1";             "LICENSE-LGPL-2.1";             "http://hibernate.org/";                                            "Dependency required to run some ExternalRA tests.";
+"Javassist";                    "javassist-3.15.0-GA";                          "MPL/ALv2/LGPLv2.1";    "LICENSE-MPL-1.1-JAVASSIST";    "http://jboss-javassist.github.io/javassist/";                      "Javassist (Java Programming Assistant) makes Java bytecode manipulation simple.";
+"JBoss Logging";                "jboss-logging-3.1.0.GA";                       "LGPLv2.1";             "LICENSE-LGPL-2.1";             "https://github.com/jboss-logging/jboss-logging";                   "JBoss logging library.";
+"JBoss Transaction API Spec";   "jboss-transaction-api_1.1_spec-1.0.0.Final";   "CDDL,GPL2+CPE";        "LICENSE-CCDL-1.0-GPL2CPE";     "https://github.com/jboss/jboss-transaction-api_spec";              "JBoss transaction API.";

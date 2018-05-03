@@ -1,24 +1,27 @@
-Project							Library Name 					License					Source 													Comment
-Apache Commons					commons-cli						Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-logging					Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-beanutils				Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-codec					Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-collections				Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-configuration			Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-digester				Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-el						Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-fileupload				Apache					http://jakarta.apache.org/commons/index.html
-Apache Commons					commons-io						Apache					http://jakarta.apache.org/commons/index.html
-Apache HTTP Components			httpclient						Apache					https://hc.apache.org/index.html
-Apache HTTP Components			httpcore						Apache					https://hc.apache.org/index.html
-Apache HTTP Components			httpmime						Apache					https://hc.apache.org/index.html
-BouncyCastle					bcpkix							BC (BSD like)			https://www.bouncycastle.org/							The cryptographic foundation of EJBCA.
-BouncyCastle					bcprov							BC (BSD like)			https://www.bouncycastle.org/							The cryptographic foundation of EJBCA.
-Cert-CVC						cert-cvc						LGPL					https://svn.cesecore.eu/svn/ejbca/trunk/cert-cvc		A library for handling Card Verifiable Certificates, built from the sub project cert-cvc of EJBCA. Originally developed by Keijo Kurkinen, and contributed to EJBCA. 
-DNSJava							dnsjava							BSD						http://dnsjava.org/										Used to perform DNS lookups
-Jitsi							dnssecjava						Eclipse					https://github.com/ibauersachs/dnssecjava				Used in addition to DNSJava to validate DNSSec
-Log4j							log4j							Apache					https://logging.apache.org/log4j						Used for logging throughout EJBCA		
-Nimbus Jose						nimbus-jose-jwt					Apache					https://connect2id.com/products/nimbus-jose-jwt
-OpenLDAP						ldap							OpenLDAP Public License http://www.openldap.org/								Used for publishing in LDAP directories
-SnakeYAML                       snakeyaml                       Apache                  https://bitbucket.org/asomov/snakeyaml                  Serialisation of Java objects to/from YAML
-CSRF Guard						csrfguard						BSD						https://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project CSRF protection for non-JSF (JSP) pages
+"Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
+"BouncyCastle";                 "bcpkix-jdk15on-159";                           "BC (BSD like)";        "LICENSE-BC";                   "https://www.bouncycastle.org/";                                    "The cryptographic foundation of EJBCA.";
+"BouncyCastle";                 "bcprov-jdk15on-159";                           "BC (BSD like)";        "LICENSE-BC";                   "https://www.bouncycastle.org/";                                    "The cryptographic foundation of EJBCA.";
+"Cert-CVC";                     "cert-cvc-1.4.9";                               "LGPLv2.1";             "LICENSE-LGPL-2.1";             "https://svn.cesecore.eu/svn/ejbca/trunk/cert-cvc";                 "A library for handling Card Verifiable Certificates, built from the sub project cert-cvc of EJBCA. Originally developed by Keijo Kurkinen, and contributed to EJBCA.";
+"Apache Commons";               "commons-beanutils-1.9.3";                      "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-beanutils/";             "Easy-to-use wrappers around the Java reflection and introspection APIs.";
+"Apache Commons";               "commons-cli-1.4";                              "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-cli/";                   "Command Line arguments parser.";
+"Apache Commons";               "commons-codec-1.10";                           "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-codec/";                 "General encoding/decoding algorithms.";
+"Apache Commons";               "commons-collections-3.2.2";                    "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-collections/";           "Extends or augments the Java Collections Framework.";
+"Apache Commons";               "commons-configuration-1.6";                    "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-configuration/";         "Reading of configuration/preferences files in various formats.";
+"Apache Commons";               "commons-digester-2.1";                         "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-digester/";              "XML-to-Java-object mapping utility.";
+"Apache Commons";               "commons-el-1.0";                               "ALv1.1";               "LICENSE-APACHE-1.1";           "https://commons.apache.org/dormant/commons-el/";                   "JSP 2.0 Expression Language Interpreter from Apache.";
+"Apache Commons";               "commons-fileupload-1.3.3";                     "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-fileupload/";            "File upload capability for servlets and web applications.";
+"Apache Commons";               "commons-io-2.5";                               "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-io/";                    "Collection of I/O utilities.";
+"Apache Commons";               "commons-lang-2.6";                             "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-lang/";                  "Provides extra functionality for classes in java.lang.";
+"Apache Commons";               "commons-logging-1.2";                          "ALv2";                 "LICENSE-APACHE-2.0";           "https://commons.apache.org/proper/commons-logging/";               "Wrapper around a variety of logging API implementations.";
+"CSRF Guard";                   "csrfguard-3.1.0";                              "BSD";                  "LICENSE-BSD-CSRFGUARD";        "https://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project"; "CSRF protection for non-JSF (JSP) pages";
+"DNSJava";                      "dnsjava-2.1.8";                                "BSD";                  "LICENSE-BSD-DNSJAVA";          "http://dnsjava.org/";                                              "Used to perform DNS lookups";
+"Jitsi";                        "dnssecjava-1.1.3";                             "EPLv1.0";              "LICENSE-DNSSECJAVA";           "https://github.com/ibauersachs/dnssecjava";                        "Used in addition to DNSJava to validate DNSSec.";
+"Apache HTTP Components";       "httpclient-4.5.3";                             "ALv2";                 "LICENSE-APACHE-2.0";           "https://hc.apache.org/httpcomponents-client-ga/";                  "HTTP agent implementation based on HttpCore.";
+"Apache HTTP Components";       "httpcore-4.4.6";                               "ALv2";                 "LICENSE-APACHE-2.0";           "https://hc.apache.org/httpcomponents-core-ga/";                    "A set of low level HTTP transport components.";
+"Apache HTTP Components";       "httpmime-4.5.3";                               "ALv2";                 "LICENSE-APACHE-2.0";           "https://hc.apache.org/httpcomponents-client-ga/";                  "HttpClient MIME coded entities.";
+"json-simple";                  "json-simple-1.1.1";                            "ALv2";                 "LICENSE-APACHE-2.0";           "https://github.com/fangyidong/json-simple";                        "A simple Java toolkit for JSON.";
+"json-smart";                   "json-smart-1.1.1";                             "ALv2";                 "LICENSE-APACHE-2.0";           "https://github.com/netplex/json-smart-v1";                         "JSON Small and Fast Parser.";
+"OpenLDAP";                     "ldap";                                         "OpenLDAP PL";          "LICENSE-JLDAP";                "https://www.openldap.org/";                                        "Used for publishing in LDAP directories.";
+"Log4j";                        "log4j-1.2.17";                                 "ALv2";                 "LICENSE-APACHE-2.0";           "https://logging.apache.org/log4j/1.2/";                            "Used for logging throughout EJBCA.";
+"Nimbus Jose";                  "nimbus-jose-jwt-4.36.1";                       "ALv2";                 "LICENSE-APACHE-2.0";           "https://connect2id.com/products/nimbus-jose-jwt";                  "User for JSON Web Tokens in the ACME protocol";
+"SnakeYAML";                    "snakeyaml-1.19";                               "ALv2";                 "LICENSE-APACHE-2.0";           "https://bitbucket.org/asomov/snakeyaml";                           "Serialization of Java objects to/from YAML";
