@@ -32,7 +32,9 @@ public final class CertificateProfileHelper {
 
     private static final String certificateProfileSaveMessage = "Certificate Profile saved.";
 
-    private CertificateProfileHelper() {}
+    private CertificateProfileHelper() {
+        throw new AssertionError("Cannot instantiate class");
+    }
 
     /**
      * Opens the 'Manage Certificate Profiles' page.

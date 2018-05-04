@@ -30,9 +30,11 @@ import org.openqa.selenium.support.ui.Select;
  * @version $Id$
  *
  */
-public class CaHelper {
+public final class CaHelper {
 
-    private CaHelper() {}
+    private CaHelper() {
+        throw new AssertionError("Cannot instantiate class");
+    }
     
     /**
      * Opens the 'Certificate Authorities' page.

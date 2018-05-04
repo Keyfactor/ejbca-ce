@@ -28,9 +28,11 @@ import org.openqa.selenium.WebDriver;
  * @version $Id$
  *
  */
-public class CryptoTokenHelper {
+public final class CryptoTokenHelper {
 
-    private CryptoTokenHelper() {}
+    private CryptoTokenHelper() {
+        throw new AssertionError("Cannot instantiate class");
+    }
 
     /**
      * Opens the 'Crypto Tokens' page.
