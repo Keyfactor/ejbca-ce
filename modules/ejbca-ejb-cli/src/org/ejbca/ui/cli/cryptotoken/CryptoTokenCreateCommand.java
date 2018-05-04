@@ -48,6 +48,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String AUTOACTIVATE_KEY = "--autoactivate";
     private static final String TYPE_KEY = "--type";
     private static final String PRIVATE_KEY_EXPORT_KEY = "--exportkey";
+    private static final String USE_EXPLICIT_KEY_PARAMETERS = "--explicitkeyparams";
     private static final String PKCS11_LIB_KEY = "--lib";
     private static final String SLOT_REFERENCE_TYPE_KEY = "--slotlabeltype";
     private static final String SLOT_REFERENCE_KEY = "--slotlabel";
@@ -76,6 +77,9 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(" + PKCS11CryptoToken.class.getSimpleName() + ") Slot reference."));
         registerParameter(new Parameter(PKCS11_ATTR_FILE_KEY, "Attribute File", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "(" + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 Attribute File"));
+        // ePassport CSCA only
+        registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "(" + SoftCryptoToken.class.getSimpleName() + ") Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
     }
     
     @Override
@@ -154,6 +158,11 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         } else {
             getLogger().info("Invalid CryptoToken type: " + type);
             return CommandResult.CLI_FAILURE;
+        }
+        String useExplicitKeyParameter = parameters.get(USE_EXPLICIT_KEY_PARAMETERS);
+        if (useExplicitKeyParameter != null) {
+            cryptoTokenPropertes.setProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS,
+                    Boolean.toString(Boolean.valueOf(useExplicitKeyParameter)));
         }
         final char[] authenticationCode = getAuthenticationCode(parameters.get(PIN_KEY));
         if (autoActivate) {
