@@ -36,6 +36,7 @@ public abstract class WebTestBase {
     private static String ejbcaDomain;
     private static String ejbcaSslPort;
     private static String ejbcaPort;
+    private static String downloadDir;
 
     private static WebDriver webDriver;
     private static WebDriverWait webDriverWait;
@@ -59,6 +60,9 @@ public abstract class WebTestBase {
                 firefoxProfile = allProfiles.getProfile(config.getProperty(ConfigurationConstants.PROFILE_FIREFOX_DEFAULT));
             }
             firefoxProfile.setPreference("security.default_personal_cert", "Select Automatically");
+            firefoxProfile.setPreference("browser.download.folderList", 2);
+            firefoxProfile.setPreference("browser.download.dir", downloadDir);
+            firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream");
             FirefoxOptions firefoxOptions = new FirefoxOptions();
             firefoxOptions.setProfile(firefoxProfile);
             firefoxOptions.setAcceptInsecureCerts(true);
@@ -82,6 +86,7 @@ public abstract class WebTestBase {
         ejbcaDomain = config.getProperty(ConfigurationConstants.APPSERVER_DOMAIN);
         ejbcaPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT);
         ejbcaSslPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT_SSL);
+        downloadDir = config.getProperty(ConfigurationConstants.BROWSER_DOWNLOADDIR);
     }
 
     public String getCaName() {
@@ -121,6 +126,10 @@ public abstract class WebTestBase {
 
     public String getRaWebUrl() {
         return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
+    }
+
+    public String getDownloadDir() {
+        return downloadDir;
     }
 
     public static WebDriver getWebDriver() {

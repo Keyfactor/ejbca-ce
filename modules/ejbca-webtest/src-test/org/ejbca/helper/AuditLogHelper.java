@@ -73,6 +73,10 @@ public final class AuditLogHelper {
         clearConditions(webDriver);
         addCondition(webDriver, "Event", "Not equals", "Access Control");
         addCondition(webDriver, "Time", "Greater than", filterTime);
+
+        // Set 'Displaying results' and 'Entries per page' to standard values
+        setDisplayingResults(webDriver, 1);
+        setEntriesPerPage(webDriver, 40);
         reload(webDriver);
     }
 
@@ -152,6 +156,39 @@ public final class AuditLogHelper {
 
         // Apply the condition
         webDriver.findElement(By.xpath("//input[contains(@src, 'success') and @type='image']")).click();
+    }
+
+    /**
+     * Sets the 'Displaying results' field.
+     * 
+     * @param webDriver the WebDriver to use
+     * @param displayingResults the number to be entered
+     */
+    public static void setDisplayingResults(WebDriver webDriver, int displayingResults) {
+        WebElement input = webDriver.findElement(By.id("search2:startIndex2"));
+        input.clear();
+        input.sendKeys(Integer.toString(displayingResults));
+    }
+
+    /**
+     * Sets the 'Entries per page' field.
+     * 
+     * @param webDriver the WebDriver to use
+     * @param entriesPerPage the number to be entered
+     */
+    public static void setEntriesPerPage(WebDriver webDriver, int entriesPerPage) {
+        WebElement input = webDriver.findElement(By.id("search2:maxResults"));
+        input.clear();
+        input.sendKeys(Integer.toString(entriesPerPage));
+    }
+
+    /**
+     * Returns the number of entries currently displayed in the Audit Log.
+     * 
+     * @param webDriver the WebDriver to use
+     */
+    public static int entryCount(WebDriver webDriver) {
+        return webDriver.findElements(By.xpath("//table[caption[text()='Search results']]/tbody/tr")).size();
     }
 
     /**
