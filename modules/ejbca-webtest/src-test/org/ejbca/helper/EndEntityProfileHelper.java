@@ -35,7 +35,9 @@ public final class EndEntityProfileHelper {
 
     private static final String endEntityProfileSaveMessage = "End Entity Profile saved.";
 
-    private EndEntityProfileHelper() {}
+    private EndEntityProfileHelper() {
+        throw new AssertionError("Cannot instantiate class");
+    }
 
     /**
      * Opens the 'Manage End Entity Profiles' page.

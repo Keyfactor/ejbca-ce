@@ -32,9 +32,11 @@ import org.openqa.selenium.support.ui.Select;
  * @version $Id$
  *
  */
-public class AddEndEntityHelper {
+public final class AddEndEntityHelper {
 
-    private AddEndEntityHelper() {}
+    private AddEndEntityHelper() {
+        throw new AssertionError("Cannot instantiate class");
+    }
 
     /**
      * Opens the 'Add End Entity' page.
