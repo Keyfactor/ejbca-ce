@@ -1313,9 +1313,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         for (Role role : allRoles) {
             boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
             if (isRaRequestRole) {
-                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP, Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST, Role.STATE_ALLOW);
-                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS, Role.STATE_ALLOW);
+                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_CMP), Role.STATE_ALLOW);
+                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_EST), Role.STATE_ALLOW);
+                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_WS), Role.STATE_ALLOW);
                 roleDataSession.persistRole(role);
             }
         }
@@ -1377,7 +1377,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         for (Role role : allRoles) {
             boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
             if (isRaRequestRole) {
-                role.getAccessRules().put(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP, Role.STATE_ALLOW);
+                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP), Role.STATE_ALLOW);
                 roleDataSession.persistRole(role);
             }
         }
