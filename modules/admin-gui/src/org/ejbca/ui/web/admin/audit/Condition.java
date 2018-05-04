@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.audit;
 
+/**
+ * Comparison operations that can be used when searching the audit log. 
+ * @version $Id$
+ */
 public enum Condition {
 	EQUALS, NOT_EQUALS, STARTS_WITH, ENDS_WITH, CONTAINS, LESS_THAN, GREATER_THAN
 }

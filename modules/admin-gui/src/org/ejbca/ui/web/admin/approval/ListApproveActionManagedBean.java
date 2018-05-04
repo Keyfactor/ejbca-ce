@@ -63,7 +63,7 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 	
 	public List<SelectItem> getAvailableStatus() {
 		if(availableStatus == null){
-			  availableStatus = new ArrayList<SelectItem>();
+			  availableStatus = new ArrayList<>();
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,getEjbcaWebBean().getText("WAITING", true),""));	 
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXPIRED,getEjbcaWebBean().getText("EXPIRED", true),""));
 			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED,getEjbcaWebBean().getText("EXPIREDANDNOTIFIED", true),""));	  
@@ -83,7 +83,7 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 
 	public List<SelectItem> getAvailableTimeSpans() {
         if (availableTimeSpans == null) {
-            availableTimeSpans = new ArrayList<SelectItem>();
+            availableTimeSpans = new ArrayList<>();
             availableTimeSpans.add(new SelectItem(TIME_5MIN, "5 " + getEjbcaWebBean().getText("MINUTES", true), ""));
             availableTimeSpans.add(new SelectItem(TIME_30MIN, "30 " + getEjbcaWebBean().getText("MINUTES", true), ""));
             availableTimeSpans.add(new SelectItem(TIME_8HOURS, "8 " + getEjbcaWebBean().getText("HOURS", true), ""));
@@ -113,7 +113,7 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 			query.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, selectedStatus, Query.CONNECTOR_AND);
 			query.add(getStartDate(), new Date());
 		}
-        List<ApprovalDataVO> result = new ArrayList<ApprovalDataVO>();
+        List<ApprovalDataVO> result = new ArrayList<>();
 		try {
             RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejbLocalHelper.getGlobalConfigurationSession(),
             		ejbLocalHelper.getAuthorizationSession(), ejbLocalHelper.getCaSession(), ejbLocalHelper.getEndEntityProfileSession());

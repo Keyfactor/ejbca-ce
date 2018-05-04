@@ -291,7 +291,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the list.
      */
     public List<SelectItem> getAvailableValidatorSettingsTemplates() {
-        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<SelectItem> result = new ArrayList<>();
         final KeyValidatorSettingsTemplate[] items = KeyValidatorSettingsTemplate.values();
         for (int i = 0, j = items.length; i < j; i++) {
             result.add(new SelectItem(items[i].getOption(), getEjbcaWebBean().getText(items[i].getLabel())));
@@ -304,7 +304,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the list.
      */
     public List<SelectItem> getAllApplicablePhases() {
-        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<SelectItem> result = new ArrayList<>();
         final IssuancePhase[] items = IssuancePhase.values();
         for(IssuancePhase phase : items) {
             result.add(new SelectItem(phase.getIndex(), getEjbcaWebBean().getText(phase.getLabel())));
@@ -317,7 +317,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the list.
      */
     public List<SelectItem> getApplicablePhases() {
-        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<SelectItem> result = new ArrayList<>();
         for (Integer index : ((PhasedValidator) getValidator()).getApplicablePhases()) {
             result.add(new SelectItem(index, getEjbcaWebBean().getText(IssuancePhase.fromIndex(index).getLabel())));
         }
@@ -343,7 +343,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator notBefore field, see {@link ValidatorBase#getNotBefore()}.
+     * Validates the BaseKeyValildator notBefore field, see {@link org.cesecore.keys.validation.ValidityAwareValidator#getNotBefore()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -362,7 +362,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator notBefore condition field, see {@link ValidatorBase#getNotBeforeCondition()}.
+     * Validates the BaseKeyValildator notBefore condition field, see {@link org.cesecore.keys.validation.ValidityAwareValidator#getNotBeforeCondition()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -377,7 +377,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator notAfter field, see {@link ValidatorBase#getNotAfter()}.
+     * Validates the BaseKeyValildator notAfter field, see {@link org.cesecore.keys.validation.ValidityAwareValidator#getNotAfter()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -396,7 +396,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
 
     /**
-     * Validates the BaseKeyValildator notAfter condition field, see {@link ValidatorBase#getNotAfterCondition()}.
+     * Validates the BaseKeyValildator notAfter condition field, see {@link org.cesecore.keys.validation.ValidityAwareValidator#getNotAfterCondition()}.
      * @param context the faces context.
      * @param component the events source component
      * @param value the source components value attribute
@@ -435,7 +435,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public void validateCertificateProfileIds(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         @SuppressWarnings("unchecked")
         final List<String> selectedIds = (List<String>) value;
-        final List<Integer> ids = new ArrayList<Integer>(certificateProfileSession.getCertificateProfileIdToNameMap().keySet());
+        final List<Integer> ids = new ArrayList<>(certificateProfileSession.getCertificateProfileIdToNameMap().keySet());
         for (String id : selectedIds) {
             if (!ids.contains(Integer.parseInt(id))) {
                 final String message = "Key validator certificate profile id must be on of " + ids;
@@ -483,7 +483,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the list.
      */
     public List<SelectItem> getAvailableCertificateProfiles() {
-        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<SelectItem> result = new ArrayList<>();
         List<Integer> authorizedCertificateProfiles = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_UNKNOWN);
         final Map<Integer, String> map = certificateProfileSession.getCertificateProfileIdToNameMap();
         for(Integer certificateProfileId : authorizedCertificateProfiles) {
@@ -512,10 +512,10 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     /**
      * Sets the BaseKeyValidator certificateProfileIds field.
-     * @param the list of certificate profile IDs.
+     * @param ids the list of certificate profile IDs.
      */
     public void setCertificateProfileIds(List<String> ids) {
-        final List<Integer> list = new ArrayList<Integer>();
+        final List<Integer> list = new ArrayList<>();
         for (String id : ids) {
             list.add(Integer.parseInt(id));
         }
@@ -543,7 +543,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the list.
      */
     public List<SelectItem> getAvailableFailedActions() {
-        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<SelectItem> result = new ArrayList<>();
         final KeyValidationFailedActions[] items = KeyValidationFailedActions.values();
         for (int i = 0, j = items.length; i < j; i++) {
             result.add(new SelectItem(items[i].getIndex(), getEjbcaWebBean().getText(items[i].getLabel())));
@@ -556,7 +556,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @return the list.
      */
     private List<SelectItem> conditionsToSelectItems() {
-        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<SelectItem> result = new ArrayList<>();
         final KeyValidatorDateConditions[] items = KeyValidatorDateConditions.values();
         for (int i = 0, j = items.length; i < j; i++) {
             result.add(new SelectItem(items[i].getIndex(), getEjbcaWebBean().getText(items[i].getLabel())));

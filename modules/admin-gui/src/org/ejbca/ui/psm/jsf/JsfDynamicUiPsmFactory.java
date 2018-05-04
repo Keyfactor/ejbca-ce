@@ -63,7 +63,6 @@ public class JsfDynamicUiPsmFactory {
     /**
      * Initializes the dynamic UI properties on a grid panel with two columns, label on the left, UI component on the right.
      * @param panelGrid the panel grid instance to (re-)build.
-     * @param properties the dynamic UI properties.
      * @param i18nPrefix the name prefix for the I18N message resources.
      * @throws DynamicUiModelException if the PSM could not be created by the dynamic UI model.
      */
@@ -85,8 +84,8 @@ public class JsfDynamicUiPsmFactory {
             label = new HtmlOutputLabel();
             label.setValue(getText(i18nPrefix, property.getName()));
             label.setStyleClass(STYLE_CLASS_SUB_ITEM);
-            if (index == 0 && label instanceof HtmlOutputLabel) { // Re-factor: Set header bold.
-                ((HtmlOutputLabel) label).setStyle("font-weight: bold;");
+            if (index == 0) { // Re-factor: Set header bold.
+                label.setStyle("font-weight: bold;");
             }
             panelGrid.getChildren().add(label);
             if (!property.isLabelOnly()) {
@@ -274,7 +273,7 @@ public class JsfDynamicUiPsmFactory {
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
         result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
-        final List<SelectItem> items = new ArrayList<SelectItem>();
+        final List<SelectItem> items = new ArrayList<>();
         final Map<?, String> labels = property.getLabels();
         for (Entry<?, String> entry : labels.entrySet()) {
             items.add(new SelectItem(entry.getKey(),
@@ -298,7 +297,7 @@ public class JsfDynamicUiPsmFactory {
         setUIInputAttributes(result, property);
         result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
         result.setConverter(new IntegerConverter());
-        final List<SelectItem> items = new ArrayList<SelectItem>();
+        final List<SelectItem> items = new ArrayList<>();
         final Map<?, String> labels = property.getLabels();
         for (Entry<?, String> entry : labels.entrySet()) {
             items.add(new SelectItem(entry.getKey(),
@@ -321,7 +320,7 @@ public class JsfDynamicUiPsmFactory {
         result.setDynamicUiProperty(property);
         setUIInputAttributes(result, property);
         result.setDisabled(property.getDynamicUiModel().isDisabled() || property.isDisabled());
-        final List<SelectItem> items = new ArrayList<SelectItem>();
+        final List<SelectItem> items = new ArrayList<>();
         final Map<?, String> labels = property.getLabels();
         for (Entry<?, String> entry : labels.entrySet()) {
             items.add(new SelectItem(entry.getKey(),
@@ -421,7 +420,7 @@ public class JsfDynamicUiPsmFactory {
             }
             final AjaxBehavior behavior = (AjaxBehavior) FacesContext.getCurrentInstance().getApplication().createBehavior(AjaxBehavior.BEHAVIOR_ID);
             behavior.addAjaxBehaviorListener(new JsfDynamicUiAjaxBehaviorListener(property, component));
-            final List<String> render = new ArrayList<String>();
+            final List<String> render = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(property.getActionCallback().getRender())) {
                 render.addAll(property.getActionCallback().getRender());
             } else {

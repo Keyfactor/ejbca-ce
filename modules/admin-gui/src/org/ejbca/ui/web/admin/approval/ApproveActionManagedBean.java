@@ -148,7 +148,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
 	public HashMap<Integer, String> getStatusText(){
 	    if(statustext == null){
 	    	EjbcaWebBean ejbcawebbean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
-	    	statustext = new HashMap<Integer, String>();
+	    	statustext = new HashMap<>();
 	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), ejbcawebbean.getText("WAITING", true));
 	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_EXPIRED), ejbcawebbean.getText("EXPIRED", true));
 	    	statustext.put(Integer.valueOf(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED), ejbcawebbean.getText("EXPIREDANDNOTIFIED", true));
@@ -435,7 +435,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     step = approvalDataVOView.getApprovalProfile().getStep(step.getNextStep());
                 }
             }
-            previousPartitions = new ListDataModel<ApprovalPartitionProfileGuiObject>(authorizedPartitions);
+            previousPartitions = new ListDataModel<>(authorizedPartitions);
         }
         return previousPartitions;
 
@@ -475,7 +475,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     }
                 }
             }
-            partitionsAuthorizedToView = new ListDataModel<ApprovalPartitionProfileGuiObject>(authorizedPartitions);
+            partitionsAuthorizedToView = new ListDataModel<>(authorizedPartitions);
 
         }
         return partitionsAuthorizedToView;

@@ -40,7 +40,7 @@ public class EndEntityProfileNameProxy implements java.io.Serializable {
               // Get the RaAdminSession instance.
       this.endEntityProfileSession = endEntityProfileSession;
       
-      profilenamestore = new HashMap<Integer, String>(); 
+      profilenamestore = new HashMap<>(); 
     }
     
     /**
@@ -52,7 +52,7 @@ public class EndEntityProfileNameProxy implements java.io.Serializable {
     public String getEndEntityProfileName(int profileid) {
       String returnval = null;  
       // Check if name is in hashmap
-      returnval = (String) profilenamestore.get(Integer.valueOf(profileid));
+      returnval = profilenamestore.get(Integer.valueOf(profileid));
       
       if(returnval==null){
         // Retreive profilename

@@ -45,7 +45,6 @@ public class EditEndEntityBean {
      * Properties format and store it in the extended information.
      *
      * @param extensionData properties to parse and store.
-     * @throws IOException 
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setExtensionData(String extensionData) {
@@ -127,7 +126,7 @@ public class EditEndEntityBean {
      * @return A Map view of the extension data.
      */
     public Map<String, String> getExtensionDataAsMap() {
-        final Map<String, String> result = new HashMap<String, String>();
+        final Map<String, String> result = new HashMap<>();
         if (extendedInformation != null) {
             @SuppressWarnings("rawtypes")
             Map data = (Map) extendedInformation.getData();

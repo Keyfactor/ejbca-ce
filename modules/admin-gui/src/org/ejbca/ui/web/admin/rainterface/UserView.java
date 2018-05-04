@@ -272,6 +272,7 @@ public class UserView implements Serializable, Comparable<UserView> {
         }
     }
 
+    @Override
     public int compareTo(UserView obj) {
         int returnvalue = -1;
         int sortby = this.sortby.getSortBy();

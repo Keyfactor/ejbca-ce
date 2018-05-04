@@ -37,19 +37,22 @@ public class NoActionType extends ActionType {
     String unit;
     String value;
 
-
+    @Override
 	public String getClassPath() {
 		return org.ejbca.core.model.services.actions.NoAction.class.getName();
 	}
 
+    @Override
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {		
 		return properties;
 	}
 	
+    @Override
 	public void setProperties(Properties properties) throws IOException {
 		this.properties = properties;
 	}
 
+    @Override
 	public boolean isCustom() {
 		return false;
 	}

@@ -156,14 +156,14 @@ public class ServiceConfigurationView implements Serializable{
 	}
 
 	/**
-	 * @return the active
+	 * @return the active flag
 	 */
 	public boolean isActive() {
 		return active;
 	}
 
 	/**
-	 * @param active the active to set
+	 * @param active the active flag to set
 	 */
 	public void setActive(boolean active) {
 		this.active = active;
@@ -174,7 +174,7 @@ public class ServiceConfigurationView implements Serializable{
 	}
 
 	/**
-	 * @param active the active to set
+	 * @param hidden the hidden flag to set
 	 */
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
@@ -230,13 +230,13 @@ public class ServiceConfigurationView implements Serializable{
 		  
 		
 		  if(selectedInterval != null && !workerType.getCompatibleIntervalTypeNames().contains(selectedInterval)){				
-			setSelectedInterval((String) workerType.getCompatibleIntervalTypeNames().iterator().next());
+			setSelectedInterval(workerType.getCompatibleIntervalTypeNames().iterator().next());
 			setIntervalType((IntervalType) typeManager.getServiceTypeByName(getSelectedInterval()));
 		  }
 		  
 		
 		  if(selectedAction != null && !workerType.getCompatibleActionTypeNames().contains(selectedAction)){
-			setSelectedAction((String) workerType.getCompatibleActionTypeNames().iterator().next());
+			setSelectedAction(workerType.getCompatibleActionTypeNames().iterator().next());
 			setActionType((ActionType) typeManager.getServiceTypeByName(getSelectedAction()));
 		  }
 		  
@@ -309,7 +309,7 @@ public class ServiceConfigurationView implements Serializable{
 	}	
 	
 	public List<SelectItem> getAvailableWorkers(){
-		final ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
+		final ArrayList<SelectItem> retval = new ArrayList<>();
 		final Collection<ServiceType> available = typeManager.getAvailableWorkerTypes();
 		for (final ServiceType next : available) {
 			String label = next.getName();
@@ -341,13 +341,13 @@ public class ServiceConfigurationView implements Serializable{
 	}
 	
 	public List<SelectItem> getAvailableIntervals(){
-		final ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
+		final ArrayList<SelectItem> retval = new ArrayList<>();
 		final WorkerType currentWorkerType = getWorkerType();
 		for (final String name : currentWorkerType.getCompatibleIntervalTypeNames()) {
 			final ServiceType next = typeManager.getServiceTypeByName(name);
 			String label = name;
 			if(next.isTranslatable()){
-				label = (String) EjbcaJSFHelper.getBean().getText().get(name);
+				label = EjbcaJSFHelper.getBean().getText().get(name);
 			}
 			retval.add(new SelectItem(name,label));
 		}
@@ -355,13 +355,13 @@ public class ServiceConfigurationView implements Serializable{
 	}
 	
 	public List<SelectItem> getAvailableActions(){
-		final ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
+		final ArrayList<SelectItem> retval = new ArrayList<>();
 		final WorkerType currentWorkerType = getWorkerType();
 		for (final String name : currentWorkerType.getCompatibleActionTypeNames()) {
 			final ServiceType next = typeManager.getServiceTypeByName(name);
 			String label = name;
 			if (next.isTranslatable()) {
-				label = (String) EjbcaJSFHelper.getBean().getText().get(name);
+				label = EjbcaJSFHelper.getBean().getText().get(name);
 			}
 			retval.add(new SelectItem(name,label));
 		}		
@@ -369,7 +369,7 @@ public class ServiceConfigurationView implements Serializable{
 	}
 	
 	private List<SelectItem> stringsToItems(List<String> stringList) {
-	   List<SelectItem> itemList = new ArrayList<SelectItem>(stringList.size());
+	   List<SelectItem> itemList = new ArrayList<>(stringList.size());
 	   for (String s : stringList) {
 	       itemList.add(new SelectItem(s, s));
 	   }
@@ -378,7 +378,7 @@ public class ServiceConfigurationView implements Serializable{
 	
 	public List<SelectItem> getAvailableCustomWorkerItems() {
 	    final List<String> customClasses = CustomLoader.getCustomClasses(IWorker.class);
-	    final List<String> customClassesWithoutUiSupport = new ArrayList<String>();
+	    final List<String> customClassesWithoutUiSupport = new ArrayList<>();
 	    for (final String classPath : customClasses) {
 	    	// Exclude all the workers that have custom UI support and will be shown as any other worker
 	        if (!CustomWorkerType.isCustomUiRenderingSupported(classPath)) {
@@ -424,7 +424,7 @@ public class ServiceConfigurationView implements Serializable{
 	}
 
 	public List<SelectItem> getNodesInCluster() {
-		final List<SelectItem> ret = new LinkedList<SelectItem>();
+		final List<SelectItem> ret = new LinkedList<>();
 		final Set<String> nodes = EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getNodesInCluster();  
 		for (String node : nodes) {
 			ret.add(new SelectItem(node));

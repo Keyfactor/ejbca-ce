@@ -45,8 +45,8 @@ public class CustomWorkerType extends WorkerType {
     private String autoClassPath;
     private String manualClassPath;
     private String propertyText;
-    private Collection<String> compatibleActionTypeNames = new ArrayList<String>();
-    private Collection<String> compatibleIntervalTypeNames = new ArrayList<String>();
+    private Collection<String> compatibleActionTypeNames = new ArrayList<>();
+    private Collection<String> compatibleIntervalTypeNames = new ArrayList<>();
     private ListDataModel<CustomServiceWorkerProperty> customUiPropertyListDataModel = null;
 
 	public CustomWorkerType() {
@@ -88,6 +88,7 @@ public class CustomWorkerType extends WorkerType {
 	    }
 	}
 
+	@Override
 	public String getClassPath() {
 		return autoClassPath != null && !autoClassPath.isEmpty() ? autoClassPath : manualClassPath;
 	}
@@ -108,6 +109,7 @@ public class CustomWorkerType extends WorkerType {
         return manualClassPath;
     }
 
+    @Override
 	@SuppressWarnings("unchecked")
     public Properties getProperties(final ArrayList<String> errorMessages) throws IOException{
 		final Properties retval = new Properties();
@@ -121,6 +123,7 @@ public class CustomWorkerType extends WorkerType {
 		return retval;
 	}
 	
+    @Override
 	public void setProperties(Properties properties) throws IOException{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();		
 		properties.store(baos, null);		
@@ -130,6 +133,7 @@ public class CustomWorkerType extends WorkerType {
 	/**
 	 * @return the names of the Compatible Action Types
 	 */
+    @Override
 	public Collection<String> getCompatibleActionTypeNames() {
 		return compatibleActionTypeNames;
 	}
@@ -137,10 +141,12 @@ public class CustomWorkerType extends WorkerType {
 	/**
 	 * @return the names of the Compatible Interval Types
 	 */
+    @Override
 	public Collection<String> getCompatibleIntervalTypeNames() {
 		return compatibleIntervalTypeNames;
 	}
 	
+    @Override
 	public boolean isCustom() {
 		return true;
 	}
@@ -160,7 +166,7 @@ public class CustomWorkerType extends WorkerType {
 	public ListDataModel<CustomServiceWorkerProperty> getCustomUiPropertyList() {
 	    if (isCustomUiRenderingSupported()) {
 	        if (customUiPropertyListDataModel==null) {
-	            final List<CustomServiceWorkerProperty> customUiPropertyList = new ArrayList<CustomServiceWorkerProperty>();
+	            final List<CustomServiceWorkerProperty> customUiPropertyList = new ArrayList<>();
 	            try {
 	                final CustomServiceWorkerUiSupport customPublisherUiSupport = (CustomServiceWorkerUiSupport) Class.forName(getClassPath()).newInstance();
 	                final Properties currentProperties = new Properties();
@@ -175,15 +181,15 @@ public class CustomWorkerType extends WorkerType {
 	            } catch (IOException e) {
 	                e.printStackTrace();
 	            }
-	            this.customUiPropertyListDataModel = new ListDataModel<CustomServiceWorkerProperty>(customUiPropertyList);
+	            this.customUiPropertyListDataModel = new ListDataModel<>(customUiPropertyList);
             }
 	    }
 	    return customUiPropertyListDataModel;
 	}
 	
 	public List<SelectItem> getCustomUiPropertySelectItems() {
-	    final List<SelectItem> ret = new ArrayList<SelectItem>();
-	    final CustomServiceWorkerProperty customServiceWorkerProperty = (CustomServiceWorkerProperty) getCustomUiPropertyList().getRowData();
+	    final List<SelectItem> ret = new ArrayList<>();
+	    final CustomServiceWorkerProperty customServiceWorkerProperty = getCustomUiPropertyList().getRowData();
 	    customServiceWorkerProperty.getOptions();
 	    for (int i=0; i<customServiceWorkerProperty.getOptions().size(); i++) {
 	        ret.add(new SelectItem(customServiceWorkerProperty.getOptions().get(i), customServiceWorkerProperty.getOptionTexts().get(i)));
@@ -198,7 +204,7 @@ public class CustomWorkerType extends WorkerType {
 
     public String getCustomUiPropertyText() {
         final String customClassSimpleName = getClassPath().substring(getClassPath().lastIndexOf('.')+1);
-        final String name = ((CustomServiceWorkerProperty)getCustomUiPropertyList().getRowData()).getName().replaceAll("\\.", "_");
+        final String name = (getCustomUiPropertyList().getRowData()).getName().replaceAll("\\.", "_");
         return EjbcaJSFHelper.getBean().getText().get(customClassSimpleName.toUpperCase() + "_" + name.toUpperCase());
     }
 }

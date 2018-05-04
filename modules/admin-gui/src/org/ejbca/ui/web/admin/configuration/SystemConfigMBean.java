@@ -879,7 +879,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public ListDataModel<String> getNodesInCluster() {
         if (nodesInCluster == null) {
             List<String> nodesList = getListFromSet(currentConfig.getNodesInCluster());
-            nodesInCluster = new ListDataModel<String>(nodesList);
+            nodesInCluster = new ListDataModel<>(nodesList);
         }
         return nodesInCluster;
     }
@@ -890,7 +890,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         Set<String> nodes = currentConfig.getNodesInCluster();
         nodes.add(nodeToAdd);
         currentConfig.setNodesInCluster(nodes);
-        nodesInCluster = new ListDataModel<String>(getListFromSet(nodes));
+        nodesInCluster = new ListDataModel<>(getListFromSet(nodes));
     }
 
     /** Invoked when the user wants to remove a node from the cluster */
@@ -899,11 +899,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         Set<String> nodes = currentConfig.getNodesInCluster();
         nodes.remove(nodeToRemove);
         currentConfig.setNodesInCluster(nodes);
-        nodesInCluster = new ListDataModel<String>(getListFromSet(nodes));
+        nodesInCluster = new ListDataModel<>(getListFromSet(nodes));
     }
 
     private List<String> getListFromSet(Set<String> set) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         if(set!=null && !set.isEmpty()) {
             for(String entry : set) {
                 list.add(entry);
@@ -929,7 +929,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public ListDataModel<ProtocolGuiInfo> getAvailableProtocols() {
         if (availableProtocolInfos == null) {
-            availableProtocolInfos = new ListDataModel<ProtocolGuiInfo>(getNewAvailableProtocolInfos());
+            availableProtocolInfos = new ListDataModel<>(getNewAvailableProtocolInfos());
         }
         return availableProtocolInfos;
     }
@@ -955,7 +955,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     private ArrayList<ProtocolGuiInfo> getNewAvailableProtocolInfos() {
-        ArrayList<ProtocolGuiInfo> protocolInfos = new ArrayList<ProtocolGuiInfo>();
+        ArrayList<ProtocolGuiInfo> protocolInfos = new ArrayList<>();
         LinkedHashMap<String, Boolean> allPC = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         for (Entry<String, Boolean> entry : allPC.entrySet()) {
             protocolInfos.add(new ProtocolGuiInfo(entry.getKey(), entry.getValue()));
@@ -1069,14 +1069,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public ListDataModel<EKUInfo> getAvailableExtendedKeyUsages() {
         if(availableExtendedKeyUsages == null) {
-            availableExtendedKeyUsages = new ListDataModel<EKUInfo>(getNewAvailableExtendedKeyUsages());
+            availableExtendedKeyUsages = new ListDataModel<>(getNewAvailableExtendedKeyUsages());
         }
         return availableExtendedKeyUsages;
     }
 
     private ArrayList<EKUInfo> getNewAvailableExtendedKeyUsages() {
         availableExtendedKeyUsagesConfig = getEjbcaWebBean().getAvailableExtendedKeyUsagesConfiguration();
-        ArrayList<EKUInfo> ekus = new ArrayList<EKUInfo>();
+        ArrayList<EKUInfo> ekus = new ArrayList<>();
         Map<String, String> allEKU = availableExtendedKeyUsagesConfig.getAllEKUOidsAndNames();
         for (Entry<String, String> entry : allEKU.entrySet()) {
             ekus.add(new EKUInfo(entry.getKey(), getEjbcaWebBean().getText(entry.getValue())));
@@ -1131,7 +1131,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ekuConfig.addExtKeyUsage(currentEKUOid, currentEKUName);
         try {
             getEjbcaWebBean().saveAvailableExtendedKeyUsagesConfiguration(ekuConfig);
-            availableExtendedKeyUsages = new  ListDataModel<EKUInfo>(getNewAvailableExtendedKeyUsages());
+            availableExtendedKeyUsages = new  ListDataModel<>(getNewAvailableExtendedKeyUsages());
         } catch(Exception e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to save AvailableExtendedKeyUsagesConfiguration.", e.getLocalizedMessage()));
             return;
@@ -1150,7 +1150,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to save AvailableExtendedKeyUsagesConfiguration: " + e.getLocalizedMessage(), null));
             return;
         }
-        availableExtendedKeyUsages = new ListDataModel<EKUInfo>(getNewAvailableExtendedKeyUsages());
+        availableExtendedKeyUsages = new ListDataModel<>(getNewAvailableExtendedKeyUsages());
 
         ArrayList<String> cpNamesUsingEKU = getCertProfilesUsingEKU(oid);
         if(!cpNamesUsingEKU.isEmpty()) {
@@ -1161,7 +1161,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     private ArrayList<String> getCertProfilesUsingEKU(final String oid) {
-        ArrayList<String> ret = new ArrayList<String>();
+        ArrayList<String> ret = new ArrayList<>();
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Map<Integer, CertificateProfile> allCertProfiles = certprofileSession.getAllCertificateProfiles();
         for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
@@ -1308,39 +1308,39 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         int numberOfZipEntries = 0;
         int numberOfImportedFiles = 0;
         int numberOfignoredFiles = 0;
-        Map<String, RaCssInfo> raCssInfosMap = new HashMap<String, RaCssInfo>();
-        ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(fileBuffer));
-        ZipEntry ze;
-        // Read each zip entry
-        while ((ze = zis.getNextEntry()) != null) {
-            String fileName = ze.getName();
-            if (log.isDebugEnabled()) {
-                log.debug("Reading zip entry: " + fileName);
+        Map<String, RaCssInfo> raCssInfosMap = new HashMap<>();
+        try (final ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(fileBuffer))) {
+            ZipEntry ze;
+            // Read each zip entry
+            while ((ze = zis.getNextEntry()) != null) {
+                String fileName = ze.getName();
+                if (log.isDebugEnabled()) {
+                    log.debug("Reading zip entry: " + fileName);
+                }
+                try {
+                    fileName = URLDecoder.decode(fileName, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new IllegalStateException("UTF-8 was not a known character encoding", e);
+                }
+                numberOfZipEntries++;
+                if (!ze.getName().endsWith(".css")) {
+                    log.info(fileName + " not recognized as a css file. Expected file extension '.css'. Skipping...");
+                    numberOfignoredFiles++;
+                    ignoredFiles += ze.getName() + ", ";
+                    continue;
+                }
+                // Extract bytes from this entry
+                byte[] filebytes = new byte[(int) ze.getSize()];
+                int i = 0;
+                while ((zis.available() == 1) && (i < filebytes.length)) {
+                    filebytes[i++] = (byte) zis.read();
+                }
+                RaCssInfo raCssInfo = new RaCssInfo(filebytes, fileName);
+                raCssInfosMap.put(fileName, raCssInfo);
+                importedFiles += fileName + ", ";
+                numberOfImportedFiles++;
             }
-            try {
-                fileName = URLDecoder.decode(fileName, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("UTF-8 was not a known character encoding", e);
-            }
-            numberOfZipEntries++;
-            if (!ze.getName().endsWith(".css")) {
-                log.info(fileName + " not recognized as a css file. Expected file extension '.css'. Skipping...");
-                numberOfignoredFiles++;
-                ignoredFiles += ze.getName() + ", ";
-                continue;
-            }
-            // Extract bytes from this entry
-            byte[] filebytes = new byte[(int) ze.getSize()];
-            int i = 0;
-            while ((zis.available() == 1) && (i < filebytes.length)) {
-                filebytes[i++] = (byte) zis.read();
-            }
-            RaCssInfo raCssInfo = new RaCssInfo(filebytes, fileName);
-            raCssInfosMap.put(fileName, raCssInfo);
-            importedFiles += fileName + ", ";
-            numberOfImportedFiles++;
         }
-        zis.close();
         if (numberOfZipEntries == 0 && raCssFile.getName().endsWith(".css")) {
             // Single file selected (not zip)
             raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(raCssFile.getBytes(), raCssFile.getName()));
@@ -1454,13 +1454,13 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public ListDataModel<CustomCertExtensionInfo> getAvailableCustomCertExtensions() {
-        availableCustomCertExtensions = new ListDataModel<CustomCertExtensionInfo>(getNewAvailableCustomCertExtensions());
+        availableCustomCertExtensions = new ListDataModel<>(getNewAvailableCustomCertExtensions());
         return availableCustomCertExtensions;
     }
 
     private ArrayList<CustomCertExtensionInfo> getNewAvailableCustomCertExtensions() {
         availableCustomCertExtensionsConfig = getEjbcaWebBean().getAvailableCustomCertExtensionsConfiguration();
-        ArrayList<CustomCertExtensionInfo> extensionsInfo = new ArrayList<CustomCertExtensionInfo>();
+        ArrayList<CustomCertExtensionInfo> extensionsInfo = new ArrayList<>();
         Collection<CertificateExtension> allExtensions = availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions();
         for(CertificateExtension extension : allExtensions) {
             extensionsInfo.add(new CustomCertExtensionInfo(extension));
@@ -1487,7 +1487,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Failed to save AvailableCustomCertificateExtensionsConfiguration: " + e.getLocalizedMessage(), null));
             return;
         }
-        availableCustomCertExtensions = new ListDataModel<CustomCertExtensionInfo>(getNewAvailableCustomCertExtensions());
+        availableCustomCertExtensions = new ListDataModel<>(getNewAvailableCustomCertExtensions());
 
         final ArrayList<String> cpNamedUsingExtension = getCertProfilesUsingExtension(extID);
         if(!cpNamedUsingExtension.isEmpty()) {
@@ -1532,7 +1532,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     "Failed to add Custom Certificate Extension. " + e.getLocalizedMessage() , e.getLocalizedMessage()));
             return;
         }
-        availableCustomCertExtensions = new ListDataModel<CustomCertExtensionInfo>(getNewAvailableCustomCertExtensions());
+        availableCustomCertExtensions = new ListDataModel<>(getNewAvailableCustomCertExtensions());
         flushNewExtensionCache();
         flushCache();
     }
@@ -1581,7 +1581,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     private ArrayList<String> getCertProfilesUsingExtension(final int id) {
-        ArrayList<String> ret = new ArrayList<String>();
+        ArrayList<String> ret = new ArrayList<>();
         final CertificateProfileSessionLocal certprofileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Map<Integer, CertificateProfile> allCertProfiles = certprofileSession.getAllCertificateProfiles();
         for(Entry<Integer, CertificateProfile> entry : allCertProfiles.entrySet()) {
@@ -1642,21 +1642,17 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final String[] availableLanguagesNativeNames = getEjbcaWebBean().getLanguagesNativeNames();
         for(int i=0; i<availableLanguages.length; i++) {
             String output = availableLanguagesEnglishNames[i];
-            if((availableLanguagesEnglishNames != null) && (availableLanguagesNativeNames[i] != null)) {
-                output += " - ";
+            if (availableLanguagesNativeNames[i] != null) {
+                output += " - " + availableLanguagesNativeNames[i];
             }
-            output += availableLanguagesNativeNames[i];
-            if((availableLanguagesEnglishNames != null) || (availableLanguagesNativeNames[i] != null)) {
-                output += " ";
-            }
-            output += "[" + availableLanguages[i] + "]";
+            output += " [" + availableLanguages[i] + "]";
             ret.add(new SelectItem(i, output));
         }
         return ret;
     }
 
     public List<SelectItem> getAvailableThemes() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         final String[] themes = globalConfig.getAvailableThemes();
         for(String theme : themes) {
             ret.add(new SelectItem(theme, theme));
@@ -1665,7 +1661,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getPossibleEntriesPerPage() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         final String[] possibleValues = globalConfig.getPossibleEntiresPerPage();
         for(String value : possibleValues) {
             ret.add(new SelectItem(Integer.parseInt(value), value));
@@ -1674,7 +1670,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<String> getAvailableTabs() {
-        final List<String> availableTabs = new ArrayList<String>();
+        final List<String> availableTabs = new ArrayList<>();
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Basic Configurations");
             availableTabs.add("Administrator Preferences");

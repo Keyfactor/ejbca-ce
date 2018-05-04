@@ -143,7 +143,7 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * Force a shorter scope (than session scoped) for the ListDataModel by always resetting it before it is rendered
-     * @return
+     * @return Always empty string
      */
     public String getResetValidatorsTrigger() {
         validatorItems = null;
@@ -191,7 +191,7 @@ public class ValidatorsBean extends BaseManagedBean {
      */
     public ListDataModel<ValidatorItem> getAvailableValidators() {
         if (validatorItems == null) {
-            final List<ValidatorItem> items = new ArrayList<ValidatorItem>();
+            final List<ValidatorItem> items = new ArrayList<>();
             final Collection<Integer> validatorIds = keyValidatorSession.getAuthorizedKeyValidatorIds(getAdmin(), AccessRulesConstants.REGULAR_VIEWVALIDATOR);
             for (Integer id : validatorIds) {
             	final Validator validator = keyValidatorSession.getValidator(id);
@@ -211,7 +211,7 @@ public class ValidatorsBean extends BaseManagedBean {
                     return o1.getName().compareToIgnoreCase(o2.getName());
                 }
             });
-            validatorItems = new ListDataModel<ValidatorItem>(items);
+            validatorItems = new ListDataModel<>(items);
         }
         return validatorItems;
     }
@@ -349,8 +349,6 @@ public class ValidatorsBean extends BaseManagedBean {
 
     /**
      * Delete confirm action.
-     * @throws AuthorizationDeniedException if authorization was denied.
-     * @throws CouldNotRemoveKeyValidatorException if the validator could not be removed.
      */
     public void actionDeleteConfirm() {
         try {

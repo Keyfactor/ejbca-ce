@@ -46,10 +46,12 @@ public class PeriodicalIntervalType extends IntervalType {
 		this.value = DEFAULT_VALUE;
 	}
 
+	@Override
 	public String getClassPath() {
 		return org.ejbca.core.model.services.intervals.PeriodicalInterval.class.getName();
 	}
 
+	@Override
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
 		Properties retval = new Properties();
 		
@@ -67,11 +69,13 @@ public class PeriodicalIntervalType extends IntervalType {
 		return retval;
 	}
 	
+	@Override
 	public void setProperties(Properties properties) throws IOException{
 		value = properties.getProperty(PeriodicalInterval.PROP_VALUE,DEFAULT_VALUE);
 		unit = properties.getProperty(PeriodicalInterval.PROP_UNIT,DEFAULT_UNIT);
 	}
 
+	@Override
 	public boolean isCustom() {
 		return false;
 	}
@@ -85,7 +89,7 @@ public class PeriodicalIntervalType extends IntervalType {
 	}
 	
 	public List<SelectItem> getAvailableUnits(){
-		final List<SelectItem> retval = new ArrayList<SelectItem>(PeriodicalInterval.AVAILABLE_UNITS.length);
+		final List<SelectItem> retval = new ArrayList<>(PeriodicalInterval.AVAILABLE_UNITS.length);
 		for (final String key : PeriodicalInterval.AVAILABLE_UNITS) {
             retval.add(new SelectItem(key, EjbcaJSFHelper.getBean().getText().get(key).toLowerCase()));
 		}

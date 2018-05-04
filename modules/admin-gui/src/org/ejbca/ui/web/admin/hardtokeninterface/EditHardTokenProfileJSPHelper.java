@@ -143,11 +143,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
         if (!initialized) {
             this.hardtokenbean = hardtokenbean;
             initialized = true;
-            issuperadministrator = false;
-            try {
-                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(StandardRules.ROLE_ROOT.resource());
-            } catch (AuthorizationDeniedException ade) {
-            }
+            issuperadministrator = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.ROLE_ROOT.resource());
         }
     }
 

@@ -37,7 +37,7 @@ public class CustomLoader {
      * @return A list of class names (including the full package paths)
      */
     public static <T> List<String> getCustomClasses(Class<T> interfaceClass) {
-        List<String> classes = new ArrayList<String>();
+        List<String> classes = new ArrayList<>();
         ServiceLoader<T> svcloader = ServiceLoader.load(interfaceClass);
         for (T implInstance : svcloader) {
             String name = implInstance.getClass().getName();
