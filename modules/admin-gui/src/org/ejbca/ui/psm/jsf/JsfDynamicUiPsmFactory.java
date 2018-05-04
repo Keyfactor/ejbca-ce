@@ -63,6 +63,7 @@ public class JsfDynamicUiPsmFactory {
     /**
      * Initializes the dynamic UI properties on a grid panel with two columns, label on the left, UI component on the right.
      * @param panelGrid the panel grid instance to (re-)build.
+     * @param model DynamicUiModel to extract properties from
      * @param i18nPrefix the name prefix for the I18N message resources.
      * @throws DynamicUiModelException if the PSM could not be created by the dynamic UI model.
      */
