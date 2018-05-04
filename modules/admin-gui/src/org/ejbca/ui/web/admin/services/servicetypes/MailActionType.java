@@ -62,13 +62,15 @@ public class MailActionType extends ActionType {
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getClassPath()
 	 */
+	@Override
 	public String getClassPath() {
 		return org.ejbca.core.model.services.actions.MailAction.class.getName();
 	}
 
 	/**
-	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
+	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties
 	 */
+	@Override
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {		
 		Properties properties = new Properties();
 		if(senderAddress == null || senderAddress.trim().equals("")){
@@ -83,6 +85,7 @@ public class MailActionType extends ActionType {
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#isCustom()
 	 */
+	@Override
 	public boolean isCustom() {		
 		return false;
 	}
@@ -90,6 +93,7 @@ public class MailActionType extends ActionType {
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#setProperties(java.util.Properties)
 	 */
+	@Override
 	public void setProperties(Properties properties) throws IOException {		
 	   senderAddress = properties.getProperty(MailAction.PROP_SENDERADDRESS, "");
 	   recieverAddress = properties.getProperty(MailAction.PROP_RECIEVERADDRESS, "");

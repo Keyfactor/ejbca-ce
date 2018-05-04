@@ -93,7 +93,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     public static EditServiceManagedBean getBean() {    
     	FacesContext context = FacesContext.getCurrentInstance();
     	Application app = context.getApplication();
-    	EditServiceManagedBean value = (EditServiceManagedBean) app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
+    	EditServiceManagedBean value = app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
     	return value;
     }
     
@@ -118,7 +118,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
 	public String save(){
 		String retval = "listservices";
-		ArrayList<String> errorMessages = new ArrayList<String>();
+		ArrayList<String> errorMessages = new ArrayList<>();
 		try {
 			serviceConfigurationView.getServiceConfiguration(errorMessages);
 			if(errorMessages.size() == 0){
@@ -132,7 +132,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 				retval = null;				
 			}
 		} catch (IOException e) {
-			addErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());
+			addErrorMessage(EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());
 		}
 		return retval;
 	}
@@ -285,7 +285,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
      */
     public List<SelectItem> getAvailableCAs() {
-        List<SelectItem> availableCANames = new ArrayList<SelectItem>();
+        List<SelectItem> availableCANames = new ArrayList<>();
         for (Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
             try {
                 availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName()));
@@ -300,8 +300,8 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
 	 */
     public List<SelectItem> getAvailableCAsWithAnyOption() {
-        List<SelectItem> availableCANames = new ArrayList<SelectItem>();
-        String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");
+        List<SelectItem> availableCANames = new ArrayList<>();
+        String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
         availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
         availableCANames.addAll(getAvailableCAs());
         return availableCANames;
@@ -312,7 +312,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
      */
     public List<SelectItem> getAvailableExternalX509CAsWithAnyOption() {
-        final List<SelectItem> availableCANames = new ArrayList<SelectItem>();
+        final List<SelectItem> availableCANames = new ArrayList<>();
         final String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
         availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
         for (final Integer caid : ejb.getCaSession().getAuthorizedCaIds(getAdmin())) {
@@ -334,7 +334,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      * (and HARDTOKEN if available) certificate profiles current admin is authorized to.
      */
     public Collection<SelectItem> getCertificateProfiles() {
-        TreeMap<String, SelectItem> certificateProfiles = new TreeMap<String, SelectItem>();
+        TreeMap<String, SelectItem> certificateProfiles = new TreeMap<>();
          
         final List<Integer> certificateProfileTypes = new ArrayList<>();
         certificateProfileTypes.add(CertificateConstants.CERTTYPE_ENDENTITY);
@@ -361,7 +361,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
 
 	public List<SelectItem> getAvailablePublishers(){
-		List<SelectItem> availablePublisherNames = new ArrayList<SelectItem>();
+		List<SelectItem> availablePublisherNames = new ArrayList<>();
         for (int next : ejb.getCaAdminSession().getAuthorizedPublisherIds(getAdmin())) {
             // Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
             availablePublisherNames.add(new SelectItem(String.valueOf(next), ejb.getPublisherSession().getPublisherName(next) + " (" + next + ")"));
@@ -377,9 +377,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	
 	/** Return type used by getManualCustomActionItems */
     public static class ManualCustomItems {
-        private final List<SelectItem> workers = new ArrayList<SelectItem>();
-        private final List<SelectItem> intervals = new ArrayList<SelectItem>();
-        private final List<SelectItem> actions = new ArrayList<SelectItem>();
+        private final List<SelectItem> workers = new ArrayList<>();
+        private final List<SelectItem> intervals = new ArrayList<>();
+        private final List<SelectItem> actions = new ArrayList<>();
         public List<SelectItem> getWorkers() { return workers; }
         public List<SelectItem> getIntervals() { return intervals; }
         public List<SelectItem> getActions() { return actions; }

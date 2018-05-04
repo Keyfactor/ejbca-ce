@@ -37,17 +37,19 @@ public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> imp
     private List<ApprovalDataVOView> listData;
 
     public ApprovalDataVOViewList(Collection<ApprovalDataVO> approvalDataVOs) {
-        listData = new ArrayList<ApprovalDataVOView>();
+        listData = new ArrayList<>();
         for(ApprovalDataVO approvalDataVO : approvalDataVOs) {
             listData.add(new ApprovalDataVOView(approvalDataVO));
         }
 
     }
 
+    @Override
     public ApprovalDataVOView get(int arg0) {
         return listData.get(arg0);
     }
 
+    @Override
     public int size() {
         return listData.size();
     }
@@ -58,6 +60,7 @@ public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> imp
      */
     protected void sort(final String column, final boolean ascending) {
         Comparator<ApprovalDataVOView> comparator = new Comparator<ApprovalDataVOView>() {
+            @Override
             public int compare(ApprovalDataVOView c2, ApprovalDataVOView c1) {
                 if (column == null || column.equals("requestDate")) {
                     return ascending ? c1.getApproveActionDataVO().getRequestDate().compareTo(c2.getApproveActionDataVO().getRequestDate()) : c2

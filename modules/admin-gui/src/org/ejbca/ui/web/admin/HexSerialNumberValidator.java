@@ -35,6 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 public class HexSerialNumberValidator implements Validator {
 	private static final Logger log = Logger.getLogger(HexSerialNumberValidator.class);
 
+	@Override
 	public void validate(FacesContext facesContext, UIComponent textField, Object object) throws ValidatorException {
 		if (log.isDebugEnabled()) {
 			log.debug("Validating component " + textField.getClientId(facesContext) + " with value \"" + object + "\"");

@@ -57,12 +57,14 @@ public class GetCRLServlet extends HttpServlet {
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
 
+    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");
         doGet(req, res);
         log.trace("<doPost()");
     }
 
+    @Override
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         log.trace(">doGet()");
 

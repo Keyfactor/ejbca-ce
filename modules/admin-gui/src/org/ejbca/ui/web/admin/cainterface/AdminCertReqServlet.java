@@ -182,7 +182,7 @@ public class AdminCertReqServlet extends HttpServlet {
             throw new ServletException("This servlet requires certificate authentication!");
         }
 
-        final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        final Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(certs[0]);
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         AuthenticationToken admin = authenticationSession.authenticate(subject);

@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.IWorker;
 
 /**
@@ -34,13 +33,13 @@ public abstract class BaseWorkerType extends WorkerType {
 
     private static final long serialVersionUID = 7026884019102752494L;
 
-    public static final String DEFAULT_TIMEUNIT = BaseWorker.UNIT_DAYS;
+    public static final String DEFAULT_TIMEUNIT = IWorker.UNIT_DAYS;
 	public static final String DEFAULT_TIMEVALUE = "7";
 	
-	private List<String> selectedCANamesToCheck = new ArrayList<String>();
-	private List<String> selectedCertificateProfilesToCheck = new ArrayList<String>();
-	private Collection<String> compatibleActionTypeNames = new ArrayList<String>();
-	private Collection<String> compatibleIntervalTypeNames = new ArrayList<String>();
+	private List<String> selectedCANamesToCheck = new ArrayList<>();
+	private List<String> selectedCertificateProfilesToCheck = new ArrayList<>();
+	private Collection<String> compatibleActionTypeNames = new ArrayList<>();
+	private Collection<String> compatibleIntervalTypeNames = new ArrayList<>();
 	private String classpath = null;
 
 	public BaseWorkerType(String subViewPage, String name, boolean translatable, String classpath) {
@@ -55,13 +54,13 @@ public abstract class BaseWorkerType extends WorkerType {
 		compatibleActionTypeNames.add(name);
 	}
 	protected void deleteAllCompatibleActionTypes() {
-		compatibleActionTypeNames = new ArrayList<String>();
+		compatibleActionTypeNames = new ArrayList<>();
 	}
 	protected void addCompatibleIntervalTypeName(String name) {
 		compatibleIntervalTypeNames.add(name);
 	}
 	protected void deleteAllCompatibleIntervalTypes() {
-		compatibleIntervalTypeNames = new ArrayList<String>();
+		compatibleIntervalTypeNames = new ArrayList<>();
 	}
 	public List<String> getSelectedCANamesToCheck() {
 		return selectedCANamesToCheck;
@@ -124,10 +123,10 @@ public abstract class BaseWorkerType extends WorkerType {
 
 	@Override
     public void setProperties(Properties properties) throws IOException {
-        ArrayList<String> selectedCANamesToCheck = new ArrayList<String>();
+        ArrayList<String> selectedCANamesToCheck = new ArrayList<>();
         selectedCANamesToCheck.addAll(Arrays.asList(properties.getProperty(IWorker.PROP_CAIDSTOCHECK, "").split(";")));
         setSelectedCANamesToCheck(selectedCANamesToCheck);
-        ArrayList<String> selectedCertificateProfileNamesToCheck = new ArrayList<String>();
+        ArrayList<String> selectedCertificateProfileNamesToCheck = new ArrayList<>();
         selectedCertificateProfileNamesToCheck.addAll(Arrays.asList(properties.getProperty(IWorker.PROP_CERTIFICATE_PROFILE_IDS_TO_CHECK, "")
                 .split(";")));
         setSelectedCertificateProfilesToCheck(selectedCertificateProfileNamesToCheck);      

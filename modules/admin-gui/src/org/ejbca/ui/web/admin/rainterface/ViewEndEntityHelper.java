@@ -102,8 +102,6 @@ public class ViewEndEntityHelper implements Serializable{
 	   // Public methods.
     /**
      * Method that initialized the bean.
-     *
-     * @param request is a reference to the http request.
      */
     public void initialize(EjbcaWebBean ejbcawebbean,  
     		               RAInterfaceBean rabean, CAInterfaceBean cabean) throws Exception {

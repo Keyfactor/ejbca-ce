@@ -117,8 +117,8 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
 
     public ListDataModel<ApprovalProfileGuiInfo> getApprovalProfiles() {
         if (approvalProfilesList == null) {
-            final List<ApprovalProfileGuiInfo> items = new ArrayList<ApprovalProfileGuiInfo>();
-            final List<Integer> authorizedProfileIds = new ArrayList<Integer>();
+            final List<ApprovalProfileGuiInfo> items = new ArrayList<>();
+            final List<Integer> authorizedProfileIds = new ArrayList<>();
 
             authorizedProfileIds.addAll(approvalProfileSession.getAuthorizedApprovalProfileIds(getAdmin()));
             final Map<Integer, String> idToNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
@@ -133,7 +133,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
                     return a.getName().compareToIgnoreCase(b.getName());
                 }
             });
-            approvalProfilesList = new ListDataModel<ApprovalProfileGuiInfo>(items);
+            approvalProfilesList = new ListDataModel<>(items);
         }
         return approvalProfilesList;
     }
@@ -240,7 +240,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         final CertificateProfileSessionLocal certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
         Map<Integer, CertificateProfile> allCertProfiles = certProfileSession.getAllCertificateProfiles();
         Set<Entry<Integer, CertificateProfile>> entries = allCertProfiles.entrySet();
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for(Entry<Integer, CertificateProfile> entry : entries) {
             final CertificateProfile certProfile = entry.getValue();
             if(certProfile.getApprovals().containsValue(Integer.valueOf(approvalProfileId))) {
@@ -253,7 +253,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     public List<String> getCAsUsingApprovalProfile(final int approvalProfileId) {
         final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
         List<Integer> allCas = caSession.getAllCaIds();
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (int caid : allCas) {
             CAInfo cainfo = caSession.getCAInfoInternal(caid);
             if (cainfo.getApprovals().containsValue(Integer.valueOf(approvalProfileId))) {

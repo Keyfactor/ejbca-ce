@@ -215,12 +215,9 @@ public class ApprovalDataVOView implements Serializable {
      * @return An array of Link-objects
      */
     public boolean isContainingLink() {
-        List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
-        int size = newTextRows.size();
-        for (int i = 0; i < size; i++) {
-            if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)
-                    || ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN)
-                    || ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(USERNAME)) {
+        final List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
+        for (final ApprovalDataText row : newTextRows) {
+            if (row.getHeader().equals(CERTSERIALNUMBER) || row.getHeader().equals(ISSUERDN) || row.getHeader().equals(USERNAME)) {
                 return true;
             }
         }
@@ -234,17 +231,17 @@ public class ApprovalDataVOView implements Serializable {
      * @return An array of Link-objects
      */
     public List<LinkView> getApprovalDataLinks() {
-        List<LinkView> certificateLinks = new ArrayList<LinkView>();
-        List<String> certificateSerialNumbers = new ArrayList<String>();
-        List<String> certificateIssuerDN = new ArrayList<String>();
+        List<LinkView> certificateLinks = new ArrayList<>();
+        List<String> certificateSerialNumbers = new ArrayList<>();
+        List<String> certificateIssuerDN = new ArrayList<>();
         List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
 
-        for (int i = 0; i < newTextRows.size(); i++) {
-            if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)) {
-                certificateSerialNumbers.add(((ApprovalDataText) newTextRows.get(i)).getData());
+        for (final ApprovalDataText row : newTextRows) {
+            if (row.getHeader().equals(CERTSERIALNUMBER)) {
+                certificateSerialNumbers.add(row.getData());
             }
-            if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN)) {
-                certificateIssuerDN.add(((ApprovalDataText) newTextRows.get(i)).getData());
+            if (row.getHeader().equals(ISSUERDN)) {
+                certificateIssuerDN.add(row.getData());
             }
         }
         if (certificateIssuerDN.size() != certificateSerialNumbers.size()) {
@@ -262,23 +259,22 @@ public class ApprovalDataVOView implements Serializable {
                 log.warn("UnsupportedEncoding creating approval data link. ", e);
             }
             certificateLinks.add(new LinkView(link, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(CERTSERIALNUMBER) + ": ",
-                    (String) certificateSerialNumbers.get(i), ""));
+                    certificateSerialNumbers.get(i), ""));
         }
         return certificateLinks;
     }
 
     public List<TextComparisonView> getTextListExceptLinks() {
-        ArrayList<TextComparisonView> textComparisonList = new ArrayList<TextComparisonView>();
+        ArrayList<TextComparisonView> textComparisonList = new ArrayList<>();
         List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
-        int size = newTextRows.size();
-        for (int i = 0; i < size; i++) {
-            if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)
-                    || ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN)) {
+        for (final ApprovalDataText row : newTextRows) {
+            if (row.getHeader().equals(CERTSERIALNUMBER)
+                    || row.getHeader().equals(ISSUERDN)) {
                 continue;
             }
             String newString = "";
             try {
-                newString = translateApprovalDataText((ApprovalDataText) newTextRows.get(i));
+                newString = translateApprovalDataText(row);
             } catch (ArrayIndexOutOfBoundsException e) {
                 // Do nothing orgstring should be "";
             }
@@ -288,7 +284,7 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public List<TextComparisonView> getTextComparisonList() {
-        ArrayList<TextComparisonView> textComparisonList = new ArrayList<TextComparisonView>();
+        ArrayList<TextComparisonView> textComparisonList = new ArrayList<>();
         if (data.getApprovalRequest().getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_COMPARING) {
             List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
             List<ApprovalDataText> orgTextRows = getOldRequestDataAsText();
@@ -299,13 +295,13 @@ public class ApprovalDataVOView implements Serializable {
             for (int i = 0; i < size; i++) {
                 String orgString = "";
                 try {
-                    orgString = translateApprovalDataText((ApprovalDataText) orgTextRows.get(i));
+                    orgString = translateApprovalDataText(orgTextRows.get(i));
                 } catch (IndexOutOfBoundsException e) {
                     // Do nothing orgstring should be "";
                 }
                 String newString = "";
                 try {
-                    newString = translateApprovalDataText((ApprovalDataText) newTextRows.get(i));
+                    newString = translateApprovalDataText(newTextRows.get(i));
                 } catch (IndexOutOfBoundsException e) {
                     // Do nothing orgstring should be "";
                 }

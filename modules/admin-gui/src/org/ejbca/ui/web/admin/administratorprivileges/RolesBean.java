@@ -178,7 +178,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
         return false;
     }
     
-    public List<SelectItem> getAvailableStylesList() throws AuthorizationDeniedException {
+    public List<SelectItem> getAvailableStylesList() {
         GlobalCustomCssConfiguration globalCustomCssConfiguration = (GlobalCustomCssConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCustomCssConfiguration.CSS_CONFIGURATION_ID);
         raStyleList = new ArrayList<>();
         raStyleList.add(new SelectItem(0, "Default"));

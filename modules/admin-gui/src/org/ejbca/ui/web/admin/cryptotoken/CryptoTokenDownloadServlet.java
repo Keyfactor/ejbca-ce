@@ -49,17 +49,20 @@ public class CryptoTokenDownloadServlet extends HttpServlet {
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     // org.cesecore.keys.util.KeyTools.getAsPem(PublicKey)
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     /** Handles HTTP POST the same way HTTP GET is handled. */
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         doGet(request, response);
     }
 
     /** Handles HTTP GET */
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         final String cryptoTokenIdParam = request.getParameter("cryptoTokenId");

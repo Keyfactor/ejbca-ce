@@ -58,8 +58,8 @@ public class HttpUpload {
     @SuppressWarnings("unchecked") // Needed in some environments, and detected as unnecessary in others. Do not remove!
     public HttpUpload(HttpServletRequest request, String[] fileFields, int maxbytes) throws IOException, FileUploadException {
         if (ServletFileUpload.isMultipartContent(request)) {
-            final Map<String,ArrayList<String>> paramTemp = new HashMap<String,ArrayList<String>>();
-            fileMap = new HashMap<String,byte[]>();
+            final Map<String,ArrayList<String>> paramTemp = new HashMap<>();
+            fileMap = new HashMap<>();
             
             final ServletFileUpload upload = new ServletFileUpload();
             final FileItemIterator iter = upload.getItemIterator(request);
@@ -69,7 +69,7 @@ public class HttpUpload {
                 if (item.isFormField()) {
                     ArrayList<String> values = paramTemp.get(name);
                     if (values == null) {
-                        values = new ArrayList<String>();
+                        values = new ArrayList<>();
                         paramTemp.put(name, values);
                     }
                     values.add(Streams.asString(item.openStream(), request.getCharacterEncoding()));
@@ -90,7 +90,7 @@ public class HttpUpload {
             }
         } else {
             parameterMap = new ParameterMap(request.getParameterMap());
-            fileMap = new HashMap<String,byte[]>();
+            fileMap = new HashMap<>();
         }
     }
     

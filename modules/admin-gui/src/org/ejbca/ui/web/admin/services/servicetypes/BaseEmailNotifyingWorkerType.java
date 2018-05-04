@@ -19,7 +19,7 @@ import java.util.Properties;
 
 import javax.faces.model.SelectItem;
 
-import org.ejbca.core.model.services.BaseWorker;
+import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -57,12 +57,13 @@ public abstract class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 	}
 	
 	/** Overrides
-	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
+	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties
 	 */
+	@Override
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {
 		Properties retval = super.getProperties(errorMessages);
 				
-		retval.setProperty(BaseWorker.PROP_TIMEUNIT, timeUnit);
+		retval.setProperty(IWorker.PROP_TIMEUNIT, timeUnit);
 		
 		try{
 			int value = Integer.parseInt(timeValue);
@@ -72,7 +73,7 @@ public abstract class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 		}catch(NumberFormatException e){
 			errorMessages.add("TIMEBEFOREEXPIRATIONERROR");
 		}
-		retval.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, timeValue);
+		retval.setProperty(IWorker.PROP_TIMEBEFOREEXPIRING, timeValue);
 		
 		if(useEndUserNotifications){
 			retval.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "TRUE");
@@ -101,11 +102,12 @@ public abstract class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 	/** Overrides
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#setProperties(java.util.Properties)
 	 */
+	@Override
 	public void setProperties(Properties properties) throws IOException {
 		super.setProperties(properties);
 		 
-		timeUnit = properties.getProperty(BaseWorker.PROP_TIMEUNIT,DEFAULT_TIMEUNIT);
-		timeValue = properties.getProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING,DEFAULT_TIMEVALUE);
+		timeUnit = properties.getProperty(IWorker.PROP_TIMEUNIT,DEFAULT_TIMEUNIT);
+		timeValue = properties.getProperty(IWorker.PROP_TIMEBEFOREEXPIRING,DEFAULT_TIMEVALUE);
 
 		useEndUserNotifications = properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS,"").equalsIgnoreCase("TRUE");
 		useAdminNotifications = properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS,"").equalsIgnoreCase("TRUE");
@@ -126,9 +128,9 @@ public abstract class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 	}
 	
 	public List<SelectItem> getAvailableUnits(){
-		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
+		ArrayList<SelectItem> retval = new ArrayList<>();
 		for(int i = 0 ; i<PeriodicalInterval.AVAILABLE_UNITS.length; i++){
-			retval.add(new SelectItem(PeriodicalInterval.AVAILABLE_UNITS[i],(String) EjbcaJSFHelper.getBean().getText().get(PeriodicalInterval.AVAILABLE_UNITS[i])));
+			retval.add(new SelectItem(PeriodicalInterval.AVAILABLE_UNITS[i], EjbcaJSFHelper.getBean().getText().get(PeriodicalInterval.AVAILABLE_UNITS[i])));
 		}
 		
 		return retval;

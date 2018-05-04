@@ -34,12 +34,12 @@ public class UsersView implements Serializable {
     private static final long serialVersionUID = -7382135359016557800L;
     /** Creates a new instance of UsersView */
     public UsersView() {
-      users = new ArrayList<UserView>();
+      users = new ArrayList<>();
       sortby = new SortBy();
     }
     
     public UsersView(EndEntityInformation importuser, HashMap<Integer, String> caidtonamemap){
-      users = new ArrayList<UserView>();
+      users = new ArrayList<>();
       sortby = new SortBy();        
       users.add(new UserView(importuser, caidtonamemap)); 
       
@@ -47,7 +47,7 @@ public class UsersView implements Serializable {
     }
     
     public UsersView(Collection<EndEntityInformation> importusers, HashMap<Integer, String>caidtonamemap){ 
-      users = new ArrayList<UserView>();
+      users = new ArrayList<>();
       sortby = new SortBy();
       
       setUsers(importusers, caidtonamemap);
@@ -89,7 +89,7 @@ public class UsersView implements Serializable {
       
       int end = endindex - index;
       for(int i = 0; i < end; i++){
-        returnval[i] = (UserView) users.get(index+i);   
+        returnval[i] = users.get(index+i);   
       }
       
       return returnval;
@@ -127,7 +127,7 @@ public class UsersView implements Serializable {
       if(importusers!=null && importusers.size() > 0){
         i=importusers.iterator();
         while(i.hasNext()){
-        	EndEntityInformation nextuser = (EndEntityInformation) i.next();  
+        	EndEntityInformation nextuser = i.next();  
           user = new UserView(nextuser, caidtonamemap); 
           user.setSortBy(this.sortby);
           users.add(user);

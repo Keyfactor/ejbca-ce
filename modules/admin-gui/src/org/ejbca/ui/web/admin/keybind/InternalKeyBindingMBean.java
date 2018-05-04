@@ -284,7 +284,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public List<String> getAvailableKeyBindingTypes() {
-        final List<String> availableKeyBindingTypes = new ArrayList<String>();
+        final List<String> availableKeyBindingTypes = new ArrayList<>();
         for (String current : internalKeyBindingSession.getAvailableTypesAndProperties().keySet()) {
             availableKeyBindingTypes.add(current);
         }
@@ -320,7 +320,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     @SuppressWarnings("unchecked")
     public List<SelectItem/*<Integer,String>*/> getUploadTargets() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         for (final GuiInfo guiInfo : (List<GuiInfo>) getInternalKeyBindingGuiList().getWrappedData()) {
             ret.add(new SelectItem(guiInfo.getInternalKeyBindingId(), guiInfo.getName()));
         }
@@ -329,12 +329,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     @SuppressWarnings("unchecked")
     public List<SelectItem/*<String,String>*/> getDefaultResponderTargets() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem("", super.getEjbcaWebBean().getText("INTERNALKEYBINDING_OCSPKEYBINDING_NODEFAULTRESPONDER")));
         //Create a map so that we can exclude bounded CAs.
         String currentValue = getDefaultResponderTarget();
         boolean currentValueMatched = false;
-        Set<String> internalkeybindingSet = new HashSet<String>();
+        Set<String> internalkeybindingSet = new HashSet<>();
         for (final GuiInfo guiInfo : (List<GuiInfo>) getInternalKeyBindingGuiList().getWrappedData()) {
             if (guiInfo.getStatus().equalsIgnoreCase(GuiInfo.TEXTKEY_PREFIX + InternalKeyBindingStatus.ACTIVE.name())) {
                 internalkeybindingSet.add(guiInfo.getCertificateIssuerDn());
@@ -347,7 +347,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         for (CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
             if (caInfo.getCAType() == CAInfo.CATYPE_X509 && caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                 //Checking actual certificate, because CA subject DN does not have to be CA certificate subject DN
-                final String caSubjectDn = CertTools.getSubjectDN(new ArrayList<Certificate>(caInfo.getCertificateChain()).get(0));
+                final String caSubjectDn = CertTools.getSubjectDN(new ArrayList<>(caInfo.getCertificateChain()).get(0));
                 if (!internalkeybindingSet.contains(caSubjectDn)) {
                     //Skip CAs already represented by an internal keybinding
                     ret.add(new SelectItem(caSubjectDn, "CA: " + caInfo.getName()));
@@ -490,7 +490,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         if (internalKeyBindingGuiList == null) {
             // Get the current type of tokens we operate on
             final String internalKeyBindingType = getSelectedInternalKeyBindingType();
-            List<GuiInfo> internalKeyBindingList = new LinkedList<GuiInfo>();
+            List<GuiInfo> internalKeyBindingList = new LinkedList<>();
             for (InternalKeyBindingInfo current : internalKeyBindingSession.getInternalKeyBindingInfos(authenticationToken, internalKeyBindingType)) {
                 final int cryptoTokenId = current.getCryptoTokenId();
                 final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
@@ -570,7 +570,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     }
                 });
             }
-            internalKeyBindingGuiList = new ListDataModel<GuiInfo>(internalKeyBindingList);
+            internalKeyBindingGuiList = new ListDataModel<>(internalKeyBindingList);
         }
         // View the list will purge the view cache
         flushSingleViewCache();
@@ -815,7 +815,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             getAvailableCryptoTokens();
             getAvailableKeyPairAliases();
             getAvailableSignatureAlgorithms();
-            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<DynamicUiProperty<? extends Serializable>>(internalKeyBindingSession.getAvailableTypesAndProperties()
+            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<>(internalKeyBindingSession.getAvailableTypesAndProperties()
                     .get(getSelectedInternalKeyBindingType()).values()));
         } else {
             // Load existing
@@ -833,8 +833,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
-            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<DynamicUiProperty<? extends Serializable>>(internalKeyBinding
-                    .getCopyOfProperties().values()));
+            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<>(internalKeyBinding.getCopyOfProperties().values()));
             trustedCertificates = null;
         }
     }
@@ -1046,7 +1045,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public List<SelectItem/*<Integer,String>*/> getAvailableCryptoTokens() {
-        final List<SelectItem> availableCryptoTokens = new ArrayList<SelectItem>();
+        final List<SelectItem> availableCryptoTokens = new ArrayList<>();
         for (CryptoTokenInfo current : cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken)) {
             if (current.isActive()
                     && authorizationSession.isAuthorizedNoLogging(authenticationToken,
@@ -1089,7 +1088,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     /** @return a list of available aliases in the currently selected CryptoToken */
     public List<SelectItem/*<String,String>*/> getAvailableKeyPairAliases() {
-        final List<SelectItem> availableKeyPairAliases = new ArrayList<SelectItem>();
+        final List<SelectItem> availableKeyPairAliases = new ArrayList<>();
         try {
             if (currentCryptoToken != null) {
                 for (final String alias : cryptoTokenManagementSession.getKeyPairAliases(authenticationToken, currentCryptoToken.intValue())) {
@@ -1118,7 +1117,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     /** @return a list of available signature algorithms for the currently selected key pair */
     public List<SelectItem/*<String,String>*/> getAvailableSignatureAlgorithms() {
-        final List<SelectItem> availableSignatureAlgorithms = new ArrayList<SelectItem>();
+        final List<SelectItem> availableSignatureAlgorithms = new ArrayList<>();
         if (currentCryptoToken != null && currentKeyPairAlias != null) {
             try {
                 final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, currentCryptoToken.intValue(),
@@ -1150,7 +1149,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public List<SelectItem/*<Integer,String>*/> getAvailableCertificateAuthorities() {
         final List<Integer> availableCaIds = caSession.getAuthorizedCaIds(authenticationToken);
         final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
-        final List<SelectItem> availableCertificateAuthorities = new ArrayList<SelectItem>(availableCaIds.size());
+        final List<SelectItem> availableCertificateAuthorities = new ArrayList<>(availableCaIds.size());
         for (final Integer availableCaId : availableCaIds) {
             availableCertificateAuthorities.add(new SelectItem(availableCaId, caIdToNameMap.get(availableCaId)));
         }
@@ -1184,12 +1183,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         if (ocspExtensions == null) {
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
             if (internalKeyBindingId == 0) {
-                ocspExtensions = new ListDataModel<String>(new ArrayList<String>());
+                ocspExtensions = new ListDataModel<>(new ArrayList<String>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
                             authenticationToken, internalKeyBindingId);
-                    ocspExtensions = new ListDataModel<String>(internalKeyBinding.getOcspExtensions());
+                    ocspExtensions = new ListDataModel<>(internalKeyBinding.getOcspExtensions());
                 } catch (AuthorizationDeniedException e) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
                 }
@@ -1258,12 +1257,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         if (trustedCertificates == null) {
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
             if (internalKeyBindingId == 0) {
-                trustedCertificates = new ListDataModel<InternalKeyBindingTrustEntry>(new ArrayList<InternalKeyBindingTrustEntry>());
+                trustedCertificates = new ListDataModel<>(new ArrayList<InternalKeyBindingTrustEntry>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
                             authenticationToken, internalKeyBindingId);
-                    trustedCertificates = new ListDataModel<InternalKeyBindingTrustEntry>(internalKeyBinding.getTrustedCertificateReferences());
+                    trustedCertificates = new ListDataModel<>(internalKeyBinding.getTrustedCertificateReferences());
                 } catch (AuthorizationDeniedException e) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
                 }
@@ -1312,7 +1311,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
     public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
-        final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
+        final List<SelectItem> propertyPossibleValues = new ArrayList<>();
         if (internalKeyBindingPropertyList != null) {
             final DynamicUiProperty<? extends Serializable> property = internalKeyBindingPropertyList
                     .getRowData();
@@ -1335,7 +1334,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                             + getCurrentName(), null));
         } else {
             try {
-                final Map<String, Serializable> dataMap = new HashMap<String, Serializable>();
+                final Map<String, Serializable> dataMap = new HashMap<>();
                 final List<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties = (List<DynamicUiProperty<? extends Serializable>>) internalKeyBindingPropertyList
                         .getWrappedData();
                 for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {

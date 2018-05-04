@@ -443,14 +443,13 @@ function confirmrevocation(){
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr>
       <td  valign="top">
-      <% try{ 
-           if (ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)){ %>
+      <% if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_REVOKEENDENTITY)){ %>
         <input type="submit" name="<%=BUTTON_REVOKE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"REVOKESELECTED\") %>"/>'
                onClick='return confirmrevocation()'>&nbsp;&nbsp;&nbsp;
-      <% if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_DELETEENDENTITY)){ %>
-        <input type="submit" name="<%=BUTTON_DELETEREVOKE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"REVOKEANDDELETE\") %>"/>'
-               onClick='return confirmdeleterevoke()'>&nbsp;&nbsp;&nbsp;
-      <% }  %>        
+          <% if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_DELETEENDENTITY)){ %>
+            <input type="submit" name="<%=BUTTON_DELETEREVOKE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"REVOKEANDDELETE\") %>"/>'
+                   onClick='return confirmdeleterevoke()'>&nbsp;&nbsp;&nbsp;
+          <% }  %>        
          <br /> <c:out value="<%= ejbcawebbean.getText(\"CRL_ENTRY_REVOCATIONREASON\") %>"/>&nbsp;
         <select class="margin-top" name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
@@ -459,9 +458,7 @@ function confirmrevocation(){
           <%   } 
              } %>
          </select>
-       <%} 
-          }catch(AuthorizationDeniedException ade){} %>
-
+      <% } %>
       </td>
       <td  valign="top">
       <%

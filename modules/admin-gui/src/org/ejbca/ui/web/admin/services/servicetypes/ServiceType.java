@@ -35,7 +35,7 @@ public abstract class ServiceType implements Serializable{
 	/**
 	 * 
 	 * @param subViewPage the name of the subViewPage to link in the page
-	 * @param name, the name of the page when it is selected in the GUI
+	 * @param name the name of the page when it is selected in the GUI
 	 * @param translatable if the name should be looked up in the resource files or not. 
 	 */
 	public ServiceType(String subViewPage, String name, boolean translatable) {

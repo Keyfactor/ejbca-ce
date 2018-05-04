@@ -31,7 +31,7 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 
     public static final String NAME = "PUBLISHQUEUEWORKER";
 
-	private List<String> selectedPublisherIdsToCheck = new ArrayList<String>();
+	private List<String> selectedPublisherIdsToCheck = new ArrayList<>();
 
 	public PublishQueueWorkerType(){
 		super(NAME, "publishqueueprocessworker.jsp", PublishQueueProcessWorker.class.getName());
@@ -42,8 +42,9 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	
 	
 	/** Overrides
-	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
+	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties
 	 */
+	@Override
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {
 		Properties ret = super.getProperties(errorMessages);
 		String publisherIdString = "";
@@ -63,9 +64,10 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	/** Overrides
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#setProperties(java.util.Properties)
 	 */
+	@Override
 	public void setProperties(Properties properties) throws IOException {
 		super.setProperties(properties);
-		selectedPublisherIdsToCheck = new ArrayList<String>();
+		selectedPublisherIdsToCheck = new ArrayList<>();
 		String[] publisherIdsToCheck = properties.getProperty(PublishQueueProcessWorker.PROP_PUBLISHER_IDS,"").split(";");
 		for(int i=0;i<publisherIdsToCheck.length;i++){
 			selectedPublisherIdsToCheck.add(publisherIdsToCheck[i]);

@@ -64,9 +64,9 @@ public class ServiceTypeManager implements Serializable {
 	private static Logger log = Logger.getLogger(ServiceTypeManager.class);
 	
 	// static variables common for the application
-	private static HashMap<String, ServiceType> availableTypesByName = new HashMap<String, ServiceType>();
-	private static HashMap<String, ServiceType> availableTypesByClassPath = new HashMap<String, ServiceType>();
-	private static ArrayList<ServiceType> workerTypes = new ArrayList<ServiceType>();
+	private static HashMap<String, ServiceType> availableTypesByName = new HashMap<>();
+	private static HashMap<String, ServiceType> availableTypesByClassPath = new HashMap<>();
+	private static ArrayList<ServiceType> workerTypes = new ArrayList<>();
 	
 
 	private HashMap<?, ?> localAvailableTypesByName;

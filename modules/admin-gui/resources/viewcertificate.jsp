@@ -75,27 +75,21 @@
   RequestHelper.setDefaultCharacterEncoding(request);
 
   if( request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER ) != null){
-     notauthorized = false;
      noparameter = false;
-     try {
-    	 ejbcawebbean.isAuthorized(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
+     if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
+    	 notauthorized = false;
 	     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
 	     tokensn  = request.getParameter(HARDTOKENSN_PARAMETER);
 	     rabean.loadTokenCertificates(tokensn);
-     } catch (AuthorizationDeniedException e) {
-    	 notauthorized = true;
      }
   }
 
   if( request.getParameter(USER_PARAMETER ) != null && request.getParameter(HARDTOKENSN_PARAMETER) == null){
-	 notauthorized = false;
      noparameter = false;
-     try {
-    	 ejbcawebbean.isAuthorized(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
+     if (ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
+    	 notauthorized = false;
 	     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
 	     rabean.loadCertificates(username);
-     } catch (AuthorizationDeniedException e) {
-    	 notauthorized = true;
      }
   }
 
@@ -676,7 +670,7 @@ function confirmrepublish(){
           </td>
           <td>
        <%  try{
-            if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)){
+            if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_REVOKEENDENTITY)){
 				if ( !certificatedata.isRevoked() || certificatedata.isRevokedAndOnHold() ){
 					//-- Certificate can be revoked or suspended
 		%>    

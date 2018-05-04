@@ -90,7 +90,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
     /** GUI representation of a CryptoToken and its CA(s) for the activation view */
 	public class TokenAndCaActivationGuiInfo {
 	    private final CryptoTokenInfo cryptoTokenInfo;
-	    private final List<CaActivationGuiInfo> caActivationGuiInfos = new ArrayList<CaActivationGuiInfo>();
+	    private final List<CaActivationGuiInfo> caActivationGuiInfos = new ArrayList<>();
         private final boolean allowedActivation;
         private final boolean allowedDeactivation;
         private boolean cryptoTokenNewState;
@@ -152,7 +152,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private String authenticationcode;
 
 	public List<TokenAndCaActivationGuiComboInfo> getAuthorizedTokensAndCas() {
-        final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<Integer,TokenAndCaActivationGuiInfo>();
+        final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<>();
         for (final CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
                 final Integer cryptoTokenId = Integer.valueOf(caInfo.getCAToken().getCryptoTokenId());
                 if (sortMap.get(cryptoTokenId)==null) {
@@ -177,7 +177,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
                 return o1.getCryptoTokenName().compareToIgnoreCase(o2.getCryptoTokenName());
             }
         });
-        final List<TokenAndCaActivationGuiComboInfo> retValues = new ArrayList<TokenAndCaActivationGuiComboInfo>();
+        final List<TokenAndCaActivationGuiComboInfo> retValues = new ArrayList<>();
         for (final TokenAndCaActivationGuiInfo value : tokenAndCasArray) {
             boolean first = true;
             final CaActivationGuiInfo[] casArray = value.getCas().toArray(new CaActivationGuiInfo[0]);
@@ -292,7 +292,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
     /**
      * AccessRulesConstants.REGULAR_ACTIVATECA is not the best rule to check, but will work as a placeholder until authorization is revamped. 
      * 
-     * @return true if admin is authorized to {@link AccessRulesConstants.REGULAR_ACTIVATECA}
+     * @return true if admin is authorized to {@link AccessRulesConstants#REGULAR_ACTIVATECA}
      */
     public boolean isAuthorizedToBasicFunctions() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_ACTIVATECA);

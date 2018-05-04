@@ -495,7 +495,7 @@ public class EditPublisherJSPHelper {
                                 
                                 String[] values = request.getParameterValues(SELECT_LDAPUSEFIELDINLDAPDN);
                                 if(values != null){
-                                    ArrayList<Integer> usefields = new ArrayList<Integer>();
+                                    ArrayList<Integer> usefields = new ArrayList<>();
                                     for(int i=0;i< values.length;i++){
                                         usefields.add(Integer.valueOf(values[i]));
                                     }
@@ -649,7 +649,7 @@ public class EditPublisherJSPHelper {
     
     /** @return the available publishers as list that can be used by JSF h:datatable in the future. */
     public List<SelectItem> getSelectablePublishers() {
-        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        final List<SelectItem> ret = new ArrayList<>();
         // List all built in publisher types and all the dynamic ones
         for (int i=0; i<AVAILABLEPUBLISHER_TYPES.length; i++) {
             final int type = AVAILABLEPUBLISHER_TYPES[i];
@@ -770,7 +770,7 @@ public class EditPublisherJSPHelper {
     }
     
     public List<String> getCustomClasses() {        
-        final List<String> classes = new ArrayList<String>();
+        final List<String> classes = new ArrayList<>();
         final ServiceLoader<ICustomPublisher> svcloader = ServiceLoader.load(ICustomPublisher.class);
         final boolean enabled = ((GlobalConfiguration) ejbcawebbean.getEjb().getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
         String name = null;

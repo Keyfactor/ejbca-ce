@@ -171,10 +171,11 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     }
 
     /** @return a viewable list of 'match with'-texts */
+    @SuppressWarnings("deprecation")
     public List<SelectItem> getMatchWithItems() {
         if (matchWithItems == null) {
             matchWithItems = new ArrayList<>();
-            final List<String> tokenTypes = new ArrayList<String>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
+            final List<String> tokenTypes = new ArrayList<>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
             Collections.sort(tokenTypes);
             for (final String tokenType : tokenTypes) {
                 final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);

@@ -128,12 +128,9 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
         if(!initialized){
             initialized = true;
             userdatasourcesession = rabean.getUserDataSourceSession();
-            issuperadministrator = false;
             admin = ejbcawebbean.getAdminObject();
             this.ejbcawebbean = ejbcawebbean;
-            try{
-                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(StandardRules.ROLE_ROOT.resource());
-            }catch(AuthorizationDeniedException ade){}
+            issuperadministrator = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.ROLE_ROOT.resource());
         }
     }
 
@@ -244,7 +241,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                             
                             String[] values = request.getParameterValues(SELECT_MODIFYABLEFIELDS);
                             if(values != null){
-                                Set<Integer> modifyablefields = new HashSet<Integer>();
+                                Set<Integer> modifyablefields = new HashSet<>();
                                 for(int i=0;i< values.length;i++){
                                 	modifyablefields.add(Integer.valueOf(values[i]));
                                 }
@@ -256,11 +253,11 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
 
                             values = request.getParameterValues(SELECT_APPLICABLECAS);
                             if(values != null){
-                                List<Integer> useCAs = new ArrayList<Integer>();
+                                List<Integer> useCAs = new ArrayList<>();
                                 for(int i=0;i< values.length;i++){
                                 	Integer caid = Integer.valueOf(values[i]);
                                 	if(caid.intValue() == BaseUserDataSource.ANYCA){
-                                		useCAs = new ArrayList<Integer>();
+                                		useCAs = new ArrayList<>();
                                 		useCAs.add(caid);
                                 		break;
                                 	}
@@ -346,7 +343,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
 
     
     public TreeMap<String, Integer> getAuthorizedUserDataSourceNames(){
-    	TreeMap<String, Integer> retval = new TreeMap<String, Integer>();
+    	TreeMap<String, Integer> retval = new TreeMap<>();
     	
     	Collection<Integer> authorizedsources = userdatasourcesession.getAuthorizedUserDataSourceIds(admin,false);
         for(Integer id : authorizedsources) {
@@ -358,7 +355,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     
     public TreeMap<String, Integer> getModifyableFieldTexts(){
     	if(modifyableFieldTexts ==null){
-    		modifyableFieldTexts = new TreeMap<String, Integer>();
+    		modifyableFieldTexts = new TreeMap<>();
     		
     		String subjectdntext = ejbcawebbean.getText("CERT_SUBJECTDN");
     		String subjectaltnametext = ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME");

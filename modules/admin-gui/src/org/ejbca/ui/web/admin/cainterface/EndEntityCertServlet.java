@@ -59,12 +59,14 @@ public class EndEntityCertServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String CERTIFICATEDN_PROPERTY = "certificatesn";
 
+    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");
         doGet(req, res);
         log.trace("<doPost()");
     }
 
+    @Override
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doGet()");
         // Check if authorized

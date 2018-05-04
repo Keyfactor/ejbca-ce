@@ -38,7 +38,7 @@ public class DnObjectArrayListConverter implements Converter {
     @Override
     public Object getAsObject(final FacesContext context, final UIComponent component, final String values) {
 
-        final ArrayList<String> result = new ArrayList<String>(); 
+        final ArrayList<String> result = new ArrayList<>(); 
         for (String value : values.split(",", 0)) {           
             final String trimmedValue = value.trim();
             if (!trimmedValue.isEmpty()) {

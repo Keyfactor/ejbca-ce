@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -91,7 +90,7 @@ public class JsfDynamicUiValueChangeListener implements Serializable, ValueChang
                 File file;
                 try {
                     file = ExternalProcessTools.writeTemporaryFileToDisk(((UploadedFile) value).getBytes(), fileName, "");
-                    property.setValueGenericIncludeNull( (Serializable) file);
+                    property.setValueGenericIncludeNull(file);
                 } catch (ExternalProcessException | IOException e) {
                     if (log.isTraceEnabled()) {
                     	log.trace("Could not delete temp. file " + fileName + ": " + e.getMessage(), e);
@@ -112,6 +111,6 @@ public class JsfDynamicUiValueChangeListener implements Serializable, ValueChang
             log.debug("Registered UIComponent " + eventSource + " for dynamic UI property " + property.getName() + " single value changed from "
                     + property.getValues() + " to " + values + ".");
         }
-        property.setValuesGeneric((List<String>) Arrays.asList(values));
+        property.setValuesGeneric(Arrays.asList(values));
     }
 }

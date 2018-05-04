@@ -28,24 +28,21 @@ public class SortableSelectItem extends SelectItem implements Comparable<SelectI
 
 	private static final long serialVersionUID = -3282242436064530974L;
 
-    public SortableSelectItem(Object arg0, String arg1, String arg2, boolean arg3) {
-		super(arg0, arg1, arg2, arg3);
+    public SortableSelectItem(final Object value, final String label, final String description, final boolean disabled) {
+		super(value, label, description, disabled);
 	}
 
-	public SortableSelectItem(Object arg0, String arg1, String arg2) {
-		super(arg0, arg1, arg2);
+	public SortableSelectItem(final Object value, final String label, final String description) {
+		super(value, label, description);
 	}
 
-	public SortableSelectItem(Object arg0, String arg1) {
-		super(arg0, arg1);
+	public SortableSelectItem(final Object value, final String label) {
+		super(value, label);
 	}
 
-	public int compareTo(SelectItem arg0) {
-		int retval = 0;
-		if(arg0 instanceof SelectItem){
-			return this.getLabel().compareTo(arg0.getLabel());
-		}
-		return retval;
+	@Override
+	public int compareTo(final SelectItem other) {
+		return this.getLabel().compareTo(other.getLabel());
 	}
 
 }

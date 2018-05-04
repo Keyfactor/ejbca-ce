@@ -33,6 +33,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 public class LegalCharsValidator implements Validator {
 	private static final Logger log = Logger.getLogger(LegalCharsValidator.class);
 
+	@Override
 	public void validate(FacesContext facesContext, UIComponent uIComponent, Object object) throws ValidatorException {
 		final String textFieldValue = (String)object;
 		if (log.isDebugEnabled()) {

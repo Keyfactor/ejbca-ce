@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.security.KeyStoreException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
@@ -377,22 +376,22 @@ public class CAInterfaceBean implements Serializable {
     }
     
     /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
-    public CAInfoView getCAInfo(String name) throws CADoesntExistsException, AuthorizationDeniedException {
+    public CAInfoView getCAInfo(String name) throws AuthorizationDeniedException {
       return cadatahandler.getCAInfo(name);   
     }
     
     /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
-    public CAInfoView getCAInfoNoAuth(String name) throws CADoesntExistsException {
+    public CAInfoView getCAInfoNoAuth(String name) {
         return cadatahandler.getCAInfoNoAuth(name);   
      }
 
     /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
-    public CAInfoView getCAInfo(int caid) throws CADoesntExistsException, AuthorizationDeniedException {
+    public CAInfoView getCAInfo(int caid) throws AuthorizationDeniedException {
       return cadatahandler.getCAInfo(caid);   
     }  
     
     /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
-    public CAInfoView getCAInfoNoAuth(int caid) throws CADoesntExistsException {
+    public CAInfoView getCAInfoNoAuth(int caid) {
         return cadatahandler.getCAInfoNoAuth(caid);   
     }
     
@@ -866,8 +865,8 @@ public class CAInterfaceBean implements Serializable {
 	            crlIssueInterval = 0;
 	            crlOverlapTime = 0;
 	            deltacrlperiod = 0;
-	            final List<Integer> crlpublishers = new ArrayList<Integer>(); 
-	            final List<Integer> keyValidators = new ArrayList<Integer>(); 
+	            final List<Integer> crlpublishers = new ArrayList<>(); 
+	            final List<Integer> keyValidators = new ArrayList<>(); 
 	            if(crlperiod != 0 && !illegaldnoraltname){
 	                // A CVC CA does not have any of the external services OCSP, CMS
 	                List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
@@ -996,7 +995,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public List<CertificatePolicy> parsePolicies(String policyid) {
-        final ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+        final ArrayList<CertificatePolicy> policies = new ArrayList<>();
         if (!(policyid == null || policyid.trim().equals(""))) {
             final String[] str = policyid.split("\\s+");
             if (str.length > 1) {
@@ -1086,7 +1085,7 @@ public class CAInterfaceBean implements Serializable {
                final String cadefinedfreshestcrl = (caDefinedFreshestCrl==null ? "" : caDefinedFreshestCrl);
                // Create extended CA Service updatedata.
                final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
-               final ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+               final ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
                extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false)); 
                // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
                // is not need to update them.
@@ -1186,7 +1185,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     /** @return a list of key pair aliases that can be used for either signing or encryption under the supplied CA signing algorithm */
-    public List<String> getAvailableCryptoTokenMixedAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
+    public List<String> getAvailableCryptoTokenMixedAliases(int cryptoTokenId, final String caSigingAlgorithm) throws CryptoTokenOfflineException, AuthorizationDeniedException {
         final List<String> aliases = new ArrayList<>();
         aliases.addAll(getAvailableCryptoTokenAliases(cryptoTokenId, caSigingAlgorithm));
         final List<String> encAliases = getAvailableCryptoTokenEncryptionAliases(cryptoTokenId, caSigingAlgorithm);
@@ -1429,9 +1428,6 @@ public class CAInterfaceBean implements Serializable {
             } else {
                 retMsg = "Error: The CRL in the file in not issued by " + caname;
             }
-            
-        } catch (CADoesntExistsException e) {
-            retMsg = "Error: Cannot find CA " + caname;
         } catch (AuthorizationDeniedException | CRLException | CrlImportException | CrlStoreException e) {
             retMsg = "Error: " + e.getLocalizedMessage();
         }
