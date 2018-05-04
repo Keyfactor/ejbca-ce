@@ -37,6 +37,7 @@ public class ConfigurationHolder {
             loadProperty("appserver");
             loadProperty("ejbca");
             loadProperty("profiles");
+            loadProperty("browser");
         } catch (IOException e) {
             e.printStackTrace();
         }

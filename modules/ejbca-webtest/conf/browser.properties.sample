@@ -1,0 +1,3 @@
+# Configuration file for browser options.
+
+browser.downloaddir = /tmp
