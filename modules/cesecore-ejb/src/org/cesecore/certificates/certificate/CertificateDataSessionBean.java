@@ -208,7 +208,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     }
 
     @Override
-    public final String findUsernameByIssuerDnAndSerialNumber(final String issuerDn, final String serialNumber) {
+    public String findUsernameByIssuerDnAndSerialNumber(final String issuerDn, final String serialNumber) {
         final TypedQuery<String> query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber", String.class);
         query.setParameter("issuerDN", issuerDn);
         query.setParameter("serialNumber", serialNumber);
