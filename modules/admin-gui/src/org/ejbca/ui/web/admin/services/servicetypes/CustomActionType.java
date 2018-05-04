@@ -70,6 +70,7 @@ public class CustomActionType extends ActionType {
         }
     }
 
+    @Override
     public String getClassPath() {
         return autoClassPath != null && !autoClassPath.isEmpty() ? autoClassPath : manualClassPath;
     }
@@ -90,18 +91,21 @@ public class CustomActionType extends ActionType {
         return manualClassPath;
     }
 
+    @Override
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
 		Properties retval = new Properties();
 	    retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));		
 		return retval;
 	}
 
+    @Override
 	public void setProperties(Properties properties) throws IOException{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();		
 		properties.store(baos, null);		
 		setPropertyText(new String(baos.toByteArray()));
 	}
 	
+    @Override
 	public boolean isCustom() {
 		return true;
 	}

@@ -91,13 +91,13 @@ public class AuditorManagedBean implements Serializable {
 	private boolean sortOrder = ORDER_DESC;
 	private int maxResults = 40;
 	private int startIndex = 1;
-	private final List<SelectItem> sortColumns = new ArrayList<SelectItem>();
-	private final List<SelectItem> columns = new ArrayList<SelectItem>();
-	private final List<SelectItem> sortOrders = new ArrayList<SelectItem>();
+	private final List<SelectItem> sortColumns = new ArrayList<>();
+	private final List<SelectItem> columns = new ArrayList<>();
+	private final List<SelectItem> sortOrders = new ArrayList<>();
 	private List<? extends AuditLogEntry> results;
 	private Map<Object, String> caIdToNameMap;
 
-	private Map<String, String> columnNameMap = new HashMap<String, String>();
+	private Map<String, String> columnNameMap = new HashMap<>();
 	private final List<SelectItem> eventStatusOptions = new ArrayList<>();
 	private final List<SelectItem> eventTypeOptions = new ArrayList<>();
 	private final List<SelectItem> moduleTypeOptions = new ArrayList<>();
@@ -196,7 +196,7 @@ public class AuditorManagedBean implements Serializable {
 	}
 
 	public List<SelectItem> getDevices() {
-		final List<SelectItem> list = new ArrayList<SelectItem>();
+		final List<SelectItem> list = new ArrayList<>();
 		for (final String deviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
 			list.add(new SelectItem(deviceId, deviceId));
 		}
@@ -207,12 +207,12 @@ public class AuditorManagedBean implements Serializable {
 		return getDevices().size()==1;
 	}
 	
-	public boolean isRenderNext() throws AuthorizationDeniedException {
+	public boolean isRenderNext() {
 		getResults();
 		return renderNext;
 	}
 
-	public int getResultSize() throws AuthorizationDeniedException {
+	public int getResultSize() {
 		getResults();
 		return results==null?0:results.size();
 	}
@@ -237,7 +237,7 @@ public class AuditorManagedBean implements Serializable {
 		return device;
 	}
 	
-	public List<? extends AuditLogEntry> getResults() throws AuthorizationDeniedException {
+	public List<? extends AuditLogEntry> getResults() {
 		if (getDevice() != null && reloadResultsNextView) {
 			reloadResults();
 			reloadResultsNextView = false;
@@ -312,7 +312,7 @@ public class AuditorManagedBean implements Serializable {
 				|| AuditLogEntry.FIELD_SEQUENCENUMBER.equals(conditionColumn)) {
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, conditionsOptions, null, Condition.EQUALS, ""));
 		} else if (AuditLogEntry.FIELD_CUSTOM_ID.equals(conditionColumn)) {
-			List<SelectItem> caIds = new ArrayList<SelectItem>();
+			List<SelectItem> caIds = new ArrayList<>();
 			for (Entry<Object,String> entry : caIdToNameMap.entrySet()) {
 				caIds.add(new SelectItem(entry.getKey(), entry.getValue()));
 			}
@@ -343,7 +343,7 @@ public class AuditorManagedBean implements Serializable {
 	}
 
     public void removeCondition(ActionEvent event){
-        getConditions().remove((AuditSearchCondition)event.getComponent().getAttributes().get("removeCondition"));
+        getConditions().remove(event.getComponent().getAttributes().get("removeCondition"));
         onConditionChanged();
     }
 
@@ -363,7 +363,7 @@ public class AuditorManagedBean implements Serializable {
 		reloadResultsNextView = true;
 	}
 
-	private void reloadResults() throws AuthorizationDeniedException {
+	private void reloadResults() {
 		if (log.isDebugEnabled()) {
 			log.debug("Reloading audit load. selectedDevice=" + device);
 		}
@@ -400,7 +400,7 @@ public class AuditorManagedBean implements Serializable {
     private List<? extends AuditLogEntry> getResults(final AuthenticationToken token, final Set<String> validColumns, final String device,
             final List<AuditSearchCondition> conditions, final String sortColumn, final boolean sortOrder, final int firstResult, final int maxResults)
             throws AuthorizationDeniedException {
-        final List<Object> parameters = new ArrayList<Object>();
+        final List<Object> parameters = new ArrayList<>();
         final StringBuilder whereClause = new StringBuilder();
         final String errorMessage = "This should never happen unless you are intentionally trying to perform an SQL injection attack.";
         for (int i=0; i<conditions.size(); i++) {
@@ -467,7 +467,7 @@ public class AuditorManagedBean implements Serializable {
 
 	private void updateCaIdToNameMap() {
 		final Map<Integer, String> map = caSession.getCAIdToNameMap();
-		final Map<Object, String> ret = new HashMap<Object, String>();
+		final Map<Object, String> ret = new HashMap<>();
 		final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
 		for (final Entry<Integer,String> entry : map.entrySet()) {
             if (caSession.authorizedToCANoLogging(authenticationToken, entry.getKey())) {
@@ -667,13 +667,14 @@ public class AuditorManagedBean implements Serializable {
             }
             auditExporter = new AuditExporterXml(); // Use Java-friendly XML as default
         }
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        auditExporter.setOutputStream(baos);
-        for (final AuditLogEntry auditLogEntry : results) {
-            writeToExport(auditExporter, (AuditRecordData) auditLogEntry);
+        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            auditExporter.setOutputStream(baos);
+            for (final AuditLogEntry auditLogEntry : results) {
+                writeToExport(auditExporter, (AuditRecordData) auditLogEntry);
+            }
+            auditExporter.close();
+            return baos.toByteArray();
         }
-        auditExporter.close();
-        return baos.toByteArray();
     }
 
     /** Uses the provided exporter to generate export data in memory. Responds with the data instead of rendering a new page. */

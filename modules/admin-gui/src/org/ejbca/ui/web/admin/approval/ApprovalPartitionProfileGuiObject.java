@@ -58,7 +58,7 @@ public class ApprovalPartitionProfileGuiObject implements Serializable {
 
     /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
     public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
-        final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
+        final List<SelectItem> propertyPossibleValues = new ArrayList<>();
         if (profilePropertyList != null) {
             final DynamicUiProperty<? extends Serializable> property = profilePropertyList.getRowData();
             if (property != null && property.getPossibleValues() != null) {

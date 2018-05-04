@@ -55,7 +55,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	}
 
     public List<SortableSelectItem> getAvailableServices() {
-        List<SortableSelectItem> availableServices = new ArrayList<SortableSelectItem>();
+        List<SortableSelectItem> availableServices = new ArrayList<>();
         Collection<Integer> availableServicesIds = ejb.getServiceSession().getVisibleServiceIds();
         for (Integer id : availableServicesIds) {
             ServiceConfiguration serviceConfig = ejb.getServiceSession().getServiceConfiguration(id.intValue());
@@ -111,7 +111,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 			try {
 				ejb.getServiceSession().renameService(getAdmin(), selectedServiceName, newServiceName);
 			} catch (ServiceExistsException e) {
-				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("SERVICENAMEALREADYEXISTS"));
+				addNonTranslatedErrorMessage(EjbcaJSFHelper.getBean().getText().get("SERVICENAMEALREADYEXISTS"));
 			}			
 		}
 		newServiceName = "";
@@ -130,7 +130,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 				getEditServiceBean().setServiceConfiguration(serviceConfig);
 				getEditServiceBean().setServiceName(newServiceName);
 			} catch (ServiceExistsException e) {
-				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("SERVICENAMEALREADYEXISTS"));
+				addNonTranslatedErrorMessage(EjbcaJSFHelper.getBean().getText().get("SERVICENAMEALREADYEXISTS"));
 			} 
 		}
 		newServiceName = "";
@@ -183,7 +183,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	private EditServiceManagedBean getEditServiceBean(){
 		FacesContext context = FacesContext.getCurrentInstance();    
 		Application app = context.getApplication();   
-		EditServiceManagedBean value =  (EditServiceManagedBean) app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
+		EditServiceManagedBean value =  app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
 		return value;
 	}
 }

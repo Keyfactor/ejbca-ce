@@ -1101,8 +1101,7 @@ public class RAInterfaceBean implements Serializable {
         int importedFiles = 0;
         int ignoredFiles = 0;
         int nrOfFiles = 0;
-        try {
-            ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer));
+        try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer))) {
             ZipEntry ze = zis.getNextEntry();
             if(ze == null) {
                 // Print import message if the file header corresponds to an empty zip archive
@@ -1182,7 +1181,6 @@ public class RAInterfaceBean implements Serializable {
 
             } while((ze=zis.getNextEntry()) != null);
             zis.closeEntry();
-            zis.close();
         } catch (UnsupportedEncodingException e) {
             retmsg = "Error: UTF-8 was not a known character encoding.";
             log.error(retmsg, e);
@@ -1243,13 +1241,12 @@ public class RAInterfaceBean implements Serializable {
 
     /**
      * Handle the combinations of available cert profiles and default cert profile to get the correct available cert profiles line.
-     * @param availableCasArray an array of CA Ids
      * @param defaultcertprof the Id of the selected default cert profile
      * @param values an array of cert profile Ids
      * @return the ;-seperated list of cert profile Ids
      */
     public String getAvailableCertProfiles(final String defaultcertprof, final String[] values) {
-        String availablecertprofiles =defaultcertprof;
+        String availablecertprofiles = defaultcertprof;
         if (values!= null) {
             for (int i=0; i< values.length; i++) {
                 if(!values[i].equals(defaultcertprof)) {

@@ -40,7 +40,7 @@ public class OidsObjectLinkedHashSetConverter implements Converter {
     @Override
     public Object getAsObject(final FacesContext context, final UIComponent component, final String values) {
 
-        final LinkedHashSet<String> result = new LinkedHashSet<String>(); 
+        final LinkedHashSet<String> result = new LinkedHashSet<>(); 
         for (String value : values.split(",", 0)) {           
             final String trimmedValue = value.trim();
             if (!trimmedValue.isEmpty()) {
@@ -61,7 +61,7 @@ public class OidsObjectLinkedHashSetConverter implements Converter {
 
             @SuppressWarnings("unchecked")
             final LinkedHashSet<String> lhs = (LinkedHashSet<String>) value;
-            final List<?> list = new ArrayList<String>(lhs);
+            final List<?> list = new ArrayList<>(lhs);
 
             for (int i = 0; i < list.size(); i++) {               
                 if (list.get(i) instanceof String) {

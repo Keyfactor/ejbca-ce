@@ -42,7 +42,7 @@ public class AddedUserMemory implements Serializable {
      * Creates a new instance of AddedUserMemory
      */
     public AddedUserMemory() {
-        memory = new LinkedList<UserView>();
+        memory = new LinkedList<>();
     }
 
     /**

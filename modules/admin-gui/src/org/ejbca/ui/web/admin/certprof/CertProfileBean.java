@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin.certprof;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -899,11 +898,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isCtAvailable() { return CertificateTransparencyFactory.isCTAvailable(); }
-    public boolean isCtEnabled() {
-        return getCertificateProfile().isUseCertificateTransparencyInCerts() ||
-            getCertificateProfile().isUseCertificateTransparencyInOCSP() ||
-            getCertificateProfile().isUseCertificateTransparencyInPublishers();
-    }
+    public boolean isCtEnabled() { return getCertificateProfile().isCtEnabled(); }
 
     public boolean isCtInCertsOrOCSPEnabled() {
         return getCertificateProfile().isUseCertificateTransparencyInCerts() ||
@@ -1103,16 +1098,14 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem(String.valueOf(5), getEjbcaWebBean().getText("CVCACCESSPINMANAGEMENT")));
         ret.add(new SelectItem(String.valueOf(6), getEjbcaWebBean().getText("CVCACCESSINSTALLCERT")));
         ret.add(new SelectItem(String.valueOf(7), getEjbcaWebBean().getText("CVCACCESSINSTALLQUALIFIEDCERT")));
-        final String readDGFormat = getEjbcaWebBean().getText("CVCACCESSREADDG");
         for (int i=8; i<=28; i++) {
-            ret.add(new SelectItem(String.valueOf(i), MessageFormat.format(readDGFormat, i-8+1)));
+            ret.add(new SelectItem(String.valueOf(i), getEjbcaWebBean().getText("CVCACCESSREADDG", false, i-8+1)));
         }
-        final String writeDGFormat = getEjbcaWebBean().getText("CVCACCESSWRITEDG");
-        ret.add(new SelectItem(String.valueOf(37), MessageFormat.format(writeDGFormat, 17)));
-        ret.add(new SelectItem(String.valueOf(36), MessageFormat.format(writeDGFormat, 18)));
-        ret.add(new SelectItem(String.valueOf(35), MessageFormat.format(writeDGFormat, 19)));
-        ret.add(new SelectItem(String.valueOf(34), MessageFormat.format(writeDGFormat, 20)));
-        ret.add(new SelectItem(String.valueOf(33), MessageFormat.format(writeDGFormat, 21)));
+        ret.add(new SelectItem(String.valueOf(37), getEjbcaWebBean().getText("CVCACCESSWRITEDG", false, 17)));
+        ret.add(new SelectItem(String.valueOf(36), getEjbcaWebBean().getText("CVCACCESSWRITEDG", false, 18)));
+        ret.add(new SelectItem(String.valueOf(35), getEjbcaWebBean().getText("CVCACCESSWRITEDG", false, 19)));
+        ret.add(new SelectItem(String.valueOf(34), getEjbcaWebBean().getText("CVCACCESSWRITEDG", false, 20)));
+        ret.add(new SelectItem(String.valueOf(33), getEjbcaWebBean().getText("CVCACCESSWRITEDG", false, 21)));
         return ret;
     }
 

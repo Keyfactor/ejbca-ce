@@ -100,7 +100,7 @@ public class ValidatorSettings {
 
     public void validateScripts() {
         final ExternalScriptsWhitelist whitelist = ExternalScriptsWhitelist.fromText(externalScriptsWhitelist);
-        final List<String> validationMessages = new ArrayList<String>();
+        final List<String> validationMessages = new ArrayList<>();
         for (final Entry<File, String> validationEntry : whitelist.validateScripts().entrySet()) {
             if (validationEntry.getValue() == null) {
                 // No problem detected

@@ -66,6 +66,7 @@ public class CACertServlet extends HttpServlet {
     @EJB
     private SignSessionLocal signSession;
 
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
     	if (signSession==null) {
@@ -73,12 +74,14 @@ public class CACertServlet extends HttpServlet {
     	}
     }
     
+    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");
         doGet(req, res);
         log.trace("<doPost()");
     }
 
+    @Override
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         log.trace(">doGet()");
         // Check if authorized
@@ -124,7 +127,7 @@ public class CACertServlet extends HttpServlet {
             }
             // Root CA is level 0, next below root level 1 etc etc
             try {
-                Certificate[] chain = (Certificate[]) signSession.getCertificateChain(issuerdn.hashCode()).toArray(new Certificate[0]);
+                Certificate[] chain = signSession.getCertificateChain(issuerdn.hashCode()).toArray(new Certificate[0]);
                                                             
                 // chain.length-1 is last cert in chain (root CA)
                 if ( (chain.length-1-level) < 0 ) {
@@ -133,7 +136,7 @@ public class CACertServlet extends HttpServlet {
                     log.error("No CA certificate of level "+level+"exist.");
                     return;
                 }
-                Certificate cacert = (Certificate)chain[level];
+                Certificate cacert = chain[level];
                 byte[] enccert = cacert.getEncoded();
                 // Se if we can name the file as the CAs CN, if that does not exist try serialnumber, and if that does not exist, use the full O
                 // and if that does not exist, use the fixed string CertificateAuthority. 

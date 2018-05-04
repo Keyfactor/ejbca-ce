@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.audit;
 
+/**
+ * Logic operators that can be used when searching the audit log. 
+ * @version $Id$
+ */
 public enum Operation {
 	AND, OR
 }

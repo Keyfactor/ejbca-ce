@@ -421,24 +421,7 @@ public class EjbcaWebBean implements Serializable {
             addAdminPreference(currentadminpreference);
         }
     }
-
-    /**
-     * Checks if the admin have authorization to view the resource Does not return false if not authorized, instead throws an
-     * AuthorizationDeniedException.
-     *
-     * @deprecated Don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
-     *
-     * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
-     * @throws AuthorizationDeniedException is not authorized to resource
-     */
-    @Deprecated
-    public boolean isAuthorized(String... resources) throws AuthorizationDeniedException {
-        if (!authorizationSession.isAuthorized(administrator, resources)) {
-            throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
-        }
-        return true;
-    }
-
+    
     /**
      * Checks if the admin have authorization to view the resource without performing any logging. Used by menu page Does not return false if not
      * authorized, instead throws an AuthorizationDeniedException.
@@ -449,7 +432,7 @@ public class EjbcaWebBean implements Serializable {
      * @throws AuthorizationDeniedException is not authorized to resource
      */
     @Deprecated
-    public boolean isAuthorizedNoLog(String... resources) throws AuthorizationDeniedException {
+    public boolean isAuthorizedNoLog(String... resources) throws AuthorizationDeniedException { // still used by JSP code (viewcertificate.jsp and viewtoken.jsp)
         if (!authorizationSession.isAuthorizedNoLogging(administrator, resources)) {
             throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
         }
@@ -458,8 +441,7 @@ public class EjbcaWebBean implements Serializable {
 
     /**
      * Checks if the admin have authorization to view the resource without performing any logging. Will simply return a boolean,
-     * no other information
-     *
+     * does not throw exception.
      *
      * @return true if is authorized to resource, false if not
      */
@@ -1445,7 +1427,7 @@ public class EjbcaWebBean implements Serializable {
      */
     public String getCaNamesString(final String idString) throws NumberFormatException, AuthorizationDeniedException {
         final TreeMap<String, Integer> availableCas = getCAOptions();
-        final List<String> result = new ArrayList<String>();
+        final List<String> result = new ArrayList<>();
         if (StringUtils.isNotBlank(idString)) {
             for (String id : idString.split(";")) {
                 if (availableCas.containsValue(Integer.valueOf(id))) {
