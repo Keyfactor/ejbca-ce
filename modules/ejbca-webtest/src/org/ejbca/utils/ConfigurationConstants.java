@@ -41,4 +41,7 @@ public final class ConfigurationConstants {
     public static final String EJBCA_CANAME     = "ejbca.ca.name";
     public static final String EJBCA_CADN       = "ejbca.ca.dn";
     public static final String EJBCA_NAMESPACE  = "ejbca.namespace";
+
+    // Browser Constants
+    public static final String BROWSER_DOWNLOADDIR  = "browser.downloaddir";
 }
