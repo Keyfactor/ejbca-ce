@@ -137,6 +137,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private boolean active = false;
         private boolean referenced = false;
         private String keyPlaceholders;
+        private boolean allowExplicitParameters = false;
         
         private CurrentCryptoTokenGuiInfo() {}
         
@@ -171,6 +172,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setReferenced(boolean referenced) { this.referenced = referenced; }
         public String getKeyPlaceholders() { return keyPlaceholders; }
         public void setKeyPlaceholders(String keyTemplates) { this.keyPlaceholders = keyTemplates; }
+
+        public boolean isAllowExplicitParameters() {
+            return allowExplicitParameters;
+        }
+
+        public void setAllowExplicitParameters(boolean allowExplicitParameters) {
+            this.allowExplicitParameters = allowExplicitParameters;
+        }
 
         public String getP11LibraryAlias() { return CryptoTokenMBean.this.getP11LibraryAlias(p11Library); }
         public String getP11AttributeFileAlias() { return CryptoTokenMBean.this.getP11AttributeFileAlias(p11AttributeFile); }
@@ -425,6 +434,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 if (getCurrentCryptoToken().getKeyPlaceholders() != null) {
                     properties.setProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, getCurrentCryptoToken().getKeyPlaceholders());
                 }
+                if (getCurrentCryptoToken().isAllowExplicitParameters()) {
+                    properties.setProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS, String.valueOf(getCurrentCryptoToken().isAllowExplicitParameters()));
+                }
                 
                 final char[] secret = getCurrentCryptoToken().getSecret1().toCharArray();
                 final String name = getCurrentCryptoToken().getName();
@@ -657,6 +669,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setName(cryptoTokenInfo.getName());
                     currentCryptoToken.setType(cryptoTokenInfo.getType());
                     currentCryptoToken.setKeyPlaceholders(cryptoTokenInfo.getCryptoTokenProperties().getProperty(CryptoToken.KEYPLACEHOLDERS_PROPERTY, ""));
+                    currentCryptoToken.setAllowExplicitParameters(cryptoTokenInfo.isAllowExplicitParameters());
+
                     if (cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName())) {
                         currentCryptoToken.setP11AttributeFile(cryptoTokenInfo.getP11AttributeFile());
                         currentCryptoToken.setP11Library(cryptoTokenInfo.getP11Library());

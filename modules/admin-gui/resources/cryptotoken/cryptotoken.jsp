@@ -104,6 +104,16 @@ org.cesecore.authorization.control.CryptoTokenRules
 				value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 			<h:outputLabel for="currentCryptoTokenAllowExportPrivateKey" value="#{web.text.ALLOW}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
+		<h:panelGroup id="allowExplicitParameters">
+			<h:outputLabel id="allowExplicitParametersLabel" for="currentCryptoTokenAllowExplicitParameters"
+						   value="#{web.text.CRYPTOTOKEN_USEEXPLICITKEYPARAMETERS} "/>
+			<%= ejbcawebbean.getHelpReference("/Managing_Crypto_Tokens.html#New_Crypto_Tokens") %>
+		</h:panelGroup>
+		<h:panelGroup>
+			<h:selectBooleanCheckbox id="currentCryptoTokenAllowExplicitParameters"
+									 value="#{cryptoTokenMBean.currentCryptoToken.allowExplicitParameters}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+			<h:outputLabel for="currentCryptoTokenAllowExplicitParameters" value="#{web.text.USE}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+		</h:panelGroup>
 		<h:outputLabel id="currentCryptoTokenP11LibraryLabel" for="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
 			value="#{web.text.CRYPTOTOKEN_TYPE_P11} : #{web.text.CRYPTOTOKEN_LIBRARY}"/>
 		<h:panelGroup id="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
