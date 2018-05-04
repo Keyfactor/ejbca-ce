@@ -31,7 +31,9 @@ import org.openqa.selenium.support.ui.Select;
  */
 public final class WebTestHelper {
 
-    private WebTestHelper() {}
+    private WebTestHelper() {
+        throw new AssertionError("Cannot instantiate class");
+    }
 
     /**
      * Used to assert that there was an alert, and optionally if there was a

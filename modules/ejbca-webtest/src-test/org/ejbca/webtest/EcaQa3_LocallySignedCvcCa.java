@@ -69,8 +69,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
     }
 
     @Test
-    public void testA_rootCa() {
-        // Add CA
+    public void a_createRootCa() {
         CaHelper.goTo(webDriver, getAdminWebUrl());
         CaHelper.add(webDriver, rootName);
 
@@ -85,15 +84,13 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
     }
 
     @Test
-    public void testB_cryptoToken() {
-        // Check that a Crypto Token was created
+    public void b_checkCryptoToken() {
         CryptoTokenHelper.goTo(webDriver, getAdminWebUrl());
         CryptoTokenHelper.assertExists(webDriver, rootName);
     }
 
     @Test
-    public void testC_subCa() {
-        // Add CA
+    public void c_createSubCa() {
         CaHelper.goTo(webDriver, getAdminWebUrl());
         CaHelper.add(webDriver, subName);
 

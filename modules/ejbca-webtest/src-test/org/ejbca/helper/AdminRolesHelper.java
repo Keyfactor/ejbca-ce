@@ -29,7 +29,9 @@ import org.openqa.selenium.WebElement;
  */
 public final class AdminRolesHelper {
     
-    private AdminRolesHelper() {}
+    private AdminRolesHelper() {
+        throw new AssertionError("Cannot instantiate class");
+    }
     
     /**
      * Navigates to 'Administrator Roles' page and verifies outcome

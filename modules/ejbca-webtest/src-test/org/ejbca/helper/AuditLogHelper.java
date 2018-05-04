@@ -42,7 +42,9 @@ public final class AuditLogHelper {
     private static String filterTime;
     static { resetFilterTime(); }
 
-    private AuditLogHelper() {}
+    private AuditLogHelper() {
+        throw new AssertionError("Cannot instantiate class");
+    }
 
     /**
      * Resets the time to filter the Audit Log with. Only entries after the
