@@ -1,0 +1,406 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Author:  Fabien Hochstrasser <fabien.hochstrasser@swisscom.com>
+# Date:    2018-04-18
+# Purpose: Nagios check to monitor CMPv2 (HTTP) interface.
+#
+# A CMP certConf request is sent and the pkiConf response is parsed.
+# See https://jira.primekey.se/projects/SUPPORT/issues/SUPPORT-2286
+#
+# No good lightweight CMP library was found. So I decided to build the (ASN.1
+# encoded) certConf message manually, following the grammar described in RFC
+# 4210. The message is sent via a HTTP POST request (RFC 6712). The certConf
+# message sent is as simple (small) as possible to respect the RFC and make
+# EJBCA happy (e.g. protectionAlg is optional but EJBCA throws a
+# NullPointerException if not present).
+#
+# As a reference, here is a valid CMP certConf message (base64):
+# MGcwWQIBAqQCMACkEDAOMQwwCgYDVQQDDANBbnmhMDAuBgkqhkiG9n0HQg0wIQQGQUJDREVGMAcGBS
+# sOAwIaAgIEADAKBggqhkiG9w0CB6IMBAptb25pdG9yaW5nuAowCDAGBAEwAgEA
+#
+# Require: asn1, future, requests
+#
+# Usage: See --help
+#
+import argparse
+import asn1
+import base64
+import os
+import requests
+import sys
+
+OK = 0
+WARNING = 1
+CRITICAL = 2
+UNKNOWN = 3
+
+
+def main(args):
+    # Create the certConf message
+    try:
+        certconf = create_certconf_message(args.sender_kid)
+        if args.verbose:
+            print('CertConf message to be sent (base64): {0}'.format(base64.b64encode(certconf)))
+    except asn1.Error as e:
+        print('Error while encoding certConf message: {0}'.format(e.message))
+        sys.exit(UNKNOWN)
+
+    # Send the certConf message
+    try:
+        if args.verbose:
+            print('Sending certConf message to {0}'.format(args.url))
+        response = send_message(certconf, args.url, args.proxy)
+        if args.verbose:
+            print('pkiConf response received (base64): {0}'.format(base64.b64encode(response)))
+    except requests.exceptions.RequestException as e:
+        print(e.message)
+        sys.exit(CRITICAL)
+
+    # Check the pkiConf response
+    try:
+        if not is_valid_response(response):
+            print('pkiConf response is different than expected')
+            sys.exit(CRITICAL)
+    except asn1.Error as e:
+        print('Error while decoding response: {0}'.format(e.message))
+        sys.exit(UNKNOWN)
+
+    print('OK - Valid pkiConf response received from {0}'.format(args.url))
+    sys.exit(OK)
+
+
+def create_certconf_message(sender_key_id):
+    """Return a ASN.1 encoded certConf message based on the following grammar.
+
+    PKIMessage ::= SEQUENCE {
+        header           PKIHeader,
+        body             PKIBody,
+        ...
+    }
+    The PKIHeader contains information that is common to many PKI messages.
+
+    The PKIBody contains message-specific information.
+    """
+    encoder = asn1.Encoder()
+    encoder.start()
+
+    encoder.enter(asn1.Numbers.Sequence)
+    encoder.write(
+        create_pki_header(sender_key_id),
+        nr=asn1.Numbers.Sequence,
+        typ=asn1.Types.Constructed,
+    )
+
+    # 24 = certConf message
+    encoder.enter(24, cls=asn1.Classes.Context)
+    encoder.write(
+        create_pki_body(),
+        nr=asn1.Numbers.Sequence,
+        typ=asn1.Types.Constructed
+    )
+    encoder.leave()
+    encoder.leave()
+
+    return encoder.output()
+
+
+def create_pki_header(sender_key_id):
+    """Return a ASN.1 encoded PKIHeader based on the following grammar.
+
+    PKIHeader ::= SEQUENCE {
+        pvno             INTEGER    { cmp1999(1), cmp2000(2) },
+        sender           GeneralName,
+        recipient        GeneralName,
+        ...
+        protectionAlg    [1] AlgorithmIdentifier    OPTIONAL,
+        senderKID        [2] KeyIdentifier          OPTIONAL,
+        ...
+    }
+
+    The pvno field is fixed (at 2) for this version of this specification.
+
+    The sender field contains the name of the sender of the PKIMessage.
+    This name (in conjunction with senderKID, if supplied) should be
+    sufficient to indicate the key to use to verify the protection on the
+    message.  If nothing about the sender is known to the sending entity
+    (e.g., in the init. req. message, where the end entity may not know
+    its own Distinguished Name (DN), e-mail name, IP address, etc.), then
+    the "sender" field MUST contain a "NULL" value; that is, the SEQUENCE
+    OF relative distinguished names is of zero length.  In such a case,
+    the senderKID field MUST hold an identifier (i.e., a reference
+    number) that indicates to the receiver the appropriate shared secret
+    information to use to verify the message.
+
+    The recipient field contains the name of the recipient of the
+    PKIMessage.  This name (in conjunction with recipKID, if supplied)
+    should be usable to verify the protection on the message.
+
+    GeneralName ::= CHOICE {
+        ...
+        directoryName    [4]    Name,
+        ...
+    }
+
+    Name ::= CHOICE {
+        RDNSequence
+    }
+
+    RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
+
+    senderKID and recipKID are usable to indicate which keys have been
+    used to protect the message (recipKID will normally only be required
+    where protection of the message uses Diffie-Hellman (DH) keys).
+    These fields MUST be used if required to uniquely identify a key
+    (e.g., if more than one key is associated with a given sender name)
+    and SHOULD be omitted otherwise.
+
+    KeyIdentifier ::= OCTET STRING
+    """
+    encoder = asn1.Encoder()
+    encoder.start()
+
+    # pvno
+    # fixed (at 2) for this version of the specification
+    encoder.write(2, asn1.Numbers.Integer)
+
+    # sender
+    # "NULL" value; the SEQUENCE OF relative distinguished names is of zero length
+    encoder.enter(4, cls=asn1.Classes.Context)
+    encoder.enter(asn1.Numbers.Sequence)
+    encoder.leave()
+    encoder.leave()
+
+    # recipient
+    # directoryName constructed in create_pki_header_recipient()
+    encoder.enter(4, cls=asn1.Classes.Context)
+    encoder.write(
+        create_pki_header_recipient(),
+        nr=asn1.Numbers.Sequence,
+        typ=asn1.Types.Constructed,
+    )
+    encoder.leave()
+
+    # protectionAlg
+    # AlgorithmIdentifier constructed in create_pki_header_protection_alg()
+    encoder.enter(1, cls=asn1.Classes.Context)
+    encoder.write(
+        create_pki_header_protection_alg(),
+        nr=asn1.Numbers.Sequence,
+        typ=asn1.Types.Constructed,
+    )
+    encoder.leave()
+
+    # senderKID
+    # This field is ignored by EJBCA, it uses the last component of the URL
+    # as CMP alias instead. This field must be set to respect the RFC.
+    encoder.enter(2, cls=asn1.Classes.Context)
+    encoder.write(sender_key_id, asn1.Numbers.OctetString)
+    encoder.leave()
+
+    return encoder.output()
+
+
+def create_pki_header_recipient():
+    """Return the ASN.1 encoded 'recipient' based on the following grammar.
+
+    RelativeDistinguishedName ::= SET SIZE (1..MAX) OF AttributeTypeAndValue
+
+    AttributeTypeAndValue ::= SEQUENCE {
+        type  AttributeType,
+        value AttributeValue,
+    }
+
+    AttributeType ::= OBJECT IDENTIFIER
+    AttributeValue ::= ANY
+    """
+    encoder = asn1.Encoder()
+    encoder.start()
+
+    # RelativeDistinguishedName
+    encoder.enter(asn1.Numbers.Set)
+    # AttributeTypeAndValue
+    encoder.enter(asn1.Numbers.Sequence)
+    # AttributeType (commonName)
+    encoder.write('2.5.4.3', asn1.Numbers.ObjectIdentifier)
+    # AttributeValue
+    encoder.write('Any', asn1.Numbers.UTF8String)
+    encoder.leave()
+    encoder.leave()
+
+    return encoder.output()
+
+
+def create_pki_header_protection_alg():
+    """Return the ASN.1 encoded 'protectionAlg' based on the following grammar.
+
+    This section is not actually used, but EJBCA throws a NullPointerException
+    if it's not there.
+
+    The protectionAlg field specifies the algorithm used to protect the
+    message.  If no protection bits are supplied (note that PKIProtection
+    is OPTIONAL) then this field MUST be omitted; if protection bits are
+    supplied, then this field MUST be supplied.
+
+    AlgorithmIdentifier  ::=  SEQUENCE  {
+        algorithm     OBJECT IDENTIFIER,
+        parameters    ANY    DEFINED BY algorithm    OPTIONAL
+    }
+
+    The algorithm identifier is used to identify a cryptographic
+    algorithm.  The OBJECT IDENTIFIER component identifies the algorithm
+    (such as DSA with SHA-1).  The contents of the optional parameters
+    field will vary according to the algorithm identified.
+
+    PBMParameter ::= SEQUENCE {
+        salt              OCTET STRING,
+        owf               AlgorithmIdentifier,
+        iterationCount    INTEGER
+        mac               AlgorithmIdentifier,
+    }
+    """
+    encoder = asn1.Encoder()
+    encoder.start()
+
+    # algorithm (password based MAC)
+    encoder.write('1.2.840.113533.7.66.13', asn1.Numbers.ObjectIdentifier)
+
+    # PBMParameter
+    encoder.enter(asn1.Numbers.Sequence)
+    # salt
+    encoder.write('ABCDEF', asn1.Numbers.OctetString)
+    # owf (sha1)
+    encoder.enter(asn1.Numbers.Sequence)
+    encoder.write('1.3.14.3.2.26', asn1.Numbers.ObjectIdentifier)
+    encoder.leave()
+    # iterationCount
+    encoder.write(1024, asn1.Numbers.Integer)
+    # mac (hmacWithSHA1)
+    encoder.enter(asn1.Numbers.Sequence)
+    encoder.write('1.2.840.113549.2.7', asn1.Numbers.ObjectIdentifier)
+    encoder.leave()
+    encoder.leave()
+
+    return encoder.output()
+
+
+def create_pki_body():
+    """Return the ASN.1 encoded PKIBody based on the following grammar.
+
+    PKIBody ::= CHOICE {
+        ...
+        certConf [24] CertConfirmContent,
+        ...
+    }
+
+    CertConfirmContent ::= SEQUENCE OF CertStatus
+
+    CertStatus ::= SEQUENCE {
+        certHash    OCTET STRING,
+        certReqId   INTEGER,
+        ...
+    }
+    """
+    encoder = asn1.Encoder()
+    encoder.start()
+
+    encoder.enter(asn1.Numbers.Sequence)
+    # certHash
+    encoder.write('0', asn1.Numbers.OctetString)
+    # certReqId
+    encoder.write(0, asn1.Numbers.Integer)
+    encoder.leave()
+
+    return encoder.output()
+
+
+def send_message(message, url, proxy):
+    """Send the CMP certConf message to the given URL."""
+    proxies = None if not proxy else {
+        'http': proxy,
+        'https': proxy,
+    }
+
+    response = requests.post(
+        url=url,
+        data=message,
+        headers={'Content-Type': 'application/pkixcmp'},
+        proxies=proxies,
+        timeout=5,
+    )
+    response.raise_for_status()
+
+    return response.content
+
+
+def is_valid_response(response):
+    """Makes sure the response contains a valid pkiConf message.
+
+    The structure of a pkiConf body is very simple. It's just NULL.
+
+    PKIMessage ::= SEQUENCE {
+        header           PKIHeader,
+        body             PKIBody,
+        ...
+    }
+
+    PKIBody ::= CHOICE {
+        ...
+        pkiconf  [19] PKIConfirmContent,
+        ...
+    }
+
+    PKIConfirmContent ::= NULL
+    """
+    decoder = asn1.Decoder()
+    decoder.start(response)
+
+    # Go in the PKImessage
+    decoder.enter()
+    # Read it until the PKIConfirmContent section
+    while decoder.peek().nr != 19:
+        decoder.read()
+
+    # Read the value (should be NULL)
+    _, value = decoder.read()
+
+    # encode a NULL value to compare it with the response body
+    encoder = asn1.Encoder()
+    encoder.start()
+    encoder.write(None, asn1.Numbers.Null)
+
+    return value == encoder.output()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+         description='Nagios check to monitor a CMPv2 (HTTP) interface.',
+    )
+    parser.add_argument(
+        'url',
+        type=str,
+        help='HTTP(S) URL of the CMPv2 endpoint',
+    )
+    parser.add_argument(
+        '--sender-kid',
+        type=str,
+        required=True,
+        help='CMP Sender Key ID',
+    )
+    parser.add_argument(
+        '--proxy',
+        type=str,
+        help='http(s) proxy, http_proxy environment variables is never used',
+    )
+    parser.add_argument(
+        '--verbose', '-v',
+        action='store_true',
+        help='Show helpful messages for debugging',
+    )
+    args = parser.parse_args()
+
+    # Ignore system environment variables about HTTP(S) proxies
+    del os.environ['http_proxy']
+    del os.environ['https_proxy']
+
+    main(args)
