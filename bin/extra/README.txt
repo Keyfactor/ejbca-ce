@@ -1,5 +1,13 @@
 This directory contains extra scripts that are useful for some special functions.
 
+CMP Monitoring
+--------------
+check_cmpv2 is a Python script for Nagios monitoring of the CMP server. 
+It was contributed by Fabien Hochstrasser and is provided "as is".
+
+For monitoring it sends a real CMP message, certConf, which does not perform any actual operation on the server
+and parses the response to see that the CMP server is actually up and responding to requests.
+
 Code signing:
 ------------
 sign-verify.sh - used to sign a file. Creates a signature file, that can later be verified using the same program. 
