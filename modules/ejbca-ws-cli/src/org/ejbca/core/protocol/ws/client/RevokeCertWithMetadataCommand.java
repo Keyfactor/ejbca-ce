@@ -44,6 +44,8 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 	private static final int ARG_ISSUERDN			= 1;
 	private static final int ARG_CERTSN				= 2;
 
+	private static final String REASON_KEY = "reason";
+
 	/**
 	 * Creates a new instance of RevokeCertCommand
 	 *
@@ -55,40 +57,13 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 	
 	@Override
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-
 		try {
 			if(this.args.length < 3) {
 				usage();
 				System.exit(-1); // NOPMD, it's not a JEE app
 			}
 
-			String REASON_KEY = "reason";
-
-			List<KeyValuePair> metadata = new ArrayList<>();
-			if (this.args.length > 3) {
-			    for (int i=3; i<this.args.length; i++) {
-			        String arg = this.args[i];
-			        String[] parts = arg.split("=", 2);
-
-					if (parts.length != 2) {
-						String msg = "Problem with parameter: " + arg + ". Invalid format, please use \"key=value\"";
-						getPrintStream().println(msg);
-						throw new IllegalArgumentException(msg);
-					}
-			        KeyValuePair keyValuePair = new KeyValuePair();
-					String key = parts[0];
-					keyValuePair.setKey(key);
-
-					if (key.equalsIgnoreCase(REASON_KEY)) {
-						final int reason = getRevokeReason(parts[1]);
-						keyValuePair.setValue(new Integer(reason).toString());
-					} else {
-						keyValuePair.setValue(parts[1]);
-					}
-
-					metadata.add(keyValuePair);
-			    }
-			}
+			List<KeyValuePair> metadata = parseInputArgs();
 
 			final String issuerdn = CertTools.stringToBCDNString(this.args[ARG_ISSUERDN]);
 			final String certsn = getCertSN(this.args[ARG_CERTSN]);
@@ -123,11 +98,39 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 		}
 	}
 
+	protected List<KeyValuePair> parseInputArgs() throws Exception {
+		List<KeyValuePair> metadata = new ArrayList<>();
+		if (this.args.length > 3) {
+            for (int i=3; i<this.args.length; i++) {
+                String arg = this.args[i];
+                String[] parts = arg.split("=", 2);
+
+                if (parts.length != 2) {
+                    String msg = "Problem with parameter: " + arg + ". Invalid format, please use \"key=value\"";
+                    getPrintStream().println(msg);
+                    throw new IllegalArgumentException(msg);
+                }
+                KeyValuePair keyValuePair = new KeyValuePair();
+                String key = parts[0];
+                keyValuePair.setKey(key);
+
+                if (key.equalsIgnoreCase(REASON_KEY)) {
+                    final int reason = getRevokeReason(parts[1]);
+                    keyValuePair.setValue(new Integer(reason).toString());
+                } else {
+                    keyValuePair.setValue(parts[1]);
+                }
+                metadata.add(keyValuePair);
+            }
+        }
+		return metadata;
+	}
+
 
 	private String getCertSN(String certsn) {
-		try{
-			new BigInteger(certsn,16);
-		}catch(NumberFormatException e){
+		try {
+			new BigInteger(certsn, 16);
+		} catch(NumberFormatException e) {
 			getPrintStream().println("Error in Certificate SN");
 			usage();
 			System.exit(-1); // NOPMD, it's not a JEE app

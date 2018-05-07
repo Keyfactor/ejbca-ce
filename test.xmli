@@ -102,7 +102,8 @@
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
 					<include name="modules/unidfnr/src-test/**/${test.runone}.java" />
-                    <include name="modules/ejbca-webtest/src-test/**/${test.runone}.java" />
+					<include name="modules/ejbca-webtest/src-test/**/${test.runone}.java" />
+					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -174,6 +175,9 @@
         <condition property="module" value="modules/ejbca-webtest">
             <matches string="${test-fullname}" pattern="^modules/ejbca-webtest/.*$"/>
         </condition>
+    	<condition property="module" value="modules/ejbca-ws-cli">
+    	    <matches string="${test-fullname}" pattern="^modules/ejbca-ws-cli/.*$"/>
+    	</condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" />
 		<antcall target="createreport"/>
