@@ -6,9 +6,12 @@
 
 	<dirname property="this.dir" file="${ant.file.ejbca-ws-cli}"/>
 	<import file="${this.dir}/../build.xml"/>
+	<import file="${this.dir}/../systemtests/build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="src-gen.dir" location="${this.dir}/src-gen"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
@@ -26,6 +29,16 @@
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 	</path>
 
+	<path id="test.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="systemtests.classpath.nojee"/>
+		<path refid="common.classpath"/>
+		<path location="${build.dir}/classes"/>
+		<path location="${build-test.dir}"/>
+		<path location="${build.dir}/conf"/>
+		<path location="${build.dir}/resources"/>
+	</path>
+	
 	<path id="compile-withws.classpath">
 		<path refid="compile.classpath"/>
 	</path>
@@ -51,10 +64,47 @@
     	</jar>
     </target>
 
+	<target name="compile-tests" depends="build, with.clover">
+    	<mkdir dir="${build-test.dir}"/>
+		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+        	encoding="UTF-8" classpathref="test.classpath"/>
+    </target>
+	
+	<target name="test" depends="compile-tests" description="Run all tests for this module">
+		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+			<classpath>
+        		<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${build-test.dir}" includes="**/EcaQa*.class"/>
+            </batchtest>
+		</junit>
+    </target>
+	
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=EcaQa64_PublicWebMenuItems" unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" >
+			<classpath>
+        		<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="clean"/>
+	</target>
+	
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${mod.ejbca-ws-cli.dist}" />
 		<delete file="${mod.ejbca-ws.wsdl}" />
+		<delete dir="${build-test.dir}"/>
     </target>
 	
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ws-common"/></target>
