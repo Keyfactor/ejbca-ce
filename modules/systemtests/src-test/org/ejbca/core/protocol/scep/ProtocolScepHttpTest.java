@@ -567,6 +567,7 @@ public class ProtocolScepHttpTest {
     @Test
     public void test10ScepGetCACaps() throws Exception {
         checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-1");
+        sendGetCACapsRequest("NonExistent", 404);
     }
 
     @Test
@@ -1208,28 +1209,34 @@ public class ProtocolScepHttpTest {
         return respBytes;
     }
     
-
-    private void checkCACaps(String caname, String expectedCaps) throws IOException {
-        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(caname, "UTF-8");
-        URL url = new URL(reqUrl);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    
+    private byte[] sendGetCACapsRequest(final String caname, final int expectedStatusCode) throws IOException {
+        final String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(caname, "UTF-8");
+        final URL url = new URL(reqUrl);
+        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         con.getDoOutput();
         con.connect();
-        assertEquals("Response code", 200, con.getResponseCode());
+        assertEquals("Response code was wrong.", expectedStatusCode, con.getResponseCode());
+        if (expectedStatusCode != 200) {
+            return null;
+        }
         // Some appserver (Weblogic) responds with "text/plain; charset=UTF-8"
         assertTrue(con.getContentType().startsWith("text/plain"));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // This works for small requests, and SCEP requests are small enough
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
+        try (final InputStream in = con.getInputStream()) {
+            int b = in.read();
+            while (b != -1) {
+                baos.write(b);
+                b = in.read();
+            }
         }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
+        return baos.toByteArray();
+    }
+
+    private void checkCACaps(String caname, String expectedCaps) throws IOException {
+        byte[] respBytes = sendGetCACapsRequest(caname, 200);
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
         assertEquals(expectedCaps, new String(respBytes));

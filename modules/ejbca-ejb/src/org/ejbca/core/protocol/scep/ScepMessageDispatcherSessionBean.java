@@ -192,21 +192,19 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
         } else if (operation.equals("GetCACaps")) {
             final String caname = getCAName(message);
-            boolean hasRolloverCert;
-            try {
-                final CAInfo cainfo = caSession.getCAInfoInternal(-1, caname, true);
-                hasRolloverCert = (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
-            } catch (CADoesntExistsException e) {
-                hasRolloverCert = false;
-                if (log.isDebugEnabled()) {
-                    log.debug("CA was not found: "+caname);
-                }
+            final CAInfo cainfo = caSession.getCAInfoInternal(-1, caname, true);
+            if (cainfo != null) {
+                final boolean hasRolloverCert = (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
+                // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format". 
+                // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.            
+                return  hasRolloverCert ?
+                        "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1".getBytes() :
+                        "POSTPKIOperation\nRenewal\nSHA-1".getBytes();
+            } else {
+                final String msg = "CA was not found: "+caname;
+                log.debug(msg);
+                throw new CADoesntExistsException(msg);
             }
-            // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format". 
-            // It SHOULD also remove the GetNextCACert setting from the capabilities until it does have rollover certificates.            
-            return  hasRolloverCert ?
-                    "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-1".getBytes() :
-                    "POSTPKIOperation\nRenewal\nSHA-1".getBytes();
         } else {
             log.error("Invalid parameter '" + operation);
         }
