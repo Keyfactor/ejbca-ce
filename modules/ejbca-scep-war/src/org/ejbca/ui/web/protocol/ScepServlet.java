@@ -304,7 +304,7 @@ public class ScepServlet extends HttpServlet {
             }
         } catch (CADoesntExistsException cae) {
     		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
-            log.info(errMsg, cae);
+            log.info(errMsg);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_NOT_FOUND, cae.getMessage());
         } catch (DecoderException de) {
