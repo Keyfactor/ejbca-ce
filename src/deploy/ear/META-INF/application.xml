@@ -93,6 +93,7 @@
        <!--@acme.war@-->
        <!--@est.war@-->
        <!--@unidfnr-ejb.jar@-->
+       <!--@ejbca-rest-api.war@-->
        
 </application>
 

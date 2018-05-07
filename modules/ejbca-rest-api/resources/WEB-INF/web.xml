@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *                                                                       *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           * 
+ *  commercial license terms.                                            *
+ *                                                                       *
+ *************************************************************************/
+
+ version: $Id$
+ -->
+<web-app version="3.0" id="ejbca-rest-api"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                        http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+    <description><![CDATA[External interface for the Ejbca rest api]]></description>
+    
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>restricted methods</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint> 
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>require HTTPS</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+</web-app>
