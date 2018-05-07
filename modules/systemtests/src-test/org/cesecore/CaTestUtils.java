@@ -84,33 +84,10 @@ public abstract class CaTestUtils {
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
             AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
             IllegalStateException, OperatorCreationException, CAExistsException {
-        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
-        final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
-        cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
-        int cryptoTokenId;
-        if (!cryptoTokenManagementProxySession.isCryptoTokenNameUsed(cryptoTokenName)) {
-            try {
-                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(),
-                        cryptoTokenProperties, null, null);
-            } catch (NoSuchSlotException e) {
-                throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
-            }
-        } else {
-            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
-        }
-        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
-        }
-        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
-        }
-
+        final int cryptoTokenId = initCryptoTokenId(cryptoTokenManagementProxySession, authenticationToken, cryptoTokenName);
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
         final CA x509Ca = createX509Ca(cryptoToken, caName, cadn);
         caSession.addCA(authenticationToken, x509Ca);
@@ -118,19 +95,9 @@ public abstract class CaTestUtils {
         return x509Ca;
     }
 
-
     private static CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn) throws CertificateException,
             CryptoTokenOfflineException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
-        Properties caTokenProperties = new Properties();
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
-        // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
-        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        CAToken catoken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // No extended services
         X509CAInfo cainfo = new X509CAInfo(cadn, caName, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
@@ -230,7 +197,7 @@ public abstract class CaTestUtils {
             } else if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             }
-            X509Certificate cacert = null;
+            X509Certificate cacert;
             if (keyusage == -1) {
                 cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true,
                         cryptoTokenManagementProxySession.getSignProviderName(cryptoTokenId), ldapOrder);
@@ -315,8 +282,7 @@ public abstract class CaTestUtils {
         final PrivateKey privateKey = cryptoTokenManagementProxySession.getPrivateKey(cryptoTokenId, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         CVCertificate cv = CaTestUtils.createTestCvcCertificate(publicKey, privateKey, caRef, holderRef, "SHA256WithRSA", AuthorizationRoleEnum.CVCA,
                 cryptoTokenManagementProxySession.getSignProviderName(cryptoTokenId));
-        CardVerifiableCertificate cvccacert = new CardVerifiableCertificate(cv);
-        Certificate cacert = cvccacert;
+        Certificate cacert = new CardVerifiableCertificate(cv);
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);
@@ -377,58 +343,22 @@ public abstract class CaTestUtils {
      * @param cryptoTokenName Name of new Crypto Token
      * @param caName Name of new CA
      * @param cadn Subject DN of new CA
+     * @param defaultCertificateProfileId Default CA profile id
      */
-    public static CA createX509ThrowAwayCa(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn)
-            throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
-            AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
-            IllegalStateException, OperatorCreationException, CAExistsException {
-        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
-        final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
-        cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
-        int cryptoTokenId;
-        if (!cryptoTokenManagementProxySession.isCryptoTokenNameUsed(cryptoTokenName)) {
-            try {
-                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(),
-                        cryptoTokenProperties, null, null);
-            } catch (NoSuchSlotException e) {
-                throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
-            }
-        } else {
-            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
-        }
-        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
-        }
-        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
-        }
-
+    public static CA createX509ThrowAwayCa(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn, final int defaultCertificateProfileId) throws Exception {
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        final int cryptoTokenId = initCryptoTokenId(cryptoTokenManagementProxySession, authenticationToken, cryptoTokenName);
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
-        final CA x509Ca = createX509ThrowAwayCa(cryptoToken, caName, cadn);
+        final CA x509Ca = createX509ThrowAwayCa(cryptoToken, caName, cadn, defaultCertificateProfileId);
         caSession.addCA(authenticationToken, x509Ca);
         // Now our CA should be operational
         return x509Ca;
     }
 
-    private static CA createX509ThrowAwayCa(final CryptoToken cryptoToken, final String caName, final String cadn) throws CertificateException,
-            CryptoTokenOfflineException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
-        Properties caTokenProperties = new Properties();
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
-        // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
-        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        // Set _useUserStorage and _useCertificateStorage to false
+    private static CA createX509ThrowAwayCa(final CryptoToken cryptoToken, final String caName, final String cadn, final int defaultCertificateProfileId) throws Exception {
+        CAToken catoken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        // Set useNoConflictCertificateData, defaultCertprofileId, _useUserStorage and _useCertificateStorage to false
         X509CAInfo cainfo = new X509CAInfo(
                 cadn,
                 caName,
@@ -436,7 +366,7 @@ public abstract class CaTestUtils {
                 new Date(), // update time
                 "", // Subject Alternative name
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, // CA certificate profile
-                0, // default ca profile
+                defaultCertificateProfileId, // default ca profile
                 true,
                 "3650d", null, // Expiretime
                 CAInfo.CATYPE_X509, // CA type (X509/CVC)
@@ -448,11 +378,11 @@ public abstract class CaTestUtils {
                 null, // Revocation date
                 null, // PolicyId
                 24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                0L, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(),
-                new ArrayList<Integer>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
                 true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -465,9 +395,9 @@ public abstract class CaTestUtils {
                 null, null, // Name Constraints (permitted/excluded)
                 null, // defaultfreshestcrl
                 true, // Finish User
-                new ArrayList<ExtendedCAServiceInfo>(), // no extended services
+                new ArrayList<>(), // no extended services
                 false, // use default utf8 settings
-                new HashMap<ApprovalRequestType, Integer>(), //approvals
+                new HashMap<>(), //approvals
                 false, // Use UTF8 subject DN by default
                 true, // Use LDAP DN order by default
                 false, // Use CRL Distribution Point on CRL
@@ -497,4 +427,35 @@ public abstract class CaTestUtils {
         x509ca.setCertificateChain(cachain);
         return x509ca;
     }
+
+    private static int initCryptoTokenId(final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession, final AuthenticationToken authenticationToken, final String cryptoTokenName) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, CryptoTokenNameInUseException, InvalidAlgorithmParameterException, InvalidKeyException {
+        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        final Properties cryptoTokenProperties = new Properties();
+        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
+        cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+        int cryptoTokenId;
+        if (!cryptoTokenManagementProxySession.isCryptoTokenNameUsed(cryptoTokenName)) {
+            try {
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(
+                        authenticationToken,
+                        cryptoTokenName,
+                        SoftCryptoToken.class.getName(),
+                        cryptoTokenProperties,
+                        null,
+                        null);
+            } catch (NoSuchSlotException e) {
+                throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
+            }
+        } else {
+            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        }
+        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS)) {
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
+        }
+        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+        }
+        return cryptoTokenId;
+    }
+
 }
