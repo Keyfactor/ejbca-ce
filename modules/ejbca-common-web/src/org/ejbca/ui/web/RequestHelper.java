@@ -69,6 +69,7 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
+import org.ejbca.util.HTMLTools;
 
 /**
  * Helper class for handling certificate request from browsers or general PKCS#10
@@ -661,6 +662,55 @@ public class RequestHelper {
     	// Strip whitespace though
     	String filename = dnpart.replaceAll("\\W", "");
     	return filename;
+    }
+
+    // Uniform Resource Identifier specification has a section on parsing URIs with a regular expression. The regular expression, written by Berners-Lee, et al., is:
+    // For example: http://www.ics.uci.edu/pub/ietf/uri/#Related
+    // results in the following subexpression matches:
+    //$1 = http:
+    //$2 = http
+    //$3 = //www.ics.uci.edu
+    //$4 = www.ics.uci.edu
+    //$5 = /pub/ietf/uri/
+    //$6 = <undefined>
+    //$7 = <undefined>
+    //$8 = #Related
+    //$9 = Related
+    // Port is part of the name in $4
+    // See https://stackoverflow.com/questions/27745/getting-parts-of-a-url-regex
+    private static java.util.regex.Pattern reg = java.util.regex.Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?");
+    /**
+     * Method that returns the servername including port, extracted from the HTTPServlet Request, no protocol or application path is returned
+     *
+     * @return the server name and port requested, i.e. localhost:8443
+     */
+    public static String getRequestServerName(final String request) {
+        if (request == null) {
+            return null;
+        }
+        final java.util.regex.Matcher m = reg.matcher(request);
+        String requestURL = null;
+        if (m.matches() && m.groupCount() >= 4) {
+            if (log.isTraceEnabled()) {
+                log.trace("regexp match with "+m.groupCount()+" groups, 0 being: "+m.group(0));
+            }
+            requestURL = m.group(4);
+        } else {
+            if (log.isTraceEnabled()) {
+                log.trace("no reqexp match: "+request);
+            }
+            // Remove https://
+            requestURL = request.substring(8);
+            int firstSlash = requestURL.indexOf("/");
+            // Remove application path
+            requestURL = requestURL.substring(0, firstSlash);            
+        }        
+        // Escape in order to be sure not to have any XSS
+        requestURL = HTMLTools.htmlescape(requestURL);
+        if (log.isDebugEnabled()) {
+            log.debug("requestServerName: " + requestURL);
+        }
+        return requestURL;
     }
 
 }
