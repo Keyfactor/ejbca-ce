@@ -13,6 +13,7 @@
 package org.ejbca.ui.web;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
@@ -146,5 +147,21 @@ public class RequestHelperTest {
         
         //Verify that mocks have behaved as planned
         EasyMock.verify(caInfo, ca, responseMessage, signsession, caSession);
+    }
+    
+    /** Tests RequestHelper.getRequestServerName that it handles different protocols, with and without port, and that it does HTML encoding on the result
+     */
+    @Test
+    public void testGetRequestServerName() {
+        assertNull("getRequestServerName did not handle null", RequestHelper.getRequestServerName(null));
+        assertEquals("getRequestServerName did not handle https without port correctly", "servername", RequestHelper.getRequestServerName("https://servername/foo/bar.html"));
+        assertEquals("getRequestServerName did not handle https with port correctly", "servername:8443", RequestHelper.getRequestServerName("https://servername:8443/foo/bar.html"));
+        assertEquals("getRequestServerName did not handle http without port correctly", "servername", RequestHelper.getRequestServerName("https://servername/foo/bar.html"));
+        assertEquals("getRequestServerName did not handle http with port correctly", "servername:11111", RequestHelper.getRequestServerName("https://servername:11111/foo/bar.html"));
+        assertEquals("getRequestServerName did not handle ajp without port correctly", "servername", RequestHelper.getRequestServerName("ajp://servername/foo/bar.html"));
+        assertEquals("getRequestServerName did not handle ajp with port correctly", "servername:3", RequestHelper.getRequestServerName("ajp://servername:3/foo/bar.html"));
+        assertEquals("getRequestServerName did not handle bogusprotocol without port correctly", "servername", RequestHelper.getRequestServerName("bogusprotocol://servername/foo/bar.html"));
+        assertEquals("getRequestServerName did not handle bogusprotocol with port correctly", "servername:8080", RequestHelper.getRequestServerName("bogusprotocol://servername:8080/foo/bar.html"));
+        assertEquals("getRequestServerName did not do HTML encoding ", "&gt;serve&amp;rname&lt;:8443", RequestHelper.getRequestServerName("https://>serve&rname<:8443/foo/bar.html"));
     }
 }
