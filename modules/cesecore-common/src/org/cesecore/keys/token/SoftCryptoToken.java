@@ -63,8 +63,8 @@ public class SoftCryptoToken extends BaseCryptoToken {
     
     /**
      * This property value denotes whether the default soft token password is usable on this token (as defined by ca.keystorepass, defaults to 'foo123',
-     * which allows it to be activated/deactivated/edited without providing a password. Setting this property to true means that the default password is 
-     * not available for use. 
+     * which allows it to be activated/deactivated/edited without providing a password. Setting this property to true (setting it at all actually could be false as well) 
+     * means that the default password is not available for use. 
      */
     public static final String NODEFAULTPWD = "NODEFAULTPWD";
 
@@ -92,7 +92,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
         String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
         if ((autoPwd == null) && (properties.getProperty(NODEFAULTPWD) == null)) {
             final String keystorepass = StringTools.passwordDecryption(CesecoreConfiguration.getCaKeyStorePass(), "ca.keystorepass");
-            // Test it first, don't set an incorrect password as autoa-ctivate password
+            // Test it first, don't set an incorrect password as autoactivate password
             boolean okPwd = checkSoftKeystorePassword(keystorepass.toCharArray(), cryptoTokenId);
             if (okPwd) {
                 log.debug("Succeded to load keystore with password");
