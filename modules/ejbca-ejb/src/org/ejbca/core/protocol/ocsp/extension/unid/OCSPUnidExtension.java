@@ -17,9 +17,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -29,6 +31,7 @@ import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
+import org.cesecore.certificates.ocsp.extension.OCSPExtensionType;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.util.CertTools;
@@ -63,6 +66,11 @@ public class OCSPUnidExtension implements OCSPExtension {
     @Override
     public String getName() {
         return OCSP_UNID_NAME;
+    }
+    
+    @Override
+    public Set<OCSPExtensionType> getExtensionType() {
+        return EnumSet.of(OCSPExtensionType.RESPONSE);
     }
     
 	@Override
