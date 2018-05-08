@@ -39,6 +39,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
@@ -82,7 +84,6 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -133,6 +134,7 @@ import org.cesecore.certificates.ocsp.exception.IllegalNonceException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
+import org.cesecore.certificates.ocsp.extension.OCSPExtensionType;
 import org.cesecore.certificates.ocsp.keys.CardKeys;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
@@ -1219,6 +1221,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 final CertificateStatus signerIssuerCertStatus = ocspSigningCacheEntry.getIssuerCaCertificateStatus();
                 final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
                 CertificateStatusHolder certificateStatusHolder = null;
+                OCSPResponseItem respItem;
                 if (signerIssuerCertStatus.equals(CertificateStatus.REVOKED)) {
                     /*
                      * According to chapter 2.7 in RFC2560:
@@ -1231,7 +1234,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
                     log.info(intres.getLocalizedMessage("ocsp.signcertissuerrevoked", CertTools.getSerialNumberAsString(caCertificate),
                             CertTools.getSubjectDN(caCertificate)));
-                    responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
+                    respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     if (transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                         transactionLogger.paramPut(TransactionLogger.REV_REASON, signerIssuerCertStatus.revocationReason);
@@ -1357,12 +1360,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 + status.certificateProfileId);
                     }
                     log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn));
-                    OCSPResponseItem respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
+                    respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
                     if (addArchiveCutoff) {
                         addArchiveCutoff(respItem);
                         producedAt = new Date();
                     }
-                    responseList.add(respItem);
                     if (transactionLogger.isEnabled()) {
                         transactionLogger.writeln();
                     }
@@ -1399,7 +1401,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus, ocspSigningCacheEntry.getOcspKeyBinding());
                                 if (retext != null) {
                                     // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
-                                    responseExtensions.putAll(retext);
+                                    if (extObj.getExtensionType().contains(OCSPExtensionType.RESPONSE)) {
+                                        responseExtensions.putAll(retext);
+                                    }
+                                    if (extObj.getExtensionType().contains(OCSPExtensionType.SINGLE_RESPONSE)) {
+                                        respItem.addExtensions(retext);
+                                    }
                                 } else {
                                         log.error(intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
                                                 Integer.valueOf(extObj.getLastErrorCode())));
@@ -1408,6 +1415,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }
                     }
                 }
+                responseList.add(respItem);
             }
             if (addExtendedRevokedExtension) { 
                 // id-pkix-ocsp-extended-revoke OBJECT IDENTIFIER ::= {id-pkix-ocsp 9}
@@ -1565,14 +1573,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             return;
         }
         long res = System.currentTimeMillis() - archPeriod;
-        ExtensionsGenerator gen = new ExtensionsGenerator();
+        ASN1OctetString archiveCutoffValue;
         try {
-            gen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, new ASN1GeneralizedTime(new Date(res)));
+            archiveCutoffValue = new DEROctetString(new ASN1GeneralizedTime(new Date(res)));
         } catch (IOException e) {
             throw new IllegalStateException("IOException was caught when decoding static value.", e);
         } 
-        Extensions exts = gen.generate();
-        respItem.setExtentions(exts);
+        Extension archiveCutoff = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, archiveCutoffValue);
+        respItem.addExtensions(Collections.singletonMap(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, archiveCutoff));
     }
 
     /**
@@ -1700,7 +1708,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (signerCert != null && nextUpdate != null && signerCert.getNotAfter().before(nextUpdate)) {
                     nextUpdate = signerCert.getNotAfter();
                 }
-                basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), nextUpdate, item.getExtensions());
+                basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), item.buildExtensions());
             }
         }
         if (exts != null) {

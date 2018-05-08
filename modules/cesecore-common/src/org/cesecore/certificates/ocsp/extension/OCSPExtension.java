@@ -16,6 +16,7 @@ package org.cesecore.certificates.ocsp.extension;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
+import java.util.Set;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
@@ -64,6 +65,13 @@ public interface OCSPExtension {
      * @return error code as defined by implementing class
      */
     int getLastErrorCode();
+    
+    /**
+     * Returns a set of valid positions where the extension may be added.
+     * 
+     * @return a set of valid positions where the extension may be added. The returned Set should contain at least one value. Never returns <code>null</code>.
+     */
+    Set<OCSPExtensionType> getExtensionType();
     
     /**
      * @return Extension OID
