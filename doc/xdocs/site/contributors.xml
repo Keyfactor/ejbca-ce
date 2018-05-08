@@ -129,6 +129,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Christian Felsing, <!-- pug@felsing.net -->ejbca-setup install script for easier setup.</li>
 <li>Claes Jakobsson, <!-- claes.jakobsson@b3it.se> -->Initial EST (RFC7030) implementation (through PrimeKey).</li>
 <li>Fabien Hochstrasser, <!-- fabien.hochstrasser@swisscom.com -->check_cmpv2 Nagios monitoring script.</li>
+<li>Max Fichtelmann, <!-- max.fichtelmann@procilon.de -->Patch for making the Common PKI CertHash extension into a SingleResponse extension.</li>
 </ul>
     </section>
   </body>
