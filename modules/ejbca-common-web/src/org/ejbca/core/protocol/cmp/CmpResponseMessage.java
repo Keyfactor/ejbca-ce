@@ -245,12 +245,16 @@ public class CmpResponseMessage implements CertificateResponseMessage {
         // Some general stuff, common for all types of messages
         String issuer = null;
         String subject = null;
+        Certificate signCert = null;
+        if (CollectionUtils.isNotEmpty(signCertChain)) {
+            signCert = signCertChain.iterator().next();            
+        }
         if (cert != null) {
-            X509Certificate x509cert = (X509Certificate) cert;
+            final X509Certificate x509cert = (X509Certificate) cert;
             issuer = x509cert.getIssuerDN().getName();
             subject = x509cert.getSubjectDN().getName();
-        } else if (CollectionUtils.isNotEmpty(signCertChain)) {
-            issuer = ((X509Certificate) signCertChain.iterator().next()).getSubjectDN().getName();
+        } else if (signCert != null) {
+            issuer = ((X509Certificate) signCert).getSubjectDN().getName();
             subject = "CN=fooSubject";
         } else {
             issuer = "CN=fooIssuer";
@@ -376,6 +380,11 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                         pbeIterationCount);
             } else {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digest)));
+                if (signCert != null) {
+                	// set sender Key ID as well when the response is signed, so the signer (CA) can have multiple certificates out there
+                	// with the same DN but different keys
+                    myPKIHeader.setSenderKID(CertTools.getSubjectKeyId(signCert));
+                }
                 PKIHeader header = myPKIHeader.build();
                 final Collection<Certificate> extraCertsList = new ArrayList<Certificate>(signCertChain);
                 for (Certificate extraCert : extraCerts) {
