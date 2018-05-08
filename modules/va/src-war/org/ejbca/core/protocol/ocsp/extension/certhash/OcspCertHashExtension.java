@@ -17,8 +17,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -27,6 +29,7 @@ import org.bouncycastle.asn1.isismtt.ocsp.CertHash;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
+import org.cesecore.certificates.ocsp.extension.OCSPExtensionType;
 import org.cesecore.keybind.InternalKeyBinding;
 
 /**
@@ -36,10 +39,16 @@ import org.cesecore.keybind.InternalKeyBinding;
  * 
  * OID for this extension is 1.3.36.8.3.13
  * 
+ * This extension is specified in the German Common PKI standard.
+ * <a href="http://www.t7ev.org/T7-de/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.
+ * 
+ * CertHashExtension is a SINGLE_RESPONSE extension, which means it's inside the responseItem, 
+ * not generic for the Response (which can contain several responseItems)
+ * 
  * @version $Id$
  *
  */
-public class OcspCertHashExtension implements OCSPExtension{
+public class OcspCertHashExtension implements OCSPExtension {
 
     public static final String CERT_HASH_OID = "1.3.36.8.3.13";
     public static final String CERT_HASH_NAME = "Certificate Hash";
@@ -55,6 +64,11 @@ public class OcspCertHashExtension implements OCSPExtension{
     @Override
     public String getName() {
         return CERT_HASH_NAME;
+    }
+    
+    @Override
+    public Set<OCSPExtensionType> getExtensionType() {
+        return EnumSet.of(OCSPExtensionType.SINGLE_RESPONSE);
     }
     
     @Override

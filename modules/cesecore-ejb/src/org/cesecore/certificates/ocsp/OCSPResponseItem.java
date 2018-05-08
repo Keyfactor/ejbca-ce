@@ -14,8 +14,13 @@
 package org.cesecore.certificates.ocsp;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
@@ -48,8 +53,8 @@ public class OCSPResponseItem implements Serializable {
      */
     private Date nextUpdate = null;
     
-    private Extensions singleExtensions = null;
-
+    private Map<ASN1ObjectIdentifier, Extension> singleExtensions = new HashMap<ASN1ObjectIdentifier, Extension>();
+    
     public OCSPResponseItem(CertificateID certID, CertificateStatus certStatus, long untilNextUpdate) {
         this.certID = certID;
         this.certStatus = certStatus;
@@ -75,11 +80,13 @@ public class OCSPResponseItem implements Serializable {
         return nextUpdate;
     }
     
-    public Extensions getExtensions() {
-        return singleExtensions;
+    public void addExtensions(Map<ASN1ObjectIdentifier, Extension> extensions) {
+        singleExtensions.putAll(extensions);
     }
-    
-    public void setExtentions(Extensions extensions) {
-        singleExtensions = extensions;
+
+    public Extensions buildExtensions() {
+        Collection<Extension> extensionValues = singleExtensions.values();
+        Extension[] extensions = extensionValues.toArray(new Extension[singleExtensions.size()]);
+        return new Extensions(extensions);
     }
 }
