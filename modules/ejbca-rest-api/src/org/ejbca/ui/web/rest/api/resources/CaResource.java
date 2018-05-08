@@ -15,6 +15,8 @@ import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 
@@ -30,6 +32,7 @@ public class CaResource {
     private static final Logger log = Logger.getLogger(CaResource.class);
     
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     public List<String> getCAs() {
         log.trace(">getCAs");
         
