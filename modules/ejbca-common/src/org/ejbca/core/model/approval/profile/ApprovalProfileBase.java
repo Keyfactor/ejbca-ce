@@ -542,7 +542,7 @@ public abstract class ApprovalProfileBase extends ProfileBase implements Approva
         int partitionApprovalsPerformed = 0;
         for (Approval approval : approvalsPerformed) {
             if (!approval.isApproved()) {
-                return ApprovalDataVO.STATUS_REJECTED;
+                return -1;
             }
             if (approval.getStepId() == stepIdentifier && approval.getPartitionId() == partitionIdentifier) {
                 partitionApprovalsPerformed++;

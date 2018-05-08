@@ -115,7 +115,7 @@ public interface ApprovalProfile extends Profile, Serializable, Cloneable, Compa
     /**
      *
      * @param approvalsPerformed the approvals performed against this profile
-     * @return the number of remaining approvals, or ApprovalDataVO.STATUS_REJECTED (-1) if any approval is denied
+     * @return the number of remaining approvals, or -1 if any approval is denied
      */
     int getRemainingApprovals(final Collection<Approval> approvalsPerformed);
 
