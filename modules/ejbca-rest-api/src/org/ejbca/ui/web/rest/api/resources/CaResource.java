@@ -19,6 +19,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * JAX-RS resource handling CA related requests.
@@ -31,21 +33,15 @@ public class CaResource {
     
     private static final Logger log = Logger.getLogger(CaResource.class);
     
+    private CaSessionLocal caSession;     
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<String> getCAs() {
         log.trace(">getCAs");
-        
-        ArrayList<String> list = new ArrayList<String>();
-        list.add("ItemOne");
-        list.add("ItemTwo");
-        list.add("ItemThree");
-        
+        caSession = new EjbLocalHelper().getCaSession();
         log.trace("<getCAs");
-
-        return new ArrayList<String>(list);
-
-        
+        return new ArrayList<String>(caSession.getCAIdToNameMap().values());
     }
 
 }
