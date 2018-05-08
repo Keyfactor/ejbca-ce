@@ -1708,7 +1708,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (signerCert != null && nextUpdate != null && signerCert.getNotAfter().before(nextUpdate)) {
                     nextUpdate = signerCert.getNotAfter();
                 }
-                basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), item.buildExtensions());
+                basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), nextUpdate, item.buildExtensions());
             }
         }
         if (exts != null) {
