@@ -381,8 +381,8 @@ public abstract class CaTestUtils {
                 0L, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<>(),
-                new ArrayList<>(),
+                new ArrayList<Integer>(), //crlpublishers
+                new ArrayList<Integer>(), // keyValidators
                 true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -395,9 +395,9 @@ public abstract class CaTestUtils {
                 null, null, // Name Constraints (permitted/excluded)
                 null, // defaultfreshestcrl
                 true, // Finish User
-                new ArrayList<>(), // no extended services
+                new ArrayList<ExtendedCAServiceInfo>(), // no extended services
                 false, // use default utf8 settings
-                new HashMap<>(), //approvals
+                new HashMap<ApprovalRequestType, Integer>(), //approvals
                 false, // Use UTF8 subject DN by default
                 true, // Use LDAP DN order by default
                 false, // Use CRL Distribution Point on CRL
