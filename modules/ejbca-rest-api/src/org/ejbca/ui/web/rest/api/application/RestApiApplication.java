@@ -8,41 +8,38 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.resources;
+package org.ejbca.ui.web.rest.api.application;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
+import javax.ws.rs.core.Application;
 
-import org.apache.log4j.Logger;
+import org.ejbca.ui.web.rest.api.resources.CaResource;
 
 /**
- * JAX-RS resource handling CA related requests.
- * 
+ * Ejbca rest api application based on Easyrest
+ *  
  * @version $Id$
  *
  */
-@Path("/v1/ca")
-public class CaResource {
-    
-    private static final Logger log = Logger.getLogger(CaResource.class);
-    
-    @GET
-    public List<String> getCAs() {
-        log.trace(">getCAs");
-        
-        ArrayList<String> list = new ArrayList<String>();
-        list.add("ItemOne");
-        list.add("ItemTwo");
-        list.add("ItemThree");
-        
-        log.trace("<getCAs");
+public class RestApiApplication extends Application {
 
-        return new ArrayList<String>(list);
+    private Set<Object> singletons = new HashSet<Object>();
+    private Set<Class<?>> empty = new HashSet<Class<?>>();
 
-        
+    public RestApiApplication() {
+        singletons.add(new CaResource());
+    }
+
+    @Override
+    public Set<Class<?>> getClasses() {
+        return empty;
+    }
+
+    @Override
+    public Set<Object> getSingletons() {
+        return singletons;
     }
 
 }
