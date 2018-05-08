@@ -12,13 +12,17 @@ package org.ejbca.ui.web.rest.api.resources;
 
 import javax.ws.rs.Path;
 
+import org.apache.log4j.Logger;
+
 /**
- * Endpoint handling CA related requests.
+ * JAX-RS resource handling CA related requests.
  * @version $Id$
  *
  */
 @Path("/v1/ca")
-public class CaEndPoint {
+public class CaResource {
+    
+    private static final Logger log = Logger.getLogger(CaResource.class);
     
 
 }
