@@ -24,6 +24,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -43,6 +44,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.util.CertTools;
 
 /**
  * A very simple confirmation message, no protection and a nullbody
@@ -154,6 +156,11 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
 		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digestAlg)));
+            if (CollectionUtils.isNotEmpty(signCertChain)) {
+                // set sender Key ID as well when the response is signed, so the signer (CA) can have multiple certificates out there
+                // with the same DN but different keys
+                myPKIHeader.setSenderKID(CertTools.getSubjectKeyId(signCertChain.iterator().next()));
+            }
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
             try {
                 responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
