@@ -30,19 +30,34 @@
 		<path location="${build.dir}/resources"/>
 	</path>
 
-	<target name="build">
+	<condition property="isWindows">
+		<os family="windows" />
+	</condition>
+
+	<target name="make_directories">
+		<echo message="Came into make_directories target" />
 		<mkdir dir="${build.dir}/classes"/>
 		<mkdir dir="${build.dir}/conf"/>
 		<mkdir dir="${build.dir}/resources"/>
+	</target>
+
+	<target name="build" depends="make_directories, copyWindows, copy">
         <javac srcdir="${src.dir}" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath"/>
         </javac>
     	<copy todir="${build.dir}/conf" failonerror="true">
             <fileset dir="${conf.dir}"/>
 		</copy>
- 		<!-- Copy and keep permissions for geckodriver in order to be executable -->
-		<exec executable="cp">
-		    <arg line="-R ${resources.dir} ${build.dir}"/>
+	</target>
+
+	<target name="copyWindows" if="isWindows">
+		<copy file="${resources.dir}/geckodriver.exe" tofile="${build.dir}/resources/geckodriver" failonerror="true"/>
+	</target>
+
+	<target name="copy" unless="isWindows">
+		 <!--Copy and keep permissions for geckodriver in order to be executable-->
+		<exec executable="cp" osfamily="!windowsos">
+			<arg line="-R ${resources.dir} ${build.dir}"/>
 		</exec>
 	</target>
 	
@@ -68,6 +83,11 @@
 	
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=EcaQa64_PublicWebMenuItems" unless="test.runone" />
+		<condition property="remoteDebugJvmArgs"
+				   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				   else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
         		<path refid="test.classpath"/>
@@ -79,6 +99,7 @@
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
 		</junit>
 	</target>
 	
