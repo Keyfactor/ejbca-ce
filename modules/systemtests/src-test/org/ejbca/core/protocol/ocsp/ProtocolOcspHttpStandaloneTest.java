@@ -173,8 +173,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     /**
      * Tests ocsp message
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void test02OcspGood() throws Exception {
@@ -430,13 +429,13 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         assertNull("No nonce should be present.", brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce));
         SingleResp[] singleResps = brep.getResponses();
         assertNotNull("SingleResps should not be null.", singleResps);
-        assertTrue("Expected a single SingleResp in the repsonse.", singleResps.length == 1);
+        assertEquals("Expected a single SingleResp in the repsonse.", 1, singleResps.length);
         assertEquals("Serno in response does not match serno in request.", singleResps[0].getCertID().getSerialNumber(), serialNumber);
         assertEquals("Status is not null (null is 'good')", singleResps[0].getCertStatus(), null);
-        assertTrue("RFC 5019 6.2: Last-Modified SHOULD 'be the same as the thisUpdate timestamp in the request itself'", singleResps[0]
-                .getThisUpdate().getTime() == lastModified);
-        assertTrue("RFC 5019 6.2: Expires SHOULD 'be the same as the nextUpdate timestamp in the request itself'", singleResps[0].getNextUpdate()
-                .getTime() == expires);
+        assertEquals("RFC 5019 6.2: Last-Modified SHOULD 'be the same as the thisUpdate timestamp in the request itself'", lastModified, singleResps[0]
+                .getThisUpdate().getTime());
+        assertEquals("RFC 5019 6.2: Expires SHOULD 'be the same as the nextUpdate timestamp in the request itself'", expires, singleResps[0].getNextUpdate()
+                .getTime());
         assertTrue("Response cannot be produced before it was last modified..", brep.getProducedAt().getTime() >= singleResps[0].getThisUpdate()
                 .getTime());
     }
