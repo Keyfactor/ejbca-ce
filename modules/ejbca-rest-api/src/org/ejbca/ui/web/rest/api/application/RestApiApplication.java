@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.ejbca.ui.web.rest.api.resources.CaResource;
+import org.ejbca.ui.web.rest.api.resources.CertificateResource;
 
 /**
  * Ejbca rest api application based on Easyrest
@@ -30,6 +31,7 @@ public class RestApiApplication extends Application {
 
     public RestApiApplication() {
         singletons.add(new CaResource());
+        singletons.add(new CertificateResource());
     }
 
     @Override
