@@ -12,32 +12,44 @@
 
  version: $Id$
  -->
-<web-app version="3.0" id="ejbca-rest-api"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns="http://java.sun.com/xml/ns/javaee"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-                        http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-
-    <description><![CDATA[External interface for the Ejbca rest api]]></description>
-    
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>restricted methods</web-resource-name>
-            <url-pattern>/*</url-pattern>
-            <http-method>PUT</http-method>
-            <http-method>DELETE</http-method>
-            <http-method>OPTIONS</http-method>
-            <http-method>TRACE</http-method>
-        </web-resource-collection>
-        <auth-constraint />
-    </security-constraint> 
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>require HTTPS</web-resource-name>
-            <url-pattern>/*</url-pattern>
-        </web-resource-collection>
-        <user-data-constraint>
-            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	version="3.0" id="ejbca-rest-api" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee                         
+	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+   <description><![CDATA[External interface for the Ejbca rest api]]></description>
+   <display-name>ejbca-rest-api</display-name>
+   <context-param>
+      <param-name>javax.ws.rs.Application</param-name>
+      <param-value>org.ejbca.ui.web.rest.api.application.RestApiApplication</param-value>
+   </context-param>
+   <listener>
+      <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
+   </listener>
+   <servlet>
+      <servlet-name>Resteasy</servlet-name>
+      <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>Resteasy</servlet-name>
+      <url-pattern>/*</url-pattern>
+   </servlet-mapping>
+   <security-constraint>
+      <web-resource-collection>
+         <web-resource-name>restricted methods</web-resource-name>
+         <url-pattern>/*</url-pattern>
+         <http-method>PUT</http-method>
+         <http-method>DELETE</http-method>
+         <http-method>OPTIONS</http-method>
+         <http-method>TRACE</http-method>
+      </web-resource-collection>
+      <auth-constraint />
+   </security-constraint>
+   <security-constraint>
+      <web-resource-collection>
+         <web-resource-name>require HTTPS</web-resource-name>
+         <url-pattern>/*</url-pattern>
+      </web-resource-collection>
+      <user-data-constraint>
+         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+   </security-constraint>
 </web-app>
