@@ -63,7 +63,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
     
     /**
      * This property value denotes whether the default soft token password is usable on this token (as defined by ca.keystorepass, defaults to 'foo123',
-     * which allows it to be activated/deactivated/edited without providing a password. Setting this property to true (setting it at all actually could be false as well) 
+     * which allows it to be activated/deactivated/edited without providing a password. Setting this property (it does not matter what it's value is set to as long as it is present) 
      * means that the default password is not available for use. 
      */
     public static final String NODEFAULTPWD = "NODEFAULTPWD";
