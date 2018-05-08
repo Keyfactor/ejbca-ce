@@ -197,6 +197,8 @@
 	<condition property="externalra-database.valid.connection.sql" value="select 1 from dual"><contains string="${externalra-database.driver}" substring="oracle"/></condition>
 	<property name="externalra-database.valid.connection.sql" value="select 1" /> <!-- all other databases -->
 
+	<property name="unidfnr.enabled" value="false" /> <!-- by default unidfnr is not enabled, but can be in ocsp.properties -->
+	
     <target name="display-properties" description="Show current configuration">
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------
