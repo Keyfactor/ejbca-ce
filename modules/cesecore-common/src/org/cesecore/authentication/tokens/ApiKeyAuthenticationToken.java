@@ -16,9 +16,11 @@ package org.cesecore.authentication.tokens;
 import java.security.Principal;
 import java.util.HashSet;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.ApiKeyAccessMatchValue;
+import org.cesecore.keys.util.KeyTools;
 
 /**
  * TODO Not done at all
@@ -38,28 +40,48 @@ public class ApiKeyAuthenticationToken extends AuthenticationToken {
         super(new HashSet<Principal>() {
             private static final long serialVersionUID = 1L;
             {
-                add(new UsernamePrincipal("REST API"));
+                // TODO We need some way to identify each API key
+                add(new UsernamePrincipal("API Key"));
             }
         }, null);
         this.apiKey = apiKey;
+        this.apiKeyHash = generateSha256Hash(apiKey);
     }
 
     @Override
     public boolean matches(AccessUserAspect accessUser) throws AuthenticationFailedException {
-        // TODO Auto-generated method stub
+        if (StringUtils.isEmpty(apiKeyHash)) {
+            return false;
+        }
+        if (matchTokenType(accessUser.getTokenType()) && accessUser.getMatchValue().equals(apiKeyHash)) {
+            return true;
+        }
         return false;
     }
 
     @Override
-    public boolean equals(Object authenticationToken) {
-        // TODO Auto-generated method stub
-        return false;
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ApiKeyAuthenticationToken other = (ApiKeyAuthenticationToken) obj;
+        if (apiKey == null) {
+            if (other.apiKey != null)
+                return false;
+        } else if (!apiKey.equals(other.apiKey))
+            return false;
+        return true;
     }
 
     @Override
     public int hashCode() {
-        // TODO Auto-generated method stub
-        return 0;
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((apiKey == null) ? 0 : apiKey.hashCode());
+        return result;
     }
 
     @Override
@@ -74,13 +96,20 @@ public class ApiKeyAuthenticationToken extends AuthenticationToken {
 
     @Override
     public String getPreferredMatchValue() {
-        return null;
+        return apiKeyHash;
     }
 
     @Override
     protected String generateUniqueId() {
-        // TODO Auto-generated method stub
-        return null;
+        return apiKeyHash;
     }
 
+    public String getApiKeyHash() {
+        return apiKeyHash;
+    }
+    
+    private String generateSha256Hash(String input) {
+        return KeyTools.getSha256Fingerprint(input);
+    }
 }
+
