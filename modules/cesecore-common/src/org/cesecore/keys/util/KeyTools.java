@@ -1368,7 +1368,7 @@ public final class KeyTools {
      * @param input on what to generate the fingerprint
      * @return SHA256 fingerprint of given input string 
      */
-    public static String getSha256Fingerprint(String text) throws IOException {
+    public static String getSha256Fingerprint(String text) {
         byte[] sha256Fingerprint = CertTools.generateSHA256Fingerprint(text.getBytes());
         return new String(Hex.encode(sha256Fingerprint));
     }
