@@ -39,6 +39,8 @@ public class CaController {
     
     private static final Logger log = Logger.getLogger(CaController.class);
     
+    private static final String API_VERSION = "1";
+    
     private CaSessionLocal caSession;     
     
     @GET
@@ -56,4 +58,12 @@ public class CaController {
         log.trace("<getCAs");
         return Response.ok(result).build();
     }
+    
+    @GET
+    @Path("/version")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getVersion() {
+        return Response.ok(API_VERSION).build();
+    }
+    
 }
