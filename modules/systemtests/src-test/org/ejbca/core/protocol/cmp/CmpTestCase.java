@@ -55,7 +55,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.ejb.RemoveException;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -119,6 +118,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -801,7 +801,7 @@ public abstract class CmpTestCase extends CaTestCase {
             assertNotNull("senderKID should not be null when response is signed from the CA", str);
             final byte[] senderKID = header.getSenderKID().getOctets();
             final byte[] verifyKID = CertTools.getSubjectKeyId(cacert);
-            assertEquals("senderKID in the response is not the expected as in the certificate we plan to verify with.", Hex.encodeHexString(verifyKID), Hex.encodeHexString(senderKID));
+            assertEquals("senderKID in the response is not the expected as in the certificate we plan to verify with.", Hex.toHexString(verifyKID), Hex.toHexString(senderKID));
         }
         if (pbe) {
             String keyId;
