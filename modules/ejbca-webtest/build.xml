@@ -56,7 +56,7 @@
 
 	<target name="copy" unless="isWindows">
 		 <!--Copy and keep permissions for geckodriver in order to be executable-->
-		<exec executable="cp" osfamily="!windowsos">
+		<exec executable="cp">
 			<arg line="-R ${resources.dir} ${build.dir}"/>
 		</exec>
 	</target>
