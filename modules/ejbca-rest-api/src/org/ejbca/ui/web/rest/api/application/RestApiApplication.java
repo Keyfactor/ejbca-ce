@@ -15,8 +15,8 @@ import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
-import org.ejbca.ui.web.rest.api.resources.CaResource;
-import org.ejbca.ui.web.rest.api.resources.CertificateResource;
+import org.ejbca.ui.web.rest.api.controllers.CaController;
+import org.ejbca.ui.web.rest.api.controllers.CertificateController;
 
 /**
  * Ejbca rest api application based on Easyrest
@@ -30,8 +30,8 @@ public class RestApiApplication extends Application {
     private Set<Class<?>> empty = new HashSet<Class<?>>();
 
     public RestApiApplication() {
-        singletons.add(new CaResource());
-        singletons.add(new CertificateResource());
+        singletons.add(new CaController());
+        singletons.add(new CertificateController());
     }
 
     @Override

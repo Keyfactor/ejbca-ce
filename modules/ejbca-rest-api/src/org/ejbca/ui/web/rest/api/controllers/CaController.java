@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.resources;
+package org.ejbca.ui.web.rest.api.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +35,9 @@ import org.ejbca.ui.web.rest.api.types.CaType;
  *
  */
 @Path("/v1/ca")
-public class CaResource {
+public class CaController {
     
-    private static final Logger log = Logger.getLogger(CaResource.class);
+    private static final Logger log = Logger.getLogger(CaController.class);
     
     private CaSessionLocal caSession;     
     
