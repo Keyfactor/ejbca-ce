@@ -99,7 +99,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Test of appovals.
+ * Test of approvals.
  * 
  * Note/TODO:
  * A lot of tests in this class is written in such a way that they are sensitive to timing on a highly loaded test
@@ -576,7 +576,7 @@ public class ApprovalSessionTest extends CaTestCase {
                 log.info("ApprovalException: " + e.getErrorCode() + ". " + e.getMessage());
             } 
 
-            // Test that the approval exipres as it should
+            // Test that the approval expires as it should
             Thread.sleep(1100);
             result = approvalSessionRemote.findApprovalDataVO(nonExecutableRequest.generateApprovalId());
             assertEquals(1, result.size());
@@ -803,6 +803,101 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalProfile.setRequestExpirationPeriod(originalValidity);
             approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
             log.trace("<testExpiredQuery");
+        }
+    }
+    
+    @Test
+    public void testGetRemainingNumberOfApprovals() throws Exception {
+        final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
+        approvalProfile.setApprovalExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                false, approvalProfile);
+        int approvalId = executableRequest.generateApprovalId();
+        try {
+            int requestId = approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
+            Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin1, executableRequest.generateApprovalId(), approval1);
+            assertEquals("There should be only one approval remaining", 1, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
+            Approval approval2 = new Approval("ap2test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin2, executableRequest.generateApprovalId(), approval2);
+            assertEquals("There should be no approvals remaining", 0, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
+        } finally {
+            approvalSessionRemote.removeApprovalRequest(admin1, approvalId);
+            approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        }
+    }
+    
+    @Test(expected = ApprovalRequestExpiredException.class)
+    public void testGetRemainingNumberOfApprovalsOnExpiredRequest() throws Exception {
+        final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
+        approvalProfile.setApprovalExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false,
+                approvalProfile);
+        int approvalId = executableRequest.generateApprovalId();
+        try {
+            int requestId = approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
+            Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin1, executableRequest.generateApprovalId(), approval1);
+            Approval approval2 = new Approval("ap2test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin2, executableRequest.generateApprovalId(), approval2);
+            // Make sure that the approval still have status executed after expiration
+            Thread.sleep(1100);
+            approvalSessionRemote.getRemainingNumberOfApprovals(requestId);
+        } finally {
+            approvalSessionRemote.removeApprovalRequest(admin1, approvalId);
+            approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        }
+    }
+    
+    @Test
+    public void testGetRemainingNumberOfApprovalsOnRejectedRequest() throws Exception {
+        final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
+        approvalProfile.setApprovalExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false,
+                approvalProfile);
+        int approvalId = executableRequest.generateApprovalId();
+        try {
+            int requestId = approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
+            Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin1, executableRequest.generateApprovalId(), approval1);
+            assertEquals("There should be only one approval remaining", 1, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
+            Approval approval2 = new Approval("ap2test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.reject(admin2, executableRequest.generateApprovalId(), approval2);         
+            assertEquals("Returned status should be -1", -1, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
+        } finally {
+            approvalSessionRemote.removeApprovalRequest(admin1, approvalId);
+            approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        }
+    }
+    
+    @Test
+    public void testGetRemainingNumberOfApprovalsOnRejectedAndExpiredRequest() throws Exception {
+        final long originalApprovalValidity = approvalProfile.getApprovalExpirationPeriod();
+        approvalProfile.setApprovalExpirationPeriod(500);
+        approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+        DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false,
+                approvalProfile);
+        int approvalId = executableRequest.generateApprovalId();
+        try {
+            int requestId = approvalSessionRemote.addApprovalRequest(admin1, executableRequest);
+            Approval approval1 = new Approval("ap1test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.approve(admin1, executableRequest.generateApprovalId(), approval1);
+            Approval approval2 = new Approval("ap2test", AccumulativeApprovalProfile.FIXED_STEP_ID, getPartitionId());
+            approvalExecutionSessionRemote.reject(admin2, executableRequest.generateApprovalId(), approval2);         
+            // Make sure that the approval still have status rejected after expiration
+            Thread.sleep(1100);
+            approvalSessionRemote.getRemainingNumberOfApprovals(requestId);
+            assertEquals("Returned status should be -1", -1, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
+        } finally {
+            approvalSessionRemote.removeApprovalRequest(admin1, approvalId);
+            approvalProfile.setApprovalExpirationPeriod(originalApprovalValidity);
+            approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         }
     }
     
