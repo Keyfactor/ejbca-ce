@@ -444,8 +444,4 @@
 		<available file="${mod.webtest.path}/build.xml" />
 	</condition>
 
-	<condition property="mod.ejbca-rest-api.exists">
-		<available file="${mod.ejbca-rest-api.path}/build.xml" />
-    </condition>
-
 </project>

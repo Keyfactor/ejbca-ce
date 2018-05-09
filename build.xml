@@ -466,7 +466,7 @@
 		<war-replacement-in-module
 				replacement-tag="!--@ejbca-rest-api.war@-->"
 				replacement-file="${eardd.src}/META-INF/application.xml"
-				replacement-enabled="${mod.ejbca-rest-api.exists}"
+				replacement-enabled="true"
 				replacement-web-uri="ejbca-rest-api.war"
 				replacement-context-root="/ejbca/ejbca-rest-api"
 		/>

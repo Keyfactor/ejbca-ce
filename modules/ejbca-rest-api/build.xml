@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ejbca-rest-api" default="build">
     <description>
-            Build files for the Ejbca rest api module
+            Build files for the EJBCA rest api module
     </description>
 
 	<dirname property="this.dir" file="${ant.file.ejbca-rest-api}"/>
