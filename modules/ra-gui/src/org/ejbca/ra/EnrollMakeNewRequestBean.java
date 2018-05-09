@@ -1064,7 +1064,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             sha256Fingerprint = KeyTools.getSha256Fingerprint(certificateRequest);
             signature = KeyTools.getCertificateRequestSignature(jcaPKCS10CertificationRequest);
             
-        } catch (InvalidKeyException | NoSuchAlgorithmException | IOException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             raLocaleBean.addMessageError("enroll_unknown_key_algorithm");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
         }
