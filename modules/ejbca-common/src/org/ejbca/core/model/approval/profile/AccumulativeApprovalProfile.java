@@ -121,7 +121,7 @@ public class AccumulativeApprovalProfile extends ApprovalProfileBase {
         } else {
             int numberofapprovalsleft = getRemainingApprovals(approvalsPerformed);
             if (numberofapprovalsleft < 0) {
-                throw new ApprovalException("Too many approvals have been performed on this request.");
+                throw new ApprovalException("Approval cannot execute due to already being rejected.");
             }
             return numberofapprovalsleft == 0;
         }
