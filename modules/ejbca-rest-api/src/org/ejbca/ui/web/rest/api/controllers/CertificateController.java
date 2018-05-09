@@ -8,7 +8,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.resources;
+package org.ejbca.ui.web.rest.api.controllers;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -22,9 +22,9 @@ import org.apache.log4j.Logger;
  *
  */
 @Path("v1/certificate")
-public class CertificateResource {
+public class CertificateController {
     
-    private static final Logger log = Logger.getLogger(CertificateResource.class);
+    private static final Logger log = Logger.getLogger(CertificateController.class);
     
     /* test it with endpoint:
      * https://localhost:8443/ejbca/ejbca-rest-api/v1/certificate/hello
