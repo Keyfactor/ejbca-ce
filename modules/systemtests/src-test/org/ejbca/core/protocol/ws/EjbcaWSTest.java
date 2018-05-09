@@ -816,8 +816,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 Approval rejection = new Approval("", AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
                 rejection.setApprovalAdmin(false, approvingAdminToken);
                 approvalExecutionSession.reject(approvingAdminToken, approvalRequest.generateApprovalId(), rejection);
-                assertEquals("Approval status should be ApprovalDataVO.STATUS_REJECTED (-1)", ApprovalDataVO.STATUS_REJECTED,
-                        ejbcaraws.getRemainingNumberOfApprovals(approvalId));
+                assertEquals("Approval status should be -1", -1, ejbcaraws.getRemainingNumberOfApprovals(approvalId));
             } finally {
                 try {
                     endEntityManagementSession.deleteUser(intAdmin, username);
