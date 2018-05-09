@@ -18,7 +18,7 @@
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	version="3.0" id="ejbca-rest-api" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee                         
 	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-   <description><![CDATA[External interface for the Ejbca rest api]]></description>
+   <description><![CDATA[External interface for the EJBCA rest api]]></description>
    <display-name>ejbca-rest-api</display-name>
    <context-param>
       <param-name>javax.ws.rs.Application</param-name>
