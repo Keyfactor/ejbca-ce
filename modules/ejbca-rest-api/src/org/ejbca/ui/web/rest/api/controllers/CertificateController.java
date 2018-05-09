@@ -1,10 +1,13 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
- *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
- *  commercial license terms.                                            *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
 
@@ -24,15 +27,15 @@ import org.apache.log4j.Logger;
 @Path("v1/certificate")
 public class CertificateController {
     
+    private static final String VERSION = "1";
+    
     private static final Logger log = Logger.getLogger(CertificateController.class);
     
-    /* test it with endpoint:
-     * https://localhost:8443/ejbca/ejbca-rest-api/v1/certificate/hello
-     */
+    
     @GET
-    @Path("/hello")
+    @Path("/version")
     @Produces("text/html")
-    public String hello() {
-        return "hello";
+    public String version() {
+        return VERSION;
     }
 }
