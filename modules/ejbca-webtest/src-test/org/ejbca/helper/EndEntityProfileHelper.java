@@ -175,6 +175,16 @@ public final class EndEntityProfileHelper {
     }
 
     /**
+     * Clicks the Cancel button when editing an End Entity Profile.
+     * 
+     * @param webDriver the WebDriver to use
+     * @param assertSuccess true if an assertion should be made that the save was successful
+     */
+    public static void cancel(WebDriver webDriver) {
+        webDriver.findElement(By.xpath("//input[@name='buttoncancel']")).click();
+    }
+
+    /**
      * Checks that a given End Entity Profile exists in 'List of End Entity Profiles'.
      * 
      * @param webDriver the WebDriver to use
