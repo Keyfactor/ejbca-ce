@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 /**
  * JAX-RS resource handling certificate-related requests.
- * @version $Id: CertificateResource.java 28867 2018-05-08 09:26:51Z tarmo_r_helmes $
+ * @version $Id$
  *
  */
 @Path("v1/certificate")
