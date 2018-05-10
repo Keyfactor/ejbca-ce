@@ -32,7 +32,7 @@ import org.ejbca.ui.web.rest.api.types.CaType;
 /**
  * JAX-RS resource handling CA related requests.
  * 
- * @version $Id: CaController.java 28900 2018-05-09 13:15:45Z aminkh $
+ * @version $Id$
  *
  */
 @Path("/v1/ca")
