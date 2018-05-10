@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.controllers;
+package org.ejbca.ui.web.rest.api.resources;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -25,11 +25,11 @@ import org.apache.log4j.Logger;
  *
  */
 @Path("v1/certificate")
-public class CertificateController {
+public class CertificateResource {
     
     private static final String VERSION = "1";
     
-    private static final Logger log = Logger.getLogger(CertificateController.class);
+    private static final Logger log = Logger.getLogger(CertificateResource.class);
     
     
     @GET

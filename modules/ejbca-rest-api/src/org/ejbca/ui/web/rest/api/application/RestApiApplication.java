@@ -13,38 +13,17 @@
 
 package org.ejbca.ui.web.rest.api.application;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import org.ejbca.ui.web.rest.api.controllers.CaController;
-import org.ejbca.ui.web.rest.api.controllers.CertificateController;
-
 /**
- * EJBCA rest api application based on Easyrest
+ * EJBCA rest api application based on RESTEasy
  *  
  * @version $Id$
  *
  */
+@ApplicationPath("/")
 public class RestApiApplication extends Application {
-
-    private Set<Object> singletons = new HashSet<Object>();
-    private Set<Class<?>> empty = new HashSet<Class<?>>();
-
-    public RestApiApplication() {
-        singletons.add(new CaController());
-        singletons.add(new CertificateController());
-    }
-
-    @Override
-    public Set<Class<?>> getClasses() {
-        return empty;
-    }
-
-    @Override
-    public Set<Object> getSingletons() {
-        return singletons;
-    }
-
+    // Nothing here for now so RESTEasy takes care of registering end points automatically.
+    // Later if manual control over some resources required those could be added here.
 }
