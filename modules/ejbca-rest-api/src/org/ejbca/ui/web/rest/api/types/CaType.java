@@ -14,7 +14,7 @@
 package org.ejbca.ui.web.rest.api.types;
 
 /**
- * CA type representer
+ * CA data type representer, used to produce rest response (JSON currently).
  * 
  * @version $Id$
  *

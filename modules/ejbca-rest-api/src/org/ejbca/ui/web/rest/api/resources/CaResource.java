@@ -11,12 +11,14 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.controllers;
+package org.ejbca.ui.web.rest.api.resources;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -25,45 +27,44 @@ import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.rest.api.types.CaType;
 
 /**
  * JAX-RS resource handling CA related requests.
  * 
- * @version $Id$
+ * @version $Id: CaController.java 28900 2018-05-09 13:15:45Z aminkh $
  *
  */
 @Path("/v1/ca")
-public class CaController {
+@Produces(MediaType.APPLICATION_JSON)
+@Stateless
+public class CaResource {
     
-    private static final Logger log = Logger.getLogger(CaController.class);
+    private static final Logger log = Logger.getLogger(CaResource.class);
     
-    private static final String API_VERSION = "1";
+    private static final String VERSION = "1";
     
-    private CaSessionLocal caSession;     
+    @EJB
+    private CaSessionLocal caSession;
     
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getCAs() {
         log.trace(">getCAs");
-        caSession = new EjbLocalHelper().getCaSession();
         
-        List<CaType> result = new ArrayList<CaType>();
+        List<CaType> caList = new ArrayList<CaType>();
         
         for (final Entry<Integer, String> caEntry : caSession.getCAIdToNameMap().entrySet()) {
-            result.add(new CaType(caEntry.getKey(), caEntry.getValue()));
+            caList.add(new CaType(caEntry.getKey(), caEntry.getValue()));
         }
-        
+
         log.trace("<getCAs");
-        return Response.ok(result).build();
+        return Response.ok(caList).build();
     }
-    
+
     @GET
     @Path("/version")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getVersion() {
-        return Response.ok(API_VERSION).build();
+    @Produces(MediaType.TEXT_HTML)
+    public Response getApiVersion() {
+        return Response.ok(VERSION).build();
     }
-    
 }
