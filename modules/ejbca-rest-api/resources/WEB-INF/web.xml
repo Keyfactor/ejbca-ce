@@ -24,6 +24,10 @@
       <param-name>javax.ws.rs.Application</param-name>
       <param-value>org.ejbca.ui.web.rest.api.application.RestApiApplication</param-value>
    </context-param>
+   <context-param>
+        <param-name>resteasy.scan</param-name>
+        <param-value>true</param-value>
+   </context-param>
    <listener>
       <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
    </listener>
