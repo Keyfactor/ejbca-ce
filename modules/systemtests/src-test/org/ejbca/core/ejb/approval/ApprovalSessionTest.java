@@ -407,6 +407,8 @@ public class ApprovalSessionTest extends CaTestCase {
         endEntityManagementSession.changeUser(cliReqAuthToken, userdata, false);
         approvalExecutionSessionRemote.approve(intadmin, approvalId, createApproval("ap1test"));
 
+        final int actualStatus = approvalSessionRemote.isApproved(approvalId);
+        assertEquals(ApprovalDataVO.STATUS_APPROVED, actualStatus);
         log.trace("<testApproveFromCli");
     }
 
@@ -741,7 +743,7 @@ public class ApprovalSessionTest extends CaTestCase {
     }
 
     private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {
-        Set<Principal> principals = new HashSet<>(Collections.singletonList(certificate.getSubjectX500Principal()));
+        Set<Principal> principals = new HashSet<>(Collections.singletonList((Principal) certificate.getSubjectX500Principal()));
         Set<X509Certificate> credentials = new HashSet<>(Collections.singletonList(certificate));
         return new AuthenticationSubject(principals, credentials);
     }
