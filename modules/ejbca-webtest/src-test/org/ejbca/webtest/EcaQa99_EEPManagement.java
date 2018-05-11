@@ -98,10 +98,10 @@ public class EcaQa99_EEPManagement extends WebTestBase {
 
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Add", "Success", Arrays.asList(
-                "End entity profile " + eepName + " added."));
-        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Edit", "Success", Arrays.asList(
-                "End entity profile " + eepName + " edited."));
+        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Add", "Success", null,
+                Arrays.asList("End entity profile " + eepName + " added."));
+        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Edit", "Success", null,
+                Arrays.asList("End entity profile " + eepName + " edited."));
     }
 
     @Test
@@ -115,8 +115,8 @@ public class EcaQa99_EEPManagement extends WebTestBase {
 
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Add", "Success", Arrays.asList(
-                "Added new end entity profile " + eepNameClone + " using profile " + eepName + " as template."));
+        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Add", "Success", null,
+                Arrays.asList("Added new end entity profile " + eepNameClone + " using profile " + eepName + " as template."));
 
         // Rename EEP
         AuditLogHelper.resetFilterTime();
@@ -125,8 +125,8 @@ public class EcaQa99_EEPManagement extends WebTestBase {
 
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Rename", "Success", Arrays.asList(
-                "End entity profile " + eepName + " renamed to " + eepRename + "."));
+        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Rename", "Success", null,
+                Arrays.asList("End entity profile " + eepName + " renamed to " + eepRename + "."));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class EcaQa99_EEPManagement extends WebTestBase {
 
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Remove", "Success", Arrays.asList(
-                "End entity profile " + eepRename + " removed."));
+        AuditLogHelper.assertEntry(webDriver, "End Entity Profile Remove", "Success", null,
+                Arrays.asList("End entity profile " + eepRename + " removed."));
     }
 }

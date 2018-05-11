@@ -82,9 +82,9 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
 
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-        AuditLogHelper.assertEntry(webDriver, "CRL Store", "Success",
+        AuditLogHelper.assertEntry(webDriver, "CRL Store", "Success", null,
                 Arrays.asList("Stored CRL with CRLNumber=", ", fingerprint=", ", issuerDN 'CN=" + caName + "'."));
-        AuditLogHelper.assertEntry(webDriver, "CRL Create", "Success",
+        AuditLogHelper.assertEntry(webDriver, "CRL Create", "Success", null,
                 Arrays.asList("Created CRL with number ", " for CA '" + caName + "' with DN 'CN=" + caName + "'."));
     }
 
@@ -123,9 +123,9 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
 
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-        AuditLogHelper.assertEntry(webDriver, "CRL Store", "Success",
+        AuditLogHelper.assertEntry(webDriver, "CRL Store", "Success", null,
                 Arrays.asList("Stored CRL with CRLNumber=", ", fingerprint=", ", issuerDN 'CN=" + caName + "'."));
-        AuditLogHelper.assertEntry(webDriver, "CRL Create", "Success",
+        AuditLogHelper.assertEntry(webDriver, "CRL Create", "Success", null,
                 Arrays.asList("Created CRL with number ", " for CA '" + caName + "' with DN 'CN=" + caName + "'."));
     }
 }
