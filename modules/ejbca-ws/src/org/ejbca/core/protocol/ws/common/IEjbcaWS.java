@@ -937,10 +937,10 @@ public interface IEjbcaWS {
 	/**
 	 *
 	 * @param requestId the ID of an approval request
-	 * @return the number of remaining approvals required, or STATUS_REJECTED (-1) if request was rejected
+     * @return the remaining number of approvals for this request (with 0 meaning that the request has passed) or -1 if the request has been denied
 	 * @throws ApprovalException if a request of the given ID didn't exist
 	 * @throws AuthorizationDeniedException if the current requester wasn't authorized.
-	 * @throws ApprovalRequestExpiredException if sought approval request has expired
+     * @throws ApprovalRequestExpiredException if approval request was expired before having a definite status
 	 *
 	 */
 	int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException, ApprovalRequestExpiredException;

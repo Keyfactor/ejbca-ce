@@ -627,7 +627,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
     }
 
-    @Test(expected = ApprovalRequestExpiredException.class)
+    @Test
     public void testGetRemainingNumberOfApprovalsOnExpiredRequest() throws Exception {
         int approvalId = removeApprovalIds.get(0);
         int requestId = approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
@@ -635,7 +635,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalExecutionSessionRemote.approve(admin2, approvalId, createApproval("ap2test"));
         // Make sure that the approval still have status executed after expiration
         Thread.sleep(1100);
-        approvalSessionRemote.getRemainingNumberOfApprovals(requestId);
+        assertEquals("There should be no approvals remaining", 0, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
     }
 
     @Test(expected = ApprovalRequestExpiredException.class)
