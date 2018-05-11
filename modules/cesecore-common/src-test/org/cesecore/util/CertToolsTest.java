@@ -1083,6 +1083,8 @@ public class CertToolsTest {
         assertTrue(!CertTools.isDNReversed(dn2));
         assertTrue(CertTools.isDNReversed("C=SE,CN=Foo"));
         assertTrue(!CertTools.isDNReversed("CN=Foo,O=FooO"));
+        // Test some bad input
+        assertTrue(!CertTools.isDNReversed("asdasd,asdassd"));
         String revdn1 = CertTools.reverseDN(dn1);
         log.debug("dn1: " + dn1);
         log.debug("revdn1: " + revdn1);
@@ -1141,6 +1143,9 @@ public class CertToolsTest {
         X500Name x500dn11 = CertTools.stringToBcX500Name(dn11, new CeSecoreNameStyle(), false);
         assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", x500dn11.toString());
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn11));
+
+        // Test some bad input
+        assertEquals("", CertTools.stringToBCDNString("asdasd,asdassd"));
 
         log.trace("<test09TestReverse()");
     }
