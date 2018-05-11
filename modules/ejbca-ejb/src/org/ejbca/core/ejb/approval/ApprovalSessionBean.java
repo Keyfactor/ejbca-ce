@@ -947,9 +947,15 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             throw new ApprovalException("Approval with ID " + requestId + " not found.");
         }
         int result = approvalData.getApprovalRequest().getApprovalProfile().getRemainingApprovals(approvalData.getApprovals());
-        if (result >= 0 && approvalData.hasRequestOrApprovalExpired()) {
+        if(result <= 0) {
+            //If approval is done, or has been rejected
+            return result;
+        } else if (approvalData.hasRequestOrApprovalExpired()) {
+            //If it's expired, toss an exception
             throw new ApprovalRequestExpiredException("Approval Request with request ID " + requestId + " has expired.");
+        } else {
+            //Otherwise just return the number of remaining approvals
+            return result;
         }
-        return result;
     }
 }
