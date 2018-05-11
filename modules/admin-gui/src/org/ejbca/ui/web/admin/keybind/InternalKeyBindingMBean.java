@@ -50,7 +50,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
-import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -61,12 +60,10 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
-import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.GlobalOcspConfiguration;
@@ -74,6 +71,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingCache;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -1404,7 +1402,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
      * Updates the current operational status of the current key binding.
      * @param currentKeyBindingInfo
      * @param cryptoTokenInfo
-     * @return path to corresponding icons based on the followings:
+     * @return path to corresponding icon based on the followings:
      *
      * Online if keybinding is enabled, crypto token is active and keybinding exists in the cache
      * Pending if keybinding is enabled, crypto token is active, but cache hasn't been refreshed yet (keybinding is not in cache)
@@ -1417,7 +1415,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         switch (currentKeyBindingInfo.getStatus()) {
         case ACTIVE:
             if (currentKeyBindingInfo.getImplementationAlias().equals(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
-                return updateOcspKeyBindingStatus(currentKeyBindingInfo, cryptoTokenInfo);
+                return updateKeyBindingStatus(currentKeyBindingInfo, cryptoTokenInfo);
             }
             return updateGenericKeyBindingStatus(currentKeyBindingInfo, cryptoTokenInfo);
         default:
@@ -1442,13 +1440,13 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
      *
      * @param currentKeyBindingInfo
      * @param cryptoTokenInfo
-     * @return active if crypto token active and ocsp keybinding is in cache.
-     *         pending if crypto token is active but ocsp keybidning not in cache.
+     * @return active if crypto token active and keybinding exists in cache.
+     *         pending if crypto token is active but keybidning not present in cache.
      *         offline otherwise.
      */
-    private String updateOcspKeyBindingStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
+    private String updateKeyBindingStatus(final InternalKeyBindingInfo currentKeyBindingInfo, final CryptoTokenInfo cryptoTokenInfo) {
         if (cryptoTokenInfo.isActive()) {
-            if (hasOcspCacheEntry(currentKeyBindingInfo.getCertificateId())) {
+            if (hasOcspCacheEntry(currentKeyBindingInfo.getId())) {
                 return getEjbcaWebBean().getImagefileInfix("status-ca-active.png");
             }
             return getEjbcaWebBean().getImagefileInfix("status-ca-pending.png");
@@ -1457,24 +1455,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         }
     }
 
-    /**
-     * Checks if the ocsp key binding is in cache.
-     * @param fingerprint the fingerprint of the sought certificate
-     * @return true if an ocsp key binding exists in the cache, false otherwise.
+    /**                                                                                                                                                                                                            
+     * Checks if the key binding exists in cache.                                                                                                                                                                  
+     * @param keyBindingId of the key binding we are looking for in the cache.                                                                                                                                               
+     * @return true if key binding exists in the cache, false otherwise.                                                                                                                                           
      */
-    private boolean hasOcspCacheEntry(final String fingerprint) {
-        final CertificateDataWrapper certificateData = certificateStoreSession.getCertificateData(fingerprint);
-        if (certificateData != null) {
-            final Certificate certificate = certificateData.getCertificate();
-            if (certificate instanceof X509Certificate) {
-                List<CertificateID> certIdList = OcspSigningCache.getCertificateIDFromCertificate((X509Certificate) certificate);
-                for (final CertificateID certificateID : certIdList) {
-                    if (OcspSigningCache.INSTANCE.getEntry(certificateID) != null) {
-                        return (OcspSigningCache.INSTANCE.getEntry(certificateID).getOcspKeyBinding() != null);
-                    }
-                }
-            }
-        }
-        return false;
+    private boolean hasOcspCacheEntry(final int keyBindingId) {
+        return InternalKeyBindingCache.INSTANCE.getEntry(keyBindingId) != null;
     }
 }
