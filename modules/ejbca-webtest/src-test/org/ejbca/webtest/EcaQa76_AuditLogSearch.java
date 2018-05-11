@@ -158,19 +158,19 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
 
         // Check that the correct events exist in the Audit Log
-        AuditLogHelper.assertEntry(webDriver, "End Entity Edit", "Success",
+        AuditLogHelper.assertEntry(webDriver, "End Entity Edit", "Success", null,
                 Arrays.asList("msg=Edited end entity " + fieldMap.get("Username"), "subjectDN=CN=" + fieldMap.get("CN, Common name") + " -> CN=" + cnChanged));
-        AuditLogHelper.assertEntry(webDriver, "End Entity Add", "Success",
+        AuditLogHelper.assertEntry(webDriver, "End Entity Add", "Success", null,
                 Arrays.asList("msg=Added end entity " + fieldMap.get("Username")));
-        AuditLogHelper.assertEntry(webDriver, "CRL Create", "Success",
+        AuditLogHelper.assertEntry(webDriver, "CRL Create", "Success", null,
                 Arrays.asList("CA 'TestAuditLog' with DN 'CN=TestAuditLog'"));
-        AuditLogHelper.assertEntry(webDriver, "CRL Store", "Success",
+        AuditLogHelper.assertEntry(webDriver, "CRL Store", "Success", null,
                 Arrays.asList("issuerDN 'CN=" + caName + "'"));
-        AuditLogHelper.assertEntry(webDriver, "Certificate Store", "Success",
+        AuditLogHelper.assertEntry(webDriver, "Certificate Store", "Success", null,
                 Arrays.asList("subjectDN 'CN=" + caName + "', issuerDN 'CN=" + caName + "'"));
-        AuditLogHelper.assertEntry(webDriver, "CA Edit", "Success",
+        AuditLogHelper.assertEntry(webDriver, "CA Edit", "Success", null,
                 Arrays.asList("name " + caName + " edited"));
-        AuditLogHelper.assertEntry(webDriver, "CA Create", "Success",
+        AuditLogHelper.assertEntry(webDriver, "CA Create", "Success", null,
                 Arrays.asList("name " + caName + " added"));
     }
 
