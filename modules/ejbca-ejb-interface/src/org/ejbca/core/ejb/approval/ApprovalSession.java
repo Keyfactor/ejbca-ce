@@ -99,7 +99,7 @@ public interface ApprovalSession {
      * Gives the remaining number of approvals for a given approval request
      * 
      * @param requestId the request ID of the approval
-     * @return the remaining number of approvals for this request, or ApprovalDataVO.STATUS_REJECTED (-1) if the request has been denied
+     * @return the remaining number of approvals for this request, or -1 if the request has been denied
      * @throws ApprovalException if an approval request with the given ID was not found. 
      * @throws ApprovalRequestExpiredException if approval request was expired
      */
