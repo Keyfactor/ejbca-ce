@@ -659,8 +659,11 @@ public abstract class CertTools {
             }
             String[] dNObjects = DnComponents.getDnObjects(true);
             if ((first != null) && (last != null)) {
-                first = first.substring(0, first.indexOf('='));
-                last = last.substring(0, last.indexOf('='));
+                // Be careful for bad input, that may not have any = sign in it
+                final int fi = first.indexOf('=');
+                first = first.substring(0, (fi != -1 ? fi : (first.length()-1)));
+                final int li = last.indexOf('=');
+                last = last.substring(0, (li != -1 ? li : (last.length()-1)));
                 int firsti = 0, lasti = 0;
                 for (int i = 0; i < dNObjects.length; i++) {
                     if (first.equalsIgnoreCase(dNObjects[i])) {
@@ -3714,6 +3717,7 @@ public abstract class CertTools {
         private char separator;
         private StringBuffer buf = new StringBuffer();
 
+        /** Creates the object, using the default comma (,) as separator for tokenization */
         public X509NameTokenizer(String oid) {
             this(oid, ',');
         }
