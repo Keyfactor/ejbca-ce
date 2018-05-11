@@ -84,7 +84,7 @@ public final class CaHelper {
      * @param webDriver
      */
     public static void save(WebDriver webDriver) {
-        webDriver.findElement(By.xpath("//input[@name='buttoncreate']")).click();
+        webDriver.findElement(By.xpath("//input[@name='buttoncreate' or @name='buttonsave']")).click();
     }
 
     /**
