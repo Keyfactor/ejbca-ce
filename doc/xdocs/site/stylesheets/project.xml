@@ -13,7 +13,6 @@
                 <item name="Reference Installations" href="/installations.html"/>
                 <item name="Complementary Software"  href="/complementary.html"/>
                 <item name="Contribute to EJBCA"     href="/contributions.html"/>
-                <item name="Contributors"          href="/contributors.html"/>
             </menu>
             <menu name="Download">
             	<item name="Community Download" href="/download.html"/>
