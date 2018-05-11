@@ -73,7 +73,7 @@ public class EcaQa12_CPManagement extends WebTestBase {
 
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Create", "Success",
+        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Create", "Success", null,
                 Arrays.asList("New certificate profile " + cpName + " added successfully."));
     }
 
@@ -94,9 +94,8 @@ public class EcaQa12_CPManagement extends WebTestBase {
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
         AuditLogHelper.reload(webDriver);
-        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Edit", "Success", Arrays.asList(
-                "msg=Edited certificateprofile " + cpName + ".",
-                "changed:encodedvalidity=1y 11mo 25d"));
+        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Edit", "Success", null,
+                Arrays.asList("msg=Edited certificateprofile " + cpName + ".", "changed:encodedvalidity=1y 11mo 25d"));
     }
 
     @Test
@@ -111,7 +110,7 @@ public class EcaQa12_CPManagement extends WebTestBase {
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
         AuditLogHelper.reload(webDriver);
-        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Rename", "Success",
+        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Rename", "Success", null,
                 Arrays.asList("Renamed certificateprofile " + cpName + " to " + cpRename + "."));
     }
 
@@ -127,7 +126,7 @@ public class EcaQa12_CPManagement extends WebTestBase {
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
         AuditLogHelper.reload(webDriver);
-        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Create", "Success",
+        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Create", "Success", null,
                 Arrays.asList("New certificateprofile " + cpClone +  " added using profile " + cpRename + " as template."));
     }
 
@@ -145,7 +144,7 @@ public class EcaQa12_CPManagement extends WebTestBase {
         // Verify Audit Log
         AuditLogHelper.goTo(webDriver, getAdminWebUrl());
         AuditLogHelper.reload(webDriver);
-        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Remove", "Success",
+        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Remove", "Success", null,
                 Arrays.asList("Removed profile " + cpClone + "."));
     }
 }
