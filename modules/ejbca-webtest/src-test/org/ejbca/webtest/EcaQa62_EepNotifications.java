@@ -86,7 +86,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
     }
 
     @Test
-    public void b_checkDocumentation1() {
+    public void b_checkDocumentation() {
         openDocumentation("//strong[text()='Send Notification']/following-sibling::a", "E-mail Notifications");
     }
 
@@ -116,7 +116,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
     }
 
     @Test
-    public void d_checkDocumentation2() {
+    public void d_checkDocumentation() {
         openDocumentation("//td[contains(text(), 'Notification Subject')]/a", "Dynamic Substitution Variables");
         openDocumentation("//td[contains(text(), 'Notification Message')]/a", "Dynamic Substitution Variables");
     }
