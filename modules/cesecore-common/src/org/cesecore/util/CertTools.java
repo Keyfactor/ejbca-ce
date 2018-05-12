@@ -283,7 +283,7 @@ public abstract class CertTools {
      * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *            the string will be added to the end positions of OID array.
      * 
-     * @return X500Name or null if input is null
+     * @return X500Name, which can be empty if dn does not contain any real DN components, or null if input is null
      */
     public static X500Name stringToBcX500Name(final String dn) {
         final X500NameStyle nameStyle = CeSecoreNameStyle.INSTANCE;
@@ -298,7 +298,7 @@ public abstract class CertTools {
      * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *            the string will be added to the end positions of OID array.
      * @param ldapOrder true if X500Name should be in Ldap Order
-     * @return X500Name or null if input is null
+     * @return X500Name, which can be empty if dn does not contain any real DN components, or null if input is null
      */
     public static X500Name stringToBcX500Name(final String dn, boolean ldapOrder) {
         final X500NameStyle nameStyle = CeSecoreNameStyle.INSTANCE;
@@ -316,7 +316,7 @@ public abstract class CertTools {
      * @param nameStyle Controls how the name is encoded. Usually it should be a CeSecoreNameStyle.
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
-     * @return X500Name or null if input is null
+     * @return X500Name, which can be empty if dn does not contain any real DN components, or null if input is null
      * @throws IllegalArgumentException if DN is not valid
      */
     public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder) {
@@ -332,7 +332,7 @@ public abstract class CertTools {
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
      * @param order specified order, which overrides 'ldaporder', care must be taken constructing this String array, ignored if null or empty
-     * @return X500Name or null if input is null
+     * @return X500Name, which can be empty if dn does not contain any real DN components, or null if input is null
      */
     public static X500Name stringToBcX500Name(String dn, final X500NameStyle nameStyle, final boolean ldaporder, final String[] order) {
         return stringToBcX500Name(dn, nameStyle, ldaporder, order, true);
@@ -508,7 +508,7 @@ public abstract class CertTools {
      * 
      * @param dn String containing DN
      * 
-     * @return String containing DN, or null if input is null
+     * @return String containing DN, or empty string if dn does not contain any real DN components, or null if input is null
      */
     public static String stringToBCDNString(String dn) {
         // BC now seem to handle multi-valued RDNs, but we keep escaping this for now to keep the behavior until support is required
@@ -523,7 +523,7 @@ public abstract class CertTools {
         }
         /*
          * For some databases (MySQL for instance) the database column holding subjectDN is only 250 chars long. There have been strange error
-         * reported (clipping DN natuarally) that is hard to debug if DN is more than 250 chars and we don't have a good message
+         * reported (clipping DN naturally) that is hard to debug if DN is more than 250 chars and we don't have a good message
          */
         if ((ret != null) && (ret.length() > 250)) {
             log.info("Warning! DN is more than 250 characters long. Some databases have only 250 characters in the database for SubjectDN. Clipping may occur! DN ("
@@ -638,6 +638,7 @@ public abstract class CertTools {
      * reversed.
      * 
      * If the string has only one component (e.g. "CN=example.com") then this method returns false.
+     * If the string does not contain any real DN components, it returns false. 
      * 
      * @param dn String containing DN to be checked, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
      * @return true if the DN is believed to be in reversed order, false otherwise
