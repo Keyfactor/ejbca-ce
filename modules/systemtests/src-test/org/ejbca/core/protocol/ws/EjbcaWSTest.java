@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
@@ -67,6 +68,7 @@ import org.cesecore.CaTestUtils;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -113,6 +115,7 @@ import org.cesecore.keys.validation.KeyValidatorSessionTest;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
 import org.cesecore.keys.validation.RsaKeyValidator;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -560,12 +563,103 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test060RevokeCert() throws Exception {
-        revokeCert();
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+        
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        {
+            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
+        }
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
+        {
+            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+        }
+        {
+            //final long beforeTimeMilliseconds = new Date().getTime();
+            final Date beforeRevoke = new Date();
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            final Date afterRevoke = new Date();
+            //final Date beforeRevoke = new Date(beforeTimeMilliseconds-beforeTimeMilliseconds%1000);
+            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            final Date revokeDate  = revokestatus.getRevocationDate().toGregorianCalendar().getTime();
+            assertTrue("Too early revocation date. Before time '"+beforeRevoke+"'. Revoke time '"+revokeDate+"'.", !revokeDate.before(beforeRevoke));
+            assertTrue("Too late revocation date. After time '"+afterRevoke+"'. Revoke time '"+revokeDate+"'.", !revokeDate.after(afterRevoke));
+        }
+        try {
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
+            fail("AlreadyRevokedException_Exception was expected.");
+        } catch (AlreadyRevokedException_Exception e){}    
     }
 
+    @Test(expected=CADoesntExistsException_Exception.class)
+    public void testRevokeCertFromNonExistingCA() throws Exception {
+        final String issuerdn = "";
+        final String serno = "";
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);   
+    }
+    
     @Test
     public void test0601RevokeThrowAwayCert () throws Exception {
-        revokeThrowAwayCert();
+        final String issuerDn = "CN=" + CA1;
+        // This certificate doesn't exist in EJBCA Database. Though it should be possible to revoke with a throw away CA.
+        final String serialNumber = "1a1a1a1a1a1a1a1a";
+        
+        final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST-revokeThrowAwayCert"));
+        // Use throw away CA mode (don't store UserData, CertificateData or CertReqHistoryData)
+        final CAInfo caInfo = caSession.getCAInfo(authenticationToken, CA1);
+        final boolean originalUseCertificateStorage = caInfo.isUseCertificateStorage();
+        final boolean originalUseCertReqHistory = caInfo.isUseCertReqHistory();
+        final boolean originalUseUserStorage = caInfo.isUseUserStorage();
+        final boolean originalAcceptRevokeNonExisting = caInfo.isAcceptRevocationNonExistingEntry();
+        try {
+            caInfo.setUseCertificateStorage(false);
+            caInfo.setUseCertReqHistory(false);
+            caInfo.setUseUserStorage(false);
+            caInfo.setAcceptRevocationNonExistingEntry(true);
+            caSession.editCA(authenticationToken, caInfo);
+            
+            try {
+                this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+                {
+                    final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
+                    assertNotNull("Certificate status should be available.", revokestatus);
+                    assertEquals("Certificate should be 'on hold'.", RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, revokestatus.getReason());
+                    assertEquals(serialNumber, revokestatus.getCertificateSN());
+                    assertEquals(issuerDn, revokestatus.getIssuerDN());
+                    assertNotNull("Revocation date should not be null.", revokestatus.getRevocationDate());
+                }
+                
+                this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.NOT_REVOKED);
+                {
+                    final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
+                    assertNotNull("Certificate status should exist after unrevoking.", revokestatus);
+                    assertEquals("Certificate status should be 'not revoked'.", RevokedCertInfo.NOT_REVOKED, revokestatus.getReason());
+                }
+            } catch (NotFoundException_Exception e) {
+                fail("Unexpected behaviour: Revocation of throw away cert required certificate in database");
+            }
+            
+        } finally {
+            final CAInfo caInfoToRestore = caSession.getCAInfo(authenticationToken, CA1);
+            caInfoToRestore.setUseCertificateStorage(originalUseCertificateStorage);
+            caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
+            caInfoToRestore.setUseUserStorage(originalUseUserStorage);
+            caInfoToRestore.setAcceptRevocationNonExistingEntry(originalAcceptRevokeNonExisting);
+            caSession.editCA(authenticationToken, caInfoToRestore);
+            internalCertificateStoreSession.removeCertificate(new BigInteger(serialNumber, 16));
+        }    
     }
     
     @Test

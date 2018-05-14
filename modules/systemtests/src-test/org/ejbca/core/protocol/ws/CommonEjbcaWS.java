@@ -1577,98 +1577,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertFalse(certFound);
 
     }
-
-    protected void revokeCert() throws Exception {
-        final P12TestUser p12TestUser = new P12TestUser();
-        final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
-        final String serno = cert.getSerialNumber().toString(16);
-        
-        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-        {
-            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
-            assertNotNull(revokestatus);
-            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-
-            assertTrue(revokestatus.getCertificateSN().equals(serno));
-            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
-            assertNotNull(revokestatus.getRevocationDate());
-        }
-        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
-        {
-            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
-            assertNotNull(revokestatus);
-            assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
-        }
-        {
-            //final long beforeTimeMilliseconds = new Date().getTime();
-            final Date beforeRevoke = new Date();
-            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-            final Date afterRevoke = new Date();
-            //final Date beforeRevoke = new Date(beforeTimeMilliseconds-beforeTimeMilliseconds%1000);
-            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
-            assertNotNull(revokestatus);
-            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-            final Date revokeDate  = revokestatus.getRevocationDate().toGregorianCalendar().getTime();
-            assertTrue("Too early revocation date. Before time '"+beforeRevoke+"'. Revoke time '"+revokeDate+"'.", !revokeDate.before(beforeRevoke));
-            assertTrue("Too late revocation date. After time '"+afterRevoke+"'. Revoke time '"+revokeDate+"'.", !revokeDate.after(afterRevoke));
-        }
-        try {
-            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
-            assertTrue(false);
-        } catch (AlreadyRevokedException_Exception e){}
-    }
-
-    protected void revokeThrowAwayCert() throws Exception {
-        final String issuerDn = "CN=" + CA1;
-        // This certificate doesn't exist in EJBCA Database. Though it should be possible to revoke with a throw away CA.
-        final String serialNumber = "1a1a1a1a1a1a1a1a";
-        
-        final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST-revokeThrowAwayCert"));
-        // Use throw away CA mode (don't store UserData, CertificateData or CertReqHistoryData)
-        final CAInfo caInfo = caSession.getCAInfo(authenticationToken, CA1);
-        final boolean originalUseCertificateStorage = caInfo.isUseCertificateStorage();
-        final boolean originalUseCertReqHistory = caInfo.isUseCertReqHistory();
-        final boolean originalUseUserStorage = caInfo.isUseUserStorage();
-        final boolean originalAcceptRevokeNonExisting = caInfo.isAcceptRevocationNonExistingEntry();
-        try {
-            caInfo.setUseCertificateStorage(false);
-            caInfo.setUseCertReqHistory(false);
-            caInfo.setUseUserStorage(false);
-            caInfo.setAcceptRevocationNonExistingEntry(true);
-            caSession.editCA(authenticationToken, caInfo);
-            
-            try {
-                this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-                {
-                    final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
-                    assertNotNull("Certificate status should be available.", revokestatus);
-                    assertEquals("Certificate should be 'on hold'.", RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, revokestatus.getReason());
-                    assertEquals(serialNumber, revokestatus.getCertificateSN());
-                    assertEquals(issuerDn, revokestatus.getIssuerDN());
-                    assertNotNull("Revocation date should not be null.", revokestatus.getRevocationDate());
-                }
-                
-                this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.NOT_REVOKED);
-                {
-                    final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
-                    assertNotNull("Certificate status should exist after unrevoking.", revokestatus);
-                    assertEquals("Certificate status should be 'not revoked'.", RevokedCertInfo.NOT_REVOKED, revokestatus.getReason());
-                }
-            } catch (NotFoundException_Exception e) {
-                fail("Unexpected behaviour: Revocation of throw away cert required certificate in database");
-            }
-            
-        } finally {
-            final CAInfo caInfoToRestore = caSession.getCAInfo(authenticationToken, CA1);
-            caInfoToRestore.setUseCertificateStorage(originalUseCertificateStorage);
-            caInfoToRestore.setUseCertReqHistory(originalUseCertReqHistory);
-            caInfoToRestore.setUseUserStorage(originalUseUserStorage);
-            caInfoToRestore.setAcceptRevocationNonExistingEntry(originalAcceptRevokeNonExisting);
-            caSession.editCA(authenticationToken, caInfoToRestore);
-            internalCertStoreSession.removeCertificate(new BigInteger(serialNumber, 16));
-        }
-    }
     
     protected void revokeCertBackdated() throws Exception {
 
@@ -1728,7 +1636,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     }
 
-    private class P12TestUser {
+    protected class P12TestUser {
         final private List<UserDataVOWS> userdatas;
         public P12TestUser() throws Exception {
             UserMatch usermatch = new UserMatch();
