@@ -61,6 +61,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
@@ -84,102 +85,104 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	
 	@EJB ApprovalExecutionSessionLocal approvalExecutionSession;
-	@EJB ApprovalSessionLocal approvalSession;
 	@EJB ApprovalProfileSessionLocal approvalProfileSession;
+	@EJB ApprovalSessionLocal approvalSession;
     @EJB AuthorizationSessionLocal authorizationSession;
     @EJB AuthorizationSystemSessionLocal authorizationSystemSession;
+	@EJB BlacklistSessionLocal blacklistSession;
 	@EJB CAAdminSessionLocal caAdminSession;
 	@EJB CaSessionLocal caSession;
+	@EJB CertificateCreateSessionLocal certificateCreateSession;
 	@EJB CertificateProfileSessionLocal certificateProfileSession;
 	@EJB CertificateStoreSessionLocal certificateStoreSession;
 	@EJB CertReqHistorySessionLocal certReqHistorySession;
 	@EJB CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
-	@EJB CrlStoreSessionLocal crlStoreSession;
 	@EJB CrlCreateSessionLocal crlCreateSession;
-	@EJB CertificateCreateSessionLocal certificateCreateSession;
+	@EJB CrlStoreSessionLocal crlStoreSession;
+	@EJB CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+	@EJB CryptoTokenSessionLocal cryptoTokenSession;
 	@EJB EjbcaAuditorSessionLocal ejbcaAuditorSession;
+	@EJB EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
 	@EJB EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
 	@EJB EndEntityAccessSessionLocal endEntityAccessSession;
-	@EJB EndEntityProfileSessionLocal endEntityProfileSession;
+	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
+    @EJB EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB GlobalConfigurationSessionLocal globalConfigurationSession;
 	@EJB HardTokenBatchJobSessionLocal hardTokenBatchJobSession;
 	@EJB HardTokenSessionLocal hardTokenSession;
-    @EJB InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
-    @EJB InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
-	@EJB KeyRecoverySessionLocal keyRecoverySession;
+	@EJB ImportCrlSessionLocal importCrlSession;
+	@EJB InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
+	@EJB InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
+    @EJB KeyRecoverySessionLocal keyRecoverySession;
 	@EJB KeyValidatorSessionLocal keyValidatorSession;
-	@EJB BlacklistSessionLocal blacklistSession;
-	@EJB PublisherQueueSessionLocal publisherQueueSession;
+    @EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
-	@EJB AdminPreferenceSessionLocal raSession;
+    @EJB PublishingCrlSessionLocal publishingCrlSession;
     @EJB RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+	@EJB RaMasterApiSessionLocal raMasterApiSession;
+	@EJB AdminPreferenceSessionLocal raSession;
 	@EJB RevocationSessionLocal revocationSession;
-    @EJB RoleDataSessionLocal roleDataSession;
-	@EJB RoleMemberDataSessionLocal roleMemberDataSession;
-    @EJB RoleMemberSessionLocal roleMemberSession;
-    @EJB RoleSessionLocal roleSession;
+	@EJB RoleDataSessionLocal roleDataSession;
+    @EJB RoleMemberDataSessionLocal roleMemberDataSession;
+	@EJB RoleMemberSessionLocal roleMemberSession;
+	@EJB RoleSessionLocal roleSession;
 	@EJB SecurityEventsAuditorSessionLocal securityEventsAuditorSession;
 	@EJB SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
-    @EJB UpgradeSessionLocal upgradeSession;
+	@EJB UpgradeSessionLocal upgradeSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
-	@EJB EndEntityManagementSessionLocal endEntityManagementSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
-	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
-	@EJB CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-	@EJB CryptoTokenSessionLocal cryptoTokenSession;
-	@EJB PublishingCrlSessionLocal publishingCrlSessionLocal;
-	@EJB ImportCrlSessionLocal importCrlSessionLocal;
-	@EJB RaMasterApiSessionLocal raMasterApiSessionLocal;
 
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
-	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
 	@Override public ApprovalProfileSessionLocal getApprovalProfileSession() { return approvalProfileSession; }
+	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
     @Override public AuthorizationSessionLocal getAuthorizationSession() { return authorizationSession; }
     @Override public AuthorizationSystemSessionLocal getAuthorizationSystemSession() { return authorizationSystemSession; }
+	@Override public BlacklistSessionLocal getBlacklistSession() { return blacklistSession; }
 	@Override public CAAdminSessionLocal getCaAdminSession() { return caAdminSession; }
 	@Override public CaSessionLocal getCaSession() { return caSession; }
+	@Override public CertificateCreateSessionLocal getCertificateCreateSession() { return certificateCreateSession; }
 	@Override public CertificateProfileSessionLocal getCertificateProfileSession() { return certificateProfileSession; }
 	@Override public CertificateStoreSessionLocal getCertificateStoreSession() { return certificateStoreSession; }
 	@Override public CertReqHistorySessionLocal getCertReqHistorySession() { return certReqHistorySession; }
 	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return cmpMessageDispatcherSession; }
-	@Override public CrlStoreSessionLocal getCrlStoreSession() { return crlStoreSession; }
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return crlCreateSession; }
-	@Override public CertificateCreateSessionLocal getCertificateCreateSession() { return certificateCreateSession; }
+	@Override public CrlStoreSessionLocal getCrlStoreSession() { return crlStoreSession; }
+	@Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return cryptoTokenManagementSession; }
+	@Override public CryptoTokenSessionLocal getCryptoTokenSession() { return cryptoTokenSession; }
 	@Override public EjbcaAuditorSessionLocal getEjbcaAuditorSession() { return ejbcaAuditorSession; }
+	@Override public EjbcaRestHelperSessionLocal getEjbcaRestHelperSession() { return ejbcaRestHelperSession; }
 	@Override public EjbcaWSHelperSessionLocal getEjbcaWSHelperSession() { return ejbcaWSHelperSession; }
+    @Override public EndEntityAccessSessionLocal getEndEntityAccessSession() { return endEntityAccessSession; }
+    @Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return endEntityAuthenticationSession; }
+	@Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return endEntityManagementSession; }
 	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return endEntityProfileSession; }
 	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return globalConfigurationSession; }
 	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }
 	@Override public HardTokenSessionLocal getHardTokenSession() { return hardTokenSession; }
+	@Override public ImportCrlSessionLocal getImportCrlSession() { return importCrlSession; }
     @Override public InternalKeyBindingDataSessionLocal getInternalKeyBindingDataSession() { return internalKeyBindingDataSession; }
-    @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return internalKeyBindingMgmtSession; }
-	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
-	@Override public BlacklistSessionLocal getBlacklistSession() { return blacklistSession; }
-	@Override public KeyValidatorSessionLocal getKeyValidatorSession() { return keyValidatorSession; }
-	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
-	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
+	@Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return internalKeyBindingMgmtSession; }
+    @Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
+    @Override public KeyValidatorSessionLocal getKeyValidatorSession() { return keyValidatorSession; }
+    @Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
+    @Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
+	@Override public PublishingCrlSessionLocal getPublishingCrlSession() { return publishingCrlSession; }
 	@Override public AdminPreferenceSessionLocal getRaAdminSession() { return raSession; }
-    @Override public RaMasterApiProxyBeanLocal getRaMasterApiProxyBean() { return raMasterApiProxyBean; }
-	@Override public RevocationSessionLocal getRevocationSession() { return revocationSession; }
-    @Override public RoleDataSessionLocal getRoleDataSession() { return roleDataSession; }
-    @Override public RoleMemberDataSessionLocal getRoleMemberDataSession() { return roleMemberDataSession; }
-    @Override public RoleMemberSessionLocal getRoleMemberSession() { return roleMemberSession; }
-    @Override public RoleSessionLocal getRoleSession() { return roleSession; }
+	@Override public RaMasterApiProxyBeanLocal getRaMasterApiProxyBean() { return raMasterApiProxyBean; }
+	@Override public RaMasterApiSessionLocal getRaMasterApiSession() { return raMasterApiSession; }
+    @Override public RevocationSessionLocal getRevocationSession() { return revocationSession; }
+	@Override public RoleDataSessionLocal getRoleDataSession() { return roleDataSession; }
+	@Override public RoleMemberDataSessionLocal getRoleMemberDataSession() { return roleMemberDataSession; }
+	@Override public RoleMemberSessionLocal getRoleMemberSession() { return roleMemberSession; }
+	@Override public RoleSessionLocal getRoleSession() { return roleSession; }
 	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return securityEventsAuditorSession; }
-	@Override public SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession() { return securityEventsLoggerSession; }
-	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
-	@Override public SignSessionLocal getSignSession() { return signSession; }
+    @Override public SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession() { return securityEventsLoggerSession; }
+    @Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
+    @Override public SignSessionLocal getSignSession() { return signSession; }
     @Override public UpgradeSessionLocal getUpgradeSession() { return upgradeSession; }
-	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
-	@Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return endEntityManagementSession; }
-	@Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
-	@Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return endEntityAuthenticationSession; }
-	@Override public EndEntityAccessSessionLocal getEndEntityAccessSession() { return endEntityAccessSession; }
-    @Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return cryptoTokenManagementSession; }
-    @Override public CryptoTokenSessionLocal getCryptoTokenSession() { return cryptoTokenSession; }
-    @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return publishingCrlSessionLocal; }
-    @Override public ImportCrlSessionLocal getImportCrlSession() { return importCrlSessionLocal; }
-    @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return raMasterApiSessionLocal; }
+    @Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
+    @Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
 }
