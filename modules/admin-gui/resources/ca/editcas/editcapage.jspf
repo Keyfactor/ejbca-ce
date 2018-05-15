@@ -1107,7 +1107,7 @@ function pageLoad() {
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMODHMS") %> <%= ejbcawebbean.getText("ORENDDATE") %>
-        <%= ejbcawebbean.getHelpReference("Certificate_Profile_Fields.html#validity") %> <br />
+        <%= ejbcawebbean.getHelpReference("/Certificate_Profile_Fields.html#validity") %> <br />
       </td>
       <td width="50%"> 
         <% if(isexternal || (editca && !isUninitialized && signbyexternal)){

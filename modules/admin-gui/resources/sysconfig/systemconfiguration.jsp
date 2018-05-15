@@ -94,7 +94,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 	<p>
 		<h:panelGroup rendered="#{systemConfigMBean.selectedTab eq 'CTLogs'}">
 			<h:outputText value="#{web.text.CTLOGCONFIGURATION_HELP}"/>
-			<%= ejbcawebbean.getHelpReference("Certificate_Transparency.html") %>
+			<%= ejbcawebbean.getHelpReference("/Certificate_Transparency.html") %>
 		</h:panelGroup>
 	</p>
 
@@ -713,7 +713,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			<h4>
 			<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_EDIT_CCE_TITLE}" rendered="#{systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
 			<h:outputText value="#{web.text.CUSTOMCERTEXTENSION_VIEW_CCE_TITLE}" rendered="#{!systemConfigMBean.allowedToEditCustomCertificateExtension}"/>
-			<%= ejbcawebbean.getHelpReference("Custom_Certificate_Extensions.html") %></h4>
+			<%= ejbcawebbean.getHelpReference("/Custom_Certificate_Extensions.html") %></h4>
 			</br>
 		</h:panelGroup>
 		
@@ -890,7 +890,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 
             <h:panelGroup>
                 <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST}" styleClass="titles"/>
-                <%= ejbcawebbean.getHelpReference("Post_Processing_Validators.html") %>
+                <%= ejbcawebbean.getHelpReference("/Post_Processing_Validators.html") %>
                 <br/>
                 <h:outputText value="#{web.text.EXTERNAL_SCRIPTS_WHITELIST_HELP}" styleClass="help"/>
             </h:panelGroup>
