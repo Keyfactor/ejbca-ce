@@ -12,12 +12,10 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.KeyFactory;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -26,10 +24,8 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -38,6 +34,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 
 /**
  * Just to be used for encryption (not decryption) and verifying (not signing)
@@ -51,7 +51,7 @@ public class PublicCryptoToken implements CryptoToken {
 	private int id;
 	private static final Logger log = Logger.getLogger(PublicCryptoToken.class);
 	private PublicKey pk;
-	private final static String providerName = "SunRsaSign";
+	private final static String providerName = BouncyCastleProvider.PROVIDER_NAME;
 	private String tokenName = "not available";
 
 	@Override
@@ -63,6 +63,7 @@ public class PublicCryptoToken implements CryptoToken {
 			log.error(msg);
 			throw new Exception( msg );
 		}
+		CryptoProviderTools.installBCProviderIfNotAvailable();
 		this.pk = getPublicKey(data);
 		if ( this.pk==null ) {
 			final String msg = "Not possible to initiate public key id: "+this.id;
@@ -72,15 +73,21 @@ public class PublicCryptoToken implements CryptoToken {
 	}
 
 	private static PublicKey getPublicKey(final byte data[]) {
+	    try {
+    	    PublicKey ret = KeyTools.getPublicKeyFromBytes(data);
+    	    if (ret != null) {
+    	        return ret;
+    	    }
+	    } catch (IllegalArgumentException e) {
+	        log.debug("Not an X509 key.", e);
+	    }
+	    log.debug("Trying to parse it as a certificate.");
 		try {
-			return KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(data));
-		} catch (InvalidKeySpecException e) {
-			log.debug("Not an X509 key.", e);
-		} catch (NoSuchAlgorithmException e) {
-			log.debug("No RSA key factory available. Try to read key from cert instead.", e);
-		}
-		try {
-			return CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(data)).getPublicKey();
+		    X509Certificate x509Certificate = CertTools.getCertfromByteArray(data, X509Certificate.class);
+		    if (x509Certificate != null) {
+		        return x509Certificate.getPublicKey();
+		    }
+		    log.debug("Failed to parse as X509 Certificate.");
 		} catch (CertificateException e) {
 			log.debug("Public key data is not a certificate.", e);
 		}
