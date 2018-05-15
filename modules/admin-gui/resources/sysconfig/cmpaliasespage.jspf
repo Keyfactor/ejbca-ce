@@ -5,7 +5,7 @@
 %>
 
 <h1><%= (ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()) ? ejbcawebbean.getText("CMPMANAGEALIASES") : ejbcawebbean.getText("CMP_VIEW_ALIASES"))%>
-<%= ejbcawebbean.getHelpReference("CMP.html") %></h1>
+<%= ejbcawebbean.getHelpReference("/CMP.html") %></h1>
 
 <form name="editcmpaliases" method="post"  action="<%= THIS_FILENAME%>">
   <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>

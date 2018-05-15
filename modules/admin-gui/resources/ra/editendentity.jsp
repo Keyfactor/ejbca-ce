@@ -1775,7 +1775,7 @@ function checkUseInBatch(){
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>"/> 
-        <%= ejbcawebbean.getHelpReference("Key_Recovery.html") %>
+        <%= ejbcawebbean.getHelpReference("/Key_Recovery.html") %>
       </td>
       <td> 
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 
