@@ -11,32 +11,13 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.resources;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-
-import org.apache.log4j.Logger;
-import org.ejbca.ui.web.rest.common.BaseRestResource;
+package org.ejbca.core.ejb.rest;
 
 /**
- * JAX-RS resource handling certificate-related requests.
+ * 
  * @version $Id$
  *
  */
-@Path("v1/certificate")
-public class CertificateResource extends BaseRestResource {
-    
-    private static final String VERSION = "1";
-    
-    private static final Logger log = Logger.getLogger(CertificateResource.class);
-    
-    
-    @GET
-    @Path("/version")
-    @Produces("text/html")
-    public String version() {
-        return VERSION;
-    }
+public interface EjbcaRestHelperSession {
+
 }
