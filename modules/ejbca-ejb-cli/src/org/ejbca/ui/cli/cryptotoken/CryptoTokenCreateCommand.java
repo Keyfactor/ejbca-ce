@@ -79,7 +79,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(" + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 Attribute File"));
         // ePassport CSCA only
         registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "(" + SoftCryptoToken.class.getSimpleName() + ") Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
+                "Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
     }
     
     @Override
