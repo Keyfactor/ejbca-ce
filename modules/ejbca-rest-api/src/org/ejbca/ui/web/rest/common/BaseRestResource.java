@@ -35,12 +35,12 @@ public abstract class BaseRestResource {
      * @return AuthenticationToken for the requesting administrator
      * @throws AuthorizationDeniedException
      */
-    protected AuthenticationToken getAdmin(HttpServletRequest requestContext) throws AuthorizationDeniedException {
+    protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException {
         X509Certificate[] certs = (X509Certificate[]) requestContext.getAttribute("javax.servlet.request.X509Certificate");
         if (certs == null || certs[0] == null) {
             throw new AuthorizationDeniedException("Error no client certificate received for authentication.");
         }
-        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(certs[0]);
+        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certs[0]);
     }
     
 }
