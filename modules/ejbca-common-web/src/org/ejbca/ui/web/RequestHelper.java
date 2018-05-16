@@ -85,8 +85,8 @@ public class RequestHelper {
 	public static final  String BEGIN_CERTIFICATE_REQUEST_WITH_NL = "-----BEGIN CERTIFICATE REQUEST-----\n";
 	public static final  String END_CERTIFICATE_REQUEST_WITH_NL    = "\n-----END CERTIFICATE REQUEST-----\n";
 
-	public static final  String BEGIN_CERTIFICATE_WITH_NL = "-----BEGIN CERTIFICATE-----\n";
-	public static final  String END_CERTIFICATE_WITH_NL    = "\n-----END CERTIFICATE-----\n";
+	public static final  String BEGIN_CERTIFICATE_WITH_NL = CertTools.BEGIN_CERTIFICATE_WITH_NL;
+	public static final  String END_CERTIFICATE_WITH_NL  = CertTools.END_CERTIFICATE_WITH_NL;
     public static final  String BEGIN_CRL_WITH_NL = "-----BEGIN X509 CRL-----\n";
     public static final  String END_CRL_WITH_NL    = "\n-----END X509 CRL-----\n";
 

@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -159,10 +158,7 @@ public class CACertServlet extends HttpServlet {
                     res.getOutputStream().write(enccert);
                     log.debug("Sent CA cert to IE client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
-                    byte[] b64cert = Base64.encode(enccert);
-                    String out = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;                   
-                    out += new String(b64cert);
-                    out += RequestHelper.END_CERTIFICATE_WITH_NL;
+                    String out = CertTools.getPemFromCertificate(cacert);
                     res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename + ".cacert.pem") + "\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
