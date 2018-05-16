@@ -1,0 +1,2 @@
+"Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
+"EasyMock";                     "easymock-3.6";                                 "ALv2";                 "LICENSE-APACHE-2.0";           "http://easymock.org/";                                             "Not needed for running CESeCore. Used to create mocks for unit testing purposes.";
