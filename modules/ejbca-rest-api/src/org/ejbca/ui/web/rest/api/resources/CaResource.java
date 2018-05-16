@@ -83,6 +83,10 @@ public class CaResource extends BaseRestResource {
         return Response.ok(caList).build();
     }
 
+    /**
+     * @param subjectDn CA subjectDn
+     * @return PEM file with CA certifictes
+     */
     @GET
     @Path("/{subject_dn}/certificate/download")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
@@ -90,20 +94,17 @@ public class CaResource extends BaseRestResource {
         subjectDn = CertTools.stringToBCDNString(subjectDn);
         try {
             List<Certificate> certificateChain = caSession.getCAInfoInternal(subjectDn.hashCode()).getCertificateChain();
-            Certificate cacert = certificateChain.get(0);
-            String out = CertTools.getPemFromCertificate(cacert);
-            // See if we can name the file as the CAs CN, if that does not exist try serialnumber, and if that does not exist, use the full O
-            // and if that does not exist, use the fixed string CertificateAuthority.
-            String filename = RequestHelper.getFileNameFromCertNoEnding(cacert, "CertificateAuthority");
-            return Response.ok(out.getBytes())
-                    .header("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename + ".cacert.pem") + "\"")
-                    .build();
-        } catch (CertificateEncodingException e) {
-            e.printStackTrace();
-            return Response.serverError().build();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-            return Response.serverError().build();
+            try {
+                byte[] bytes = CertTools.getPemFromCertificateChain(certificateChain);
+                return Response.ok(bytes)
+                        .header("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(subjectDn + ".cacert.pem") + "\"")
+                        .build();
+            } catch (CertificateEncodingException e) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+            }
+        } catch (Exception e) {
+            log.error("Error getting CA certificates: ", e);
+            return Response.status(Response.Status.NOT_FOUND).entity("Error getting CA certificates.").build();
         }
     }
 
