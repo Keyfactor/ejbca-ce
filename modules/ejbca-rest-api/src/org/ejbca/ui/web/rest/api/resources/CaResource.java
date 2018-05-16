@@ -84,9 +84,9 @@ public class CaResource extends BaseRestResource {
     }
     
     /**
-     * TODO Mainly used for auth testing. Keep this anyway (under some base url)?
+     * TODO Mainly used for auth testing. Keep this anyway (under some other base url)?
      * @param requestContext Context
-     * @return granted access for the requesting administrator and update number for the corresponding AuthenticationToken
+     * @return granted access for the requesting administrator
      */
     @GET
     @Path("/get-authorization")
@@ -96,7 +96,7 @@ public class CaResource extends BaseRestResource {
             return Response.status(Response.Status.BAD_REQUEST).entity("Missing request context").build();
         }
         try {
-            final AuthenticationToken admin = getAdmin(requestContext);
+            final AuthenticationToken admin = getAdmin(requestContext, false);
             final RaAuthorizationResult authResult = raMasterApiProxyBean.getAuthorization(admin);
             final Map<String, Boolean> authResultSorted = new TreeMap<String, Boolean>(authResult.getAccessRules()); 
             return Response.ok(authResultSorted).build();
