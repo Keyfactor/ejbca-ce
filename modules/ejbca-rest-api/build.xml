@@ -48,11 +48,15 @@
 	    <path location="${systemtest-ejb.jar}"/>
 		<path location="${this.dir}/../dist/systemtests-interfaces.jar"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
+		<path refid="lib.test.classpath"/>
+		<path refid="lib.resteasy-jaxrs.classpath"/>
 	</path>
 
 	<path id="test.classpath">
 		<path refid="compile-test.classpath"/>
+		<!-- TODO Replaced RestEasy components
 		<path refid="lib.jee-client.classpath"/>
+		-->
 		<pathelement path="${clover.jar}"/>
 	</path>
 
@@ -89,7 +93,7 @@
 		<copy file="${internal.properties.file}" todir="${build-test.dir}" failonerror="true"/>
 	</target>
 
-	<target name="test" depends="compile-tests" description="Run tests for this module">
+	<target name="test:unit" depends="compile-tests" description="Run unit tests for this module">
 	    <antcall target="showtime"/>
 		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
 			<classpath>
@@ -104,6 +108,8 @@
 		</junit>
 		<antcall target="showtime"/>
 	</target>
+
+	<!-- TODO Add target test:system to launch SystemTests -->
 
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=SomeTest" unless="test.runone" />

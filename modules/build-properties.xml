@@ -214,6 +214,26 @@
 		<fileset dir="${ejbca.home}/lib/ext/easymock">
 			<include name="*.jar"/>
 		</fileset>
+		<!-- TODO To support legacy references, use lib.test.classpath instead of lib.easymock.classpath -->
+		<fileset dir="${ejbca.home}/lib/ext/test">
+			<include name="easymock-3.6.jar"/>
+		</fileset>
+	</path>
+
+	<path id="lib.test.classpath">
+		<fileset dir="${ejbca.home}/lib/ext/test">
+			<include name="*.jar"/>
+			<exclude name="*-javadoc.jar"/>
+			<exclude name="*-sources.jar"/>
+		</fileset>
+	</path>
+
+	<path id="lib.resteasy-jaxrs.classpath">
+		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib-2.3.1.GA">
+			<include name="*.jar"/>
+			<exclude name="*-javadoc.jar"/>
+			<exclude name="*-sources.jar"/>
+		</fileset>
 	</path>
 
 	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>

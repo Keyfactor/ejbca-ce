@@ -13,23 +13,6 @@
 
 package org.ejbca.ui.web.rest.api.resources;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,29 +23,40 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaAuthorizationResult;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.rest.api.types.CaType;
+import org.ejbca.ui.web.rest.api.converters.CaInfoConverter;
+import org.ejbca.ui.web.rest.api.types.CaInfoTypes;
+import org.ejbca.ui.web.rest.api.types.EndpointStatusType;
 import org.ejbca.ui.web.rest.common.BaseRestResource;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
 
+// TODO Javadoc
 /**
  * JAX-RS resource handling CA related requests.
- * 
- * @version $Id$
  *
+ * @version $Id$
  */
 @Path("/v1/ca")
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
 public class CaResource extends BaseRestResource {
-    
+
     private static final Logger log = Logger.getLogger(CaResource.class);
-    
-    private static final String VERSION = "1";
-    
+    private final CaInfoConverter caInfoConverter;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -70,18 +64,19 @@ public class CaResource extends BaseRestResource {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    @GET
-    public Response getCAs() {
-        log.trace(">getCAs");
-        
-        List<CaType> caList = new ArrayList<CaType>();
-        
-        for (final Entry<Integer, String> caEntry : caSession.getCAIdToNameMap().entrySet()) {
-            caList.add(new CaType(caEntry.getKey(), caEntry.getValue()));
-        }
+    public CaResource() {
+        caInfoConverter = new CaInfoConverter();
+    }
 
-        log.trace("<getCAs");
-        return Response.ok(caList).build();
+    @GET
+    @Path("/status")
+    public Response status() {
+        return Response.ok(EndpointStatusType.builder()
+                .status("OK")
+                .version("1.0")
+                .revision("ALPHA")
+                .build()
+        ).build();
     }
 
     /**
@@ -110,14 +105,16 @@ public class CaResource extends BaseRestResource {
     }
 
     @GET
-    @Path("/version")
-    @Produces(MediaType.TEXT_HTML)
-    public Response getApiVersion() {
-        return Response.ok(VERSION).build();
+    public Response listCas() {
+        final CaInfoTypes caInfoTypes = CaInfoTypes.builder()
+                .certificateAuthorities(caInfoConverter.toTypes(caSession.findAll()))
+                .build();
+        return Response.ok(caInfoTypes).build();
     }
 
     /**
      * TODO Mainly used for auth testing. Keep this anyway (under some other base url)?
+     *
      * @param requestContext Context
      * @return granted access for the requesting administrator
      */
