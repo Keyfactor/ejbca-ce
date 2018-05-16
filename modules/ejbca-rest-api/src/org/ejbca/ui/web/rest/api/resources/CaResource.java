@@ -34,11 +34,18 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaAuthorizationResult;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.rest.api.types.CaType;
 import org.ejbca.ui.web.rest.common.BaseRestResource;
+
+import javax.ws.rs.PathParam;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 
 /**
  * JAX-RS resource handling CA related requests.
@@ -61,7 +68,7 @@ public class CaResource extends BaseRestResource {
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    
+
     @GET
     public Response getCAs() {
         log.trace(">getCAs");
@@ -77,12 +84,36 @@ public class CaResource extends BaseRestResource {
     }
 
     @GET
+    @Path("/{subject_dn}/certificate/download")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getCertificateAsPem(@PathParam("subject_dn") String subjectDn) {
+        subjectDn = CertTools.stringToBCDNString(subjectDn);
+        try {
+            List<Certificate> certificateChain = caSession.getCAInfoInternal(subjectDn.hashCode()).getCertificateChain();
+            Certificate cacert = certificateChain.get(0);
+            String out = CertTools.getPemFromCertificate(cacert);
+            // See if we can name the file as the CAs CN, if that does not exist try serialnumber, and if that does not exist, use the full O
+            // and if that does not exist, use the fixed string CertificateAuthority.
+            String filename = RequestHelper.getFileNameFromCertNoEnding(cacert, "CertificateAuthority");
+            return Response.ok(out.getBytes())
+                    .header("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename + ".cacert.pem") + "\"")
+                    .build();
+        } catch (CertificateEncodingException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
+    }
+
+    @GET
     @Path("/version")
     @Produces(MediaType.TEXT_HTML)
     public Response getApiVersion() {
         return Response.ok(VERSION).build();
     }
-    
+
     /**
      * TODO Mainly used for auth testing. Keep this anyway (under some other base url)?
      * @param requestContext Context
@@ -98,7 +129,7 @@ public class CaResource extends BaseRestResource {
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
             final RaAuthorizationResult authResult = raMasterApiProxyBean.getAuthorization(admin);
-            final Map<String, Boolean> authResultSorted = new TreeMap<String, Boolean>(authResult.getAccessRules()); 
+            final Map<String, Boolean> authResultSorted = new TreeMap<String, Boolean>(authResult.getAccessRules());
             return Response.ok(authResultSorted).build();
         } catch (AuthorizationDeniedException e) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
