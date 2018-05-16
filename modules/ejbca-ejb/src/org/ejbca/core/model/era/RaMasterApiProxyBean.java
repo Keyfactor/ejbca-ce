@@ -30,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -1658,5 +1659,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         	}
             return null;
         }
+    }
+
+    @Override
+    public Collection<Certificate> getCertificateChain(int caid) {
+        NoSuchAliasException caughtException = null;
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
+                try {
+                    return raMasterApi.getCertificateChain(caid);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
     }
 }
