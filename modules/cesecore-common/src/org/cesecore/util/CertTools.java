@@ -194,8 +194,6 @@ public abstract class CertTools {
     public static final String XMPPADDR = "xmppAddr";
     public static final String SRVNAME = "srvName";
     public static final String FASCN = "fascN";
-    public static final  String BEGIN_CERTIFICATE_WITH_NL = "-----BEGIN CERTIFICATE-----\n";
-    public static final  String END_CERTIFICATE_WITH_NL    = "\n-----END CERTIFICATE-----\n";
 
     /** Kerberos altName for smart card logon */
     public static final String KRB5PRINCIPAL = "krb5principal";
@@ -268,6 +266,8 @@ public abstract class CertTools {
     public static final String END_KEYTOOL_CERTIFICATE_REQUEST = "-----END NEW CERTIFICATE REQUEST-----";
     public static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
+    public static final  String BEGIN_CERTIFICATE_WITH_NL = "-----BEGIN CERTIFICATE-----\n";
+    public static final  String END_CERTIFICATE_WITH_NL    = "\n-----END CERTIFICATE-----\n";
     public static final String BEGIN_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----";
     public static final String END_PUBLIC_KEY = "-----END PUBLIC KEY-----";
     public static final String BEGIN_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----";
