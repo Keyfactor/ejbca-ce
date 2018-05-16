@@ -22,7 +22,7 @@
    <display-name>ejbca-rest-api</display-name>
    <context-param>
       <param-name>javax.ws.rs.Application</param-name>
-      <param-value>org.ejbca.ui.web.rest.api.application.RestApiApplication</param-value>
+      <param-value>org.ejbca.ui.web.rest.api.RestApiApplication</param-value>
    </context-param>
    <context-param>
         <param-name>resteasy.scan</param-name>
