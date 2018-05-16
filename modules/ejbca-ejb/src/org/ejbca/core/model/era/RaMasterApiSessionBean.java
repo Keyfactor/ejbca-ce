@@ -2124,4 +2124,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return estOperationsSessionLocal.dispatchRequest(operation, alias, cert, username, password, requestBody);
     }
 
+    @Override
+    public Collection<Certificate> getCertificateChain(int caid) {
+        return caSession.getCAInfoInternal(caid).getCertificateChain();
+    }
 }

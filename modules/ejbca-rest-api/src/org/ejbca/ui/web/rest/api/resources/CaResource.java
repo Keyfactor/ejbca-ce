@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.rest.api.resources;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,7 +94,7 @@ public class CaResource extends BaseRestResource {
     public Response getCertificateAsPem(@PathParam("subject_dn") String subjectDn) {
         subjectDn = CertTools.stringToBCDNString(subjectDn);
         try {
-            List<Certificate> certificateChain = caSession.getCAInfoInternal(subjectDn.hashCode()).getCertificateChain();
+            Collection<Certificate> certificateChain = raMasterApiProxyBean.getCertificateChain(subjectDn.hashCode());
             try {
                 byte[] bytes = CertTools.getPemFromCertificateChain(certificateChain);
                 return Response.ok(bytes)
