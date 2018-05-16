@@ -175,6 +175,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -182,6 +183,7 @@ import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
+import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
@@ -267,7 +269,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
-    private static final int RA_MASTER_API_VERSION = 3;
+    private static final int RA_MASTER_API_VERSION = 4;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -1898,6 +1900,27 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             endEntityManagementSessionLocal.changeUser(authenticationToken, endEntityInformation, false);
             return true;
         }
+    }
+
+    @Override
+    public List<UserDataVOWS> findUserWS(AuthenticationToken authenticationToken, UserMatch usermatch, int maxNumberOfRows) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException {
+        List<UserDataVOWS> retval = null;
+        try {
+            final org.ejbca.util.query.Query query = ejbcaWSHelperSession.convertUserMatch(authenticationToken, usermatch);
+            final Collection<EndEntityInformation> result = endEntityAccessSession.query(authenticationToken, query, null,null, maxNumberOfRows, AccessRulesConstants.VIEW_END_ENTITY); // also checks authorization
+            if (result.size() > 0) {
+                retval = new ArrayList<>(result.size());
+                for (final EndEntityInformation userdata : result) {
+                    retval.add(ejbcaWSHelperSession.convertEndEntityInformation(userdata));
+                }
+            }
+        } catch (CesecoreException e) {
+            // Convert cesecore exception to EjbcaException
+            throw  new EjbcaException(e.getErrorCode(), e);
+        }
+
+        return retval;
+
     }
 
     @Override
