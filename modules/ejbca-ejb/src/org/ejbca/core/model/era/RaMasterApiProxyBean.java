@@ -116,10 +116,13 @@ import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
+import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
+import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Proxy implementation of the the RaMasterApi that will will get the result of the most preferred API implementation
@@ -1659,6 +1662,33 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         	}
             return null;
         }
+    }
+
+    @Override
+    public List<UserDataVOWS> findUserWS(AuthenticationToken authenticationToken, UserMatch usermatch, int maxNumberOfRows) throws
+            AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException {
+        final List<UserDataVOWS> mergedResult = new ArrayList<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()  && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    mergedResult.addAll(
+                            raMasterApi.findUserWS(authenticationToken, usermatch, maxNumberOfRows - mergedResult.size()));
+                    if (mergedResult.size() >= maxNumberOfRows) {
+                        return mergedResult;
+                    }
+                } catch (UnsupportedOperationException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Trouble during back end invocation: " + e.getMessage());
+                    }
+                    // Just try next implementation
+                } catch (RaMasterBackendUnavailableException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Timeout during back end invocation.", e);
+                    }
+                }
+            }
+        }
+        return mergedResult;
     }
 
     @Override

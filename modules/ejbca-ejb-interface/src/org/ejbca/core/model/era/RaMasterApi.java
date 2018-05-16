@@ -74,11 +74,14 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
+import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
+import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * API of available methods on the CA that can be invoked by the RA.
@@ -694,6 +697,26 @@ public interface RaMasterApi {
     byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
 
+    /**
+     * Retrieves information about users
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /ra_functionality/view_end_entity
+     * - /endentityprofilesrules/&lt;end entity profile of matching users&gt;/view_end_entity
+     * - /ca/&lt;ca of usermatch&gt; - when matching on CA
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action
+     * @param usermatch the unique user pattern to search for
+     * @return a list of {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS} objects (Max 100) containing the information about the user or null if there are no matches.
+     * @throws AuthorizationDeniedException if client isn't authorized to request
+     * @throws IllegalQueryException if query isn't valid
+     * @throws EjbcaException
+     * @throws EndEntityProfileNotFoundException
+     */
+    public List<UserDataVOWS> findUserWS(AuthenticationToken authenticationToken, UserMatch usermatch, int maxNumberOfRows) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException;
+  
     /**
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
      * RootCA certificate in the last position.

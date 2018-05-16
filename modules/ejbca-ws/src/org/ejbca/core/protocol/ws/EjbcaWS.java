@@ -218,7 +218,6 @@ import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
-import org.ejbca.util.query.Query;
 
 /**
  * Implementor of the IEjbcaWS interface.
@@ -378,21 +377,12 @@ public class EjbcaWS implements IEjbcaWS {
     public void editUser(final UserDataVOWS userdata)
 			throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
-        try {
-            final AuthenticationToken admin = getAdmin();
+        try{
+            AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
             final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userdata);
-            if (endEntityManagementSession.existsUser(endEntityInformation.getUsername())) {
-                if (log.isDebugEnabled()) {
-                    log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
-                }
-                endEntityManagementSession.changeUser(admin,endEntityInformation,userdata.isClearPwd(), true);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("New User " + userdata.getUsername() + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
-                }
-                endEntityManagementSession.addUserFromWS(admin,endEntityInformation,userdata.isClearPwd());
-            }
+            raMasterApiProxyBean.editUser(admin, endEntityInformation);
+            return;
         } catch (EndEntityProfileValidationException e) {
             log.debug(e.toString());
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
@@ -402,26 +392,22 @@ public class EjbcaWS implements IEjbcaWS {
             log.info(errorMessage);
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorMessage);
             throw e;
-        } catch (EndEntityExistsException e) {
-            throw getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
-        } catch (RuntimeException e) {  // ClassCastException, EJBException, ...
-            throw getInternalException(e, logger);
-        } catch (IllegalNameException e) {
+        }  catch (IllegalNameException e) {
             throw new EjbcaException(e);
         } catch (CertificateSerialNumberException e) {
             throw new EjbcaException(e);
         } catch (NoSuchEndEntityException e) {
             throw getEjbcaException(e, logger, ErrorCode.USER_NOT_FOUND, Level.INFO);
-        } finally {
+        }  catch (RuntimeException e) {  // ClassCastException, EJBException, ...
+            throw getInternalException(e, logger);
+        }  finally {
             logger.writeln();
             logger.flush();
         }
 	}
 
     @Override
-	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException {
-    	List<UserDataVOWS> retval = null;
     	if (log.isDebugEnabled()) {
             log.debug("Find user with match '"+usermatch.getMatchvalue()+"'.");
     	}
@@ -429,24 +415,13 @@ public class EjbcaWS implements IEjbcaWS {
         try {
         	final AuthenticationToken admin = getAdmin();
         	logAdminName(admin,logger);
-        	final Query query = ejbcaWSHelperSession.convertUserMatch(admin, usermatch);
-        	final Collection<EndEntityInformation> result = endEntityAccessSession.query(admin, query, null,null, MAXNUMBEROFROWS, AccessRulesConstants.VIEW_END_ENTITY); // also checks authorization
-        	if (result.size() > 0) {
-        		retval = new ArrayList<>(result.size());
-        		for (final EndEntityInformation userdata : result) {
-        			retval.add(ejbcaWSHelperSession.convertEndEntityInformation(userdata));
-        		}
-        	}
-        } catch (CesecoreException e) {
-        	// Convert cesecore exception to EjbcaException
-            getEjbcaException(e, null, e.getErrorCode(), null);
-        } catch (RuntimeException e) {	// ClassCastException, EJBException ...
+        	return raMasterApiProxyBean.findUserWS(admin, usermatch, MAXNUMBEROFROWS);
+        }  catch (RuntimeException e) {	// ClassCastException, EJBException ...
         	throw getInternalException(e, logger);
         } finally {
         	logger.writeln();
         	logger.flush();
         }
-		return retval;
 	}
 
     @Override
