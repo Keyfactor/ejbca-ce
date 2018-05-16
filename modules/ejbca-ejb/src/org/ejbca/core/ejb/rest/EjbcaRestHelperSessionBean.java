@@ -27,8 +27,11 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 
 /**
@@ -46,15 +49,27 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     
     @EJB
     private WebAuthenticationProviderSessionLocal authenticationSession;
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public AuthenticationToken getAdmin(X509Certificate cert) throws AuthorizationDeniedException {
+    public AuthenticationToken getAdmin(final boolean allowNonAdmins, X509Certificate cert) throws AuthorizationDeniedException {
         final Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(cert);
         final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         final AuthenticationToken admin = authenticationSession.authenticate(subject);
+        
+        if ((admin != null) && (!allowNonAdmins)) {
+            if(!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+                throw new AuthorizationDeniedException(msg);
+            }
+        } else if (admin == null) {
+            final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " + 
+                    CertTools.getSerialNumber(cert) + " and issuerDN '" + CertTools.getIssuerDN(cert)+"'.");
+            throw new AuthorizationDeniedException(msg);
+        }
         return admin;
     }
-    
 }

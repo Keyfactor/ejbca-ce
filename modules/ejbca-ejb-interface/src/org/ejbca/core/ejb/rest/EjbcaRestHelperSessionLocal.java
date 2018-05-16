@@ -31,8 +31,8 @@ public interface EjbcaRestHelperSessionLocal extends EjbcaRestHelperSession {
     /**
      * @param cert X509 certificate
      * @return AuthenticationToken object based on the SSL client certificate
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins = false and the certificate does not belong to an administrator
      */
-    AuthenticationToken getAdmin(X509Certificate cert) throws AuthorizationDeniedException;
+    AuthenticationToken getAdmin(boolean allowNonAdmins, X509Certificate cert) throws AuthorizationDeniedException;
     
 }
