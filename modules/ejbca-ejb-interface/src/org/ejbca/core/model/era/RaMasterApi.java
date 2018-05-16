@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -349,7 +350,7 @@ public interface RaMasterApi {
     
     /**
      * Adds (end entity) user.
-     * @param admin authentication token
+     * @param authenticationToken authentication token
      * @param endEntity end entity data as EndEntityInformation object
      * @param clearpwd 
      * @throws AuthorizationDeniedException
@@ -405,8 +406,7 @@ public interface RaMasterApi {
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
      * @param authenticationToken authentication token
-     * @param endEntity end entity information. CertificateRequest (CSR) must be set under extendedInformation of the endEntityInformation. 
-     * @param certificateRequest CSR as PKCS10CertificateRequst object
+     * @param endEntity end entity information. CertificateRequest (CSR) must be set under extendedInformation of the endEntityInformation.
      * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null.
      * @throws AuthorizationDeniedException
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
@@ -603,7 +603,7 @@ public interface RaMasterApi {
 
     /**
      * Performs all "deep" checks of user data (EndEntityInformation) intended to be added. Checks like uniqueness of SubjectDN or username should be part of this test.
-     * @param authenticationToken auth. token
+     * @param admin auth. token
      * @param endEntity user data as EndEntityInformation object
      * @throws AuthorizationDeniedException if authentication token is not authorized to perform checks on user data
      * @throws EjbcaException exception with errorCode if check fails
@@ -693,5 +693,14 @@ public interface RaMasterApi {
      */
     byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
+
+    /**
+     * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
+     * RootCA certificate in the last position.
+     *
+     * @param caid  is the issuerdn.hashCode()
+     * @return Collection of Certificate, the certificate chain, never null.
+     */
+    Collection<Certificate> getCertificateChain(int caid);
 
 }
