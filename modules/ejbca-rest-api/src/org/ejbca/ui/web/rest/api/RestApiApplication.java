@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.application;
+package org.ejbca.ui.web.rest.api;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
