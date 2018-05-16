@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
@@ -143,10 +143,7 @@ public class EndEntityCertServlet extends HttpServlet {
 					res.getOutputStream().write(enccert);
 					log.debug("Sent CA cert to IE client, len="+enccert.length+".");
 				} else if (command.equalsIgnoreCase(COMMAND_CERT)) {
-					byte[] b64cert = Base64.encode(enccert);
-					String out = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;                   
-					out += new String(b64cert);
-					out += RequestHelper.END_CERTIFICATE_WITH_NL;
+					String out = CertTools.getPemFromCertificate(cert);
 					res.setHeader("Content-disposition", "attachment; filename=" + URLEncoder.encode(certview.getUsername(),"UTF-8") + ".pem");
 					res.setContentType("application/octet-stream");
 					res.setContentLength(out.length());

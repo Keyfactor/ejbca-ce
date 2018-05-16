@@ -194,6 +194,8 @@ public abstract class CertTools {
     public static final String XMPPADDR = "xmppAddr";
     public static final String SRVNAME = "srvName";
     public static final String FASCN = "fascN";
+    public static final  String BEGIN_CERTIFICATE_WITH_NL = "-----BEGIN CERTIFICATE-----\n";
+    public static final  String END_CERTIFICATE_WITH_NL    = "\n-----END CERTIFICATE-----\n";
 
     /** Kerberos altName for smart card logon */
     public static final String KRB5PRINCIPAL = "krb5principal";
@@ -1454,6 +1456,15 @@ public abstract class CertTools {
             }
         }
         return baos.toByteArray();
+    }
+
+    public static String getPemFromCertificate(Certificate cacert) throws CertificateEncodingException {
+        byte[] enccert = cacert.getEncoded();
+        byte[] b64cert = Base64.encode(enccert);
+        String out = BEGIN_CERTIFICATE_WITH_NL;
+        out += new String(b64cert);
+        out += END_CERTIFICATE_WITH_NL;
+        return out;
     }
 
     /** @return a CRL in PEM-format as a byte array. */
