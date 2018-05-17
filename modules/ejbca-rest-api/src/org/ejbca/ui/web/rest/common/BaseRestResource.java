@@ -32,6 +32,7 @@ public abstract class BaseRestResource {
     /**
      * Returns an AuthenticationToken for the requesting administrator based on the SSL client certificate
      * @param requestContext HTTP context
+     * @param false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
      * @return AuthenticationToken for the requesting administrator
      * @throws AuthorizationDeniedException
      */
