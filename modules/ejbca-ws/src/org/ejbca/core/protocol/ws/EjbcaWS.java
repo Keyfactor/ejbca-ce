@@ -212,6 +212,7 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
+import org.ejbca.ui.web.protocol.DateNotValidException;
 import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.KeyValuePair;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
