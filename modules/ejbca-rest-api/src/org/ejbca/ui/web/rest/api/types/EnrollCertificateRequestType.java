@@ -6,15 +6,7 @@ public class EnrollCertificateRequestType {
     Integer certificateProfileId;
     Integer endEntityProfileId; 
     Integer certificateAuthorityId;
-
-    /*
-    public EnrollCertificateRequestType(String certificateRequest, Integer certificateProfileId, Integer endEntityProfileId, Integer certificateAuthorityId) {
-        this.certificateRequest = certificateRequest;
-        this.certificateProfileId = certificateProfileId;
-        this.endEntityProfileId = endEntityProfileId;
-        this.certificateAuthorityId = certificateAuthorityId;
-    }
-    */
+    
     public EnrollCertificateRequestType() {
         
     }
