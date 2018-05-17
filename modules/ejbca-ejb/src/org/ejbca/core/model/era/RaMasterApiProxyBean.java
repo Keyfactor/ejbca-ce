@@ -1695,7 +1695,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public Collection<Certificate> getCertificateChain(int caid) {
         NoSuchAliasException caughtException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     return raMasterApi.getCertificateChain(caid);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
