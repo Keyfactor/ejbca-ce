@@ -21,6 +21,7 @@ import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 
 import org.ejbca.core.ejb.dto.CertRevocationDto;
+import org.ejbca.ui.web.protocol.DateNotValidException;
 import org.ejbca.util.KeyValuePair;
 import org.junit.Test;
 
