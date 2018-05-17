@@ -51,7 +51,6 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -359,60 +358,22 @@ public abstract class CaTestUtils {
     private static CA createX509ThrowAwayCa(final CryptoToken cryptoToken, final String caName, final String cadn, final int defaultCertificateProfileId) throws Exception {
         CAToken catoken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // Set useNoConflictCertificateData, defaultCertprofileId, _useUserStorage and _useCertificateStorage to false
-        X509CAInfo cainfo = new X509CAInfo(
-                cadn,
-                caName,
-                CAConstants.CA_ACTIVE, // CA status (CAConstants.CA_ACTIVE, etc.)
-                new Date(), // update time
-                "", // Subject Alternative name
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, // CA certificate profile
-                defaultCertificateProfileId, // default ca profile
-                true,
-                "3650d", null, // Expiretime
-                CAInfo.CATYPE_X509, // CA type (X509/CVC)
-                CAInfo.SELFSIGNED, // Signed by CA
-                null, // Certificate chain
-                catoken, // CA Token
-                "", // Description
-                -1, // Revocation reason
-                null, // Revocation date
-                null, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0L, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), //crlpublishers
-                new ArrayList<Integer>(), // keyValidators
-                true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // CRL Authority Information Access (AIA) extension
-                null, // Certificate AIA default CA issuer URI
-                null, null, // Name Constraints (permitted/excluded)
-                null, // defaultfreshestcrl
-                true, // Finish User
-                new ArrayList<ExtendedCAServiceInfo>(), // no extended services
-                false, // use default utf8 settings
-                new HashMap<ApprovalRequestType, Integer>(), //approvals
-                false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, // Include in HealthCheck
-                true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                false, // useUserStorage
-                false, // useCertificateStorage
-                true, // acceptRevocationNonExistingEntry
-                null, // cmpRaAuthSecret
-                false // keepExpiredCertsOnCRL
-        );
+        X509CAInfo cainfo =  new X509CAInfo.X509CAInfoBuilder()
+                .setSubjectdn(cadn)
+                .setName(caName)
+                .setStatus(CAConstants.CA_ACTIVE)
+                .setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA)
+                .setDefaultCertprofileId(defaultCertificateProfileId)
+                .setUseNoConflictCertificateData(true)
+                .setEncodedValidity("3650d")
+                .setSignedby(CAInfo.SELFSIGNED)
+                .setCertificatechain(null)
+                .setCatoken(catoken)
+                .setCrlIssueInterval(0L)
+                .setUseUserStorage(false)
+                .setUseCertificateStorage(false)
+                .setAcceptRevocationNonExistingEntry(true)
+                .build();
         cainfo.setDescription("JUnit RSA CA");
         X509CA x509ca = new X509CA(cainfo);
         x509ca.setCAToken(catoken);
