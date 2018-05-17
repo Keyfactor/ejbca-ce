@@ -14,14 +14,12 @@
 package org.ejbca.ui.web.rest.api.resources;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
-import org.ejbca.core.model.era.RaAuthorizationResult;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.converters.CaInfoConverter;
 import org.ejbca.ui.web.rest.api.types.CaInfoTypes;
@@ -41,8 +39,6 @@ import javax.ws.rs.core.Response;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
 
 // TODO Javadoc
 /**
@@ -119,30 +115,5 @@ public class CaResource extends BaseRestResource {
                 .certificateAuthorities(caInfoConverter.toTypes(caSession.findAll()))
                 .build();
         return Response.ok(caInfoTypes).build();
-    }
-
-    /**
-     * TODO Mainly used for auth testing. Keep this anyway (under some other base url)?
-     *
-     * @param requestContext Context
-     * @return granted access for the requesting administrator
-     */
-    @GET
-    @Path("/get-authorization")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAuthorization(@Context HttpServletRequest requestContext) {
-        if (requestContext == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Missing request context").build();
-        }
-        try {
-            final AuthenticationToken admin = getAdmin(requestContext, false);
-            final RaAuthorizationResult authResult = raMasterApiProxyBean.getAuthorization(admin);
-            final Map<String, Boolean> authResultSorted = new TreeMap<String, Boolean>(authResult.getAccessRules());
-            return Response.ok(authResultSorted).build();
-        } catch (AuthorizationDeniedException e) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
-        } catch (AuthenticationFailedException e) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
-        }
     }
 }
