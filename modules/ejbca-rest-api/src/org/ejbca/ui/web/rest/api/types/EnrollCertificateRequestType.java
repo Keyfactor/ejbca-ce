@@ -2,10 +2,13 @@ package org.ejbca.ui.web.rest.api.types;
 
 public class EnrollCertificateRequestType {
         
-    String certificateRequest;
-    Integer certificateProfileId;
-    Integer endEntityProfileId; 
-    Integer certificateAuthorityId;
+    private String certificateRequest;
+    private Integer certificateProfileId;
+    private Integer endEntityProfileId; 
+    private Integer certificateAuthorityId;
+    private String username;
+    private String password;
+    
     
     public EnrollCertificateRequestType() {
         
@@ -34,5 +37,21 @@ public class EnrollCertificateRequestType {
     }
     public void setCertificateAuthorityId(Integer certificateAuthorityId) {
         this.certificateAuthorityId = certificateAuthorityId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
