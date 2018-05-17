@@ -59,6 +59,7 @@ import org.cesecore.roles.member.RoleMember;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -364,6 +365,30 @@ public interface RaMasterApi {
     boolean addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException,
     EjbcaException, WaitingForApprovalException;
 
+    /**
+     * addUserFromWS is called from EjbcaWS if profile specifies merge data from
+     * profile to user we merge them before calling addUser
+     * 
+     * @param admin the administrator pwrforming the action
+     * @param endEntityInformation a EndEntityInformation object, the fields status, timecreated and timemodified will not be used.
+     * @param clearpwd true if the password will be stored in clear form in the  db, otherwise it is hashed.
+     *            
+     * @return true if used has been added, false otherwise
+     *
+     * @throws AuthorizationDeniedException if administrator isn't authorized to add user
+     * @throws EndEntityProfileValidationException if data doesn't fulfill requirements of end entity profile
+     * @throws EndEntityExistsException  if user already exists or some other database error occur during commit
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
+     * @throws CADoesntExistsException if the caid of the user does not exist
+     * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
+     * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
+     * @throws ApprovalException if an approval already exists for this request.
+     * @throws IllegalNameException if the Subject DN failed constraints
+     */
+    boolean addUserFromWS(AuthenticationToken admin, EndEntityInformation endEntityInformation, boolean clearpwd)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
+            CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException;
+    
     /**
      * Deletes (end entity) user. Does not propagate the exceptions but logs them.
      * @param authenticationToken
@@ -706,6 +731,8 @@ public interface RaMasterApi {
      * - /endentityprofilesrules/&lt;end entity profile of matching users&gt;/view_end_entity
      * - /ca/&lt;ca of usermatch&gt; - when matching on CA
      * </pre>
+     * 
+     * 
      *
      * @param authenticationToken the administrator performing the action
      * @param usermatch the unique user pattern to search for
@@ -714,8 +741,10 @@ public interface RaMasterApi {
      * @throws IllegalQueryException if query isn't valid
      * @throws EjbcaException
      * @throws EndEntityProfileNotFoundException
+     * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    public List<UserDataVOWS> findUserWS(AuthenticationToken authenticationToken, UserMatch usermatch, int maxNumberOfRows) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException;
+    List<UserDataVOWS> findUserWS(AuthenticationToken authenticationToken, UserMatch usermatch, int maxNumberOfRows)
+            throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException;
   
     /**
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
@@ -723,8 +752,10 @@ public interface RaMasterApi {
      * @param authenticationToken the administrator performing the action
      * @param caid  is the issuerdn.hashCode()
      * @return Collection of Certificate, the certificate chain, never null.
+     * @since RA Master API version 4 (EJBCA 6.14.0)
      * @throws AuthorizationDeniedException if client isn't authorized to request
      */
     Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException;
+   
 
 }

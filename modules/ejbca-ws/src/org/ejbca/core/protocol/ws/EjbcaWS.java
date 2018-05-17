@@ -382,8 +382,10 @@ public class EjbcaWS implements IEjbcaWS {
             AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
             final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userdata);
-            raMasterApiProxyBean.editUser(admin, endEntityInformation);
-            return;
+            if(!raMasterApiProxyBean.editUser(admin, endEntityInformation)) {
+                //If editUser returned true, then an end entity was found and modified. If not, add that user. 
+                raMasterApiProxyBean.addUser(admin, endEntityInformation, userdata.isClearPwd());
+            }        
         } catch (EndEntityProfileValidationException e) {
             log.debug(e.toString());
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());

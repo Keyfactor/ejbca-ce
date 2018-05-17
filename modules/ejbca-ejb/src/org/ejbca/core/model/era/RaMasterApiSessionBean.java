@@ -142,6 +142,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -169,6 +170,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
 import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -237,8 +239,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private EndEntityManagementSessionLocal endEntityManagementSessionLocal;
     @EJB
     private EstOperationsSessionLocal estOperationsSessionLocal;
     @EJB
@@ -1578,7 +1578,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
     EjbcaException, WaitingForApprovalException{
         //Authorization
-        if (!endEntityManagementSessionLocal.isAuthorizedToEndEntityProfile(admin, endEntity.getEndEntityProfileId(),
+        if (!endEntityManagementSession.isAuthorizedToEndEntityProfile(admin, endEntity.getEndEntityProfileId(),
                 AccessRulesConstants.DELETE_END_ENTITY)) {
             log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + admin
                     + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
@@ -1586,7 +1586,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
 
         try {
-            endEntityManagementSessionLocal.addUser(admin, endEntity, clearpwd);
+            endEntityManagementSession.addUser(admin, endEntity, clearpwd);
         } catch (CesecoreException e) {
             //Wrapping the CesecoreException.errorCode
             throw new EjbcaException(e);
@@ -1596,11 +1596,25 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return endEntityAccessSession.findUser(endEntity.getUsername()) != null;
     }
+    
+    @Override
+    public boolean addUserFromWS(final AuthenticationToken admin, EndEntityInformation endEntityInformation, final boolean clearpwd)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
+            CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
+        final int profileId = endEntityInformation.getEndEntityProfileId();
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
+        if (profile.getAllowMergeDnWebServices()) {
+            endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntityInformation, profile);
+        }
+        endEntityManagementSession.addUser(admin, endEntityInformation, clearpwd);
+        return endEntityAccessSession.findUser(endEntityInformation.getUsername()) != null;
+    }
 
+    
     @Override
     public void deleteUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException{
         try {
-            endEntityManagementSessionLocal.deleteUser(admin, username);
+            endEntityManagementSession.deleteUser(admin, username);
         } catch (NoSuchEndEntityException | RemoveException e) {
             log.error(e);
         }
@@ -1640,7 +1654,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             userdata = endEntityAccessSession.findUser(username);
             if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
                 // We require keyrecovery access. The operation below should not require edit access, so we use an AlwaysAllowLocalAuthenticationToken
-                endEntityManagementSessionLocal.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
+                endEntityManagementSession.setClearTextPassword(new AlwaysAllowLocalAuthenticationToken(
                         new UsernamePrincipal("Implicit authorization from key recovery operation to reset password.")), username, null);
             }
         } catch (NoSuchEndEntityException | EndEntityProfileValidationException e) {
@@ -1866,20 +1880,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (authorized) {
             try {
                 if (!localKeyGeneration) {
-                    keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecovery(authenticationToken, username, endEntityProfileId, cert.getCertificate());
+                    keyRecoverySuccessful = endEntityManagementSession.prepareForKeyRecovery(authenticationToken, username, endEntityProfileId, cert.getCertificate());
                 } else {
                     // In this case, the users status is set to 'Key Recovery' but not the flag in KeyRecoveryData since
                     // this is stored in another instance database
-                    keyRecoverySuccessful = endEntityManagementSessionLocal.prepareForKeyRecoveryInternal(authenticationToken, username, endEntityProfileId, cert.getCertificate());
+                    keyRecoverySuccessful = endEntityManagementSession.prepareForKeyRecoveryInternal(authenticationToken, username, endEntityProfileId, cert.getCertificate());
                 }
                 if (keyRecoverySuccessful && newPassword != null) {
                     // No approval required, continue by setting a new enrollment code
-                    endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
+                    endEntityManagementSession.setPassword(authenticationToken, username, newPassword);
                 }
             } catch (WaitingForApprovalException e) {
                 // Set new EE password anyway
                 if (newPassword != null) { // Password may null if there is a call from EjbcaWS
-                    endEntityManagementSessionLocal.setPassword(authenticationToken, username, newPassword);
+                    endEntityManagementSession.setPassword(authenticationToken, username, newPassword);
                 }
                 throw e;
             }
@@ -1897,7 +1911,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // If called from the wrong instance, return to proxybean and try next implementation
             return false;
         } else {
-            endEntityManagementSessionLocal.changeUser(authenticationToken, endEntityInformation, false);
+            endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, false);
             return true;
         }
     }
@@ -1979,9 +1993,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
 
             // Do the work, mark user for key recovery
-            if (!endEntityManagementSessionLocal.prepareForKeyRecovery(authenticationToken, userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
+            if (!endEntityManagementSession.prepareForKeyRecovery(authenticationToken, userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
                 // Reset user status and throw exception
-                endEntityManagementSessionLocal.setUserStatus(authenticationToken, username, userdata.getStatus());
+                endEntityManagementSession.setUserStatus(authenticationToken, username, userdata.getStatus());
                 throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE, "Key recovery data not found for user '" + username + "'");
             }
         } catch (NotFoundException e) {
@@ -2056,7 +2070,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final String issuerDn = cdw.getCertificateData().getIssuerDN();
             try {
                 // This call checks CA authorization, EEP authorization (if enabled) and /ra_functionality/revoke_end_entity
-                endEntityManagementSessionLocal.revokeCert(authenticationToken, serialNumber, issuerDn, newRevocationReason);
+                endEntityManagementSession.revokeCert(authenticationToken, serialNumber, issuerDn, newRevocationReason);
                 return true;
             } catch (AlreadyRevokedException e) {
                 // If it is already revoked, great! The client got what the client wanted.. (almost at least, since reason might differ)
@@ -2081,7 +2095,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
         final int caid = CertTools.stringToBCDNString(issuerdn).hashCode();
         caSession.verifyExistenceOfCA(caid);
-        endEntityManagementSessionLocal.revokeCert(authenticationToken, certserno, revocationdate, issuerdn, reason, checkDate);
+        endEntityManagementSession.revokeCert(authenticationToken, certserno, revocationdate, issuerdn, reason, checkDate);
     }
 
     @Override
@@ -2092,7 +2106,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         
         final int caId = CertTools.stringToBCDNString(certRevocationDto.getIssuerDN()).hashCode();
         caSession.verifyExistenceOfCA(caId);
-        endEntityManagementSessionLocal.revokeCertWithMetadata(authenticationToken, certRevocationDto);
+        endEntityManagementSession.revokeCertWithMetadata(authenticationToken, certRevocationDto);
     }
     
     @Override
