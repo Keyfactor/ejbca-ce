@@ -85,20 +85,29 @@ public class CaResource extends BaseRestResource {
      */
     @GET
     @Path("/{subject_dn}/certificate/download")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getCertificateAsPem(@PathParam("subject_dn") String subjectDn) {
-        subjectDn = CertTools.stringToBCDNString(subjectDn);
+    @Produces(MediaType.WILDCARD)
+    public Response getCertificateAsPem(@Context HttpServletRequest requestContext,
+                                        @PathParam("subject_dn") String subjectDn) {
+        if (requestContext == null) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Missing request context").build();
+        }
         try {
-            Collection<Certificate> certificateChain = raMasterApiProxyBean.getCertificateChain(subjectDn.hashCode());
+            final AuthenticationToken admin = getAdmin(requestContext, false);
+            subjectDn = CertTools.stringToBCDNString(subjectDn);
+            Collection<Certificate> certificateChain = raMasterApiProxyBean.getCertificateChain(admin, subjectDn.hashCode());
             try {
                 byte[] bytes = CertTools.getPemFromCertificateChain(certificateChain);
                 return Response.ok(bytes)
                         .header("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(subjectDn + ".cacert.pem") + "\"")
+                        .header("Content-Length", bytes.length)
                         .build();
             } catch (CertificateEncodingException e) {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
             }
-        } catch (Exception e) {
+        } catch (AuthorizationDeniedException e){
+            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+        }
+        catch (Exception e) {
             log.error("Error getting CA certificates: ", e);
             return Response.status(Response.Status.NOT_FOUND).entity("Error getting CA certificates.").build();
         }
