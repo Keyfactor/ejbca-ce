@@ -542,7 +542,7 @@ public class CertDistServlet extends HttpServlet {
             res.setContentType("application/octet-stream");
         }
         if (StringUtils.equals(format, "PEM")) {
-            RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+            RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
         } else if (StringUtils.equals(format, "PKCS7")) {
             try {
                 final byte[] pkcs7 = CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(getFullChainOfCertificate(certcert)));
