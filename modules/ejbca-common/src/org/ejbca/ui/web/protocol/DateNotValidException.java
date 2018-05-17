@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol.ws;
+package org.ejbca.ui.web.protocol;
 
 import javax.xml.ws.WebFault;
 
@@ -20,7 +20,7 @@ import org.ejbca.core.EjbcaException;
 
 /**
  * Thrown when a string is not a valid date
- * @version $Id$
+ * @version $Id: DateNotValidException.java 19902 2014-09-30 14:32:24Z anatom $
  *
  */
 @WebFault
