@@ -774,39 +774,58 @@ public class CAInterfaceBean implements Serializable {
 	            if (crlperiod != 0 && !illegaldnoraltname) {
 	                if (buttonCreateCa) {
 	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
-	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
-	                            certprofileid, defaultCertprofileId, useNoConflictCertificateData, validityString,
-	                            null, catype, signedby,
-	                            null, catoken, description, -1, null,
-	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators,
-	                            useauthoritykeyidentifier, 
-	                            authoritykeyidentifiercritical,
-	                            usecrlnumber, 
-	                            crlnumbercritical, 
-	                            defaultcrldistpoint,
-	                            defaultcrlissuer,
-	                            defaultocsplocator, 
-	                            authorityInformationAccess,
-	                            certificateAiaDefaultCaIssuerUri,
-	                            nameConstraintsPermitted, nameConstraintsExcluded,
-	                            cadefinedfreshestcrl,
-	                            finishUser, extendedcaservices,
-	                            useutf8policytext,
-	                            approvals,
-	                            useprintablestringsubjectdn,
-	                            useldapdnorder,
-	                            usecrldistpointoncrl,
-	                            crldistpointoncrlcritical,
-	                            includeInHealthCheck,
-	                            isDoEnforceUniquePublicKeys,
-	                            isDoEnforceUniqueDistinguishedName,
-	                            isDoEnforceUniqueSubjectDNSerialnumber,
-	                            useCertReqHistory,
-	                            useUserStorage,
-	                            useCertificateStorage,
-	                            acceptRevocationsNonExistingEntry,
-	                            sharedCmpRaSecret,
-	                            keepExpiredCertsOnCRL);
+                        X509CAInfo x509cainfo =  new X509CAInfo.X509CAInfoBuilder()
+                                .setSubjectdn(subjectdn)
+                                .setName(caName)
+                                .setStatus(CAConstants.CA_ACTIVE)
+                                .setSubjectaltname(subjectaltname)
+                                .setCertificateProfileId(certprofileid)
+                                .setDefaultCertprofileId(defaultCertprofileId)
+                                .setUseNoConflictCertificateData(useNoConflictCertificateData)
+                                .setEncodedValidity(validityString)
+                                .setCatype(catype)
+                                .setSignedby(signedby)
+                                .setCertificatechain(null)
+                                .setCatoken(catoken)
+                                .setDescription(description)
+                                .setPolicies(policies)
+                                .setCrlperiod(crlperiod)
+                                .setCrlIssueInterval(crlIssueInterval)
+                                .setCrlOverlapTime(crlOverlapTime)
+                                .setDeltacrlperiod(deltacrlperiod)
+                                .setCrlpublishers(crlpublishers)
+                                .setKeyValidators(keyValidators)
+                                .setUseauthoritykeyidentifier(useauthoritykeyidentifier)
+                                .setAuthoritykeyidentifiercritical(authoritykeyidentifiercritical)
+                                .setUsecrlnumber(usecrlnumber)
+                                .setCrlnumbercritical(crlnumbercritical)
+                                .setDefaultcrldistpoint(defaultcrldistpoint)
+                                .setDefaultcrlissuer(defaultcrlissuer)
+                                .setDefaultocspservicelocator(defaultocsplocator)
+                                .setAuthorityInformationAccess(authorityInformationAccess)
+                                .setCertificateAiaDefaultCaIssuerUri(certificateAiaDefaultCaIssuerUri)
+                                .setNameConstraintsPermitted(nameConstraintsPermitted)
+                                .setNameConstraintsExcluded(nameConstraintsExcluded)
+                                .setCadefinedfreshestcrl(cadefinedfreshestcrl)
+                                .setFinishuser(finishUser)
+                                .setExtendedcaserviceinfos(extendedcaservices)
+                                .setUseUTF8PolicyText(useutf8policytext)
+                                .setApprovals(approvals)
+                                .setUsePrintableStringSubjectDN(useprintablestringsubjectdn)
+                                .setUseLdapDnOrder(useldapdnorder)
+                                .setUseCrlDistributionPointOnCrl(usecrldistpointoncrl)
+                                .setCrlDistributionPointOnCrlCritical(crldistpointoncrlcritical)
+                                .setIncludeInHealthCheck(includeInHealthCheck)
+                                .setDoEnforceUniquePublicKeys(isDoEnforceUniquePublicKeys)
+                                .setDoEnforceUniqueDistinguishedName(isDoEnforceUniqueDistinguishedName)
+                                .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber)
+                                .setUseCertReqHistory(useCertReqHistory)
+                                .setUseUserStorage(useUserStorage)
+                                .setUseCertificateStorage(useCertificateStorage)
+                                .setAcceptRevocationNonExistingEntry(acceptRevocationsNonExistingEntry)
+                                .setCmpRaAuthSecret(sharedCmpRaSecret)
+                                .setKeepExpiredCertsOnCRL(keepExpiredCertsOnCRL)
+                                .build();
                         try {
                             cadatahandler.createCA(x509cainfo);
                         } catch (EJBException e) {
@@ -821,39 +840,57 @@ public class CAInterfaceBean implements Serializable {
 
 	                if (buttonMakeRequest) {
 	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
-	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
-	                            certprofileid, defaultCertprofileId, useNoConflictCertificateData, validityString,
-	                            null, catype, CAInfo.SIGNEDBYEXTERNALCA,
-	                            null, catoken, description, -1, null, 
-	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators, 
-	                            useauthoritykeyidentifier, 
-	                            authoritykeyidentifiercritical,
-	                            usecrlnumber, 
-	                            crlnumbercritical, 
-	                            defaultcrldistpoint,
-	                            defaultcrlissuer,
-	                            defaultocsplocator, 
-	                            authorityInformationAccess,
-	                            certificateAiaDefaultCaIssuerUri,
-	                            nameConstraintsPermitted, nameConstraintsExcluded,
-	                            cadefinedfreshestcrl,
-	                            finishUser, extendedcaservices,
-	                            useutf8policytext,
-	                            approvals,
-	                            useprintablestringsubjectdn,
-	                            useldapdnorder,
-	                            usecrldistpointoncrl,
-	                            crldistpointoncrlcritical,
-	                            false, // Do not automatically include new CAs in health-check
-	                            isDoEnforceUniquePublicKeys,
-	                            isDoEnforceUniqueDistinguishedName,
-	                            isDoEnforceUniqueSubjectDNSerialnumber,
-	                            useCertReqHistory,
-	                            useUserStorage,
-	                            useCertificateStorage,
-	                            acceptRevocationsNonExistingEntry,
-	                            null,
-	                            keepExpiredCertsOnCRL);
+                        X509CAInfo x509cainfo =  new X509CAInfo.X509CAInfoBuilder()
+                                .setSubjectdn(subjectdn)
+                                .setName(caName)
+                                .setStatus(CAConstants.CA_ACTIVE)
+                                .setSubjectaltname(subjectaltname)
+                                .setCertificateProfileId(certprofileid)
+                                .setDefaultCertprofileId(defaultCertprofileId)
+                                .setUseNoConflictCertificateData(useNoConflictCertificateData)
+                                .setEncodedValidity(validityString)
+                                .setCatype(catype)
+                                .setSignedby(CAInfo.SIGNEDBYEXTERNALCA)
+                                .setCertificatechain(null)
+                                .setCatoken(catoken)
+                                .setDescription(description)
+                                .setPolicies(policies)
+                                .setCrlperiod(crlperiod)
+                                .setCrlIssueInterval(crlIssueInterval)
+                                .setCrlOverlapTime(crlOverlapTime)
+                                .setDeltacrlperiod(deltacrlperiod)
+                                .setCrlpublishers(crlpublishers)
+                                .setKeyValidators(keyValidators)
+                                .setUseauthoritykeyidentifier(useauthoritykeyidentifier)
+                                .setAuthoritykeyidentifiercritical(authoritykeyidentifiercritical)
+                                .setUsecrlnumber(usecrlnumber)
+                                .setCrlnumbercritical(crlnumbercritical)
+                                .setDefaultcrldistpoint(defaultcrldistpoint)
+                                .setDefaultcrlissuer(defaultcrlissuer)
+                                .setDefaultocspservicelocator(defaultocsplocator)
+                                .setAuthorityInformationAccess(authorityInformationAccess)
+                                .setCertificateAiaDefaultCaIssuerUri(certificateAiaDefaultCaIssuerUri)
+                                .setNameConstraintsPermitted(nameConstraintsPermitted)
+                                .setNameConstraintsExcluded(nameConstraintsExcluded)
+                                .setCadefinedfreshestcrl(cadefinedfreshestcrl)
+                                .setFinishuser(finishUser)
+                                .setExtendedcaserviceinfos(extendedcaservices)
+                                .setUseUTF8PolicyText(useutf8policytext)
+                                .setApprovals(approvals)
+                                .setUsePrintableStringSubjectDN(useprintablestringsubjectdn)
+                                .setUseLdapDnOrder(useldapdnorder)
+                                .setUseCrlDistributionPointOnCrl(usecrldistpointoncrl)
+                                .setCrlDistributionPointOnCrlCritical(crldistpointoncrlcritical)
+                                .setIncludeInHealthCheck(false) // Do not automatically include new CAs in health-check
+                                .setDoEnforceUniquePublicKeys(isDoEnforceUniquePublicKeys)
+                                .setDoEnforceUniqueDistinguishedName(isDoEnforceUniqueDistinguishedName)
+                                .setDoEnforceUniqueSubjectDNSerialnumber(isDoEnforceUniqueSubjectDNSerialnumber)
+                                .setUseCertReqHistory(useCertReqHistory)
+                                .setUseUserStorage(useUserStorage)
+                                .setUseCertificateStorage(useCertificateStorage)
+                                .setAcceptRevocationNonExistingEntry(acceptRevocationsNonExistingEntry)
+                                .setKeepExpiredCertsOnCRL(keepExpiredCertsOnCRL)
+                                .build();
 	                    saveRequestInfo(x509cainfo);                
 	                }
 	            }                          
