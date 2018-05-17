@@ -38,7 +38,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
-import org.ejbca.core.protocol.ws.DateNotValidException;
 import org.ejbca.core.protocol.ws.UnknownProfileTypeException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
@@ -51,6 +50,7 @@ import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
+import org.ejbca.ui.web.protocol.DateNotValidException;
 import org.ejbca.util.KeyValuePair;
 import org.ejbca.util.query.IllegalQueryException;
 
