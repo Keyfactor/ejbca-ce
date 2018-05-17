@@ -809,7 +809,7 @@ public abstract class CertTools {
      * oid, only one value is returned.
      * 
      * @param dn String containing DN, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz", or "rfc822Name=foo@bar.com", etc.
-     * @param dnpart String specifying which part of the DN to get, should be "CN" or "OU" etc.
+     * @param dn String specifying which part of the DN to get, should be "CN" or "OU" etc.
      * 
      * @return ArrayList containing unique oids or empty list if no custom OIDs are present
      */
@@ -1254,7 +1254,7 @@ public abstract class CertTools {
      * Reads a CA certificate and its certificate chain by a file. If it is a chain it is a file with multiple PEM encoded certificates.
      * A single certificate is either in PEM or binary format.
      *  
-     * @param the full path of the file.
+     * @param file the full path of the file.
      * @return a byte array containing one PEM or binary certificate, or all certificates in the chain in PEM format. First is the CA certificate, followed by its certificate chain.
      * @throws FileNotFoundException if the file cannot be found.
      * @throws CertificateParsingException if a certificate could not be parsed.
@@ -1457,7 +1457,13 @@ public abstract class CertTools {
         }
         return baos.toByteArray();
     }
-
+    /**
+     * Returns a certificate in PEM-format.
+     *
+     * @param cacert a Certificate to convert to PEM
+     * @return byte array containing PEM certificate
+     * @throws CertificateEncodingException if an encoding error occurred
+     */
     public static String getPemFromCertificate(Certificate cacert) throws CertificateEncodingException {
         byte[] enccert = cacert.getEncoded();
         byte[] b64cert = Base64.encode(enccert);
@@ -1504,7 +1510,7 @@ public abstract class CertTools {
     
     /** 
      * Generates PEM from binary pkcs#7 data.
-     * @param pkcs7binary pkcs#7 binary data
+     * @param pkcs7Binary pkcs#7 binary data
      * @return a pkcs#7 PEM encoded */
     public static byte[] getPemFromPkcs7(final byte[] pkcs7Binary) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -2978,7 +2984,7 @@ public abstract class CertTools {
      * @param certificate certificate to verify
      * @param caCertChain collection of X509Certificates
      * @param date Date to verify at, or null to use current time.
-     * @param optional PKIXCertPathChecker implementations to use during cert path validation
+     * @param pkixCertPathCheckers optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
      * @throws CertPathValidatorException if certificate could not be validated
      */
@@ -3040,7 +3046,7 @@ public abstract class CertTools {
      * 
      * @param certificate certificate to verify
      * @param trustedCertificates collection of trusted X509Certificates
-     * @param optional PKIXCertPathChecker implementations to use during cert path validation
+     * @param pkixCertPathCheckers optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
      */
     public static boolean verifyWithTrustedCertificates(X509Certificate certificate, List< Collection<X509Certificate>> trustedCertificates, PKIXCertPathChecker...pkixCertPathCheckers) {
@@ -4433,7 +4439,7 @@ public abstract class CertTools {
     /**
      * Converts a X509CertificateHolder chain into a X509Certificate chain.
      * 
-     * @param certificateHolderChain input chain to be converted
+     * @param crlHolders input chain to be converted
      * @return the result
      * @throws CRLException if there is a problem extracting the CRL information.
      */
