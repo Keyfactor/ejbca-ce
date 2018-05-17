@@ -720,10 +720,11 @@ public interface RaMasterApi {
     /**
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
      * RootCA certificate in the last position.
-     *
+     * @param authenticationToken the administrator performing the action
      * @param caid  is the issuerdn.hashCode()
      * @return Collection of Certificate, the certificate chain, never null.
+     * @throws AuthorizationDeniedException if client isn't authorized to request
      */
-    Collection<Certificate> getCertificateChain(int caid);
+    Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException;
 
 }
