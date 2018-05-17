@@ -99,6 +99,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -918,6 +919,32 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
+    public boolean addUserFromWS(final AuthenticationToken admin, EndEntityInformation endEntityInformation, final boolean clearpwd)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
+            CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            try {
+                if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                    return raMasterApi.addUserFromWS(admin, endEntityInformation, clearpwd);
+                }
+            } catch (AuthorizationDeniedException e) {
+                if (authorizationDeniedException == null) {
+                    authorizationDeniedException = e;
+                }
+                // Just try next implementation
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return false;
+        
+    }
+    
+    @Override
     public void checkSubjectDn(AuthenticationToken admin, EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
@@ -1671,8 +1698,10 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()  && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    mergedResult.addAll(
-                            raMasterApi.findUserWS(authenticationToken, usermatch, maxNumberOfRows - mergedResult.size()));
+                    List<UserDataVOWS> result = raMasterApi.findUserWS(authenticationToken, usermatch, maxNumberOfRows - mergedResult.size());
+                    if (result != null) {
+                        mergedResult.addAll(result);
+                    }
                     if (mergedResult.size() >= maxNumberOfRows) {
                         return mergedResult;
                     }
@@ -1690,6 +1719,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return mergedResult;
     }
+    
 
     @Override
     public Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException {
