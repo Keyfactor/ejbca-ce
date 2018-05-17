@@ -178,8 +178,8 @@ public class CACertReqServlet extends HttpServlet {
             		String begin = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
             		String end = RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;
             		if (isx509cert) {
-            			begin = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;
-            			end = RequestHelper.END_CERTIFICATE_WITH_NL;
+            			begin = CertTools.BEGIN_CERTIFICATE_WITH_NL;
+            			end = CertTools.END_CERTIFICATE_WITH_NL;
             		}
     				byte[] b64certreq = Base64.encode(request);
     				String out = begin;
@@ -218,7 +218,7 @@ public class CACertReqServlet extends HttpServlet {
 			 	Certificate cert = cabean.getProcessedCertificate();
             	if (!StringUtils.equals(format, "binary")) {
     				byte[] b64cert = Base64.encode(cert.getEncoded());	
-    				RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);							
+    				RequestHelper.sendNewB64Cert(b64cert, res, CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
             	} else {
             		RequestHelper.sendBinaryBytes(cert.getEncoded(), res, "application/octet-stream", "cert.crt");
             	}
@@ -249,7 +249,7 @@ public class CACertReqServlet extends HttpServlet {
                 if (rawCert!=null) {
                     if (!"binary".equals(format)) {
                         final byte[] b64cert = Base64.encode(rawCert);  
-                        RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);                         
+                        RequestHelper.sendNewB64Cert(b64cert, res, CertTools.BEGIN_CERTIFICATE_WITH_NL, CertTools.END_CERTIFICATE_WITH_NL);
                     } else {
                         RequestHelper.sendBinaryBytes(rawCert, res, "application/octet-stream", "cert.crt");
                     }

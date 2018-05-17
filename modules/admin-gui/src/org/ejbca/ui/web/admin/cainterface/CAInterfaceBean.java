@@ -458,9 +458,9 @@ public class CAInterfaceBean implements Serializable {
 		String returnval = null;	
 		if(request != null ){
 			byte[] b64cert = Base64.encode(this.processedcert.getEncoded(), true);
-			returnval = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;
+			returnval = CertTools.BEGIN_CERTIFICATE_WITH_NL;
 			returnval += new String(b64cert);
-			returnval += RequestHelper.END_CERTIFICATE_WITH_NL;  	    
+			returnval += CertTools.END_CERTIFICATE_WITH_NL;
 		}      
 		return returnval;
 	}
