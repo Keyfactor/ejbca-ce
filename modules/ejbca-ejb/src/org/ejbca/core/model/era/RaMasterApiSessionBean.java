@@ -2169,4 +2169,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return caSession.getCAInfoInternal(caid).getCertificateChain();
     }
+
+    public List<Certificate> getCertificatesByExpirationTime(long days, int maxNumberOfResults) {
+        Date findDate = new Date();
+        long millis = (days * 24 * 60 * 60 * 1000);
+        findDate.setTime(findDate.getTime() + millis);
+        List<Certificate> certificates = certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate, maxNumberOfResults);
+        return certificates;
+    }
 }
