@@ -369,8 +369,8 @@ public interface RaMasterApi {
      * addUserFromWS is called from EjbcaWS if profile specifies merge data from
      * profile to user we merge them before calling addUser
      * 
-     * @param admin the administrator pwrforming the action
-     * @param endEntityInformation a EndEntityInformation object, the fields status, timecreated and timemodified will not be used.
+     * @param admin the administrator performing the action
+     * @param userdata a UserDataVOWS object from WS
      * @param clearpwd true if the password will be stored in clear form in the  db, otherwise it is hashed.
      *            
      * @return true if used has been added, false otherwise
@@ -384,10 +384,12 @@ public interface RaMasterApi {
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws ApprovalException if an approval already exists for this request.
      * @throws IllegalNameException if the Subject DN failed constraints
+     * @throws EjbcaException if userdata couldn't be converted to an EndEntityInformation
+     * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    boolean addUserFromWS(AuthenticationToken admin, EndEntityInformation endEntityInformation, boolean clearpwd)
+    boolean addUserFromWS(AuthenticationToken admin, UserDataVOWS userdata, boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
-            CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException;
+            CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EjbcaException;
     
     /**
      * Deletes (end entity) user. Does not propagate the exceptions but logs them.
@@ -571,6 +573,27 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
+    
+    /**
+     * Edit End Entity information. Can only be used with API version 2 and later.
+     * 
+     * @param authenticationToken the administrator performing the action
+     * @param userDataVOWS an UserDataVOWS object with the new information
+     * @throws AuthorizationDeniedException administrator not authorized to edit user
+     * @throws EndEntityProfileValidationException data doesn't fulfill EEP requirements
+     * @throws ApprovalException if an approval already is waiting for specified action
+     * @throws WaitingForApprovalException if the action has been added in the approval queue
+     * @throws CADoesntExistsException if the user's CA doesn't exist
+     * @throws IllegalNameException if the Subject DN failed constraints
+     * @throws CertificateSerialNumberException if SubjectDN serial number already exists
+     * @throws NoSuchEndEntityException if the EE was not found
+     * @throws CustomFieldException if the EE was not validated by a locally defined field validator
+     * @throws EjbcaException if userDataVOWS couldn't be converted to an EndEntityInformation 
+     */
+    boolean editUserWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOWS)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CADoesntExistsException, ApprovalException,
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException, EjbcaException;
 
     /**
      * Key recovery method to be called from web services. This method handles some special cases differently from the regular key recovery method.
