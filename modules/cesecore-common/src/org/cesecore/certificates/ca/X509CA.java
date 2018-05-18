@@ -240,7 +240,7 @@ public class X509CA extends CA implements Serializable {
      * Constructor used when retrieving existing X509CA from database.
      */
     @SuppressWarnings("deprecation")
-    public X509CA(final HashMap<Object, Object> data, final int caId, final String subjectDN, final String name, final int status,
+    public X509CA(final HashMap<Object, Object> data, final int caId, final String subjectDn, final String name, final int status,
             final Date updateTime, final Date expireTime) {
         super(data);
         setExpireTime(expireTime); // Make sure the internal state is synched with the database column. Required for upgrades from EJBCA 3.5.6 or
@@ -257,7 +257,7 @@ public class X509CA extends CA implements Serializable {
             }
         }
         X509CAInfo info =  new X509CAInfo.X509CAInfoBuilder()
-                .setSubjectdn(subjectDN)
+                .setSubjectDn(subjectDn)
                 .setName(name)
                 .setStatus(status)
                 .setUpdateTime(updateTime)
