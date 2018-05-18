@@ -1734,4 +1734,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+
+    @Override
+    public List<Certificate> getCertificatesByExpirationTime(long days, int maxNumberOfResults) {
+        NoSuchAliasException caughtException = null;
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.getCertificatesByExpirationTime(days, maxNumberOfResults);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
 }

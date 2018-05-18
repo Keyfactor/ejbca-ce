@@ -16,10 +16,12 @@ package org.ejbca.ui.web.rest.api.resources;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import javax.ejb.EJB;
@@ -70,6 +72,8 @@ import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.protocol.DateNotValidException;
+import org.ejbca.ui.web.rest.api.converters.CertificateConverter;
+import org.ejbca.ui.web.rest.api.types.CertificateTypes;
 import org.ejbca.ui.web.rest.api.types.EnrollCertificateRequestType;
 import org.ejbca.ui.web.rest.api.types.EnrollCertificateResponseType;
 import org.ejbca.ui.web.rest.api.types.RevocationResultType;
@@ -83,16 +87,21 @@ import org.ejbca.ui.web.rest.common.BaseRestResource;
 @Path("v1/certificate")
 @Stateless
 public class CertificateResource extends BaseRestResource {
-    
+
     private static final Logger log = Logger.getLogger(CertificateResource.class);
-    
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
+    private final CertificateConverter certificateConverter;
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
-    
-    
+
+
+    public CertificateResource() {
+        this.certificateConverter = new CertificateConverter();
+    }
+
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
@@ -358,5 +367,25 @@ public class CertificateResource extends BaseRestResource {
             }
         }
         return date;
+    }
+
+    @GET
+    @Path("/expire")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext){
+        if (requestContext == null) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Missing request context").build();
+        }
+        try {
+            final AuthenticationToken admin = getAdmin(requestContext, true);
+            List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(800, 10);
+            CertificateTypes certificateTypes = new CertificateTypes(certificateConverter.toTypes(expiringCertificates));
+            return Response.ok(certificateTypes).build();
+        } catch (AuthorizationDeniedException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+        } catch (CertificateEncodingException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+        }
+
     }
 }
