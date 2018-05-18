@@ -471,39 +471,39 @@ public class X509CAInfo extends CAInfo {
         private int certificateProfileId;
         private String encodedValidity;
         private int signedBy;
-        private Collection<Certificate> certificatechain;
-        private CAToken catoken;
+        private Collection<Certificate> certificateChain;
+        private CAToken caToken;
         private Date updateTime = new Date();
-        private String subjectaltname = "";
-        private int defaultCertprofileId = 0;
+        private String subjectAltName = "";
+        private int defaultCertProfileId = 0;
         private boolean useNoConflictCertificateData = false;
-        private Date expiretime = null;
-        private int catype = CAInfo.CATYPE_X509;
+        private Date expireTime = null;
+        private int caType = CAInfo.CATYPE_X509;
         private String description = "";
         private int revocationReason = -1;
         private Date revocationDate = null;
         private List<CertificatePolicy> policies = null;
-        private long crlperiod = 24 * SimpleTime.MILLISECONDS_PER_HOUR;
+        private long crlPeriod = 24 * SimpleTime.MILLISECONDS_PER_HOUR;
         private long crlIssueInterval = 0L;
         private long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
-        private long deltacrlperiod = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
-        private Collection<Integer> crlpublishers = new ArrayList<Integer>();
-        private Collection<Integer> keyValidators = new ArrayList<Integer>();
-        private boolean useauthoritykeyidentifier = true;
-        private boolean authoritykeyidentifiercritical = false;
-        private boolean usecrlnumber = true;
-        private boolean crlnumbercritical = false;
-        private String defaultcrldistpoint = null;
-        private String defaultcrlissuer = null;
-        private String defaultocspservicelocator = null;
+        private long deltaCrlPeriod = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
+        private Collection<Integer> crlPublishers = new ArrayList<Integer>();
+        private Collection<Integer> validators = new ArrayList<Integer>();
+        private boolean useAuthorityKeyIdentifier = true;
+        private boolean authorityKeyIdentifierCritical = false;
+        private boolean useCrlNumber = true;
+        private boolean crlNumberCritical = false;
+        private String defaultCrlDistPoint = null;
+        private String defaultCrlIssuer = null;
+        private String defaultOcspCerviceLocator = null;
         private List<String> authorityInformationAccess = null;
         private List<String> certificateAiaDefaultCaIssuerUri = null;
         private List<String> nameConstraintsPermitted = null;
         private List<String> nameConstraintsExcluded = null;
-        private String cadefinedfreshestcrl = null;
-        private boolean finishuser = true;
-        private Collection<ExtendedCAServiceInfo> extendedcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
-        private boolean useUTF8PolicyText = false;
+        private String caDefinedFreshestCrl = null;
+        private boolean finishUser = true;
+        private Collection<ExtendedCAServiceInfo> extendedCaServiceInfos = new ArrayList<ExtendedCAServiceInfo>();
+        private boolean useUtf8PolicyText = false;
         private Map<ApprovalRequestType, Integer> approvals = new HashMap<ApprovalRequestType, Integer>();
         private boolean usePrintableStringSubjectDN = false;
         private boolean useLdapDnOrder = true;
@@ -550,13 +550,13 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setCertificatechain(Collection<Certificate> certificatechain) {
-            this.certificatechain = certificatechain;
+        public X509CAInfoBuilder setCertificateChain(Collection<Certificate> certificateChain) {
+            this.certificateChain = certificateChain;
             return this;
         }
 
-        public X509CAInfoBuilder setCatoken(CAToken catoken) {
-            this.catoken = catoken;
+        public X509CAInfoBuilder setCaToken(CAToken caToken) {
+            this.caToken = caToken;
             return this;
         }
 
@@ -565,13 +565,13 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setSubjectaltname(String subjectaltname) {
-            this.subjectaltname = subjectaltname;
+        public X509CAInfoBuilder setSubjectAltName(String subjectAltName) {
+            this.subjectAltName = subjectAltName;
             return this;
         }
 
-        public X509CAInfoBuilder setDefaultCertprofileId(int defaultCertprofileId) {
-            this.defaultCertprofileId = defaultCertprofileId;
+        public X509CAInfoBuilder setDefaultCertProfileId(int defaultCertProfileId) {
+            this.defaultCertProfileId = defaultCertProfileId;
             return this;
         }
 
@@ -580,13 +580,13 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setExpiretime(Date expiretime) {
-            this.expiretime = expiretime;
+        public X509CAInfoBuilder setExpireTime(Date expireTime) {
+            this.expireTime = expireTime;
             return this;
         }
 
-        public X509CAInfoBuilder setCatype(int catype) {
-            this.catype = catype;
+        public X509CAInfoBuilder setCaType(int caType) {
+            this.caType = caType;
             return this;
         }
 
@@ -610,8 +610,8 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setCrlperiod(long crlperiod) {
-            this.crlperiod = crlperiod;
+        public X509CAInfoBuilder setCrlPeriod(long crlPeriod) {
+            this.crlPeriod = crlPeriod;
             return this;
         }
 
@@ -625,53 +625,53 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setDeltacrlperiod(long deltacrlperiod) {
-            this.deltacrlperiod = deltacrlperiod;
+        public X509CAInfoBuilder setDeltaCrlPeriod(long deltaCrlPeriod) {
+            this.deltaCrlPeriod = deltaCrlPeriod;
             return this;
         }
 
-        public X509CAInfoBuilder setCrlpublishers(Collection<Integer> crlpublishers) {
-            this.crlpublishers = crlpublishers;
+        public X509CAInfoBuilder setCrlPublishers(Collection<Integer> crlPublishers) {
+            this.crlPublishers = crlPublishers;
             return this;
         }
 
-        public X509CAInfoBuilder setKeyValidators(Collection<Integer> keyValidators) {
-            this.keyValidators = keyValidators;
+        public X509CAInfoBuilder setValidators(Collection<Integer> validators) {
+            this.validators = validators;
             return this;
         }
 
-        public X509CAInfoBuilder setUseauthoritykeyidentifier(boolean useauthoritykeyidentifier) {
-            this.useauthoritykeyidentifier = useauthoritykeyidentifier;
+        public X509CAInfoBuilder setUseAuthorityKeyIdentifier(boolean useAuthorityKeyIdentifier) {
+            this.useAuthorityKeyIdentifier = useAuthorityKeyIdentifier;
             return this;
         }
 
-        public X509CAInfoBuilder setAuthoritykeyidentifiercritical(boolean authoritykeyidentifiercritical) {
-            this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
+        public X509CAInfoBuilder setAuthorityKeyIdentifierCritical(boolean authorityKeyIdentifierCritical) {
+            this.authorityKeyIdentifierCritical = authorityKeyIdentifierCritical;
             return this;
         }
 
-        public X509CAInfoBuilder setUsecrlnumber(boolean usecrlnumber) {
-            this.usecrlnumber = usecrlnumber;
+        public X509CAInfoBuilder setUseCrlNumber(boolean useCrlNumber) {
+            this.useCrlNumber = useCrlNumber;
             return this;
         }
 
-        public X509CAInfoBuilder setCrlnumbercritical(boolean crlnumbercritical) {
-            this.crlnumbercritical = crlnumbercritical;
+        public X509CAInfoBuilder setCrlNumberCritical(boolean crlNumberCritical) {
+            this.crlNumberCritical = crlNumberCritical;
             return this;
         }
 
-        public X509CAInfoBuilder setDefaultcrldistpoint(String defaultcrldistpoint) {
-            this.defaultcrldistpoint = defaultcrldistpoint;
+        public X509CAInfoBuilder setDefaultCrlDistPoint(String defaultCrlDistPoint) {
+            this.defaultCrlDistPoint = defaultCrlDistPoint;
             return this;
         }
 
-        public X509CAInfoBuilder setDefaultcrlissuer(String defaultcrlissuer) {
-            this.defaultcrlissuer = defaultcrlissuer;
+        public X509CAInfoBuilder setDefaultCrlIssuer(String defaultCrlIssuer) {
+            this.defaultCrlIssuer = defaultCrlIssuer;
             return this;
         }
 
-        public X509CAInfoBuilder setDefaultocspservicelocator(String defaultocspservicelocator) {
-            this.defaultocspservicelocator = defaultocspservicelocator;
+        public X509CAInfoBuilder setDefaultOcspCerviceLocator(String defaultOcspCerviceLocator) {
+            this.defaultOcspCerviceLocator = defaultOcspCerviceLocator;
             return this;
         }
 
@@ -695,23 +695,23 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setCadefinedfreshestcrl(String cadefinedfreshestcrl) {
-            this.cadefinedfreshestcrl = cadefinedfreshestcrl;
+        public X509CAInfoBuilder setCaDefinedFreshestCrl(String caDefinedFreshestCrl) {
+            this.caDefinedFreshestCrl = caDefinedFreshestCrl;
             return this;
         }
 
-        public X509CAInfoBuilder setFinishuser(boolean finishuser) {
-            this.finishuser = finishuser;
+        public X509CAInfoBuilder setFinishUser(boolean finishUser) {
+            this.finishUser = finishUser;
             return this;
         }
 
-        public X509CAInfoBuilder setExtendedcaserviceinfos(Collection<ExtendedCAServiceInfo> extendedcaserviceinfos) {
-            this.extendedcaserviceinfos = extendedcaserviceinfos;
+        public X509CAInfoBuilder setExtendedCaServiceInfos(Collection<ExtendedCAServiceInfo> extendedCaServiceInfos) {
+            this.extendedCaServiceInfos = extendedCaServiceInfos;
             return this;
         }
 
-        public X509CAInfoBuilder setUseUTF8PolicyText(boolean useUTF8PolicyText) {
-            this.useUTF8PolicyText = useUTF8PolicyText;
+        public X509CAInfoBuilder setUseUtf8PolicyText(boolean useUtf8PolicyText) {
+            this.useUtf8PolicyText = useUtf8PolicyText;
             return this;
         }
 
@@ -791,16 +791,16 @@ public class X509CAInfo extends CAInfo {
         }
 
         public X509CAInfo build() {
-            return new X509CAInfo(subjectDn, name, status, updateTime, subjectaltname, certificateProfileId, defaultCertprofileId, useNoConflictCertificateData,
-                    encodedValidity, expiretime, catype, signedBy, certificatechain, catoken, description, revocationReason, revocationDate, policies, crlperiod,
-                    crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators, useauthoritykeyidentifier, authoritykeyidentifiercritical,
-                    usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer,
-                    defaultocspservicelocator,
+            return new X509CAInfo(subjectDn, name, status, updateTime, subjectAltName, certificateProfileId, defaultCertProfileId, useNoConflictCertificateData,
+                    encodedValidity, expireTime, caType, signedBy, certificateChain, caToken, description, revocationReason, revocationDate, policies, crlPeriod,
+                    crlIssueInterval, crlOverlapTime, deltaCrlPeriod, crlPublishers, validators, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
+                    useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer,
+                    defaultOcspCerviceLocator,
                     authorityInformationAccess,
                     certificateAiaDefaultCaIssuerUri,
-                    nameConstraintsPermitted, nameConstraintsExcluded, cadefinedfreshestcrl,
-                    finishuser, extendedcaserviceinfos,
-                    useUTF8PolicyText, approvals, usePrintableStringSubjectDN,
+                    nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl,
+                    finishUser, extendedCaServiceInfos,
+                    useUtf8PolicyText, approvals, usePrintableStringSubjectDN,
                     useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck,
                     doEnforceUniquePublicKeys, doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber,
                     useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry,

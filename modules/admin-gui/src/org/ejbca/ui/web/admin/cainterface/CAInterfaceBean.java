@@ -638,21 +638,21 @@ public class CAInterfaceBean implements Serializable {
 
 	private boolean actionCreateCaMakeRequestInternal(String caName, String signatureAlgorithm,
 	        String extendedServiceSignatureKeySpec,
-	        String keySequenceFormat, String keySequence, int catype, String subjectDn,
+	        String keySequenceFormat, String keySequence, int caType, String subjectDn,
 	        String certificateProfileIdString, String defaultCertificateProfileIdString, boolean useNoConflictCertificateData, 
 	        String signedByString, String description, String validityString,
 	        Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
 	        boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
-	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationsNonExistingEntry, String subjectaltname,
-	        String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
-            long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
-            String availablePublisherValues, String availableKeyValidatorValues, boolean usecrlnumber, boolean crlnumbercritical,
-            String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
+	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationsNonExistingEntry, String subjectAltName,
+	        String policyid, boolean useAuthorityKeyIdentifier, boolean authorityKeyIdentifierCritical,
+            long crlPeriod, long crlIssueInterval, long crlOverlapTime, long deltaCrlPeriod,
+            String availablePublisherValues, String availableKeyValidatorValues, boolean useCrlNumber, boolean crlNumberCritical,
+            String defaultCrlDistPoint, String defaultCrlIssuer, String defaultOcspCerviceLocator,
             String authorityInformationAccessString,
             String certificateAiaDefaultCaIssuerUriString,
-            String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useutf8policytext,
-            boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-            boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
+            String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useUtf8PolicyText,
+            boolean usePrintableStringSubjectDn, boolean useLdapDnOrder, boolean useCrlDistributionPointOnCrl,
+            boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck, boolean serviceOcspActive,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
@@ -689,25 +689,25 @@ public class CAInterfaceBean implements Serializable {
         if (keyAliasKeyTestKey.length()>0) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, keyAliasKeyTestKey);
         }
-	    final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
+	    final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
         if (signatureAlgorithm == null) {
             throw new Exception("No signature algorithm supplied!");  
         }
-        catoken.setSignatureAlgorithm(signatureAlgorithm);
-        catoken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm));
+        caToken.setSignatureAlgorithm(signatureAlgorithm);
+        caToken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm));
 
         if (extendedServiceSignatureKeySpec == null || extendedServiceSignatureKeySpec.length()==0) {
             throw new Exception("No key specification supplied.");
         }
         if (keySequenceFormat==null) {
-            catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         } else {
-            catoken.setKeySequenceFormat(Integer.parseInt(keySequenceFormat));
+            caToken.setKeySequenceFormat(Integer.parseInt(keySequenceFormat));
         }
         if (keySequence==null) {
-            catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            caToken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         } else {
-            catoken.setKeySequence(keySequence);
+            caToken.setKeySequence(keySequence);
         }
 	    try {
 	        CertTools.stringToBcX500Name(subjectDn);
@@ -715,7 +715,7 @@ public class CAInterfaceBean implements Serializable {
 	        illegaldnoraltname = true;
 	    }
         int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
-        int defaultCertprofileId = (defaultCertificateProfileIdString==null ? 0 : Integer.parseInt(defaultCertificateProfileIdString));
+        int defaultCertProfileId = (defaultCertificateProfileIdString==null ? 0 : Integer.parseInt(defaultCertificateProfileIdString));
 	    int signedBy = (signedByString==null ? 0 : Integer.parseInt(signedByString));
 
 	    if (description == null) {
@@ -732,23 +732,23 @@ public class CAInterfaceBean implements Serializable {
             }
         }
 
-	    if (catoken != null && catype != 0 && subjectDn != null && caName != null && signedBy != 0) {
+	    if (caToken != null && caType != 0 && subjectDn != null && caName != null && signedBy != 0) {
 	        // Approvals is generic for all types of CAs
 //	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
 //            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
 
-	        if (catype == CAInfo.CATYPE_X509) {
+	        if (caType == CAInfo.CATYPE_X509) {
 	            // Create a X509 CA
-	            if (subjectaltname == null) {
-                    subjectaltname = ""; 
+	            if (subjectAltName == null) {
+                    subjectAltName = "";
 	            }
-	            if (!checkSubjectAltName(subjectaltname)) {
+	            if (!checkSubjectAltName(subjectAltName)) {
 	               illegaldnoraltname = true;
 	            }
 	            /* Process certificate policies. */
 	            final List<CertificatePolicy> policies = parsePolicies(policyid);
 	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
-	            final List<Integer> crlpublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
+	            final List<Integer> crlPublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
 	            final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
 	            
 	            List<String> authorityInformationAccess = new ArrayList<>();
@@ -759,9 +759,9 @@ public class CAInterfaceBean implements Serializable {
 	            if (StringUtils.isNotBlank(certificateAiaDefaultCaIssuerUriString)) {
 	                certificateAiaDefaultCaIssuerUri = new ArrayList<>( Arrays.asList(certificateAiaDefaultCaIssuerUriString.split(LIST_SEPARATOR)));
 	            }
-	            String cadefinedfreshestcrl = "";
+	            String caDefinedFreshestCrl = "";
 	            if (caDefinedFreshestCrlString != null) {
-	                cadefinedfreshestcrl = caDefinedFreshestCrlString;
+	                caDefinedFreshestCrl = caDefinedFreshestCrlString;
 	            }
 	            
 	            final List<String> nameConstraintsPermitted = parseNameConstraintsInput(nameConstraintsPermittedString);
@@ -771,50 +771,50 @@ public class CAInterfaceBean implements Serializable {
 	               throw new ParameterException(ejbcawebbean.getText("NAMECONSTRAINTSNOTENABLED"));
 	            }
 
-	            if (crlperiod != 0 && !illegaldnoraltname) {
+	            if (crlPeriod != 0 && !illegaldnoraltname) {
 	                if (buttonCreateCa) {
-	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectDn, serviceCmsActive);
+	                    List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectDn, serviceCmsActive);
                         X509CAInfo x509cainfo =  new X509CAInfo.X509CAInfoBuilder()
                                 .setSubjectDn(subjectDn)
                                 .setName(caName)
                                 .setStatus(CAConstants.CA_ACTIVE)
-                                .setSubjectaltname(subjectaltname)
+                                .setSubjectAltName(subjectAltName)
                                 .setCertificateProfileId(certprofileid)
-                                .setDefaultCertprofileId(defaultCertprofileId)
+                                .setDefaultCertProfileId(defaultCertProfileId)
                                 .setUseNoConflictCertificateData(useNoConflictCertificateData)
                                 .setEncodedValidity(validityString)
-                                .setCatype(catype)
+                                .setCaType(caType)
                                 .setSignedBy(signedBy)
-                                .setCertificatechain(null)
-                                .setCatoken(catoken)
+                                .setCertificateChain(null)
+                                .setCaToken(caToken)
                                 .setDescription(description)
                                 .setPolicies(policies)
-                                .setCrlperiod(crlperiod)
+                                .setCrlPeriod(crlPeriod)
                                 .setCrlIssueInterval(crlIssueInterval)
                                 .setCrlOverlapTime(crlOverlapTime)
-                                .setDeltacrlperiod(deltacrlperiod)
-                                .setCrlpublishers(crlpublishers)
-                                .setKeyValidators(keyValidators)
-                                .setUseauthoritykeyidentifier(useauthoritykeyidentifier)
-                                .setAuthoritykeyidentifiercritical(authoritykeyidentifiercritical)
-                                .setUsecrlnumber(usecrlnumber)
-                                .setCrlnumbercritical(crlnumbercritical)
-                                .setDefaultcrldistpoint(defaultcrldistpoint)
-                                .setDefaultcrlissuer(defaultcrlissuer)
-                                .setDefaultocspservicelocator(defaultocsplocator)
+                                .setDeltaCrlPeriod(deltaCrlPeriod)
+                                .setCrlPublishers(crlPublishers)
+                                .setValidators(keyValidators)
+                                .setUseAuthorityKeyIdentifier(useAuthorityKeyIdentifier)
+                                .setAuthorityKeyIdentifierCritical(authorityKeyIdentifierCritical)
+                                .setUseCrlNumber(useCrlNumber)
+                                .setCrlNumberCritical(crlNumberCritical)
+                                .setDefaultCrlDistPoint(defaultCrlDistPoint)
+                                .setDefaultCrlIssuer(defaultCrlIssuer)
+                                .setDefaultOcspCerviceLocator(defaultOcspCerviceLocator)
                                 .setAuthorityInformationAccess(authorityInformationAccess)
                                 .setCertificateAiaDefaultCaIssuerUri(certificateAiaDefaultCaIssuerUri)
                                 .setNameConstraintsPermitted(nameConstraintsPermitted)
                                 .setNameConstraintsExcluded(nameConstraintsExcluded)
-                                .setCadefinedfreshestcrl(cadefinedfreshestcrl)
-                                .setFinishuser(finishUser)
-                                .setExtendedcaserviceinfos(extendedcaservices)
-                                .setUseUTF8PolicyText(useutf8policytext)
+                                .setCaDefinedFreshestCrl(caDefinedFreshestCrl)
+                                .setFinishUser(finishUser)
+                                .setExtendedCaServiceInfos(extendedCaServiceInfos)
+                                .setUseUtf8PolicyText(useUtf8PolicyText)
                                 .setApprovals(approvals)
-                                .setUsePrintableStringSubjectDN(useprintablestringsubjectdn)
-                                .setUseLdapDnOrder(useldapdnorder)
-                                .setUseCrlDistributionPointOnCrl(usecrldistpointoncrl)
-                                .setCrlDistributionPointOnCrlCritical(crldistpointoncrlcritical)
+                                .setUsePrintableStringSubjectDN(usePrintableStringSubjectDn)
+                                .setUseLdapDnOrder(useLdapDnOrder)
+                                .setUseCrlDistributionPointOnCrl(useCrlDistributionPointOnCrl)
+                                .setCrlDistributionPointOnCrlCritical(crlDistributionPointOnCrlCritical)
                                 .setIncludeInHealthCheck(includeInHealthCheck)
                                 .setDoEnforceUniquePublicKeys(isDoEnforceUniquePublicKeys)
                                 .setDoEnforceUniqueDistinguishedName(isDoEnforceUniqueDistinguishedName)
@@ -844,43 +844,43 @@ public class CAInterfaceBean implements Serializable {
                                 .setSubjectDn(subjectDn)
                                 .setName(caName)
                                 .setStatus(CAConstants.CA_ACTIVE)
-                                .setSubjectaltname(subjectaltname)
+                                .setSubjectAltName(subjectAltName)
                                 .setCertificateProfileId(certprofileid)
-                                .setDefaultCertprofileId(defaultCertprofileId)
+                                .setDefaultCertProfileId(defaultCertProfileId)
                                 .setUseNoConflictCertificateData(useNoConflictCertificateData)
                                 .setEncodedValidity(validityString)
-                                .setCatype(catype)
+                                .setCaType(caType)
                                 .setSignedBy(CAInfo.SIGNEDBYEXTERNALCA)
-                                .setCertificatechain(null)
-                                .setCatoken(catoken)
+                                .setCertificateChain(null)
+                                .setCaToken(caToken)
                                 .setDescription(description)
                                 .setPolicies(policies)
-                                .setCrlperiod(crlperiod)
+                                .setCrlPeriod(crlPeriod)
                                 .setCrlIssueInterval(crlIssueInterval)
                                 .setCrlOverlapTime(crlOverlapTime)
-                                .setDeltacrlperiod(deltacrlperiod)
-                                .setCrlpublishers(crlpublishers)
-                                .setKeyValidators(keyValidators)
-                                .setUseauthoritykeyidentifier(useauthoritykeyidentifier)
-                                .setAuthoritykeyidentifiercritical(authoritykeyidentifiercritical)
-                                .setUsecrlnumber(usecrlnumber)
-                                .setCrlnumbercritical(crlnumbercritical)
-                                .setDefaultcrldistpoint(defaultcrldistpoint)
-                                .setDefaultcrlissuer(defaultcrlissuer)
-                                .setDefaultocspservicelocator(defaultocsplocator)
+                                .setDeltaCrlPeriod(deltaCrlPeriod)
+                                .setCrlPublishers(crlPublishers)
+                                .setValidators(keyValidators)
+                                .setUseAuthorityKeyIdentifier(useAuthorityKeyIdentifier)
+                                .setAuthorityKeyIdentifierCritical(authorityKeyIdentifierCritical)
+                                .setUseCrlNumber(useCrlNumber)
+                                .setCrlNumberCritical(crlNumberCritical)
+                                .setDefaultCrlDistPoint(defaultCrlDistPoint)
+                                .setDefaultCrlIssuer(defaultCrlIssuer)
+                                .setDefaultOcspCerviceLocator(defaultOcspCerviceLocator)
                                 .setAuthorityInformationAccess(authorityInformationAccess)
                                 .setCertificateAiaDefaultCaIssuerUri(certificateAiaDefaultCaIssuerUri)
                                 .setNameConstraintsPermitted(nameConstraintsPermitted)
                                 .setNameConstraintsExcluded(nameConstraintsExcluded)
-                                .setCadefinedfreshestcrl(cadefinedfreshestcrl)
-                                .setFinishuser(finishUser)
-                                .setExtendedcaserviceinfos(extendedcaservices)
-                                .setUseUTF8PolicyText(useutf8policytext)
+                                .setCaDefinedFreshestCrl(caDefinedFreshestCrl)
+                                .setFinishUser(finishUser)
+                                .setExtendedCaServiceInfos(extendedcaservices)
+                                .setUseUtf8PolicyText(useUtf8PolicyText)
                                 .setApprovals(approvals)
-                                .setUsePrintableStringSubjectDN(useprintablestringsubjectdn)
-                                .setUseLdapDnOrder(useldapdnorder)
-                                .setUseCrlDistributionPointOnCrl(usecrldistpointoncrl)
-                                .setCrlDistributionPointOnCrlCritical(crldistpointoncrlcritical)
+                                .setUsePrintableStringSubjectDN(usePrintableStringSubjectDn)
+                                .setUseLdapDnOrder(useLdapDnOrder)
+                                .setUseCrlDistributionPointOnCrl(useCrlDistributionPointOnCrl)
+                                .setCrlDistributionPointOnCrlCritical(crlDistributionPointOnCrlCritical)
                                 .setIncludeInHealthCheck(false) // Do not automatically include new CAs in health-check
                                 .setDoEnforceUniquePublicKeys(isDoEnforceUniquePublicKeys)
                                 .setDoEnforceUniqueDistinguishedName(isDoEnforceUniqueDistinguishedName)
@@ -896,15 +896,15 @@ public class CAInterfaceBean implements Serializable {
 	            }                          
 	        }
 
-	        if (catype == CAInfo.CATYPE_CVC) {
+	        if (caType == CAInfo.CATYPE_CVC) {
 	            // Only default values for these that are not used
-	            crlperiod = 2400;
+	            crlPeriod = 2400;
 	            crlIssueInterval = 0;
 	            crlOverlapTime = 0;
-	            deltacrlperiod = 0;
+	            deltaCrlPeriod = 0;
 	            final List<Integer> crlpublishers = new ArrayList<>(); 
 	            final List<Integer> keyValidators = new ArrayList<>(); 
-	            if(crlperiod != 0 && !illegaldnoraltname){
+	            if(crlPeriod != 0 && !illegaldnoraltname){
 	                // A CVC CA does not have any of the external services OCSP, CMS
 	                List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
 	                if (buttonMakeRequest) {
@@ -912,10 +912,10 @@ public class CAInterfaceBean implements Serializable {
 	                }
 	                // Create the CAInfo to be used for either generating the whole CA or making a request
 	                CVCCAInfo cvccainfo = new CVCCAInfo(subjectDn, caName, CAConstants.CA_ACTIVE, new Date(),
-	                        certprofileid, defaultCertprofileId, validityString,
-	                        null, catype, signedBy,
-	                        null, catoken, description, -1, null,
-	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators,
+	                        certprofileid, defaultCertProfileId, validityString,
+	                        null, caType, signedBy,
+	                        null, caToken, description, -1, null,
+	                        crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, crlpublishers, keyValidators,
 	                        finishUser, extendedcaservices,
 	                        approvals,
 	                        false, // Do not automatically include new CAs in health-check
@@ -939,7 +939,7 @@ public class CAInterfaceBean implements Serializable {
             cadatahandler.createCA(cainfo);                           
             int caid = cainfo.getCAId();
             try {
-                byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                 saveRequestData(certreq);
             } catch (CryptoTokenOfflineException e) {
                 cadatahandler.removeCA(caid);
