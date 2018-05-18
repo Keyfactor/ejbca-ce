@@ -638,7 +638,7 @@ public class CAInterfaceBean implements Serializable {
 
 	private boolean actionCreateCaMakeRequestInternal(String caName, String signatureAlgorithm,
 	        String extendedServiceSignatureKeySpec,
-	        String keySequenceFormat, String keySequence, int catype, String subjectdn,
+	        String keySequenceFormat, String keySequence, int catype, String subjectDn,
 	        String certificateProfileIdString, String defaultCertificateProfileIdString, boolean useNoConflictCertificateData, 
 	        String signedByString, String description, String validityString,
 	        Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
@@ -710,7 +710,7 @@ public class CAInterfaceBean implements Serializable {
             catoken.setKeySequence(keySequence);
         }
 	    try {
-	        CertTools.stringToBcX500Name(subjectdn);
+	        CertTools.stringToBcX500Name(subjectDn);
 	    } catch (IllegalArgumentException e) {
 	        illegaldnoraltname = true;
 	    }
@@ -732,7 +732,7 @@ public class CAInterfaceBean implements Serializable {
             }
         }
 
-	    if (catoken != null && catype != 0 && subjectdn != null && caName != null && signedby != 0) {
+	    if (catoken != null && catype != 0 && subjectDn != null && caName != null && signedby != 0) {
 	        // Approvals is generic for all types of CAs
 //	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
 //            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
@@ -773,9 +773,9 @@ public class CAInterfaceBean implements Serializable {
 
 	            if (crlperiod != 0 && !illegaldnoraltname) {
 	                if (buttonCreateCa) {
-	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
+	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectDn, serviceCmsActive);
                         X509CAInfo x509cainfo =  new X509CAInfo.X509CAInfoBuilder()
-                                .setSubjectdn(subjectdn)
+                                .setSubjectDn(subjectDn)
                                 .setName(caName)
                                 .setStatus(CAConstants.CA_ACTIVE)
                                 .setSubjectaltname(subjectaltname)
@@ -839,9 +839,9 @@ public class CAInterfaceBean implements Serializable {
 	                }
 
 	                if (buttonMakeRequest) {
-	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceCmsActive);
+	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectDn, serviceCmsActive);
                         X509CAInfo x509cainfo =  new X509CAInfo.X509CAInfoBuilder()
-                                .setSubjectdn(subjectdn)
+                                .setSubjectDn(subjectDn)
                                 .setName(caName)
                                 .setStatus(CAConstants.CA_ACTIVE)
                                 .setSubjectaltname(subjectaltname)
@@ -911,7 +911,7 @@ public class CAInterfaceBean implements Serializable {
 	                    signedby = CAInfo.SIGNEDBYEXTERNALCA;
 	                }
 	                // Create the CAInfo to be used for either generating the whole CA or making a request
-	                CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(),
+	                CVCCAInfo cvccainfo = new CVCCAInfo(subjectDn, caName, CAConstants.CA_ACTIVE, new Date(),
 	                        certprofileid, defaultCertprofileId, validityString,
 	                        null, catype, signedby,
 	                        null, catoken, description, -1, null,

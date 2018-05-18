@@ -465,7 +465,7 @@ public class X509CAInfo extends CAInfo {
 
 
     public static class X509CAInfoBuilder {
-        private String subjectdn;
+        private String subjectDn;
         private String name;
         private int status;
         private int certificateProfileId;
@@ -520,8 +520,8 @@ public class X509CAInfo extends CAInfo {
         private String cmpRaAuthSecret = null;
         private boolean keepExpiredCertsOnCRL = false;
 
-        public X509CAInfoBuilder setSubjectdn(String subjectdn) {
-            this.subjectdn = subjectdn;
+        public X509CAInfoBuilder setSubjectDn(String subjectDn) {
+            this.subjectDn = subjectDn;
             return this;
         }
 
@@ -791,7 +791,7 @@ public class X509CAInfo extends CAInfo {
         }
 
         public X509CAInfo build() {
-            return new X509CAInfo(subjectdn, name, status, updateTime, subjectaltname, certificateProfileId, defaultCertprofileId, useNoConflictCertificateData,
+            return new X509CAInfo(subjectDn, name, status, updateTime, subjectaltname, certificateProfileId, defaultCertprofileId, useNoConflictCertificateData,
                     encodedValidity, expiretime, catype, signedby, certificatechain, catoken, description, revocationReason, revocationDate, policies, crlperiod,
                     crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators, useauthoritykeyidentifier, authoritykeyidentifiercritical,
                     usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer,
