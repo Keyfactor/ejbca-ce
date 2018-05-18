@@ -75,7 +75,7 @@ public class CVCCAInfo extends CAInfo {
 	 * Constructor that should be used when creating CA and retrieving CA info.
 	 * Please use the shorter form if you do not need to set all of the values.
 	 */
-	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, int defaultCertprofileId,
+	public CVCCAInfo(String subjectDn, String name, int status, Date updateTime, int certificateprofileid, int defaultCertprofileId,
             String encodedValidity, Date expiretime, int catype, int signedby, List<Certificate> certificatechain,
 			CAToken catoken, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
@@ -85,8 +85,8 @@ public class CVCCAInfo extends CAInfo {
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, boolean _acceptRevocationNonExistingEntry) {
-		this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-		this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
+		this.subjectDn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
+		this.caid = CertTools.stringToBCDNString(this.subjectDn).hashCode();
 		this.name = name;
 		this.status = status;
 		this.updatetime = updateTime;

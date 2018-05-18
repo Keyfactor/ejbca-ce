@@ -126,7 +126,7 @@ public class X509CAInfo extends CAInfo {
     /**
      * Constructor that should be used when creating CA and retrieving CA info.
      * Please use the shorter form if you do not need to set all of the values.
-     * @param subjectdn the Subject DN of the CA as found in the certificate
+     * @param subjectDn the Subject DN of the CA as found in the certificate
      * @param name the name of the CA shown in EJBCA, can be changed by the user
      * @param status the operational status of the CA, one of the constants in {@link #CAConstants}
      * @param updateTime the last time this CA was updated, normally the current date and time
@@ -181,7 +181,7 @@ public class X509CAInfo extends CAInfo {
      * @param _cmpRaAuthSecret
      * @param keepExpiredCertsOnCRL
      */
-    private X509CAInfo(final String subjectdn, final String name, final int status, final Date updateTime, final String subjectaltname,
+    private X509CAInfo(final String subjectDn, final String name, final int status, final Date updateTime, final String subjectaltname,
             final int certificateprofileid, final int defaultCertprofileId, final boolean useNoConflictCertificateData, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
             final Collection<Certificate> certificatechain, final CAToken catoken,
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
@@ -198,8 +198,8 @@ public class X509CAInfo extends CAInfo {
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
     		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry,
             final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
-        this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-        this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
+        this.subjectDn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
+        this.caid = CertTools.stringToBCDNString(this.subjectDn).hashCode();
         this.name = name;
         this.status = status;
         this.updatetime = updateTime;
