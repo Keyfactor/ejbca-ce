@@ -384,7 +384,7 @@ public class EjbcaWS implements IEjbcaWS {
             final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userdata);
             if(!raMasterApiProxyBean.editUser(admin, endEntityInformation)) {
                 //If editUser returned true, then an end entity was found and modified. If not, add that user. 
-                raMasterApiProxyBean.addUser(admin, endEntityInformation, userdata.isClearPwd());
+                raMasterApiProxyBean.addUserFromWS(admin, endEntityInformation, userdata.isClearPwd());
             }        
         } catch (EndEntityProfileValidationException e) {
             log.debug(e.toString());
@@ -395,9 +395,7 @@ public class EjbcaWS implements IEjbcaWS {
             log.info(errorMessage);
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorMessage);
             throw e;
-        }  catch (IllegalNameException e) {
-            throw new EjbcaException(e);
-        } catch (CertificateSerialNumberException e) {
+        } catch (IllegalNameException | CertificateSerialNumberException | EndEntityExistsException e) {
             throw new EjbcaException(e);
         } catch (NoSuchEndEntityException e) {
             throw getEjbcaException(e, logger, ErrorCode.USER_NOT_FOUND, Level.INFO);
