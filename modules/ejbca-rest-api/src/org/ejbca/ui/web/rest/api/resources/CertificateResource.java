@@ -84,9 +84,8 @@ import org.ejbca.ui.web.rest.common.BaseRestResource;
 @Stateless
 public class CertificateResource extends BaseRestResource {
     
-    private static final String VERSION = "1";
-    
     private static final Logger log = Logger.getLogger(CertificateResource.class);
+    
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
@@ -94,6 +93,13 @@ public class CertificateResource extends BaseRestResource {
     private RaMasterApiProxyBeanLocal raMasterApi;
     
     
+    @GET
+    @Path("/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Override
+    public Response status() {
+        return super.status();
+    }
     
     @POST
     @Path("/enroll")
@@ -352,12 +358,5 @@ public class CertificateResource extends BaseRestResource {
             }
         }
         return date;
-    }
-    
-    @GET
-    @Path("/version")
-    @Produces("text/html")
-    public String version() {
-        return VERSION;
     }
 }
