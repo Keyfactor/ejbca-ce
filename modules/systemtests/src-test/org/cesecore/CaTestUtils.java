@@ -356,19 +356,19 @@ public abstract class CaTestUtils {
     }
 
     private static CA createX509ThrowAwayCa(final CryptoToken cryptoToken, final String caName, final String caDn, final int defaultCertificateProfileId) throws Exception {
-        CAToken catoken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        CAToken caToken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // Set useNoConflictCertificateData, defaultCertprofileId, _useUserStorage and _useCertificateStorage to false
         X509CAInfo cainfo =  new X509CAInfo.X509CAInfoBuilder()
                 .setSubjectDn(caDn)
                 .setName(caName)
                 .setStatus(CAConstants.CA_ACTIVE)
                 .setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA)
-                .setDefaultCertprofileId(defaultCertificateProfileId)
+                .setDefaultCertProfileId(defaultCertificateProfileId)
                 .setUseNoConflictCertificateData(true)
                 .setEncodedValidity("3650d")
                 .setSignedBy(CAInfo.SELFSIGNED)
-                .setCertificatechain(null)
-                .setCatoken(catoken)
+                .setCertificateChain(null)
+                .setCaToken(caToken)
                 .setCrlIssueInterval(0L)
                 .setUseUserStorage(false)
                 .setUseCertificateStorage(false)
@@ -376,11 +376,11 @@ public abstract class CaTestUtils {
                 .build();
         cainfo.setDescription("JUnit RSA CA");
         X509CA x509ca = new X509CA(cainfo);
-        x509ca.setCAToken(catoken);
+        x509ca.setCAToken(caToken);
         // A CA certificate
         X509Certificate cacert = CertTools.genSelfCert(caDn, 10L, "1.1.1.1",
-                cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
                 "SHA256WithRSA", true);
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
