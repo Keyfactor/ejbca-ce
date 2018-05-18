@@ -76,7 +76,7 @@ public class CVCCAInfo extends CAInfo {
 	 * Please use the shorter form if you do not need to set all of the values.
 	 */
 	public CVCCAInfo(String subjectDn, String name, int status, Date updateTime, int certificateprofileid, int defaultCertprofileId,
-            String encodedValidity, Date expiretime, int catype, int signedby, List<Certificate> certificatechain,
+            String encodedValidity, Date expiretime, int catype, int signedBy, List<Certificate> certificatechain,
 			CAToken catoken, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
 			Collection<Integer> crlpublishers, Collection<Integer> keyValidators,
@@ -93,7 +93,7 @@ public class CVCCAInfo extends CAInfo {
 		setEncodedValidity(encodedValidity);
 		this.expiretime = expiretime;
 		this.catype = catype;
-		this.signedby = signedby;
+		this.signedBy = signedBy;
 		setCertificateChain(certificatechain);
 		this.catoken = catoken;
 		this.description = description;

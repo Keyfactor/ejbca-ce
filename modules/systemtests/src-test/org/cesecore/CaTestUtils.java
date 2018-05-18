@@ -366,7 +366,7 @@ public abstract class CaTestUtils {
                 .setDefaultCertprofileId(defaultCertificateProfileId)
                 .setUseNoConflictCertificateData(true)
                 .setEncodedValidity("3650d")
-                .setSignedby(CAInfo.SELFSIGNED)
+                .setSignedBy(CAInfo.SELFSIGNED)
                 .setCertificatechain(null)
                 .setCatoken(catoken)
                 .setCrlIssueInterval(0L)
