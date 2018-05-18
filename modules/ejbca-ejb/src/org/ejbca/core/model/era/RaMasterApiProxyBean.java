@@ -919,14 +919,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public boolean addUserFromWS(final AuthenticationToken admin, EndEntityInformation endEntityInformation, final boolean clearpwd)
+    public boolean addUserFromWS(final AuthenticationToken admin, UserDataVOWS userDataVOWS, final boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
-            CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
+            CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             try {
                 if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
-                    return raMasterApi.addUserFromWS(admin, endEntityInformation, clearpwd);
+                    return raMasterApi.addUserFromWS(admin, userDataVOWS, clearpwd);
                 }
             } catch (AuthorizationDeniedException e) {
                 if (authorizationDeniedException == null) {
@@ -1519,6 +1519,26 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     if (raMasterApi.editUser(authenticationToken, endEntityInformation)) {
+                        // Successfully edited the user
+                        return true;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        // Editing was unsuccessful
+        return false;
+    }
+    
+    @Override
+    public boolean editUserWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOWS)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
+            CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, EjbcaException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    if (raMasterApi.editUserWs(authenticationToken, userDataVOWS)) {
                         // Successfully edited the user
                         return true;
                     }

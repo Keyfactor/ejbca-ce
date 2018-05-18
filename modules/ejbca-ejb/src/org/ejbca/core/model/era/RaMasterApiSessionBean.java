@@ -1598,9 +1598,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public boolean addUserFromWS(final AuthenticationToken admin, EndEntityInformation endEntityInformation, final boolean clearpwd)
+    public boolean addUserFromWS(final AuthenticationToken admin, UserDataVOWS userDataVOWS, final boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
-            CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
+            CADoesntExistsException, IllegalNameException, CertificateSerialNumberException, EjbcaException {
+        EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(admin, userDataVOWS);
         final int profileId = endEntityInformation.getEndEntityProfileId();
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
         if (profile.getAllowMergeDnWebServices()) {
@@ -1747,7 +1748,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
             EndEntityProfileValidationException {
         try {
-            // Some of the session beans are only needed for authentication or certation operations, and are passed as null
+            // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
             final EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userdata);
             int responseTypeInt = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
             if (!responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
@@ -1916,6 +1917,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
     }
 
+    @Override
+    public boolean editUserWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOWS)
+            throws AuthorizationDeniedException, EndEntityProfileValidationException,
+            WaitingForApprovalException, CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, EjbcaException {
+        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS));
+    }
+    
     @Override
     public List<UserDataVOWS> findUserWS(AuthenticationToken authenticationToken, UserMatch usermatch, int maxNumberOfRows) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException {
         List<UserDataVOWS> retval = null;
