@@ -693,9 +693,9 @@ public class ApprovalSessionTest extends CaTestCase {
     public void testGetRemainingNumberOfApprovalsOnRejectedRequest() throws Exception {
         int approvalId = removeApprovalIds.get(0);
         int requestId = approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-        approvalExecutionSessionRemote.approve(admin1, approvalId, createApproval("ap1test"));
+        approvalExecutionSessionRemote.approve(admin1, approvalId, createApproval("testGetRemainingNumberOfApprovalsOnRejectedRequest1"));
         assertEquals("There should be only one approval remaining", 1, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
-        approvalExecutionSessionRemote.reject(admin2, approvalId, createApproval("ap2test"));
+        approvalExecutionSessionRemote.reject(admin2, approvalId, createApproval("testGetRemainingNumberOfApprovalsOnRejectedRequest2"));
         assertEquals("Returned status should be -1", -1, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
     }
 
@@ -703,8 +703,8 @@ public class ApprovalSessionTest extends CaTestCase {
     public void testGetRemainingNumberOfApprovalsOnRejectedAndExpiredRequest() throws Exception {
         int approvalId = removeApprovalIds.get(0);
         int requestId = approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-        approvalExecutionSessionRemote.approve(admin1, approvalId, createApproval("ap1test"));
-        approvalExecutionSessionRemote.reject(admin2, approvalId, createApproval("ap2test"));
+        approvalExecutionSessionRemote.approve(admin1, approvalId, createApproval("testGetRemainingNumberOfApprovalsOnRejectedAndExpiredRequest1"));
+        approvalExecutionSessionRemote.reject(admin2, approvalId, createApproval("testGetRemainingNumberOfApprovalsOnRejectedAndExpiredRequest2"));
         // Make sure that the approval still have status rejected after expiration
         Thread.sleep(1100);
         approvalSessionRemote.getRemainingNumberOfApprovals(requestId);
