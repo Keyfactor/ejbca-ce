@@ -66,7 +66,7 @@ public abstract class CAInfo implements Serializable {
     /** CATYPE_X509 or CATYPE_CVC */
     protected int catype;
     /** A CAId or CAInfo.SELFSIGNED */
-    protected int signedby;
+    protected int signedBy;
     protected Collection<CertificateWrapper> certificatechain;
     protected Collection<CertificateWrapper> renewedcertificatechain;
     protected transient List<Certificate> certificatechainCached;
@@ -178,11 +178,11 @@ public abstract class CAInfo implements Serializable {
      * @return A CAId or CAInfo.SELFSIGNED, CAInfo.SIGNEDBYEXTERNALCA etc
      */
     public int getSignedBy() {
-        return signedby;
+        return signedBy;
     }
 
     public void setSignedBy(int signedby) {
-        this.signedby = signedby;
+        this.signedBy = signedby;
     }
 
     public void setEncodedValidity(String encodedValidity) {
