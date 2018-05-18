@@ -23,7 +23,6 @@ import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.converters.CaInfoConverter;
 import org.ejbca.ui.web.rest.api.types.CaInfoTypes;
-import org.ejbca.ui.web.rest.api.types.EndpointStatusType;
 import org.ejbca.ui.web.rest.common.BaseRestResource;
 
 import javax.ejb.EJB;
@@ -40,7 +39,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
-// TODO Javadoc
 /**
  * JAX-RS resource handling CA related requests.
  *
@@ -66,18 +64,14 @@ public class CaResource extends BaseRestResource {
 
     @GET
     @Path("/status")
+    @Override
     public Response status() {
-        return Response.ok(EndpointStatusType.builder()
-                .status("OK")
-                .version("1.0")
-                .revision("ALPHA")
-                .build()
-        ).build();
+        return super.status();
     }
 
     /**
      * @param subjectDn CA subjectDn
-     * @return PEM file with CA certifictes
+     * @return PEM file with CA certificates
      */
     @GET
     @Path("/{subject_dn}/certificate/download")
@@ -109,6 +103,9 @@ public class CaResource extends BaseRestResource {
         }
     }
 
+    /**
+     * Returns the list of CAs with general information per CA as Json.
+     */
     @GET
     public Response listCas() {
         final CaInfoTypes caInfoTypes = CaInfoTypes.builder()
@@ -116,4 +113,5 @@ public class CaResource extends BaseRestResource {
                 .build();
         return Response.ok(caInfoTypes).build();
     }
+
 }

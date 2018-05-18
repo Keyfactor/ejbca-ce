@@ -12,26 +12,29 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.converters;
 
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAData;
+import org.cesecore.util.CertTools;
 import org.ejbca.ui.web.rest.api.types.CaInfoType;
 
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-// TODO Javadoc
 /**
- * A class to make a conversion between Entity and its corresponding REST projection.
+ * A class to make a conversion between Entity and its corresponding REST Type.
  *
- * @version $Id: CaInfoConverter.java 28909 2018-05-10 12:16:53Z aminkh $
+ * @version $Id: CaInfoConverter.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
  */
 public class CaInfoConverter {
 
     /**
+     * Converts a list of CAData into list of CaInfoType. Null-safe.
      *
-     * @param caDataList
+     * @param caDataList input list of CAData.
      *
-     * @return
+     * @return list of CaInfoType.
      */
     public List<CaInfoType> toTypes(final List<CAData> caDataList) {
         final List<CaInfoType> caInfoTypes = new ArrayList<>();
@@ -44,10 +47,11 @@ public class CaInfoConverter {
     }
 
     /**
+     * Converts a non-null instance of CAData into CaInfoType.
      *
-     * @param caData
+     * @param caData non-null CAData.
      *
-     * @return
+     * @return CaInfoType.
      */
     public CaInfoType toType(final CAData caData) {
         return CaInfoType.builder()
@@ -59,16 +63,15 @@ public class CaInfoConverter {
                 .build();
     }
 
-    // TODO Temporarily commented due to test data problem
+    // Extracts the Issuer DN using certificate data
     private String extractIssuerDn(final CAData caData) {
-
-//        final CA ca = caData.getCA();
-//        if(ca != null) {
-//            final Certificate caCertificate = ca.getCACertificate();
-//            if (caCertificate != null) {
-//                return CertTools.getIssuerDN(caData.getCA().getCACertificate());
-//            }
-//        }
+        final CA ca = caData.getCA();
+        if(ca != null) {
+            final Certificate caCertificate = ca.getCACertificate();
+            if (caCertificate != null) {
+                return CertTools.getIssuerDN(caData.getCA().getCACertificate());
+            }
+        }
         return "unknown";
     }
 }
