@@ -16,10 +16,7 @@ package org.ejbca.webtest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.WebTestBase;
 import org.ejbca.helper.AuditLogHelper;
 import org.ejbca.utils.WebTestUtils;
