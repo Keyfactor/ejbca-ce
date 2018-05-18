@@ -137,7 +137,7 @@ public class X509CAInfo extends CAInfo {
      * @param encodedValidity the validity of this CA as a human-readable string, e.g. 25y
      * @param expiretime the date when this CA expires
      * @param catype the type of CA, in this case CAInfo.CATYPE_X509
-     * @param signedby the id of the CA which signed this CA
+     * @param signedBy the id of the CA which signed this CA
      * @param certificatechain the certificate chain containing the CA certificate of this CA
      * @param catoken the CA token for this CA, containing e.g. a reference to the crypto token
      * @param description a text describing this CA
@@ -182,7 +182,7 @@ public class X509CAInfo extends CAInfo {
      * @param keepExpiredCertsOnCRL
      */
     private X509CAInfo(final String subjectDn, final String name, final int status, final Date updateTime, final String subjectaltname,
-            final int certificateprofileid, final int defaultCertprofileId, final boolean useNoConflictCertificateData, final String encodedValidity, final Date expiretime, final int catype, final int signedby,
+            final int certificateprofileid, final int defaultCertprofileId, final boolean useNoConflictCertificateData, final String encodedValidity, final Date expiretime, final int catype, final int signedBy,
             final Collection<Certificate> certificatechain, final CAToken catoken,
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
@@ -206,7 +206,7 @@ public class X509CAInfo extends CAInfo {
         this.encodedValidity = encodedValidity;
         this.expiretime = expiretime;
         this.catype = catype;
-        this.signedby = signedby;
+        this.signedBy = signedBy;
         // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this
         // Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
         // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
@@ -470,7 +470,7 @@ public class X509CAInfo extends CAInfo {
         private int status;
         private int certificateProfileId;
         private String encodedValidity;
-        private int signedby;
+        private int signedBy;
         private Collection<Certificate> certificatechain;
         private CAToken catoken;
         private Date updateTime = new Date();
@@ -545,8 +545,8 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
 
-        public X509CAInfoBuilder setSignedby(int signedby) {
-            this.signedby = signedby;
+        public X509CAInfoBuilder setSignedBy(int signedBy) {
+            this.signedBy = signedBy;
             return this;
         }
 
@@ -792,7 +792,7 @@ public class X509CAInfo extends CAInfo {
 
         public X509CAInfo build() {
             return new X509CAInfo(subjectDn, name, status, updateTime, subjectaltname, certificateProfileId, defaultCertprofileId, useNoConflictCertificateData,
-                    encodedValidity, expiretime, catype, signedby, certificatechain, catoken, description, revocationReason, revocationDate, policies, crlperiod,
+                    encodedValidity, expiretime, catype, signedBy, certificatechain, catoken, description, revocationReason, revocationDate, policies, crlperiod,
                     crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators, useauthoritykeyidentifier, authoritykeyidentifiercritical,
                     usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer,
                     defaultocspservicelocator,

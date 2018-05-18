@@ -268,7 +268,7 @@ public class X509CA extends CA implements Serializable {
                 .setEncodedValidity(getEncodedValidity())
                 .setExpiretime(getExpireTime())
                 .setCatype(getCAType())
-                .setSignedby(getSignedBy())
+                .setSignedBy(getSignedBy())
                 .setCertificatechain(getCertificateChain())
                 .setCatoken(getCAToken())
                 .setDescription(getDescription())

@@ -716,7 +716,7 @@ public class CAInterfaceBean implements Serializable {
 	    }
         int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
         int defaultCertprofileId = (defaultCertificateProfileIdString==null ? 0 : Integer.parseInt(defaultCertificateProfileIdString));
-	    int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
+	    int signedBy = (signedByString==null ? 0 : Integer.parseInt(signedByString));
 
 	    if (description == null) {
             description = "";
@@ -732,7 +732,7 @@ public class CAInterfaceBean implements Serializable {
             }
         }
 
-	    if (catoken != null && catype != 0 && subjectDn != null && caName != null && signedby != 0) {
+	    if (catoken != null && catype != 0 && subjectDn != null && caName != null && signedBy != 0) {
 	        // Approvals is generic for all types of CAs
 //	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
 //            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
@@ -784,7 +784,7 @@ public class CAInterfaceBean implements Serializable {
                                 .setUseNoConflictCertificateData(useNoConflictCertificateData)
                                 .setEncodedValidity(validityString)
                                 .setCatype(catype)
-                                .setSignedby(signedby)
+                                .setSignedBy(signedBy)
                                 .setCertificatechain(null)
                                 .setCatoken(catoken)
                                 .setDescription(description)
@@ -850,7 +850,7 @@ public class CAInterfaceBean implements Serializable {
                                 .setUseNoConflictCertificateData(useNoConflictCertificateData)
                                 .setEncodedValidity(validityString)
                                 .setCatype(catype)
-                                .setSignedby(CAInfo.SIGNEDBYEXTERNALCA)
+                                .setSignedBy(CAInfo.SIGNEDBYEXTERNALCA)
                                 .setCertificatechain(null)
                                 .setCatoken(catoken)
                                 .setDescription(description)
@@ -908,12 +908,12 @@ public class CAInterfaceBean implements Serializable {
 	                // A CVC CA does not have any of the external services OCSP, CMS
 	                List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
 	                if (buttonMakeRequest) {
-	                    signedby = CAInfo.SIGNEDBYEXTERNALCA;
+	                    signedBy = CAInfo.SIGNEDBYEXTERNALCA;
 	                }
 	                // Create the CAInfo to be used for either generating the whole CA or making a request
 	                CVCCAInfo cvccainfo = new CVCCAInfo(subjectDn, caName, CAConstants.CA_ACTIVE, new Date(),
 	                        certprofileid, defaultCertprofileId, validityString,
-	                        null, catype, signedby,
+	                        null, catype, signedBy,
 	                        null, catoken, description, -1, null,
 	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, keyValidators,
 	                        finishUser, extendedcaservices,
