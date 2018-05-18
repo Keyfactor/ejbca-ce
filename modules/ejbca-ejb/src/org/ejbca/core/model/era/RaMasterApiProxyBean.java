@@ -1723,7 +1723,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException {
-        NoSuchAliasException caughtException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
