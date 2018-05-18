@@ -55,7 +55,7 @@ public abstract class CAInfo implements Serializable {
      */
     public static final int SPECIALCAIDBORDER = 10;
 
-    protected String subjectdn;
+    protected String subjectDn;
     protected int caid;
     protected String name;
     /** CAConstants.CA_ACTIVE etc, 0 means not defined (i.e. not updated when editing CA) */
@@ -123,11 +123,11 @@ public abstract class CAInfo implements Serializable {
     protected boolean acceptRevocationNonExistingEntry;
 
     public String getSubjectDN() {
-        return subjectdn;
+        return subjectDn;
     }
 
-    public void setSubjectDN(final String subjectdn) {
-        this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
+    public void setSubjectDN(final String subjectDn) {
+        this.subjectDn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
     }
 
     public int getCAId() {
