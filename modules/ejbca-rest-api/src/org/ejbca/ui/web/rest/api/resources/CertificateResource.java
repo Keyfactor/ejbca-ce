@@ -111,10 +111,10 @@ public class CertificateResource extends BaseRestResource {
     }
     
     @POST
-    @Path("/enroll")
+    @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response enrollServerCertificate(@Context HttpServletRequest requestContext, EnrollCertificateRequestType enrollcertificateRequest) {
+    public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRequestType enrollcertificateRequest) {
         
         AuthenticationToken authenticationToken;
         try {

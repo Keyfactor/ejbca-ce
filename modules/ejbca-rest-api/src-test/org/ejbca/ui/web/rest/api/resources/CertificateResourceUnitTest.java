@@ -14,41 +14,44 @@ package org.ejbca.ui.web.rest.api.resources;
 
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
+import java.util.HashMap;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CAData;
-import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
-import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaMasterApi;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
-import org.ejbca.ui.web.rest.api.helpers.CADataBuilder;
 import org.ejbca.ui.web.rest.api.types.EnrollCertificateRequestType;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,20 +76,43 @@ public class CertificateResourceUnitTest {
     private static CertificateResource testClass = new CertificateResource();
     
     @Mock
-    private CaSessionLocal caSessionMock;
-
-    @Mock
     private EjbBridgeSessionLocal ejbLocalHelper;
     
     @Mock
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSessionLocal;
+
+    @Mock
+    private RaMasterApi raMasterApi;
+
+    @Mock
+    HttpServletRequest requestContext;
 
     private static EnrollCertificateRequestType requestBody;
     
     
     @BeforeClass
     public static void beforeClass() throws IOException {
-        String csr = "-----BEGIN CERTIFICATE REQUEST-----\\r\\nMIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\\r\\nBgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\\r\\nZWxsbzEyM3NlcnZlcjYwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDX\\r\\nYnPvA2cih5XfeW9yORYVZf+imaC31B50nhbQMA2okQ9EY+eFEl00UrBqFeuzRIiZ\\r\\nctpZtD40hIYMQ35GMABzvXji9DS9f6Ergn0m3P97sH1L2koV2ogBjLw2VhwBZaD1\\r\\nVkrOFWqiHIFR4aORo3fPH9C96gL86prLKRybznJ96MObGsmy9gYR6ktneZ8537Ds\\r\\nouhvuBBt7wfAda/rUPhjoRVrmET5CD/PiCttM8t/AIrFcebnAYU2BbKNqMVF12Xp\\r\\nCXkrbUJ9BDs0mqqpd1c9jFBMPd1JZw4+SrPdP7trpIoCYDtoXkIu3igcwsmsYArZ\\r\\n3pfinFBp/AhYnqDEEMKlAgMBAAGggbEwga4GCSqGSIb3DQEJDjGBoDCBnTBQBgNV\\r\\nHREESTBHggtzb21lZG5zLmNvbYcEwKgBB4ISc29tZS5vdGhlci5kbnMuY29tpB4w\\r\\nHDENMAsGA1UEAxMEVGVzdDELMAkGA1UEBxMCWFgwMQYDVR0lBCowKAYIKwYBBQUH\\r\\nAwEGCCsGAQUFBwMCBggrBgEFBQcDAwYIKwYBBQUHAwQwCQYDVR0TBAIwADALBgNV\\r\\nHQ8EBAMCBeAwDQYJKoZIhvcNAQELBQADggEBAEEkExEQEcPf18niLP7VF8XDIik8\\r\\nD58VcgBKQDd9e0ZVC9liQ58671480+KrSja9RhlkiewbSmVVFRSCEDOA89Aj+mPy\\r\\nUeUrk9yP3Tj2VeMr6JrhhEf39IFqCeQQp7tPXVcb7Rq+ABblSBTEPjXnz+XY0SqW\\r\\nYunDQIKyW4cAM4iEcsinykppRyKmaDBgIh1fh3iWpjLoG7nXk65sexVtDBcX3USY\\r\\nnNuri7HRJEFr7J1GiKZfTbw3wkHtOE/e1WjS7ZhS78K4OLUaciEpIFXRu2SNyj1D\\r\\n+Y+xGNcRBibFqi3j3/00J+bqrXYQCXVMtPa4tDw2GSggKS/rtNK1hKvQfrI=\\r\\n-----END CERTIFICATE REQUEST-----\\r\\n";
+        String csr = "-----BEGIN CERTIFICATE REQUEST-----\\r\\n" +
+                "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\\r\\n" +
+                "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\\r\\n" +
+                "ZWxsbzEyM3NlcnZlcjYwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDX\\r\\n" +
+                "YnPvA2cih5XfeW9yORYVZf+imaC31B50nhbQMA2okQ9EY+eFEl00UrBqFeuzRIiZ\\r\\n" +
+                "ctpZtD40hIYMQ35GMABzvXji9DS9f6Ergn0m3P97sH1L2koV2ogBjLw2VhwBZaD1\\r\\n" +
+                "VkrOFWqiHIFR4aORo3fPH9C96gL86prLKRybznJ96MObGsmy9gYR6ktneZ8537Ds\\r\\n" +
+                "ouhvuBBt7wfAda/rUPhjoRVrmET5CD/PiCttM8t/AIrFcebnAYU2BbKNqMVF12Xp\\r\\n" +
+                "CXkrbUJ9BDs0mqqpd1c9jFBMPd1JZw4+SrPdP7trpIoCYDtoXkIu3igcwsmsYArZ\\r\\n" +
+                "3pfinFBp/AhYnqDEEMKlAgMBAAGggbEwga4GCSqGSIb3DQEJDjGBoDCBnTBQBgNV\\r\\n" +
+                "HREESTBHggtzb21lZG5zLmNvbYcEwKgBB4ISc29tZS5vdGhlci5kbnMuY29tpB4w\\r\\n" +
+                "HDENMAsGA1UEAxMEVGVzdDELMAkGA1UEBxMCWFgwMQYDVR0lBCowKAYIKwYBBQUH\\r\\n" +
+                "AwEGCCsGAQUFBwMCBggrBgEFBQcDAwYIKwYBBQUHAwQwCQYDVR0TBAIwADALBgNV\\r\\n" +
+                "HQ8EBAMCBeAwDQYJKoZIhvcNAQELBQADggEBAEEkExEQEcPf18niLP7VF8XDIik8\\r\\n" +
+                "D58VcgBKQDd9e0ZVC9liQ58671480+KrSja9RhlkiewbSmVVFRSCEDOA89Aj+mPy\\r\\n" +
+                "UeUrk9yP3Tj2VeMr6JrhhEf39IFqCeQQp7tPXVcb7Rq+ABblSBTEPjXnz+XY0SqW\\r\\n" +
+                "YunDQIKyW4cAM4iEcsinykppRyKmaDBgIh1fh3iWpjLoG7nXk65sexVtDBcX3USY\\r\\n" +
+                "nNuri7HRJEFr7J1GiKZfTbw3wkHtOE/e1WjS7ZhS78K4OLUaciEpIFXRu2SNyj1D\\r\\n" +
+                "+Y+xGNcRBibFqi3j3/00J+bqrXYQCXVMtPa4tDw2GSggKS/rtNK1hKvQfrI=\\r\\n" +
+                "-----END CERTIFICATE REQUEST-----";
+
         requestBody = new EnrollCertificateRequestType();
         requestBody.setCertificateProfileId(1);
         requestBody.setEndEntityProfileId(1);
@@ -143,12 +169,11 @@ public class CertificateResourceUnitTest {
         expect(ejbcaRestHelperSessionLocal.getAdmin(EasyMock.anyBoolean(), (X509Certificate)EasyMock.anyObject())).andThrow(new AuthorizationDeniedException());
         
         // when
-        ClientRequest request = server.newRequest("/v1/certificate/enroll");
+        ClientRequest request = server.newRequest("/v1/certificate/pkcs10enroll");
         request.body(MediaType.APPLICATION_JSON, requestBody);
         final ClientResponse actualResponse = request.post();
         Status responseStatus = actualResponse.getResponseStatus();
         // then
         assertEquals(Status.UNAUTHORIZED, responseStatus);
     }
-
 }
