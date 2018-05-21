@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api;
 
+import org.ejbca.ui.web.rest.api.config.ExceptionHandler;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.plugins.server.embedded.SecurityDomain;
 import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
@@ -24,10 +25,13 @@ import java.util.Set;
 
 /**
  * A wrapper utility that creates an instance of TJWSEmbeddedJaxrsServer to run Unit Tests on top of the Resteasy embedded server.
+ * <br/>
+ * By default this server registers ExceptionHandler Provider.
  *
  * @see org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer
+ * @see org.ejbca.ui.web.rest.api.config.ExceptionHandler
  *
- * @version $Id: CaInfoType.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
+ * @version $Id: CaInfoType.java 28909 2018-05-21 12:16:53Z andrey_s_helmes $
  */
 public class InMemoryRestServer implements AutoCloseable {
 
@@ -83,6 +87,8 @@ public class InMemoryRestServer implements AutoCloseable {
         for (Object resource : resources) {
             server.getDeployment().getResources().add(resource);
         }
+        // Add a provider
+        server.getDeployment().getProviderClasses().add(ExceptionHandler.class.getName());
         server.start();
     }
 
