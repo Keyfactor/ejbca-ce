@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.rest.api.types.RestServiceStatusType;
+import org.ejbca.ui.web.rest.api.types.RestResourceStatusType;
 
 /**
  * Base class for common methods used across all REST resources.
@@ -40,7 +40,7 @@ public abstract class BaseRestResource {
      * @return response as Json.
      */
     public Response status() {
-        return Response.ok(RestServiceStatusType.builder()
+        return Response.ok(RestResourceStatusType.builder()
                 .status(RESOURCE_STATUS)
                 .version(RESOURCE_VERSION)
                 .revision(RESOURCE_REVISION)
@@ -51,7 +51,7 @@ public abstract class BaseRestResource {
     /**
      * Returns an AuthenticationToken for the requesting administrator based on the SSL client certificate
      * @param requestContext HTTP context
-     * @param false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
+     * @param allowNonAdmins false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
      * @return AuthenticationToken for the requesting administrator
      * @throws AuthorizationDeniedException
      */

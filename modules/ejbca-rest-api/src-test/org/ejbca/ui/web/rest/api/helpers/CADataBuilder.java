@@ -36,7 +36,7 @@ public class CADataBuilder {
     /**
      * A self-signed dummy CA's name.
      */
-    public static final String TEST_CA_NAME = "E=testCa@testCa.org,CN=TestCA,OU=Test CA Unit,O=Test CA,L=City,ST=Some-State,C=XX";
+    public static final String TEST_CA_NAME = "TestCA";
     /**
      * A self-signed dummy CA's issuer.
      */
@@ -135,7 +135,7 @@ public class CADataBuilder {
     public static X509CAInfo getTestX509CAInfo() {
         final X509CAInfo x509CaInfo = new X509CAInfo(
                 CertTools.getSubjectDN(testCaCertificate),
-                TEST_CA_SUBJECT_DN,
+                TEST_CA_NAME,
                 CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 "1d",
@@ -143,6 +143,10 @@ public class CADataBuilder {
                 Collections.singletonList(testCaCertificate),
                 getTestCAToken());
         x509CaInfo.setDescription("JUnit RSA CA");
+        System.out.println("getTestX509CAInfo:name");
+        System.out.println(x509CaInfo.getName());
+        System.out.println("getTestX509CAInfo:CAInfo");
+        System.out.println(((CAInfo)x509CaInfo).getName());
         return x509CaInfo;
     }
 
@@ -160,6 +164,10 @@ public class CADataBuilder {
         final X509CA x509CA = new X509CA(getTestX509CAInfo());
         x509CA.setCAToken(getTestCAToken());
         x509CA.setCertificateChain(Collections.singletonList(testCaCertificate));
+        System.out.println("getTestX509Ca:name");
+        System.out.println(x509CA.getName());
+        System.out.println("getTestX509Ca:CA");
+        System.out.println(((CA)x509CA).getName());
         return x509CA;
     }
 
