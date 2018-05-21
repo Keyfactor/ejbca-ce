@@ -76,7 +76,9 @@ import org.ejbca.ui.web.rest.api.converters.CertificateConverter;
 import org.ejbca.ui.web.rest.api.types.CertificateTypes;
 import org.ejbca.ui.web.rest.api.types.EnrollCertificateRequestType;
 import org.ejbca.ui.web.rest.api.types.EnrollCertificateResponseType;
+import org.ejbca.ui.web.rest.api.types.ResponseStatus;
 import org.ejbca.ui.web.rest.api.types.RevocationResultType;
+import org.ejbca.ui.web.rest.api.types.response.ExpiringCertificatesResponse;
 import org.ejbca.ui.web.rest.common.BaseRestResource;
 
 /**
@@ -372,15 +374,25 @@ public class CertificateResource extends BaseRestResource {
     @GET
     @Path("/expire")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext){
+    public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext,
+                                                 @QueryParam("days") int days,
+                                                 @QueryParam("offset") int offset,
+                                                 @QueryParam("maxNumberOfResults") int maxNumberOfResults){
         if (requestContext == null) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Missing request context").build();
         }
         try {
             final AuthenticationToken admin = getAdmin(requestContext, true);
-            List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(800, 10);
+            int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
+            List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset);
+            int processedResults = offset + maxNumberOfResults;
+            ResponseStatus responseStatus = ResponseStatus.builder().setMoreResults(count > processedResults)
+                    .setNextOffset(offset + maxNumberOfResults + 1)
+                    .setNumberOfResults(count - processedResults)
+                    .build();
             CertificateTypes certificateTypes = new CertificateTypes(certificateConverter.toTypes(expiringCertificates));
-            return Response.ok(certificateTypes).build();
+            ExpiringCertificatesResponse response = new ExpiringCertificatesResponse(responseStatus, certificateTypes);
+            return Response.ok(response).build();
         } catch (AuthorizationDeniedException e) {
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
         } catch (CertificateEncodingException e) {

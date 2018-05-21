@@ -783,20 +783,18 @@ public interface RaMasterApi {
 
     /**
      * Retrieves the certificates whose expiration date is before the specified number of days.
-     *
-     *  Note the whole certificate chain is returned.
-     *
-     * Authorization requirements:<pre>
-     * - /administrator
-     * - /ra_functionality/view_end_entity
-     * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
-     * - /ca/&lt;ca of user&gt;
-     * </pre>
-     *
      * @param days the number of days before the certificates will expire
      * @param maxNumberOfResults the maximum number of returned certificates
+     * @param offset return results starting from offset
      * @return A list of certificates, never null
      * @throws EjbcaException if at least one of the certificates is unreadable
      */
-    List<Certificate> getCertificatesByExpirationTime(long days, int maxNumberOfResults);
+    List<Certificate> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days, int maxNumberOfResults, int offset) throws AuthorizationDeniedException;
+
+    /**
+     * Finds count of certificates  expiring within a specified time and that have
+     * status "active" or "notifiedaboutexpiration".
+     * @param days the number of days before the certificates will expire
+     * @return return count of query results. */
+    int getCountOfCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days) throws AuthorizationDeniedException;
 }
