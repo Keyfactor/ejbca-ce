@@ -614,6 +614,30 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
+    public int countByExpireDate(Date expireDate) {
+        return certificateDataSession.countByExpireDate(expireDate.getTime());
+    }
+
+    @Override
+    public List<Certificate> findByExpireDateWithLimitAndOffset(Date expireTime, int maxNumberOfResults, int offset) {
+        log.trace(">findByExpireDateWithLimitAndOffset(), time=" + expireTime + " - maxNumberOfResults=" + maxNumberOfResults + " - offset=" + offset);
+        log.debug("Looking for certs that expire before: " + expireTime);
+        List<CertificateData> certificateDatas = certificateDataSession.findByExpireDateWithLimitAndOffset(expireTime.getTime(), maxNumberOfResults, offset);
+        log.debug("Found " + certificateDatas.size() + " certificates that expire before " + expireTime);
+        final List<Certificate> ret = new ArrayList<>();
+        for (final CertificateData certificateData : certificateDatas) {
+            final Certificate certificate = certificateData.getCertificate(entityManager);
+            if (certificate == null) {
+                log.debug("Skipping CertificateData with fingerprint '" + certificateData.getFingerprint() + "' since it has no stored certificate.");
+            } else {
+                ret.add(certificate);
+            }
+        }
+        log.trace("<findByExpireDateWithLimitAndOffset(), time=" + expireTime + " - maxNumberOfResults=" + maxNumberOfResults + " - offset=" + offset);
+        return ret;
+    }
+
+    @Override
     public List<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN, int maxNumberOfResults) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByExpireTimeWithLimit(), time=" + expireTime + "  - issuerDN=" + issuerDN + "  - maxNumberOfResults=" + maxNumberOfResults);

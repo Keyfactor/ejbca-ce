@@ -76,6 +76,12 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     
     /** @return return the query results as a List. */
     List<CertificateData> findByExpireDateWithLimit(long expireDate, int maxNumberOfResults);
+
+    /** @return return the query results as a List. */
+    List<CertificateData> findByExpireDateWithLimitAndOffset(long expireDate, int maxNumberOfResults, int offset);
+
+    /** @return return count of query results. */
+    int countByExpireDate(long expireDate);
     
     /** @return return the query results as a List. */
     List<CertificateData> findByExpireDateAndIssuerWithLimit(long expireDate, String issuerDN, int maxNumberOfResults);

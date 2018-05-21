@@ -2178,11 +2178,29 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return caSession.getCAInfoInternal(caid).getCertificateChain();
     }
 
-    public List<Certificate> getCertificatesByExpirationTime(long days, int maxNumberOfResults) {
+    public List<Certificate> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days, int maxNumberOfResults, int offset) throws AuthorizationDeniedException {
+        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate")) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", null);
+            throw new AuthorizationDeniedException(msg);
+        }
+        Date findDate = getDate(days);
+        return certificateStoreSession.findByExpireDateWithLimitAndOffset(findDate, maxNumberOfResults, offset);
+    }
+
+    private Date getDate(long days) {
         Date findDate = new Date();
         long millis = (days * 24 * 60 * 60 * 1000);
         findDate.setTime(findDate.getTime() + millis);
-        List<Certificate> certificates = certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate, maxNumberOfResults);
-        return certificates;
+        return findDate;
+    }
+
+    @Override
+    public int getCountOfCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days) throws AuthorizationDeniedException {
+        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate")) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", null);
+            throw new AuthorizationDeniedException(msg);
+        }
+        Date findDate = getDate(days);
+        return certificateStoreSession.countByExpireDate(findDate);
     }
 }

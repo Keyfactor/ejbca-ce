@@ -1756,17 +1756,30 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public List<Certificate> getCertificatesByExpirationTime(long days, int maxNumberOfResults) {
-        NoSuchAliasException caughtException = null;
+    public List<Certificate> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days, int maxNumberOfResults, int offset) throws AuthorizationDeniedException {
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getCertificatesByExpirationTime(days, maxNumberOfResults);
+                    return raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, maxNumberOfResults, offset);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
         return null;
+    }
+
+    @Override
+    public int getCountOfCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days) throws AuthorizationDeniedException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.getCountOfCertificatesByExpirationTime(authenticationToken, days);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return 0;
     }
 }

@@ -38,8 +38,8 @@ import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ValueExtractor;
 
 /**
- * Low level CRUD functions to access CertificateData 
- *  
+ * Low level CRUD functions to access CertificateData
+ *
  * @version $Id$
  */
 @Stateless //(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateDataSessionRemote")
@@ -50,17 +50,17 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
-    
+
     @Override
     protected String getTableName() {
         return "CertificateData";
     }
-    
+
     @Override
     protected EntityManager getEntityManager() {
         return entityManager;
     }
-    
+
     //
     // Search functions.
     //
@@ -252,6 +252,28 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
     }
 
     @Override
+    public List<CertificateData> findByExpireDateWithLimitAndOffset(long expireDate, int maxNumberOfResults, int offset) {
+        final TypedQuery<CertificateData> query = entityManager
+                .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2) order by a.expireDate asc", CertificateData.class);
+        query.setParameter("expireDate", expireDate);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setMaxResults(maxNumberOfResults);
+        query.setFirstResult(offset);
+        return query.getResultList();
+    }
+
+
+    @Override
+    public int countByExpireDate(long expireDate) {
+        Query query = entityManager.createQuery("SELECT count(a) FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2) ");
+        query.setParameter("expireDate", expireDate);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        return ((Long) query.getSingleResult()).intValue();
+    }
+
+    @Override
     public List<CertificateData> findByExpireDateAndIssuerWithLimit(final long expireDate, final String issuerDN, final int maxNumberOfResults) {
         final TypedQuery<CertificateData> query = entityManager
                 .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2) AND issuerDN=:issuerDN", CertificateData.class);
@@ -301,7 +323,7 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         }
         return cl;
     }
-    
+
     @Override
     public List<Certificate> findCertificatesByIssuerDnAndSerialNumbers(final String issuerDN, final Collection<BigInteger> serialNumbers) {
         final StringBuilder sb = new StringBuilder();
@@ -428,6 +450,6 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         // log.debug("findExpirationInfo: "+query.unwrap(org.hibernate.Query.class).getQueryString());
         return query.getResultList();
     }
-    
-    
+
+
 }
