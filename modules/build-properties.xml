@@ -326,6 +326,10 @@
     	<path location="${mod.ejbca-common.lib}"/>
 	</path>
 
+	<path id="lib.ejbca-ws.classpath">
+		<path location="${mod.ejbca-ws.lib}"/>
+	</path>
+
 	<path id="lib.ejbca-common-web.classpath">
     	<path refid="lib.ejbca-common.classpath"/>
     	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>

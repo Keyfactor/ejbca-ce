@@ -19,24 +19,23 @@ import java.util.Date;
 
 /**
  * Revocation result type holder. Used to produce JSON.
- * @version $Id$
  *
+ * @version $Id$
  */
 public class RevocationResultType {
 
-    public static final String STATUS_ALREADYREVOKED       = "Already revoked";
-    public static final String STATUS_ERROR                = "Error";
     public static final String STATUS_REVOKED              = "Revoked";
-    public static final String STATUS_WAITINGFORAPPROVAL   = "Waiting for approval"; 
-    
+
     private BigInteger serialNumber;
     private Date revocationDate;
     private String status;
     private String message;
     
-    public RevocationResultType(BigInteger serialNumber, String status) {
+    public RevocationResultType(BigInteger serialNumber, Date revocationDate, String status, String message) {
         this.serialNumber = serialNumber;
+        this.revocationDate = revocationDate;
         this.status = status;
+        this.message = message;
     }
 
     public BigInteger getSerialNumber() {

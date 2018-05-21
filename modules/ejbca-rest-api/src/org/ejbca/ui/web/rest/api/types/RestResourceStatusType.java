@@ -15,19 +15,19 @@ package org.ejbca.ui.web.rest.api.types;
 /**
  * A class representing the status information of a REST resource.
  *
- * @version $Id: RestServiceStatusType.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
+ * @version $Id: RestResourceStatusType.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
  */
-public class RestServiceStatusType {
+public class RestResourceStatusType {
 
     private String status;
     private String version;
     private String revision;
     // TODO Possible extra info: Authentication info, token information, token validity and etc.
 
-    public RestServiceStatusType() {
+    public RestResourceStatusType() {
     }
 
-    private RestServiceStatusType(String status, String version, String revision) {
+    private RestResourceStatusType(String status, String version, String revision) {
         this.status = status;
         this.version = version;
         this.revision = revision;
@@ -145,12 +145,12 @@ public class RestServiceStatusType {
         }
 
         /**
-         * Builds an instance of RestServiceStatusType using this builder.
+         * Builds an instance of RestResourceStatusType using this builder.
          *
-         * @return instance of RestServiceStatusType using this builder.
+         * @return instance of RestResourceStatusType using this builder.
          */
-        public RestServiceStatusType build() {
-            return new RestServiceStatusType(
+        public RestResourceStatusType build() {
+            return new RestResourceStatusType(
                     status,
                     version,
                     revision

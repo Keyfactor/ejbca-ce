@@ -20,9 +20,6 @@ import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.helpers.CADataBuilder;
-import org.ejbca.ui.web.rest.api.types.CaInfoType;
-import org.ejbca.ui.web.rest.api.types.CaInfoTypes;
-import org.ejbca.ui.web.rest.api.types.RestServiceStatusType;
 import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -152,7 +149,6 @@ public class CaResourceUnitTest {
         final String actualJsonString = (String) actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get("certificateAuthorities");
-        System.out.println(actualJsonString);
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON, actualContentType);

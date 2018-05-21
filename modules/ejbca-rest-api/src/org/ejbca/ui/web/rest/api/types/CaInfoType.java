@@ -33,7 +33,6 @@ public class CaInfoType {
     public CaInfoType() {
     }
 
-    // Private
     private CaInfoType(final Integer id, final String name, final String subjectDn, final String issuerDn, final Date expirationDate) {
         this.id = id;
         this.name = name;

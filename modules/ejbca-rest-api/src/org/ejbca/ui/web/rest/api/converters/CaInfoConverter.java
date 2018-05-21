@@ -66,11 +66,8 @@ public class CaInfoConverter {
     // Extracts the Issuer DN using certificate data
     private String extractIssuerDn(final CAData caData) {
         final CA ca = caData.getCA();
-        if(ca != null) {
-            final Certificate caCertificate = ca.getCACertificate();
-            if (caCertificate != null) {
-                return CertTools.getIssuerDN(caData.getCA().getCACertificate());
-            }
+        if(ca != null && ca.getCACertificate() != null) {
+            return CertTools.getIssuerDN(caData.getCA().getCACertificate());
         }
         return "unknown";
     }
