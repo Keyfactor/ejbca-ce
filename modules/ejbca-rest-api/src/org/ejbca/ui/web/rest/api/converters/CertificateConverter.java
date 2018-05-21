@@ -7,6 +7,7 @@ import org.ejbca.ui.web.rest.api.types.CertificateType;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,14 @@ public class CertificateConverter {
         return CertificateType.builder()
                 .setCertificate(Base64.encode(certificate.getEncoded()))
                 .setSerialNumber(CertTools.getSerialNumber(certificate))
+                .build();
+    }
+
+    public CertificateType toType(X509Certificate certificate) throws CertificateEncodingException {
+        certificate.getType();
+        return CertificateType.builder()
+                .setCertificate(certificate.getEncoded())
+                .setSerialNumber(certificate.getSerialNumber())
                 .build();
     }
 
