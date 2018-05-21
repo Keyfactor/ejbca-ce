@@ -73,9 +73,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.protocol.DateNotValidException;
 import org.ejbca.ui.web.rest.api.converters.CertificateConverter;
+import org.ejbca.ui.web.rest.api.types.CertificateType;
 import org.ejbca.ui.web.rest.api.types.CertificateTypes;
 import org.ejbca.ui.web.rest.api.types.EnrollCertificateRequestType;
-import org.ejbca.ui.web.rest.api.types.EnrollCertificateResponseType;
 import org.ejbca.ui.web.rest.api.types.ResponseStatus;
 import org.ejbca.ui.web.rest.api.types.RevocationResultType;
 import org.ejbca.ui.web.rest.api.types.response.ExpiringCertificatesResponse;
@@ -247,9 +247,9 @@ public class CertificateResource extends BaseRestResource {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
         
-        EnrollCertificateResponseType enrollCertificateResponse = null;
+        CertificateType enrollCertificateResponse = null;
         try {
-            enrollCertificateResponse = new EnrollCertificateResponseType(cert.getEncoded(), cert.getSerialNumber());
+            enrollCertificateResponse = certificateConverter.toType(cert);
         } catch (CertificateEncodingException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
