@@ -229,7 +229,7 @@ public class CertificateResource extends BaseRestResource {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
 
-        CertificateType enrollCertificateResponse = null;
+        CertificateResponse enrollCertificateResponse = null;
         try {
             enrollCertificateResponse = certificateConverter.toType(cert);
         } catch (CertificateEncodingException e) {
