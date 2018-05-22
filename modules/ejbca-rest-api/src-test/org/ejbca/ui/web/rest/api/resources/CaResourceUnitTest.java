@@ -12,14 +12,18 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resources;
 
-import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CAData;
-import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
-import org.ejbca.ui.web.rest.api.helpers.CADataBuilder;
+import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
 import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -29,11 +33,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Date;
 
 import static org.easymock.EasyMock.*;
@@ -53,13 +57,21 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(EasyMockRunner.class)
 public class CaResourceUnitTest {
 
+    private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
+    // Extend class to test without security
+    private static class CaResourceWithoutSecurity extends CaResource {
+        @Override
+        protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException {
+            return authenticationToken;
+        }
+    }
     public static InMemoryRestServer server;
     private static final JSONParser jsonParser = new JSONParser();
 
     @TestSubject
-    private static CaResource testClass = new CaResource();
+    private static CaResource testClass = new CaResourceWithoutSecurity();
     @Mock
-    private CaSessionLocal caSessionMock;
+    private RaMasterApiProxyBeanLocal raMasterApiProxy;
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -109,8 +121,8 @@ public class CaResourceUnitTest {
     @Test
     public void shouldReturnEmptyListOfCas() throws Exception {
         // given
-        expect(caSessionMock.findAll()).andReturn(Collections.<CAData>emptyList());
-        replay(caSessionMock);
+        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(new IdNameHashMap<CAInfo>());
+        replay(raMasterApiProxy);
         // when
         final ClientResponse actualResponse = server.newRequest("/v1/ca").get();
         final String actualContentType = getContentType(actualResponse);
@@ -122,27 +134,26 @@ public class CaResourceUnitTest {
         assertEquals(MediaType.APPLICATION_JSON, actualContentType);
         assertNotNull(actualCertificateAuthorities);
         assertEquals(0, actualCertificateAuthorities.size());
-        verify(caSessionMock);
+        verify(raMasterApiProxy);
     }
 
     @Test
     public void shouldReturnListOfCasWithOneProperCa() throws Exception {
         // given
-        final String expectedSubjectDn = CADataBuilder.TEST_CA_SUBJECT_DN;
-        final String expectedName = CADataBuilder.TEST_CA_NAME;
+        final String expectedSubjectDn = CaInfoBuilder.TEST_CA_SUBJECT_DN;
+        final String expectedName = CaInfoBuilder.TEST_CA_NAME;
         final int expectedId = 11;
-        final String expectedIssuerDn = CADataBuilder.TEST_CA_ISSUER_DN;
+        final String expectedIssuerDn = CaInfoBuilder.TEST_CA_ISSUER_DN;
         final Date expectedExpirationDate = new Date();
         final long expectedExpirationDateLong = expectedExpirationDate.getTime();
-        final CAData caData = CADataBuilder.builder()
+        final CAInfo cAInfo = CaInfoBuilder.builder()
                 .id(expectedId)
-                .subjectDn(expectedSubjectDn)
-                .name(expectedName)
-                .status(CAConstants.CA_ACTIVE)
                 .expirationDate(expectedExpirationDate)
                 .build();
-        expect(caSessionMock.findAll()).andReturn(Collections.singletonList(caData));
-        replay(caSessionMock);
+        final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
+        caInfosMap.put(expectedId, expectedName, cAInfo);
+        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(caInfosMap);
+        replay(raMasterApiProxy);
         // when
         final ClientResponse actualResponse = server.newRequest("/v1/ca").get();
         final String actualContentType = getContentType(actualResponse);
@@ -170,7 +181,7 @@ public class CaResourceUnitTest {
         assertEquals(expectedIssuerDn, actualIssuerDn);
         assertNotNull(actualExpirationDateLong);
         assertEquals(expectedExpirationDateLong, actualExpirationDateLong);
-        verify(caSessionMock);
+        verify(raMasterApiProxy);
     }
 
 }
