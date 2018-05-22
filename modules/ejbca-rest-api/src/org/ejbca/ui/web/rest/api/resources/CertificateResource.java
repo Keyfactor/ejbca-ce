@@ -155,9 +155,6 @@ public class CertificateResource extends BaseRestResource {
         boolean isSendNotificationDefaultInProfile = EndEntityProfile.TRUE.equals(endEntityProfile.getValue(EndEntityProfile.SENDNOTIFICATION, 0));
         endEntityInformation.setSendNotification(isSendNotificationDefaultInProfile && !endEntityInformation.getSendNotification());
 
-        boolean isKeyRecoverableDefaultInProfile = EndEntityProfile.TRUE.equals(endEntityProfile.getValue(EndEntityProfile.KEYRECOVERABLE, 0));
-        endEntityInformation.setKeyRecoverable(isKeyRecoverableDefaultInProfile && !endEntityInformation.getKeyRecoverable());
-
         endEntityInformation.setPrintUserData(false);
         endEntityInformation.setTokenType(EndEntityConstants.TOKEN_USERGEN);
 
@@ -215,6 +212,10 @@ public class CertificateResource extends BaseRestResource {
         try {
             endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest()).getEncoded());
             certificate = raMasterApi.createCertificate(authenticationToken, endEntityInformation);
+            
+            // refacto from review
+            raMasterApi.createCertificate
+            
         } catch (IOException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         } catch (AuthorizationDeniedException e) {
