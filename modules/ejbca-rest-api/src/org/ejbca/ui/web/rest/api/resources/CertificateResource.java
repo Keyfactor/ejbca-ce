@@ -207,7 +207,7 @@ public class CertificateResource extends BaseRestResource {
     }
 
 
-    private String getSubjectAltName(PKCS10CertificationRequest pkcs10CertificateRequest) {
+    protected String getSubjectAltName(PKCS10CertificationRequest pkcs10CertificateRequest) {
         String altName = null;
         final Extension subjectAlternativeNameExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
         if (subjectAlternativeNameExtension != null) {
@@ -217,7 +217,7 @@ public class CertificateResource extends BaseRestResource {
     }
 
 
-    private String getSubjectDn(PKCS10CertificationRequest pkcs10CertificateRequest) {
+    protected String getSubjectDn(PKCS10CertificationRequest pkcs10CertificateRequest) {
         String subject = "";
         if (pkcs10CertificateRequest.getSubject() != null) {
             subject = pkcs10CertificateRequest.getSubject().toString();
