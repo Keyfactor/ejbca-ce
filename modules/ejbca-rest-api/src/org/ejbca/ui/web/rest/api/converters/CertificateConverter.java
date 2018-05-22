@@ -2,7 +2,7 @@ package org.ejbca.ui.web.rest.api.converters;
 
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.ui.web.rest.api.types.CertificateType;
+import org.ejbca.ui.web.rest.api.types.CertificateResponse;
 
 
 import java.security.cert.Certificate;
@@ -16,8 +16,8 @@ import java.util.List;
  */
 public class CertificateConverter {
 
-    public List<CertificateType> toTypes(final List<Certificate> certificateList) throws CertificateEncodingException {
-        final List<CertificateType> certificateTypes = new ArrayList<>();
+    public List<CertificateResponse> toTypes(final List<Certificate> certificateList) throws CertificateEncodingException {
+        final List<CertificateResponse> certificateTypes = new ArrayList<>();
         if (certificateList != null && !certificateList.isEmpty()) {
             for (final Certificate certificate : certificateList) {
                 certificateTypes.add(toType(certificate));
@@ -26,17 +26,17 @@ public class CertificateConverter {
         return certificateTypes;
     }
 
-    private CertificateType toType(Certificate certificate) throws CertificateEncodingException {
+    private CertificateResponse toType(Certificate certificate) throws CertificateEncodingException {
         certificate.getType();
-        return CertificateType.builder()
+        return CertificateResponse.builder()
                 .setCertificate(Base64.encode(certificate.getEncoded()))
                 .setSerialNumber(CertTools.getSerialNumber(certificate))
                 .build();
     }
 
-    public CertificateType toType(X509Certificate certificate) throws CertificateEncodingException {
+    public CertificateResponse toType(X509Certificate certificate) throws CertificateEncodingException {
         certificate.getType();
-        return CertificateType.builder()
+        return CertificateResponse.builder()
                 .setCertificate(certificate.getEncoded())
                 .setSerialNumber(certificate.getSerialNumber())
                 .build();
