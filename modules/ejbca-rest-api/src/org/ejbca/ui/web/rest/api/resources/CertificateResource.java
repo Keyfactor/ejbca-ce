@@ -213,8 +213,6 @@ public class CertificateResource extends BaseRestResource {
             endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest()).getEncoded());
             certificate = raMasterApi.createCertificate(authenticationToken, endEntityInformation);
             
-            // refacto from review
-            raMasterApi.createCertificate
             
         } catch (IOException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
