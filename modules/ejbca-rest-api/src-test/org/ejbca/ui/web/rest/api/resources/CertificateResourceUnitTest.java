@@ -16,12 +16,15 @@ import static org.easymock.EasyMock.anyBoolean;
 import static org.easymock.EasyMock.anyInt;
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.anyString;
+import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -29,6 +32,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -85,7 +89,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(EasyMockRunner.class)
 public class CertificateResourceUnitTest {
-    
+
     private static final JSONParser jsonParser = new JSONParser();
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
@@ -130,7 +134,7 @@ public class CertificateResourceUnitTest {
             + "3V1hMBajTMGN9emWLR6pfj5P7QpVR4hkv3LvgCPf474pWA9l/4WiKBzrI76T5yz1\n"
             + "KoobCZQ2UrqnKFGEbdoNFchb2CDgdLnFu6Tbf6MW5zO5ypOIUih61Zf9Qyo=\n"
             + "-----END CERTIFICATE REQUEST-----\n";
-    
+
     static final byte[] testCertificateBytes = Base64.decode((
             "MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
@@ -413,7 +417,7 @@ public class CertificateResourceUnitTest {
         assertEquals(expectedErrorMessage, actualErrorMessage);
         verify(raMasterApiProxy);
     }
-    
+
     @Test
     public void shouldEnrollCert() throws Exception {
         
@@ -426,18 +430,18 @@ public class CertificateResourceUnitTest {
         int status = 20;
         String encodedValidity = "";
         int signedby = 1;
-        
+
         EnrollCertificateRequestType requestBody = new EnrollCertificateRequestType();
         requestBody.setCertificateProfileId(certificateProfileId);
         requestBody.setEndEntityProfileId(endEntityProfileId);
         requestBody.setCertificateAuthorityId(certificateAuthorityId);
         requestBody.setCertificateRequest(csr);
-        
+
         X509Certificate mockX509Cert = EasyMock.mock(X509Certificate.class);
 
         X509Certificate[] certs = new X509Certificate[1];
         certs[0] = mockX509Cert;
-        
+
         Collection<Certificate> certificatechain = new ArrayList<>();
         CAToken caToken = EasyMock.mock(CAToken.class);
 
@@ -463,19 +467,19 @@ public class CertificateResourceUnitTest {
         expect(raMasterApiProxy.createCertificate((AuthenticationToken)EasyMock.anyObject(), (EndEntityInformation)EasyMock.anyObject())).andReturn(testCertificateBytes);
         
         replay(raMasterApiProxy);
-        
+
         // when
         ClientRequest request = server.newRequest("/v1/certificate/pkcs10enroll");
         request.body(MediaType.APPLICATION_JSON, requestBody);
 
         final ClientResponse actualResponse = request.post();
         Status responseStatus = actualResponse.getResponseStatus();
-        
+
         // then
         assertEquals(Status.OK, responseStatus);
         EasyMock.verify(raMasterApiProxy);
     }
-    
+
     @Test
     public void shouldParseCorrectDn() {
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
@@ -483,12 +487,116 @@ public class CertificateResourceUnitTest {
         String expectedResult = "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6";
         assertEquals(expectedResult, actualResult);
     }
-    
+
     @Test
     public void shouldParseCorrectAn() {
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
         String actualResult = testClass.getSubjectAltName(pkcs10CertificateRequest);
         String expectedResult = "dNSName=somedns.com, iPAddress=192.168.1.7, dNSName=some.other.dns.com, directoryName=CN=Test\\,L=XX";
         assertEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void shouldReturnNoMoreExpiredCertificates() throws Exception {
+        // given
+        long days = 1;
+        int offset = 0;
+        int maxNumberOfResults = 0;
+
+        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(0).times(1);
+        expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
+                .andReturn(Collections.<Certificate>emptyList());
+
+        replay(raMasterApiProxy);
+        // when
+        final ClientRequest clientRequest = server
+                .newRequest("/v1/certificate/expire")
+                .queryParameter("days", days)
+                .queryParameter("offset", offset)
+                .queryParameter("maxNumberOfResults", maxNumberOfResults);
+        final ClientResponse actualResponse = clientRequest.get();
+        Status status = actualResponse.getResponseStatus();
+        final String actualContentType = getContentType(actualResponse);
+        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final boolean moreResults  = (Boolean) ((JSONObject)actualJsonObject.get("responseStatus")).get("moreResults");
+        // then
+        assertEquals(Status.OK, status);
+        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
+        assertFalse(moreResults);
+        EasyMock.verify(raMasterApiProxy);
+    }
+
+    @Test
+    public void shouldReturnAreMoreResultsAndNextOffsetAndNumberOfResultsLeft() throws Exception {
+        // given
+        long days = 1;
+        int offset = 0;
+        int maxNumberOfResults = 4;
+
+        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
+        expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
+                .andReturn(Collections.<Certificate>emptyList());
+
+        replay(raMasterApiProxy);
+        // when
+        final ClientRequest clientRequest = server
+                .newRequest("/v1/certificate/expire")
+                .queryParameter("days", days)
+                .queryParameter("offset", offset)
+                .queryParameter("maxNumberOfResults", maxNumberOfResults);
+        final ClientResponse actualResponse = clientRequest.get();
+        Status status = actualResponse.getResponseStatus();
+        final String actualContentType = getContentType(actualResponse);
+        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        JSONObject responseStatus = (JSONObject) actualJsonObject.get("responseStatus");
+        final boolean moreResults  = (Boolean) responseStatus.get("moreResults");
+        final long nextOffset  = (Long) responseStatus.get("nextOffset");
+        final long numberOfResults  = (Long) responseStatus.get("numberOfResults");
+        // then
+        assertEquals(Status.OK, status);
+        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
+        assertTrue(moreResults);
+        assertEquals(5l, nextOffset);
+        assertEquals(6l, numberOfResults);
+        EasyMock.verify(raMasterApiProxy);
+    }
+
+
+    @Test
+    public void shouldReturnAreMoreResultsAndNextOffsetAndNumberOfResultsLeftWithNotZeroOffset() throws Exception {
+        // given
+        long days = 1;
+        int offset = 3;
+        int maxNumberOfResults = 4;
+
+        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
+        expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
+                .andReturn(Collections.<Certificate>emptyList());
+
+        replay(raMasterApiProxy);
+        // when
+        final ClientRequest clientRequest = server
+                .newRequest("/v1/certificate/expire")
+                .queryParameter("days", days)
+                .queryParameter("offset", offset)
+                .queryParameter("maxNumberOfResults", maxNumberOfResults);
+        final ClientResponse actualResponse = clientRequest.get();
+        Status status = actualResponse.getResponseStatus();
+        final String actualContentType = getContentType(actualResponse);
+        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        JSONObject responseStatus = (JSONObject) actualJsonObject.get("responseStatus");
+        final boolean moreResults  = (Boolean) responseStatus.get("moreResults");
+        final long nextOffset  = (Long) responseStatus.get("nextOffset");
+        final long numberOfResults  = (Long) responseStatus.get("numberOfResults");
+        // then
+        assertEquals(Status.OK, status);
+        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
+        assertTrue(moreResults);
+        assertEquals(8l, nextOffset);
+        assertEquals(3l, numberOfResults);
+        EasyMock.verify(raMasterApiProxy);
     }
 }

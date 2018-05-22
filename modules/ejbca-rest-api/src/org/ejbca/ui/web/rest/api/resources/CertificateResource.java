@@ -310,7 +310,7 @@ public class CertificateResource extends BaseRestResource {
     @Path("/expire")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext,
-                                                 @QueryParam("days") int days,
+                                                 @QueryParam("days") long days,
                                                  @QueryParam("offset") int offset,
                                                  @QueryParam("maxNumberOfResults") int maxNumberOfResults) {
         if (requestContext == null) {
