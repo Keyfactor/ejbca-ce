@@ -112,22 +112,24 @@ public class CertificateResource extends BaseRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRequestType enrollcertificateRequest) 
-            throws RestException, AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, CertificateParsingException, 
-            IOException, CertificateEncodingException {
+            throws RestException, AuthorizationDeniedException {
 
-        AuthenticationToken authenticationToken = getAdmin(requestContext, false);
-        EndEntityInformation endEntityInformation = fillEndEntityInformation(enrollcertificateRequest, authenticationToken);
-        
-        addEndEntity(authenticationToken, endEntityInformation);
-        
-        endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest()).getEncoded());
-        byte[] certificate = raMasterApi.createCertificate(authenticationToken, endEntityInformation);
-        
-        X509Certificate cert = CertTools.getCertfromByteArray(certificate, X509Certificate.class);
-        
-        CertificateResponse enrollCertificateResponse = certificateConverter.toType(cert);
-        
-        return Response.ok(enrollCertificateResponse).build();
+        try {
+            AuthenticationToken authenticationToken = getAdmin(requestContext, false);
+            EndEntityInformation endEntityInformation = fillEndEntityInformation(enrollcertificateRequest, authenticationToken);
+            
+            addEndEntity(authenticationToken, endEntityInformation);
+            
+            endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest()).getEncoded());
+            byte[] certificate = raMasterApi.createCertificate(authenticationToken, endEntityInformation);
+            
+            X509Certificate cert = CertTools.getCertfromByteArray(certificate, X509Certificate.class);
+            
+            CertificateResponse enrollCertificateResponse = certificateConverter.toType(cert);
+            return Response.ok(enrollCertificateResponse).build();
+        } catch (EjbcaException | WaitingForApprovalException | CertificateParsingException | IOException | CertificateEncodingException e){
+            throw new RestException(400, e.getMessage());
+        }
     }
 
     private void addEndEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
