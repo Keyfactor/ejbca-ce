@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.types;
 
+/**
+ * A class representing the input for certificate enrollment REST method.
+ *
+ * @version $Id: EnrollCertificateRequestType.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
+ */
 public class EnrollCertificateRequestType {
         
     private String certificateRequest;
