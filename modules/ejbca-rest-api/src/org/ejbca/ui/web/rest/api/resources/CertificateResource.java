@@ -258,7 +258,7 @@ public class CertificateResource extends BaseRestResource {
      *
      * @param requestContext HttpServletRequest
      * @param issuerDN       of the certificate to revoke
-     * @param serialNumber   decimal serial number
+     * @param serialNumber   HEX encoded serial number
      * @param reason         revocation reason.
      * @param date           revocation date (optional). Must be valid ISO8601 date string
      * @return JSON representation of serialNr, revocation status, date and optional message
@@ -280,7 +280,7 @@ public class CertificateResource extends BaseRestResource {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid revocation reason.");
         }
         final int revocationReason = reasons.getDatabaseValue();
-        final BigInteger serialNr = new BigInteger(serialNumber);
+        final BigInteger serialNr = CertTools.getDecFromHexIgnorePrefix(serialNumber);
         Date revocationDate;
         if (date != null) {
             revocationDate = getValidatedRevocationDate(date);
