@@ -16,13 +16,11 @@ package org.ejbca.ui.web.rest.api.resources;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.ui.web.rest.api.converters.CaInfoConverter;
-import org.ejbca.ui.web.rest.api.types.CaInfoTypes;
+import org.ejbca.ui.web.rest.api.types.response.CaInfoTypes;
 import org.ejbca.ui.web.rest.common.BaseRestResource;
 
 import javax.ejb.EJB;
@@ -49,17 +47,13 @@ import java.util.Collection;
 @Stateless
 public class CaResource extends BaseRestResource {
 
-    private static final Logger log = Logger.getLogger(CaResource.class);
-    private final CaInfoConverter caInfoConverter;
-    @EJB
-    private CaSessionLocal caSession;
+    private static final Logger logger = Logger.getLogger(CaResource.class);
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
     @EJB
-    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
+    private RaMasterApiProxyBeanLocal raMasterApiProxy;
 
     public CaResource() {
-        caInfoConverter = new CaInfoConverter();
     }
 
     @GET
@@ -84,7 +78,7 @@ public class CaResource extends BaseRestResource {
         try {
             final AuthenticationToken admin = getAdmin(requestContext, false);
             subjectDn = CertTools.stringToBCDNString(subjectDn);
-            Collection<Certificate> certificateChain = raMasterApiProxyBean.getCertificateChain(admin, subjectDn.hashCode());
+            Collection<Certificate> certificateChain = raMasterApiProxy.getCertificateChain(admin, subjectDn.hashCode());
             try {
                 byte[] bytes = CertTools.getPemFromCertificateChain(certificateChain);
                 return Response.ok(bytes)
@@ -98,18 +92,23 @@ public class CaResource extends BaseRestResource {
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
         }
         catch (Exception e) {
-            log.error("Error getting CA certificates: ", e);
+            logger.error("Error getting CA certificates: ", e);
             return Response.status(Response.Status.NOT_FOUND).entity("Error getting CA certificates.").build();
         }
     }
 
     /**
-     * Returns the list of CAs with general information per CA as Json.
+     * Returns the Response containing the list of CAs with general information per CA as Json.
+     *
+     * @param httpServletRequest HttpServletRequest of a request.
+     *
+     * @return The response containing the list of CAs and its general information.
      */
     @GET
-    public Response listCas() {
+    public Response listCas(@Context final HttpServletRequest httpServletRequest) throws Exception {
+        final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
         final CaInfoTypes caInfoTypes = CaInfoTypes.builder()
-                .certificateAuthorities(caInfoConverter.toTypes(caSession.findAll()))
+                .certificateAuthorities(CaInfoTypes.converter().toTypes(raMasterApiProxy.getAuthorizedCAInfos(adminToken)))
                 .build();
         return Response.ok(caInfoTypes).build();
     }

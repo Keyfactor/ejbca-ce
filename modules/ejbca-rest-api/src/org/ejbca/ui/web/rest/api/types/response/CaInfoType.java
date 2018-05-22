@@ -10,14 +10,20 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.types;
+package org.ejbca.ui.web.rest.api.types.response;
 
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.util.CertTools;
+
+import java.security.cert.Certificate;
 import java.util.Date;
+import java.util.List;
 
 /**
  * A class representing general information about CA certificate.
  *
- * @version $Id: CaInfoType.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
+ * @version $Id: CaInfoType.java 28909 2018-05-22 12:16:53Z andrey_s_helmes $
  */
 public class CaInfoType {
 
@@ -227,6 +233,52 @@ public class CaInfoType {
                     issuerDn,
                     expirationDate
             );
+        }
+    }
+
+    /**
+     * Returns a converter instance for this class.
+     *
+     * @return instance of converter for this class.
+     */
+    public static CaInfoTypeConverter converter() {
+        return new CaInfoTypeConverter();
+    }
+
+    /**
+     * Converter of this class.
+     */
+    public static class CaInfoTypeConverter {
+
+        CaInfoTypeConverter() {
+        }
+
+        /**
+         * Converts a non-null instance of CAInfo into CaInfoType.
+         *
+         * @param caInfo CAInfo.
+         *
+         * @return CaInfoType.
+         */
+        public CaInfoType toType(final CAInfo caInfo) throws CADoesntExistsException {
+            return CaInfoType.builder()
+                    .id(caInfo.getCAId())
+                    .name(caInfo.getName())
+                    .subjectDn(caInfo.getSubjectDN())
+                    .issuerDn(extractIssuerDn(caInfo))
+                    .expirationDate(caInfo.getExpireTime())
+                    .build();
+        }
+
+        // Extracts the Issuer DN using certificate chain
+        private String extractIssuerDn(final CAInfo caInfo) throws CADoesntExistsException {
+            final List<Certificate> caInfoCertificateChain = caInfo.getCertificateChain();
+            if(caInfoCertificateChain != null && !caInfoCertificateChain.isEmpty()) {
+                // Get last it should be RootCA
+                final Certificate rootCa = caInfoCertificateChain.get(caInfoCertificateChain.size() - 1);
+                return CertTools.getIssuerDN(rootCa);
+            }
+            throw new CADoesntExistsException("Cannot extract the Issuer DN for CA certificate with id " + caInfo.getCAId());
         }
     }
 }
