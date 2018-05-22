@@ -16,7 +16,8 @@ import java.math.BigInteger;
 
 /**
  * A class representing general information about certificate. Is used for REST services' responses.
- *
+ * 
+ * @version $Id: CertificateResponse.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
 public class CertificateResponse {
 
