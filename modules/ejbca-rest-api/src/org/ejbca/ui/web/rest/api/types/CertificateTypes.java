@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * A class representing general information about certificate.
  *
- *
+ * @version $Id: CertificateTypes.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
 public class CertificateTypes {
     private List<CertificateResponse> certificates;

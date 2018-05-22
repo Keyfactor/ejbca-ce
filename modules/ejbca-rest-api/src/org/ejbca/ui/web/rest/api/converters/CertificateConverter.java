@@ -13,6 +13,8 @@ import java.util.List;
 
 /**
  * A class to make a conversion between Entity and its corresponding REST Type.
+ * 
+ * @version $Id: CertificateConverter.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
 public class CertificateConverter {
 
