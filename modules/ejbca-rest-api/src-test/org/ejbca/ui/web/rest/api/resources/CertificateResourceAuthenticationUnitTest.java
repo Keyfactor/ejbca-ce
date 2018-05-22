@@ -92,6 +92,6 @@ public class CertificateResourceAuthenticationUnitTest {
         Status responseStatus = actualResponse.getResponseStatus();
         
         // then
-        assertEquals(Status.UNAUTHORIZED, responseStatus);
+        assertEquals(Status.FORBIDDEN, responseStatus);
     }
 }
