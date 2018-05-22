@@ -36,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -48,6 +49,7 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
@@ -83,10 +85,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(EasyMockRunner.class)
 public class CertificateResourceUnitTest {
-
-    private static final int END_ENTITY_PROFILE_ID = 1;
-    private static final int CERTIFICATE_AUTHORITY_ID = 1652389506;
-    private static final int CERTIFICATE_PROFILE_ID = 1;
+    
     private static final JSONParser jsonParser = new JSONParser();
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
@@ -111,7 +110,27 @@ public class CertificateResourceUnitTest {
     @Mock
     HttpServletRequest requestContext;
     
-
+    final String csr = "-----BEGIN CERTIFICATE REQUEST-----\n"
+            + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
+            + "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\n"
+            + "ZWxsbzEyM3NlcnZlcjYwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDe\n"
+            + "lRzGyeXlCQL3lgLjzEn4qcbD0qtth8rXAwjg/eEN1u8lpQp3GtByWm6LeeB7CEyP\n"
+            + "fyy+rW9C7nQmXvJ09cJaLAlETpGjjfZLy6pHzle/D192THB2MYZRuvvAPCfpjjnV\n"
+            + "hP9sYn7GN7kCaYh61fvlD2fVquzqRdz9kjib3mVEmswkS6lHuAPIsmI7SG9UuvPR\n"
+            + "ND1DOsmVwqOL62EOE/RlHRStxZDHQDoYMqZISAO5arpbDujn666IVqLs1QpsQ5Ih\n"
+            + "Avxlw+EGNzzYMCbFEkuGs5JK/YNS7JL3JrvMor8XLngaatbteztK0o+khgT2K9x7\n"
+            + "BCkqEoz9iJrmO3B8JDATAgMBAAGggbEwga4GCSqGSIb3DQEJDjGBoDCBnTBQBgNV\n"
+            + "HREESTBHggtzb21lZG5zLmNvbYcEwKgBB4ISc29tZS5vdGhlci5kbnMuY29tpB4w\n"
+            + "HDENMAsGA1UEAxMEVGVzdDELMAkGA1UEBxMCWFgwMQYDVR0lBCowKAYIKwYBBQUH\n"
+            + "AwEGCCsGAQUFBwMCBggrBgEFBQcDAwYIKwYBBQUHAwQwCQYDVR0TBAIwADALBgNV\n"
+            + "HQ8EBAMCBeAwDQYJKoZIhvcNAQELBQADggEBAM2cW62D4D4vxaKVtIYpgolbD0zv\n"
+            + "WyEA6iPa4Gg2MzeLJVswQoZXCj5gDOrttHDld3QQTDyT9GG0Vg8N8Tr9i44vUr7R\n"
+            + "gK5w+PMq2ExGS48YrCoMqV+AJHaeXP+gi23ET5F6bIJnpM3ru6bbZC5IUE04YjG6\n"
+            + "xQux6UsxQabuaTrHpExMgYjwJsekEVe13epUq5OiEh7xTJaSnsZm+Ja+MV2pn0gF\n"
+            + "3V1hMBajTMGN9emWLR6pfj5P7QpVR4hkv3LvgCPf474pWA9l/4WiKBzrI76T5yz1\n"
+            + "KoobCZQ2UrqnKFGEbdoNFchb2CDgdLnFu6Tbf6MW5zO5ypOIUih61Zf9Qyo=\n"
+            + "-----END CERTIFICATE REQUEST-----\n";
+    
     static final byte[] testCertificateBytes = Base64.decode((
             "MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
@@ -394,70 +413,82 @@ public class CertificateResourceUnitTest {
         assertEquals(expectedErrorMessage, actualErrorMessage);
         verify(raMasterApiProxy);
     }
+    
     @Test
     public void shouldEnrollCert() throws Exception {
         
         // given
-        String csr = "-----BEGIN CERTIFICATE REQUEST-----\nMIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\nBgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\nZWxsbzEyM3NlcnZlcjYwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDe\nlRzGyeXlCQL3lgLjzEn4qcbD0qtth8rXAwjg/eEN1u8lpQp3GtByWm6LeeB7CEyP\nfyy+rW9C7nQmXvJ09cJaLAlETpGjjfZLy6pHzle/D192THB2MYZRuvvAPCfpjjnV\nhP9sYn7GN7kCaYh61fvlD2fVquzqRdz9kjib3mVEmswkS6lHuAPIsmI7SG9UuvPR\nND1DOsmVwqOL62EOE/RlHRStxZDHQDoYMqZISAO5arpbDujn666IVqLs1QpsQ5Ih\nAvxlw+EGNzzYMCbFEkuGs5JK/YNS7JL3JrvMor8XLngaatbteztK0o+khgT2K9x7\nBCkqEoz9iJrmO3B8JDATAgMBAAGggbEwga4GCSqGSIb3DQEJDjGBoDCBnTBQBgNV\nHREESTBHggtzb21lZG5zLmNvbYcEwKgBB4ISc29tZS5vdGhlci5kbnMuY29tpB4w\nHDENMAsGA1UEAxMEVGVzdDELMAkGA1UEBxMCWFgwMQYDVR0lBCowKAYIKwYBBQUH\nAwEGCCsGAQUFBwMCBggrBgEFBQcDAwYIKwYBBQUHAwQwCQYDVR0TBAIwADALBgNV\nHQ8EBAMCBeAwDQYJKoZIhvcNAQELBQADggEBAM2cW62D4D4vxaKVtIYpgolbD0zv\nWyEA6iPa4Gg2MzeLJVswQoZXCj5gDOrttHDld3QQTDyT9GG0Vg8N8Tr9i44vUr7R\ngK5w+PMq2ExGS48YrCoMqV+AJHaeXP+gi23ET5F6bIJnpM3ru6bbZC5IUE04YjG6\nxQux6UsxQabuaTrHpExMgYjwJsekEVe13epUq5OiEh7xTJaSnsZm+Ja+MV2pn0gF\n3V1hMBajTMGN9emWLR6pfj5P7QpVR4hkv3LvgCPf474pWA9l/4WiKBzrI76T5yz1\nKoobCZQ2UrqnKFGEbdoNFchb2CDgdLnFu6Tbf6MW5zO5ypOIUih61Zf9Qyo=\n-----END CERTIFICATE REQUEST-----\n";
-
+        int endEntityProfileId = 1;
+        int certificateAuthorityId = 1652389506;
+        int certificateProfileId = 1;
+        String subjectdn = "mydn=123";
+        String name = "test123";
+        int status = 20;
+        String encodedValidity = "";
+        int signedby = 1;
+        
         EnrollCertificateRequestType requestBody = new EnrollCertificateRequestType();
-        requestBody.setCertificateProfileId(CERTIFICATE_PROFILE_ID);
-        requestBody.setEndEntityProfileId(END_ENTITY_PROFILE_ID);
-        requestBody.setCertificateAuthorityId(CERTIFICATE_AUTHORITY_ID);
+        requestBody.setCertificateProfileId(certificateProfileId);
+        requestBody.setEndEntityProfileId(endEntityProfileId);
+        requestBody.setCertificateAuthorityId(certificateAuthorityId);
         requestBody.setCertificateRequest(csr);
         
         X509Certificate mockX509Cert = EasyMock.mock(X509Certificate.class);
 
         X509Certificate[] certs = new X509Certificate[1];
         certs[0] = mockX509Cert;
-
-        String subjectdn = "mydn=123";
-        String name = "test123";
-        int status = 20;
-        int certificateProfileId = CERTIFICATE_PROFILE_ID;
-        String encodedValidity = "";
-        int signedby = 1;
+        
         Collection<Certificate> certificatechain = new ArrayList<>();
         CAToken caToken = EasyMock.mock(CAToken.class);
 
         CAInfo caInfo = new X509CAInfo(subjectdn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
 
         IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
-        authorizedCAInfos.put(CERTIFICATE_AUTHORITY_ID, "test-cainfo-name", caInfo);
+        authorizedCAInfos.put(certificateAuthorityId, "test-cainfo-name", caInfo);
         
         CertificateProfile certificateProfile = new CertificateProfile();
 
         IdNameHashMap<CertificateProfile> certificateProfiles = new IdNameHashMap<>();
-        certificateProfiles.put(CERTIFICATE_PROFILE_ID, "test-profile-name", certificateProfile);
+        certificateProfiles.put(certificateProfileId, "test-profile-name", certificateProfile);
         
         EndEntityProfile endEntityProfile = new EndEntityProfile();
         
         IdNameHashMap<EndEntityProfile> endEntityProfiles =  new IdNameHashMap<>();
-        endEntityProfiles.put(END_ENTITY_PROFILE_ID, "test-endentity-profile-name", endEntityProfile);
+        endEntityProfiles.put(endEntityProfileId, "test-endentity-profile-name", endEntityProfile);
         
         expect(raMasterApiProxy.getAuthorizedCAInfos((AuthenticationToken) EasyMock.anyObject())).andReturn(authorizedCAInfos);
         expect(raMasterApiProxy.getAuthorizedCertificateProfiles((AuthenticationToken) EasyMock.anyObject())).andReturn(certificateProfiles);
         expect(raMasterApiProxy.getAuthorizedEndEntityProfiles((AuthenticationToken)EasyMock.anyObject(), EasyMock.anyString())).andReturn(endEntityProfiles);
-        expect(raMasterApiProxy.searchUser((AuthenticationToken)EasyMock.anyObject(), EasyMock.anyString())).andReturn(null);
         expect(raMasterApiProxy.addUser((AuthenticationToken)EasyMock.anyObject(), (EndEntityInformation)EasyMock.anyObject(), EasyMock.anyBoolean())).andReturn(true);
         expect(raMasterApiProxy.createCertificate((AuthenticationToken)EasyMock.anyObject(), (EndEntityInformation)EasyMock.anyObject())).andReturn(testCertificateBytes);
         
         replay(raMasterApiProxy);
         
-        
         // when
-
-        // TODO verify dn and an
-        String dn = "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6";
-        String an = "dNSName=somedns.com, iPAddress=192.168.1.7, dNSName=some.other.dns.com, directoryName=CN=Test\\,L=XX";
-        
         ClientRequest request = server.newRequest("/v1/certificate/pkcs10enroll");
         request.body(MediaType.APPLICATION_JSON, requestBody);
 
         final ClientResponse actualResponse = request.post();
         Status responseStatus = actualResponse.getResponseStatus();
+        
+        // then
         assertEquals(Status.OK, responseStatus);
         EasyMock.verify(raMasterApiProxy);
     }
-
+    
+    @Test
+    public void shouldParseCorrectDn() {
+        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
+        String actualResult = testClass.getSubjectDn(pkcs10CertificateRequest);
+        String expectedResult = "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6";
+        assertEquals(expectedResult, actualResult);
+    }
+    
+    @Test
+    public void shouldParseCorrectAn() {
+        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
+        String actualResult = testClass.getSubjectAltName(pkcs10CertificateRequest);
+        String expectedResult = "dNSName=somedns.com, iPAddress=192.168.1.7, dNSName=some.other.dns.com, directoryName=CN=Test\\,L=XX";
+        assertEquals(expectedResult, actualResult);
+    }
 }
