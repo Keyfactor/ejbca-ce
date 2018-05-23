@@ -56,6 +56,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -258,8 +259,11 @@ public class CertificateResource extends BaseRestResource {
      *
      * @param requestContext HttpServletRequest
      * @param issuerDN       of the certificate to revoke
-     * @param serialNumber   HEX encoded serial number
-     * @param reason         revocation reason.
+     * @param serialNumber   HEX encoded SN with or without 0x prefix
+     * @param reason         revocation reason. Must be valid RFC5280 reason: 
+     *                          NOT_REVOKED, UNSPECIFIED ,KEYCOMPROMISE,
+     *                          CACOMPROMISE, AFFILIATIONCHANGED, SUPERSEDED, CESSATIONOFOPERATION,
+     *                          CERTIFICATEHOLD, REMOVEFROMCRL, PRIVILEGESWITHDRAWN, AACOMPROMISE
      * @param date           revocation date (optional). Must be valid ISO8601 date string
      * @return JSON representation of serialNr, revocation status, date and optional message
      * @see org.cesecore.certificates.crl.RevocationReasons
@@ -280,7 +284,13 @@ public class CertificateResource extends BaseRestResource {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid revocation reason.");
         }
         final int revocationReason = reasons.getDatabaseValue();
-        final BigInteger serialNr = CertTools.getDecFromHexIgnorePrefix(serialNumber);
+        final BigInteger serialNr;
+        try {
+            serialNr = StringTools.getBigIntegerFromHexString(serialNumber);
+        } catch (NumberFormatException e) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid serial number format. Should be "
+                    + "HEX encoded (optionally with '0x' prefix) e.g. '0x10782a83eef170d4'");
+        }
         Date revocationDate;
         if (date != null) {
             revocationDate = getValidatedRevocationDate(date);
