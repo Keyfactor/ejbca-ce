@@ -9,7 +9,7 @@
 	Iterator iter = publishernames.keySet().iterator();
 %>
 <div class="status" id="publishqueuestatus" >
-		<h4><%=ejbcawebbean.getText("PUBLISHERQUEUESTATUS")%> <%= ejbcawebbean.getHelpReference("/Admin_GUI_Overview_Page.html#Publisher%20Queue%20Status") %></h4>
+		<h4><%=ejbcawebbean.getText("PUBLISHERQUEUESTATUS")%> <%= ejbcawebbean.getHelpReference("/Admin_GUI_Overview.html#Publisher%20Queue%20Status") %></h4>
 		<table class="grid"><thead>
 		<%	if(ejbcawebbean.getAdminPreference().getFrontpagePublisherQueueStatus()) { %>
 			<tr>
