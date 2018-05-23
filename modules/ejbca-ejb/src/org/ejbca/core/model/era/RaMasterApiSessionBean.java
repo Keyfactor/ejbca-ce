@@ -1989,7 +1989,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final int caid = userdata.getCAId();
             caSession.verifyExistenceOfCA(caid);
             if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caid)) {
-                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
+                final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
                 throw new AuthorizationDeniedException(msg);
             }
 
@@ -2124,7 +2124,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         caSession.verifyExistenceOfCA(caid);
         // Check if we are authorized to this CA
         if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() +caid)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
             throw new AuthorizationDeniedException(msg);
         }
         
@@ -2172,7 +2172,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException {
         if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() +caid)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
             throw new AuthorizationDeniedException(msg);
         }
         return caSession.getCAInfoInternal(caid).getCertificateChain();
@@ -2180,7 +2180,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     public List<Certificate> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days, int maxNumberOfResults, int offset) throws AuthorizationDeniedException {
         if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate")) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", null);
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", null);
             throw new AuthorizationDeniedException(msg);
         }
         Date findDate = getDate(days);
@@ -2197,7 +2197,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public int getCountOfCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days) throws AuthorizationDeniedException {
         if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate")) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", null);
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", null);
             throw new AuthorizationDeniedException(msg);
         }
         Date findDate = getDate(days);
