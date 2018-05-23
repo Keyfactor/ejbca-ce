@@ -13,6 +13,7 @@
 package org.cesecore.util;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -485,6 +486,18 @@ public final class StringTools {
             return n;
         }
         return s;
+    }
+    
+    /**
+     * Converts hexadecimal string to BigInteger. Hex prefix (0x) is ignored
+     * @param hexString HEX value with or without '0x' prefix
+     * @return BigInteger value
+     */
+    public static BigInteger getBigIntegerFromHexString(String hexString) {
+        if (hexString.startsWith("0x") || hexString.startsWith("0X")) {
+            hexString = hexString.substring(2, hexString.length());
+        }
+        return new BigInteger(hexString, 16);
     }
 
     /** Obfuscates a String if it does not already start with "OBF:"
