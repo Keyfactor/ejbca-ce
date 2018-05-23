@@ -229,7 +229,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         }
 
         if (!authorizationSession.isAuthorized(admin, StandardRules.SYSTEMCONFIGURATION_EDIT.resource())) {
-            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.SYSTEMCONFIGURATION_EDIT, null);
+            String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.SYSTEMCONFIGURATION_EDIT, null);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA,

@@ -68,7 +68,7 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
             Map<String, Object> additionalDetails) throws AuditRecordStorageException, AuthorizationDeniedException {        
         // We need to check that admin have rights to log
         if (!authorizationSession.isAuthorized(authToken, AuditLogRules.LOG.resource())) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AuditLogRules.LOG.resource(), null);
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AuditLogRules.LOG.resource(), null);
             throw new AuthorizationDeniedException(msg);
         }
         log(eventType, eventStatus, module, service, authToken.toString(), customId, searchDetail1, searchDetail2, additionalDetails);

@@ -79,7 +79,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         continue;
                     }
                 }  catch (AuthorizationDeniedException e) {
-                    log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("authorization.notuathorizedtoresource", caid, "CAId"));
+                    log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("authorization.notauthorizedtoresource", caid, "CAId"));
                     continue;
                 }
                 String cadn = caInfo.getSubjectDN();
