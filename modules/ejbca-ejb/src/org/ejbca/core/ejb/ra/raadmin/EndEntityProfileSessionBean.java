@@ -591,13 +591,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     /**
      * Help function that checks if administrator is authorized to edit profile.
      * @param profile is the end entity profile or null for EndEntityConstants.EMPTY_END_ENTITY_PROFILE
-     * @param editcheck is true for edit, add, remove, clone and rename operations. false for get.
      */
     private void authorizedToProfile(final AuthenticationToken admin, final EndEntityProfile profile)  throws AuthorizationDeniedException {
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null) {
             authorizedToProfileCas(admin, profile);
         } else {
-            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, admin.toString());
+            final String msg = INTRES.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, admin.toString());
             throw new AuthorizationDeniedException(msg);
         }
     }

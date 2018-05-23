@@ -308,7 +308,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     private void authorizedToEditProfile(AuthenticationToken admin) throws AuthorizationDeniedException {
         // We need to check that admin also have rights to edit certificate profiles
         if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, null);
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, null);
             throw new AuthorizationDeniedException(msg);
         }
     }
@@ -571,7 +571,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     private void authorizedToEditIssuer(AuthenticationToken admin) throws AuthorizationDeniedException {
         // We need to check that admin also have rights to edit certificate profiles
         if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, null);
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, null);
             throw new AuthorizationDeniedException(msg);
         }
     }
