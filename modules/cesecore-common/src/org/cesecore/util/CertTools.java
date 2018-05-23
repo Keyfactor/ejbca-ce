@@ -990,18 +990,6 @@ public abstract class CertTools {
     }
 
     /**
-     * Converts hexadecimal string to decimal BigInteger. Hex prefix (0x) is parsed
-     * @param hexString HEX value with or without '0x' prefix
-     * @return decimal value
-     */
-    public static BigInteger getDecFromHexIgnorePrefix(String hexString) {
-        if (hexString.startsWith("0x")) {
-            hexString = hexString.substring(2, hexString.length());
-        }
-        return new BigInteger(hexString, 16);
-    }
-    
-    /**
      * Gets a serial number in numeric form, it takes - either a hex encoded integer with length != 5 (x.509 certificate) - 5 letter numeric string
      * (cvc), will convert the number to an int - 5 letter alfanumeric string vi some numbers in it (cvc), will convert the numbers in it to a numeric
      * string (remove the letters) and convert to int - 5 letter alfanumeric string with only letters (cvc), will convert to integer from string with
