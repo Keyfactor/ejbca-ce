@@ -34,41 +34,31 @@ public class CertificateResponse {
      *
      * @return builder instance for this class.
      */
-    public static CertificateTypeBuilder builder() {
-        return new CertificateTypeBuilder();
+    public static CertificateResponseBuilder builder() {
+        return new CertificateResponseBuilder();
     }
 
     public byte[] getCertificate() {
         return certificate;
     }
 
-    public void setCertificate(byte[] certificate) {
-        this.certificate = certificate;
-    }
-
     public BigInteger getSerialNumber() {
         return serialNumber;
     }
 
-    public void setSerialNumber(BigInteger serialNumber) {
-        this.serialNumber = serialNumber;
-    }
-
-
-
-    public static class CertificateTypeBuilder {
+    public static class CertificateResponseBuilder {
         private byte[] certificate;
         private BigInteger serialNumber;
 
-        private CertificateTypeBuilder() {
+        private CertificateResponseBuilder() {
         }
 
-        public CertificateTypeBuilder setCertificate(byte[] certificate) {
+        public CertificateResponseBuilder setCertificate(byte[] certificate) {
             this.certificate = certificate;
             return this;
         }
 
-        public CertificateTypeBuilder setSerialNumber(BigInteger serialNumber) {
+        public CertificateResponseBuilder setSerialNumber(BigInteger serialNumber) {
             this.serialNumber = serialNumber;
             return this;
         }

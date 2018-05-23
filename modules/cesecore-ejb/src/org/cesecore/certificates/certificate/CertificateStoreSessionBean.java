@@ -614,16 +614,16 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public int countByExpireDate(Date expireDate) {
-        return certificateDataSession.countByExpireDate(expireDate.getTime());
+    public int findNumberOfExpiringCertificates(Date expirationDate) {
+        return certificateDataSession.countByExpireDate(expirationDate.getTime());
     }
 
     @Override
-    public List<Certificate> findByExpireDateWithLimitAndOffset(Date expireTime, int maxNumberOfResults, int offset) {
-        log.trace(">findByExpireDateWithLimitAndOffset(), time=" + expireTime + " - maxNumberOfResults=" + maxNumberOfResults + " - offset=" + offset);
-        log.debug("Looking for certs that expire before: " + expireTime);
-        List<CertificateData> certificateDatas = certificateDataSession.findByExpireDateWithLimitAndOffset(expireTime.getTime(), maxNumberOfResults, offset);
-        log.debug("Found " + certificateDatas.size() + " certificates that expire before " + expireTime);
+    public List<Certificate> findExpiringCertificates(Date expirationDate, int maxNumberOfResults, int offset) {
+        log.trace(">findExpiringCertificates(), time=" + expirationDate + " - maxNumberOfResults=" + maxNumberOfResults + " - offset=" + offset);
+        log.debug("Looking for certs that expire before: " + expirationDate);
+        List<CertificateData> certificateDatas = certificateDataSession.findByExpireDateWithLimitAndOffset(expirationDate.getTime(), maxNumberOfResults, offset);
+        log.debug("Found " + certificateDatas.size() + " certificates that expire before " + expirationDate);
         final List<Certificate> ret = new ArrayList<>();
         for (final CertificateData certificateData : certificateDatas) {
             final Certificate certificate = certificateData.getCertificate(entityManager);
@@ -633,7 +633,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 ret.add(certificate);
             }
         }
-        log.trace("<findByExpireDateWithLimitAndOffset(), time=" + expireTime + " - maxNumberOfResults=" + maxNumberOfResults + " - offset=" + offset);
+        log.trace("<findExpiringCertificates(), time=" + expirationDate + " - maxNumberOfResults=" + maxNumberOfResults + " - offset=" + offset);
         return ret;
     }
 

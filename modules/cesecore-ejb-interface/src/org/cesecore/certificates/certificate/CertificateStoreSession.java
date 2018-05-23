@@ -130,19 +130,19 @@ public interface CertificateStoreSession {
     /**
      * Finds count of certificates  expiring within a specified time and that have
      * status "active" or "notifiedaboutexpiration".
-     * @param expireDate The time by which the certificates will be expired
+     * @param expirationDate The time by which the certificates will be expired
      * @return return count of query results. */
-    int countByExpireDate(Date expireDate);
+    int findNumberOfExpiringCertificates(Date expirationDate);
 
     /**
      * Finds certificates  expiring within a specified time and that have
      * status "active" or "notifiedaboutexpiration".
-     * @param expireTime The time by which the certificates will be expired
+     * @param expirationDate The time by which the certificates will be expired
      * @param maxNumberOfResults The maximum number of certificates to be returned
      * @param offset return results starting from offset
      * @return List of certificates (java.security.cert.Certificate), never null
      */
-    List<Certificate> findByExpireDateWithLimitAndOffset(Date expireTime, int maxNumberOfResults, int offset);
+    List<Certificate> findExpiringCertificates(Date expirationDate, int maxNumberOfResults, int offset);
 
     /**
      * Finds certificates  expiring within a specified time, issued by a specified issuer and have
