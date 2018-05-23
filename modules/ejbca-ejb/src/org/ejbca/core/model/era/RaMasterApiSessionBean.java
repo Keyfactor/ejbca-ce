@@ -2184,7 +2184,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new AuthorizationDeniedException(msg);
         }
         Date findDate = getDate(days);
-        return certificateStoreSession.findByExpireDateWithLimitAndOffset(findDate, maxNumberOfResults, offset);
+        return certificateStoreSession.findExpiringCertificates(findDate, maxNumberOfResults, offset);
     }
 
     private Date getDate(long days) {
@@ -2201,6 +2201,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new AuthorizationDeniedException(msg);
         }
         Date findDate = getDate(days);
-        return certificateStoreSession.countByExpireDate(findDate);
+        return certificateStoreSession.findNumberOfExpiringCertificates(findDate);
     }
 }
