@@ -533,6 +533,8 @@ public class CertificateResourceUnitTest {
         long days = 1;
         int offset = 0;
         int maxNumberOfResults = 4;
+        long expectedNextOffset = 4l;
+        long expectedNumberOfResults = 6l;
 
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
@@ -558,8 +560,8 @@ public class CertificateResourceUnitTest {
         assertEquals(Status.OK, status);
         assertEquals(MediaType.APPLICATION_JSON, actualContentType);
         assertTrue(moreResults);
-        assertEquals(5l, nextOffset);
-        assertEquals(6l, numberOfResults);
+        assertEquals(expectedNextOffset, nextOffset);
+        assertEquals(expectedNumberOfResults, numberOfResults);
         EasyMock.verify(raMasterApiProxy);
     }
 
@@ -570,6 +572,8 @@ public class CertificateResourceUnitTest {
         long days = 1;
         int offset = 3;
         int maxNumberOfResults = 4;
+        long expectedNextOffset = 7l;
+        long expectedNumberOfResults = 3l;
 
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
@@ -595,8 +599,8 @@ public class CertificateResourceUnitTest {
         assertEquals(Status.OK, status);
         assertEquals(MediaType.APPLICATION_JSON, actualContentType);
         assertTrue(moreResults);
-        assertEquals(8l, nextOffset);
-        assertEquals(3l, numberOfResults);
+        assertEquals(expectedNextOffset, nextOffset);
+        assertEquals(expectedNumberOfResults, numberOfResults);
         EasyMock.verify(raMasterApiProxy);
     }
 }
