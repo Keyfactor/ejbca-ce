@@ -324,7 +324,7 @@ public class CertificateResource extends BaseRestResource {
             List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset);
             int processedResults = offset + maxNumberOfResults;
             ResponseStatus responseStatus = ResponseStatus.builder().setMoreResults(count > processedResults)
-                    .setNextOffset(offset + maxNumberOfResults + 1)
+                    .setNextOffset(offset + maxNumberOfResults)
                     .setNumberOfResults(count - processedResults)
                     .build();
             CertificateTypes certificateTypes = new CertificateTypes(certificateConverter.toTypes(expiringCertificates));
