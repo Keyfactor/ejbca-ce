@@ -773,7 +773,7 @@ public class RAInterfaceBean implements Serializable {
 
     public void loadCertificates(BigInteger serno, String issuerdn) throws AuthorizationDeniedException {
     	if (!authorizationSession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, "Not authorized to view certificate.");
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, "Not authorized to view certificate.");
 	        throw new AuthorizationDeniedException(msg);
         }
     	final CertificateDataWrapper cdw = certificatesession.getCertificateDataByIssuerAndSerno(issuerdn, serno);

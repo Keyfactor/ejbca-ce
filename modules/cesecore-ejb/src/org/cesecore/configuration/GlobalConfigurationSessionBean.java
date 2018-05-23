@@ -172,7 +172,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     private void assertAuthorization(final AuthenticationToken authenticationToken, final String configID, final String errorMsg) throws AuthorizationDeniedException {
         final String accessRule = getAccessRuleFromConfigId(configID);
         if (!authorizationSession.isAuthorized(authenticationToken, accessRule)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", accessRule, errorMsg);
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", accessRule, errorMsg);
             throw new AuthorizationDeniedException(msg);
         }
     }
