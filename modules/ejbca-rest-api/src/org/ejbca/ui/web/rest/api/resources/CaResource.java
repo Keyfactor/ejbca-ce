@@ -47,7 +47,7 @@ import java.util.Collection;
 @Stateless
 public class CaResource extends BaseRestResource {
 
-    private static final Logger logger = Logger.getLogger(CaResource.class);
+    private static final Logger log = Logger.getLogger(CaResource.class);
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
     @EJB
@@ -92,7 +92,7 @@ public class CaResource extends BaseRestResource {
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
         }
         catch (Exception e) {
-            logger.error("Error getting CA certificates: ", e);
+            log.error("Error getting CA certificates: ", e);
             return Response.status(Response.Status.NOT_FOUND).entity("Error getting CA certificates.").build();
         }
     }
