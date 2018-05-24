@@ -353,14 +353,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         boolean ret = true;
         if (isLesserThan(last, currentVersion)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Starting upgrade.");
-            }
+            log.info("Database content version: " + last + ", current application version: " + currentVersion + " -> Starting upgrade.");
             ret = upgradeSession.upgrade(dbType, last, false);
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Upgrade is not needed.");
-            }
+            log.info("Database content version: " + last + ", current application version: " + currentVersion + " -> Upgrade is not needed.");
         }
         return ret;
     }
