@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
-import java.security.KeyStore.PasswordProtection;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -25,8 +24,6 @@ import java.security.Provider;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
-
-import javax.security.auth.DestroyFailedException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
