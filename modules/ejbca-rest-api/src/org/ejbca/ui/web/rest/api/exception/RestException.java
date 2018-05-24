@@ -21,11 +21,10 @@ package org.ejbca.ui.web.rest.api.exception;
  *     <li>The cause might be forwarded for the logging purpose.</li>
  * </ul>
  *
- *
  * @version $Id: RestException.java 28962 2018-05-21 06:54:45Z andrey_s_helmes $
  */
 public class RestException extends Exception {
-
+    private static final long serialVersionUID = 1L;
     private final int errorCode;
 
     /**

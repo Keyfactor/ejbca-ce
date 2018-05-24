@@ -13,15 +13,9 @@
 
 package org.ejbca.ui.web.rest.api.resources;
 
-import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.StringTools;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.ui.web.rest.api.types.response.CaInfoTypes;
-import org.ejbca.ui.web.rest.common.BaseRestResource;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.util.Collection;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -33,9 +27,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.util.Collection;
+
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.ui.web.rest.api.types.response.CaInfoTypes;
+import org.ejbca.ui.web.rest.common.BaseRestResource;
 
 /**
  * JAX-RS resource handling CA related requests.
@@ -46,8 +46,8 @@ import java.util.Collection;
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
 public class CaResource extends BaseRestResource {
+    //private static final Logger log = Logger.getLogger(CaResource.class);
 
-    private static final Logger log = Logger.getLogger(CaResource.class);
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
     @EJB

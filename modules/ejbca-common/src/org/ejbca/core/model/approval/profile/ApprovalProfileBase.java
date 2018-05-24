@@ -35,7 +35,6 @@ import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.approval.Approval;
-import org.ejbca.core.model.approval.ApprovalDataVO;
 
 /**
  *
