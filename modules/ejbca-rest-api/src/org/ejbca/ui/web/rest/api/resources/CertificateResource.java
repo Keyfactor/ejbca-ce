@@ -47,6 +47,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -58,12 +59,16 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.rest.api.converters.CertificateConverter;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -276,7 +281,9 @@ public class CertificateResource extends BaseRestResource {
             @PathParam("issuer_dn") String issuerDN,
             @PathParam("certificate_serial_number") String serialNumber,
             @QueryParam("reason") String reason,
-            @QueryParam("date") String date) throws Exception {
+            @QueryParam("date") String date)
+            throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException, CADoesntExistsException, AlreadyRevokedException,
+            NoSuchEndEntityException, WaitingForApprovalException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         RevocationReasons reasons = RevocationReasons.getFromCliValue(reason);
         // TODO Replace with @ValidRevocationReason
@@ -324,27 +331,20 @@ public class CertificateResource extends BaseRestResource {
     public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext,
                                                  @QueryParam("days") long days,
                                                  @QueryParam("offset") int offset,
-                                                 @QueryParam("maxNumberOfResults") int maxNumberOfResults) {
+                                                 @QueryParam("maxNumberOfResults") int maxNumberOfResults) throws AuthorizationDeniedException, CertificateEncodingException, RestException {
         if (requestContext == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Missing request context").build();
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Missing request context");
         }
-        try {
-            final AuthenticationToken admin = getAdmin(requestContext, true);
-            int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
-            List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset);
-            int processedResults = offset + maxNumberOfResults;
-            ResponseStatus responseStatus = ResponseStatus.builder().setMoreResults(count > processedResults)
-                    .setNextOffset(offset + maxNumberOfResults)
-                    .setNumberOfResults(count - processedResults)
-                    .build();
-            CertificateTypes certificateTypes = new CertificateTypes(certificateConverter.toTypes(expiringCertificates));
-            ExpiringCertificatesResponse response = new ExpiringCertificatesResponse(responseStatus, certificateTypes);
-            return Response.ok(response).build();
-        } catch (AuthorizationDeniedException e) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
-        } catch (CertificateEncodingException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
-        }
-
+        final AuthenticationToken admin = getAdmin(requestContext, true);
+        int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
+        List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset);
+        int processedResults = offset + maxNumberOfResults;
+        ResponseStatus responseStatus = ResponseStatus.builder().setMoreResults(count > processedResults)
+                .setNextOffset(offset + maxNumberOfResults)
+                .setNumberOfResults(count - processedResults)
+                .build();
+        CertificateTypes certificateTypes = new CertificateTypes(certificateConverter.toTypes(expiringCertificates));
+        ExpiringCertificatesResponse response = new ExpiringCertificatesResponse(responseStatus, certificateTypes);
+        return Response.ok(response).build();
     }
 }

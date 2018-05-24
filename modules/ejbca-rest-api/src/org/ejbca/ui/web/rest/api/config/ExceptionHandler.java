@@ -219,6 +219,12 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                         .errorCode(422)
                         .errorMessage(exception.getMessage())
                         .build();
+            // 500
+            case CertificateEncodingException:
+                return ExceptionInfoType.builder()
+                        .errorCode(DEFAULT_ERROR_CODE)
+                        .errorMessage(DEFAULT_ERROR_MESSAGE)
+                        .build();
         }
         return null;
     }
