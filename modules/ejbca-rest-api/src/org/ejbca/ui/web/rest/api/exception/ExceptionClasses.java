@@ -11,6 +11,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
+import java.security.cert.CertificateEncodingException;
 import java.util.IdentityHashMap;
 
 /**
@@ -41,6 +42,9 @@ public enum ExceptionClasses {
     EndEntityProfileValidationException(EndEntityProfileValidationException.class),
     UserDoesntFullfillEndEntityProfile(UserDoesntFullfillEndEntityProfile.class),
     CertificateExtensionException(CertificateExtensionException.class),
+    // 500
+    CertificateEncodingException(CertificateEncodingException.class),
+
     // All others
     UNKNOWN(null);
 
