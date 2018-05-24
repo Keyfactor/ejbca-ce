@@ -52,19 +52,19 @@ import org.junit.runner.RunWith;
 public class CertificateResourceAuthenticationUnitTest {
 
     public static InMemoryRestServer server;
-    
+
     @TestSubject
     private static CertificateResource testClass = new CertificateResource();
-    
+
     @Mock
     private EjbBridgeSessionLocal ejbLocalHelper;
-    
+
     @Mock
-    private EjbcaRestHelperSessionLocal ejbcaRestHelperSessionLocal;    
+    private EjbcaRestHelperSessionLocal ejbcaRestHelperSessionLocal;
 
     @Mock
     HttpServletRequest requestContext;
-    
+
     @BeforeClass
     public static void beforeClass() throws IOException {
         server = InMemoryRestServer.create(testClass);
@@ -75,22 +75,22 @@ public class CertificateResourceAuthenticationUnitTest {
     public static void afterClass() {
         server.close();
     }
-    
-    
+
+
     @Test
     public void shouldGiveUnauthorizedException() throws Exception {
         // given
         EnrollCertificateRequestType requestBody = new EnrollCertificateRequestType();
-        
+
         expect(ejbLocalHelper.getEjbcaRestHelperSession()).andReturn(ejbcaRestHelperSessionLocal);
         expect(ejbcaRestHelperSessionLocal.getAdmin(EasyMock.anyBoolean(), (X509Certificate)EasyMock.anyObject())).andThrow(new AuthorizationDeniedException());
-        
+
         // when
         ClientRequest request = server.newRequest("/v1/certificate/pkcs10enroll");
         request.body(MediaType.APPLICATION_JSON, requestBody);
-        final ClientResponse actualResponse = request.post();
+        final ClientResponse<?> actualResponse = request.post();
         Status responseStatus = actualResponse.getResponseStatus();
-        
+
         // then
         assertEquals(Status.FORBIDDEN, responseStatus);
     }

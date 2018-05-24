@@ -102,7 +102,7 @@ public class CertificateResourceUnitTest {
     public static InMemoryRestServer server;
     @TestSubject
     private static CertificateResourceWithoutSecurity testClass = new CertificateResourceWithoutSecurity();
-    
+
     @Mock
     private EjbBridgeSessionLocal ejbLocalHelper;
     @Mock
@@ -113,7 +113,7 @@ public class CertificateResourceUnitTest {
 
     @Mock
     HttpServletRequest requestContext;
-    
+
     final String csr = "-----BEGIN CERTIFICATE REQUEST-----\n"
             + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
             + "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\n"
@@ -163,8 +163,7 @@ public class CertificateResourceUnitTest {
         server.close();
     }
 
-    @SuppressWarnings("unchecked")
-    private String getContentType(final ClientResponse clientResponse) {
+    private String getContentType(final ClientResponse<?> clientResponse) {
         final MultivaluedMap<String, String> headersMap = clientResponse.getHeaders();
         if (headersMap != null) {
             return headersMap.getFirst("Content-type");
@@ -182,7 +181,7 @@ public class CertificateResourceUnitTest {
         ClientRequest newRequest = server.newRequest("/v1/certificate/status");
         final ClientResponse<?> actualResponse = newRequest.get();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualStatus = actualJsonObject.get("status");
         final Object actualVersion = actualJsonObject.get("version");
@@ -210,9 +209,9 @@ public class CertificateResourceUnitTest {
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/111/revoke")
                 .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse actualResponse = clientRequest.put();
+        final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualErrorCode = actualJsonObject.get("errorCode");
         final Object actualErrorMessage = actualJsonObject.get("errorMessage");
@@ -235,9 +234,9 @@ public class CertificateResourceUnitTest {
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/111/revoke")
                 .queryParameter("reason", "BAD_REVOCATION_REASON_DOES_NOT_EXIST");
-        final ClientResponse actualResponse = clientRequest.put();
+        final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualErrorCode = actualJsonObject.get("errorCode");
         final Object actualErrorMessage = actualJsonObject.get("errorMessage");
@@ -262,9 +261,9 @@ public class CertificateResourceUnitTest {
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/111/revoke")
                 .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse actualResponse = clientRequest.put();
+        final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualErrorCode = actualJsonObject.get("errorCode");
         final Object actualErrorMessage = actualJsonObject.get("errorMessage");
@@ -290,9 +289,9 @@ public class CertificateResourceUnitTest {
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/111/revoke")
                 .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse actualResponse = clientRequest.put();
+        final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualErrorCode = actualJsonObject.get("errorCode");
         final Object actualErrorMessage = actualJsonObject.get("errorMessage");
@@ -318,9 +317,9 @@ public class CertificateResourceUnitTest {
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/111/revoke")
                 .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse actualResponse = clientRequest.put();
+        final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualErrorCode = actualJsonObject.get("errorCode");
         final Object actualErrorMessage = actualJsonObject.get("errorMessage");
@@ -346,9 +345,9 @@ public class CertificateResourceUnitTest {
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/111/revoke")
                 .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse actualResponse = clientRequest.put();
+        final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualErrorCode = actualJsonObject.get("errorCode");
         final Object actualErrorMessage = actualJsonObject.get("errorMessage");
@@ -374,9 +373,9 @@ public class CertificateResourceUnitTest {
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/111/revoke")
                 .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse actualResponse = clientRequest.put();
+        final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualErrorCode = actualJsonObject.get("errorCode");
         final Object actualErrorMessage = actualJsonObject.get("errorMessage");
@@ -402,9 +401,9 @@ public class CertificateResourceUnitTest {
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/111/revoke")
                 .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse actualResponse = clientRequest.put();
+        final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualErrorCode = actualJsonObject.get("errorCode");
         final Object actualErrorMessage = actualJsonObject.get("errorMessage");
@@ -420,7 +419,7 @@ public class CertificateResourceUnitTest {
 
     @Test
     public void shouldEnrollCert() throws Exception {
-        
+
         // given
         int endEntityProfileId = 1;
         int certificateAuthorityId = 1652389506;
@@ -449,30 +448,30 @@ public class CertificateResourceUnitTest {
 
         IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
         authorizedCAInfos.put(certificateAuthorityId, "test-cainfo-name", caInfo);
-        
+
         CertificateProfile certificateProfile = new CertificateProfile();
 
         IdNameHashMap<CertificateProfile> certificateProfiles = new IdNameHashMap<>();
         certificateProfiles.put(certificateProfileId, "test-profile-name", certificateProfile);
-        
+
         EndEntityProfile endEntityProfile = new EndEntityProfile();
-        
+
         IdNameHashMap<EndEntityProfile> endEntityProfiles =  new IdNameHashMap<>();
         endEntityProfiles.put(endEntityProfileId, "test-endentity-profile-name", endEntityProfile);
-        
+
         expect(raMasterApiProxy.getAuthorizedCAInfos((AuthenticationToken) EasyMock.anyObject())).andReturn(authorizedCAInfos);
         expect(raMasterApiProxy.getAuthorizedCertificateProfiles((AuthenticationToken) EasyMock.anyObject())).andReturn(certificateProfiles);
         expect(raMasterApiProxy.getAuthorizedEndEntityProfiles((AuthenticationToken)EasyMock.anyObject(), EasyMock.anyString())).andReturn(endEntityProfiles);
         expect(raMasterApiProxy.addUser((AuthenticationToken)EasyMock.anyObject(), (EndEntityInformation)EasyMock.anyObject(), EasyMock.anyBoolean())).andReturn(true);
         expect(raMasterApiProxy.createCertificate((AuthenticationToken)EasyMock.anyObject(), (EndEntityInformation)EasyMock.anyObject())).andReturn(testCertificateBytes);
-        
+
         replay(raMasterApiProxy);
 
         // when
         ClientRequest request = server.newRequest("/v1/certificate/pkcs10enroll");
         request.body(MediaType.APPLICATION_JSON, requestBody);
 
-        final ClientResponse actualResponse = request.post();
+        final ClientResponse<?> actualResponse = request.post();
         Status responseStatus = actualResponse.getResponseStatus();
 
         // then
@@ -514,10 +513,10 @@ public class CertificateResourceUnitTest {
                 .queryParameter("days", days)
                 .queryParameter("offset", offset)
                 .queryParameter("maxNumberOfResults", maxNumberOfResults);
-        final ClientResponse actualResponse = clientRequest.get();
+        final ClientResponse<?> actualResponse = clientRequest.get();
         Status status = actualResponse.getResponseStatus();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final boolean moreResults  = (Boolean) ((JSONObject)actualJsonObject.get("responseStatus")).get("moreResults");
         // then
@@ -547,10 +546,10 @@ public class CertificateResourceUnitTest {
                 .queryParameter("days", days)
                 .queryParameter("offset", offset)
                 .queryParameter("maxNumberOfResults", maxNumberOfResults);
-        final ClientResponse actualResponse = clientRequest.get();
+        final ClientResponse<?> actualResponse = clientRequest.get();
         Status status = actualResponse.getResponseStatus();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         JSONObject responseStatus = (JSONObject) actualJsonObject.get("responseStatus");
         final boolean moreResults  = (Boolean) responseStatus.get("moreResults");
@@ -586,10 +585,10 @@ public class CertificateResourceUnitTest {
                 .queryParameter("days", days)
                 .queryParameter("offset", offset)
                 .queryParameter("maxNumberOfResults", maxNumberOfResults);
-        final ClientResponse actualResponse = clientRequest.get();
+        final ClientResponse<?> actualResponse = clientRequest.get();
         Status status = actualResponse.getResponseStatus();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         JSONObject responseStatus = (JSONObject) actualJsonObject.get("responseStatus");
         final boolean moreResults  = (Boolean) responseStatus.get("moreResults");
