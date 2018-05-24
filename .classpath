@@ -140,7 +140,6 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib-2.3.1.GA/resteasy-jackson-provider-2.3.1.GA.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib-2.3.1.GA/resteasy-jaxrs-2.3.1.GA.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib-2.3.1.GA/scannotation-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib-2.3.1.GA/servlet-api-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib-2.3.1.GA/tjws-2.3.1.GA.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium-firefox-driver-3.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/webtest/selenium-java-3.7.1.jar"/>
