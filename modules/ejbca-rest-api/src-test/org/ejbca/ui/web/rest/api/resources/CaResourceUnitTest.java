@@ -12,6 +12,20 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resources;
 
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -32,17 +46,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.Date;
-
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -84,8 +87,7 @@ public class CaResourceUnitTest {
         server.close();
     }
 
-    @SuppressWarnings("unchecked")
-    private String getContentType(final ClientResponse clientResponse) {
+    private String getContentType(final ClientResponse<?> clientResponse) {
         final MultivaluedMap<String, String> headersMap = clientResponse.getHeaders();
         if (headersMap != null) {
             return headersMap.getFirst("Content-type");
@@ -100,9 +102,9 @@ public class CaResourceUnitTest {
         final String expectedVersion = "1.0";
         final String expectedRevision = "ALPHA";
         // when
-        final ClientResponse actualResponse = server.newRequest("/v1/ca/status").get();
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/status").get();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualStatus = actualJsonObject.get("status");
         final Object actualVersion = actualJsonObject.get("version");
@@ -124,9 +126,9 @@ public class CaResourceUnitTest {
         expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(new IdNameHashMap<CAInfo>());
         replay(raMasterApiProxy);
         // when
-        final ClientResponse actualResponse = server.newRequest("/v1/ca").get();
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca").get();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get("certificateAuthorities");
         // then
@@ -155,9 +157,9 @@ public class CaResourceUnitTest {
         expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(caInfosMap);
         replay(raMasterApiProxy);
         // when
-        final ClientResponse actualResponse = server.newRequest("/v1/ca").get();
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca").get();
         final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get("certificateAuthorities");
         // then
