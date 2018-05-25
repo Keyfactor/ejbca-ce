@@ -11,10 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.types.response;
-
-import org.ejbca.ui.web.rest.api.types.CertificateTypes;
-import org.ejbca.ui.web.rest.api.types.ResponseStatus;
+package org.ejbca.ui.web.rest.api.io.response;
 
 /**
  * A Response container for expiring certificate service.
@@ -22,27 +19,27 @@ import org.ejbca.ui.web.rest.api.types.ResponseStatus;
  * @version $Id: ExpiringCertificatesResponse.java 29010 2018-05-23 13:09:53Z jekaterina_b_helmes $
  */
 public class ExpiringCertificatesResponse {
-    private ResponseStatus responseStatus;
-    private CertificateTypes certificateTypes;
+    private PaginationRestResponseComponent paginationRestResponseComponent;
+    private CertificatesRestResponse certificatesRestResponse;
 
-    public ExpiringCertificatesResponse(ResponseStatus responseStatus, CertificateTypes certificateTypes) {
-        this.responseStatus = responseStatus;
-        this.certificateTypes = certificateTypes;
+    public ExpiringCertificatesResponse(PaginationRestResponseComponent paginationRestResponseComponent, CertificatesRestResponse certificatesRestResponse) {
+        this.paginationRestResponseComponent = paginationRestResponseComponent;
+        this.certificatesRestResponse = certificatesRestResponse;
     }
 
-    public ResponseStatus getResponseStatus() {
-        return responseStatus;
+    public PaginationRestResponseComponent getPaginationRestResponseComponent() {
+        return paginationRestResponseComponent;
     }
 
-    public void setResponseStatus(ResponseStatus responseStatus) {
-        this.responseStatus = responseStatus;
+    public void setPaginationRestResponseComponent(PaginationRestResponseComponent paginationRestResponseComponent) {
+        this.paginationRestResponseComponent = paginationRestResponseComponent;
     }
 
-    public CertificateTypes getCertificateTypes() {
-        return certificateTypes;
+    public CertificatesRestResponse getCertificatesRestResponse() {
+        return certificatesRestResponse;
     }
 
-    public void setCertificateTypes(CertificateTypes certificateTypes) {
-        this.certificateTypes = certificateTypes;
+    public void setCertificatesRestResponse(CertificatesRestResponse certificatesRestResponse) {
+        this.certificatesRestResponse = certificatesRestResponse;
     }
 }

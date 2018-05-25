@@ -10,14 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.types;
+package org.ejbca.ui.web.rest.api.io.response;
 
 /**
  * A class representing the information about an exceptional event triggered by REST resource failure.
  *
- * @version $Id: ExceptionInfoType.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
+ * @version $Id: ExceptionInfoRestResponse.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
  */
-public class ExceptionInfoType {
+public class ExceptionInfoRestResponse {
 
     // Have to match HTTP Status codes
     private int errorCode;
@@ -26,10 +26,10 @@ public class ExceptionInfoType {
     /**
      * Simple constructor.
      */
-    public ExceptionInfoType() {
+    public ExceptionInfoRestResponse() {
     }
 
-    private ExceptionInfoType(final int errorCode, final String errorMessage) {
+    private ExceptionInfoRestResponse(final int errorCode, final String errorMessage) {
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
     }
@@ -117,12 +117,12 @@ public class ExceptionInfoType {
         }
 
         /**
-         * Builds an instance of ExceptionInfoType using this builder.
+         * Builds an instance of ExceptionInfoRestResponse using this builder.
          *
-         * @return instance of ExceptionInfoType using this builder.
+         * @return instance of ExceptionInfoRestResponse using this builder.
          */
-        public ExceptionInfoType build() {
-            return new ExceptionInfoType(errorCode, errorMessage);
+        public ExceptionInfoRestResponse build() {
+            return new ExceptionInfoRestResponse(errorCode, errorMessage);
         }
     }
 }

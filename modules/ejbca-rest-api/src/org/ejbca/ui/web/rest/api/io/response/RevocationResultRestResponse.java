@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.types;
+package org.ejbca.ui.web.rest.api.io.response;
 
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
@@ -22,7 +22,7 @@ import java.util.Date;
  *
  * @version $Id$
  */
-public class RevocationResultType {
+public class RevocationResultRestResponse {
 
     public static final String STATUS_REVOKED              = "Revoked";
 
@@ -31,7 +31,7 @@ public class RevocationResultType {
     private String status;
     private String message;
     
-    public RevocationResultType(BigInteger serialNumber, Date revocationDate, String status, String message) {
+    public RevocationResultRestResponse(BigInteger serialNumber, Date revocationDate, String status, String message) {
         this.serialNumber = serialNumber;
         this.revocationDate = revocationDate;
         this.status = status;
