@@ -207,6 +207,28 @@
 		</junit>
 	</target>
 
+	<target name="test:unit" depends="compile-tests" description="Run unit tests for this module">
+	        <antcall target="showtime"/>
+	        <condition property="remoteDebugJvmArgs"
+	                   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+	                   else="-ea">
+	                    <istrue value="${remoteDebug}"/>
+	        </condition>
+	        <junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+	            <classpath>
+	                <path refid="test.classpath"/>
+	                <path location="${build-test.dir}" />
+	            </classpath>
+	            <formatter type="xml" />
+	            <batchtest fork="yes" todir="${reports.dir}">
+	                <fileset dir="${build-test.dir}" includes="**/*UnitTest.class">
+	                </fileset>
+	            </batchtest>
+	            <jvmarg value="${remoteDebugJvmArgs}"/>
+	        </junit>
+	        <antcall target="showtime"/>
+	    </target>
+	
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
 		<junit printsummary="yes" haltonfailure="no" >
