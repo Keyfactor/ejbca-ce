@@ -148,6 +148,7 @@ import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -182,6 +183,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
+import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -233,6 +235,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
     @EJB
     private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
+    
+    @EJB
+    private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
+    
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -1742,7 +1748,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
         }
     }
-
+    
+    
+    @Override
+    public byte[] createCertificateRest(final AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest) 
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, IOException, EndEntityProfileNotFoundException, 
+            CertificateProfileDoesNotExistException, CADoesntExistsException {
+        byte[] certificate = ejbcaRestHelperSession.createCertificateRest(authenticationToken, enrollcertificateRequest);
+        return certificate;
+    }
+    
+    
     @Override
     public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
