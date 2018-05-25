@@ -2186,12 +2186,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException {
+    public Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException {
         if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() +caid)) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
             throw new AuthorizationDeniedException(msg);
         }
-        return caSession.getCAInfoInternal(caid).getCertificateChain();
+        CAInfo caInfo = caSession.getCAInfoInternal(caid);
+        if(caInfo == null) {
+            throw new CADoesntExistsException("CA doesn't exist");
+        }
+        return caInfo.getCertificateChain();
     }
 
     public List<Certificate> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days, int maxNumberOfResults, int offset) throws AuthorizationDeniedException {
