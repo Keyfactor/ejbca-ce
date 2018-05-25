@@ -391,7 +391,7 @@ public class CertificateRestResourceUnitTest {
         final String actualContentType = getContentType(actualResponse);
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final boolean moreResults  = (Boolean) ((JSONObject)actualJsonObject.get("responseStatus")).get("moreResults");
+        final boolean moreResults  = (Boolean) ((JSONObject)actualJsonObject.get("paginationRestResponseComponent")).get("moreResults");
         // then
         assertEquals(Status.OK, status);
         assertEquals(MediaType.APPLICATION_JSON, actualContentType);
@@ -424,7 +424,7 @@ public class CertificateRestResourceUnitTest {
         final String actualContentType = getContentType(actualResponse);
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        JSONObject responseStatus = (JSONObject) actualJsonObject.get("responseStatus");
+        JSONObject responseStatus = (JSONObject) actualJsonObject.get("paginationRestResponseComponent");
         final boolean moreResults  = (Boolean) responseStatus.get("moreResults");
         final long nextOffset  = (Long) responseStatus.get("nextOffset");
         final long numberOfResults  = (Long) responseStatus.get("numberOfResults");
@@ -463,7 +463,7 @@ public class CertificateRestResourceUnitTest {
         final String actualContentType = getContentType(actualResponse);
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        JSONObject responseStatus = (JSONObject) actualJsonObject.get("responseStatus");
+        JSONObject responseStatus = (JSONObject) actualJsonObject.get("paginationRestResponseComponent");
         final boolean moreResults  = (Boolean) responseStatus.get("moreResults");
         final long nextOffset  = (Long) responseStatus.get("nextOffset");
         final long numberOfResults  = (Long) responseStatus.get("numberOfResults");
