@@ -12,23 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.easymock.EasyMockRunner;
@@ -46,6 +33,21 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.util.Date;
+
+import static org.easymock.EasyMock.anyInt;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -183,6 +185,29 @@ public class CaRestResourceUnitTest {
         assertEquals(expectedIssuerDn, actualIssuerDn);
         assertNotNull(actualExpirationDateLong);
         assertEquals(expectedExpirationDateLong, actualExpirationDateLong);
+        verify(raMasterApiProxy);
+    }
+
+    @Test
+    public void shouldThrowEcceptionOnNonExistingCa() throws Exception {
+        // given
+        final String expectedMessage = "CA doesn't exist";
+        final long expectedCode = Response.Status.NOT_FOUND.getStatusCode();
+        final String subjectDn = "Ca name";
+        // when
+        expect(raMasterApiProxy.getCertificateChain(eq(authenticationToken), anyInt())).andThrow(new CADoesntExistsException(expectedMessage));
+        replay(raMasterApiProxy);
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/" + subjectDn + "/certificate/download").get();
+        final String actualJsonString = (String) actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final Object actualErrorCode = actualJsonObject.get("errorCode");
+        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        // then
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), actualResponse.getStatus());
+        assertNotNull(actualErrorCode);
+        assertEquals(expectedCode, actualErrorCode);
+        assertNotNull(actualErrorMessage);
+        assertEquals(expectedMessage, actualErrorMessage);
         verify(raMasterApiProxy);
     }
 
