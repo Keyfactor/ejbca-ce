@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyStoreException;
 import java.security.SignatureException;
@@ -79,6 +80,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
@@ -462,6 +464,17 @@ public interface RaMasterApi {
     byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
             EndEntityProfileValidationException;
+
+    /**
+     * Generates a certificate. This variant is used from the REST Service interface.
+     * @param authenticationToken authentication token.
+     * @param enrollcertificateRequest input data object for enrolling a certificate
+     */    
+    byte[] createCertificateRest(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest) 
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, IOException, EndEntityProfileNotFoundException, 
+            CertificateProfileDoesNotExistException, CADoesntExistsException;
+    
+    
     
     /**
      * Finds end entity by its username.

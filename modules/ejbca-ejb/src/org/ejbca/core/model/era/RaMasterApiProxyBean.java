@@ -120,6 +120,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
+import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
@@ -1280,6 +1281,25 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         if (caDoesntExistException != null) {
             throw caDoesntExistException;
+        }
+        return null;
+    }
+    
+    @Override
+    public byte[] createCertificateRest(final AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest) 
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, IOException, EndEntityProfileNotFoundException, 
+            CertificateProfileDoesNotExistException, CADoesntExistsException {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (log.isDebugEnabled()) {
+                log.debug("raMasterApi calling createCertificateRest: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+            }
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    return raMasterApi.createCertificateRest(authenticationToken, enrollcertificateRequest);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
         }
         return null;
     }
