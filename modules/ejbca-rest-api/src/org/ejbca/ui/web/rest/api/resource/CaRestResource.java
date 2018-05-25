@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
@@ -71,7 +72,7 @@ public class CaRestResource extends BaseRestResource {
     @Path("/{subject_dn}/certificate/download")
     @Produces(MediaType.WILDCARD)
     public Response getCertificateAsPem(@Context HttpServletRequest requestContext,
-                                        @PathParam("subject_dn") String subjectDn) throws AuthorizationDeniedException, CertificateEncodingException {
+                                        @PathParam("subject_dn") String subjectDn) throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException {
         if (requestContext == null) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Missing request context").build();
         }
@@ -94,7 +95,7 @@ public class CaRestResource extends BaseRestResource {
      * @return The response containing the list of CAs and its general information.
      */
     @GET
-    public Response listCas(@Context final HttpServletRequest httpServletRequest) throws Exception {
+    public Response listCas(@Context final HttpServletRequest httpServletRequest) throws AuthorizationDeniedException, CADoesntExistsException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
                 .certificateAuthorities(CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken)))
