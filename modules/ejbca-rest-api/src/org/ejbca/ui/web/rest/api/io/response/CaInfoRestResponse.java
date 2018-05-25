@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.types.response;
+package org.ejbca.ui.web.rest.api.io.response;
 
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -23,9 +23,9 @@ import java.util.List;
 /**
  * A class representing general information about CA certificate.
  *
- * @version $Id: CaInfoType.java 28909 2018-05-22 12:16:53Z andrey_s_helmes $
+ * @version $Id: CaInfoRestResponse.java 28909 2018-05-22 12:16:53Z andrey_s_helmes $
  */
-public class CaInfoType {
+public class CaInfoRestResponse {
 
     private Integer id;
     private String name;
@@ -36,10 +36,10 @@ public class CaInfoType {
     /**
      * Simple constructor.
      */
-    public CaInfoType() {
+    public CaInfoRestResponse() {
     }
 
-    private CaInfoType(final Integer id, final String name, final String subjectDn, final String issuerDn, final Date expirationDate) {
+    private CaInfoRestResponse(final Integer id, final String name, final String subjectDn, final String issuerDn, final Date expirationDate) {
         this.id = id;
         this.name = name;
         this.subjectDn = subjectDn;
@@ -52,8 +52,8 @@ public class CaInfoType {
      *
      * @return builder instance for this class.
      */
-    public static CaInfoTypeBuilder builder() {
-        return new CaInfoTypeBuilder();
+    public static CaInfoRestResponseBuilder builder() {
+        return new CaInfoRestResponseBuilder();
     }
 
     /**
@@ -149,7 +149,7 @@ public class CaInfoType {
     /**
      * Builder of this class.
      */
-    public static class CaInfoTypeBuilder {
+    public static class CaInfoRestResponseBuilder {
 
         private Integer id;
         private String name;
@@ -157,7 +157,7 @@ public class CaInfoType {
         private String issuerDn;
         private Date expirationDate;
 
-        CaInfoTypeBuilder() {
+        CaInfoRestResponseBuilder() {
         }
 
         /**
@@ -167,7 +167,7 @@ public class CaInfoType {
          *
          * @return instance of this builder.
          */
-        public CaInfoTypeBuilder id(final Integer id) {
+        public CaInfoRestResponseBuilder id(final Integer id) {
             this.id = id;
             return this;
         }
@@ -179,7 +179,7 @@ public class CaInfoType {
          *
          * @return instance of this builder.
          */
-        public CaInfoTypeBuilder name(final String name) {
+        public CaInfoRestResponseBuilder name(final String name) {
             this.name = name;
             return this;
         }
@@ -191,7 +191,7 @@ public class CaInfoType {
          *
          * @return instance of this builder.
          */
-        public CaInfoTypeBuilder subjectDn(final String subjectDn) {
+        public CaInfoRestResponseBuilder subjectDn(final String subjectDn) {
             this.subjectDn = subjectDn;
             return this;
         }
@@ -203,7 +203,7 @@ public class CaInfoType {
          *
          * @return instance of this builder.
          */
-        public CaInfoTypeBuilder issuerDn(final String issuerDn) {
+        public CaInfoRestResponseBuilder issuerDn(final String issuerDn) {
             this.issuerDn = issuerDn;
             return this;
         }
@@ -215,18 +215,18 @@ public class CaInfoType {
          *
          * @return instance of this builder.
          */
-        public CaInfoTypeBuilder expirationDate(final Date expirationDate) {
+        public CaInfoRestResponseBuilder expirationDate(final Date expirationDate) {
             this.expirationDate = expirationDate;
             return this;
         }
 
         /**
-         * Builds an instance of CaInfoType using this builder.
+         * Builds an instance of CaInfoRestResponse using this builder.
          *
-         * @return instance of CaInfoType using this builder.
+         * @return instance of CaInfoRestResponse using this builder.
          */
-        public CaInfoType build() {
-            return new CaInfoType(
+        public CaInfoRestResponse build() {
+            return new CaInfoRestResponse(
                     id,
                     name,
                     subjectDn,
@@ -241,27 +241,27 @@ public class CaInfoType {
      *
      * @return instance of converter for this class.
      */
-    public static CaInfoTypeConverter converter() {
-        return new CaInfoTypeConverter();
+    public static CaInfoRestResponseConverter converter() {
+        return new CaInfoRestResponseConverter();
     }
 
     /**
      * Converter of this class.
      */
-    public static class CaInfoTypeConverter {
+    public static class CaInfoRestResponseConverter {
 
-        CaInfoTypeConverter() {
+        CaInfoRestResponseConverter() {
         }
 
         /**
-         * Converts a non-null instance of CAInfo into CaInfoType.
+         * Converts a non-null instance of CAInfo into CaInfoRestResponse.
          *
          * @param caInfo CAInfo.
          *
-         * @return CaInfoType.
+         * @return CaInfoRestResponse.
          */
-        public CaInfoType toType(final CAInfo caInfo) throws CADoesntExistsException {
-            return CaInfoType.builder()
+        public CaInfoRestResponse toRestResponse(final CAInfo caInfo) throws CADoesntExistsException {
+            return CaInfoRestResponse.builder()
                     .id(caInfo.getCAId())
                     .name(caInfo.getName())
                     .subjectDn(caInfo.getSubjectDN())

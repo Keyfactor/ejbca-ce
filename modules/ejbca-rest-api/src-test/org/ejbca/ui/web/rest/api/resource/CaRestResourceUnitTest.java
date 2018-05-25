@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.resources;
+package org.ejbca.ui.web.rest.api.resource;
 
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
 
 
 /**
- * A unit test class for CaResource to test its content.
+ * A unit test class for CaRestResource to test its content.
  * <br/>
  * The testing is organized through deployment of this resource with mocked dependencies into InMemoryRestServer.
  *
@@ -58,11 +58,11 @@ import org.junit.runner.RunWith;
  * @version $Id: CaInfoConverterUnitTest.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
  */
 @RunWith(EasyMockRunner.class)
-public class CaResourceUnitTest {
+public class CaRestResourceUnitTest {
 
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
-    private static class CaResourceWithoutSecurity extends CaResource {
+    private static class CaRestResourceWithoutSecurity extends CaRestResource {
         @Override
         protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException {
             return authenticationToken;
@@ -72,7 +72,7 @@ public class CaResourceUnitTest {
     private static final JSONParser jsonParser = new JSONParser();
 
     @TestSubject
-    private static CaResource testClass = new CaResourceWithoutSecurity();
+    private static CaRestResource testClass = new CaRestResourceWithoutSecurity();
     @Mock
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
 

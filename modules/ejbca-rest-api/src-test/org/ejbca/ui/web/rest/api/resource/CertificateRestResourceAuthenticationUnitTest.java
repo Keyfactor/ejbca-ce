@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.resources;
+package org.ejbca.ui.web.rest.api.resource;
 
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
@@ -30,7 +30,7 @@ import org.easymock.TestSubject;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
-import org.ejbca.ui.web.rest.api.types.EnrollCertificateRequestType;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.junit.AfterClass;
@@ -40,21 +40,21 @@ import org.junit.runner.RunWith;
 
 
 /**
- * A unit test class for CertificateResourceAuthenticationUnitTest to test the unauthorized flow.
+ * A unit test class for CertificateRestResourceAuthenticationUnitTest to test the unauthorized flow.
  * <br/>
  * The testing is organized through deployment of this resource with mocked dependencies into InMemoryRestServer.
  *
  * @see org.ejbca.ui.web.rest.api.InMemoryRestServer
  *
- * @version $Id: CertificateResourceAuthenticationUnitTest.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
+ * @version $Id: CertificateRestResourceAuthenticationUnitTest.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
 @RunWith(EasyMockRunner.class)
-public class CertificateResourceAuthenticationUnitTest {
+public class CertificateRestResourceAuthenticationUnitTest {
 
     public static InMemoryRestServer server;
 
     @TestSubject
-    private static CertificateResource testClass = new CertificateResource();
+    private static CertificateRestResource testClass = new CertificateRestResource();
 
     @Mock
     private EjbBridgeSessionLocal ejbLocalHelper;
@@ -80,7 +80,7 @@ public class CertificateResourceAuthenticationUnitTest {
     @Test
     public void shouldGiveUnauthorizedException() throws Exception {
         // given
-        EnrollCertificateRequestType requestBody = new EnrollCertificateRequestType();
+        EnrollCertificateRestRequest requestBody = new EnrollCertificateRestRequest();
 
         expect(ejbLocalHelper.getEjbcaRestHelperSession()).andReturn(ejbcaRestHelperSessionLocal);
         expect(ejbcaRestHelperSessionLocal.getAdmin(EasyMock.anyBoolean(), (X509Certificate)EasyMock.anyObject())).andThrow(new AuthorizationDeniedException());
