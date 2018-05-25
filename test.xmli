@@ -277,6 +277,11 @@
         <antcall target="createreport"/>
     </target>
 
+    <target name="test:unit:ejbca-ejb" description="run all JUnit tests for ejbca-ejb module." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" />
+        <antcall target="createreport"/>
+    </target>
+    	
     <target name="createreport">
 		<junitreport todir="${reports.dir}">
 			<fileset dir="${reports.dir}">
