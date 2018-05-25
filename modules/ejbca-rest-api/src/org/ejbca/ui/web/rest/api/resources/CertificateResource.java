@@ -15,14 +15,12 @@ package org.ejbca.ui.web.rest.api.resources;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -38,24 +36,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.crl.RevocationReasons;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
-import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
@@ -63,13 +52,11 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.era.IdNameHashMap;
-import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.converters.CertificateConverter;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.types.CertificateResponse;
@@ -122,140 +109,27 @@ public class CertificateResource extends BaseRestResource {
 
         try {
             AuthenticationToken authenticationToken = getAdmin(requestContext, false);
-            EndEntityInformation endEntityInformation = fillEndEntityInformation(enrollcertificateRequest, authenticationToken);
             
-            addEndEntity(authenticationToken, endEntityInformation);
-            
-            endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest()).getEncoded());
-            byte[] certificate = raMasterApi.createCertificate(authenticationToken, endEntityInformation);
+            EnrollPkcs10CertificateRequest requestDto = new EnrollPkcs10CertificateRequest.Builder()
+                    .certificateRequest(enrollcertificateRequest.getCertificateRequest())
+                    .certificateProfileName(enrollcertificateRequest.getCertificateProfileName())
+                    .endEntityProfileName(enrollcertificateRequest.getEndEntityProfileName())
+                    .certificateAuthorityName(enrollcertificateRequest.getCertificateAuthorityName())
+                    .username(enrollcertificateRequest.getUsername())
+                    .password(enrollcertificateRequest.getPassword())
+                    .build();
+                    
+            byte[] certificate = raMasterApi.createCertificateRest(authenticationToken, requestDto);
             
             X509Certificate cert = CertTools.getCertfromByteArray(certificate, X509Certificate.class);
             
             CertificateResponse enrollCertificateResponse = certificateConverter.toType(cert);
             return Response.ok(enrollCertificateResponse).build();
-        } catch (EjbcaException | WaitingForApprovalException | CertificateParsingException | IOException | CertificateEncodingException e){
-            throw new RestException(400, e.getMessage());
+        } catch (CertificateParsingException | CertificateEncodingException | EjbcaException | 
+                WaitingForApprovalException | IOException | EndEntityProfileNotFoundException | 
+                CertificateProfileDoesNotExistException | CADoesntExistsException e) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
-    }
-
-    private void addEndEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
-            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, RestException {
-        if (raMasterApi.addUser(authenticationToken, endEntityInformation, /*clearpwd=*/false)) {
-            log.info("End entity with username " + endEntityInformation.getUsername() + " has been successfully added by client " + authenticationToken);
-        } else {
-            throw new RestException(422, "Problem with adding end entity with username " + endEntityInformation.getUsername());
-        }
-    }
-
-    private EndEntityInformation fillEndEntityInformation(EnrollCertificateRequestType enrollcertificateRequest, AuthenticationToken authenticationToken) throws RestException {
-        EndEntityInformation endEntityInformation = new EndEntityInformation();
-        ExtendedInformation extendedInformation = new ExtendedInformation();
-
-        endEntityInformation.setExtendedInformation(extendedInformation);
-
-        CAInfo caInfo = getCAInfo(enrollcertificateRequest.getCertificateAuthorityId(), authenticationToken);
-        if (caInfo == null) {
-            throw new RestException(422, "CA with id " + enrollcertificateRequest.getCertificateAuthorityId() + " doesn't exist");
-        }
-        endEntityInformation.setCAId(caInfo.getCAId());
-
-        if (!certificateProfileExists(enrollcertificateRequest.getCertificateProfileId(), authenticationToken)) {
-            throw new RestException(422, "Certificate profile with id " + enrollcertificateRequest.getCertificateProfileId() + " doesn't exist");
-        }
-        endEntityInformation.setCertificateProfileId(enrollcertificateRequest.getCertificateProfileId());
-        
-        PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest());
-        if (pkcs10CertificateRequest == null) {
-            throw new RestException(422, "Invalid certificate request");
-        }
-        
-        String altName = getSubjectAltName(pkcs10CertificateRequest);
-        endEntityInformation.setSubjectAltName(altName);
-        
-        String subjectDn = getSubjectDn(pkcs10CertificateRequest);
-        endEntityInformation.setDN(subjectDn);
-        
-        EndEntityProfile endEntityProfile = getEndEntityProfile(enrollcertificateRequest.getEndEntityProfileId(), authenticationToken);
-        if (endEntityProfile == null) {
-            throw new RestException(422, "End entity profile with id " + enrollcertificateRequest.getEndEntityProfileId() + "doesn't exist");
-        }
-        endEntityInformation.setEndEntityProfileId(enrollcertificateRequest.getEndEntityProfileId());
-        
-        endEntityInformation.setCardNumber("");
-        endEntityInformation.setHardTokenIssuerId(0);
-        endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
-
-        Date timecreated = new Date();
-        endEntityInformation.setTimeCreated(timecreated);
-        endEntityInformation.setTimeModified(timecreated);
-        
-        endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
-        boolean isSendNotificationDefaultInProfile = EndEntityProfile.TRUE.equals(endEntityProfile.getValue(EndEntityProfile.SENDNOTIFICATION, 0));
-        endEntityInformation.setSendNotification(isSendNotificationDefaultInProfile && !endEntityInformation.getSendNotification());
-
-        endEntityInformation.setPrintUserData(false);
-        endEntityInformation.setTokenType(EndEntityConstants.TOKEN_USERGEN);
-
-
-        // Fill end-entity information (Username and Password)
-        final byte[] randomData = new byte[16];
-        final Random random = new SecureRandom();
-        
-        if (endEntityProfile.useAutoGeneratedPasswd()) {
-            // If auto-generated passwords are used, this is set on the CA side when adding or changing the EE as long as the password is null
-            endEntityInformation.setPassword(null);
-        } else if (StringUtils.isEmpty(enrollcertificateRequest.getPassword())) {
-            // If not needed just use some random data
-            random.nextBytes(randomData);
-            endEntityInformation.setPassword(new String(Hex.encode(CertTools.generateSHA256Fingerprint(randomData))));
-        } else {
-            endEntityInformation.setPassword(enrollcertificateRequest.getPassword());
-        }
-        return endEntityInformation;
-    }
-
-
-    protected String getSubjectAltName(PKCS10CertificationRequest pkcs10CertificateRequest) {
-        String altName = null;
-        final Extension subjectAlternativeNameExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
-        if (subjectAlternativeNameExtension != null) {
-            altName = CertTools.getAltNameStringFromExtension(subjectAlternativeNameExtension);
-        }
-        return altName;
-    }
-
-
-    protected String getSubjectDn(PKCS10CertificationRequest pkcs10CertificateRequest) {
-        String subject = "";
-        if (pkcs10CertificateRequest.getSubject() != null) {
-            subject = pkcs10CertificateRequest.getSubject().toString();
-        }
-        return subject;
-    }
-
-    private CAInfo getCAInfo(int certificateAuthorityId, AuthenticationToken authenticationToken) {
-        IdNameHashMap<CAInfo> authorizedCAInfos = raMasterApi.getAuthorizedCAInfos(authenticationToken);
-        KeyToValueHolder<CAInfo> caInfo = authorizedCAInfos.get(certificateAuthorityId);
-
-        if (caInfo != null) {
-            return caInfo.getValue();
-        }
-        return null;
-    }
-
-    public EndEntityProfile getEndEntityProfile(int endEntityProfileId, AuthenticationToken authenticationToken) {
-        IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = raMasterApi.getAuthorizedEndEntityProfiles(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY);
-        KeyToValueHolder<EndEntityProfile> endEntityProfile = authorizedEndEntityProfiles.get(endEntityProfileId);
-        if (endEntityProfile != null) {
-            return endEntityProfile.getValue();
-        }
-        return null;
-    }
-
-    private boolean certificateProfileExists(int certificateProfileId, AuthenticationToken authenticationToken) {
-        IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = raMasterApi.getAuthorizedCertificateProfiles(authenticationToken);
-        KeyToValueHolder<CertificateProfile> certificateProfile = authorizedCertificateProfiles.get(certificateProfileId);
-        return certificateProfile != null;
     }
 
 

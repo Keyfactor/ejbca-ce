@@ -13,12 +13,19 @@
 
 package org.ejbca.core.ejb.rest;
 
+import java.io.IOException;
 import java.security.cert.X509Certificate;
 
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
 /**
  * 
@@ -35,5 +42,14 @@ public interface EjbcaRestHelperSessionLocal extends EjbcaRestHelperSession {
      * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins = false and the certificate does not belong to an administrator
      */
     AuthenticationToken getAdmin(boolean allowNonAdmins, X509Certificate cert) throws AuthorizationDeniedException;
+
+    /**
+     * Add user & enroll a pkcs10 certificate based on EnrollPkcs10CertificateRequest input
+     * @param authenticationToken of the requesting administrator
+     * @param enrollcertificateRequest input data object for enrolling a certificate
+     */
+    public byte[] createCertificateRest(final AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest) 
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, IOException, EndEntityProfileNotFoundException, 
+            CertificateProfileDoesNotExistException, CADoesntExistsException;
     
 }
