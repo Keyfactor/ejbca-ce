@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.rest.api.types.RestResourceStatusType;
+import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
 /**
  * Base class for common methods used across all REST resources.
@@ -40,7 +40,7 @@ public abstract class BaseRestResource {
      * @return response as Json.
      */
     public Response status() {
-        return Response.ok(RestResourceStatusType.builder()
+        return Response.ok(RestResourceStatusRestResponse.builder()
                 .status(RESOURCE_STATUS)
                 .version(RESOURCE_VERSION)
                 .revision(RESOURCE_REVISION)

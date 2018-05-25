@@ -10,14 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.types;
+package org.ejbca.ui.web.rest.api.io.request;
 
 /**
  * A class representing the input for certificate enrollment REST method.
  *
- * @version $Id: EnrollCertificateRequestType.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
+ * @version $Id: EnrollCertificateRestRequest.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
-public class EnrollCertificateRequestType {
+public class EnrollCertificateRestRequest {
         
     private String certificateRequest;
     private String certificateProfileName;
@@ -27,7 +27,7 @@ public class EnrollCertificateRequestType {
     private String password;
     
     
-    public EnrollCertificateRequestType() {
+    public EnrollCertificateRestRequest() {
         
     }
     

@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.resources;
+package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -34,7 +34,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.ui.web.rest.api.types.response.CaInfoTypes;
+import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
 import org.ejbca.ui.web.rest.common.BaseRestResource;
 
 /**
@@ -45,15 +45,15 @@ import org.ejbca.ui.web.rest.common.BaseRestResource;
 @Path("/v1/ca")
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
-public class CaResource extends BaseRestResource {
-    //private static final Logger log = Logger.getLogger(CaResource.class);
+public class CaRestResource extends BaseRestResource {
+    //private static final Logger log = Logger.getLogger(CaRestResource.class);
 
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
 
-    public CaResource() {
+    public CaRestResource() {
     }
 
     @GET
@@ -96,10 +96,10 @@ public class CaResource extends BaseRestResource {
     @GET
     public Response listCas(@Context final HttpServletRequest httpServletRequest) throws Exception {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
-        final CaInfoTypes caInfoTypes = CaInfoTypes.builder()
-                .certificateAuthorities(CaInfoTypes.converter().toTypes(raMasterApiProxy.getAuthorizedCAInfos(adminToken)))
+        final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
+                .certificateAuthorities(CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken)))
                 .build();
-        return Response.ok(caInfoTypes).build();
+        return Response.ok(caInfosRestResponse).build();
     }
 
 }

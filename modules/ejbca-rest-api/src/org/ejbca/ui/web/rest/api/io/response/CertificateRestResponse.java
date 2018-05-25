@@ -10,21 +10,27 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.types;
+package org.ejbca.ui.web.rest.api.io.response;
+
+import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 
 import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 
 /**
  * A class representing general information about certificate. Is used for REST services' responses.
- * 
- * @version $Id: CertificateResponse.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
+ *
+ * @version $Id: CertificateRestResponse.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
-public class CertificateResponse {
+public class CertificateRestResponse {
 
     private byte[] certificate;
     private BigInteger serialNumber;
 
-    private CertificateResponse(byte[] certificate, BigInteger serialNumber) {
+    private CertificateRestResponse(byte[] certificate, BigInteger serialNumber) {
         this.certificate = certificate;
         this.serialNumber = serialNumber;
     }
@@ -36,6 +42,15 @@ public class CertificateResponse {
      */
     public static CertificateResponseBuilder builder() {
         return new CertificateResponseBuilder();
+    }
+
+    /**
+     * Returns a converter instance for this class.
+     *
+     * @return instance of converter for this class.
+     */
+    public static CertificateRestResponseConverter converter() {
+        return new CertificateRestResponseConverter();
     }
 
     public byte[] getCertificate() {
@@ -63,8 +78,28 @@ public class CertificateResponse {
             return this;
         }
 
-        public CertificateResponse build() {
-            return new CertificateResponse(certificate, serialNumber);
+        public CertificateRestResponse build() {
+            return new CertificateRestResponse(certificate, serialNumber);
         }
+    }
+
+    public static class CertificateRestResponseConverter {
+
+        public CertificateRestResponse toRestResponse(Certificate certificate) throws CertificateEncodingException {
+            certificate.getType();
+            return CertificateRestResponse.builder()
+                    .setCertificate(Base64.encode(certificate.getEncoded()))
+                    .setSerialNumber(CertTools.getSerialNumber(certificate))
+                    .build();
+        }
+
+        public CertificateRestResponse toRestResponse(X509Certificate certificate) throws CertificateEncodingException {
+            certificate.getType();
+            return CertificateRestResponse.builder()
+                    .setCertificate(certificate.getEncoded())
+                    .setSerialNumber(certificate.getSerialNumber())
+                    .build();
+        }
+
     }
 }
