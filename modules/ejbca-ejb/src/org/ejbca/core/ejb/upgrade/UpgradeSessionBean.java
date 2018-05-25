@@ -376,14 +376,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         final String currentVersion = InternalConfiguration.getAppVersionNumber();
                         final String last = getLastPostUpgradedToVersion();
                         if (isLesserThan(last, currentVersion)) {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Starting post-upgrade.");
-                            }
+                            log.info("Database content version: " + last + ", current application version: " + currentVersion + " -> Starting post-upgrade.");
                             ret = upgradeSession.upgrade(dbType, last, true);
                         } else {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Database content version: " + last + " Current application version: " + currentVersion + " -> Post-upgrade is not needed.");
-                            }
+                            log.info("Database content version: " + last + ", current application version: " + currentVersion + " -> Post-upgrade is not needed.");
                             ret = true;
                         }
                     } finally {
