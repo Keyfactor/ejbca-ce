@@ -73,6 +73,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
     @EJB
     private WebAuthenticationProviderSessionLocal authenticationSession;
+    
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     
@@ -84,6 +85,8 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     
     @EJB
     private CertificateProfileSessionLocal certificateProfileSessionBean;
+    
+    
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public AuthenticationToken getAdmin(final boolean allowNonAdmins, X509Certificate cert) throws AuthorizationDeniedException {
@@ -118,7 +121,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         return certificate;
     }
     
-    public EndEntityInformation convertToEndEntityInformation(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest) 
+    private EndEntityInformation convertToEndEntityInformation(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest)
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException, EjbcaException, CertificateProfileDoesNotExistException, CADoesntExistsException {
         
         EndEntityInformation endEntityInformation = new EndEntityInformation();
