@@ -791,7 +791,7 @@ public interface RaMasterApi {
      * @since RA Master API version 4 (EJBCA 6.14.0)
      * @throws AuthorizationDeniedException if client isn't authorized to request
      */
-    Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException;
+    Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException;
    
 
     /**
