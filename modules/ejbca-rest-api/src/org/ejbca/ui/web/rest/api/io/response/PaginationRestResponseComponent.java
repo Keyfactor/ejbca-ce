@@ -11,19 +11,19 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.types;
+package org.ejbca.ui.web.rest.api.io.response;
 
 /**
  * A container for response status information. Are where more results? Next offset, how many results left etc..
  *
- * @version $Id: ResponseStatus.java 29010 2018-05-23 13:09:53Z jekaterina_b_helmes $
+ * @version $Id: PaginationRestResponseComponent.java 29010 2018-05-23 13:09:53Z jekaterina_b_helmes $
  */
-public class ResponseStatus {
+public class PaginationRestResponseComponent {
     private boolean moreResults;
     private int nextOffset;
     private int numberOfResults;
 
-    private ResponseStatus(boolean moreResults, int nextOffset, int numberOfResults) {
+    private PaginationRestResponseComponent(boolean moreResults, int nextOffset, int numberOfResults) {
         this.moreResults = moreResults;
         if(moreResults) {
             this.nextOffset = nextOffset;
@@ -54,32 +54,32 @@ public class ResponseStatus {
     public void setNumberOfResults(int numberOfResults) {
         this.numberOfResults = numberOfResults;
     }
-    public static ResponseStatusBuilder builder() {
-        return new ResponseStatusBuilder();
+    public static PaginationRestResponseComponentBuilder builder() {
+        return new PaginationRestResponseComponentBuilder();
     }
 
-    public static class ResponseStatusBuilder {
+    public static class PaginationRestResponseComponentBuilder {
         private boolean moreResults;
         private int nextOffset;
         private int numberOfResults;
 
-        public ResponseStatusBuilder setMoreResults(boolean moreResults) {
+        public PaginationRestResponseComponentBuilder setMoreResults(boolean moreResults) {
             this.moreResults = moreResults;
             return this;
         }
 
-        public ResponseStatusBuilder setNextOffset(int nextOffset) {
+        public PaginationRestResponseComponentBuilder setNextOffset(int nextOffset) {
             this.nextOffset = nextOffset;
             return this;
         }
 
-        public ResponseStatusBuilder setNumberOfResults(int numberOfResults) {
+        public PaginationRestResponseComponentBuilder setNumberOfResults(int numberOfResults) {
             this.numberOfResults = numberOfResults;
             return this;
         }
 
-        public ResponseStatus build() {
-            return new ResponseStatus(moreResults, nextOffset, numberOfResults);
+        public PaginationRestResponseComponent build() {
+            return new PaginationRestResponseComponent(moreResults, nextOffset, numberOfResults);
         }
     }
 }

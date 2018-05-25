@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.resources;
+package org.ejbca.ui.web.rest.api.resource;
 
 import static org.easymock.EasyMock.anyBoolean;
 import static org.easymock.EasyMock.anyInt;
@@ -69,7 +69,7 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
-import org.ejbca.ui.web.rest.api.types.EnrollCertificateRequestType;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONObject;
@@ -80,20 +80,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A unit test class for CertificateResource to test its content.
+ * A unit test class for CertificateRestResource to test its content.
  * <br/>
  * The testing is organized through deployment of this resource with mocked dependencies into InMemoryRestServer.
  *
- * @version $Id: CertificateResourceUnitTest.java 28909 2018-05-21 12:16:53Z andrey_s_helmes $
+ * @version $Id: CertificateRestResourceUnitTest.java 28909 2018-05-21 12:16:53Z andrey_s_helmes $
  * @see org.ejbca.ui.web.rest.api.InMemoryRestServer
  */
 @RunWith(EasyMockRunner.class)
-public class CertificateResourceUnitTest {
+public class CertificateRestResourceUnitTest {
 
     private static final JSONParser jsonParser = new JSONParser();
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
-    private static class CertificateResourceWithoutSecurity extends CertificateResource {
+    private static class CertificateRestResourceWithoutSecurity extends CertificateRestResource {
         @Override
         protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException {
             return authenticationToken;
@@ -101,7 +101,7 @@ public class CertificateResourceUnitTest {
     }
     public static InMemoryRestServer server;
     @TestSubject
-    private static CertificateResourceWithoutSecurity testClass = new CertificateResourceWithoutSecurity();
+    private static CertificateRestResourceWithoutSecurity testClass = new CertificateRestResourceWithoutSecurity();
 
     @Mock
     private EjbBridgeSessionLocal ejbLocalHelper;
@@ -430,7 +430,7 @@ public class CertificateResourceUnitTest {
         String encodedValidity = "";
         int signedby = 1;
 
-        EnrollCertificateRequestType requestBody = new EnrollCertificateRequestType();
+        EnrollCertificateRestRequest requestBody = new EnrollCertificateRestRequest();
         requestBody.setCertificateProfileId(certificateProfileId);
         requestBody.setEndEntityProfileId(endEntityProfileId);
         requestBody.setCertificateAuthorityId(certificateAuthorityId);

@@ -10,24 +10,24 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.types;
+package org.ejbca.ui.web.rest.api.io.response;
 
 /**
  * A class representing the status information of a REST resource.
  *
- * @version $Id: RestResourceStatusType.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
+ * @version $Id: RestResourceStatusRestResponse.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
  */
-public class RestResourceStatusType {
+public class RestResourceStatusRestResponse {
 
     private String status;
     private String version;
     private String revision;
     // TODO Possible extra info: Authentication info, token information, token validity and etc.
 
-    public RestResourceStatusType() {
+    public RestResourceStatusRestResponse() {
     }
 
-    private RestResourceStatusType(String status, String version, String revision) {
+    private RestResourceStatusRestResponse(String status, String version, String revision) {
         this.status = status;
         this.version = version;
         this.revision = revision;
@@ -109,7 +109,7 @@ public class RestResourceStatusType {
         }
 
         /**
-         * Sets a status of RestResourceStatusType in this builder.
+         * Sets a status of RestResourceStatusRestResponse in this builder.
          *
          * @param status status.
          *
@@ -121,7 +121,7 @@ public class RestResourceStatusType {
         }
 
         /**
-         * Sets a version of RestResourceStatusType in this builder.
+         * Sets a version of RestResourceStatusRestResponse in this builder.
          *
          * @param version version.
          *
@@ -133,7 +133,7 @@ public class RestResourceStatusType {
         }
 
         /**
-         * Sets a version of RestResourceStatusType in this builder.
+         * Sets a version of RestResourceStatusRestResponse in this builder.
          *
          * @param revision revision.
          *
@@ -145,12 +145,12 @@ public class RestResourceStatusType {
         }
 
         /**
-         * Builds an instance of RestResourceStatusType using this builder.
+         * Builds an instance of RestResourceStatusRestResponse using this builder.
          *
-         * @return instance of RestResourceStatusType using this builder.
+         * @return instance of RestResourceStatusRestResponse using this builder.
          */
-        public RestResourceStatusType build() {
-            return new RestResourceStatusType(
+        public RestResourceStatusRestResponse build() {
+            return new RestResourceStatusRestResponse(
                     status,
                     version,
                     revision

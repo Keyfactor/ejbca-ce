@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.api.resources;
+package org.ejbca.ui.web.rest.api.resource;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -57,14 +57,13 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
-import org.ejbca.ui.web.rest.api.converters.CertificateConverter;
 import org.ejbca.ui.web.rest.api.exception.RestException;
-import org.ejbca.ui.web.rest.api.types.CertificateResponse;
-import org.ejbca.ui.web.rest.api.types.CertificateTypes;
-import org.ejbca.ui.web.rest.api.types.EnrollCertificateRequestType;
-import org.ejbca.ui.web.rest.api.types.ResponseStatus;
-import org.ejbca.ui.web.rest.api.types.RevocationResultType;
-import org.ejbca.ui.web.rest.api.types.response.ExpiringCertificatesResponse;
+import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
+import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
+import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesResponse;
 import org.ejbca.ui.web.rest.common.BaseRestResource;
 
 /**
@@ -74,23 +73,16 @@ import org.ejbca.ui.web.rest.common.BaseRestResource;
  */
 @Path("v1/certificate")
 @Stateless
-public class CertificateResource extends BaseRestResource {
+public class CertificateRestResource extends BaseRestResource {
 
-    private static final Logger log = Logger.getLogger(CertificateResource.class);
+    private static final Logger log = Logger.getLogger(CertificateRestResource.class);
     /**
      * Internal localization of logs and errors
      */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private final CertificateConverter certificateConverter;
-
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
-
-
-    public CertificateResource() {
-        this.certificateConverter = new CertificateConverter();
-    }
 
     @GET
     @Path("/status")
@@ -104,7 +96,7 @@ public class CertificateResource extends BaseRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRequestType enrollcertificateRequest) 
+    public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollcertificateRequest)
             throws RestException, AuthorizationDeniedException {
 
         try {
@@ -123,8 +115,8 @@ public class CertificateResource extends BaseRestResource {
             
             X509Certificate cert = CertTools.getCertfromByteArray(certificate, X509Certificate.class);
             
-            CertificateResponse enrollCertificateResponse = certificateConverter.toType(cert);
-            return Response.ok(enrollCertificateResponse).build();
+            CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(cert);
+            return Response.ok(enrollCertificateRestResponse).build();
         } catch (CertificateParsingException | CertificateEncodingException | EjbcaException | 
                 WaitingForApprovalException | IOException | EndEntityProfileNotFoundException | 
                 CertificateProfileDoesNotExistException | CADoesntExistsException e) {
@@ -179,7 +171,7 @@ public class CertificateResource extends BaseRestResource {
             revocationDate = new Date();
         }
         raMasterApi.revokeCert(admin, serialNr, revocationDate, issuerDN, revocationReason, false);
-        final RevocationResultType result = new RevocationResultType(serialNr, revocationDate, RevocationResultType.STATUS_REVOKED, "Successfully revoked");
+        final RevocationResultRestResponse result = new RevocationResultRestResponse(serialNr, revocationDate, RevocationResultRestResponse.STATUS_REVOKED, "Successfully revoked");
         return Response.ok(result).build();
     }
 
@@ -213,12 +205,12 @@ public class CertificateResource extends BaseRestResource {
         int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
         List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset);
         int processedResults = offset + maxNumberOfResults;
-        ResponseStatus responseStatus = ResponseStatus.builder().setMoreResults(count > processedResults)
+        PaginationRestResponseComponent paginationRestResponseComponent = PaginationRestResponseComponent.builder().setMoreResults(count > processedResults)
                 .setNextOffset(offset + maxNumberOfResults)
                 .setNumberOfResults(count - processedResults)
                 .build();
-        CertificateTypes certificateTypes = new CertificateTypes(certificateConverter.toTypes(expiringCertificates));
-        ExpiringCertificatesResponse response = new ExpiringCertificatesResponse(responseStatus, certificateTypes);
+        CertificatesRestResponse certificatesRestResponse = new CertificatesRestResponse(CertificatesRestResponse.converter().toRestResponses(expiringCertificates));
+        ExpiringCertificatesResponse response = new ExpiringCertificatesResponse(paginationRestResponseComponent, certificatesRestResponse);
         return Response.ok(response).build();
     }
 }

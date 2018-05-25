@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.types.response;
+package org.ejbca.ui.web.rest.api.io.response;
 
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -24,37 +24,37 @@ import java.util.Map;
 /**
  * A container class of CA information output.
  *
- * @version $Id: CaInfoType.java 28909 2018-05-22 12:16:53Z andrey_s_helmes $
+ * @version $Id: CaInfoRestResponse.java 28909 2018-05-22 12:16:53Z andrey_s_helmes $
  */
-public class CaInfoTypes {
+public class CaInfosRestResponse {
 
-    private List<CaInfoType> certificateAuthorities = new ArrayList<>();
+    private List<CaInfoRestResponse> certificateAuthorities = new ArrayList<>();
 
     /**
      * Simple constructor.
      */
-    public CaInfoTypes() {
+    public CaInfosRestResponse() {
     }
 
-    private CaInfoTypes(final List<CaInfoType> certificateAuthorities) {
+    private CaInfosRestResponse(final List<CaInfoRestResponse> certificateAuthorities) {
         this.certificateAuthorities = certificateAuthorities;
     }
 
     /**
-     * Returns the list of CaInfoType.
+     * Returns the list of CaInfoRestResponse.
      *
-     * @return list of CaInfoType.
+     * @return list of CaInfoRestResponse.
      */
-    public List<CaInfoType> getCertificateAuthorities() {
+    public List<CaInfoRestResponse> getCertificateAuthorities() {
         return certificateAuthorities;
     }
 
     /**
-     * Sets a list of CaInfoType.
+     * Sets a list of CaInfoRestResponse.
      *
-     * @param certificateAuthorities list of CaInfoType.
+     * @param certificateAuthorities list of CaInfoRestResponse.
      */
-    public void setCertificateAuthorities(List<CaInfoType> certificateAuthorities) {
+    public void setCertificateAuthorities(List<CaInfoRestResponse> certificateAuthorities) {
         this.certificateAuthorities = certificateAuthorities;
     }
 
@@ -63,39 +63,39 @@ public class CaInfoTypes {
      *
      * @return instance of builder for this class.
      */
-    public static CaInfoTypesBuilder builder() {
-        return new CaInfoTypesBuilder();
+    public static CaInfosRestResponseBuilder builder() {
+        return new CaInfosRestResponseBuilder();
     }
 
     /**
      * Builder of this class.
      */
-    public static class CaInfoTypesBuilder {
+    public static class CaInfosRestResponseBuilder {
 
-        private List<CaInfoType> certificateAuthorities = new ArrayList<>();
+        private List<CaInfoRestResponse> certificateAuthorities = new ArrayList<>();
 
-        CaInfoTypesBuilder() {
+        CaInfosRestResponseBuilder() {
         }
 
         /**
-         * Sets a list of CaInfoType in this builder.
+         * Sets a list of CaInfoRestResponse in this builder.
          *
-         * @param certificateAuthorities list of CaInfoType.
+         * @param certificateAuthorities list of CaInfoRestResponse.
          *
          * @return instance of this builder.
          */
-        public CaInfoTypesBuilder certificateAuthorities(final List<CaInfoType> certificateAuthorities) {
+        public CaInfosRestResponseBuilder certificateAuthorities(final List<CaInfoRestResponse> certificateAuthorities) {
             this.certificateAuthorities = certificateAuthorities;
             return this;
         }
 
         /**
-         * Builds an instance of CaInfoTypes using this builder.
+         * Builds an instance of CaInfosRestResponse using this builder.
          *
-         * @return instance of CaInfoTypes using this builder.
+         * @return instance of CaInfosRestResponse using this builder.
          */
-        public CaInfoTypes build() {
-            return new CaInfoTypes(certificateAuthorities);
+        public CaInfosRestResponse build() {
+            return new CaInfosRestResponse(certificateAuthorities);
         }
     }
 
@@ -104,34 +104,34 @@ public class CaInfoTypes {
      *
      * @return instance of converter for this class.
      */
-    public static CaInfoTypesConverter converter() {
-        return new CaInfoTypesConverter();
+    public static CaInfosRestResponseConverter converter() {
+        return new CaInfosRestResponseConverter();
     }
 
     /**
      * Converter of this class.
      */
-    public static class CaInfoTypesConverter {
+    public static class CaInfosRestResponseConverter {
 
-        CaInfoTypesConverter() {
+        CaInfosRestResponseConverter() {
         }
 
         /**
-         * Converts a map of CAInfo into list of CaInfoType. Null-safe.
+         * Converts a map of CAInfo into list of CaInfoRestResponse. Null-safe.
          *
          * @param caInfosMap input map of CAInfo.
          *
-         * @return list of CaInfoType.
+         * @return list of CaInfoRestResponse.
          */
-        public List<CaInfoType> toTypes(final IdNameHashMap<CAInfo> caInfosMap) throws CADoesntExistsException {
-            final List<CaInfoType> caInfoTypes = new ArrayList<>();
+        public List<CaInfoRestResponse> toRestResponses(final IdNameHashMap<CAInfo> caInfosMap) throws CADoesntExistsException {
+            final List<CaInfoRestResponse> caInfoRestResponses = new ArrayList<>();
             if(caInfosMap != null && !caInfosMap.isEmpty()) {
                 for(Map.Entry<Integer, KeyToValueHolder<CAInfo>> entry : caInfosMap.getIdMap().entrySet()) {
                     final KeyToValueHolder<CAInfo> caInfoKeyToValueHolder = entry.getValue();
-                    caInfoTypes.add(CaInfoType.converter().toType(caInfoKeyToValueHolder.getValue()));
+                    caInfoRestResponses.add(CaInfoRestResponse.converter().toRestResponse(caInfoKeyToValueHolder.getValue()));
                 }
             }
-            return caInfoTypes;
+            return caInfoRestResponses;
         }
 
     }
