@@ -1059,4 +1059,65 @@ public final class StringTools {
         }
         return true;
     }
+    
+    /** Takes two versions and compares the first and the second versions to each other
+     * Compares the max amount of numbers on both. So 6.1.2.3,6.1.2 will try to compare 4 numbers, adding a 0, i.e. 6.1.2.3,6.1.2.0 
+     * 
+     * @param first a version number
+     * @param second a version number
+     * @return true of the first version is lower (1.0 < 2.0) than the second, false otherwise.
+     **/
+    public static boolean isLesserThan(final String first, final String second) {
+        if (log.isTraceEnabled()) {
+            log.trace("isLesserThan("+first+", "+second+")");
+        }
+        final String delimiter = "\\.";
+        if (first == null) {
+            if (second != null) {
+                return true;    // No version is before a specified version
+            }
+            throw new IllegalArgumentException("First version argument may not be null");
+        }
+        if (second == null) {
+            throw new IllegalArgumentException("Second version argument may not be null");
+        }
+        String[] firstSplit = first.split(delimiter);
+        String[] secondSplit = second.split(delimiter);
+        for (int i = 0; i < Math.max(firstSplit.length, secondSplit.length); i++) {
+            String firstString;
+            String secondString;
+            if (i == firstSplit.length) {
+                //We've gotten this far and passed the number of digits in first, so treat next first as a 0
+                firstString = "0";
+                secondString = secondSplit[i].replaceAll("[^0-9].*", "");                
+            } else if (i == secondSplit.length) {
+                //We've gotten this far and passed the number of digits in second, so treat next second as a 0
+                firstString = firstSplit[i].replaceAll("[^0-9].*", "");    // Remove trailing Beta2, _alpha1 etc
+                secondString = "0";
+            } else {
+                firstString = firstSplit[i].replaceAll("[^0-9].*", "");    // Remove trailing Beta2, _alpha1 etc
+                secondString = secondSplit[i].replaceAll("[^0-9].*", "");                
+            }
+            if (firstString.isEmpty()) {
+                firstString = "0";  // Treat ".x" as ".0"
+            }
+            if (secondString.isEmpty()) {
+                secondString = "0";
+            }
+            if (StringUtils.isNumeric(firstString) && StringUtils.isNumeric(secondString)) {
+                final int firstNumber = Integer.valueOf(firstString);
+                final int secondNumber = Integer.valueOf(secondString);
+                log.error(firstNumber+", "+secondNumber);
+                if (firstNumber != secondNumber) {
+                    return firstNumber < secondNumber;
+                }
+            } else {
+                throw new IllegalArgumentException("Unable to parse version numbers.");
+            }
+        }
+        //Versions must be the same then
+        return false;
+    }
+
+
 }
