@@ -1107,7 +1107,6 @@ public final class StringTools {
             if (StringUtils.isNumeric(firstString) && StringUtils.isNumeric(secondString)) {
                 final int firstNumber = Integer.valueOf(firstString);
                 final int secondNumber = Integer.valueOf(secondString);
-                log.error(firstNumber+", "+secondNumber);
                 if (firstNumber != secondNumber) {
                     return firstNumber < secondNumber;
                 }
