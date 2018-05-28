@@ -495,4 +495,19 @@ public class StringToolsTest {
         assertFalse(StringTools.isAlphaOrAsciiPrintable("foobar123\0"));
         assertFalse(StringTools.isAlphaOrAsciiPrintable("foobar123\n"));
     }
+    
+    @Test
+    public void testIsLesserThan() {
+        assertFalse(StringTools.isLesserThan("6.0.1", "6.0.1"));
+        assertFalse(StringTools.isLesserThan("6.0.1", "6.0.0"));
+        assertFalse(StringTools.isLesserThan("6.0.1", "5.3.4"));
+        assertFalse(StringTools.isLesserThan("5.0", "5.0"));
+        assertFalse(StringTools.isLesserThan("5.0", "5.0.0"));
+        assertFalse(StringTools.isLesserThan("5.0.0", "5.0"));
+        assertFalse(StringTools.isLesserThan("6.0.1", "6.0"));
+        
+        assertTrue(StringTools.isLesserThan("6.0.1", "6.3.0"));
+        assertTrue(StringTools.isLesserThan("6.0.1", "6.3.0"));
+        assertTrue(StringTools.isLesserThan("6.0", "6.0.1"));
+    }
 }
