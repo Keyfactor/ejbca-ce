@@ -75,6 +75,7 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
 
     /**
      * Takes two versions and compares the first and the second versions to each other
+     * Compares the max amount of numbers on both. So 6.1.2.3,6.1.2 will try to compare 4 numbers, adding a 0, i.e. 6.1.2.3,6.1.2.0 
      * 
      * @param first a version number
      * @param second a version number
