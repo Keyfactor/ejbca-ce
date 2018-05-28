@@ -18,6 +18,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
@@ -39,6 +40,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Date;
 
 import static org.easymock.EasyMock.anyInt;
@@ -48,6 +58,7 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -211,4 +222,54 @@ public class CaRestResourceUnitTest {
         verify(raMasterApiProxy);
     }
 
+    @Test
+    public void shouldReturnCaCertificateAsPem() throws Exception {
+        // given
+        String certificateContent = "Test Certificate";
+        final String subjectDn = "Ca name";
+        Certificate certificate = getCertificate(certificateContent);
+        ArrayList<Certificate> certificates = new ArrayList<>();
+        certificates.add(certificate);
+        // when
+        expect(raMasterApiProxy.getCertificateChain(eq(authenticationToken), anyInt())).andReturn(certificates);
+        replay(raMasterApiProxy);
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/" + subjectDn + "/certificate/download").get();
+        final String actualString = (String) actualResponse.getEntity(String.class);
+        // then
+        assertTrue(actualString.contains(CertTools.BEGIN_CERTIFICATE));
+        assertTrue(actualString.contains(CertTools.END_CERTIFICATE));
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        verify(raMasterApiProxy);
+    }
+
+    private Certificate getCertificate(final String certificateContent) {
+        return new Certificate(certificateContent) {
+
+
+            @Override
+            public byte[] getEncoded() throws CertificateEncodingException {
+                return getType().getBytes();
+            }
+
+            @Override
+            public void verify(PublicKey key) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
+
+            }
+
+            @Override
+            public void verify(PublicKey key, String sigProvider) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
+
+            }
+
+            @Override
+            public String toString() {
+                return null;
+            }
+
+            @Override
+            public PublicKey getPublicKey() {
+                return null;
+            }
+        };
+    }
 }
