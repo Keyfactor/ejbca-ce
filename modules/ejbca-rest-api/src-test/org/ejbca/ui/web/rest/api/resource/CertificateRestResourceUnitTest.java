@@ -43,6 +43,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
+import org.cesecore.util.StringTools;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
@@ -56,6 +57,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
+import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONObject;
@@ -146,6 +148,33 @@ public class CertificateRestResourceUnitTest {
         assertEquals(expectedVersion, actualVersion);
         assertNotNull(actualRevision);
         assertEquals(expectedRevision, actualRevision);
+    }
+
+    @Test
+    public void shouldReturnProperStatusOnCertificateRevoke() throws Exception {
+        // given
+        final int expectedCode = Status.OK.getStatusCode();
+        final String expectedMessage = "Successfully revoked";
+        final String expectedStatus = RevocationResultRestResponse.STATUS_REVOKED;
+        final Long expectedSerialNumber = StringTools.getBigIntegerFromHexString("12345").longValue();
+        // when
+        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
+        replay(raMasterApiProxy);
+        final ClientRequest clientRequest = server
+                .newRequest("/v1/certificate/TestCa/12345/revoke")
+                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
+        final ClientResponse<?> actualResponse = clientRequest.put();
+        final String actualJsonString = actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final Object actualMessage = actualJsonObject.get("message");
+        final Object actualStatus = actualJsonObject.get("status");
+        final Object actualSerialNumber = actualJsonObject.get("serialNumber");
+        // than
+        assertEquals(expectedCode, actualResponse.getStatus());
+        assertEquals(expectedMessage, actualMessage);
+        assertEquals(expectedStatus, actualStatus);
+        assertEquals(expectedSerialNumber, actualSerialNumber);
+        verify(raMasterApiProxy);
     }
 
     @Test
