@@ -12,12 +12,17 @@
  *************************************************************************/
 package org.ejbca.core.protocol.rest;
 
+import java.io.Serializable;
+
 /**
  * A DTO class representing the input for certificate enrollment.
  *
  * @version $Id: EnrollPkcs10CertificateRequest.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
  */
-public class EnrollPkcs10CertificateRequest {
+public class EnrollPkcs10CertificateRequest implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
     private String certificateRequest;
     private String certificateProfileName;
     private String endEntityProfileName;
