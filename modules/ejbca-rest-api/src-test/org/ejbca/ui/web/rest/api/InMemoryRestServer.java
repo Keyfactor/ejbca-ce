@@ -31,7 +31,7 @@ import java.util.Set;
  * @see org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer
  * @see org.ejbca.ui.web.rest.api.config.ExceptionHandler
  *
- * @version $Id: CaInfoRestResponse.java 28909 2018-05-21 12:16:53Z andrey_s_helmes $
+ * @version $Id: InMemoryRestServer.java 28909 2018-05-21 12:16:53Z andrey_s_helmes $
  */
 public class InMemoryRestServer implements AutoCloseable {
 
