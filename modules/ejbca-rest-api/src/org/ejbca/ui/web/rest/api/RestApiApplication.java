@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.web.rest.api;
 
+import io.swagger.jaxrs.config.BeanConfig;
+
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
@@ -26,4 +28,17 @@ import javax.ws.rs.core.Application;
 public class RestApiApplication extends Application {
     // Nothing here for now so RESTEasy takes care of registering end points automatically.
     // Later if manual control over some resources required those could be added here.
+
+
+    public RestApiApplication() {
+        super();
+        BeanConfig beanConfig = new BeanConfig();
+        beanConfig.setVersion("1.0.0");
+        beanConfig.setSchemes(new String[]{"https"});
+        beanConfig.setHost("localhost:8443");
+        beanConfig.setBasePath("/ejbca/ejbca-rest-api");
+        beanConfig.setResourcePackage("org.ejbca.ui.web.rest.api.resource");
+        beanConfig.setScan(true);
+    }
+
 }

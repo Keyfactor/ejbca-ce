@@ -28,6 +28,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -43,6 +44,7 @@ import org.ejbca.ui.web.rest.common.BaseRestResource;
  *
  * @version $Id$
  */
+@Api
 @Path("/v1/ca")
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
