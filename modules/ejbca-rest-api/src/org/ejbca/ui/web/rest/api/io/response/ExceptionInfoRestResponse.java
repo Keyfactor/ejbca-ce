@@ -10,109 +10,106 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.web.rest.api.io.response;
 
+
 /**
- * A class representing the information about an exceptional event triggered by REST resource failure.
+ * A class representing the information about an "expected" exceptional event triggered by REST resource failure,
+ * such as WaitingForApprovalException which shouldn't be considered an error. In order to respond to "error events"
+ * use ExceptionErrorRestResponse.
+ * @see org.ejbca.ui.web.rest.api.io.response.ExceptionErrorRestResponse
+ * @version $Id$
  *
- * @version $Id: ExceptionInfoRestResponse.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
  */
 public class ExceptionInfoRestResponse {
 
     // Have to match HTTP Status codes
-    private int errorCode;
-    private String errorMessage;
+    private int statusCode;
+    private String infoMessage;
 
     /**
      * Simple constructor.
      */
-    public ExceptionInfoRestResponse() {
-    }
+    public ExceptionInfoRestResponse() {}
 
-    private ExceptionInfoRestResponse(final int errorCode, final String errorMessage) {
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
+    private ExceptionInfoRestResponse(final int statusCode, final String infoMessage) {
+        this.statusCode = statusCode;
+        this.infoMessage = infoMessage;
     }
-
+    
     /**
-     * Return the numeric value of error code.
-     *
-     * @return numeric value of error code.
+     * @return the numeric value of status code.
      */
-    public int getErrorCode() {
-        return errorCode;
+    public int getStatusCode() {
+        return statusCode;
     }
 
     /**
-     * Sets a numeric value of error code.
+     * Sets a numeric value of status code.
      * <br/>
      * <b>Note:</b> should match standard HTTP response codes.
      *
-     * @param errorCode umeric value of error code.
+     * @param statusCode numeric value of status code.
      */
-    public void setErrorCode(int errorCode) {
-        this.errorCode = errorCode;
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
     }
 
     /**
-     * Return the error message.
-     *
-     * @return error message.
+     * @return info message
      */
-    public String getErrorMessage() {
-        return errorMessage;
+    public String getInfoMessage() {
+        return infoMessage;
     }
 
     /**
-     * Sets an error message.
-     *
-     * @param errorMessage error message.
+     * @param infoMessage info message
      */
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setInfoMessage(String infoMessage) {
+        this.infoMessage = infoMessage;
     }
 
+    
     /**
-     * Return a builder instance for this class.
-     *
      * @return builder instance for this class.
      */
     public static ExceptionInfoTypeBuilder builder() {
         return new ExceptionInfoTypeBuilder();
     }
-
+    
     /**
      * Builder of this class.
      */
     public static class ExceptionInfoTypeBuilder {
 
-        private int errorCode;
-        private String errorMessage;
+        private int statusCode;
+        private String infoMessage;
 
         ExceptionInfoTypeBuilder() {
         }
 
         /**
-         * Sets a numeric value of error code in this builder.
+         * Sets a numeric value of status code in this builder.
          *
-         * @param errorCode numeric value of error code.
+         * @param statusCode numeric value of status code.
          *
          * @return instance of this builder.
          */
-        public ExceptionInfoTypeBuilder errorCode(final int errorCode) {
-            this.errorCode = errorCode;
+        public ExceptionInfoTypeBuilder statusCode(final int statusCode) {
+            this.statusCode = statusCode;
             return this;
         }
 
         /**
-         * Sets an error message in this builder.
+         * Sets an info message in this builder.
          *
-         * @param errorMessage error message.
+         * @param infoMessage info message.
          *
          * @return instance of this builder.
          */
-        public ExceptionInfoTypeBuilder errorMessage(final String errorMessage) {
-            this.errorMessage = errorMessage;
+        public ExceptionInfoTypeBuilder infoMessage(final String infoMessage) {
+            this.infoMessage = infoMessage;
             return this;
         }
 
@@ -122,7 +119,7 @@ public class ExceptionInfoRestResponse {
          * @return instance of ExceptionInfoRestResponse using this builder.
          */
         public ExceptionInfoRestResponse build() {
-            return new ExceptionInfoRestResponse(errorCode, errorMessage);
+            return new ExceptionInfoRestResponse(statusCode, infoMessage);
         }
     }
 }
