@@ -129,10 +129,6 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         endEntityInformation.setCertificateProfileId(certificateProfileId);
         
         Integer endEntityProfileId = getEndEntityProfileId(enrollcertificateRequest.getEndEntityProfileName());
-        if (endEntityProfileId == null) {
-            String errorMessage = "End entity profile with name \"" + enrollcertificateRequest.getEndEntityProfileName() + "\" doesn't exist";
-            throw new EndEntityProfileNotFoundException(errorMessage);
-        }
         endEntityInformation.setEndEntityProfileId(endEntityProfileId);
         
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest());
@@ -205,13 +201,9 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         return caInfo;
     }
 
-    public Integer getEndEntityProfileId(String endEntityProfileName) {
-        try {
+    public Integer getEndEntityProfileId(String endEntityProfileName) throws EndEntityProfileNotFoundException {
             int endEntityProfileId = endEntityProfileSessionBean.getEndEntityProfileId(endEntityProfileName);
             return endEntityProfileId;
-        } catch (EndEntityProfileNotFoundException e) {
-            return null;
-        }
     }
     
     public EndEntityProfile getEndEntityProfile(int endEntityProfileId) {
