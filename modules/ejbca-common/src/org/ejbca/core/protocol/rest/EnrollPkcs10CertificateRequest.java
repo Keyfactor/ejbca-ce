@@ -30,52 +30,29 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
     private String username;
     private String password;
 
+
     public String getCertificateRequest() {
         return certificateRequest;
-    }
-
-    public void setCertificateRequest(String certificateRequest) {
-        this.certificateRequest = certificateRequest;
     }
 
     public String getCertificateProfileName() {
         return certificateProfileName;
     }
 
-    public void setCertificateProfileName(String certificateProfileName) {
-        this.certificateProfileName = certificateProfileName;
-    }
-
     public String getEndEntityProfileName() {
         return endEntityProfileName;
-    }
-
-    public void setEndEntityProfileName(String endEntityProfileName) {
-        this.endEntityProfileName = endEntityProfileName;
     }
 
     public String getCertificateAuthorityName() {
         return certificateAuthorityName;
     }
-
-    public void setCertificateAuthorityName(String certificateAuthorityName) {
-        this.certificateAuthorityName = certificateAuthorityName;
-    }
-
+    
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getPassword() {
         return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public static class Builder {
