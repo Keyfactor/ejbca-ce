@@ -189,5 +189,12 @@
 	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-159.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-159.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-1.19.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/jackson-dataformat-yaml-2.9.5.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-1.5.20.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-1.5.20.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.5.20.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.5.20.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
