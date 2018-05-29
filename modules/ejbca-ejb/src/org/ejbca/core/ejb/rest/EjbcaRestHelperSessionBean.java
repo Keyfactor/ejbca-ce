@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.rest;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -50,7 +49,6 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -108,20 +106,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         return admin;
     }
     
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public byte[] createCertificateRest(final AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest) 
-            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, IOException, EndEntityProfileNotFoundException, 
-            CertificateProfileDoesNotExistException, CADoesntExistsException {
-        
-        EndEntityInformation endEntityInformation = convertToEndEntityInformation(authenticationToken, enrollcertificateRequest);
-        addEndEntity(authenticationToken, endEntityInformation);
-        endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest()).getEncoded());
-        byte[] certificate = raMasterApiProxyBean.createCertificate(authenticationToken, endEntityInformation);
-        return certificate;
-    }
-    
-    private EndEntityInformation convertToEndEntityInformation(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest)
+    public EndEntityInformation convertToEndEntityInformation(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest)
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException, EjbcaException, CertificateProfileDoesNotExistException, CADoesntExistsException {
         
         EndEntityInformation endEntityInformation = new EndEntityInformation();
@@ -237,15 +222,5 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     private int getCertificateProfileId(String certificateProfileName) {
         int certificateProfileId = certificateProfileSessionBean.getCertificateProfileId(certificateProfileName);
         return certificateProfileId;
-    }
-    
-    private void addEndEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
-            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
-        if (raMasterApiProxyBean.addUser(authenticationToken, endEntityInformation, false)) {
-            log.info("End entity with username " + endEntityInformation.getUsername() + " has been successfully added by client " + authenticationToken);
-        } else {
-            String errorMessage = "Problem with adding end entity with username " + endEntityInformation.getUsername();
-            throw new EjbcaException(errorMessage);
-        }
     }
 }
