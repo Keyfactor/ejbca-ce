@@ -525,6 +525,8 @@
             </zipfileset>
 			<zipfileset prefix="lib" dir="${lib}/ext/swagger" erroronmissingdir="false">
 				<include name="*.jar"/>
+				<exclude name="*-javadoc.jar"/>
+				<exclude name="*-sources.jar"/>
 			</zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>

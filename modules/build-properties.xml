@@ -235,8 +235,13 @@
 			<exclude name="*-sources.jar"/>
 		</fileset>
 	</path>
-
-	<path id="lib.swagger.classpath"><fileset dir="${ejbca.home}/lib/ext/swagger" includes="*.jar"/></path>
+	<path id="lib.swagger.classpath">
+		<fileset dir="${ejbca.home}/lib/ext/swagger">
+			<include name="*.jar"/>
+			<exclude name="*-javadoc.jar"/>
+			<exclude name="*-sources.jar"/>
+		</fileset>
+	</path>
 
 	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>
 	<path id="lib.slf4jlog4j.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="slf4j-log4j*.jar"/></path>
