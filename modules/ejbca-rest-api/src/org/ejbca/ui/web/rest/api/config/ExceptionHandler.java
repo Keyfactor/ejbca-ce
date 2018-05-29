@@ -19,6 +19,7 @@ import org.ejbca.ui.web.rest.api.exception.CesecoreExceptionClasses;
 import org.ejbca.ui.web.rest.api.exception.EjbcaExceptionClasses;
 import org.ejbca.ui.web.rest.api.exception.ExceptionClasses;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.response.ExceptionErrorRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExceptionInfoRestResponse;
 
 import javax.ws.rs.WebApplicationException;
@@ -44,14 +45,18 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
 
     @Override
     public Response toResponse(Exception exception) {
-        ExceptionInfoRestResponse exceptionInfoRestResponse = null;
+        ExceptionErrorRestResponse exceptionErrorRestResponse = null;
         // Map through EjbcaException
         if (exception instanceof EjbcaException) {
-            exceptionInfoRestResponse = mapEjbcaException((EjbcaException) exception);
+            exceptionErrorRestResponse = mapEjbcaException((EjbcaException) exception);
         }
         // Map through CesecoreException
         else if (exception instanceof CesecoreException) {
-            exceptionInfoRestResponse = mapCesecoreException((CesecoreException) exception);
+            exceptionErrorRestResponse = mapCesecoreException((CesecoreException) exception);
+        }
+        // Map managed exception
+        else if (mapManagedException(exception) != null) {
+            return getExceptionResponse(mapManagedException(exception));
         }
         // Map through WebApplicationException
         else if (exception instanceof WebApplicationException) {
@@ -59,52 +64,66 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             logger.warn("Cannot find a proper mapping for the exception, falling back to default.", exception);
         } else if (exception instanceof RestException) {
             final RestException restException = (RestException) exception;
-            exceptionInfoRestResponse = ExceptionInfoRestResponse.builder()
+            exceptionErrorRestResponse = ExceptionErrorRestResponse.builder()
                     .errorCode(restException.getErrorCode())
                     .errorMessage(restException.getMessage())
                     .build();
         }
         // If previous mapping failed, try to map through Standalone Exception
-        if (exceptionInfoRestResponse == null) {
-            exceptionInfoRestResponse = mapException(exception);
+        if (exceptionErrorRestResponse == null) {
+            exceptionErrorRestResponse = mapException(exception);
         }
         // Fall back to default if mapping doesn't exist
-        if (exceptionInfoRestResponse == null) {
+        if (exceptionErrorRestResponse == null) {
             logger.warn("Cannot find a proper mapping for the exception, falling back to default.", exception);
-            exceptionInfoRestResponse = ExceptionInfoRestResponse.builder()
+            exceptionErrorRestResponse = ExceptionErrorRestResponse.builder()
                     .errorCode(DEFAULT_ERROR_CODE)
                     .errorMessage(DEFAULT_ERROR_MESSAGE)
                     .build();
         }
-        return getExceptionResponse(exceptionInfoRestResponse);
+        return getExceptionResponse(exceptionErrorRestResponse);
     }
 
+    
+    // Map managed exceptions (not of error nature)
+    private ExceptionInfoRestResponse mapManagedException(final Exception exception) {
+        switch (ExceptionClasses.fromClass(exception.getClass())) {
+            // 202
+            case WaitingForApprovalException:
+                return ExceptionInfoRestResponse.builder()
+                    .statusCode(Status.ACCEPTED.getStatusCode())
+                    .infoMessage(exception.getMessage())
+                    .build();
+        }
+        return null;
+    }
+    
     // Map EjbcaException extending exceptions
-    private ExceptionInfoRestResponse mapEjbcaException(final EjbcaException ejbcaException) {
+    private ExceptionErrorRestResponse mapEjbcaException(final EjbcaException ejbcaException) {
         switch (EjbcaExceptionClasses.fromClass(ejbcaException.getClass())) {
             // 400
             case ApprovalException:
             case KeyStoreGeneralRaException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.BAD_REQUEST.getStatusCode())
                         .errorMessage(ejbcaException.getMessage())
                         .build();
             // 403
             case AuthLoginException:
             case AuthStatusException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.FORBIDDEN.getStatusCode())
                         .errorMessage(ejbcaException.getMessage())
                         .build();
             // 404
             case NotFoundException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.NOT_FOUND.getStatusCode())
                         .errorMessage(ejbcaException.getMessage())
                         .build();
             // 409
             case AlreadyRevokedException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.CONFLICT.getStatusCode())
                         .errorMessage(ejbcaException.getMessage())
                         .build();
@@ -115,7 +134,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             case CustomFieldException:
             case EndEntityProfileValidationRaException:
             case RevokeBackDateNotAllowedForProfileException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(422)
                         .errorMessage(ejbcaException.getMessage())
                         .build();
@@ -124,13 +143,13 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
     }
 
     // Map CesecoreException extending exceptions
-    private ExceptionInfoRestResponse mapCesecoreException(final CesecoreException cesecoreException) {
+    private ExceptionErrorRestResponse mapCesecoreException(final CesecoreException cesecoreException) {
         switch (CesecoreExceptionClasses.fromClass(cesecoreException.getClass())) {
             // 400
             case CertificateRevokeException:
             case CertificateSerialNumberException:
             case EndEntityExistsException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.BAD_REQUEST.getStatusCode())
                         .errorMessage(cesecoreException.getMessage())
                         .build();
@@ -138,7 +157,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             case CADoesntExistsException:
             case CertificateProfileDoesNotExistException:
             case NoSuchEndEntityException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.NOT_FOUND.getStatusCode())
                         .errorMessage(cesecoreException.getMessage())
                         .build();
@@ -146,13 +165,13 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             case IllegalNameException:
             case IllegalValidityException:
             case InvalidAlgorithmException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(422)
                         .errorMessage(cesecoreException.getMessage())
                         .build();
             // 500
             case CertificateCreateException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.INTERNAL_SERVER_ERROR.getStatusCode())
                         .errorMessage(DEFAULT_ERROR_MESSAGE)
                         .build();
@@ -160,7 +179,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             case CAOfflineException:
             case CryptoTokenOfflineException:
             case CTLogException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.SERVICE_UNAVAILABLE.getStatusCode())
                         .errorMessage(cesecoreException.getMessage())
                         .build();
@@ -168,19 +187,13 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
         return null;
     }
 
-    private ExceptionInfoRestResponse mapException(final Exception exception) {
+    private ExceptionErrorRestResponse mapException(final Exception exception) {
         switch (ExceptionClasses.fromClass(exception.getClass())) {
-            // 202
-            case WaitingForApprovalException:
-                return ExceptionInfoRestResponse.builder()
-                        .errorCode(Status.ACCEPTED.getStatusCode())
-                        .errorMessage(exception.getMessage())
-                        .build();
             // 400
             case ApprovalRequestExecutionException:
             case ApprovalRequestExpiredException:
             case RoleExistsException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.BAD_REQUEST.getStatusCode())
                         .errorMessage(exception.getMessage())
                         .build();
@@ -188,26 +201,26 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             case AuthenticationFailedException:
             case AuthorizationDeniedException:
             case SelfApprovalException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.FORBIDDEN.getStatusCode())
                         .errorMessage(exception.getMessage())
                         .build();
             // 404
             case EndEntityProfileNotFoundException:
             case RoleNotFoundException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.NOT_FOUND.getStatusCode())
                         .errorMessage(exception.getMessage())
                         .build();
             // 409
             case AdminAlreadyApprovedRequestException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.CONFLICT.getStatusCode())
                         .errorMessage(exception.getMessage())
                         .build();
             // 413
             case StreamSizeLimitExceededException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(413)
                         .errorMessage(exception.getMessage())
                         .build();
@@ -215,13 +228,13 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             case EndEntityProfileValidationException:
             case UserDoesntFullfillEndEntityProfile:
             case CertificateExtensionException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(422)
                         .errorMessage(exception.getMessage())
                         .build();
             // 500
             case CertificateEncodingException:
-                return ExceptionInfoRestResponse.builder()
+                return ExceptionErrorRestResponse.builder()
                         .errorCode(DEFAULT_ERROR_CODE)
                         .errorMessage(DEFAULT_ERROR_MESSAGE)
                         .build();
@@ -230,9 +243,17 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
     }
 
 
-    private Response getExceptionResponse(final ExceptionInfoRestResponse exceptionInfoRestResponse) {
+    private Response getExceptionResponse(final ExceptionErrorRestResponse exceptionInfoRestResponse) {
         return Response
                 .status(exceptionInfoRestResponse.getErrorCode())
+                .entity(exceptionInfoRestResponse)
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
+    
+    private Response getExceptionResponse(final ExceptionInfoRestResponse exceptionInfoRestResponse) {
+        return Response
+                .status(exceptionInfoRestResponse.getStatusCode())
                 .entity(exceptionInfoRestResponse)
                 .type(MediaType.APPLICATION_JSON)
                 .build();
