@@ -197,18 +197,54 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         try {
             out.addAll(runExternalCommandInternal(cmd, externalScriptsWhitelist, certificates));
         } catch(ExternalProcessException e) {
-            throw new ValidatorNotApplicableException( "External command could not be called, because it does not exit, access was denied or another severe error occured.");
+            throw new ValidatorNotApplicableException( "External command could not be called, because it does not exit, command can not be found, access was denied, certificate not written, or another error occured: "+e.getMessage());
         }
         // Validator was applicable but something bad must have happened, no exit code was returned -> validation failed.
         boolean broken = false;
         if (CollectionUtils.isNotEmpty(out)) {
             try {
+                if (isLogStandardOut()) {
+                    String stdOutput = null;
+                    for (String str : out) {
+                        if (str.startsWith(ExternalProcessTools.STDOUT_PREFIX)) {
+                            if (stdOutput == null) {
+                                stdOutput = str;
+                            } else {
+                                stdOutput += "\n" + str;
+                            }
+                        }                        
+                    }
+                    if (stdOutput != null) {
+                        log.info("External command logged to STDOUT: "+stdOutput);
+                    }
+                }
+                String errOutput = null;
+                if (isLogErrorOut()) {
+                    for (String str : out) {
+                        if (str.startsWith(ExternalProcessTools.ERROUT_PREFIX)) {
+                            if (errOutput == null) {
+                                errOutput = str;
+                            } else {
+                                errOutput += "\n" + str;
+                            }
+                        }                        
+                    }
+                    if (errOutput != null) {
+                        log.info("External command logged to ERROUT: "+errOutput);
+                    }
+                }
                 final int exitCode = Integer.parseInt(out.get(0).replaceFirst(ExternalProcessTools.EXIT_CODE_PREFIX, StringUtils.EMPTY));
                 if (exitCode > 0 && isFailOnErrorCode()) { // Validation failed: -1 is command could not be found or access denied.
-                    messages.add("Invalid: External command exit code was " + exitCode + ". Command failed.");
-                } else if (isFailOnErrorCode() && ExternalProcessTools.containsErrout(out)) {
-                    messages.add("Invalid: External command logged to ERROUT. Exit code was " + exitCode + ". Command failed.");
-                }
+                    messages.add("Invalid: External command exit code was " + exitCode);
+                    if (errOutput != null) {
+                        messages.add("ERROUT was: " + errOutput);
+                    }
+                } else if (isFailOnStandardError() && ExternalProcessTools.containsErrout(out)) {
+                    messages.add("Invalid: External command logged to ERROUT. Exit code was " + exitCode);
+                    if (errOutput != null) {
+                        messages.add("ERROUT was: " + errOutput);
+                    }
+                } 
             } catch(Exception e2) { // In case exit code could not be parsed.
                 broken = true;
             }
@@ -216,7 +252,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
             broken = true;
         }
         if (broken) {
-            messages.add("Invalid: External command could not be initiated: '" + cmd + "'. Command failed.");
+            messages.add("Invalid: External command could not be initialized: '" + cmd + "'. Command failed.");
         }
         return messages;
     }
@@ -436,7 +472,10 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
             out.addAll(ExternalProcessTools.launchExternalCommand(cmd, certificates.get(0).getEncoded(),
                     isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, ExternalCommandCertificateValidator.class.getName()));
         } catch(ExternalProcessException e) {
-            log.info("Could not call external command '" + cmd + "' with arguments " + arguments + " sucessfully: " + e.getMessage(), e);
+            log.info("Could not call external command '" + cmd + "' with arguments " + arguments + " sucessfully: " + e.getMessage());
+            if (log.isDebugEnabled()) {
+                log.debug("Failed with exception: ", e);
+            }
             if (e.getOut() != null) {
                 out.addAll(e.getOut());
             }
