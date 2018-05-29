@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyStoreException;
 import java.security.SignatureException;
@@ -469,11 +468,16 @@ public interface RaMasterApi {
      * Generates a certificate. This variant is used from the REST Service interface.
      * @param authenticationToken authentication token.
      * @param enrollcertificateRequest input data object for enrolling a certificate
-     */    
+     * @throws CertificateProfileDoesNotExistException
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     * @throws EndEntityProfileNotFoundException
+     * @throws EjbcaException
+     * @throws EndEntityProfileValidationException
+     */
     byte[] createCertificateRest(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest) 
-            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException, IOException, EndEntityProfileNotFoundException, 
-            CertificateProfileDoesNotExistException, CADoesntExistsException;
-    
+            throws CertificateProfileDoesNotExistException, CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException, 
+            EjbcaException, EndEntityProfileValidationException;
     
     
     /**

@@ -13,11 +13,10 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.List;
@@ -39,12 +38,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 
-import io.swagger.annotations.Api;
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -57,15 +55,18 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
-import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
+import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
-import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesResponse;
+import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
+import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
 import org.ejbca.ui.web.rest.common.BaseRestResource;
+
+import io.swagger.annotations.Api;
 
 /**
  * JAX-RS resource handling certificate-related requests.
@@ -119,9 +120,7 @@ public class CertificateRestResource extends BaseRestResource {
             
             CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(cert);
             return Response.ok(enrollCertificateRestResponse).build();
-        } catch (CertificateParsingException | CertificateEncodingException | EjbcaException | 
-                WaitingForApprovalException | IOException | EndEntityProfileNotFoundException | 
-                CertificateProfileDoesNotExistException | CADoesntExistsException e) {
+        } catch (EjbcaException | EndEntityProfileNotFoundException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
     }
