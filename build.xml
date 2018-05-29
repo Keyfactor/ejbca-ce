@@ -523,6 +523,9 @@
                 <include name="protobuf-java-*.jar" />
                 <include name="guava-*.jar" />
             </zipfileset>
+			<zipfileset prefix="lib" dir="${lib}/ext/swagger" erroronmissingdir="false">
+				<include name="*.jar"/>
+			</zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">

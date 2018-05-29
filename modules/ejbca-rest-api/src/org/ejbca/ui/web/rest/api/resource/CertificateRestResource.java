@@ -39,6 +39,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 
+import io.swagger.annotations.Api;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -71,6 +72,7 @@ import org.ejbca.ui.web.rest.common.BaseRestResource;
  *
  * @version $Id$
  */
+@Api
 @Path("v1/certificate")
 @Stateless
 public class CertificateRestResource extends BaseRestResource {
