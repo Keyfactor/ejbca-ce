@@ -18,6 +18,7 @@
  */
 package org.ejbca.core.model.validation;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.security.KeyPair;
@@ -81,7 +82,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         //        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         List<String> messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have been successful.", messages.size() == 0);
+        assertTrue("Key valildation should have been successful.", messages.size() == 0);
 
         // B: Test public key blacklist validation NOK with match.
         List<String> algorithms = new ArrayList<String>();
@@ -96,18 +97,24 @@ public class PublicKeyBlacklistKeyValidatorTest {
         }
         messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have failed because of public key fingerprint match.",
-                messages.size() == 1);
+        assertEquals("Key valildation should have failed because of public key fingerprint match.", 1, messages.size());
 
         // B-1: Test public key blacklist validation OK with match but other algorithm.
         algorithms = new ArrayList<String>();
-        algorithms.add("DSA");
+        algorithms.add(AlgorithmConstants.KEYALGORITHM_DSA);
         keyValidator.setKeyAlgorithms(algorithms);
         messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have been successful because of public key fingerprint match but other algorithm.",
-                messages.size() == 0);
-        
+        assertEquals("Key valildation should have been successful because of public key fingerprint match but other algorithm.", 0, messages.size());
+
+        // B-2: Test public key blacklist validation NOK with match and specified matching algorithm.
+        algorithms = new ArrayList<String>();
+        algorithms.add(AlgorithmConstants.KEYALGORITHM_RSA);
+        keyValidator.setKeyAlgorithms(algorithms);
+        messages = keyValidator.validate(keyPair.getPublic(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertEquals("Key valildation should have failed because of public key fingerprint match.", 1, messages.size());
+
         log.trace("<testMatchBlacklistedPublicKeyRSA()");
     }
 
@@ -150,7 +157,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         //        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         List<String> messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have been successful.", messages.size() == 0);
+        assertTrue("Key valildation should have been successful.", messages.size() == 0);
 
         // B: Test public key blacklist validation NOK with match.
         List<String> algorithms = new ArrayList<String>();
@@ -165,7 +172,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         }
         messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have failed because of public key fingerprint match.",
+        assertTrue("Key valildation should have failed because of public key fingerprint match.",
                 messages.size() == 1);
 
         // B-1: Test public key blacklist validation OK with match but other algorithm.
@@ -174,7 +181,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         keyValidator.setKeyAlgorithms(algorithms);
         messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        Assert.assertTrue("Key valildation should have been successful because of public key fingerprint match but other algorithm.",
+        assertTrue("Key valildation should have been successful because of public key fingerprint match but other algorithm.",
                 messages.size() == 0);
         
         log.trace("<testMatchBlacklistedPublicKeyECDSA()");
