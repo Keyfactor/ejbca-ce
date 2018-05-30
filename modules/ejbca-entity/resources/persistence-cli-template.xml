@@ -62,6 +62,7 @@
         <class>org.cesecore.configuration.GlobalConfigurationData</class>
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
+        <class>org.ejbca.acme.AcmeNonceData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
@@ -111,6 +112,7 @@
         <class>org.cesecore.configuration.GlobalConfigurationData</class>
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
+        <class>org.ejbca.acme.AcmeNonceData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
