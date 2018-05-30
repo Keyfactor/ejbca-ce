@@ -172,7 +172,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         }
         Integer idValue = PublicKeyBlacklistEntryCache.INSTANCE.getNameToIdMap().get(fingerprint);
         final PublicKeyBlacklistEntry entry = PublicKeyBlacklistEntryCache.INSTANCE.getEntry(idValue);
-        boolean keySpecMatched = false;
+        boolean keyAlgMatched = false;
 
         if (null != entry) {
             // Filter for key specifications.
@@ -181,11 +181,11 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
                 keyAlgs.add(AlgorithmConstants.KEYALGORITHM_EC);
                 keyAlgs.add(AlgorithmConstants.KEYALGORITHM_ECDSA);
             }
-            if (getKeyAlgorithms().contains("-1") || keyAlgs.contains(getKeySpec(publicKey))) {
-                keySpecMatched = true;
+            if (getKeyAlgorithms().contains("-1") || keyAlgs.contains(getKeyAlg(publicKey, fingerprint))) {
+                keyAlgMatched = true;
             }
         }
-        if (keySpecMatched) {
+        if (keyAlgMatched) {
             final String message = "Public key with id " + entry.getID() + " and fingerprint " + fingerprint
                     + " found in public key blacklist.";
             messages.add("Invalid: " + message);
@@ -201,19 +201,19 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
         return messages;
     }
 
-    private final String getKeySpec(PublicKey publicKey) {
-        String keySpec;
+    private final String getKeyAlg(PublicKey publicKey, String fingerprint) {
+        String keyAlg;
         if (publicKey instanceof BCRSAPublicKey) {
-            keySpec = publicKey.getAlgorithm().toUpperCase() + Integer.toString(((BCRSAPublicKey) publicKey).getModulus().bitLength());
+            keyAlg = publicKey.getAlgorithm().toUpperCase();
         } else if (publicKey instanceof BCECPublicKey) {
-            keySpec = publicKey.getAlgorithm().toUpperCase();
+            keyAlg = publicKey.getAlgorithm().toUpperCase();
         } else {
-            keySpec = publicKey.getAlgorithm().toUpperCase();
+            keyAlg = publicKey.getAlgorithm().toUpperCase();
         }
         if (log.isTraceEnabled()) {
-            log.trace("Key specification " + keySpec + " determined for public key " + publicKey.getEncoded());
+            log.trace("Key algorithm " + keyAlg + " determined for public key with fp: " + fingerprint);
         }
-        return keySpec;
+        return keyAlg;
     }
 
     protected void setUseOnlyCache(boolean useOnlyCache) {
