@@ -1765,41 +1765,41 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
             return certificate;
         } catch (NotFoundException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw e; // NFE extends EjbcaException
         } catch (CertificateExtensionException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         } catch (InvalidKeyException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.INVALID_KEY, e.getMessage());
         } catch (IllegalKeyException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
         } catch (AuthStatusException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, e.getMessage());
         } catch (AuthLoginException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.LOGIN_ERROR, e.getMessage());
         } catch (SignatureException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());
         } catch (SignRequestSignatureException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(e.getMessage());
         } catch (InvalidKeySpecException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.INVALID_KEY_SPEC, e.getMessage());
         } catch (NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         } catch (CesecoreException e) {
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
             throw new EjbcaException(e.getErrorCode(), e);
         } catch (RuntimeException e) {  // EJBException, ClassCastException, ...
-            log.debug("EJBCA WebService error", e);
+            log.debug("EJBCA REST exception", e);
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
         }
     }
