@@ -94,8 +94,9 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                     .statusCode(Status.ACCEPTED.getStatusCode())
                     .infoMessage(exception.getMessage())
                     .build();
+            default:
+                return null;
         }
-        return null;
     }
     
     // Map EjbcaException extending exceptions
