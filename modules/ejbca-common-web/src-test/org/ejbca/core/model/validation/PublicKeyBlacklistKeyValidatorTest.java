@@ -33,7 +33,6 @@ import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.validation.BlacklistData;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -138,9 +137,31 @@ public class PublicKeyBlacklistKeyValidatorTest {
         }
         List<String> messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
-        assertTrue("Key valildation should have failed because of public key fingerprint match.",
-                messages.size() == 1);
+        assertEquals("Key valildation should have failed because of public key fingerprint match.", 1, messages.size());
         
+        // B-1: Test public key blacklist validation OK with match but other algorithm.
+        algorithms = new ArrayList<String>();
+        algorithms.add(AlgorithmConstants.KEYALGORITHM_DSA);
+        keyValidator.setKeyAlgorithms(algorithms);
+        messages = keyValidator.validate(keyPair.getPublic(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertEquals("Key valildation should have been successful because of public key fingerprint match but other algorithm.", 0, messages.size());
+
+        // B-2: Test public key blacklist validation NOK with match and specified matching algorithm.
+        algorithms = new ArrayList<String>();
+        algorithms.add(AlgorithmConstants.KEYALGORITHM_EC);
+        keyValidator.setKeyAlgorithms(algorithms);
+        messages = keyValidator.validate(keyPair.getPublic(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertEquals("Key valildation should have failed because of public key fingerprint match.", 1, messages.size());
+        // B-3: Test public key blacklist validation NOK with match and specified matching algorithm.
+        algorithms = new ArrayList<String>();
+        algorithms.add(AlgorithmConstants.KEYALGORITHM_ECDSA);
+        keyValidator.setKeyAlgorithms(algorithms);
+        messages = keyValidator.validate(keyPair.getPublic(), null);
+        log.trace("Key validation error messages: " + messages);
+        assertEquals("Key valildation should have failed because of public key fingerprint match.", 1, messages.size());
+
     }
     /**
      * Same as testMatchBlacklistedPublicKeyEC, but specifies he algorithm as ECDSA instead of EC
