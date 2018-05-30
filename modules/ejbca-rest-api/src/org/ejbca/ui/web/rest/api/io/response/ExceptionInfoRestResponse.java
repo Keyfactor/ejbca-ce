@@ -15,7 +15,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 
 /**
- * A class representing the information about an "expected" exceptional event triggered by REST resource failure,
+ * A class representing the information about an "expected" exceptional event triggered by REST resource,
  * such as WaitingForApprovalException which shouldn't be considered an error. In order to respond to "error events"
  * use ExceptionErrorRestResponse.
  * @see org.ejbca.ui.web.rest.api.io.response.ExceptionErrorRestResponse
