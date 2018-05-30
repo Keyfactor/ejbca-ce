@@ -32,8 +32,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.validation.BlacklistData;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -54,20 +52,6 @@ public class PublicKeyBlacklistKeyValidatorTest {
         log.trace("setClassUp()");
     }
 
-    @Before
-    public void setUp() throws Exception {
-        log.trace(">setUp()");
-        // NOOP
-        log.trace("<setUp()");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        log.trace(">tearDown()");
-        // NOOP
-        log.trace("<tearDown()");
-    }
-
     @Test
     public void testMatchBlacklistedPublicKeyRSA() throws Exception {
         log.trace(">testMatchBlacklistedPublicKeyRSA()");
@@ -75,7 +59,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         KeyPair keyPair = KeyTools.genKeys("1024", "RSA");
 
         // A: Test public key blacklist validation OK with empty blacklist.        
-        PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator("publickey-blacklist-validation-test-1",
+        PublicKeyBlacklistKeyValidator keyValidator = createKeyValidator("publickey-blacklist-validation-test-1",
                 "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setUseOnlyCache(true); // don't try to make EJB lookup for the "real" blacklist
         //        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
@@ -121,7 +105,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
     public void testMatchBlacklistedPublicKeyEC() throws Exception {
         KeyPair keyPair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         // Test public key blacklist validation OK with empty blacklist.        
-        PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator("publickey-blacklist-validation-test-1",
+        PublicKeyBlacklistKeyValidator keyValidator = createKeyValidator("publickey-blacklist-validation-test-1",
                 "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setUseOnlyCache(true); // don't try to make EJB lookup for the "real" blacklist           
         // B: Test public key blacklist validation NOK with match.
@@ -172,7 +156,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
 
         KeyPair keyPair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         // A: Test public key blacklist validation OK with empty blacklist.        
-        PublicKeyBlacklistKeyValidator keyValidator = (PublicKeyBlacklistKeyValidator) createKeyValidator("publickey-blacklist-validation-test-1",
+        PublicKeyBlacklistKeyValidator keyValidator = createKeyValidator("publickey-blacklist-validation-test-1",
                 "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setUseOnlyCache(true); // don't try to make EJB lookup for the "real" blacklist
         //        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
