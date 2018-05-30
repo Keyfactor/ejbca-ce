@@ -13,6 +13,16 @@
 
 package org.ejbca.core.ejb.rest;
 
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.mock;
+import static org.easymock.EasyMock.replay;
+import static org.junit.Assert.assertEquals;
+
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -39,14 +49,6 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertEquals;
-
 
 /**
  *
@@ -55,16 +57,16 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(EasyMockRunner.class)
 public class EjbcaRestHelperUnitTest {
-    
+
     @TestSubject
-    EjbcaRestHelperSessionBean testClass = new EjbcaRestHelperSessionBean();    
-    
+    EjbcaRestHelperSessionBean testClass = new EjbcaRestHelperSessionBean();
+
     @Mock
     private WebAuthenticationProviderSessionLocal authenticationSession;
-    
+
     @Mock
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    
+
     @Mock
     private EndEntityProfileSessionLocal endEntityProfileSessionBean;
 
@@ -72,7 +74,7 @@ public class EjbcaRestHelperUnitTest {
     private CertificateProfileSessionLocal certificateProfileSessionBean;
     @Mock
     private CaSessionLocal caSessionBean;
-    
+
     final String csr = "-----BEGIN CERTIFICATE REQUEST-----\n"
             + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
             + "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\n"
@@ -93,8 +95,8 @@ public class EjbcaRestHelperUnitTest {
             + "3V1hMBajTMGN9emWLR6pfj5P7QpVR4hkv3LvgCPf474pWA9l/4WiKBzrI76T5yz1\n"
             + "KoobCZQ2UrqnKFGEbdoNFchb2CDgdLnFu6Tbf6MW5zO5ypOIUih61Zf9Qyo=\n"
             + "-----END CERTIFICATE REQUEST-----\n";
-    
-    
+
+
     final byte[] testCertificateBytes = Base64.decode((
             "MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
@@ -110,8 +112,8 @@ public class EjbcaRestHelperUnitTest {
             + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
             + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==")
             .getBytes());
-    
-    
+
+
     @Test(expected = CADoesntExistsException.class)
     public void shouldFailOnFindingCertificateAuthorityByName() throws Exception {
 
@@ -137,7 +139,7 @@ public class EjbcaRestHelperUnitTest {
         CAInfo caInfo = new X509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
 
         AuthenticationToken authenticationToken = EasyMock.mock(AuthenticationToken.class);
-        
+
         expect(caSessionBean.getCAInfo(authenticationToken, certificateAuthorityName)).andReturn(null);
         replay(caSessionBean);
         EnrollPkcs10CertificateRequest request = new EnrollPkcs10CertificateRequest.Builder()
@@ -146,7 +148,7 @@ public class EjbcaRestHelperUnitTest {
                 .endEntityProfileName(endEntityProfileName)
                 .certificateAuthorityName(certificateAuthorityName)
                 .build();
-        
+
         // when
         testClass.createCertificateRest(authenticationToken, request);
 
