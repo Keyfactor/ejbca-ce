@@ -176,7 +176,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
      *            not used
      * @param certProfile
      *            not used
-     * @see org.cesecore.certificates.certificate.certextensions.CertificateExtension#getValue(EndEntityInformation, CA, CertificateProfile, PublicKey,
+     * @see org.cesecore.certificates.certificate.certextensions.CertificateExtension#getValueEncoded(EndEntityInformation, CA, CertificateProfile, PublicKey,
      *      PublicKey, CertificateValidity)
      */
     @Override
