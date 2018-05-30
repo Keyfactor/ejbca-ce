@@ -222,25 +222,39 @@ public class StringToolsTest {
     }
 
     @Test
-    public void testFullQualifiedDomainName() {
-        assertTrue(StringTools.isFullQualifiedDomainName("a.b.cc"));
-        assertTrue(StringTools.isFullQualifiedDomainName("b.cc"));
-        assertFalse(StringTools.isFullQualifiedDomainName("cc"));
-        assertFalse(StringTools.isFullQualifiedDomainName("cc."));
-        assertFalse(StringTools.isFullQualifiedDomainName("b.cc."));
-        assertFalse(StringTools.isFullQualifiedDomainName("a.b.cc."));
-        assertFalse(StringTools.isFullQualifiedDomainName("*.b.cc"));
-        assertFalse(StringTools.isFullQualifiedDomainName("*.b.cc."));
-        assertFalse(StringTools.isFullQualifiedDomainName("c"));
-        assertFalse(StringTools.isFullQualifiedDomainName("c."));
-        assertFalse(StringTools.isFullQualifiedDomainName("b.c"));
-        assertFalse(StringTools.isFullQualifiedDomainName("b.c."));
-        assertFalse(StringTools.isFullQualifiedDomainName("a.b.c"));
-        assertFalse(StringTools.isFullQualifiedDomainName("a.b.c."));
-        assertFalse(StringTools.isFullQualifiedDomainName("*.b.c"));
-        assertFalse(StringTools.isFullQualifiedDomainName("*.b.c."));
-        assertFalse(StringTools.isFullQualifiedDomainName("*.c"));
-        assertTrue(StringTools.isFullQualifiedDomainName("a.b.c.d.e.g.h.i.j.k.ll"));
+    public void testIsValidSanDnsName() {
+        assertTrue(StringTools.isValidSanDnsName("a.b.cc"));
+        assertTrue(StringTools.isValidSanDnsName("b.cc"));
+        assertFalse(StringTools.isValidSanDnsName("b.cc."));
+        assertFalse(StringTools.isValidSanDnsName("a.b.cc."));
+        assertFalse(StringTools.isValidSanDnsName("*.b.cc."));
+        assertFalse(StringTools.isValidSanDnsName("c."));
+        assertFalse(StringTools.isValidSanDnsName("b.c."));
+        assertFalse(StringTools.isValidSanDnsName("a.b.c."));
+        assertFalse(StringTools.isValidSanDnsName("*.b.c."));
+
+        assertFalse(StringTools.isValidSanDnsName(".primekey.com"));
+        assertFalse(StringTools.isValidSanDnsName("primekey..com"));
+        assertFalse(StringTools.isValidSanDnsName("sub.*.primekey.com"));
+        assertFalse(StringTools.isValidSanDnsName("-primekey.com"));
+        assertFalse(StringTools.isValidSanDnsName("primekey-.com"));
+        assertFalse(StringTools.isValidSanDnsName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.com"));
+        assertFalse(StringTools.isValidSanDnsName("x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x."
+                + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x." + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x."
+                + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x." + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.com"));
+        assertFalse(StringTools.isValidSanDnsName("pr#mekey.com"));
+
+        assertTrue(StringTools.isValidSanDnsName("a.b.c.d.e.g.h.i.j.k.ll"));
+        assertTrue(StringTools.isValidSanDnsName("*.b.cc"));
+        assertTrue(StringTools.isValidSanDnsName("r3.com"));
+        assertTrue(StringTools.isValidSanDnsName("com.r3"));
+        assertTrue(StringTools.isValidSanDnsName("primekey-solutions.com"));
+        assertTrue(StringTools.isValidSanDnsName("primekey.tech-solutions"));
+        assertTrue(StringTools.isValidSanDnsName("3d.primekey.com"));
+        assertTrue(StringTools.isValidSanDnsName("sub-test.primekey.com"));
+        assertTrue(StringTools.isValidSanDnsName("UPPERCASE.COM"));
+        assertTrue(StringTools.isValidSanDnsName("M1XeD.CaSE.C0M"));
+        assertTrue(StringTools.isValidSanDnsName("xn--4pf93sJb.com"));
     }
 
     @Test

@@ -25,6 +25,7 @@
 		<path refid="lib.xmlpull.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
+		<path refid="lib.guava.classpath"/>
 	</path>
 
 	<!-- The buildservicemanifest needs additional classes in order to run. 

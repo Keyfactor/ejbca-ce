@@ -175,7 +175,6 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-jdk7-git20161207.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/ct/guava-20.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-log4j12-1.7.25.jar"/>
@@ -196,5 +195,6 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-1.5.20.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.5.20.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.5.20.jar"/>
+	<classpathentry kind="lib" path="lib/guava-20.0.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>

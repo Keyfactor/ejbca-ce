@@ -516,12 +516,12 @@
                 <include name="json-simple-*.jar" />
             	<include name="snakeyaml-*.jar" />
             	<include name="dns*.jar" />
+                <include name="guava-*.jar" />
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->
                 <include name="ctlog-jdk7-*.jar" />
                 <include name="protobuf-java-*.jar" />
-                <include name="guava-*.jar" />
             </zipfileset>
 			<zipfileset prefix="lib" dir="${lib}/ext/swagger" erroronmissingdir="false">
 				<include name="*.jar"/>
