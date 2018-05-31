@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.resource;
 
 import java.math.BigInteger;
@@ -38,7 +37,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -64,7 +62,6 @@ import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
-import org.ejbca.ui.web.rest.common.BaseRestResource;
 
 import io.swagger.annotations.Api;
 
@@ -78,7 +75,6 @@ import io.swagger.annotations.Api;
 @Stateless
 public class CertificateRestResource extends BaseRestResource {
 
-    private static final Logger log = Logger.getLogger(CertificateRestResource.class);
     /**
      * Internal localization of logs and errors
      */
