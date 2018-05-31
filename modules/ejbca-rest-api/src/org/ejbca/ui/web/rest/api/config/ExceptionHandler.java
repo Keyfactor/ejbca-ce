@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.config;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.ejbca.core.EjbcaException;
@@ -21,14 +28,6 @@ import org.ejbca.ui.web.rest.api.exception.ExceptionClasses;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.ExceptionErrorRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExceptionInfoRestResponse;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-
-import static javax.ws.rs.core.Response.Status;
 
 /**
  * General JAX-RS Exception handler to catch an Exception and create its appropriate response with error's status and error's message.
@@ -102,7 +101,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                 return null;
         }
     }
-    
+
     // Map EjbcaException extending exceptions
     private ExceptionErrorRestResponse mapEjbcaException(final EjbcaException ejbcaException) {
         switch (EjbcaExceptionClasses.fromClass(ejbcaException.getClass())) {
@@ -143,8 +142,9 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                         .errorCode(422)
                         .errorMessage(ejbcaException.getMessage())
                         .build();
+            default:
+                return null;
         }
-        return null;
     }
 
     // Map CesecoreException extending exceptions
@@ -188,8 +188,9 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                         .errorCode(Status.SERVICE_UNAVAILABLE.getStatusCode())
                         .errorMessage(cesecoreException.getMessage())
                         .build();
+            default:
+                return null;
         }
-        return null;
     }
 
     private ExceptionErrorRestResponse mapException(final Exception exception) {
@@ -243,8 +244,9 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                         .errorCode(DEFAULT_ERROR_CODE)
                         .errorMessage(DEFAULT_ERROR_MESSAGE)
                         .build();
+            default:
+                return null;
         }
-        return null;
     }
 
     private Response getExceptionResponse(final ExceptionErrorRestResponse exceptionInfoRestResponse) {
@@ -254,7 +256,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
-    
+
     private Response getExceptionResponse(final ExceptionInfoRestResponse exceptionInfoRestResponse) {
         return Response
                 .status(exceptionInfoRestResponse.getStatusCode())
