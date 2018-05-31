@@ -177,7 +177,7 @@ public class CaRestResourceUnitTest {
     }
 
     @Test
-    public void shouldThrowEcceptionOnNonExistingCa() throws Exception {
+    public void shouldThrowExceptionOnNonExistingCa() throws Exception {
         // given
         final String expectedMessage = "CA doesn't exist";
         final long expectedCode = Response.Status.NOT_FOUND.getStatusCode();
