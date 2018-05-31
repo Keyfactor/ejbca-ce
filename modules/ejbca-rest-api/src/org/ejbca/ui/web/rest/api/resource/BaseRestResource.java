@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.rest.common;
+package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.X509Certificate;
 
