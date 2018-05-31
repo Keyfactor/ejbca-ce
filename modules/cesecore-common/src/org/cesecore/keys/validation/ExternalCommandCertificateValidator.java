@@ -77,7 +77,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     static {
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
     }
-    
+
     /**
      * Public constructor needed for deserialization.
      */
@@ -123,8 +123,8 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         cmd.setRequired(true);
         uiModel.add(cmd);
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, FAIL_ON_ERROR_CODE, isFailOnErrorCode()));
-        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, FAIL_ON_STANDARD_ERROR, isFailOnStandardError())); 
-        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, LOG_STANDARD_OUT, isLogStandardOut())); 
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, FAIL_ON_STANDARD_ERROR, isFailOnStandardError()));
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, LOG_STANDARD_OUT, isLogStandardOut()));
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, LOG_ERROR_OUT, isLogErrorOut()));
         uiModel.add(new DynamicUiProperty<String>("test"));
         final DynamicUiProperty<File> testPath = new DynamicUiProperty<File>(File.class, "testPath", null);
@@ -212,7 +212,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
                             } else {
                                 stdOutput += "\n" + str;
                             }
-                        }                        
+                        }
                     }
                     if (stdOutput != null) {
                         log.info("External command logged to STDOUT: "+stdOutput);
@@ -227,14 +227,14 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
                             } else {
                                 errOutput += "\n" + str;
                             }
-                        }                        
+                        }
                     }
                     if (errOutput != null) {
                         log.info("External command logged to ERROUT: "+errOutput);
                     }
                 }
                 final int exitCode = Integer.parseInt(out.get(0).replaceFirst(ExternalProcessTools.EXIT_CODE_PREFIX, StringUtils.EMPTY));
-                if (exitCode > 0 && isFailOnErrorCode()) { // Validation failed: -1 is command could not be found or access denied.
+                if (exitCode != 0 && isFailOnErrorCode()) { // Validation failed: -1 is command could not be found or access denied.
                     messages.add("Invalid: External command exit code was " + exitCode);
                     if (errOutput != null) {
                         messages.add("ERROUT was: " + errOutput);
@@ -244,7 +244,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
                     if (errOutput != null) {
                         messages.add("ERROUT was: " + errOutput);
                     }
-                } 
+                }
             } catch(Exception e2) { // In case exit code could not be parsed.
                 broken = true;
             }
@@ -442,7 +442,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      * @return a string list holding exit code at index 0, and the STDOUT and ERROUT appended.
      * @throws CertificateEncodingException if the certificates could not be encoded.
      * @throws ExternalProcessException if the command wasn't found
-     * @throws ValidatorNotApplicableException if external scripts whitelist wasn't permitted 
+     * @throws ValidatorNotApplicableException if external scripts whitelist wasn't permitted
      */
     private List<String> runExternalCommandInternal(final String externalCommand, final ExternalScriptsWhitelist externalScriptsWhitelist,
             final List<Certificate> certificates) throws CertificateEncodingException, ExternalProcessException, ValidatorNotApplicableException {
@@ -485,7 +485,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
 
     /**
      * Extracts the script path.
-     * 
+     *
      * @param cmd the external command.
      * @return the script path (first token in command).
      */
@@ -503,7 +503,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
 
     /**
      * Extracts the arguments.
-     * 
+     *
      * @param cmd the external command.
      * @return the list of arguments (second token to end).
      */
