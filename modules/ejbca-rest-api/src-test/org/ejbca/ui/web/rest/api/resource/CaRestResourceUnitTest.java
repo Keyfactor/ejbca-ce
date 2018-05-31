@@ -14,7 +14,6 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
@@ -25,6 +24,7 @@ import org.easymock.TestSubject;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
+import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
 import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONArray;
@@ -36,30 +36,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Date;
+import java.text.DateFormat;
+import java.util.*;
 
 import static org.easymock.EasyMock.anyInt;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
 
 /**
  * A unit test class for CaRestResource to test its content.
@@ -68,16 +62,19 @@ import static org.junit.Assert.assertTrue;
  *
  * @see org.ejbca.ui.web.rest.api.InMemoryRestServer
  *
- * @version $Id: CaInfoConverterUnitTest.java 28909 2018-05-10 12:16:53Z andrey_s_helmes $
+ * @version $Id: CaInfoConverterUnitTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 @RunWith(EasyMockRunner.class)
 public class CaRestResourceUnitTest {
+
+    private static final String JSON_PROPERTY_CERTIFICATE_AUTHORITIES = "certificate_authorities";
+    private static final DateFormat DATE_FORMAT_ISO8601 = JsonDateSerializer.DATE_FORMAT_ISO8601;
 
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
     private static class CaRestResourceWithoutSecurity extends CaRestResource {
         @Override
-        protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException {
+        protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) {
             return authenticationToken;
         }
     }
@@ -100,14 +97,6 @@ public class CaRestResourceUnitTest {
         server.close();
     }
 
-    private String getContentType(final ClientResponse<?> clientResponse) {
-        final MultivaluedMap<String, String> headersMap = clientResponse.getHeaders();
-        if (headersMap != null) {
-            return headersMap.getFirst("Content-type");
-        }
-        return null;
-    }
-
     @Test
     public void shouldReturnProperStatus() throws Exception {
         // given
@@ -116,21 +105,11 @@ public class CaRestResourceUnitTest {
         final String expectedRevision = "ALPHA";
         // when
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/status").get();
-        final String actualContentType = getContentType(actualResponse);
         final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualStatus = actualJsonObject.get("status");
-        final Object actualVersion = actualJsonObject.get("version");
-        final Object actualRevision = actualJsonObject.get("revision");
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualStatus);
-        assertEquals(expectedStatus, actualStatus);
-        assertNotNull(actualVersion);
-        assertEquals(expectedVersion, actualVersion);
-        assertNotNull(actualRevision);
-        assertEquals(expectedRevision, actualRevision);
+        assertJsonContentType(actualResponse);
+        assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
     }
 
     @Test
@@ -140,13 +119,12 @@ public class CaRestResourceUnitTest {
         replay(raMasterApiProxy);
         // when
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca").get();
-        final String actualContentType = getContentType(actualResponse);
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get("certificateAuthorities");
+        final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
+        assertJsonContentType(actualResponse);
         assertNotNull(actualCertificateAuthorities);
         assertEquals(0, actualCertificateAuthorities.size());
         verify(raMasterApiProxy);
@@ -160,7 +138,7 @@ public class CaRestResourceUnitTest {
         final int expectedId = 11;
         final String expectedIssuerDn = CaInfoBuilder.TEST_CA_ISSUER_DN;
         final Date expectedExpirationDate = new Date();
-        final long expectedExpirationDateLong = expectedExpirationDate.getTime();
+        final String expectedExpirationDateString = DATE_FORMAT_ISO8601.format(expectedExpirationDate);
         final CAInfo cAInfo = CaInfoBuilder.builder()
                 .id(expectedId)
                 .expirationDate(expectedExpirationDate)
@@ -171,21 +149,20 @@ public class CaRestResourceUnitTest {
         replay(raMasterApiProxy);
         // when
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca").get();
-        final String actualContentType = getContentType(actualResponse);
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get("certificateAuthorities");
+        final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
+        assertJsonContentType(actualResponse);
         assertNotNull(actualCertificateAuthorities);
         assertEquals(1, actualCertificateAuthorities.size());
         final JSONObject actualCaInfo0JsonObject = (JSONObject) actualCertificateAuthorities.get(0);
         final Object actualId = actualCaInfo0JsonObject.get("id");
         final Object actualName = actualCaInfo0JsonObject.get("name");
-        final Object actualSubjectDn = actualCaInfo0JsonObject.get("subjectDn");
-        final Object actualIssuerDn = actualCaInfo0JsonObject.get("issuerDn");
-        final Object actualExpirationDateLong = actualCaInfo0JsonObject.get("expirationDate");
+        final Object actualSubjectDn = actualCaInfo0JsonObject.get("subject_dn");
+        final Object actualIssuerDn = actualCaInfo0JsonObject.get("issuer_dn");
+        final Object actualExpirationDateString = actualCaInfo0JsonObject.get("expiration_date");
         assertNotNull(actualId);
         assertEquals((long) expectedId, actualId);
         assertNotNull(actualName);
@@ -194,8 +171,8 @@ public class CaRestResourceUnitTest {
         assertEquals(expectedSubjectDn, actualSubjectDn);
         assertNotNull(actualIssuerDn);
         assertEquals(expectedIssuerDn, actualIssuerDn);
-        assertNotNull(actualExpirationDateLong);
-        assertEquals(expectedExpirationDateLong, actualExpirationDateLong);
+        assertNotNull(actualExpirationDateString);
+        assertEquals(expectedExpirationDateString, actualExpirationDateString);
         verify(raMasterApiProxy);
     }
 
@@ -204,37 +181,28 @@ public class CaRestResourceUnitTest {
         // given
         final String expectedMessage = "CA doesn't exist";
         final long expectedCode = Response.Status.NOT_FOUND.getStatusCode();
-        final String subjectDn = "Ca name";
         // when
         expect(raMasterApiProxy.getCertificateChain(eq(authenticationToken), anyInt())).andThrow(new CADoesntExistsException(expectedMessage));
         replay(raMasterApiProxy);
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/" + subjectDn + "/certificate/download").get();
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/certificate/download").get();
+        final String actualJsonString = actualResponse.getEntity(String.class);
         // then
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), actualResponse.getStatus());
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJsonString);
         verify(raMasterApiProxy);
     }
 
     @Test
     public void shouldReturnCaCertificateAsPem() throws Exception {
         // given
-        String certificateContent = "Test Certificate";
-        final String subjectDn = "Ca name";
-        Certificate certificate = getCertificate(certificateContent);
-        ArrayList<Certificate> certificates = new ArrayList<>();
-        certificates.add(certificate);
+        final Certificate certificate = getCertificate();
+        final List<Certificate> certificates = Collections.singletonList(certificate);
         // when
         expect(raMasterApiProxy.getCertificateChain(eq(authenticationToken), anyInt())).andReturn(certificates);
         replay(raMasterApiProxy);
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/" + subjectDn + "/certificate/download").get();
-        final String actualString = (String) actualResponse.getEntity(String.class);
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/certificate/download").get();
+        final String actualString = actualResponse.getEntity(String.class);
         // then
         assertTrue(actualString.contains(CertTools.BEGIN_CERTIFICATE));
         assertTrue(actualString.contains(CertTools.END_CERTIFICATE));
@@ -242,23 +210,20 @@ public class CaRestResourceUnitTest {
         verify(raMasterApiProxy);
     }
 
-    private Certificate getCertificate(final String certificateContent) {
-        return new Certificate(certificateContent) {
-
+    private Certificate getCertificate() {
+        return new Certificate("") {
 
             @Override
-            public byte[] getEncoded() throws CertificateEncodingException {
+            public byte[] getEncoded() {
                 return getType().getBytes();
             }
 
             @Override
-            public void verify(PublicKey key) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
-
+            public void verify(PublicKey key) {
             }
 
             @Override
-            public void verify(PublicKey key, String sigProvider) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
-
+            public void verify(PublicKey key, String sigProvider) {
             }
 
             @Override

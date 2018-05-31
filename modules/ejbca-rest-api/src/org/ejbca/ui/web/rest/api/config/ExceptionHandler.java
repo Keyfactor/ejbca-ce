@@ -60,9 +60,14 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
         }
         // Map through WebApplicationException
         else if (exception instanceof WebApplicationException) {
-            // TODO Check this, might be target server dependent
-            logger.warn("Cannot find a proper mapping for the exception, falling back to default.", exception);
-        } else if (exception instanceof RestException) {
+            final WebApplicationException webApplicationException = (WebApplicationException) exception;
+            // Forward server's exception
+            exceptionErrorRestResponse = ExceptionErrorRestResponse.builder()
+                    .errorCode(webApplicationException.getResponse().getStatus())
+                    .errorMessage(webApplicationException.getMessage())
+                    .build();
+        }
+        else if (exception instanceof RestException) {
             final RestException restException = (RestException) exception;
             exceptionErrorRestResponse = ExceptionErrorRestResponse.builder()
                     .errorCode(restException.getErrorCode())
@@ -84,7 +89,6 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
         return getExceptionResponse(exceptionErrorRestResponse);
     }
 
-    
     // Map managed exceptions (not of error nature)
     private ExceptionInfoRestResponse mapManagedException(final Exception exception) {
         switch (ExceptionClasses.fromClass(exception.getClass())) {
@@ -242,7 +246,6 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
         }
         return null;
     }
-
 
     private Response getExceptionResponse(final ExceptionErrorRestResponse exceptionInfoRestResponse) {
         return Response

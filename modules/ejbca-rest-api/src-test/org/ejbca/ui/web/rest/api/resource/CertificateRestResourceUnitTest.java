@@ -18,29 +18,26 @@ import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.text.DateFormat;
 import java.util.Collections;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.util.StringTools;
@@ -48,15 +45,9 @@ import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
-import org.ejbca.core.ejb.EjbBridgeSessionLocal;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
+import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
 import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
@@ -72,18 +63,19 @@ import org.junit.runner.RunWith;
  * <br/>
  * The testing is organized through deployment of this resource with mocked dependencies into InMemoryRestServer.
  *
- * @version $Id: CertificateRestResourceUnitTest.java 28909 2018-05-21 12:16:53Z andrey_s_helmes $
+ * @version $Id: CertificateRestResourceUnitTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  * @see org.ejbca.ui.web.rest.api.InMemoryRestServer
  */
 @RunWith(EasyMockRunner.class)
 public class CertificateRestResourceUnitTest {
 
+    private static final DateFormat DATE_FORMAT_ISO8601 = JsonDateSerializer.DATE_FORMAT_ISO8601;
     private static final JSONParser jsonParser = new JSONParser();
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
     private static class CertificateRestResourceWithoutSecurity extends CertificateRestResource {
         @Override
-        protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException {
+        protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) {
             return authenticationToken;
         }
     }
@@ -94,16 +86,7 @@ public class CertificateRestResourceUnitTest {
     private static CertificateRestResourceWithoutSecurity testClass = new CertificateRestResourceWithoutSecurity();
 
     @Mock
-    private EjbBridgeSessionLocal ejbLocalHelper;
-    
-    @Mock
-    private EjbcaRestHelperSessionLocal ejbcaRestHelperSessionLocal;
-
-    @Mock
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
-
-    @Mock
-    HttpServletRequest requestContext;
     
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -116,14 +99,6 @@ public class CertificateRestResourceUnitTest {
         server.close();
     }
 
-    private String getContentType(final ClientResponse<?> clientResponse) {
-        final MultivaluedMap<String, String> headersMap = clientResponse.getHeaders();
-        if (headersMap != null) {
-            return headersMap.getFirst("Content-type");
-        }
-        return null;
-    }
-
     @Test
     public void shouldReturnProperStatus() throws Exception {
         // given
@@ -131,23 +106,12 @@ public class CertificateRestResourceUnitTest {
         final String expectedVersion = "1.0";
         final String expectedRevision = "ALPHA";
         // when
-        ClientRequest newRequest = server.newRequest("/v1/certificate/status");
-        final ClientResponse<?> actualResponse = newRequest.get();
-        final String actualContentType = getContentType(actualResponse);
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/certificate/status").get();
         final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualStatus = actualJsonObject.get("status");
-        final Object actualVersion = actualJsonObject.get("version");
-        final Object actualRevision = actualJsonObject.get("revision");
         // then
         assertEquals(Status.OK.getStatusCode(), actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualStatus);
-        assertEquals(expectedStatus, actualStatus);
-        assertNotNull(actualVersion);
-        assertEquals(expectedVersion, actualVersion);
-        assertNotNull(actualRevision);
-        assertEquals(expectedRevision, actualRevision);
+        assertJsonContentType(actualResponse);
+        assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
     }
 
     @Test
@@ -157,253 +121,37 @@ public class CertificateRestResourceUnitTest {
         final String expectedMessage = "Successfully revoked";
         final String expectedStatus = RevocationResultRestResponse.STATUS_REVOKED;
         final Long expectedSerialNumber = StringTools.getBigIntegerFromHexString("12345").longValue();
+        final String expectedRevocationDateString = DATE_FORMAT_ISO8601.format(new Date());
         // when
         raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
         replay(raMasterApiProxy);
         final ClientRequest clientRequest = server
                 .newRequest("/v1/certificate/TestCa/12345/revoke")
-                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
+                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue())
+                .queryParameter("date", expectedRevocationDateString);
         final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualMessage = actualJsonObject.get("message");
         final Object actualStatus = actualJsonObject.get("status");
-        final Object actualSerialNumber = actualJsonObject.get("serialNumber");
+        final Object actualSerialNumber = actualJsonObject.get("serial_number");
+        final Object actualRevocationDate = actualJsonObject.get("revocation_date");
         // than
         assertEquals(expectedCode, actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
         assertEquals(expectedMessage, actualMessage);
         assertEquals(expectedStatus, actualStatus);
         assertEquals(expectedSerialNumber, actualSerialNumber);
-        verify(raMasterApiProxy);
-    }
-
-    @Test
-    public void shouldReturnProperErrorResponseOnRevokeCertificateWithAuthorizationDeniedException() throws Exception {
-        // given
-        final int expectedErrorCode = Status.FORBIDDEN.getStatusCode();
-        final String expectedErrorMessage = "This is AuthorizationDeniedException.";
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
-        expectLastCall().andThrow(new AuthorizationDeniedException(expectedErrorMessage));
-        replay(raMasterApiProxy);
-        // when
-        final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/111/revoke")
-                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse<?> actualResponse = clientRequest.put();
-        final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
-        // then
-        assertEquals(expectedErrorCode, actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualErrorCode);
-        assertEquals((long) expectedErrorCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedErrorMessage, actualErrorMessage);
-        verify(raMasterApiProxy);
-    }
-
-    @Test
-    public void shouldReturnProperErrorResponseOnRevokeCertificateWithRestException() throws Exception {
-        // given
-        final int expectedErrorCode = Status.BAD_REQUEST.getStatusCode();
-        final String expectedErrorMessage = "Invalid revocation reason.";
-        // when
-        final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/111/revoke")
-                .queryParameter("reason", "BAD_REVOCATION_REASON_DOES_NOT_EXIST");
-        final ClientResponse<?> actualResponse = clientRequest.put();
-        final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
-        // then
-        assertEquals(expectedErrorCode, actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualErrorCode);
-        assertEquals((long) expectedErrorCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedErrorMessage, actualErrorMessage);
-    }
-
-    @Test
-    public void shouldReturnProperErrorResponseOnRevokeCertificateWithNoSuchEndEntityException() throws Exception {
-        // given
-        final int expectedErrorCode = Status.NOT_FOUND.getStatusCode();
-        final String expectedErrorMessage = "This is NoSuchEndEntityException.";
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
-        expectLastCall().andThrow(new NoSuchEndEntityException(expectedErrorMessage));
-        replay(raMasterApiProxy);
-        // when
-        final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/111/revoke")
-                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse<?> actualResponse = clientRequest.put();
-        final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
-        // then
-        assertEquals(expectedErrorCode, actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualErrorCode);
-        assertEquals((long) expectedErrorCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedErrorMessage, actualErrorMessage);
-        verify(raMasterApiProxy);
-    }
-
-    @Test
-    public void shouldReturnProperErrorResponseOnRevokeCertificateWithAlreadyRevokedException() throws Exception {
-        // given
-        final int expectedErrorCode = Status.CONFLICT.getStatusCode();
-        final String expectedErrorMessage = "This is AlreadyRevokedException.";
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
-        expectLastCall().andThrow(new AlreadyRevokedException(expectedErrorMessage));
-        replay(raMasterApiProxy);
-        // when
-        final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/111/revoke")
-                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse<?> actualResponse = clientRequest.put();
-        final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
-        // then
-        assertEquals(expectedErrorCode, actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualErrorCode);
-        assertEquals((long) expectedErrorCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedErrorMessage, actualErrorMessage);
-        verify(raMasterApiProxy);
-    }
-
-    @Test
-    public void shouldReturnProperErrorResponseOnRevokeCertificateWithWaitingForApprovalException() throws Exception {
-        // given
-        final int expectedErrorCode = Status.ACCEPTED.getStatusCode();
-        final String expectedErrorMessage = "This is WaitingForApprovalException.";
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
-        expectLastCall().andThrow(new WaitingForApprovalException(expectedErrorMessage, 1));
-        replay(raMasterApiProxy);
-        // when
-        final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/111/revoke")
-                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse<?> actualResponse = clientRequest.put();
-        final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
-        // then
-        assertEquals(expectedErrorCode, actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualErrorCode);
-        assertEquals((long) expectedErrorCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedErrorMessage, actualErrorMessage);
-        verify(raMasterApiProxy);
-    }
-
-    @Test
-    public void shouldReturnProperErrorResponseOnRevokeCertificateWithApprovalException() throws Exception {
-        // given
-        final int expectedErrorCode = Status.BAD_REQUEST.getStatusCode();
-        final String expectedErrorMessage = "This is ApprovalException.";
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
-        expectLastCall().andThrow(new ApprovalException(expectedErrorMessage));
-        replay(raMasterApiProxy);
-        // when
-        final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/111/revoke")
-                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse<?> actualResponse = clientRequest.put();
-        final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
-        // then
-        assertEquals(expectedErrorCode, actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualErrorCode);
-        assertEquals((long) expectedErrorCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedErrorMessage, actualErrorMessage);
-        verify(raMasterApiProxy);
-    }
-
-    @Test
-    public void shouldReturnProperErrorResponseOnRevokeCertificateWithRevokeBackDateNotAllowedForProfileException() throws Exception {
-        // given
-        final int expectedErrorCode = 422;
-        final String expectedErrorMessage = "This is RevokeBackDateNotAllowedForProfileException.";
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
-        expectLastCall().andThrow(new RevokeBackDateNotAllowedForProfileException(expectedErrorMessage));
-        replay(raMasterApiProxy);
-        // when
-        final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/111/revoke")
-                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse<?> actualResponse = clientRequest.put();
-        final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
-        // then
-        assertEquals(expectedErrorCode, actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualErrorCode);
-        assertEquals((long) expectedErrorCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedErrorMessage, actualErrorMessage);
-        verify(raMasterApiProxy);
-    }
-
-    @Test
-    public void shouldReturnProperErrorResponseOnRevokeCertificateWithCADoesntExistsException() throws Exception {
-        // given
-        final int expectedErrorCode = Status.NOT_FOUND.getStatusCode();
-        final String expectedErrorMessage = "This is CADoesntExistsException.";
-        raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
-        expectLastCall().andThrow(new CADoesntExistsException(expectedErrorMessage));
-        replay(raMasterApiProxy);
-        // when
-        final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/111/revoke")
-                .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue());
-        final ClientResponse<?> actualResponse = clientRequest.put();
-        final String actualContentType = getContentType(actualResponse);
-        final String actualJsonString = actualResponse.getEntity(String.class);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
-        // then
-        assertEquals(expectedErrorCode, actualResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
-        assertNotNull(actualErrorCode);
-        assertEquals((long) expectedErrorCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedErrorMessage, actualErrorMessage);
+        assertEquals(expectedRevocationDateString, actualRevocationDate);
         verify(raMasterApiProxy);
     }
 
     @Test
     public void shouldReturnNoMoreExpiredCertificates() throws Exception {
         // given
-        long days = 1;
-        int offset = 0;
-        int maxNumberOfResults = 0;
-
+        final long days = 1;
+        final int offset = 0;
+        final int maxNumberOfResults = 0;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(0).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
                 .andReturn(Collections.<Certificate>emptyList());
@@ -416,14 +164,13 @@ public class CertificateRestResourceUnitTest {
                 .queryParameter("offset", offset)
                 .queryParameter("maxNumberOfResults", maxNumberOfResults);
         final ClientResponse<?> actualResponse = clientRequest.get();
-        Status status = actualResponse.getResponseStatus();
-        final String actualContentType = getContentType(actualResponse);
+        final Status actualStatus = actualResponse.getResponseStatus();
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final boolean moreResults  = (Boolean) ((JSONObject)actualJsonObject.get("paginationRestResponseComponent")).get("moreResults");
+        final boolean moreResults  = (Boolean) ((JSONObject)actualJsonObject.get("pagination_rest_response_component")).get("more_results");
         // then
-        assertEquals(Status.OK, status);
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
+        assertEquals(Status.OK, actualStatus);
+        assertJsonContentType(actualResponse);
         assertFalse(moreResults);
         EasyMock.verify(raMasterApiProxy);
     }
@@ -431,16 +178,14 @@ public class CertificateRestResourceUnitTest {
     @Test
     public void shouldReturnAreMoreResultsAndNextOffsetAndNumberOfResultsLeft() throws Exception {
         // given
-        long days = 1;
-        int offset = 0;
-        int maxNumberOfResults = 4;
-        long expectedNextOffset = 4l;
-        long expectedNumberOfResults = 6l;
-
+        final long days = 1;
+        final int offset = 0;
+        final int maxNumberOfResults = 4;
+        final long expectedNextOffset = 4L;
+        final long expectedNumberOfResults = 6L;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
                 .andReturn(Collections.<Certificate>emptyList());
-
         replay(raMasterApiProxy);
         // when
         final ClientRequest clientRequest = server
@@ -449,37 +194,33 @@ public class CertificateRestResourceUnitTest {
                 .queryParameter("offset", offset)
                 .queryParameter("maxNumberOfResults", maxNumberOfResults);
         final ClientResponse<?> actualResponse = clientRequest.get();
-        Status status = actualResponse.getResponseStatus();
-        final String actualContentType = getContentType(actualResponse);
+        final Status actualStatus = actualResponse.getResponseStatus();
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        JSONObject responseStatus = (JSONObject) actualJsonObject.get("paginationRestResponseComponent");
-        final boolean moreResults  = (Boolean) responseStatus.get("moreResults");
-        final long nextOffset  = (Long) responseStatus.get("nextOffset");
-        final long numberOfResults  = (Long) responseStatus.get("numberOfResults");
+        final JSONObject responseStatus = (JSONObject) actualJsonObject.get("pagination_rest_response_component");
+        final boolean moreResults  = (Boolean) responseStatus.get("more_results");
+        final long nextOffset  = (Long) responseStatus.get("next_offset");
+        final long numberOfResults  = (Long) responseStatus.get("number_of_results");
         // then
-        assertEquals(Status.OK, status);
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
+        assertEquals(Status.OK, actualStatus);
+        assertJsonContentType(actualResponse);
         assertTrue(moreResults);
         assertEquals(expectedNextOffset, nextOffset);
         assertEquals(expectedNumberOfResults, numberOfResults);
         EasyMock.verify(raMasterApiProxy);
     }
 
-
     @Test
     public void shouldReturnAreMoreResultsAndNextOffsetAndNumberOfResultsLeftWithNotZeroOffset() throws Exception {
         // given
-        long days = 1;
-        int offset = 3;
-        int maxNumberOfResults = 4;
-        long expectedNextOffset = 7l;
-        long expectedNumberOfResults = 3l;
-
+        final long days = 1;
+        final int offset = 3;
+        final int maxNumberOfResults = 4;
+        final long expectedNextOffset = 7L;
+        final long expectedNumberOfResults = 3L;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
                 .andReturn(Collections.<Certificate>emptyList());
-
         replay(raMasterApiProxy);
         // when
         final ClientRequest clientRequest = server
@@ -488,17 +229,16 @@ public class CertificateRestResourceUnitTest {
                 .queryParameter("offset", offset)
                 .queryParameter("maxNumberOfResults", maxNumberOfResults);
         final ClientResponse<?> actualResponse = clientRequest.get();
-        Status status = actualResponse.getResponseStatus();
-        final String actualContentType = getContentType(actualResponse);
+        final Status actualStatus = actualResponse.getResponseStatus();
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        JSONObject responseStatus = (JSONObject) actualJsonObject.get("paginationRestResponseComponent");
-        final boolean moreResults  = (Boolean) responseStatus.get("moreResults");
-        final long nextOffset  = (Long) responseStatus.get("nextOffset");
-        final long numberOfResults  = (Long) responseStatus.get("numberOfResults");
+        final JSONObject responseStatus = (JSONObject) actualJsonObject.get("pagination_rest_response_component");
+        final boolean moreResults  = (Boolean) responseStatus.get("more_results");
+        final long nextOffset  = (Long) responseStatus.get("next_offset");
+        final long numberOfResults  = (Long) responseStatus.get("number_of_results");
         // then
-        assertEquals(Status.OK, status);
-        assertEquals(MediaType.APPLICATION_JSON, actualContentType);
+        assertEquals(Status.OK, actualStatus);
+        assertJsonContentType(actualResponse);
         assertTrue(moreResults);
         assertEquals(expectedNextOffset, nextOffset);
         assertEquals(expectedNumberOfResults, numberOfResults);
