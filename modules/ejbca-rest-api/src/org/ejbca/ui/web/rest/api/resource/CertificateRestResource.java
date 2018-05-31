@@ -12,7 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -42,11 +48,13 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.crl.RevocationReasons;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -60,6 +68,7 @@ import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesResponse;
+import org.ejbca.ui.web.rest.api.io.response.KeystoreRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
 
@@ -120,8 +129,51 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
     }
-
-
+    
+    /**
+     * Creates a keystore for the specified end entity
+     * @param requestContext HttpServletRequest
+     * @param username of the end entity
+     * @param password must match end entity password
+     * @param keyAlg key algorithm to use, e.g. RSA, ECDSA
+     * @param keySpec key specification to use, e.g. 1024, 2048, secp256r1
+     * @return JSON representation containing base64 encoded keystore and keystore type
+     */
+    @POST
+    @Path("/enrollkeystore")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response enrollKeystore(
+            @Context HttpServletRequest requestContext,
+            @QueryParam("username") String username,
+            @QueryParam("password") String password,
+            @QueryParam("keyalg") String keyAlg,
+            @QueryParam("keyspec") String keySpec) 
+                    throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException, 
+                        NoSuchAlgorithmException, CertificateException, IOException, RestException {
+        final AuthenticationToken admin = getAdmin(requestContext, false);
+        EndEntityInformation endEntityInformation = raMasterApi.searchUser(admin, username);
+        endEntityInformation.setPassword(password);
+        endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
+        endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);
+        final int tokenType = endEntityInformation.getTokenType();
+        if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS)) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be PKCS12 or JKS");
+        }
+        final String tokenTypeString = SecConst.TOKENTEXTS[tokenType -1];
+        final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
+        final KeyStore keyStore;
+        if (tokenType == SecConst.TOKEN_SOFT_P12) {
+            keyStore = KeyStore.getInstance("PKCS12", "BC");
+        } else if (tokenType == SecConst.TOKEN_SOFT_JKS) {
+            keyStore = KeyStore.getInstance("JKS");
+        } else {
+            throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
+        }
+        keyStore.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
+        KeystoreRestResponse keystoreRestResponse = new KeystoreRestResponse(keyStore, password, tokenTypeString);
+        return Response.ok(keystoreRestResponse).build();
+    }
+    
     /**
      * Revokes the specified certificate
      *
@@ -134,7 +186,6 @@ public class CertificateRestResource extends BaseRestResource {
      *                          CERTIFICATEHOLD, REMOVEFROMCRL, PRIVILEGESWITHDRAWN, AACOMPROMISE
      * @param date           revocation date (optional). Must be valid ISO8601 date string
      * @return JSON representation of serialNr, revocation status, date and optional message
-     * @see org.cesecore.certificates.crl.RevocationReasons
      */
     @PUT
     @Path("/{issuer_dn}/{certificate_serial_number}/revoke")
