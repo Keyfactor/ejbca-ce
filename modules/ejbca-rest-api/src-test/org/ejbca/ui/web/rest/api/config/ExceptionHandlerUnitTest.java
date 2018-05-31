@@ -52,11 +52,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
-import org.ejbca.ui.web.rest.common.BaseRestResource;
-import org.jboss.resteasy.client.ClientRequest;
+import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.resource.BaseRestResource;
 import org.jboss.resteasy.client.ClientResponse;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -65,9 +63,14 @@ import org.junit.runner.RunWith;
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
+
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionInfoResponse;
 
 import static javax.ws.rs.core.Response.Status;
 import static org.easymock.EasyMock.anyInt;
@@ -75,18 +78,16 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
- * A unit test class for ExceptionHandler to test correctness of mapping between Exception and Error response.
+ * A unit test class for ExceptionHandler to test correctness of mapping between Exception and Error/Info response.
  *
- * @version $Id: ExceptionHandler.java 28962 2018-05-21 06:54:45Z andrey_s_helmes $
+ * @version $Id: ExceptionHandler.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 @RunWith(EasyMockRunner.class)
 public class ExceptionHandlerUnitTest {
 
     public static InMemoryRestServer server;
-    private static final JSONParser jsonParser = new JSONParser();
 
     public static class DummyMock {
         public int throwException(int i) throws Exception {
@@ -124,19 +125,71 @@ public class ExceptionHandlerUnitTest {
         server.close();
     }
 
-    private JSONObject getResponseAsJsonObject() throws Exception {
-        final ClientRequest clientRequest = server.newRequest("/v1/dummy");
-        final ClientResponse actualResponse = clientRequest.get();
-        final String actualJsonString = (String) actualResponse.getEntity(String.class);
-        return (JSONObject) jsonParser.parse(actualJsonString);
+    // -----------------------------------------------------------------------------------------------------------------
+    // General Exceptions
+    // -----------------------------------------------------------------------------------------------------------------
+    // 400
+    @Test
+    public void shouldFormProperErrorResponseOnRestException() throws Exception {
+        // given
+        final long expectedCode = Status.BAD_REQUEST.getStatusCode();
+        final String expectedMessage = "RestException error message";
+        expect(dummyMock.throwException(anyInt())).andThrow(new RestException((int)expectedCode, expectedMessage));
+        replay(dummyMock);
+        // when
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
+        // then
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
+        verify(dummyMock);
+    }
+
+    // 404
+    @Test
+    public void shouldFormProperErrorResponseOnWebApplicationException() throws Exception {
+        // given
+        final long expectedCode = Status.NOT_FOUND.getStatusCode();
+        final String expectedMessage = "The requested path was not found";
+        final String expectedErrorMessage = "java.lang.Exception: " + expectedMessage;
+        expect(dummyMock.throwException(anyInt())).andThrow(new WebApplicationException(new Exception(expectedMessage), (int) expectedCode));
+        replay(dummyMock);
+        // when
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
+        // then
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedErrorMessage, actualJson);
+        verify(dummyMock);
+    }
+
+    // 500
+    @Test
+    public void shouldFormProperErrorResponseOnException() throws Exception {
+        // given
+        final long expectedCode = Status.INTERNAL_SERVER_ERROR.getStatusCode();
+        final String expectedMessage = ExceptionHandler.DEFAULT_ERROR_MESSAGE;
+        expect(dummyMock.throwException(anyInt())).andThrow(new Exception());
+        replay(dummyMock);
+        // when
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
+        // then
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
+        verify(dummyMock);
     }
 
     // -----------------------------------------------------------------------------------------------------------------
     // EjbcaExceptionClasses
     // -----------------------------------------------------------------------------------------------------------------
     // 400
-    // -------------
-
     @Test
     public void shouldFormProperErrorResponseOnApprovalException() throws Exception {
         // given
@@ -145,16 +198,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new ApprovalException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnKeyStoreGeneralRaException() throws Exception {
         // given
@@ -165,23 +218,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new KeyStoreGeneralRaException(exception));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        System.out.println("Expected:" +expectedMessage);
-        System.out.println("Actual:" + actualErrorMessage);
-
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
-    // ----------------
-    // 403
-    // ---------------
 
+    // 403
     @Test
     public void shouldFormProperErrorResponseOnAuthLoginException() throws Exception {
         // given
@@ -190,19 +237,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new AuthLoginException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        System.out.println("Expected:" +expectedMessage);
-        System.out.println("Actual:" + actualErrorMessage);
-
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnAuthStatusException() throws Exception {
         // given
@@ -211,23 +255,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new AuthStatusException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        System.out.println("Expected:" +expectedMessage);
-        System.out.println("Actual:" + actualErrorMessage);
-
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
-    // ----------------
     // 404
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnNotFoundException() throws Exception {
         // given
@@ -236,22 +274,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new NotFoundException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        System.out.println("Expected:" +expectedMessage);
-        System.out.println("Actual:" + actualErrorMessage);
-
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
-    // ----------------
+
     // 409
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnAlreadyRevokedException() throws Exception {
         // given
@@ -260,22 +293,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new AlreadyRevokedException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        System.out.println("Expected:" +expectedMessage);
-        System.out.println("Actual:" + actualErrorMessage);
-
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
-    // ----------------
+
     // 422
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnCustomFieldException() throws Exception {
         // given
@@ -284,19 +312,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CustomFieldException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        System.out.println("Expected:" +expectedMessage);
-        System.out.println("Actual:" + actualErrorMessage);
-
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnEndEntityProfileValidationRaException() throws Exception {
         // given
@@ -307,17 +332,13 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new EndEntityProfileValidationRaException(exception));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        System.out.println("Expected:" +expectedMessage);
-        System.out.println("Actual:" + actualErrorMessage);
-
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
@@ -329,17 +350,13 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new RevokeBackDateNotAllowedForProfileException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        System.out.println("Expected:" +expectedMessage);
-        System.out.println("Actual:" + actualErrorMessage);
-
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
@@ -347,7 +364,6 @@ public class ExceptionHandlerUnitTest {
     // CesecoreExceptionClasses
     // -----------------------------------------------------------------------------------------------------------------
     // 400
-    // -------------
     @Test
     public void shouldFormProperErrorResponseOnCertificateRevokeException() throws Exception {
         // given
@@ -356,14 +372,13 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CertificateRevokeException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
@@ -375,14 +390,13 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CertificateSerialNumberException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
@@ -394,19 +408,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new EndEntityExistsException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
-    // ----------------
+
     // 404
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnCADoesntExistsException() throws Exception {
         // given
@@ -415,14 +427,13 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CADoesntExistsException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
@@ -434,14 +445,13 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CertificateProfileDoesNotExistException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
@@ -453,21 +463,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new NoSuchEndEntityException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
-    // ----------------
     // 422
-    // ---------------
-
     @Test
     public void shouldFormProperErrorResponseOnIllegalNameException() throws Exception {
         // given
@@ -476,16 +482,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new IllegalNameException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnIllegalValidityException() throws Exception {
         // given
@@ -494,16 +500,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new IllegalValidityException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnInvalidAlgorithmException() throws Exception {
         // given
@@ -512,22 +518,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new InvalidAlgorithmException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
-
-    // ----------------
     // 500
-    // ---------------
-
     @Test
     public void shouldFormProperErrorResponseOnCertificateCreateException() throws Exception {
         // given
@@ -536,21 +537,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CertificateCreateException("Test"));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
-    // ----------------
     // 503
-    // ---------------
-
     @Test
     public void shouldFormProperErrorResponseOnCAOfflineException() throws Exception {
         // given
@@ -559,14 +556,13 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CAOfflineException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
@@ -578,14 +574,13 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CryptoTokenOfflineException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
@@ -597,47 +592,39 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CTLogException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
-
 
     // -----------------------------------------------------------------------------------------------------------------
     // ExceptionClasses
     // -----------------------------------------------------------------------------------------------------------------
     // 202
-    // -------------
-
     @Test
     public void shouldFormProperErrorResponseOnWaitingForApprovalException() throws Exception {
         // given
         final long expectedCode = Status.ACCEPTED.getStatusCode();
         final String expectedMessage = "WaitingForApprovalException error message";
-        int requestId = 0;
-        expect(dummyMock.throwException(anyInt())).andThrow(new WaitingForApprovalException(expectedMessage, requestId));
+        expect(dummyMock.throwException(anyInt())).andThrow(new WaitingForApprovalException(expectedMessage, 0));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionInfoResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
-    // ----------------
     // 400
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnApprovalRequestExecutionException() throws Exception {
         // given
@@ -646,16 +633,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new ApprovalRequestExecutionException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnApprovalRequestExpiredException() throws Exception {
         // given
@@ -664,16 +651,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new ApprovalRequestExpiredException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnRoleExistsException() throws Exception {
         // given
@@ -682,19 +669,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new RoleExistsException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
-    // ----------------
+
     // 403
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnAuthenticationFailedException() throws Exception {
         // given
@@ -703,16 +688,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new AuthenticationFailedException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnAuthorizationDeniedException() throws Exception {
         // given
@@ -721,16 +706,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new AuthorizationDeniedException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnSelfApprovalException() throws Exception {
         // given
@@ -739,21 +724,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new SelfApprovalException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
-    // ----------------
     // 404
-    // ---------------
-
     @Test
     public void shouldFormProperErrorResponseOnEndEntityProfileNotFoundException() throws Exception {
         // given
@@ -762,16 +743,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new EndEntityProfileNotFoundException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnRoleNotFoundException() throws Exception {
         // given
@@ -780,20 +761,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new RoleNotFoundException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
-    // ----------------
     // 409
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnAdminAlreadyApprovedRequestException() throws Exception {
         // given
@@ -802,20 +780,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new AdminAlreadyApprovedRequestException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 
-    // ----------------
     // 413
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnStreamSizeLimitExceededException() throws Exception {
         // given
@@ -824,19 +799,17 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new StreamSizeLimitExceededException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
-    // ----------------
+
     // 422
-    // ---------------
     @Test
     public void shouldFormProperErrorResponseOnEndEntityProfileValidationException() throws Exception {
         // given
@@ -845,16 +818,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new EndEntityProfileValidationException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnUserDoesntFullfillEndEntityProfile() throws Exception {
         // given
@@ -863,16 +836,16 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new UserDoesntFullfillEndEntityProfile(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnCertificateExtensionException() throws Exception {
         // given
@@ -881,32 +854,31 @@ public class ExceptionHandlerUnitTest {
         expect(dummyMock.throwException(anyInt())).andThrow(new CertificateExtensionException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
+
     @Test
     public void shouldFormProperErrorResponseOnCertificateEncodingException() throws Exception {
         // given
         final long expectedCode = Status.INTERNAL_SERVER_ERROR.getStatusCode();
-        final String expectedMessage = ExceptionHandler.DEFAULT_ERROR_MESSAGE;;
+        final String expectedMessage = ExceptionHandler.DEFAULT_ERROR_MESSAGE;
         expect(dummyMock.throwException(anyInt())).andThrow(new CertificateEncodingException(expectedMessage));
         replay(dummyMock);
         // when
-        final JSONObject actualJsonObject = getResponseAsJsonObject();
-        final Object actualErrorCode = actualJsonObject.get("errorCode");
-        final Object actualErrorMessage = actualJsonObject.get("errorMessage");
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/dummy").get();
+        final int actualHttpStatus = actualResponse.getStatus();
+        final String actualJson = actualResponse.getEntity(String.class);
         // then
-        assertNotNull(actualErrorCode);
-        assertEquals(expectedCode, actualErrorCode);
-        assertNotNull(actualErrorMessage);
-        assertEquals(expectedMessage, actualErrorMessage);
+        assertJsonContentType(actualResponse);
+        assertEquals(expectedCode, actualHttpStatus);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJson);
         verify(dummyMock);
     }
 }

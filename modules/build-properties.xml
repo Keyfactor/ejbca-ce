@@ -229,12 +229,13 @@
 	</path>
 
 	<path id="lib.resteasy-jaxrs.classpath">
-		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib-2.3.1.GA">
+		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="*.jar"/>
 			<exclude name="*-javadoc.jar"/>
 			<exclude name="*-sources.jar"/>
 		</fileset>
 	</path>
+
 	<path id="lib.swagger.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/swagger">
 			<include name="*.jar"/>

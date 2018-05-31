@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.Certificate;
@@ -37,7 +36,6 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
-import org.ejbca.ui.web.rest.common.BaseRestResource;
 
 /**
  * JAX-RS resource handling CA related requests.
@@ -49,15 +47,11 @@ import org.ejbca.ui.web.rest.common.BaseRestResource;
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
 public class CaRestResource extends BaseRestResource {
-    //private static final Logger log = Logger.getLogger(CaRestResource.class);
 
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
-
-    public CaRestResource() {
-    }
 
     @GET
     @Path("/status")

@@ -13,12 +13,13 @@
 package org.ejbca.ui.web.rest.api;
 
 import org.ejbca.ui.web.rest.api.config.ExceptionHandler;
+import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
 import org.jboss.resteasy.client.ClientRequest;
-import org.jboss.resteasy.plugins.server.embedded.SecurityDomain;
 import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,24 +27,26 @@ import java.util.Set;
 /**
  * A wrapper utility that creates an instance of TJWSEmbeddedJaxrsServer to run Unit Tests on top of the Resteasy embedded server.
  * <br/>
- * By default this server registers ExceptionHandler Provider.
+ * By default this server registers these providers:
+ * <ul>
+ * <li>ExceptionHandler - handles an exception;</li>
+ * <li>ObjectMapperContextResolver - defines the mapping for JSON.</li>
+ * </ul>
+ *
+ * @version $Id: InMemoryRestServer.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  *
  * @see org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer
  * @see org.ejbca.ui.web.rest.api.config.ExceptionHandler
- *
- * @version $Id: InMemoryRestServer.java 28909 2018-05-21 12:16:53Z andrey_s_helmes $
  */
 public class InMemoryRestServer implements AutoCloseable {
 
-    private TJWSEmbeddedJaxrsServer server;
     private static final String bindAddress = "localhost";
-    private int port;
-    private SecurityDomain securityDomain;
     private final Set<Object> resources = new HashSet<>();
+    private TJWSEmbeddedJaxrsServer server;
+    private int port;
 
     // Private constructor
-    private InMemoryRestServer(final SecurityDomain securityDomain, final Object... resources) {
-        this.securityDomain = securityDomain;
+    private InMemoryRestServer(final Object... resources) {
         Collections.addAll(this.resources, resources);
     }
 
@@ -51,25 +54,18 @@ public class InMemoryRestServer implements AutoCloseable {
      * Creates an instance of InMemoryRestServer with bunch of resources.
      *
      * @param resources a bunch of resources to be served on the server.
-     *
      * @return an instance of InMemoryRestServer.
      */
     public static InMemoryRestServer create(final Object... resources) {
-        return create(null, resources);
+        return new InMemoryRestServer(resources);
     }
 
-    /**
-     * Creates an instance of InMemoryRestServer with predefined SecurityDomain and bunch of resources.
-     *
-     * @param securityDomain
-     * @param resources a bunch of resources to be served on the server.
-     *
-     * @see org.jboss.resteasy.plugins.server.embedded.SecurityDomain
-     *
-     * @return an instance of InMemoryRestServer.
-     */
-    public static InMemoryRestServer create(final SecurityDomain securityDomain, final Object... resources) {
-        return new InMemoryRestServer(securityDomain, resources);
+    // Looks for a free http port to run locally
+    private static int findFreePort() throws IOException {
+        final ServerSocket serverSocket = new ServerSocket(0);
+        final int port = serverSocket.getLocalPort();
+        serverSocket.close();
+        return port;
     }
 
     /**
@@ -82,13 +78,14 @@ public class InMemoryRestServer implements AutoCloseable {
         port = findFreePort();
         server.setPort(port);
         server.setBindAddress(bindAddress);
-        server.setSecurityDomain(securityDomain);
         // Add resources
         for (Object resource : resources) {
             server.getDeployment().getResources().add(resource);
         }
-        // Add a provider
-        server.getDeployment().getProviderClasses().add(ExceptionHandler.class.getName());
+        // Add providers
+        server.getDeployment().getProviderClasses().addAll(
+                Arrays.asList(ExceptionHandler.class.getName(), ObjectMapperContextResolver.class.getName())
+        );
         server.start();
     }
 
@@ -98,9 +95,7 @@ public class InMemoryRestServer implements AutoCloseable {
      * For example newRequest("/v1/ca") forms the request on URL "http://localhost:8080/v1/ca".
      *
      * @param uriPath a part of URL to make request on.
-     *
      * @return An instance of ClientRequest.
-     *
      * @see org.jboss.resteasy.client.ClientRequest
      */
     public ClientRequest newRequest(final String uriPath) {
@@ -116,13 +111,5 @@ public class InMemoryRestServer implements AutoCloseable {
             server.stop();
             server = null;
         }
-    }
-
-    // Looks for a free http port to run locally
-    private static int findFreePort() throws IOException {
-        final ServerSocket serverSocket = new ServerSocket(0);
-        final int port = serverSocket.getLocalPort();
-        serverSocket.close();
-        return port;
     }
 }

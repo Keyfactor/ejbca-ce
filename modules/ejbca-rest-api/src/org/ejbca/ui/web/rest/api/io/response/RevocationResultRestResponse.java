@@ -10,11 +10,9 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.io.response;
 
 import java.math.BigInteger;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -46,13 +44,11 @@ public class RevocationResultRestResponse {
         this.serialNumber = serialNumber;
     }
 
-    public String getDate() {
-        // "2018-02-10T17:06:15+00:00"
-        final SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-        return revocationDate != null ? dateFormater.format(revocationDate) : null;
+    public Date getRevocationDate() {
+        return revocationDate;
     }
 
-    public void setDate(Date date) {
+    public void setRevocationDate(Date date) {
         this.revocationDate = date;
     }
 
