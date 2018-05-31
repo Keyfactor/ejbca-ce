@@ -92,20 +92,20 @@ public class RestResourceStatusRestResponse {
      *
      * @return an instance of builder for this class.
      */
-    public static RestResourceStatusTypeBuilder builder() {
-        return new RestResourceStatusTypeBuilder();
+    public static RestResourceStatusRestResponseBuilder builder() {
+        return new RestResourceStatusRestResponseBuilder();
     }
 
     /**
      * Builder of this class.
      */
-    public static class RestResourceStatusTypeBuilder {
+    public static class RestResourceStatusRestResponseBuilder {
 
         private String status;
         private String version;
         private String revision;
 
-        RestResourceStatusTypeBuilder() {
+        RestResourceStatusRestResponseBuilder() {
         }
 
         /**
@@ -115,7 +115,7 @@ public class RestResourceStatusRestResponse {
          *
          * @return instance of this builder.
          */
-        public RestResourceStatusTypeBuilder status(final String status) {
+        public RestResourceStatusRestResponseBuilder status(final String status) {
             this.status = status;
             return this;
         }
@@ -127,7 +127,7 @@ public class RestResourceStatusRestResponse {
          *
          * @return instance of this builder.
          */
-        public RestResourceStatusTypeBuilder version(final String version) {
+        public RestResourceStatusRestResponseBuilder version(final String version) {
             this.version = version;
             return this;
         }
@@ -139,7 +139,7 @@ public class RestResourceStatusRestResponse {
          *
          * @return instance of this builder.
          */
-        public RestResourceStatusTypeBuilder revision(final String revision) {
+        public RestResourceStatusRestResponseBuilder revision(final String revision) {
             this.revision = revision;
             return this;
         }

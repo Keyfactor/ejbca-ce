@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
 /**
@@ -55,7 +56,10 @@ public abstract class BaseRestResource {
      * @return AuthenticationToken for the requesting administrator
      * @throws AuthorizationDeniedException
      */
-    protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException {
+    protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) throws AuthorizationDeniedException, RestException {
+        if (requestContext == null) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Missing request context");
+        }
         X509Certificate[] certs = (X509Certificate[]) requestContext.getAttribute("javax.servlet.request.X509Certificate");
         if (certs == null || certs[0] == null) {
             throw new AuthorizationDeniedException("Error no client certificate received for authentication.");

@@ -62,12 +62,11 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesResponse;
+import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.KeystoreRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
@@ -104,32 +103,23 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollcertificateRequest)
+    public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
 
         try {
             AuthenticationToken authenticationToken = getAdmin(requestContext, false);
-            
-            EnrollPkcs10CertificateRequest requestDto = new EnrollPkcs10CertificateRequest.Builder()
-                    .certificateRequest(enrollcertificateRequest.getCertificateRequest())
-                    .certificateProfileName(enrollcertificateRequest.getCertificateProfileName())
-                    .endEntityProfileName(enrollcertificateRequest.getEndEntityProfileName())
-                    .certificateAuthorityName(enrollcertificateRequest.getCertificateAuthorityName())
-                    .username(enrollcertificateRequest.getUsername())
-                    .password(enrollcertificateRequest.getPassword())
-                    .build();
-                    
-            byte[] certificate = raMasterApi.createCertificateRest(authenticationToken, requestDto);
-            
+            byte[] certificate = raMasterApi.createCertificateRest(
+                    authenticationToken,
+                    EnrollCertificateRestRequest.converter().toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest)
+            );
             X509Certificate cert = CertTools.getCertfromByteArray(certificate, X509Certificate.class);
-            
             CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(cert);
             return Response.ok(enrollCertificateRestResponse).build();
         } catch (EjbcaException | EndEntityProfileNotFoundException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
     }
-    
+
     /**
      * Creates a keystore for the specified end entity
      * @param requestContext HttpServletRequest
@@ -219,7 +209,12 @@ public class CertificateRestResource extends BaseRestResource {
             revocationDate = new Date();
         }
         raMasterApi.revokeCert(admin, serialNr, revocationDate, issuerDN, revocationReason, false);
-        final RevocationResultRestResponse result = new RevocationResultRestResponse(serialNr, revocationDate, RevocationResultRestResponse.STATUS_REVOKED, "Successfully revoked");
+        final RevocationResultRestResponse result = RevocationResultRestResponse.builder()
+                .serialNumber(serialNr)
+                .revocationDate(revocationDate)
+                .status(RevocationResultRestResponse.STATUS_REVOKED)
+                .message("Successfully revoked")
+                .build();
         return Response.ok(result).build();
     }
 
@@ -246,9 +241,6 @@ public class CertificateRestResource extends BaseRestResource {
                                                  @QueryParam("days") long days,
                                                  @QueryParam("offset") int offset,
                                                  @QueryParam("maxNumberOfResults") int maxNumberOfResults) throws AuthorizationDeniedException, CertificateEncodingException, RestException {
-        if (requestContext == null) {
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Missing request context");
-        }
         final AuthenticationToken admin = getAdmin(requestContext, true);
         int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
         List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset);
@@ -258,7 +250,7 @@ public class CertificateRestResource extends BaseRestResource {
                 .setNumberOfResults(count - processedResults)
                 .build();
         CertificatesRestResponse certificatesRestResponse = new CertificatesRestResponse(CertificatesRestResponse.converter().toRestResponses(expiringCertificates));
-        ExpiringCertificatesResponse response = new ExpiringCertificatesResponse(paginationRestResponseComponent, certificatesRestResponse);
+        ExpiringCertificatesRestResponse response = new ExpiringCertificatesRestResponse(paginationRestResponseComponent, certificatesRestResponse);
         return Response.ok(response).build();
     }
 }

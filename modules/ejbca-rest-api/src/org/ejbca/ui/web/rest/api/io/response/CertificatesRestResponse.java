@@ -50,13 +50,13 @@ public class CertificatesRestResponse {
     public static class CertificatesRestResponseConverter {
 
         public List<CertificateRestResponse> toRestResponses(final List<Certificate> certificateList) throws CertificateEncodingException {
-            final List<CertificateRestResponse> certificateTypes = new ArrayList<>();
+            final List<CertificateRestResponse> certificateRestResponses = new ArrayList<>();
             if (certificateList != null) {
                 for (final Certificate certificate : certificateList) {
-                    certificateTypes.add(CertificateRestResponse.converter().toRestResponse(certificate));
+                    certificateRestResponses.add(CertificateRestResponse.converter().toRestResponse(certificate));
                 }
             }
-            return certificateTypes;
+            return certificateRestResponses;
         }
     }
 }
