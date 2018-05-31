@@ -23,7 +23,7 @@ import java.security.cert.X509Certificate;
 /**
  * A class representing general information about certificate. Is used for REST services' responses.
  *
- * @version $Id: CertificateRestResponse.java 28909 2018-05-10 12:16:53Z tarmo_r_helmes $
+ * @version $Id: CertificateRestResponse.java 29010 2018-05-23 13:09:53Z andrey_s_helmes $
  */
 public class CertificateRestResponse {
 
@@ -40,8 +40,8 @@ public class CertificateRestResponse {
      *
      * @return builder instance for this class.
      */
-    public static CertificateResponseBuilder builder() {
-        return new CertificateResponseBuilder();
+    public static CertificateRestResponseBuilder builder() {
+        return new CertificateRestResponseBuilder();
     }
 
     /**
@@ -61,19 +61,19 @@ public class CertificateRestResponse {
         return serialNumber;
     }
 
-    public static class CertificateResponseBuilder {
+    public static class CertificateRestResponseBuilder {
         private byte[] certificate;
         private BigInteger serialNumber;
 
-        private CertificateResponseBuilder() {
+        private CertificateRestResponseBuilder() {
         }
 
-        public CertificateResponseBuilder setCertificate(byte[] certificate) {
+        public CertificateRestResponseBuilder setCertificate(byte[] certificate) {
             this.certificate = certificate;
             return this;
         }
 
-        public CertificateResponseBuilder setSerialNumber(BigInteger serialNumber) {
+        public CertificateRestResponseBuilder setSerialNumber(BigInteger serialNumber) {
             this.serialNumber = serialNumber;
             return this;
         }

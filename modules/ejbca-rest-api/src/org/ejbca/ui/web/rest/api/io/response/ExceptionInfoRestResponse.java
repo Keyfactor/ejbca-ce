@@ -19,7 +19,8 @@ package org.ejbca.ui.web.rest.api.io.response;
  * such as WaitingForApprovalException which shouldn't be considered an error. In order to respond to "error events"
  * use ExceptionErrorRestResponse.
  * @see org.ejbca.ui.web.rest.api.io.response.ExceptionErrorRestResponse
- * @version $Id$
+ *
+ * @version $Id: ExceptionInfoRestResponse.java 29010 2018-05-23 13:09:53Z andrey_s_helmes
  *
  */
 public class ExceptionInfoRestResponse {
@@ -74,19 +75,19 @@ public class ExceptionInfoRestResponse {
     /**
      * @return builder instance for this class.
      */
-    public static ExceptionInfoTypeBuilder builder() {
-        return new ExceptionInfoTypeBuilder();
+    public static ExceptionInfoRestResponseBuilder builder() {
+        return new ExceptionInfoRestResponseBuilder();
     }
     
     /**
      * Builder of this class.
      */
-    public static class ExceptionInfoTypeBuilder {
+    public static class ExceptionInfoRestResponseBuilder {
 
         private int statusCode;
         private String infoMessage;
 
-        ExceptionInfoTypeBuilder() {
+        ExceptionInfoRestResponseBuilder() {
         }
 
         /**
@@ -96,7 +97,7 @@ public class ExceptionInfoRestResponse {
          *
          * @return instance of this builder.
          */
-        public ExceptionInfoTypeBuilder statusCode(final int statusCode) {
+        public ExceptionInfoRestResponseBuilder statusCode(final int statusCode) {
             this.statusCode = statusCode;
             return this;
         }
@@ -108,7 +109,7 @@ public class ExceptionInfoRestResponse {
          *
          * @return instance of this builder.
          */
-        public ExceptionInfoTypeBuilder infoMessage(final String infoMessage) {
+        public ExceptionInfoRestResponseBuilder infoMessage(final String infoMessage) {
             this.infoMessage = infoMessage;
             return this;
         }

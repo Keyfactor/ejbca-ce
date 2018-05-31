@@ -35,6 +35,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
 
 /**
@@ -68,10 +69,7 @@ public class CaRestResource extends BaseRestResource {
     @Path("/{subject_dn}/certificate/download")
     @Produces(MediaType.WILDCARD)
     public Response getCertificateAsPem(@Context HttpServletRequest requestContext,
-                                        @PathParam("subject_dn") String subjectDn) throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException {
-        if (requestContext == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Missing request context").build();
-        }
+                                        @PathParam("subject_dn") String subjectDn) throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         subjectDn = CertTools.stringToBCDNString(subjectDn);
         Collection<Certificate> certificateChain = raMasterApiProxy.getCertificateChain(admin, subjectDn.hashCode());
@@ -91,10 +89,12 @@ public class CaRestResource extends BaseRestResource {
      * @return The response containing the list of CAs and its general information.
      */
     @GET
-    public Response listCas(@Context final HttpServletRequest httpServletRequest) throws AuthorizationDeniedException, CADoesntExistsException {
+    public Response listCas(@Context final HttpServletRequest httpServletRequest) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
-                .certificateAuthorities(CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken)))
+                .certificateAuthorities(
+                        CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken))
+                )
                 .build();
         return Response.ok(caInfosRestResponse).build();
     }
