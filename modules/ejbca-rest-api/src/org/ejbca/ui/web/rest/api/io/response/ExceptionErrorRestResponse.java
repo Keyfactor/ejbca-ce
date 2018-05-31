@@ -76,19 +76,19 @@ public class ExceptionErrorRestResponse {
      *
      * @return builder instance for this class.
      */
-    public static ExceptionErrorTypeBuilder builder() {
-        return new ExceptionErrorTypeBuilder();
+    public static ExceptionErrorRestResponseBuilder builder() {
+        return new ExceptionErrorRestResponseBuilder();
     }
 
     /**
      * Builder of this class.
      */
-    public static class ExceptionErrorTypeBuilder {
+    public static class ExceptionErrorRestResponseBuilder {
 
         private int errorCode;
         private String errorMessage;
 
-        ExceptionErrorTypeBuilder() {
+        ExceptionErrorRestResponseBuilder() {
         }
 
         /**
@@ -98,7 +98,7 @@ public class ExceptionErrorRestResponse {
          *
          * @return instance of this builder.
          */
-        public ExceptionErrorTypeBuilder errorCode(final int errorCode) {
+        public ExceptionErrorRestResponseBuilder errorCode(final int errorCode) {
             this.errorCode = errorCode;
             return this;
         }
@@ -110,15 +110,15 @@ public class ExceptionErrorRestResponse {
          *
          * @return instance of this builder.
          */
-        public ExceptionErrorTypeBuilder errorMessage(final String errorMessage) {
+        public ExceptionErrorRestResponseBuilder errorMessage(final String errorMessage) {
             this.errorMessage = errorMessage;
             return this;
         }
 
         /**
-         * Builds an instance of ExceptionErrorTypeBuilder using this builder.
+         * Builds an instance of ExceptionErrorRestResponseBuilder using this builder.
          *
-         * @return instance of ExceptionErrorTypeBuilder using this builder.
+         * @return instance of ExceptionErrorRestResponseBuilder using this builder.
          */
         public ExceptionErrorRestResponse build() {
             return new ExceptionErrorRestResponse(errorCode, errorMessage);

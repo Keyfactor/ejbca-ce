@@ -16,13 +16,13 @@ package org.ejbca.ui.web.rest.api.io.response;
 /**
  * A Response container for expiring certificate service.
  *
- * @version $Id: ExpiringCertificatesResponse.java 29010 2018-05-23 13:09:53Z jekaterina_b_helmes $
+ * @version $Id: ExpiringCertificatesRestResponse.java 29010 2018-05-23 13:09:53Z andrey_s_helmes $
  */
-public class ExpiringCertificatesResponse {
+public class ExpiringCertificatesRestResponse {
     private PaginationRestResponseComponent paginationRestResponseComponent;
     private CertificatesRestResponse certificatesRestResponse;
 
-    public ExpiringCertificatesResponse(PaginationRestResponseComponent paginationRestResponseComponent, CertificatesRestResponse certificatesRestResponse) {
+    public ExpiringCertificatesRestResponse(PaginationRestResponseComponent paginationRestResponseComponent, CertificatesRestResponse certificatesRestResponse) {
         this.paginationRestResponseComponent = paginationRestResponseComponent;
         this.certificatesRestResponse = certificatesRestResponse;
     }

@@ -10,15 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.io.response;
 
 /**
  * A container for response status information. Are where more results? Next offset, how many results left etc..
  *
- * @version $Id: PaginationRestResponseComponent.java 29010 2018-05-23 13:09:53Z jekaterina_b_helmes $
+ * @version $Id: PaginationRestResponseComponent.java 29010 2018-05-23 13:09:53Z andrey_s_helmes $
  */
 public class PaginationRestResponseComponent {
+
     private boolean moreResults;
     private int nextOffset;
     private int numberOfResults;
@@ -54,6 +54,7 @@ public class PaginationRestResponseComponent {
     public void setNumberOfResults(int numberOfResults) {
         this.numberOfResults = numberOfResults;
     }
+
     public static PaginationRestResponseComponentBuilder builder() {
         return new PaginationRestResponseComponentBuilder();
     }
