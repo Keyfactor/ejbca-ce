@@ -31,6 +31,8 @@
    <listener>
       <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
    </listener>
+   
+    
    <servlet>
       <servlet-name>Resteasy</servlet-name>
       <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
@@ -39,6 +41,21 @@
       <servlet-name>Resteasy</servlet-name>
       <url-pattern>/*</url-pattern>
    </servlet-mapping>
+   
+   <servlet-mapping>
+      <servlet-name>default</servlet-name>
+      <url-pattern>/swagger-ui/*</url-pattern>
+   </servlet-mapping>
+   
+   <servlet>
+        <servlet-name>swagger-root</servlet-name>
+        <jsp-file>/swagger-ui-dist/index.html</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>swagger-root</servlet-name>
+        <url-pattern>/swagger</url-pattern>
+    </servlet-mapping>
+   
    <security-constraint>
       <web-resource-collection>
          <web-resource-name>restricted methods</web-resource-name>

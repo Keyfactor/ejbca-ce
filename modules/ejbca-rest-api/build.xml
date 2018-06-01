@@ -71,6 +71,9 @@
 
     <target name="build" description="Build this module" depends="compile">
     	<copy file="${this.dir}/resources/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
+    	<copy todir="${build.dir}/swagger-ui-dist">
+    		<fileset dir="${this.dir}/swagger-ui-dist"/>
+    	</copy>
         <war destfile="${mod.ejbca-rest-api.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}">
         </war>
     </target>
