@@ -13,8 +13,7 @@
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="resources.dir" location="${this.dir}/src/main/resources"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
-	
-	
+
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
@@ -57,9 +56,6 @@
 
 	<path id="test.classpath">
 		<path refid="compile-test.classpath"/>
-		<!-- TODO Replaced RestEasy components
-		<path refid="lib.jee-client.classpath"/>
-		-->
 		<pathelement path="${clover.jar}"/>
 	</path>
 
@@ -100,28 +96,46 @@
 	</target>
 
 	<target name="test:unit" depends="compile-tests" description="Run unit tests for this module">
-	    <antcall target="showtime"/>
+		<antcall target="showtime"/>
 		<condition property="remoteDebugJvmArgs"
-                   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
-                   else="-ea">
-            		<istrue value="${remoteDebug}"/>
+				value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				else="-ea">
+			<istrue value="${remoteDebug}"/>
 		</condition>
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}" fork="true">
 			<classpath>
 				<path refid="test.classpath"/>
 				<path location="${build-test.dir}" />
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*Test.class">
-				</fileset>
+				<fileset dir="${build-test.dir}" includes="**/*UnitTest.class"/>
 			</batchtest>
 			<jvmarg value="${remoteDebugJvmArgs}"/>
 		</junit>
 		<antcall target="showtime"/>
 	</target>
 
-	<!-- TODO Add target test:system to launch SystemTests -->
+	<target name="test:system" depends="compile-tests" description="Run system tests for this module">
+		<antcall target="showtime"/>
+		<condition property="remoteDebugJvmArgs"
+				value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
+		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}" fork="true">
+			<classpath>
+				<path refid="test.classpath"/>
+				<path location="${build-test.dir}" />
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}" includes="**/*SystemTest.class"/>
+			</batchtest>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
+		</junit>
+		<antcall target="showtime"/>
+	</target>
 
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=SomeTest" unless="test.runone" />
