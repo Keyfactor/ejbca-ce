@@ -70,17 +70,19 @@ import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.KeystoreRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
+import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * JAX-RS resource handling certificate-related requests.
  *
  * @version $Id$
  */
-@Api
+@Api(tags = "v1/certificate")
 @Path("v1/certificate")
 @Stateless
 public class CertificateRestResource extends BaseRestResource {
@@ -96,6 +98,7 @@ public class CertificateRestResource extends BaseRestResource {
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Get the status of this RestResource", notes = "Get the status of this RestResource", response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
         return super.status();
@@ -105,6 +108,7 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Enrolls a PKCS10 certificate", notes = "Enrolls a PKCS10 certificate", response = CertificateRestResponse.class)
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
 
@@ -134,6 +138,9 @@ public class CertificateRestResource extends BaseRestResource {
     @POST
     @Path("/enrollkeystore")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Creates a keystore for the specified end entity", 
+        notes = "Creates a keystore for the specified end entity", 
+        response = KeystoreRestResponse.class)
     public Response enrollKeystore(
             @Context HttpServletRequest requestContext,
             @QueryParam("username") String username,
@@ -201,6 +208,7 @@ public class CertificateRestResource extends BaseRestResource {
     @PUT
     @Path("/{issuer_dn}/{certificate_serial_number}/revoke")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Revokes the specified certificate", notes = "Revokes the specified certificate", response = RevocationResultRestResponse.class)
     public Response revokeCertificate(
             @Context HttpServletRequest requestContext,
             @PathParam("issuer_dn") String issuerDN,
@@ -258,10 +266,13 @@ public class CertificateRestResource extends BaseRestResource {
     @GET
     @Path("/expire")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Get a list of certificates that are about to expire", 
+        notes = "Get a list of certificates that are about to expire", 
+        response = ExpiringCertificatesRestResponse.class)
     public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext,
-                                                 @QueryParam("days") long days,
-                                                 @QueryParam("offset") int offset,
-                                                 @QueryParam("maxNumberOfResults") int maxNumberOfResults) throws AuthorizationDeniedException, CertificateEncodingException, RestException {
+            @QueryParam("days") long days,
+            @QueryParam("offset") int offset,
+            @QueryParam("maxNumberOfResults") int maxNumberOfResults) throws AuthorizationDeniedException, CertificateEncodingException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, true);
         int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
         List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset);
