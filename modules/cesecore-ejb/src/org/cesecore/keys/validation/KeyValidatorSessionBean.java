@@ -674,7 +674,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
      *
      * @param id the validators id.
      * @param fromCache true if the validator can be taken from cache.
-     * @return a cloned validator that can be used at will without affecting the cache contents, edits have to be saved with replaceKeyValidator 
+     * @return a cloned validator that can be used at will without affecting the cache contents, edits have to be saved with replaceKeyValidator
      * */
     private Validator getValidatorInternal(int id, boolean fromCache) {
         Validator result = null;
@@ -706,7 +706,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         if (result == null) {
             log.warn("Validator with id " + id + " didn't return any validator");
         }
-        // We need to clone the validator, otherwise the cache contents will be modifyable from the outside
+        // We need to clone the validator, otherwise the cache contents will be modifiable from the outside
         if (result != null) {
             return result.clone();
         }
