@@ -47,6 +47,7 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -70,6 +71,7 @@ import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.KeystoreRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 
 import io.swagger.annotations.Api;
 
@@ -162,6 +164,25 @@ public class CertificateRestResource extends BaseRestResource {
         keyStore.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
         KeystoreRestResponse keystoreRestResponse = new KeystoreRestResponse(keyStore, password, tokenTypeString);
         return Response.ok(keystoreRestResponse).build();
+    }
+    
+    @GET
+    @Path("/{issuer_dn}/{certificate_serial_number}/revocationstatus")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response revocationStatus(
+            @Context HttpServletRequest requestContext,
+            @PathParam("issuer_dn") String issuerDn,
+            @PathParam("certificate_serial_number") String serialNumber) throws AuthorizationDeniedException, RestException, CADoesntExistsException {
+        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final BigInteger serialNr;
+        try {
+            serialNr = StringTools.getBigIntegerFromHexString(serialNumber);
+        } catch (NumberFormatException e) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid serial number format. Should be "
+                    + "HEX encoded (optionally with '0x' prefix) e.g. '0x10782a83eef170d4'");
+        }
+        final CertificateStatus status = raMasterApi.getCertificateStatus(admin, issuerDn, serialNr);
+        return Response.ok(new RevokeStatusRestResponse(status, issuerDn, serialNumber)).build();
     }
     
     /**
