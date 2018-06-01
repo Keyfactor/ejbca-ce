@@ -38,6 +38,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.util.StringTools;
@@ -243,5 +244,38 @@ public class CertificateRestResourceUnitTest {
         assertEquals(expectedNextOffset, nextOffset);
         assertEquals(expectedNumberOfResults, numberOfResults);
         EasyMock.verify(raMasterApiProxy);
+    }
+    
+    @Test
+    public void shouldReturnRevocationStatusRevokedWithReasonUnspecified() throws Exception {
+        // given
+        final int reasonUnspecified = 0;
+        final CertificateStatus response = new CertificateStatus("REVOKED", new Date().getTime(), reasonUnspecified, 123456);
+        expect(raMasterApiProxy.getCertificateStatus((AuthenticationToken)EasyMock.anyObject(), anyString(), anyObject(BigInteger.class))).andReturn(response);
+        replay(raMasterApiProxy);
+        // when
+        final ClientRequest clientRequest = server
+                .newRequest("/v1/certificate/testca/123456/revocationstatus");
+        final ClientResponse<?> actualResponse = clientRequest.get();
+        final Status actualStatus = actualResponse.getResponseStatus();
+        final String actualJsonString = actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String actualRevocationStatus = (String) actualJsonObject.get("status");
+        final String actualRevocationReason = (String) actualJsonObject.get("reason");
+        // then
+        assertEquals(Status.OK, actualStatus);
+        assertEquals("REVOKED", actualRevocationStatus);
+        assertEquals(RevocationReasons.UNSPECIFIED.getStringValue(), actualRevocationReason);
+        EasyMock.verify(raMasterApiProxy);
+    }
+    
+    @Test
+    public void inputBadSerialNrShouldReturnBadRequest() throws Exception {
+        final String nonHexSerialNumberRequest = "/v1/certificate/testca/qwerty/revocationstatus";
+        final ClientRequest clientRequest = server
+                .newRequest(nonHexSerialNumberRequest);
+        final ClientResponse<?> actualResponse = clientRequest.get();
+        final Status actualStatus = actualResponse.getResponseStatus();
+        assertEquals(Status.BAD_REQUEST, actualStatus);
     }
 }
