@@ -470,10 +470,8 @@ public interface IEjbcaWS {
 	 * @throws EjbcaException
 	 * @throws CesecoreException
 	 */
-	CertificateResponse pkcs10Request(String username, String password,
-			String pkcs10, String hardTokenSN, String responseType)
-			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
-			EjbcaException, CesecoreException;
+    CertificateResponse pkcs10Request(String username, String password, String pkcs10, String hardTokenSN, String responseType)
+            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, CesecoreException;
 
 	/**
 	 * Creates a server-generated keystore.
@@ -1184,6 +1182,7 @@ public interface IEjbcaWS {
 	KeyStore softTokenRequest(UserDataVOWS userData, String hardTokenSN, String keyspec, String keyalg)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
 	ApprovalException, WaitingForApprovalException, EjbcaException;
+	
 	/**
 	 * Generates a certificate for a user.
 	 * If the user is not already present in the database it will be added otherwise it will be overwritten.<br>
@@ -1198,7 +1197,12 @@ public interface IEjbcaWS {
 	 * When the requestType is PUBLICKEY the requestData should be an
 	 * SubjectPublicKeyInfo structure either base64 encoded or in PEM format.
 	 *
-	 * <p>If the CA does not exist on the local system, then the request will be forwarded to upstream peer systems (if any).
+	 * <p>If the CA does not exist on the local system, then the request will be forwarded to upstream peer systems (if any).</p>
+	 * 
+	 * Using this call to create end entities on CAs/Certificate Profiles with approval restrictions is not possible. If such a usecase is desired,
+	 * use org.ejbca.core.protocol.ws.common.IEjbcaWS.editUser(UserDataVOWS) in conjunction with 
+	 * org.ejbca.core.protocol.ws.common.IEjbcaWS.getRemainingNumberOfApprovals(int) and 
+	 * org.ejbca.core.protocol.ws.common.IEjbcaWS.pkcs10Request(String, String, String, String, String) instead. 
 	 *
 	 * @param userData the user
 	 * @param requestData the PKCS10/CRMF/SPKAC/PUBLICKEY request in base64
@@ -1214,8 +1218,8 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
 	 * @throws UserDoesntFullfillEndEntityProfile
-	 * @throws ApprovalException
-	 * @throws WaitingForApprovalException
+	 * @throws ApprovalException thrown if a end needs to be created as part of this request, but that action requires approvals.
+	 * @throws WaitingForApprovalException never thrown, but remains for legacy reasons
 	 * @throws EjbcaException
 	 * @see #editUser(UserDataVOWS)
 	 */
