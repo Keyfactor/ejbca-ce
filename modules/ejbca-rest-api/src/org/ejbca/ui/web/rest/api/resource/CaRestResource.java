@@ -15,6 +15,7 @@ package org.ejbca.ui.web.rest.api.resource;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -27,7 +28,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import io.swagger.annotations.Api;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -36,14 +36,19 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.response.CaInfoRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * JAX-RS resource handling CA related requests.
  *
  * @version $Id$
  */
-@Api
+@Api(tags = "v1/ca")
 @Path("/v1/ca")
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
@@ -56,6 +61,7 @@ public class CaRestResource extends BaseRestResource {
 
     @GET
     @Path("/status")
+    @ApiOperation(value = "Get the status of this RestResource", notes = "Get the status of this RestResource", response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
         return super.status();
@@ -68,6 +74,7 @@ public class CaRestResource extends BaseRestResource {
     @GET
     @Path("/{subject_dn}/certificate/download")
     @Produces(MediaType.WILDCARD)
+    @ApiOperation(value = "Get PEM file with CA certificates", notes = "Get PEM file with CA certificates")
     public Response getCertificateAsPem(@Context HttpServletRequest requestContext,
                                         @PathParam("subject_dn") String subjectDn) throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
@@ -89,12 +96,14 @@ public class CaRestResource extends BaseRestResource {
      * @return The response containing the list of CAs and its general information.
      */
     @GET
+    @ApiOperation(value = "Returns the Response containing the list of CAs with general information per CA as Json",
+        notes = "Returns the Response containing the list of CAs with general information per CA as Json",
+        response = CaInfosRestResponse.class)
     public Response listCas(@Context final HttpServletRequest httpServletRequest) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
+        List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken));
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
-                .certificateAuthorities(
-                        CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken))
-                )
+                .certificateAuthorities(caInfoRestResponseList)
                 .build();
         return Response.ok(caInfosRestResponse).build();
     }
