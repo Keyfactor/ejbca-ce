@@ -528,6 +528,12 @@
 				<exclude name="*-javadoc.jar"/>
 				<exclude name="*-sources.jar"/>
 			</zipfileset>
+			<zipfileset prefix="lib" dir="${lib}/ext/jackson" erroronmissingdir="false">
+				<include name="*.jar"/>
+				<exclude name="*-javadoc.jar"/>
+				<exclude name="*-sources.jar"/>
+				<exclude name="jackson-jaxrs*"/>
+			</zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
