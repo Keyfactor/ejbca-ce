@@ -408,7 +408,7 @@ public class KeyStoreTools {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Algorithm " + keyAlgorithm + " was not recognized.", e);
         } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+            throw new IllegalStateException(this.providerName+ " was not found as a provider.", e);
         }
         try {
             if ( keyParams instanceof SizeAlgorithmParameterSpec ) {
