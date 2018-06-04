@@ -60,6 +60,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -151,6 +152,9 @@ public class CertificateRestResource extends BaseRestResource {
                         NoSuchAlgorithmException, CertificateException, IOException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         EndEntityInformation endEntityInformation = raMasterApi.searchUser(admin, username);
+        if (endEntityInformation == null) {
+            throw new NotFoundException("The end entity '" + username + "' does not exist");
+        }
         endEntityInformation.setPassword(password);
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);
