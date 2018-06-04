@@ -15,6 +15,8 @@ package org.ejbca.ui.web.rest.api.resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -50,6 +52,8 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
@@ -155,6 +159,14 @@ public class CertificateRestResource extends BaseRestResource {
         if (endEntityInformation == null) {
             throw new NotFoundException("The end entity '" + username + "' does not exist");
         }
+        if (!AlgorithmTools.getAvailableKeyAlgorithms().contains(keyAlg)) {
+            throw new RestException(422, "Unsupported key algorithm '" + keyAlg + "'");
+        }
+        try {
+            KeyTools.checkValidKeyLength(keySpec);
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
+            throw new RestException(422, e.getMessage());
+        } 
         endEntityInformation.setPassword(password);
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);

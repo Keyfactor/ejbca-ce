@@ -44,6 +44,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
 
     @Override
     public Response toResponse(Exception exception) {
+logger.info("Exception:" + exception.getClass().getName());
         ExceptionErrorRestResponse exceptionErrorRestResponse = null;
         // Map through EjbcaException
         if (exception instanceof EjbcaException) {
