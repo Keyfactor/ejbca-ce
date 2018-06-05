@@ -61,7 +61,7 @@ public class RevokeStatusRestResponse {
     /**
      * @return HEX encoded certificate serial number
      */
-    public String getSerialNumeber() {
+    public String getSerialNumber() {
         return serialNumber;
     }
     
