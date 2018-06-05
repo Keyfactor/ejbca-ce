@@ -16,8 +16,6 @@ package org.ejbca.ui.web.rest.api;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import org.ejbca.config.WebConfiguration;
-
 import io.swagger.jaxrs.config.BeanConfig;
 
 /**
@@ -37,11 +35,6 @@ public class RestApiApplication extends Application {
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setVersion("1.0.0");
         beanConfig.setSchemes(new String[]{"https"});
-		
-        String host = WebConfiguration.getHostName();
-        int port = WebConfiguration.getPrivateHttpsPort();
-        beanConfig.setHost(host + ":" + port);
-        
         beanConfig.setBasePath("/ejbca/ejbca-rest-api");
         beanConfig.setResourcePackage("org.ejbca.ui.web.rest.api.resource");
         beanConfig.setScan(true);
