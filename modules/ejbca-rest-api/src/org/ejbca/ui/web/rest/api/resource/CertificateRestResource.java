@@ -192,19 +192,25 @@ public class CertificateRestResource extends BaseRestResource {
     @GET
     @Path("/{issuer_dn}/{certificate_serial_number}/revocationstatus")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Checks revocation status of the specified certificate", notes = "Checks revocation status of the specified certificate", 
+    response = RevokeStatusRestResponse.class)
     public Response revocationStatus(
             @Context HttpServletRequest requestContext,
             @PathParam("issuer_dn") String issuerDn,
             @PathParam("certificate_serial_number") String serialNumber) throws AuthorizationDeniedException, RestException, CADoesntExistsException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         final BigInteger serialNr;
+        final CertificateStatus status;
         try {
             serialNr = StringTools.getBigIntegerFromHexString(serialNumber);
+            status = raMasterApi.getCertificateStatus(admin, issuerDn, serialNr);
         } catch (NumberFormatException e) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid serial number format. Should be "
                     + "HEX encoded (optionally with '0x' prefix) e.g. '0x10782a83eef170d4'");
+        } catch (CADoesntExistsException e) {
+            // Returning an ID which doesn't exist makes no sense, replace with SDN.
+            throw new CADoesntExistsException("CA '" + issuerDn + "' does not exist.");
         }
-        final CertificateStatus status = raMasterApi.getCertificateStatus(admin, issuerDn, serialNr);
         return Response.ok(new RevokeStatusRestResponse(status, issuerDn, serialNumber)).build();
     }
     
