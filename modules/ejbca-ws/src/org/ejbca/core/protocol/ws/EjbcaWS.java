@@ -2775,19 +2775,18 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
     @Override
-    public int getPublisherQueueLength(String name) throws EjbcaException{
+    public int getPublisherQueueLength(String name) throws EjbcaException {
+        if (log.isDebugEnabled()) {
+            log.debug("getPublisherQueueLength for queue '" + name + "'.");
+        }
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
             final AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
-            final int id = publisherSession.getPublisherId(name);
-            if ( id==0 ) {
-                return -4;// no publisher with this name
-            }
-            return publisherQueueSession.getPendingEntriesCountForPublisher(id);
+            return raMasterApiProxyBean.getPublisherQueueLengthWS(admin, name);
         } catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
-        } catch (RuntimeException e) {	// EJBException, ...
+        } catch (RuntimeException e) { // EJBException, ...
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
