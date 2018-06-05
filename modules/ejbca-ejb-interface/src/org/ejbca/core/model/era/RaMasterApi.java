@@ -777,7 +777,7 @@ public interface RaMasterApi {
      * @param authenticationToken the administrator performing the action
      * @param usermatch the unique user pattern to search for
      * @return a list of {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS} objects (Max 100) containing the information about the user or null if there are no matches.
-     * @throws AuthorizationDeniedException if client isn't authorized to request
+     * @throws AuthorizationDeniedException if client is not authorized to request.
      * @throws IllegalQueryException if query isn't valid
      * @throws EjbcaException
      * @throws EndEntityProfileNotFoundException
@@ -785,7 +785,16 @@ public interface RaMasterApi {
      */
     List<UserDataVOWS> findUserWS(AuthenticationToken authenticationToken, UserMatch usermatch, int maxNumberOfRows)
             throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException;
-  
+       
+    /**
+     * Returns the length of a publisher queue (aggregated over all separate instances, if found).
+     *
+     * @param name the name of the queue.
+     * @return the length or -4 if the publisher does not exist
+     * @throws AuthorizationDeniedException if client is not authorized to request.
+     */
+    int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException;
+    
     /**
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
      * RootCA certificate in the last position.

@@ -66,6 +66,7 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -82,6 +83,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -97,6 +99,9 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -152,6 +157,17 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @EJB
     private KeyRecoverySessionLocal localNodeKeyRecoverySession;
 
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
+    private PublisherQueueSessionLocal publisherQueueSession;
+    @EJB
+    private CertReqHistorySessionLocal certreqHistorySession;
+    
     private RaMasterApi[] raMasterApis = null;
     private RaMasterApi[] raMasterApisLocalFirst = null;
 
@@ -1760,6 +1776,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return mergedResult;
     }
     
+    @Override
+    public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) {
+        boolean found = false;
+        int mergedResult = 0;
+        int id;
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()  && raMasterApi.getApiVersion() >= 4) {
+                try {                    
+                    id = publisherSession.getPublisherId(name);
+                    if (id == 0) {
+                    	log.info("getPublisherQueueLength for queue '" + name + "' on instance '" + raMasterApi + "'");
+//                        return -4;// No publisher with this name was found.
+                        continue;
+                    }
+                    found = true;
+                    mergedResult += publisherQueueSession.getPendingEntriesCountForPublisher(id);
+                } catch (UnsupportedOperationException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Trouble during back end invocation: " + e.getMessage());
+                    }
+                    // Just try next implementation
+                } catch (RaMasterBackendUnavailableException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Timeout during back end invocation.", e);
+                    }
+                }
+            }
+        }
+        return found ? mergedResult : -4;
+    }
 
     @Override
     public Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException {
