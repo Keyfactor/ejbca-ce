@@ -70,6 +70,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
@@ -131,45 +132,34 @@ public class CertificateRestResource extends BaseRestResource {
         }
     }
 
-    /**
-     * Creates a keystore for the specified end entity
-     * @param requestContext HttpServletRequest
-     * @param username of the end entity
-     * @param password must match end entity password
-     * @param keyAlg key algorithm to use, e.g. RSA, ECDSA
-     * @param keySpec key specification to use, e.g. 1024, 2048, secp256r1
-     * @return JSON representation containing base64 encoded keystore and keystore type
-     */
     @POST
     @Path("/enrollkeystore")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Creates a keystore for the specified end entity", 
         notes = "Creates a keystore for the specified end entity", 
         response = KeystoreRestResponse.class)
     public Response enrollKeystore(
             @Context HttpServletRequest requestContext,
-            @QueryParam("username") String username,
-            @QueryParam("password") String password,
-            @QueryParam("keyalg") String keyAlg,
-            @QueryParam("keyspec") String keySpec) 
+            KeyStoreRestRequest keyStoreRestRequest)
                     throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException, 
                         NoSuchAlgorithmException, CertificateException, IOException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
-        EndEntityInformation endEntityInformation = raMasterApi.searchUser(admin, username);
+        EndEntityInformation endEntityInformation = raMasterApi.searchUser(admin, keyStoreRestRequest.getUsername());
         if (endEntityInformation == null) {
-            throw new NotFoundException("The end entity '" + username + "' does not exist");
+            throw new NotFoundException("The end entity '" + keyStoreRestRequest.getUsername() + "' does not exist");
         }
-        if (!AlgorithmTools.getAvailableKeyAlgorithms().contains(keyAlg)) {
-            throw new RestException(422, "Unsupported key algorithm '" + keyAlg + "'");
+        if (!AlgorithmTools.getAvailableKeyAlgorithms().contains(keyStoreRestRequest.getKeyAlg())) {
+            throw new RestException(422, "Unsupported key algorithm '" + keyStoreRestRequest.getKeyAlg() + "'");
         }
         try {
-            KeyTools.checkValidKeyLength(keySpec);
+            KeyTools.checkValidKeyLength(keyStoreRestRequest.getKeySpec());
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
             throw new RestException(422, e.getMessage());
         } 
-        endEntityInformation.setPassword(password);
-        endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyAlg);
-        endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keySpec);
+        endEntityInformation.setPassword(keyStoreRestRequest.getPassword());
+        endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyStoreRestRequest.getKeyAlg());
+        endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keyStoreRestRequest.getKeySpec());
         final int tokenType = endEntityInformation.getTokenType();
         if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS)) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be PKCS12 or JKS");
@@ -184,8 +174,8 @@ public class CertificateRestResource extends BaseRestResource {
         } else {
             throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
         }
-        keyStore.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
-        KeystoreRestResponse keystoreRestResponse = new KeystoreRestResponse(keyStore, password, tokenTypeString);
+        keyStore.load(new ByteArrayInputStream(keyStoreBytes), keyStoreRestRequest.getPassword().toCharArray());
+        KeystoreRestResponse keystoreRestResponse = new KeystoreRestResponse(keyStore, keyStoreRestRequest.getPassword(), tokenTypeString);
         return Response.ok(keystoreRestResponse).build();
     }
     
