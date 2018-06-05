@@ -136,7 +136,10 @@ import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -234,11 +237,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private EnterpriseEditionEjbBridgeSessionLocal enterpriseEditionEjbBridgeSession;
     @EJB
-    private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
-    
+    private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;    
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
+    private PublisherQueueSessionLocal publisherQueueSession;
+    @EJB
+    private CertReqHistorySessionLocal certreqHistorySession;
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-    
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -2002,9 +2009,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // Convert cesecore exception to EjbcaException
             throw  new EjbcaException(e.getErrorCode(), e);
         }
-
         return retval;
-
+    }    
+    
+    @Override
+    public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) {
+        final int id = publisherSession.getPublisherId(name);
+        if (id == 0) {
+            return -4;// No publisher with this name exists.
+        }
+        return publisherQueueSession.getPendingEntriesCountForPublisher(id);
     }
 
     @Override
