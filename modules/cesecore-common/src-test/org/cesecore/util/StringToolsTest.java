@@ -245,6 +245,7 @@ public class StringToolsTest {
         assertFalse(StringTools.isValidSanDnsName("pr#mekey.com"));
         assertFalse(StringTools.isValidSanDnsName(" primekey.com"));
         assertFalse(StringTools.isValidSanDnsName("primekey.com "));
+        assertFalse(StringTools.isValidSanDnsName("*.*.b.c"));
 
         assertTrue(StringTools.isValidSanDnsName("a.b.c.d.e.g.h.i.j.k.ll"));
         assertTrue(StringTools.isValidSanDnsName("*.b.cc"));
@@ -257,6 +258,11 @@ public class StringToolsTest {
         assertTrue(StringTools.isValidSanDnsName("UPPERCASE.COM"));
         assertTrue(StringTools.isValidSanDnsName("M1XeD.CaSE.C0M"));
         assertTrue(StringTools.isValidSanDnsName("xn--4pf93sJb.com"));
+        assertTrue(StringTools.isValidSanDnsName("lab.primekey"));
+        assertTrue(StringTools.isValidSanDnsName("x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x."
+                + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x." + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x."
+                + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x." + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.com"));
+        assertTrue(StringTools.isValidSanDnsName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.com"));
     }
 
     @Test
