@@ -65,7 +65,7 @@ public interface PublisherQueueSessionLocal {
      * <i>lowerBounds</i> and <i>upperBounds</i>. 
      * 
      * The interval is defined as from lowerBounds[i] to upperBounds[i] and the unit is seconds from now. 
-     * A negative value results in no boundary.
+     * A negative or 0 value results in no boundary.
      * 
      * @param publisherId The publisher to count the number of pending entries for.
      * @return Array with the number of pending entries corresponding to each element in <i>interval</i>.
