@@ -425,7 +425,7 @@ public final class StringTools {
     }
 
     /**
-     * Check if a string constitutes a valid hostname for dNSName attribute of the Subject
+     * Check if a string constitutes a valid hostname for the dNSName attribute of the Subject
      * Alternative Name X.509 certificate extension. This method does NOT check if the hostname
      * can be resolved to an IP address, is registered with ICANN ect. Instead, the following
      * checks are performed:
@@ -439,7 +439,7 @@ public final class StringTools {
      * This implementation is null-safe and relies on Guava's <code>InternetDomainName</code>
      * implementation for hostname validation a̶n̶d̶ ̶i̶d̶e̶n̶t̶i̶f̶i̶c̶a̶t̶i̶o̶n̶ ̶o̶f̶ ̶r̶e̶g̶i̶s̶t̶r̶y̶ ̶s̶u̶f̶f̶i̶c̶e̶s̶ ̶a̶n̶d̶ ̶T̶L̶D̶s̶.
      * <p>
-     * Identification of TLDs and registry suffices is currently not supported because this
+     * Identification of TLDs and registry suffices are currently not supported because this
      * functionality requires a newer version of the Guava library.
      * @param dnsName the DNS name to check
      * @return true if the input is valid SAN dNSName attribute value
