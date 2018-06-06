@@ -4,7 +4,7 @@
 %>
 
 
-<h1><%= ejbcawebbean.getText("MANAGEPUBLISHERS") %><%= ejbcawebbean.getHelpReference("/Publishers.html.html") %></h1>
+<h1><%= ejbcawebbean.getText("MANAGEPUBLISHERS") %><%= ejbcawebbean.getHelpReference("/Publishers.html") %></h1>
 
 <form name="editpublishers" method="post"  action="<%= THIS_FILENAME%>">
   <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
