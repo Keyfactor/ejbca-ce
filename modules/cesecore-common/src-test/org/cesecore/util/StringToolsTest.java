@@ -243,6 +243,8 @@ public class StringToolsTest {
                 + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x." + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x."
                 + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x." + "x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.x.com"));
         assertFalse(StringTools.isValidSanDnsName("pr#mekey.com"));
+        assertFalse(StringTools.isValidSanDnsName(" primekey.com"));
+        assertFalse(StringTools.isValidSanDnsName("primekey.com "));
 
         assertTrue(StringTools.isValidSanDnsName("a.b.c.d.e.g.h.i.j.k.ll"));
         assertTrue(StringTools.isValidSanDnsName("*.b.cc"));
