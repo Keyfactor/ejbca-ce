@@ -401,6 +401,14 @@ CREATE TABLE UserDataSourceData (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE AcmeNonceData {
+    nonce VARCHAR(254) NOT NULL,
+    timeExpires BIGINT NOT NULL,
+    rowProtection CLOB(10K),
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (nonce)
+};
+
 alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
 
 alter table AdminEntityData add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData;
