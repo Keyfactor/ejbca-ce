@@ -430,3 +430,11 @@ CREATE TABLE NoConflictCertificateData (
     username VARCHAR(256),
     PRIMARY KEY (id)
 );
+
+CREATE TABLE AcmeNonceData {
+    nonce VARCHAR(256) NOT NULL,
+    timeExpires BIGINT NOT NULL,
+    rowProtection VARCHAR,
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (nonce)
+};
