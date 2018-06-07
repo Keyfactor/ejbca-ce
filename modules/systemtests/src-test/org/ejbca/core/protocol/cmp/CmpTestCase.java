@@ -53,7 +53,6 @@ import java.util.Date;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ejb.RemoveException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -155,6 +154,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -1268,7 +1268,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected Certificate createRACertificate(String username, String password, String raCertsPath, String cmpAlias, KeyPair keys, Date notBefore,
             Date notAfter, String certProfile, int caid) throws AuthorizationDeniedException, CertificateException, FileNotFoundException,
-            IOException, EndEntityProfileValidationException, ObjectNotFoundException, RemoveException, CADoesntExistsException,
+            IOException, EndEntityProfileValidationException, ObjectNotFoundException, CouldNotRemoveEndEntityException, CADoesntExistsException,
             WaitingForApprovalException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, NoSuchEndEntityException, ApprovalException,

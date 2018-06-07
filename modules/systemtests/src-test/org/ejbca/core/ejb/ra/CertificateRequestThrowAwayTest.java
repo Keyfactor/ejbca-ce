@@ -34,7 +34,6 @@ import java.util.Random;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
-import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
@@ -210,7 +209,7 @@ public class CertificateRequestThrowAwayTest {
      * @throws EndEntityProfileNotFoundException 
      */
     private void generateCertificatePkcs10(int certificateProfileId, CertificateProfile certificateProfile, boolean useCertReqHistory, boolean useUserStorage,
-            boolean useCertificateStorage, boolean raw) throws AuthorizationDeniedException, RemoveException, CertificateParsingException,
+            boolean useCertificateStorage, boolean raw) throws AuthorizationDeniedException, CouldNotRemoveEndEntityException, CertificateParsingException,
             InvalidKeyException, InvalidAlgorithmParameterException, OperatorCreationException, NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchProviderException, SignatureException, ObjectNotFoundException, CertificateException, ApprovalException, IOException,
             CreateException, EndEntityProfileValidationException, EjbcaException, CesecoreException, CertificateExtensionException,
