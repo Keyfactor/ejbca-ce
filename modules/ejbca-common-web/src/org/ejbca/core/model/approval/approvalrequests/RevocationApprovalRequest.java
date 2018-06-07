@@ -21,12 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.EJBException;
-import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
@@ -132,7 +132,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 			throw new ApprovalRequestExecutionException("End entity " + username + " was already revoked at execution time.");
 		} catch (NoSuchEndEntityException e) {
 			throw new ApprovalRequestExecutionException("Could not find object.",e);
-		} catch (RemoveException e) {
+		} catch (CouldNotRemoveEndEntityException e) {
 			throw new ApprovalRequestExecutionException("Could not remove object.",e);
 		}
 	}
