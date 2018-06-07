@@ -13,7 +13,11 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import org.jboss.resteasy.client.ClientResponse;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import javax.ws.rs.core.Response;
 
