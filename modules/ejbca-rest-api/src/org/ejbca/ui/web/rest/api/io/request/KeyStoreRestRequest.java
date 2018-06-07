@@ -25,8 +25,6 @@ public class KeyStoreRestRequest {
     private String keyAlg;
     private String keySpec;
     
-    public KeyStoreRestRequest() {}
-    
     public String getUsername() {
         return username;
     }
