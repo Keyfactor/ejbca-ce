@@ -17,7 +17,6 @@ import static org.junit.Assert.fail;
 
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,10 +32,6 @@ public class CaListPublisherCommandTest {
     public void setUp() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         caListPublishersCommand = new CaListPublishersCommand();
-    }
-
-    @After
-    public void tearDown() throws Exception {
     }
 
     @Test
