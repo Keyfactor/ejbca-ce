@@ -58,6 +58,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.ErrorCode;
+import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -1862,5 +1863,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return 0;
+    }
+
+    @Override
+    public void customLogWS(AuthenticationToken authenticationToken, int level, String type, String cAName, String username, String certificateSn,
+            String msg, EventType event) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    raMasterApi.customLogWS(authenticationToken, level, type, cAName, username, certificateSn, msg, event);
+                    break;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
     }
 }
