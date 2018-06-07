@@ -58,9 +58,6 @@ public interface PublisherSessionLocal extends PublisherSession {
      */
     Map<Integer, BasePublisher> getAllPublishersInternal();
 
-    /** @return mapping of publisher id (Integer) to publisher name (String). */
-    HashMap<Integer,String> getPublisherIdToNameMap();
-
     /**
      * Help method used by publisher proxys to indicate if it is time to update
      * it's data.

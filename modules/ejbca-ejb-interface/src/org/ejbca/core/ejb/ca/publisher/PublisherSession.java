@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -55,6 +56,9 @@ public interface PublisherSession {
      * @throws PublisherDoesntExistsException if there's no publisher with the given id.
      */
     Map<?, ?> getPublisherData(int id) throws PublisherDoesntExistsException;
+
+    /** @return mapping of publisher id (Integer) to publisher name (String). */
+    HashMap<Integer,String> getPublisherIdToNameMap();
 
     /**
      * Adds a publisher to the database. Used for importing and exporting
