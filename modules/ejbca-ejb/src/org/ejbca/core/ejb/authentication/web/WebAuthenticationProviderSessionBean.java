@@ -13,6 +13,8 @@
 package org.ejbca.core.ejb.authentication.web;
 
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +30,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -58,6 +61,16 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+
+    @Override
+    public X509CertificateAuthenticationToken authenticateUsingClientCertificate(final X509Certificate x509Certificate) {
+        return (X509CertificateAuthenticationToken) authenticate(new AuthenticationSubject(null, new HashSet<X509Certificate>( Arrays.asList(new X509Certificate[]{ x509Certificate }))));
+    }
+
+    @Override
+    public PublicAccessAuthenticationToken authenticateUsingNothing(final String principal, final boolean confidentialTransport) {
+        return new PublicAccessAuthenticationToken(principal, confidentialTransport);
+    }
 
     /**
      * Performs client certificate authentication for a subject. This requires:

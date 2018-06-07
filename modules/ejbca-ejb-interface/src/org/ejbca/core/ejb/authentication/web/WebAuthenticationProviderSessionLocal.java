@@ -12,17 +12,24 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
+import java.security.cert.X509Certificate;
+
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationProvider;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * Provides authentication for web service users.
  * 
  * @version $Id$
- *
  */
 @Local
 public interface WebAuthenticationProviderSessionLocal extends AuthenticationProvider {
 
+    /** @return a X509CertificateAuthenticationToken based on the provided client TLS certificate. */
+    AuthenticationToken authenticateUsingClientCertificate(X509Certificate x509Certificate);
+
+    /** @return a PublicAccessAuthenticationToken based on the provided info. */
+    AuthenticationToken authenticateUsingNothing(String principal, boolean confidentialTransport);
 }
