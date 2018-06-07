@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.ejb.RemoveException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItem;
@@ -80,6 +79,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -229,8 +229,10 @@ public class RAInterfaceBean implements Serializable {
      *
      * @param usernames an array of usernames to delete.
      * @return false if administrator wasn't authorized to delete all of given users.
+     * @throws CouldNotRemoveEndEntityException if the user could not be deleted.
+     * 
      * */
-    public boolean deleteUsers(String[] usernames) throws NoSuchEndEntityException, RemoveException {
+    public boolean deleteUsers(String[] usernames) throws NoSuchEndEntityException, CouldNotRemoveEndEntityException {
       log.trace(">deleteUsers()");
       boolean success = true;
       for (String username : usernames) {
@@ -282,7 +284,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public void revokeAndDeleteUser(String username, int reason) throws AuthorizationDeniedException,
-    		ApprovalException, WaitingForApprovalException, RemoveException, NoSuchEndEntityException {
+    		ApprovalException, WaitingForApprovalException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
 		log.trace(">revokeUser()");
 		endEntityManagementSession.revokeAndDeleteUser(administrator, username, reason);
 		log.trace("<revokeUser()");

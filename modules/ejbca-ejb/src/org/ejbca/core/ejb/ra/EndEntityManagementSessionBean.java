@@ -32,7 +32,6 @@ import java.util.Random;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.ejb.RemoveException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -1001,7 +1000,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public void deleteUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException, NoSuchEndEntityException, RemoveException {
+    public void deleteUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         if (log.isTraceEnabled()) {
             log.trace(">deleteUser(" + username + ")");
         }
@@ -1036,7 +1035,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                     caIdLog, null, username, details);
-            throw new RemoveException(msg);
+            throw new CouldNotRemoveEndEntityException(msg);
         }
         if (log.isTraceEnabled()) {
             log.trace("<deleteUser(" + username + ")");
@@ -1446,7 +1445,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void revokeAndDeleteUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, ApprovalException,
-            WaitingForApprovalException, RemoveException, NoSuchEndEntityException {
+            WaitingForApprovalException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         final UserData data = endEntityAccessSession.findByUsername(username);
         if (data == null) {
             throw new NoSuchEndEntityException("User '" + username + "' not found.");
@@ -1484,8 +1483,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // This just means that the end entity was revoked before
                 // this request could be completed. No harm.
             }
-        }
-
+        } 
         deleteUser(admin, username);
     }
 

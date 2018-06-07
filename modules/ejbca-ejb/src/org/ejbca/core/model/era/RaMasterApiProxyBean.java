@@ -104,6 +104,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -1480,6 +1481,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     break;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
+                }
+            }
+        }
+    }
+    
+    @Override
+    public void revokeUserWS(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser) throws CADoesntExistsException, AuthorizationDeniedException,
+            NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+        // Try over all instances.
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    raMasterApi.revokeUserWS(authenticationToken, username, reason, deleteUser);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (CouldNotRemoveEndEntityException e) {
+                	log.info( "End entity for proxied request on CA could not be removed: " + e.getMessage());
+                	// Try next implementation.
                 }
             }
         }

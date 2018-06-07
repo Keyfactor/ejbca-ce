@@ -45,7 +45,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.ejb.RemoveException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -144,6 +143,7 @@ import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -1629,7 +1629,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public void deleteUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException{
         try {
             endEntityManagementSession.deleteUser(admin, username);
-        } catch (NoSuchEndEntityException | RemoveException e) {
+        } catch (NoSuchEndEntityException | CouldNotRemoveEndEntityException e) {
             log.error(e);
         }
     }
@@ -2193,6 +2193,30 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         endEntityManagementSession.revokeCertWithMetadata(authenticationToken, certRevocationDto);
     }
     
+    @Override
+    public void revokeUserWS(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser) throws CADoesntExistsException, AuthorizationDeniedException,
+            NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+        // Check username.
+        final EndEntityInformation userdata = endEntityAccessSession.findUser(authenticationToken,username);
+        if(userdata == null){
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            throw new NotFoundException(msg);
+        }
+        // Check CA ID.
+        int caid = userdata.getCAId();
+        caSession.verifyExistenceOfCA(caid);
+        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() +caid)) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
+            throw new AuthorizationDeniedException(msg);
+        }
+        if (deleteUser) {
+            endEntityManagementSession.revokeAndDeleteUser(authenticationToken,username,reason);
+        } else {
+            endEntityManagementSession.revokeUser(authenticationToken,username,reason);
+        }
+    }
+
     @Override
     public CertificateStatus getCertificateStatus(AuthenticationToken authenticationToken, String issuerdn, BigInteger serno) throws CADoesntExistsException, AuthorizationDeniedException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)

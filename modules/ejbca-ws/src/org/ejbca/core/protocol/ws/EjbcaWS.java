@@ -49,7 +49,6 @@ import java.util.TreeMap;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.RemoveException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -142,6 +141,7 @@ import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -1479,29 +1479,10 @@ public class EjbcaWS implements IEjbcaWS {
         try{
 			AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-
-			// check username
-			EndEntityInformation userdata = endEntityAccessSession.findUser(admin,username);
-			if(userdata == null){
-			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-				String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
-				throw new NotFoundException(msg);
-			}
-			// Check caid
-			int caid = userdata.getCAId();
-			caSession.verifyExistenceOfCA(caid);
-			if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
-		        throw new AuthorizationDeniedException(msg);
-			}
-			if (deleteUser) {
-				endEntityManagementSession.revokeAndDeleteUser(admin,username,reason);
-			} else {
-				endEntityManagementSession.revokeUser(admin,username,reason);
-			}
+            raMasterApiProxyBean.revokeUserWS(admin, username, reason, deleteUser);
 		}  catch (NoSuchEndEntityException e) {
 			throw new NotFoundException(e.getMessage());
-		} catch (RemoveException e) {
+		} catch (CouldNotRemoveEndEntityException e) {
             throw getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
             throw getInternalException(e, logger);

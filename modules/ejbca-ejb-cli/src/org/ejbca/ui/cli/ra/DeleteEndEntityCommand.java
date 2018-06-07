@@ -17,11 +17,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.RemoveException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -91,7 +90,7 @@ public class DeleteEndEntityCommand extends BaseRaCommand {
                 } catch (AuthorizationDeniedException e) {
                     getLogger().error("ERROR: Not authorized to remove end entity.");
                     return CommandResult.FUNCTIONAL_FAILURE;
-                } catch (RemoveException e) {
+                } catch (CouldNotRemoveEndEntityException e) {
                     getLogger().error("ERROR: User could not be removed. " + e.getMessage());
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }
