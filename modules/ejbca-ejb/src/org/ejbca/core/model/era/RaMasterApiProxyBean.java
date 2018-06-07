@@ -1796,16 +1796,17 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) {
-        int id;
+    public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException {
+        int result;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()  && raMasterApi.getApiVersion() >= 4) {
-                try {                    
-                    id = publisherSession.getPublisherId(name);
-                    if (id == 0) {
-                    	continue;
+                try {
+                    result = raMasterApi.getPublisherQueueLengthWS(authenticationToken, name);
+                    if (result == -4) {
+                        continue;
+                    } else {
+                        return result;
                     }
-                    return publisherQueueSession.getPendingEntriesCountForPublisher(id);
                 } catch (UnsupportedOperationException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("Trouble during back end invocation: " + e.getMessage());
