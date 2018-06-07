@@ -80,6 +80,7 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 @Local
 public interface EjbBridgeSessionLocal {
 
+    AdminPreferenceSessionLocal getAdminPreferenceSession();
 	ApprovalExecutionSessionLocal getApprovalExecutionSession();
 	ApprovalProfileSessionLocal getApprovalProfileSession();
 	ApprovalSessionLocal getApprovalSession();
@@ -115,7 +116,6 @@ public interface EjbBridgeSessionLocal {
 	PublisherQueueSessionLocal getPublisherQueueSession();
 	PublisherSessionLocal getPublisherSession();
 	PublishingCrlSessionLocal getPublishingCrlSession();
-	AdminPreferenceSessionLocal getRaAdminSession();
     RaMasterApiProxyBeanLocal getRaMasterApiProxyBean();
 	RaMasterApiSessionLocal getRaMasterApiSession();
 	RevocationSessionLocal getRevocationSession();

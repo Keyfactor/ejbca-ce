@@ -48,7 +48,6 @@ import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
@@ -170,10 +169,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 this.maximumQueryCount = globalCesecoreConfiguration.getMaximumQueryCount();
                 this.maximumQueryTimeout= globalCesecoreConfiguration.getMaximumQueryTimeout();
-            } catch (CADoesntExistsException e) {
-                log.error(e.getLocalizedMessage(), e);
-            } catch (Exception e) {
-                log.error(e.getLocalizedMessage(), e);
+            } catch (RuntimeException e) {
+                log.error(e.getMessage(), e);
             }
         }
 

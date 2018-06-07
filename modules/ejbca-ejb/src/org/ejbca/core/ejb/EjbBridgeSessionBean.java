@@ -84,6 +84,7 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	
+    @EJB AdminPreferenceSessionLocal adminPreferenceSession;
 	@EJB ApprovalExecutionSessionLocal approvalExecutionSession;
 	@EJB ApprovalProfileSessionLocal approvalProfileSession;
 	@EJB ApprovalSessionLocal approvalSession;
@@ -121,7 +122,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @EJB PublishingCrlSessionLocal publishingCrlSession;
     @EJB RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 	@EJB RaMasterApiSessionLocal raMasterApiSession;
-	@EJB AdminPreferenceSessionLocal raSession;
 	@EJB RevocationSessionLocal revocationSession;
 	@EJB RoleDataSessionLocal roleDataSession;
     @EJB RoleMemberDataSessionLocal roleMemberDataSession;
@@ -135,6 +135,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
 
+    @Override public AdminPreferenceSessionLocal getAdminPreferenceSession() { return adminPreferenceSession; }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalProfileSessionLocal getApprovalProfileSession() { return approvalProfileSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
@@ -170,7 +171,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
     @Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
 	@Override public PublishingCrlSessionLocal getPublishingCrlSession() { return publishingCrlSession; }
-	@Override public AdminPreferenceSessionLocal getRaAdminSession() { return raSession; }
 	@Override public RaMasterApiProxyBeanLocal getRaMasterApiProxyBean() { return raMasterApiProxyBean; }
 	@Override public RaMasterApiSessionLocal getRaMasterApiSession() { return raMasterApiSession; }
     @Override public RevocationSessionLocal getRevocationSession() { return revocationSession; }
