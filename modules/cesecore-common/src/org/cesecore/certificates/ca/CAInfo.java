@@ -55,7 +55,7 @@ public abstract class CAInfo implements Serializable {
      */
     public static final int SPECIALCAIDBORDER = 10;
 
-    protected String subjectDn;
+    protected String subjectdn;
     protected int caid;
     protected String name;
     /** CAConstants.CA_ACTIVE etc, 0 means not defined (i.e. not updated when editing CA) */
@@ -66,7 +66,7 @@ public abstract class CAInfo implements Serializable {
     /** CATYPE_X509 or CATYPE_CVC */
     protected int catype;
     /** A CAId or CAInfo.SELFSIGNED */
-    protected int signedBy;
+    protected int signedby;
     protected Collection<CertificateWrapper> certificatechain;
     protected Collection<CertificateWrapper> renewedcertificatechain;
     protected transient List<Certificate> certificatechainCached;
@@ -123,11 +123,11 @@ public abstract class CAInfo implements Serializable {
     protected boolean acceptRevocationNonExistingEntry;
 
     public String getSubjectDN() {
-        return subjectDn;
+        return subjectdn;
     }
 
     public void setSubjectDN(final String subjectDn) {
-        this.subjectDn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
+        this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
     }
 
     public int getCAId() {
@@ -178,11 +178,11 @@ public abstract class CAInfo implements Serializable {
      * @return A CAId or CAInfo.SELFSIGNED, CAInfo.SIGNEDBYEXTERNALCA etc
      */
     public int getSignedBy() {
-        return signedBy;
+        return signedby;
     }
 
     public void setSignedBy(int signedby) {
-        this.signedBy = signedby;
+        this.signedby = signedby;
     }
 
     public void setEncodedValidity(String encodedValidity) {

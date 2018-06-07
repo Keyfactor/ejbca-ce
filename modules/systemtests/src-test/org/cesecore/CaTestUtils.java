@@ -232,7 +232,7 @@ public abstract class CaTestUtils {
         } catch (InvalidAlgorithmException e) {
             throw new IllegalStateException(e);
         }
-        // Create the SubCA, signed by Root designated by "signedBy"
+        // Create the SubCA, signed by Root designated by "signedby"
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         caAdminSession.createCA(admin, cainfo);

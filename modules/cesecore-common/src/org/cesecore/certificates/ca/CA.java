@@ -250,7 +250,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setSubjectDN(String subjectDn) {
-        cainfo.subjectDn = subjectDn;
+        cainfo.subjectdn = subjectDn;
     }
 
     public int getCAId() {
