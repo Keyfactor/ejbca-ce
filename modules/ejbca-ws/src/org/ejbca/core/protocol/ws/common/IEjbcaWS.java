@@ -1230,9 +1230,14 @@ public interface IEjbcaWS {
 
     /**
      * Returns the length of a publisher queue.
+     * 
+     * If the request is proxied from the RA to CA instances, the result of the first queue found is returned, 
+     * to not to count the queue length multiple times on a cluster environment. Therefore the method MUST NOT be 
+     * called for deployment scenarios, where the request is proxied to multiple different CA instances not sharing 
+     * the same data store.
      *
      * @param name of the queue
-     * @return the length or -4 if the publisher does not exist
+     * @return the length or -4 if the publisher does not exist.
      * @throws EjbcaException
      */
     int getPublisherQueueLength(String name) throws EjbcaException;

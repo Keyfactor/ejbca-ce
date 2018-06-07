@@ -1778,20 +1778,15 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     
     @Override
     public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) {
-        boolean found = false;
-        int mergedResult = 0;
         int id;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()  && raMasterApi.getApiVersion() >= 4) {
                 try {                    
                     id = publisherSession.getPublisherId(name);
                     if (id == 0) {
-                    	log.info("getPublisherQueueLength for queue '" + name + "' on instance '" + raMasterApi + "'");
-//                        return -4;// No publisher with this name was found.
-                        continue;
+                    	continue;
                     }
-                    found = true;
-                    mergedResult += publisherQueueSession.getPendingEntriesCountForPublisher(id);
+                    return publisherQueueSession.getPendingEntriesCountForPublisher(id);
                 } catch (UnsupportedOperationException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("Trouble during back end invocation: " + e.getMessage());
@@ -1804,7 +1799,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
-        return found ? mergedResult : -4;
+        return -4;
     }
 
     @Override
