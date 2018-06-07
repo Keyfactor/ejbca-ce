@@ -15,14 +15,13 @@ package org.ejbca.webtest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import javax.ejb.RemoveException;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.WebTestBase;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -49,9 +48,11 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
 
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
 
-    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    private static EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    
+    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityProfileSessionRemote.class);
+    private static EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityManagementSessionRemote.class);
+
     private static WebDriver webDriver;
 
     private static final String eepName = "OnHold";
@@ -64,23 +65,23 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException, RemoveException {
+    public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         endEntityManagementSession.deleteUser(admin, eeName);
         endEntityProfileSession.removeEndEntityProfile(admin, eepName);
         webDriver.quit();
     }
-    
+
     @Test
     public void testA_addAndEditEep() {
         EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
         EndEntityProfileHelper.add(webDriver, eepName, true);
         EndEntityProfileHelper.edit(webDriver, eepName);
         webDriver.findElement(By.id("checkboxuseissuancerevocationreason")).click();
-        Select selectIssuanceRevocationReason =  new Select(webDriver.findElement(By.xpath("//select[@name='selectissuancerevocationreason']")));
+        Select selectIssuanceRevocationReason = new Select(webDriver.findElement(By.xpath("//select[@name='selectissuancerevocationreason']")));
         selectIssuanceRevocationReason.selectByVisibleText("Suspended: Certificate hold");
         EndEntityProfileHelper.save(webDriver, true);
     }
-    
+
     @Test
     public void testB_addEndEntity() {
         // Go to "Add End Entity"
@@ -88,9 +89,9 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
         WebElement addEeLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/addendentity.jsp')]"));
         addEeLink.click();
 
-        Select dropDownEepPreSelect =  new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
+        Select dropDownEepPreSelect = new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
         dropDownEepPreSelect.selectByVisibleText(eepName);
-        
+
         try {
             webDriver.findElement(By.xpath("//input[@name='textfieldusername']"));
             webDriver.findElement(By.xpath("//input[@name='textfieldpassword']"));
@@ -105,31 +106,32 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
             Select selectCa = new Select(webDriver.findElement(By.xpath("//select[@name='selectca']")));
             selectCa.selectByVisibleText(getCaName());
             Select selectToken = new Select(webDriver.findElement(By.xpath("//select[@name='selecttoken']")));
-            assertEquals("'User Generated' was not the first selected option in 'Token'", "User Generated", selectToken.getFirstSelectedOption().getText());
+            assertEquals("'User Generated' was not the first selected option in 'Token'", "User Generated",
+                    selectToken.getFirstSelectedOption().getText());
             // Side step from the ECAQA test but we need it to enroll in RA web.
             selectToken.selectByVisibleText("P12 file");
             Select selectIssuanceRecocationReason = new Select(webDriver.findElement(By.xpath("//select[@name='selectissuancerevocationreason']")));
-            assertEquals("'Suspended: Certificate hold' was not preset in 'Revocation reason to set after certificate issuance'", "Suspended: Certificate hold", 
-                    selectIssuanceRecocationReason.getFirstSelectedOption().getText());
+            assertEquals("'Suspended: Certificate hold' was not preset in 'Revocation reason to set after certificate issuance'",
+                    "Suspended: Certificate hold", selectIssuanceRecocationReason.getFirstSelectedOption().getText());
         } catch (NoSuchElementException e) {
             fail("Could not locate element in 'Add End Entity page' when EEP" + eepName + " was selected.\n" + e.getMessage());
         }
-        
+
         webDriver.findElement(By.xpath("//input[@name='textfieldusername']")).sendKeys(eeName);
         webDriver.findElement(By.xpath("//input[@name='textfieldsubjectdn0']")).sendKeys(eeName);
         webDriver.findElement(By.xpath("//input[@name='textfieldpassword']")).sendKeys("foo123");
         webDriver.findElement(By.xpath("//input[@name='textfieldconfirmpassword']")).sendKeys("foo123");
         webDriver.findElement(By.xpath("//input[@name='buttonadduser']")).click();
-        
+
         WebElement messageInfo = webDriver.findElement(By.xpath("//div[@class='message info']"));
         assertEquals("Unexpected status text after adding end entity", "End Entity TestEndEntityOnHold added successfully.", messageInfo.getText());
     }
-    
+
     @Test
     public void testC_verifyEndEntity() {
         verifyEndEntityOrCertificate("Suspended: Certificate hold", "View End Entity (popup window)");
     }
-    
+
     @Test
     public void testD_enroll() {
         webDriver.get(getRaWebUrl() + "enrollwithusername.xhtml");
@@ -140,7 +142,7 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
         webDriver.get(getAdminWebUrl());
         verifyEndEntityOrCertificate("Revocation reasons : Certificate hold", "View Certificates (popup window)");
     }
-    
+
     /**
      * @param textToFind text to check for in resulting end entity or certificate
      * @param button name of button to click in order to open pop-up.
@@ -148,11 +150,12 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
     private void verifyEndEntityOrCertificate(String textToFind, String button) {
         WebElement searchEeLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/listendentities.jsp')]"));
         searchEeLink.click();
-        webDriver.findElement(By.xpath("//input[@name='textfieldusername']")).sendKeys(eeName);;
+        webDriver.findElement(By.xpath("//input[@name='textfieldusername']")).sendKeys(eeName);
+        ;
         webDriver.findElement(By.xpath("//input[@name='buttonfind']")).click();
         WebElement resultButtonGroup = webDriver.findElement(By.xpath("//table[@class='actions']"));
         resultButtonGroup.findElement(By.xpath(".//button[@title='" + button + "']")).click();
-        
+
         boolean foundElement = false;
         // Switch to popup
         final String mainWindow = webDriver.getWindowHandle();
@@ -168,7 +171,7 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
                 break;
             }
         }
-        
+
         if (!foundElement) {
             fail("Could not locate '" + textToFind + "' while viewing the created end entity");
         }

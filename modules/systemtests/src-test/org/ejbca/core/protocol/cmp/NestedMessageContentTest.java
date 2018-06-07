@@ -39,7 +39,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.RemoveException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
@@ -122,6 +121,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -410,7 +410,7 @@ public class NestedMessageContentTest extends CmpTestCase {
             RoleNotFoundException, InvalidKeyException, NoSuchProviderException, SecurityException, SignatureException, NoSuchEndEntityException,
             CertificateException, CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
-            InvalidAlgorithmException, CustomCertificateSerialNumberException, EndEntityProfileValidationException, RemoveException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException, EndEntityProfileValidationException, CouldNotRemoveEndEntityException,
             WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, javax.ejb.ObjectNotFoundException {
         Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(SUBJECT_DN.toString(), this.issuerDN);
         log.debug("Found " + certs.size() + " certificates for userDN \"" + SUBJECT_DN + "\"");
@@ -918,7 +918,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException,
-            AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, RemoveException {
+            AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException {
         String rolename = getRoleName();
         if (cert!=null) {
             final Role role = roleSession.getRole(ADMIN, null, rolename);

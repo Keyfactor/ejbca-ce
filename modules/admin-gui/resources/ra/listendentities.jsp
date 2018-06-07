@@ -319,7 +319,7 @@
              	notauthorizeddeleteall = true;
              } catch (NoSuchEndEntityException e) {
              	notfoundall = true;
-             } catch (javax.ejb.RemoveException e) {
+             } catch (org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException e) {
              	notremoveall = true;
              } catch (org.ejbca.core.model.approval.ApprovalException e) {
              	notapprovedall = true;

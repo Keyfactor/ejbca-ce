@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.RemoveException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionRemote;
@@ -115,7 +113,7 @@ public class CliAuthenticationTest {
 
     @Test
     public void testInstallCliAuthenticationWithBCrypt() throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
-            EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException, RemoveException {
+            EndEntityProfileValidationException, WaitingForApprovalException, EjbcaException {
         log.trace(">testInstallCliAuthenticationWithBCrypt");
         cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
         Set<Principal> principals = new HashSet<Principal>();

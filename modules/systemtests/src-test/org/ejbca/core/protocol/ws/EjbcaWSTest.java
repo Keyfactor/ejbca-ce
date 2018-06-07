@@ -52,8 +52,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
-import javax.ejb.RemoveException;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -137,6 +135,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -2114,7 +2113,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             }
             try {
                 endEntityManagementSession.deleteUser(intAdmin, username);
-            } catch (AuthorizationDeniedException | NoSuchEndEntityException | RemoveException e) {
+            } catch (AuthorizationDeniedException | NoSuchEndEntityException | CouldNotRemoveEndEntityException e) {
                 log.debug("Error during cleanup: " + e.getMessage());
             }
             try {

@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.RemoveException;
-
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -90,7 +88,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException, RemoveException {
+    public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException {
         int caId = caSessionRemote.getCAInfo(admin, caName).getCAId();
         int ctId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
         caSessionRemote.removeCA(admin, caId);

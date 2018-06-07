@@ -37,8 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.RemoveException;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -114,6 +112,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -910,7 +909,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             publisherSession.removePublisher(internalAdmin, publisherName);
             try {
                 endEntityManagementSession.deleteUser(internalAdmin, username);
-            } catch (RemoveException | NoSuchEndEntityException e) {
+            } catch (CouldNotRemoveEndEntityException | NoSuchEndEntityException e) {
                 //NOPMD Ignore...
             }
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);

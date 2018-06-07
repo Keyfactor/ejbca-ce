@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ejb.RemoveException;
-
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
@@ -38,6 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -98,7 +97,7 @@ public class AddEndEntityCommandTest {
 
     @Test
     public void testExecuteHappyPath() throws IllegalQueryException, EndEntityProfileValidationException, AuthorizationDeniedException,
-            NoSuchEndEntityException, RemoveException {
+            NoSuchEndEntityException, CouldNotRemoveEndEntityException {
 
         try {
             assertEquals(CommandResult.SUCCESS, command0.execute(HAPPY_PATH_ADD_ARGS));
@@ -139,7 +138,7 @@ public class AddEndEntityCommandTest {
 
 
     @Test
-    public void testSetPwdInvalidUser() throws IllegalQueryException, AuthorizationDeniedException, RemoveException, EndEntityProfileValidationException, NoSuchEndEntityException {
+    public void testSetPwdInvalidUser() throws IllegalQueryException, AuthorizationDeniedException, CouldNotRemoveEndEntityException, EndEntityProfileValidationException, NoSuchEndEntityException {
 
         try {
 

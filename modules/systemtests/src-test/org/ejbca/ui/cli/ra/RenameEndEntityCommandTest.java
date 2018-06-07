@@ -16,8 +16,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import javax.ejb.RemoveException;
-
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -35,6 +33,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -84,7 +83,7 @@ public class RenameEndEntityCommandTest {
     }
 
     @Test
-    public void testExecuteHappyPath() throws AuthorizationDeniedException, RemoveException, CADoesntExistsException, EndEntityExistsException,
+    public void testExecuteHappyPath() throws AuthorizationDeniedException, CouldNotRemoveEndEntityException, CADoesntExistsException, EndEntityExistsException,
             EndEntityProfileValidationException, WaitingForApprovalException, IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
         endEntityManagementSession.addUser(admin, USER_NAME1, "foo123", "CN=" + USER_NAME1, null, null, true, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, testx509ca.getCAId());

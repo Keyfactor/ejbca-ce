@@ -41,7 +41,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.RemoveException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
@@ -115,6 +114,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -835,7 +835,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             CertificateCreateException, CertificateRevokeException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, InvalidKeyException,
             CertificateEncodingException, NoSuchAlgorithmException, SignatureException, RoleNotFoundException, NoSuchProviderException,
-            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, RemoveException, CAExistsException, OperatorCreationException {
+            SecurityException, IOException, CertificateParsingException, CertPathValidatorException, CouldNotRemoveEndEntityException, CAExistsException, OperatorCreationException {
         final String cmpAdminUsername = "cmpTestAdmin";
         final String cmpAdminDn = "CN=" + cmpAdminUsername +",C=SE";
         final String cmpAdminPassword = "foo123";
@@ -1630,7 +1630,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     }
 
     private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException,
-            AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, RemoveException {
+            AuthorizationDeniedException, ApprovalException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException {
         if (cert!=null) {
             final Role role = roleSession.getRole(ADMIN, null, getRoleName());
             if (role!=null) {
