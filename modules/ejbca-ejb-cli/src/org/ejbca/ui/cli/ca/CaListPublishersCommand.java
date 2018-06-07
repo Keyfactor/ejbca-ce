@@ -24,7 +24,7 @@ import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
- * Remove a Publisher from the system. If there are references from CAs and/or certificate profiles, you can optionally also remove these, or just list them.
+ * List Publishers in the system.
  * 
  * @version $Id$
  */
