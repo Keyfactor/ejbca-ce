@@ -58,7 +58,6 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -95,6 +94,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
@@ -120,6 +120,7 @@ public class EjbcaWebBean implements Serializable {
 
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private final EnterpriseEjbLocalHelper enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
+    private final AdminPreferenceSessionLocal adminPreferenceSession = ejbLocalHelper.getAdminPreferenceSession();
     private final ApprovalProfileSessionLocal approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
     private final AuthorizationSessionLocal authorizationSession = ejbLocalHelper.getAuthorizationSession();
     private final CAAdminSessionLocal caAdminSession = ejbLocalHelper.getCaAdminSession();
@@ -136,8 +137,7 @@ public class EjbcaWebBean implements Serializable {
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
 
-    private AdminPreferenceDataHandler adminspreferences;
-    private AdminPreference currentadminpreference;
+    private AdminPreference currentAdminPreference;
     private GlobalConfiguration globalconfiguration;
     private CmpConfiguration cmpconfiguration = null;
     private CmpConfiguration cmpConfigForEdit = null;
@@ -148,7 +148,7 @@ public class EjbcaWebBean implements Serializable {
     private ServletContext servletContext = null;
     private WebLanguages adminsweblanguage;
     private String usercommonname = "";
-    private String certificatefingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
+    private String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
     private String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
@@ -200,72 +200,92 @@ public class EjbcaWebBean implements Serializable {
         final String currentTlsSessionId = getTlsSessionId(request);
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
-        if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) || !StringUtils.equals(fingerprint, certificatefingerprint)) {
+        if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) || !StringUtils.equals(fingerprint, certificateFingerprint)) {
             if (log.isDebugEnabled() && initialized) {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
-                log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificatefingerprint+", new cert fp: "+fingerprint);
+                log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificateFingerprint+", new cert fp: "+fingerprint);
             }
             final String requestURL = request.getRequestURL().toString();
             requestServerName = RequestHelper.getRequestServerName(requestURL);
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }
-            if (certificate == null) {
+            if (WebConfiguration.getRequireAdminCertificate() && certificate == null) {
                 throw new AuthenticationFailedException("Client certificate required.");
-            } else {
-                final Set<X509Certificate> credentials = new HashSet<>();
-                credentials.add(certificate);
-                final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-                administrator = authenticationSession.authenticate(subject);
+            }
+            if (certificate != null) {
+                administrator = authenticationSession.authenticateUsingClientCertificate(certificate);
                 if (administrator == null) {
                     throw new AuthenticationFailedException("Authentication failed for certificate: " + CertTools.getSubjectDN(certificate));
                 }
+                // Check if certificate and user is an RA Admin
+                final String userdn = CertTools.getSubjectDN(certificate);
+                final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
+                usercommonname = dn.getField(DNFieldExtractor.CN, 0);
+                if (log.isDebugEnabled()) {
+                    log.debug("Verifying authorization of '" + userdn + "'");
+                }
+                final String issuerDN = CertTools.getIssuerDN(certificate);
+                final String sernostr = CertTools.getSerialNumberAsString(certificate);
+                final BigInteger serno = CertTools.getSerialNumber(certificate);
+                // Set current TLS certificate fingerprint
+                certificateFingerprint = fingerprint;
+                // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
+                if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
+                    throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
+                }
+                Map<String, Object> details = new LinkedHashMap<>();
+                if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
+                    details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
+                }
+                if (WebConfiguration.getAdminLogRemoteAddress()) {
+                    details.put("remoteip", request.getRemoteAddr());
+                }
+                if (WebConfiguration.getAdminLogForwardedFor()) {
+                    details.put("forwardedip", StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
+                }
+                // Also check if this administrator is present in any role, if not, login failed
+                if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
+                    details.put("reason", "Certificate has no access");
+                    auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
+                            administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
+                    throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
+                }
+                // Continue with login
+                if (details.isEmpty()) {
+                    details = null;
+                }
+                auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
+                        administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
+            } else {
+                // TODO: When other types of authentication are implemented, check the distinct configured tokenTypes and try to authenticate for each
+                administrator = authenticationSession.authenticateUsingNothing(request.getRemoteAddr(), currentTlsSessionId!=null);
+                Map<String, Object> details = new LinkedHashMap<>();
+                if (WebConfiguration.getAdminLogRemoteAddress()) {
+                    details.put("remoteip", request.getRemoteAddr());
+                }
+                if (WebConfiguration.getAdminLogForwardedFor()) {
+                    details.put("forwardedip", StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
+                }
+                // Also check if this administrator is present in any role, if not, login failed
+                if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
+                    details.put("reason", "AuthenticationToken has no access");
+                    auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
+                            administrator.toString(), null, null, null, details);
+                    throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
+                }
+                // Continue with login
+                if (details.isEmpty()) {
+                    details = null;
+                }
+                auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
+                        administrator.toString(), null, null, null, details);
             }
             commonInit();
             // Set the current TLS session
             authenticationTokenTlsSessionId = currentTlsSessionId;
-            adminspreferences = new AdminPreferenceDataHandler((X509CertificateAuthenticationToken) administrator);
             // Set ServletContext for reading language files from resources
             servletContext = request.getSession(true).getServletContext();
-            // Check if certificate and user is an RA Admin
-            final String userdn = CertTools.getSubjectDN(certificate);
-            final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
-            usercommonname = dn.getField(DNFieldExtractor.CN, 0);
-            if (log.isDebugEnabled()) {
-                log.debug("Verifying authorization of '" + userdn + "'");
-            }
-            final String issuerDN = CertTools.getIssuerDN(certificate);
-            final String sernostr = CertTools.getSerialNumberAsString(certificate);
-            final BigInteger serno = CertTools.getSerialNumber(certificate);
-            // Set current TLS certificate fingerprint
-            certificatefingerprint = fingerprint;
-            // Check if certificate belongs to a user. checkIfCertificateBelongToUser will always return true if WebConfiguration.getRequireAdminCertificateInDatabase is set to false (in properties file)
-            if (!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
-                throw new AuthenticationFailedException("Certificate with SN " + serno + " and issuerDN '" + issuerDN+ "' did not belong to any user in the database.");
-            }
-            Map<String, Object> details = new LinkedHashMap<>();
-            if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
-                details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
-            }
-            if (WebConfiguration.getAdminLogRemoteAddress()) {
-                details.put("remoteip", request.getRemoteAddr());
-            }
-            if (WebConfiguration.getAdminLogForwardedFor()) {
-                details.put("forwardedip", StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
-            }
-            // Also check if this administrator is present in any role, if not, login failed
-            if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
-                details.put("reason", "Certificate has no access");
-                auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                        administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
-                throw new AuthenticationFailedException("Authentication failed for certificate with no access: " + CertTools.getSubjectDN(certificate));
-            }
-            // Continue with login
-            if (details.isEmpty()) {
-                details = null;
-            }
-            auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                    administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
         }
         try {
             if (resources.length > 0 && !authorizationSession.isAuthorized(administrator, resources)) {
@@ -283,15 +303,11 @@ public class EjbcaWebBean implements Serializable {
             throw e;
         }
         if (!initialized) {
-            currentadminpreference = null;
-            if (certificatefingerprint != null) {
-                currentadminpreference = adminspreferences.getAdminPreference(certificatefingerprint);
+            currentAdminPreference = adminPreferenceSession.getAdminPreference(certificateFingerprint);
+            if (currentAdminPreference == null) {
+                currentAdminPreference = getDefaultAdminPreference();
             }
-            if (currentadminpreference == null) {
-                currentadminpreference = adminspreferences.getDefaultAdminPreference();
-            }
-            adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
-                    currentadminpreference.getSecondaryLanguage());
+            adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
             initialized = true;
         }
 
@@ -307,11 +323,10 @@ public class EjbcaWebBean implements Serializable {
             commonInit();
             // Set ServletContext for reading language files from resources
             servletContext = request.getSession(true).getServletContext();
-            if (currentadminpreference == null) {
-                currentadminpreference = ejbLocalHelper.getRaAdminSession().getDefaultAdminPreference();
+            if (currentAdminPreference == null) {
+                currentAdminPreference = getDefaultAdminPreference();
             }
-            adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
-                    currentadminpreference.getSecondaryLanguage());
+            adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
             errorpage_initialized = true;
         }
         return globalconfiguration;
@@ -324,86 +339,142 @@ public class EjbcaWebBean implements Serializable {
 
     /** Returns the users certificate serialnumber, user to id the adminpreference. */
     public String getCertificateFingerprint() {
-        return certificatefingerprint;
+        return certificateFingerprint;
     }
 
     /** Return the admins selected theme including its trailing '.css' */
     public String getCssFile() {
-        return globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentadminpreference.getTheme() + ".css";
+        return globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme() + ".css";
     }
 
     /** Return the IE fixes CSS of the admins selected theme including it's trailing '.css' */
     public String getIeFixesCssFile() {
-        return globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentadminpreference.getTheme()
+        return globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme()
                 + globalconfiguration.getIeCssFilenamePostfix() + ".css";
     }
 
     /** Returns the admins prefered language */
     public int getPreferedLanguage() {
-        return currentadminpreference.getPreferedLanguage();
+        return currentAdminPreference.getPreferedLanguage();
     }
 
     /** Returns the admins secondary language. */
     public int getSecondaryLanguage() {
-        return currentadminpreference.getSecondaryLanguage();
+        return currentAdminPreference.getSecondaryLanguage();
     }
 
     public int getEntriesPerPage() {
-        return currentadminpreference.getEntriesPerPage();
+        return currentAdminPreference.getEntriesPerPage();
     }
 
     public int getLogEntriesPerPage() {
-        return currentadminpreference.getLogEntriesPerPage();
+        return currentAdminPreference.getLogEntriesPerPage();
     }
 
-    public void setLogEntriesPerPage(int logentriesperpage) throws Exception {
-        currentadminpreference.setLogEntriesPerPage(logentriesperpage);
-        if (existsAdminPreference()) {
-            adminspreferences.changeAdminPreferenceNoLog(certificatefingerprint, currentadminpreference);
-        } else {
-            addAdminPreference(currentadminpreference);
-        }
+    public void setLogEntriesPerPage(int logentriesperpage) throws AdminDoesntExistException, AdminExistsException {
+        currentAdminPreference.setLogEntriesPerPage(logentriesperpage);
+        saveCurrentAdminPreference();
     }
 
     public int getLastFilterMode() {
-        return currentadminpreference.getLastFilterMode();
+        return currentAdminPreference.getLastFilterMode();
     }
 
-    public void setLastFilterMode(int lastfiltermode) throws Exception {
-        currentadminpreference.setLastFilterMode(lastfiltermode);
-        if (existsAdminPreference()) {
-            adminspreferences.changeAdminPreferenceNoLog(certificatefingerprint, currentadminpreference);
-        } else {
-            addAdminPreference(currentadminpreference);
-        }
+    public void setLastFilterMode(int lastfiltermode) throws AdminDoesntExistException, AdminExistsException {
+        currentAdminPreference.setLastFilterMode(lastfiltermode);
+        saveCurrentAdminPreference();
     }
 
     public int getLastLogFilterMode() {
-        return currentadminpreference.getLastLogFilterMode();
+        return currentAdminPreference.getLastLogFilterMode();
     }
 
-    public void setLastLogFilterMode(int lastlogfiltermode) throws Exception {
-        currentadminpreference.setLastLogFilterMode(lastlogfiltermode);
-        if (existsAdminPreference()) {
-            adminspreferences.changeAdminPreferenceNoLog(certificatefingerprint, currentadminpreference);
-        } else {
-            addAdminPreference(currentadminpreference);
-        }
+    public void setLastLogFilterMode(int lastlogfiltermode) throws AdminDoesntExistException, AdminExistsException {
+        currentAdminPreference.setLastLogFilterMode(lastlogfiltermode);
+        saveCurrentAdminPreference();
     }
 
     public int getLastEndEntityProfile() {
-        return currentadminpreference.getLastProfile();
+        return currentAdminPreference.getLastProfile();
     }
 
-    public void setLastEndEntityProfile(int lastprofile) throws Exception {
-        currentadminpreference.setLastProfile(lastprofile);
-        if (existsAdminPreference()) {
-            adminspreferences.changeAdminPreferenceNoLog(certificatefingerprint, currentadminpreference);
+    public void setLastEndEntityProfile(int lastprofile) throws AdminDoesntExistException, AdminExistsException {
+        currentAdminPreference.setLastProfile(lastprofile);
+        saveCurrentAdminPreference();
+    }
+
+    public boolean existsAdminPreference() {
+        return adminPreferenceSession.existsAdminPreference(certificateFingerprint);
+    }
+
+    public void addAdminPreference(final AdminPreference adminPreference) throws AdminExistsException {
+        currentAdminPreference = adminPreference;
+        if (administrator instanceof X509CertificateAuthenticationToken) {
+            if (!adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken)administrator, adminPreference)) {
+                throw new AdminExistsException("Admin already exists in the database.");
+            }
         } else {
-            addAdminPreference(currentadminpreference);
+            log.debug("Changes to admin preference will not be persisted for the currently logged in AuthenticationToken type and lost when the session ends.");
+        }
+        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
+                currentAdminPreference.getSecondaryLanguage());
+    }
+
+    public void changeAdminPreference(AdminPreference adminPreference) throws AdminDoesntExistException {
+        currentAdminPreference = adminPreference;
+        if (administrator instanceof X509CertificateAuthenticationToken) {
+            if (!adminPreferenceSession.changeAdminPreference((X509CertificateAuthenticationToken)administrator, adminPreference)) {
+                throw new AdminDoesntExistException("Admin does not exist in the database.");
+            }
+        } else {
+            log.debug("Changes to admin preference will not be persisted for the currently logged in AuthenticationToken type and lost when the session ends.");
+        }
+        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
+                currentAdminPreference.getSecondaryLanguage());
+    }
+
+    /** @return the current admin's preference */
+    public AdminPreference getAdminPreference() {
+        if (currentAdminPreference==null) {
+            currentAdminPreference = adminPreferenceSession.getAdminPreference(certificateFingerprint);
+            if (currentAdminPreference == null) {
+                currentAdminPreference = getDefaultAdminPreference();
+            }
+        }
+        return currentAdminPreference;
+    }
+
+    private void saveCurrentAdminPreference() throws AdminDoesntExistException, AdminExistsException {
+        if (administrator instanceof X509CertificateAuthenticationToken) {
+            if (existsAdminPreference()) {
+                if (!adminPreferenceSession.changeAdminPreferenceNoLog((X509CertificateAuthenticationToken)administrator, currentAdminPreference)) {
+                    throw new AdminDoesntExistException("Admin does not exist in the database.");
+                }
+            } else {
+                if (!adminPreferenceSession.addAdminPreference((X509CertificateAuthenticationToken)administrator, currentAdminPreference)) {
+                    throw new AdminExistsException("Admin already exists in the database.");
+                }
+            }
+        } else {
+            log.debug("Changes to admin preference will not be persisted for the currently logged in AuthenticationToken type and lost when the session ends.");
         }
     }
     
+    public AdminPreference getDefaultAdminPreference() {
+        return adminPreferenceSession.getDefaultAdminPreference();
+    }
+    
+    public void saveDefaultAdminPreference(final AdminPreference adminPreference) throws AuthorizationDeniedException {
+        adminPreferenceSession.saveDefaultAdminPreference(administrator, adminPreference);
+        // Reload preferences
+        currentAdminPreference = adminPreferenceSession.getAdminPreference(certificateFingerprint);
+        if (currentAdminPreference == null) {
+            currentAdminPreference = getDefaultAdminPreference();
+        }
+        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
+                currentAdminPreference.getSecondaryLanguage());
+    }
+
     /**
      * Checks if the admin have authorization to view the resource without performing any logging. Used by menu page Does not return false if not
      * authorized, instead throws an AuthorizationDeniedException.
@@ -439,20 +510,6 @@ public class EjbcaWebBean implements Serializable {
         return globalconfiguration.getReportsPath();
     }
 
-    /* Returns the current admins preference */
-    public AdminPreference getAdminPreference() throws Exception {
-        AdminPreference returnval = adminspreferences.getAdminPreference(certificatefingerprint);
-        if (returnval == null) {
-            returnval = currentadminpreference;
-        }
-        return returnval;
-    }
-
-    /* Returns the admin preferences database */
-    public AdminPreferenceDataHandler getAdminPreferences() {
-        return adminspreferences;
-    }
-
     /* Returns the global configuration */
     public GlobalConfiguration getGlobalConfiguration() {
         return globalconfiguration;
@@ -472,12 +529,12 @@ public class EjbcaWebBean implements Serializable {
     public String getImagefileInfix(String imagefilename) {
         String returnedurl = null;
         String[] strs = adminsweblanguage.getAvailableLanguages();
-        int index = currentadminpreference.getPreferedLanguage();
+        int index = currentAdminPreference.getPreferedLanguage();
         String prefered = strs[index];
-        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()];
+        String secondary = adminsweblanguage.getAvailableLanguages()[currentAdminPreference.getSecondaryLanguage()];
 
         String imagefile = imagefilename.substring(0, imagefilename.lastIndexOf('.'));
-        String theme = currentadminpreference.getTheme().toLowerCase();
+        String theme = currentAdminPreference.getTheme().toLowerCase();
         String postfix = imagefilename.substring(imagefilename.lastIndexOf('.') + 1);
 
         String preferedthemefilename = "/" + globalconfiguration.getImagesPath() + "/" + imagefile + "." + theme + "." + prefered + "." + postfix;
@@ -673,17 +730,6 @@ public class EjbcaWebBean implements Serializable {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
     }
 
-    public boolean existsAdminPreference() {
-        return adminspreferences.existsAdminPreference(certificatefingerprint);
-    }
-
-    public void addAdminPreference(AdminPreference ap) throws AdminExistsException {
-        currentadminpreference = ap;
-        adminspreferences.addAdminPreference(certificatefingerprint, ap);
-        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
-                currentadminpreference.getSecondaryLanguage());
-    }
-
     public TreeMap<String,Integer> getHardTokenProfiles() {
         final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>();
         for (Integer id : hardTokenSession.getAuthorizedHardTokenProfileIds(administrator)){
@@ -850,29 +896,6 @@ public class EjbcaWebBean implements Serializable {
         return raAuthorization.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
 
-    public void changeAdminPreference(AdminPreference ap) throws AdminDoesntExistException {
-        currentadminpreference = ap;
-        adminspreferences.changeAdminPreference(certificatefingerprint, ap);
-        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
-                currentadminpreference.getSecondaryLanguage());
-    }
-
-    public AdminPreference getDefaultAdminPreference() {
-        return adminspreferences.getDefaultAdminPreference();
-    }
-
-    public void saveDefaultAdminPreference(AdminPreference dap) throws AuthorizationDeniedException {
-        adminspreferences.saveDefaultAdminPreference(dap);
-
-        // Reload preferences
-        currentadminpreference = adminspreferences.getAdminPreference(certificatefingerprint);
-        if (currentadminpreference == null) {
-            currentadminpreference = adminspreferences.getDefaultAdminPreference();
-        }
-        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
-                currentadminpreference.getSecondaryLanguage());
-    } // saveDefaultAdminPreference
-
     public AuthenticationToken getAdminObject() {
         return this.administrator;
     }
@@ -932,8 +955,8 @@ public class EjbcaWebBean implements Serializable {
     public Locale getLocale() {
         Locale[] locales = DateFormat.getAvailableLocales(); // TODO: Why not use Locale.getAvailableLocales()? Difference?
         Locale returnValue = null;
-        String prefered = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getPreferedLanguage()];
-        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()];
+        String prefered = adminsweblanguage.getAvailableLanguages()[currentAdminPreference.getPreferedLanguage()];
+        String secondary = adminsweblanguage.getAvailableLanguages()[currentAdminPreference.getSecondaryLanguage()];
         for (int i = 0; i < locales.length; i++) {
             if (locales[i].getLanguage().equalsIgnoreCase(prefered)) {
                 returnValue = locales[i];
