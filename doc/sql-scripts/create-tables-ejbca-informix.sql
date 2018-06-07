@@ -431,10 +431,10 @@ CREATE TABLE NoConflictCertificateData (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE AcmeNonceData {
+CREATE TABLE AcmeNonceData (
     nonce VARCHAR(255,0) NOT NULL,
     timeExpires DECIMAL(18,0) NOT NULL,
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (nonce)
-};
+);

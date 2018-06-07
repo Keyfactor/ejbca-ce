@@ -427,13 +427,13 @@ CREATE TABLE NoConflictCertificateData (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE AcmeNonceData {
+CREATE TABLE AcmeNonceData (
     nonce TEXT BINARY NOT NULL,
     timeExpires INT(8) NOT NULL,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
     PRIMARY KEY (nonce)
-};
+);
 
 alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
 
