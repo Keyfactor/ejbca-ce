@@ -30,8 +30,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
 
-import javax.ejb.RemoveException;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -77,6 +75,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -282,7 +281,7 @@ public class KeyRecoveryTest extends CaTestCase {
      */
     @Test
     public void testAuthorizationForKeyRecovery()
-            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException, NoSuchEndEntityException, RemoveException, CADoesntExistsException {
+            throws ApprovalException, WaitingForApprovalException, AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, CADoesntExistsException {
         X509Certificate cert1 = null;
         String fp1 = null;
         KeyPair keypair1 = null;

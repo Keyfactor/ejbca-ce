@@ -26,8 +26,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.RemoveException;
-
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -57,6 +55,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -113,7 +112,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
 
     @Test
     public void testExecuteHappyPath() throws EndEntityExistsException, AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, EjbcaException, IllegalQueryException, RemoveException, NoSuchAlgorithmException, NoSuchProviderException,
+            WaitingForApprovalException, EjbcaException, IllegalQueryException, CouldNotRemoveEndEntityException, NoSuchAlgorithmException, NoSuchProviderException,
             InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateCreateException,
             CesecoreException, CertificateExtensionException {
 

@@ -112,7 +112,7 @@ public class EndEntityAccessSessionTest extends CaTestCase {
      */
     @Test
     public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException,
-            EndEntityExistsException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException, RemoveException,
+            EndEntityExistsException, EndEntityProfileValidationException, WaitingForApprovalException, NoSuchEndEntityException, CouldNotRemoveEndEntityException,
             IllegalNameException, CertificateSerialNumberException, CustomFieldException, ApprovalException {
         String commonDn = "CN=foo";
         String firstUsername = "alpha";
@@ -149,7 +149,7 @@ public class EndEntityAccessSessionTest extends CaTestCase {
     @Test
     public void testQueryUser() throws CADoesntExistsException, EndEntityExistsException, CustomFieldException, IllegalNameException,
             ApprovalException, CertificateSerialNumberException, AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, IllegalQueryException, NoSuchEndEntityException, RemoveException {
+            WaitingForApprovalException, IllegalQueryException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         String username = "testQueryUser";
         String password = "foo123";
         int caid = getTestCAId();
@@ -176,7 +176,7 @@ public class EndEntityAccessSessionTest extends CaTestCase {
     @Test
     public void testQueryUserWithCAandEEPRestrictions() throws CADoesntExistsException, EndEntityExistsException, CustomFieldException,
             IllegalNameException, ApprovalException, CertificateSerialNumberException, AuthorizationDeniedException,
-            EndEntityProfileValidationException, WaitingForApprovalException, IllegalQueryException, NoSuchEndEntityException, RemoveException,
+            EndEntityProfileValidationException, WaitingForApprovalException, IllegalQueryException, NoSuchEndEntityException, CouldNotRemoveEndEntityException,
             CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         String firstUser = "foo";
         String secondUser = "bar";
