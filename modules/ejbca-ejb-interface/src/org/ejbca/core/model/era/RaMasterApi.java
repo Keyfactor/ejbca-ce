@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -839,7 +840,6 @@ public interface RaMasterApi {
      */
     Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException;
    
-
     /**
      * Retrieves the certificates whose expiration date is before the specified number of days.
      * @param days the number of days before the certificates will expire
@@ -856,4 +856,26 @@ public interface RaMasterApi {
      * @param days the number of days before the certificates will expire
      * @return return count of query results. */
     int getCountOfCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days) throws AuthorizationDeniedException;
+        
+    /**
+     * Generates a Custom Log event in the database.
+     *
+     * Authorization requirements: <pre>
+     * - /administrator
+     * - /secureaudit/log_custom_events (must be configured in advanced mode when editing access rules)
+     * </pre>
+     *
+     * @param level of the event, one of IEjbcaWS.CUSTOMLOG_LEVEL_ constants.
+     * @param type user defined string used as a prefix in the log comment.
+     * @param caName of the CA related to the event, use null if no specific CA is related. Then will the ca of the administrator be used.
+     * @param username of the related user, use null if no related user exists.
+     * @param certificateSn the certificate SN or null.
+     * @param msg message data used in the log comment. The log comment will have a syntax of 'type : msg'.
+     * @param event the event type.
+     * @throws AuthorizationDeniedException if the administrators isn't authorized to log.
+     * @throws CADoesntExistsException if a referenced CA does not exist.
+     * @throws EjbcaException any EjbcaException.
+     */
+    void customLogWS(AuthenticationToken authenticationToken, int level, String type, String cAName, String username, String certificateSn, String msg, EventType event) 
+                throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 }

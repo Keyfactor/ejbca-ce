@@ -40,7 +40,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,7 +66,6 @@ import org.apache.log4j.Priority;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
-import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -76,7 +74,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -129,8 +126,6 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
-import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
-import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -2428,52 +2423,25 @@ public class EjbcaWS implements IEjbcaWS {
 	public void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg)
 		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
 		AuthenticationToken admin = getAdmin();
-
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
+        EventType event = EjbcaEventTypes.CUSTOMLOG_ERROR;
+        switch (level) {
+            case IEjbcaWS.CUSTOMLOG_LEVEL_ERROR:
+                break;
+            case IEjbcaWS.CUSTOMLOG_LEVEL_INFO:
+                event = EjbcaEventTypes.CUSTOMLOG_INFO;
+                break;
+            default:
+                throw getEjbcaException("Illegal level "+ level + " sent to customLog call.", logger, ErrorCode.INVALID_LOG_LEVEL, null);
+        }
 		try{
-	        // Check authorization to perform custom logging
-			if(!authorizationSession.isAuthorized(admin, AuditLogRules.LOG_CUSTOM.resource())) {
-            	final String authmsg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AuditLogRules.LOG_CUSTOM.resource(), null);
-            	throw new AuthorizationDeniedException(authmsg);
-			}
-
-			EventType event = EjbcaEventTypes.CUSTOMLOG_ERROR;
-			switch (level) {
-			case IEjbcaWS.CUSTOMLOG_LEVEL_ERROR:
-				break;
-			case IEjbcaWS.CUSTOMLOG_LEVEL_INFO:
-				event = EjbcaEventTypes.CUSTOMLOG_INFO;
-				break;
-			default:
-				throw getEjbcaException("Illegal level "+ level + " sent to customLog call.", logger, ErrorCode.INVALID_LOG_LEVEL, null);
-			}
-
-			java.security.cert.Certificate logCert = null;
-			if(certificate != null){
-				logCert = CertificateHelper.getCertificate(certificate.getCertificateData());
-			}
-
-			int caId = 0;
-			if(cAName  != null){
-				CAInfo cAInfo = caSession.getCAInfo(admin, cAName);
-                if (cAInfo == null) {
-                    throw new CADoesntExistsException("CA with name " + cAName + " doesn't exist.");
-                } 
-				caId = cAInfo.getCAId();
-			} else {
-				caId = ((X509CertificateAuthenticationToken)admin).getCertificate().getSubjectDN().getName().hashCode();
-			}
-
-			String comment = type + " : " + msg;
-            Map<String, Object> details = new LinkedHashMap<>();
-            details.put("msg", comment);
-            String certstring = null;
-            if (logCert != null) {
-            	certstring = CertTools.getSerialNumberAsString(logCert);
+			String certificateSn = null;
+		    if (certificate != null) {
+                final java.security.cert.Certificate logCert = CertificateHelper.getCertificate(certificate.getCertificateData());
+                certificateSn = CertTools.getSerialNumberAsString(logCert);   
             }
-            auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caId), username, certstring, details);
-			//logSession.log(admin, caId, LogConstants.MODULE_CUSTOM, new Date(), username, (X509Certificate) logCert, event, comment);
+		    raMasterApiProxyBean.customLogWS(admin, level, type, cAName, username, certificateSn, msg, event);
 		} catch (CertificateException e) {
             throw getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...

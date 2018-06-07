@@ -59,11 +59,15 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventType;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
@@ -132,6 +136,8 @@ import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -216,6 +222,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private ApprovalSessionLocal approvalSession;
     @EJB
     private ApprovalExecutionSessionLocal approvalExecutionSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -2013,7 +2021,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }    
     
     @Override
-    public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) {
+    public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException {
         final int id = publisherSession.getPublisherId(name);
         if (id == 0) {
             return -4;// No publisher with this name exists.
@@ -2306,5 +2314,30 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         Date findDate = getDate(days);
         return certificateStoreSession.findNumberOfExpiringCertificates(findDate);
+    }
+
+    @Override
+    public void customLogWS(AuthenticationToken authenticationToken, int level, String type, String cAName, String username, String certificateSn, 
+            String msg, EventType event) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        // Check authorization to perform custom logging.
+        if(!authorizationSession.isAuthorized(authenticationToken, AuditLogRules.LOG_CUSTOM.resource())) {
+            final String authmsg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AuditLogRules.LOG_CUSTOM.resource(), null);
+            throw new AuthorizationDeniedException(authmsg);
+        }
+        int caId = 0;
+        if(cAName != null){
+            CAInfo cAInfo = caSession.getCAInfo(authenticationToken, cAName);
+            if (cAInfo == null) {
+                throw new CADoesntExistsException("CA with name " + cAName + " doesn't exist.");
+            } 
+            caId = cAInfo.getCAId();
+        } else {
+            caId = ((X509CertificateAuthenticationToken) authenticationToken).getCertificate().getSubjectDN().getName().hashCode();
+        }
+
+        String comment = type + " : " + msg;
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", comment);
+        auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), String.valueOf(caId), username, certificateSn, details);
     }
 }
