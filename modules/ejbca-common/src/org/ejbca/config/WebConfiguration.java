@@ -32,6 +32,7 @@ public class WebConfiguration {
     public static final String CONFIG_HTTPSERVERPUBHTTPS   = "httpserver.pubhttps";
 	public static final String CONFIG_HTTPSSERVERPRIVHTTPS = "httpserver.privhttps";
 	public static final String CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS = "httpserver.external.privhttps";
+    public static final String CONFIG_REQCERT = "web.reqcert";
 	public static final String CONFIG_REQCERTINDB = "web.reqcertindb";
 	
 	/**
@@ -105,11 +106,19 @@ public class WebConfiguration {
 	}
 	
 	/**
-	 * Require administrator certificates to be available in database for revocation checks.
+	 * Require administrator certificates to be available to access the Admin GUI
 	 */
-	public static boolean getRequireAdminCertificateInDatabase() {
-		return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERTINDB));
+	public static boolean getRequireAdminCertificate() {
+        // Anything but an explicit setting this configuration value to "false" will enforce the client certificate check
+	    return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERT));
 	}
+
+    /**
+     * Require administrator certificates to be available in database for revocation checks.
+     */
+    public static boolean getRequireAdminCertificateInDatabase() {
+        return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERTINDB));
+    }
 
 	/**
 	 * Default content encoding used to display JSP pages
