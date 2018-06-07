@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import org.jboss.resteasy.client.ClientResponse;
-import org.junit.Test;
+import org.junit.*;
 
 import javax.ws.rs.core.Response;
 
@@ -27,6 +27,24 @@ import static org.junit.Assert.assertEquals;
  * @version $Id: CertificateRestResourceSystemTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        RestResourceSystemTestBase.beforeClass();
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        RestResourceSystemTestBase.afterClass();
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
 
     @Test
     public void shouldReturnStatusInformation() throws Exception {
