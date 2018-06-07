@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import org.jboss.resteasy.client.ClientResponse;
-import org.junit.Test;
+import org.junit.*;
 
 import static javax.ws.rs.core.Response.Status;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
@@ -23,9 +23,27 @@ import static org.junit.Assert.assertEquals;
 /**
  * A set of system tests for CaRestResource ('').
  *
- * @version $Id: CaRestResourceSystemTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
+ * @version $Id: CaRestResourceSystemTest.java 29137 2018-06-07 12:40:12Z andrey_s_helmes $
  */
 public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        RestResourceSystemTestBase.beforeClass();
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        RestResourceSystemTestBase.afterClass();
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
 
     @Test
     public void shouldReturnStatusInformation() throws Exception {
