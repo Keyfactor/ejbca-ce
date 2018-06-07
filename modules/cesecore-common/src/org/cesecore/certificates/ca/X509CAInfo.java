@@ -198,15 +198,15 @@ public class X509CAInfo extends CAInfo {
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
     		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final boolean _acceptRevocationNonExistingEntry,
             final String _cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL) {
-        this.subjectDn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
-        this.caid = CertTools.stringToBCDNString(this.subjectDn).hashCode();
+        this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
+        this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
         this.name = name;
         this.status = status;
         this.updatetime = updateTime;
         this.encodedValidity = encodedValidity;
         this.expiretime = expiretime;
         this.catype = catype;
-        this.signedBy = signedBy;
+        this.signedby = signedBy;
         // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this
         // Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
         // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
