@@ -91,7 +91,7 @@ import static org.junit.Assert.*;
  * server. This needs to rewritten in a more robust way at a future point in time to avoid false negatives.
  * </p>
  *
- * @version $Id: ApprovalSessionTest.java 9666 2010-08-18 11:22:12Z mikekushner$
+ * @version $Id$
  */
 public class ApprovalSessionTest extends CaTestCase {
 
