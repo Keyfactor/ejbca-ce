@@ -435,10 +435,10 @@ CREATE TABLE NoConflictCertificateData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-CREATE TABLE AcmeNonceData {
+CREATE TABLE AcmeNonceData (
     nonce VARCHAR(250) BINARY NOT NULL,
     timeExpires BIGINT(20) NOT NULL,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (nonce)
-} TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+ ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
