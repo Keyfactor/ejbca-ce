@@ -17,8 +17,6 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.RemoveException;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -317,10 +315,10 @@ public interface EndEntityManagementSession {
      * 
      * @param username the unique username.
      * @throws AuthorizationDeniedException if admin was not authorized to remove end entities
-     * @throws NoSuchEndEntityException if the user does not exist
-     * @throws RemoveException if the user could not be removed
+     * @throws NoSuchEndEntityException if the user does not exist.
+     * @throws CouldNotRemoveEndEntityException if the user could not be deleted.
      */
-    void deleteUser(AuthenticationToken admin, String username) throws AuthorizationDeniedException, NoSuchEndEntityException, RemoveException;
+    void deleteUser(AuthenticationToken admin, String username) throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException;
 
     /**
      * Changes status of a user.
@@ -393,10 +391,11 @@ public interface EndEntityManagementSession {
     /** 
      * Revoke and then delete a user. 
      * @throws ApprovalException if an approval already exists for this request.
-     * @throws NoSuchEndEntityException if the end entity was not found
+     * @throws NoSuchEndEntityException if the end entity was not found.
+     * @throws CouldNotRemoveEndEntityException if the user could not be deleted.
      */
     void revokeAndDeleteUser(AuthenticationToken admin, String username, int reason)
-            throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, RemoveException, NoSuchEndEntityException;
+            throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, NoSuchEndEntityException, CouldNotRemoveEndEntityException;
     
     /**
      * Method that revokes a user. Revokes all users certificates and then sets user status to revoked.
