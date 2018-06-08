@@ -85,6 +85,8 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     private ListDataModel<RoleMember> roleMembers = null;
     private RoleMember roleMemberToDelete = null;
+    
+    private Map<Integer, String> caIdToNameMap = null;
 
     @PostConstruct
     private void postConstruct() {
@@ -214,10 +216,9 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     /** @return a List of (SelectItem<Integer, String>) authorized CAs */
     public List<SelectItem> getAvailableCas() {
         final List<SelectItem> availableCas = new ArrayList<>();
-        final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
         final List<Integer> authorizedCaIds = caSession.getAuthorizedCaIds(getAdmin());
         for (final int caId : authorizedCaIds) {
-            availableCas.add(new SelectItem(caId, caIdToNameMap.get(caId)));
+            availableCas.add(new SelectItem(caId, getCaIdToNameMap().get(caId)));
         }
         super.sortSelectItemsByLabel(availableCas);
         return availableCas;
@@ -235,8 +236,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             return "-";
         }
         if (getAccessMatchValue(roleMember.getTokenType(), roleMember.getTokenMatchKey()).isIssuedByCa()) {
-            final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
-            final String caName = caIdToNameMap.get(tokenIssuerId);
+            final String caName = getCaIdToNameMap().get(tokenIssuerId);
             if (caName==null) {
                 return super.getEjbcaWebBean().getText("UNKNOWNCAID") + " " + tokenIssuerId;
             } else {
@@ -245,6 +245,14 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         } else {
             return String.valueOf(tokenIssuerId);
         }
+    }
+    
+    /** @return the ViewScoped cache of the CA to name map or a fresh copy from the backend if none is present yet. */
+    private Map<Integer, String> getCaIdToNameMap() {
+        if (this.caIdToNameMap==null) {
+            this.caIdToNameMap = caSession.getCAIdToNameMap();
+        }
+        return this.caIdToNameMap;
     }
 
     /** @return a human readable version of the RoleMember's tokenMatchOperator */
