@@ -244,8 +244,8 @@
 		</fileset>
 	</path>
 
-	<path id="lib.jackson.classpath">
-		<fileset dir="${ejbca.home}/lib/ext/jackson">
+	<path id="lib.jackson2.classpath">
+		<fileset dir="${ejbca.home}/lib/ext/jackson2">
 			<include name="*.jar"/>
 			<exclude name="*-javadoc.jar"/>
 			<exclude name="*-sources.jar"/>
