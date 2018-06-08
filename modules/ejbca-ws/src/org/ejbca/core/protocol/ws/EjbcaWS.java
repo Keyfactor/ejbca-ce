@@ -622,13 +622,14 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
     @Override
-	public List<Certificate> getCertificatesByExpirationTimeAndType(long days, int certificateType, int maxNumberOfResults) throws EjbcaException {
-	    Date findDate = new Date();
-	    long millis = (days * 24 * 60 * 60 * 1000);
-	    findDate.setTime(findDate.getTime() + millis);
-	    Collection<java.security.cert.Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeAndTypeWithLimit(findDate, certificateType, maxNumberOfResults);
-
-	    ArrayList<Certificate> ret = new ArrayList<>();
+    public List<Certificate> getCertificatesByExpirationTimeAndType(long days, int certificateType, int maxNumberOfResults) throws EjbcaException {
+        final List<java.security.cert.Certificate> certs = new ArrayList<>();        
+        try {
+            certs.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndTypeWS(getAdmin(), days, certificateType, maxNumberOfResults));
+        } catch (AuthorizationDeniedException e1) {
+            // No authorization required.
+        }
+        final ArrayList<Certificate> ret = new ArrayList<>();
         for(java.security.cert.Certificate cert : certs) {
             try {
                 ret.add(new Certificate(cert));
@@ -636,8 +637,8 @@ public class EjbcaWS implements IEjbcaWS {
                 throw getInternalException(e, TransactionLogger.getPatternLogger());
             }
         }
-	    return ret;
-	}
+        return ret;
+    }
 
     @Override
 	public CertificateResponse crmfRequest(String username, String password,
