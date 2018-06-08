@@ -45,10 +45,13 @@ public class ListAdminsCommand extends BaseRolesCommand {
     private static final Logger log = Logger.getLogger(ListAdminsCommand.class);
 
     private static final String ROLE_NAME_KEY = "--role";
+    private static final String ROLE_NAMESPACE_KEY = "--namespace";
 
     {
         registerParameter(new Parameter(ROLE_NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Role to list admins of."));
+        registerParameter(new Parameter(ROLE_NAMESPACE_KEY, "Role Namespace", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The namespace the role belongs to."));
     }
 
     @Override
@@ -59,15 +62,16 @@ public class ListAdminsCommand extends BaseRolesCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);
+        final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
         final Role role;
         try {
-            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
+            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e1) {
-            getLogger().error("Not authorizied to role '" + roleName + "'.");
+            getLogger().error("Not authorizied to role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         if (role == null) {
-            getLogger().error("No such role '" + roleName + "'.");
+            getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         final List<RoleMember> roleMembers;
@@ -75,7 +79,7 @@ public class ListAdminsCommand extends BaseRolesCommand {
             roleMembers = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).getRoleMembersByRoleId(
                     getAuthenticationToken(), role.getRoleId());
         } catch (AuthorizationDeniedException e) {
-            getLogger().error("Not authorizied to members of role '" + roleName + "'.");
+            getLogger().error("Not authorizied to members of role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         Collections.sort(roleMembers, new Comparator<RoleMember>(){

@@ -53,6 +53,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
     private static final String MATCH_TYPE_KEY = "--type";
     private static final String MATCH_VALUE_KEY = "--value";
     private static final String DESCRIPTION_KEY = "--description";
+    private static final String ROLE_NAMESPACE_KEY = "--namespace";
 
     {
         registerParameter(new Parameter(ROLE_NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -67,6 +68,8 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
                 "The value to match against."));
         registerParameter(new Parameter(DESCRIPTION_KEY, "Description", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "A human readable description of the role member."));
+        registerParameter(new Parameter(ROLE_NAMESPACE_KEY, "Role Namespace", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The namespace the role belongs to."));
     }
 
     @Override
@@ -77,15 +80,16 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);
+        final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
         final Role role;
         try {
-            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
+            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e) {
-            getLogger().error("No authorized to role '" + roleName + "'.");
+            getLogger().error("No authorized to role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         if (role == null) {
-            getLogger().error("No such role '" + roleName + "'.");
+            getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         final String caName = parameters.get(CA_NAME_KEY);

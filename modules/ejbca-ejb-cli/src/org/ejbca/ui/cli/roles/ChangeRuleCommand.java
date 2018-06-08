@@ -43,6 +43,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
     private static final String NAME_KEY = "--name";
     private static final String RULE_KEY = "--rule";
     private static final String STATE_KEY = "--state";
+    private static final String ROLE_NAMESPACE_KEY = "--namespace";
     @Deprecated
     private static final String RECURSIVE_KEY = "-R";
 
@@ -53,6 +54,8 @@ public class ChangeRuleCommand extends BaseRolesCommand {
         registerParameter(new Parameter(STATE_KEY, "Rule State", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The state of the rule."));
         registerParameter(Parameter.createFlag(RECURSIVE_KEY, "(Deprecated) Set this switch if rule is to be recursive. Default is false."));
+        registerParameter(new Parameter(ROLE_NAMESPACE_KEY, "Role Namespace", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The namespace the role belongs to."));
     }
 
     @Override
@@ -62,16 +65,17 @@ public class ChangeRuleCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        String roleName = parameters.get(NAME_KEY);
+        final String roleName = parameters.get(NAME_KEY);
+        final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
         final Role role;
         try {
-            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
+            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e1) {
-            getLogger().error("Not authorized to role \"" + roleName + "\".");
+            getLogger().error("Not authorized to role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         if (role == null) {
-            getLogger().error("No such role \"" + roleName + "\".");
+            getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         try {
@@ -136,7 +140,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
         final StringBuilder availableRoles = new StringBuilder();
         for (final Role role : roles) {
             if (StringUtils.isEmpty(role.getNameSpace())) {
-                availableRoles.append((availableRoles.length() == 0 ? "" : ", ") + "'" + role.getRoleName() + "'");
+                availableRoles.append((availableRoles.length() == 0 ? "" : ", ") + super.getFullRoleName(role.getNameSpace(), role.getRoleName()));
             }
         }
         sb.append("Available roles: " + availableRoles + "\n");

@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.util.EjbRemoteHelper;
@@ -28,6 +29,7 @@ import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 
 /**
  * Base for Roles commands, contains common functions for Roles operations
+ * @version $Id$
  */
 public abstract class BaseRolesCommand extends EjbcaCliUserCommandBase {
 
@@ -80,5 +82,10 @@ public abstract class BaseRolesCommand extends EjbcaCliUserCommandBase {
                     getAllResources(getAuthenticationToken(), false);
         }
         return resourceToResourceNameMap;
+    }
+    
+    /** @return the full role name with namespace prefixed in brackets. */
+    protected String getFullRoleName(final String namespace, final String roleName) {
+        return (StringUtils.isEmpty(namespace) ? "" : "["+namespace+"] ") + "'" + roleName + "'";
     }
 }

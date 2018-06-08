@@ -38,10 +38,13 @@ public class ListRulesCommand extends BaseRolesCommand {
     private static final Logger log = Logger.getLogger(ListRulesCommand.class);
 
     private static final String ROLE_NAME_KEY = "--role";
+    private static final String ROLE_NAMESPACE_KEY = "--namespace";
 
     {
         registerParameter(new Parameter(ROLE_NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Role to list rules of."));
+        registerParameter(new Parameter(ROLE_NAMESPACE_KEY, "Role Namespace", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The namespace the role belongs to."));
     }
 
     @Override
@@ -51,11 +54,12 @@ public class ListRulesCommand extends BaseRolesCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        String roleName = parameters.get(ROLE_NAME_KEY);
+        final String roleName = parameters.get(ROLE_NAME_KEY);
+        final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
         try {
-            final Role role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
+            final Role role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
             if (role == null) {
-            	getLogger().error("ERROR: No such role '" + roleName + "'.");
+            	getLogger().error("ERROR: No such role " + super.getFullRoleName(namespace, roleName) + ".");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             for (final Entry<String,Boolean> entry : AccessRulesHelper.getAsListSortedByKey(role.getAccessRules())) {
