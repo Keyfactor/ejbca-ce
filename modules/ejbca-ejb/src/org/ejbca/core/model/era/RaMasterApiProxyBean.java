@@ -1914,4 +1914,21 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
+    
+    @Override
+    public Map<String, Integer> getAvailableCAsInProfileWS(AuthenticationToken authenticationToken, int entityProfileId)
+            throws AuthorizationDeniedException, EjbcaException {
+        final Map<String, Integer> result = new TreeMap<>();
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    result.putAll(raMasterApi.getAvailableCAsInProfileWS(authenticationToken, entityProfileId));
+                    break;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return result;
+    }
 }
