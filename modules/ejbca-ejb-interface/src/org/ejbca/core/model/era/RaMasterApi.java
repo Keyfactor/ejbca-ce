@@ -1012,4 +1012,23 @@ public interface RaMasterApi {
      * @throws EjbcaException if at least one of the certificates is unreadable.
      */
     List<Certificate> getCertificatesByExpirationTimeAndIssuerWS(AuthenticationToken authenticationToken, long days, String issuerDN, int maxNumberOfResults) throws AuthorizationDeniedException, EjbcaException;
+    
+    /**
+     * Fetches the current certificate chain for a CA.
+     *
+     * <pre>
+     * <b>Authorization requirements:</b>
+     * - /administrator
+     * - /ca/&lt;ca in question&gt;
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @param caname the unique name of the CA whose certificate chain should be returned
+     * @return a list of X509 Certificates or CVC Certificates with the root certificate last, or an empty list if the CA's status is "Waiting for certificate response"
+     * @throws AuthorizationDeniedException if the client does not fulfill the authorization requirements specified above.
+     * @throws CADoesntExistsException if the CA with the CA name given as input does not exist.
+     * @throws EjbcaException on internal errors, such as badly encoded certificate.
+     * @throws CertificateEncodingException if on of the certificates could not be encoded.
+     */
+    List<Certificate> getLastCAChainWS(AuthenticationToken authenticationToken, String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException;
 }

@@ -74,7 +74,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -2848,39 +2847,33 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
     @Override
-	public List<Certificate> getLastCAChain(String caname)
-			throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-		if (log.isTraceEnabled()) {
-			log.trace(">getLastCAChain: "+caname);
-		}
-		final List<Certificate> retval = new ArrayList<>();
-		AuthenticationToken admin = getAdmin();
+    public List<Certificate> getLastCAChain(String caname)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        if (log.isTraceEnabled()) {
+            log.trace(">getLastCAChain: "+caname);
+        }
+        final List<Certificate> retval = new ArrayList<>();
+        AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
-		try {
-			CAInfo info = caSession.getCAInfo(admin, caname);
-			if(info == null) {
-			    throw new CADoesntExistsException("CA with name " + caname + " doesn't exist.");
-			}
-			if (info.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE){
-				return retval;
-			}
-     		for (final java.security.cert.Certificate cert : info.getCertificateChain()) {
-				retval.add(new Certificate(cert));
-			}
-		} catch (CertificateEncodingException e) {
+        try {
+            final List<java.security.cert.Certificate> certificates = raMasterApiProxyBean.getLastCAChainWS(admin, caname);
+            for (final java.security.cert.Certificate certificate : certificates) {
+                retval.add(new Certificate(certificate));
+            }
+        } catch (CertificateEncodingException e) {
             throw getInternalException(e, logger);
-        } catch (RuntimeException e) {	// EJBException, ...
+        } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
             logger.flush();
         }
-		if (log.isTraceEnabled()) {
-			log.trace("<getLastCAChain: "+caname);
-		}
-		return retval;
-	}
+        if (log.isTraceEnabled()) {
+            log.trace("<getLastCAChain: "+caname);
+        }
+        return retval;
+    }
 
     private static EjbcaException getInternalException(Throwable t, IPatternLogger logger) {
         return getEjbcaException( t, logger, ErrorCode.INTERNAL_ERROR, Level.ERROR);
