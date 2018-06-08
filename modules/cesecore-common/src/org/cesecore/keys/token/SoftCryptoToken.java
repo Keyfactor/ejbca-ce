@@ -315,7 +315,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             KeyStoreException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException, SignatureException,
             CertificateException, IOException, NoSuchPaddingException, IllegalBlockSizeException {
         if (StringUtils.isNotEmpty(alias)) {
-            // Soft crypto tokens must do very special things for secret keys, since PKCS#12 keystores are ot designed to hold
+            // Soft crypto tokens must do very special things for secret keys, since PKCS#12 keystores are not designed to hold
             // symmetric keys, we wrap the symmetric key with an RSA key and store it in properties
 
             // Generate the key
