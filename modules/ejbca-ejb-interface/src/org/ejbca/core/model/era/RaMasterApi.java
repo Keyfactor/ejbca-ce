@@ -999,4 +999,17 @@ public interface RaMasterApi {
      * @throws EjbcaException if at least one of the certificates is unreadable
      */
     List<Certificate> getCertificatesByExpirationTimeAndTypeWS(AuthenticationToken authenticationToken, long days, int certificateType, int maxNumberOfResults) throws AuthorizationDeniedException, EjbcaException;
+    
+    /**
+     * Fetches a list of certificates that will expire within the given number of days and issued by the given issuer.
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @param days Expire time in days.
+     * @param issuerDN The issuerDN of the certificates.
+     * @param maxNumberOfResults the maximum number of returned certificates.
+     * @return A list of certificates, never null.
+     * @throws AuthorizationDeniedException if the calling administrator isn't authorized to fetch one of the certificates (not used).
+     * @throws EjbcaException if at least one of the certificates is unreadable.
+     */
+    List<Certificate> getCertificatesByExpirationTimeAndIssuerWS(AuthenticationToken authenticationToken, long days, String issuerDN, int maxNumberOfResults) throws AuthorizationDeniedException, EjbcaException;
 }
