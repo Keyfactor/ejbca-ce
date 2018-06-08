@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.Local;

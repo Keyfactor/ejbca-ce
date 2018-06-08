@@ -26,7 +26,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -57,15 +56,11 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
 
 /**
- *
  * @version $Id$
- *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaRestHelperSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, EjbcaRestHelperSessionRemote {
-
-    private static final Logger log = Logger.getLogger(EjbcaRestHelperSessionBean.class);
 
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
