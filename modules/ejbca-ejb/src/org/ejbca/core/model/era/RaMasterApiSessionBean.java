@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -2359,5 +2360,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             certificates = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
         }
         return certificates;
+    }
+    
+    @Override
+    public Map<String, Integer> getAvailableCertificateProfilesWS(AuthenticationToken authenticationToken, int entityProfileId)
+            throws AuthorizationDeniedException, EjbcaException {
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
+        final TreeMap<String,Integer> result = new TreeMap<>();
+        if (profile != null) {
+            final Collection<Integer> ids = profile.getAvailableCertificateProfileIds();
+            for (int id : ids) {
+                result.put(certificateProfileSession.getCertificateProfileName(id), id);
+            }
+        }
+        return result;
     }
 }

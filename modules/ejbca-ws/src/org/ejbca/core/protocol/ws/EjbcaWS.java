@@ -2580,26 +2580,21 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
     @Override
-	public NameAndId[] getAvailableCertificateProfiles(final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
-	    final AuthenticationToken admin = getAdmin();
-	    final TreeMap<String,Integer> ret = new TreeMap<>();
+    public NameAndId[] getAvailableCertificateProfiles(final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
+        final AuthenticationToken admin = getAdmin();
+        final TreeMap<String,Integer> ret = new TreeMap<>();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
-		try {
-		    final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
-			if (profile != null) {
-				for (int id : profile.getAvailableCertificateProfileIds()) {
-					ret.put(certificateProfileSession.getCertificateProfileName(id), id);
-				}
-			}
-        } catch (RuntimeException e) {	// EJBException, ...
+        try {
+            ret.putAll(raMasterApiProxyBean.getAvailableCertificateProfilesWS(admin, entityProfileId));
+        } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
             logger.flush();
         }
-		return  ejbcaWSHelperSession.convertTreeMapToArray(ret);
-	}
+        return ejbcaWSHelperSession.convertTreeMapToArray(ret);
+    }
 
     @Override
 	public NameAndId[] getAvailableCAsInProfile(final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
