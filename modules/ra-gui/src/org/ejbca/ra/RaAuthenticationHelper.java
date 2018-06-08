@@ -10,13 +10,12 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ra;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,9 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 
