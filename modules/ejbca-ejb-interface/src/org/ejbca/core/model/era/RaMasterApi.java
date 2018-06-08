@@ -913,4 +913,20 @@ public interface RaMasterApi {
      * @throws EjbcaException any EjbcaException.
      */
     Map<String,Integer> getAvailableCertificateProfilesWS(AuthenticationToken authenticationToken, int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
+    
+    /**
+     * Fetches the IDs and names of available CAs in an end entity profile.
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /endentityprofilesrules/&lt;end entity profile&gt;
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @param entityProfileId the ID of an end entity profile where we want to find which CAs are available.
+     * @return a Map containing the name and ID pairs of available CAs in the specified end entity profile or an empty map.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws EjbcaException any EjbcaException.
+     */
+    Map<String,Integer> getAvailableCAsInProfileWS(AuthenticationToken authenticationToken, final int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
 }

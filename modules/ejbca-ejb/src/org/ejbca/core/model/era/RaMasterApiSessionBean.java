@@ -2375,4 +2375,23 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return result;
     }
+    
+    @Override
+    public Map<String, Integer> getAvailableCAsInProfileWS(AuthenticationToken authenticationToken, int entityProfileId)
+            throws AuthorizationDeniedException, EjbcaException {
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
+        final TreeMap<String,Integer> result = new TreeMap<>();
+        if (profile != null) {
+            final Collection<Integer> ids = profile.getAvailableCAs();
+            final HashMap<Integer,String> map = caSession.getCAIdToNameMap();
+            String name;
+            for (int id : ids) {
+                name = map.get(id);
+                if (name != null) {
+                    result.put(name, id);
+                }
+            }
+        }
+        return result;
+    }
 }

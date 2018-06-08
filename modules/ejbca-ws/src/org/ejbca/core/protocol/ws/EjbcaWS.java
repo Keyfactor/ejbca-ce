@@ -2597,31 +2597,21 @@ public class EjbcaWS implements IEjbcaWS {
     }
 
     @Override
-	public NameAndId[] getAvailableCAsInProfile(final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
-	    final AuthenticationToken admin = getAdmin();
-	    final TreeMap<String,Integer> ret = new TreeMap<>();
+    public NameAndId[] getAvailableCAsInProfile(final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
+        final AuthenticationToken admin = getAdmin();
+        final TreeMap<String,Integer> ret = new TreeMap<>();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
-		try {
-			final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
-			if (profile != null) {
-			    final Collection<Integer> cas = profile.getAvailableCAs(); // list of CA ids available in profile
-			    final HashMap<Integer,String> map = caSession.getCAIdToNameMap();
-				for (int id : cas) {
-					String name = map.get(id);
-					if (name != null) {
-						ret.put(name, id);
-					}
-				}
-			}
-        } catch (RuntimeException e) {	// EJBException, ...
+        try {
+            ret.putAll(raMasterApiProxyBean.getAvailableCAsInProfileWS(admin, entityProfileId));
+        } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
             logger.flush();
         }
-		return ejbcaWSHelperSession.convertTreeMapToArray(ret);
-	}
+        return ejbcaWSHelperSession.convertTreeMapToArray(ret);
+    }
 
     @Override
     public byte[] getProfile(int profileId, String profileType) throws AuthorizationDeniedException, EjbcaException, UnknownProfileTypeException {
