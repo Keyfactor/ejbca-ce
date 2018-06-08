@@ -35,10 +35,13 @@ public class RemoveRoleCommand extends BaseRolesCommand {
     private static final Logger log = Logger.getLogger(RemoveRoleCommand.class);
 
     private static final String ROLE_NAME_KEY = "--role";
+    private static final String ROLE_NAMESPACE_KEY = "--namespace";
 
     {
         registerParameter(new Parameter(ROLE_NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Role to remove."));
+        registerParameter(new Parameter(ROLE_NAMESPACE_KEY, "Role Namespace", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The namespace the role belongs to."));
     }
 
     @Override
@@ -49,19 +52,20 @@ public class RemoveRoleCommand extends BaseRolesCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);
+        final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
         final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
         try {
-            final Role role = roleSession.getRole(getAuthenticationToken(), null, roleName);
+            final Role role = roleSession.getRole(getAuthenticationToken(), namespace, roleName);
             if (role == null) {
-                getLogger().error("No such role '" + roleName + "'.");
+                getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             if (!roleSession.deleteRoleIdempotent(getAuthenticationToken(), role.getRoleId())) {
-                getLogger().error("No such role '" + roleName + "'.");
+                getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
         } catch (AuthorizationDeniedException e) {
-            log.error("ERROR: Not authorized to remove role " + roleName);
+            log.error("ERROR: Not authorized to remove role " + super.getFullRoleName(namespace, roleName));
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         return CommandResult.SUCCESS;
