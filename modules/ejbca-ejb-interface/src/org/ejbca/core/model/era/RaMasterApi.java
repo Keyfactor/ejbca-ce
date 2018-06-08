@@ -964,4 +964,25 @@ public interface RaMasterApi {
      * @throws EjbcaException any EjbcaException.
      */
     Certificate getCertificateWS(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+    
+    /**
+     * Fetches a list of certificates whose expiration date is before the specified number of days.
+     *
+     *  Note the whole certificate chain is returned.
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /ra_functionality/view_end_entity
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+     * - /ca/&lt;ca of user&gt;
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @param days the number of days before the certificates will expire.
+     * @param maxNumberOfResults the maximum number of returned certificates.
+     * @return A list of certificates, never null.
+     * @throws AuthorizationDeniedException if the calling administrator isn't authorized to fetch one of the certificates (not used).
+     * @throws EjbcaException if at least one of the certificates is unreadable.
+     */
+    List<Certificate> getCertificatesByExpirationTimeWS(AuthenticationToken authenticationToken, long days, int maxNumberOfResults) throws AuthorizationDeniedException, EjbcaException;
 }
