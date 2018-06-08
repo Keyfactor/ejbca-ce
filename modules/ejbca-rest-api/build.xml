@@ -36,6 +36,7 @@
         <path refid="lib.ninbus-jose-jwt.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.swagger.classpath"/>
+		<path refid="lib.jackson.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
@@ -51,6 +52,7 @@
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.test.classpath"/>
 		<path refid="lib.resteasy-jaxrs.classpath"/>
+		<path refid="lib.jackson.classpath"/>
 	</path>
 
 	<path id="test.classpath">
