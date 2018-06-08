@@ -878,4 +878,24 @@ public interface RaMasterApi {
      */
     void customLogWS(AuthenticationToken authenticationToken, int level, String type, String cAName, String username, String certificateSn, String msg, EventType event) 
                 throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+    
+    /**
+     * Retrieves a collection of certificates as byte array generated for a user.
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /ra_functionality/view_end_entity
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+     * - /ca/&lt;ca of user&gt;
+     * </pre>
+     *
+     * @param username a unique username.
+     * @param onlyValid only return valid certificates not revoked or expired ones.
+     * @param now the current time as long value since epoch.
+     * @return a collection of Certificates or an empty list if no certificates, or no user, could be found.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws CertificateEncodingException if a certificate could not be encoded.
+     * @throws EjbcaException any EjbcaException.
+     */
+    Collection<Certificate> findCertsWS(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
 }

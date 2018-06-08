@@ -2340,4 +2340,24 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         details.put("msg", comment);
         auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), String.valueOf(caId), username, certificateSn, details);
     }
+
+    @Override
+    public Collection<Certificate> findCertsWS(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now)
+            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
+        // Check authorization on current CA and profiles and view_end_entity by looking up the end entity
+        if (endEntityAccessSession.findUser(authenticationToken,username) == null) {
+            if (log.isDebugEnabled()) {
+                log.debug(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            }
+        }
+        // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData
+        Collection<java.security.cert.Certificate> certificates;
+        if (onlyValid) {
+            // We will filter out not yet valid certificates later on, but we as the database to not return any expired certificates
+            certificates = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now);
+        } else {
+            certificates = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
+        }
+        return certificates;
+    }
 }

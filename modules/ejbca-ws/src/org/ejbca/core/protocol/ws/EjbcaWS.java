@@ -420,40 +420,32 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
     @Override
-	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public List<Certificate> findCerts(String username, boolean onlyValid) throws AuthorizationDeniedException, EjbcaException {
-		if (log.isDebugEnabled()) {
-	        log.debug("Find certs for user '"+username+"'.");
-		}
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public List<Certificate> findCerts(String username, boolean onlyValid) throws AuthorizationDeniedException, EjbcaException {
+        if (log.isDebugEnabled()) {
+            log.debug("Find certs for user '"+username+"'.");
+        }
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
-		List<Certificate> retval = new ArrayList<>(0);
-		try {
-			final AuthenticationToken admin = getAdmin();
+        List<Certificate> retval = new ArrayList<>(0);
+        try {
+            final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-            // Check authorization on current CA and profiles and view_end_entity by looking up the end entity
-            if (endEntityAccessSession.findUser(admin,username) == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-                }
-            }
-            // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData
             final long now = System.currentTimeMillis();
-            Collection<java.security.cert.Certificate> certs;
-            if (onlyValid) {
-                // We will filter out not yet valid certificates later on, but we as the database to not return any expired certificates
-                certs = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now);
-            } else {
-                certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
+            final Collection<java.security.cert.Certificate> certs = new ArrayList<>();
+            try {
+                certs.addAll(raMasterApiProxyBean.findCertsWS(admin, username, onlyValid, now));
+                retval = ejbcaWSHelperSession.returnAuthorizedCertificates(admin, certs, onlyValid, now);
+            } catch (CertificateEncodingException e) { // Should never happen!
+                log.info("Certificate found for " + username + " could not be encoded: " + e.getMessage());
             }
-            retval = ejbcaWSHelperSession.returnAuthorizedCertificates(admin, certs, onlyValid, now);
-        } catch (RuntimeException e) {	// EJBException ...
+        } catch (RuntimeException e) {  // EJBException ...
             throw getInternalException(e, logger);
-		} finally {
+        } finally {
             logger.writeln();
             logger.flush();
         }
-		return retval;
-	}
+        return retval;
+    }
 
     @Override
 	public List<Certificate> getLastCertChain(String username) throws AuthorizationDeniedException, EjbcaException {
