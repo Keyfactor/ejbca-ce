@@ -2394,4 +2394,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return result;
     }
+    
+    @Override
+    public Map<String, Integer> getAuthorizedEndEntityProfilesWS(AuthenticationToken authenticationToken)
+            throws AuthorizationDeniedException, EjbcaException {
+        final TreeMap<String,Integer> result = new TreeMap<>();
+        final Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY);
+        final Map<Integer,String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
+        for (final Integer id : ids) {
+            result.put(idtonamemap.get(id), id);
+        }
+        return result;
+    }
 }

@@ -929,4 +929,20 @@ public interface RaMasterApi {
      * @throws EjbcaException any EjbcaException.
      */
     Map<String,Integer> getAvailableCAsInProfileWS(AuthenticationToken authenticationToken, final int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
+    
+    /**
+     * Fetches the end entity profiles that the administrator is authorized to use.
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /endentityprofilesrules/&lt;end entity profile&gt;
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @return a Map containing the name and ID pairs of authorized end entity profiles or an empty map.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws EjbcaException any EjbcaException.
+     * @see "IRaAdminSessionLocal#getAuthorizedEndEntityProfileIds()"
+     */
+    Map<String,Integer> getAuthorizedEndEntityProfilesWS(AuthenticationToken authenticationToken) throws AuthorizationDeniedException, EjbcaException;
 }
