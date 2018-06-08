@@ -46,6 +46,7 @@ public class RemoveAdminCommand extends BaseRolesCommand {
     private static final String MATCH_WITH_KEY = "--with";
     private static final String MATCH_TYPE_KEY = "--type";
     private static final String MATCH_VALUE_KEY = "--value";
+    private static final String ROLE_NAMESPACE_KEY = "--namespace";
 
     {
         registerParameter(new Parameter(ROLE_NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -58,6 +59,8 @@ public class RemoveAdminCommand extends BaseRolesCommand {
                 "(Deprected) Match operator type. Kept to prevent legacy scripts from breaking. Currently implied by " + MATCH_WITH_KEY +" switch."));
         registerParameter(new Parameter(MATCH_VALUE_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The value to match against."));
+        registerParameter(new Parameter(ROLE_NAMESPACE_KEY, "Role Namespace", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The namespace the role belongs to."));
     }
 
     @Override
@@ -68,15 +71,16 @@ public class RemoveAdminCommand extends BaseRolesCommand {
     @Override
     public CommandResult execute(ParameterContainer parameters) {
         final String roleName = parameters.get(ROLE_NAME_KEY);
+        final String namespace = parameters.get(ROLE_NAMESPACE_KEY);
         final Role role;
         try {
-            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), null, roleName);
+            role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e) {
-            getLogger().error("Not authorized to role '" + roleName + "'.");
+            getLogger().error("Not authorized to role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         if (role == null) {
-            getLogger().error("No such role '" + roleName + "'.");
+            getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         final String caName = parameters.get(CA_NAME_KEY);
@@ -128,14 +132,14 @@ public class RemoveAdminCommand extends BaseRolesCommand {
                     roleMemberSession.remove(getAuthenticationToken(), roleMember.getId());
                     foundMatch = true;
                     getLogger().info("Removed role member: " + "'" + caName + "' " + accessMatchValue + " " + accessMatchType + " '" +
-                            tokenMatchValue + "' from role " + roleName);
+                            tokenMatchValue + "' from role " + super.getFullRoleName(namespace, roleName));
                 }
             }
             if (!foundMatch) {
-                getLogger().info("Could not find any matching admin in role \"" + roleName + "\".");
+                getLogger().info("Could not find any matching admin in role " + super.getFullRoleName(namespace, roleName) + ".");
             }
         } catch (AuthorizationDeniedException e) {
-            getLogger().info("Not authorized to members of role '" + roleName + "'.");
+            getLogger().info("Not authorized to members of role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         return CommandResult.SUCCESS;
