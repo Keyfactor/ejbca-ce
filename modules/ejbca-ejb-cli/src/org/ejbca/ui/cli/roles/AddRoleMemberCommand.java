@@ -39,7 +39,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * Adds an role member
+ * Adds a role member.
  * 
  * @version $Id$
  */
