@@ -1118,11 +1118,11 @@ public final class StringTools {
         for (int i = 0; i < Math.max(firstSplit.length, secondSplit.length); i++) {
             String firstString;
             String secondString;
-            if (i == firstSplit.length) {
+            if (i >= firstSplit.length) {
                 //We've gotten this far and passed the number of digits in first, so treat next first as a 0
                 firstString = "0";
                 secondString = secondSplit[i].replaceAll("[^0-9].*", "");
-            } else if (i == secondSplit.length) {
+            } else if (i >= secondSplit.length) {
                 //We've gotten this far and passed the number of digits in second, so treat next second as a 0
                 firstString = firstSplit[i].replaceAll("[^0-9].*", "");    // Remove trailing Beta2, _alpha1 etc
                 secondString = "0";
