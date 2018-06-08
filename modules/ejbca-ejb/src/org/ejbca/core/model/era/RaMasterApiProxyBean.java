@@ -1879,4 +1879,21 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
     }
+    
+    @Override
+    public Collection<Certificate> findCertsWS(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now)
+            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
+        final List<Certificate> result = new ArrayList<>();
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    result.addAll(raMasterApi.findCertsWS(authenticationToken, username, onlyValid, now));
+                    break;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return result;
+    }
 }
