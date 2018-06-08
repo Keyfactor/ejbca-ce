@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.roles;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.Role;
@@ -50,13 +49,9 @@ public class ListRolesCommand extends BaseRolesCommand {
             try {
                 roleMembers = roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), role.getRoleId());
                 final String roleMembersString = " (" + roleMembers.size() + " member"+(roleMembers.size()==1?"":"s")+")";
-                if (StringUtils.isEmpty(role.getNameSpace())) {
-                    getLogger().info("'" + role.getRoleName() + "' " + roleMembersString);
-                } else {
-                    getLogger().info("["+role.getNameSpace()+"] '" + role.getRoleName() + "' " + roleMembersString + " (Not modifyable from CLI due to namespace.)");
-                }
+                getLogger().info(super.getFullRoleName(role.getNameSpace(), role.getRoleName()) + " " + roleMembersString);
             } catch (AuthorizationDeniedException e) {
-                getLogger().info(role.getRoleName() + " (? members)");
+                getLogger().info(super.getFullRoleName(role.getNameSpace(), role.getRoleName()) + " (? members)");
             }
         }
         return CommandResult.SUCCESS;
