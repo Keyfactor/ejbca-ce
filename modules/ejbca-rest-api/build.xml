@@ -70,8 +70,11 @@
     	<copy todir="${build.dir}/swagger-ui-dist">
     		<fileset dir="${this.dir}/swagger-ui-dist"/>
     	</copy>
-        <war destfile="${mod.ejbca-rest-api.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}">
-        </war>
+		<!-- Copy Jackson2 libraries to override Jackson1 -->
+		<copy todir="${build.dir}/WEB-INF/lib">
+			<fileset dir="${this.dir}/resources/WEB-INF/lib"/>
+		</copy>
+        <war destfile="${mod.ejbca-rest-api.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
     </target>
 
 	<target name="compile" depends="with.clover,setup">
