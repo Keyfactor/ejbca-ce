@@ -105,7 +105,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:panelGroup id="allowExplicitParameters">
 			<h:outputLabel id="allowExplicitParametersLabel" for="currentCryptoTokenAllowExplicitParameters"
 						   value="#{web.text.CRYPTOTOKEN_USEEXPLICITKEYPARAMETERS} "/>
-			<%= ejbcawebbean.getHelpReference("/Managing_Crypto_Tokens.html#New_Crypto_Tokens") %>
+			<%= ejbcawebbean.getHelpReference("/Crypto_Tokens_Overview.html") %>
 		</h:panelGroup>
 		<h:panelGroup>
 			<h:selectBooleanCheckbox id="currentCryptoTokenAllowExplicitParameters"
@@ -116,7 +116,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:panelGroup id="currentCryptoTokenAllowExportPrivateKeyPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
 			<h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel" for="currentCryptoTokenAllowExportPrivateKey"
 				value="#{web.text.CRYPTOTOKEN_ALLOWEXPORT} "/>
-			<%= ejbcawebbean.getHelpReference("/Managing_Crypto_Tokens.html#New_Crypto_Tokens") %>
+			<%= ejbcawebbean.getHelpReference("/Crypto_Tokens_Overview.html") %>
 		</h:panelGroup>
 		<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
 			<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey"
