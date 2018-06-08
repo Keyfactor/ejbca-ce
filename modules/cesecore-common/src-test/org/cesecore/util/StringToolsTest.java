@@ -524,8 +524,12 @@ public class StringToolsTest {
         assertFalse(StringTools.isLesserThan("5.0", "5.0"));
         assertFalse(StringTools.isLesserThan("5.0", "5.0.0"));
         assertFalse(StringTools.isLesserThan("5.0.0", "5.0"));
+        assertFalse(StringTools.isLesserThan("5.0.0.0", "5.0"));
+        assertFalse(StringTools.isLesserThan("5.0", "5.0.0.0"));
         assertFalse(StringTools.isLesserThan("6.0.1", "6.0"));
         assertFalse(StringTools.isLesserThan("6.14.0", "6.13.0.14"));
+        assertFalse(StringTools.isLesserThan("6.14.0", "6.14.0.Alpha1"));
+        assertFalse(StringTools.isLesserThan("6.14.0.junk.0", "6.14.0.junk.0")); // incorrect syntax, but shouldn't crash
 
         assertTrue(StringTools.isLesserThan("6.0.1", "6.3.0"));
         assertTrue(StringTools.isLesserThan("6.0.1", "6.3.0"));
