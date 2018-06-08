@@ -2501,35 +2501,35 @@ public class EjbcaWS implements IEjbcaWS {
     }
 
     @Override
-	public Certificate getCertificate(String certSNinHex, String issuerDN) throws CADoesntExistsException,
-		AuthorizationDeniedException, EjbcaException {
-		Certificate retval = null;
-		AuthenticationToken admin = getAdmin(true);
-		String bcString = CertTools.stringToBCDNString(issuerDN);
-		int caid = bcString.hashCode();
+    public Certificate getCertificate(String certSNinHex, String issuerDN) throws CADoesntExistsException,
+        AuthorizationDeniedException, EjbcaException {
+        Certificate retval = null;
+        AuthenticationToken admin = getAdmin(true);
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
-		try {
-			caSession.verifyExistenceOfCA(caid);
-			final String[] rules = {StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", StandardRules.CAACCESS.resource() + caid};
-			if(!authorizationSession.isAuthorizedNoLogging(admin, rules)) {
-            	final String authmsg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", Arrays.toString(rules), null);
-            	throw new AuthorizationDeniedException(authmsg);
-			}
-			java.security.cert.Certificate cert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, new BigInteger(certSNinHex,16));
-			if(cert != null){
-				retval = new Certificate(cert);
-			}
-		} catch (CertificateEncodingException e) {
+        try {
+            String bcString = CertTools.stringToBCDNString(issuerDN);
+            int caid = bcString.hashCode();
+            caSession.verifyExistenceOfCA(caid);
+            final String[] rules = {StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", StandardRules.CAACCESS.resource() + caid};
+            if(!authorizationSession.isAuthorizedNoLogging(admin, rules)) {
+                final String authmsg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", Arrays.toString(rules), null);
+                throw new AuthorizationDeniedException(authmsg);
+            }
+            final java.security.cert.Certificate cert = raMasterApiProxyBean.getCertificateWS(admin, certSNinHex, issuerDN);
+            if(cert != null){
+                retval = new Certificate(cert);
+            }
+        } catch (CertificateEncodingException e) {
             throw getInternalException(e, logger);
-        } catch (RuntimeException e) {	// EJBException, ...
+        } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
             logger.flush();
         }
-		return retval;
-	}
+        return retval;
+    }
 
     @Override
 	public NameAndId[] getAvailableCAs() throws EjbcaException, AuthorizationDeniedException {
