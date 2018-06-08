@@ -898,4 +898,19 @@ public interface RaMasterApi {
      * @throws EjbcaException any EjbcaException.
      */
     Collection<Certificate> findCertsWS(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
+    
+    /**
+     * Fetches available certificate profiles in an end entity profile.
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /endentityprofilesrules/&lt;end entity profile&gt;
+     * </pre>
+     *
+     * @param entityProfileId id of an end entity profile where we want to find which certificate profiles are available.
+     * @return a Map containing the name and ID pairs of available certificate profiles or an empty map.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws EjbcaException any EjbcaException.
+     */
+    Map<String,Integer> getAvailableCertificateProfilesWS(AuthenticationToken authenticationToken, int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
 }
