@@ -78,7 +78,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
     /**
      * @param publishType
-     *            is one of PublishQueueData.PUBLISH_TYPE_CERT or CRL
+     *            is one of PublisherConst.PUBLISH_TYPE_CERT or CRL
      * @return null
      */
     public PublisherQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus) {
@@ -113,7 +113,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
     /**
      * PublishStatus is one of
-     * org.ejbca.core.model.ca.publisher.PublisherQueueData.STATUS_PENDING,
+     * org.ejbca.core.model.ca.publisher.PublisherConst.STATUS_PENDING,
      * FAILED or SUCCESS.
      */
     //@Column
@@ -126,7 +126,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
     /**
      * PublishType is one of
-     * org.ejbca.core.model.ca.publisher.PublishQueueData.PUBLISH_TYPE_CERT or
+     * org.ejbca.core.model.ca.publisher.PublisherConst.PUBLISH_TYPE_CERT or
      * CRL
      */
     //@Column
