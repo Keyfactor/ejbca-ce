@@ -945,4 +945,23 @@ public interface RaMasterApi {
      * @see "IRaAdminSessionLocal#getAuthorizedEndEntityProfileIds()"
      */
     Map<String,Integer> getAuthorizedEndEntityProfilesWS(AuthenticationToken authenticationToken) throws AuthorizationDeniedException, EjbcaException;
+    
+    /**
+     * Fetches an issued certificate.
+     *
+     * Authorization requirements:<pre>
+     * - A valid certificate
+     * - /ca_functionality/view_certificate
+     * - /ca/&lt;of the issing CA&gt;
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @param certSNinHex the certificate serial number in hexadecimal representation.
+     * @param issuerDN the issuer of the certificate.
+     * @return the certificate or null if certificate couldn't be found.
+     * @throws AuthorizationDeniedException if the calling administrator isn't authorized to view the certificate.
+     * @throws CADoesntExistsException if a referenced CA does not exist.
+     * @throws EjbcaException any EjbcaException.
+     */
+    Certificate getCertificateWS(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 }
