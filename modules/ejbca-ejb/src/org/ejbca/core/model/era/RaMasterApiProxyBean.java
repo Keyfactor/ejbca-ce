@@ -2029,7 +2029,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    result.addAll( getLastCAChainWS(authenticationToken, caName));
+                    result.addAll( raMasterApi.getLastCAChainWS(authenticationToken, caName));
                     break;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
