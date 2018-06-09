@@ -2455,8 +2455,16 @@ public class EjbcaWS implements IEjbcaWS {
     public int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException, ApprovalRequestExpiredException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
-            logAdminName(getAdmin(true), logger);
-            return approvalSession.getRemainingNumberOfApprovals(requestId);
+            final AuthenticationToken admin = getAdmin(true);
+            logAdminName(admin, logger);
+            final Integer requestResult = raMasterApiProxyBean.getRemainingNumberOfApprovalsWS(admin, requestId);
+            int result;
+            if (requestResult != null) {
+                result = requestResult;
+            } else {
+                result = -9;
+            }
+            return result;
         } finally {
             logger.writeln();
             logger.flush();
