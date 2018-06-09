@@ -91,10 +91,6 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -1173,92 +1169,57 @@ public class EjbcaWS implements IEjbcaWS {
         }
 	}
 
-	private byte[] processCertReq(final String username, final String password, final String req, final int reqType,
-			final String hardTokenSN, final String responseType, final IPatternLogger logger) throws EjbcaException, CesecoreException, CADoesntExistsException, AuthorizationDeniedException {
-		byte[] retval = null;
-		try {
-			final AuthenticationToken admin = getAdmin();
+    private byte[] processCertReq(final String username, final String password, final String req, final int reqType,
+            final String hardTokenSN, final String responseType, final IPatternLogger logger) throws EjbcaException, CesecoreException, CADoesntExistsException, AuthorizationDeniedException {
+        byte[] retval = null;
+        try {
+            final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-			// check authorization to CAID
-			final EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
-			if (userdata == null) {
-			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-			    String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
-				throw new NotFoundException(msg);
-			}
-			final int caid = userdata.getCAId();
-			caSession.verifyExistenceOfCA(caid);
-			// Check tokentype
-			if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
-				throw getEjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests",
-                                        logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
-			}
-            // Authorization for {StandardRules.CAACCESS.resource() +caid, StandardRules.CREATECERT.resource()} is done in the
-            // CertificateCreateSessionBean.createCertificate call which is called in the end
-			RequestMessage imsg = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
-			if (imsg != null) {
-				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
-			}
-		} catch (CertificateExtensionException e) {
-		    throw getInternalException(e, logger);
+            retval = raMasterApiProxyBean.processCertReqWS(admin, username, password, req, reqType, hardTokenSN, responseType);
+        } catch (CertificateExtensionException e) {
+            throw getInternalException(e, logger);
         } catch (InvalidKeyException e) {
             throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
-		} catch (IllegalKeyException e) {
-			// Don't log a bad error for this (user's key length too small)
+        } catch (IllegalKeyException e) {
+            // Don't log a bad error for this (user's key length too small)
             throw getEjbcaException(e, logger, ErrorCode.ILLEGAL_KEY, Level.DEBUG);
-		} catch (AuthStatusException e) {
-			// Don't log a bad error for this (user wrong status)
+        } catch (AuthStatusException e) {
+            // Don't log a bad error for this (user wrong status)
             throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
-		} catch (AuthLoginException e) {
+        } catch (AuthLoginException e) {
             throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-		} catch (SignatureException e) {
+        } catch (SignatureException e) {
             throw getEjbcaException(e, logger, ErrorCode.SIGNATURE_ERROR, Level.ERROR);
-		} catch (SignRequestSignatureException e) {
+        } catch (SignRequestSignatureException e) {
             throw getEjbcaException(e.getMessage(), logger, ErrorCode.BAD_REQUEST_SIGNATURE, Level.ERROR);
-		} catch (InvalidKeySpecException e) {
+        } catch (InvalidKeySpecException e) {
             throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY_SPEC, Level.ERROR);
         } catch (CertificateCreateException e) {
             throw getEjbcaException(e, logger, e.getErrorCode(), Level.ERROR);
-		} catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw getInternalException(e, logger);
-		} catch (NoSuchProviderException e) {
+        } catch (NoSuchProviderException e) {
             throw getInternalException(e, logger);
-		} catch (CertificateException e) {
+        } catch (CertificateException e) {
             throw getInternalException(e, logger);
-		} catch (IOException e) {
+        } catch (IOException e) {
             throw getInternalException(e, logger);
-		} catch (ParseException e) {
-			// CVC error
+        } catch (ParseException e) {
+            // CVC error
             throw getInternalException(e, logger);
-		} catch (ConstructionException e) {
-			// CVC error
+        } catch (ConstructionException e) {
+            // CVC error
             throw getInternalException(e, logger);
-		} catch (NoSuchFieldException e) {
-			// CVC error
+        } catch (NoSuchFieldException e) {
+            // CVC error
             throw getInternalException(e, logger);
-        } catch (RuntimeException e) {	// EJBException, ...
+        } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
-		}
-		return retval;
-	}
-
-
-    private byte[] getCertResponseFromPublicKey(final AuthenticationToken admin, final RequestMessage msg, final String hardTokenSN,
-            final String responseType) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
-            CertificateExtensionException, CertificateParsingException {
-        byte[] retval = null;
-        final ResponseMessage resp = signSession.createCertificate(admin, msg, X509ResponseMessage.class, null);
-        final java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), java.security.cert.Certificate.class);
-        if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
-            retval = cert.getEncoded();
-        } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
-            retval = signSession.createPKCS7(admin, (X509Certificate) cert, false);
-        } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
-            retval = signSession.createPKCS7(admin, (X509Certificate) cert, true);
-        }
-        if (hardTokenSN != null) {
-            hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, cert);
-        }
+        } catch(EjbcaException e) {
+            // ECA-6685 Re-factor.
+            // Fix exception pattern logger thrown in RaMasterApiSessionBean.processCertReq to not to serialize the logger.
+            throw getEjbcaException(e.getMessage(), logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
+        } 
         return retval;
     }
 
