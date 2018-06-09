@@ -12,19 +12,25 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -85,6 +91,8 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 import org.ejbca.util.query.IllegalQueryException;
 
@@ -1031,4 +1039,25 @@ public interface RaMasterApi {
      * @throws CertificateEncodingException if on of the certificates could not be encoded.
      */
     List<Certificate> getLastCAChainWS(AuthenticationToken authenticationToken, String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException;
+    
+    /** 
+     * Processes a certificate issuance for the user with the given name.
+     * 
+     * @param authenticationToken the administrator performing the action.
+     * @param username the users name.
+     * @param password the users password
+     * @param req the certificate request.
+     * @param reqType the request type.
+     * @param hardTokenSN the hard token SN, if available.
+     * @param responseType the response type.
+     * @return the base 64 encoded user certificate as byte array.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws EjbcaException any EjbcaException
+     * @throws CesecoreException any CesecoreException
+     * @throws CADoesntExistsException if the issuing CA associated with the user does not exist.
+     */
+    byte[] processCertReqWS(AuthenticationToken authenticationToken, final String username, final String password, final String req, final int reqType, final String hardTokenSN, final String responseType) 
+                throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
+                       InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
+                       IOException, ParseException, ConstructionException, NoSuchFieldException, RuntimeException;
 }
