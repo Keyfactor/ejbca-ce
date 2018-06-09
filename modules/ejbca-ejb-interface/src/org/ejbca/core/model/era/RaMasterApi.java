@@ -1060,4 +1060,21 @@ public interface RaMasterApi {
                 throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
                        InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
                        IOException, ParseException, ConstructionException, NoSuchFieldException, RuntimeException;
+    
+    /**
+     * Fetches the latest CRL issued by the given CA.
+     *
+     * Authorization requirements:<pre>
+     * - /ca/&lt;caid&gt;
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @param caName the name in EJBCA of the CA that issued the desired CRL.
+     * @param deltaCRL false to fetch a full CRL, true to fetch a deltaCRL (if issued).
+     * @return the latest CRL issued for the CA as a DER encoded byte array.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws CADoesntExistsException if a referenced CA does not exist.
+     * @throws EjbcaException any EjbcaException.
+     */
+    byte[] getLatestCRLWS(AuthenticationToken authenticationToken, String caName, boolean deltaCRL) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 }
