@@ -2074,4 +2074,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
+
+    @Override
+    public Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId)
+            throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.getRemainingNumberOfApprovalsWS(authenticationToken, requestId);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null; // If all requests have failed. Should only be possible, if the request was proxied to another instance.
+    }
 }
