@@ -2636,12 +2636,7 @@ public class EjbcaWS implements IEjbcaWS {
         try {
             AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
-            CAInfo cainfo = caSession.getCAInfo(admin, caname);
-            if (cainfo == null) {
-                throw new CADoesntExistsException("CA with name " + caname + " doesn't exist.");
-            }
-            byte[] ret = crlStoreSession.getLastCRL(cainfo.getSubjectDN(), deltaCRL);
-            return ret;
+            return raMasterApiProxyBean.getLatestCRLWS(admin, caname, deltaCRL);
         } catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {  // EJBException, ...
