@@ -2532,4 +2532,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return crlStoreSession.getLastCRL(cainfo.getSubjectDN(), deltaCRL);
     }
+
+    @Override
+    public Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId)
+            throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
+        return approvalSession.getRemainingNumberOfApprovals(requestId);
+    }
 }
