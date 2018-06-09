@@ -102,6 +102,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -198,6 +199,8 @@ import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.protocol.CertificateRenewalException;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
@@ -2455,14 +2458,65 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<Certificate> getLastCAChainWS(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException {
         final CAInfo info = caSession.getCAInfo(authenticationToken, caName);
-        final List<Certificate> result = new ArrayList<>();
         if(info == null) {
             throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
         }
+        final List<Certificate> result = new ArrayList<>();
         if (info.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE){
             return result;
         }
         result.addAll(info.getCertificateChain());
+        return result;
+    }
+    
+    @Override
+    public byte[] processCertReqWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType,
+            String hardTokenSN, String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
+        InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
+        IOException, ParseException, ConstructionException, NoSuchFieldException, RuntimeException {
+        byte[] retval = null;
+        // check authorization to CAID
+        final EndEntityInformation userdata = endEntityAccessSession.findUser(authenticationToken, username);
+        if (userdata == null) {
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            throw new NotFoundException(msg);
+        }
+        final int caId = userdata.getCAId();
+        caSession.verifyExistenceOfCA(caId);
+        // Check token type.
+        if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
+            // ECA-6685 Re-factor.
+            // Fix at caller EjbcaWS.
+//            throw getEjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests",
+//                                    null, ErrorCode.BAD_USER_TOKEN_TYPE, null);
+            throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE, "Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
+        }
+        // Authorization for {StandardRules.CAACCESS.resource() +caid, StandardRules.CREATECERT.resource()} is done in the
+        // CertificateCreateSessionBean.createCertificate call which is called in the end
+        final RequestMessage imsg = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
+        if (imsg != null) {
+            retval = getCertResponseFromPublicKey(authenticationToken, imsg, hardTokenSN, responseType);
+        }
+        return retval;
+    }
+    
+    private byte[] getCertResponseFromPublicKey(final AuthenticationToken admin, final RequestMessage msg, final String hardTokenSN,
+            final String responseType) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
+            CertificateExtensionException, CertificateParsingException {
+        byte[] result = null;
+        final ResponseMessage resp = signSessionLocal.createCertificate(admin, msg, X509ResponseMessage.class, null);
+        final java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), java.security.cert.Certificate.class);
+        if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
+            result = cert.getEncoded();
+        } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+            result = signSessionLocal.createPKCS7(admin, (X509Certificate) cert, false);
+        } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
+            result = signSessionLocal.createPKCS7(admin, (X509Certificate) cert, true);
+        }
+        if (hardTokenSN != null) {
+            hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, cert);
+        }
         return result;
     }
 }
