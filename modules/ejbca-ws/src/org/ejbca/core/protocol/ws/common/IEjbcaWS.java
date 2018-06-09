@@ -935,7 +935,7 @@ public interface IEjbcaWS {
 	/**
 	 *
 	 * @param requestId the ID of an approval request
-     * @return the remaining number of approvals for this request (with 0 meaning that the request has passed) or -1 if the request has been denied
+     * @return the remaining number of approvals for this request (with 0 meaning that the request has passed) or -1 if the request has been denied. If the request was proxied to a CA instance, and the request fails for technical reasons -9 is returned.
 	 * @throws ApprovalException if a request of the given ID didn't exist
 	 * @throws AuthorizationDeniedException if the current requester wasn't authorized.
      * @throws ApprovalRequestExpiredException if approval request was expired before having a definite status

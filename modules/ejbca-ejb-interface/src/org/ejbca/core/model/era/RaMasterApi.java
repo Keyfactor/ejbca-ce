@@ -1077,4 +1077,17 @@ public interface RaMasterApi {
      * @throws EjbcaException any EjbcaException.
      */
     byte[] getLatestCRLWS(AuthenticationToken authenticationToken, String caName, boolean deltaCRL) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+    
+    /**
+    * Fetches the remaining number of approvals for the given approval request.
+    * 
+    * @param authenticationToken the administrator performing the action.
+    * @param requestId the ID of an approval request.
+    * @return the remaining number of approvals for this request (with 0 meaning that the request has passed or -1 if the request has been denied) or null if the request was proxied to another instance and the request has failed.
+    * @throws AuthorizationDeniedException if client isn't authorized to request.
+    * @throws ApprovalException if a request of the given ID didn't exist.
+    * @throws ApprovalRequestExpiredException if approval request was expired before having a definite status
+    *
+    */
+   Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
 }
