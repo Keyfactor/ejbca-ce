@@ -12,6 +12,7 @@
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
 		<pathelement location="${mod.ejbca-entity.lib}" />
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<path refid="lib.log4j.classpath"/>
