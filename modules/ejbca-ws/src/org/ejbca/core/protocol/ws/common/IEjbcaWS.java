@@ -758,7 +758,7 @@ public interface IEjbcaWS {
 	 * Authorization requirements: a valid client certificate
 	 *
 	 * @param resource the access rule to test
-	 * @return true if the user is authorized to the resource otherwise false.
+	 * @return true if the user is authorized to the resource otherwise false. If the request was proxied to a CA instance, and the request fails, false is returned.
 	 * @throws EjbcaException
 	 * @see RevokeStatus
 	 */
