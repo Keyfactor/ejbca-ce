@@ -1689,7 +1689,7 @@ public class EjbcaWS implements IEjbcaWS {
 		try {
             final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-			return authorizationSession.isAuthorized(admin, resource);
+			return raMasterApiProxyBean.isAuthorizedWS(admin, resource);
 		} catch (AuthorizationDeniedException ade) {
             return false;
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
