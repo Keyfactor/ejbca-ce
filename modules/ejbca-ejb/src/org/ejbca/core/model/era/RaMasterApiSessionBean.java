@@ -110,6 +110,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -256,6 +257,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
     private CertReqHistorySessionLocal certreqHistorySession;
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
     @EJB
@@ -2518,5 +2521,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, cert);
         }
         return result;
+    }
+
+    @Override
+    public byte[] getLatestCRLWS(AuthenticationToken authenticationToken, String caName, boolean deltaCRL)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        final CAInfo cainfo = caSession.getCAInfo(authenticationToken, caName);
+        if (cainfo == null) {
+            throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
+        }
+        return crlStoreSession.getLastCRL(cainfo.getSubjectDN(), deltaCRL);
     }
 }
