@@ -2089,4 +2089,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null; // If all requests have failed. Should only be possible, if the request was proxied to another instance.
     }
+
+    @Override
+    public Integer isApprovedWS(AuthenticationToken authenticationToken, int approvalId)
+            throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.isApprovedWS(authenticationToken, approvalId);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null; // If all requests have failed. Should only be possible, if the request was proxied to another instance.
+    }
 }

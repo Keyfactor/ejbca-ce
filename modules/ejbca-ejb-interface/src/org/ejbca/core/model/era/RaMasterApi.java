@@ -1090,4 +1090,16 @@ public interface RaMasterApi {
     *
     */
    Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
+   
+   /**
+    * Looks up if a requested action has been approved.
+    *
+    * @param authenticationToken the administrator performing the action.
+    * @param approvalId unique id for the action.
+    * @return the number of approvals left, 0 if approved otherwise is the ApprovalDataVO.STATUS constants returned indicating the status or null if the request was proxied to another instance and the request has failed.
+    * @throws AuthorizationDeniedException if client isn't authorized to request.
+    * @throws ApprovalException if approvalId does not exist.
+    * @throws ApprovalRequestExpiredException if one of the approvals have expired, once notified it won't throw it anymore.
+    */
+   Integer isApprovedWS(AuthenticationToken authenticationToken, int approvalId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
 }

@@ -924,7 +924,7 @@ public interface IEjbcaWS {
 	 * Authorization requirements: A valid certificate
 	 *
 	 * @param approvalId unique id for the action
-	 * @return the number of approvals left, 0 if approved otherwise is the ApprovalDataVO.STATUS constants returned indicating the status.
+	 * @return the number of approvals left, 0 if approved otherwise is the ApprovalDataVO.STATUS constants returned indicating the status. If the request was proxied to a CA instance, and the request fails for technical reasons -9 is returned.
 	 * @throws ApprovalException if approvalId does not exist
 	 * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it won't throw it anymore.
 	 * @throws EjbcaException if error occurred server side

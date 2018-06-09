@@ -2439,8 +2439,16 @@ public class EjbcaWS implements IEjbcaWS {
 	public int isApproved(int approvalId) throws ApprovalException, EjbcaException, ApprovalRequestExpiredException{
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
-            logAdminName(getAdmin(true),logger);
-			return approvalSession.isApproved(approvalId);
+            final AuthenticationToken admin = getAdmin(true);
+            logAdminName(admin,logger);
+            final Integer requestResult = raMasterApiProxyBean.isApprovedWS(admin, approvalId);
+            int result;
+            if (requestResult != null) {
+                result = requestResult;
+            } else {
+                result = -9;
+            }
+            return result;
 		} catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
