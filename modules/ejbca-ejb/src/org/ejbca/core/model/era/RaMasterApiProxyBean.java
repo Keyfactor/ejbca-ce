@@ -2057,4 +2057,21 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
+
+    @Override
+    public byte[] getLatestCRLWS(AuthenticationToken authenticationToken, String caName, boolean deltaCRL)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        byte[] result = null;
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    result = raMasterApi.getLatestCRLWS(authenticationToken, caName, deltaCRL);
+                    break;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return result;
+    }
 }
