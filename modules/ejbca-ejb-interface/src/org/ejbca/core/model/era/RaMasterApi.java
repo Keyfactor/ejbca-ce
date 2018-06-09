@@ -1094,6 +1094,8 @@ public interface RaMasterApi {
    /**
     * Looks up if a requested action has been approved.
     *
+    * Authorization requirements: a valid client certificate.
+    * 
     * @param authenticationToken the administrator performing the action.
     * @param approvalId unique id for the action.
     * @return the number of approvals left, 0 if approved otherwise is the ApprovalDataVO.STATUS constants returned indicating the status or null if the request was proxied to another instance and the request has failed.
@@ -1102,4 +1104,17 @@ public interface RaMasterApi {
     * @throws ApprovalRequestExpiredException if one of the approvals have expired, once notified it won't throw it anymore.
     */
    Integer isApprovedWS(AuthenticationToken authenticationToken, int approvalId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
+   
+   /**
+    * Checks if a user is authorized to a given resource.
+    *
+    * Authorization requirements: a valid client certificate.
+    *
+    * @param authenticationToken the administrator performing the action.
+    * @param resource the access rule to test.
+    * @return true if the user is authorized to the resource otherwise false.
+    * @throws AuthorizationDeniedException if client isn't authorized to request.
+    * @see RevokeStatus.
+    */
+   boolean isAuthorizedWS(AuthenticationToken authenticationToken, String resource) throws AuthorizationDeniedException;
 }

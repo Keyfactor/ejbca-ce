@@ -2104,4 +2104,18 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null; // If all requests have failed. Should only be possible, if the request was proxied to another instance.
     }
+
+    @Override
+    public boolean isAuthorizedWS(AuthenticationToken authenticationToken, String resource) throws AuthorizationDeniedException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.isAuthorizedWS(authenticationToken, resource);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return false; // If all requests have failed, authorization fails as well.
+    }
 }
