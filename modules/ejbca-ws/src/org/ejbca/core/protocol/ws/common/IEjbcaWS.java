@@ -910,7 +910,7 @@ public interface IEjbcaWS {
 	 * @param serialNumberInHex of the certificate to republish
 	 * @param issuerDN of the certificate to republish
 	 * @throws CADoesntExistsException if a referenced CA does not exist
-	 * @throws AuthorizationDeniedException if the administratior isn't authorized to republish
+	 * @throws AuthorizationDeniedException if the administrator isn't authorized to republish
 	 * @throws PublisherException if something went wrong during publication
 	 * @throws EjbcaException if other error occured on the server side.
 	 */
