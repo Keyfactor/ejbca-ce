@@ -79,6 +79,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -1117,4 +1118,25 @@ public interface RaMasterApi {
     * @see RevokeStatus.
     */
    boolean isAuthorizedWS(AuthenticationToken authenticationToken, String resource) throws AuthorizationDeniedException;
+   
+   /**
+    * Republishes a selected certificate.
+    *
+    * Authorization requirements:<pre>
+    * - /administrator
+    * - /ra_functionality/view_end_entity
+    * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+    * - /ca/&lt;ca of user&gt;
+    * </pre>
+    *
+    * @param authenticationToken the administrator performing the action.
+    * @param serialNumberInHex of the certificate to republish
+    * @param issuerDN of the certificate to republish
+    * @throws AuthorizationDeniedException if the administrator isn't authorized to republish.
+    * @throws CADoesntExistsException if a referenced CA does not exist.
+    * @throws PublisherException if something went wrong during publication.
+    * @throws EjbcaException any EjbcaException.
+    */
+   void republishCertificateWS(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN) 
+           throws AuthorizationDeniedException, CADoesntExistsException, PublisherException, EjbcaException;
 }

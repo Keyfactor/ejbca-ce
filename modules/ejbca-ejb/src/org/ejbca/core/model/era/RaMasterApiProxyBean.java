@@ -122,6 +122,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -2117,5 +2118,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return false; // If all requests have failed, authorization fails as well.
+    }
+
+    @Override
+    public void republishCertificateWS(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN)
+            throws AuthorizationDeniedException, CADoesntExistsException, PublisherException, EjbcaException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    raMasterApi.republishCertificateWS(authenticationToken, serialNumberInHex, issuerDN);
+                    break;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
     }
 }
