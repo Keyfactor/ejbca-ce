@@ -181,6 +181,8 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityInformationFiller;
@@ -2548,5 +2550,31 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public boolean isAuthorizedWS(AuthenticationToken authenticationToken, String resource) throws AuthorizationDeniedException {
         return authorizationSession.isAuthorized(authenticationToken, resource);
+    }
+
+    @Override
+    public void republishCertificateWS(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN)
+            throws AuthorizationDeniedException, CADoesntExistsException, PublisherException, EjbcaException {
+        final String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
+        caSession.verifyExistenceOfCA(bcIssuerDN.hashCode());
+        final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(new BigInteger(serialNumberInHex,16), bcIssuerDN);
+        if(certReqHistory == null){
+            throw new PublisherException("Error: the certificate with serialnumber : " + serialNumberInHex +" and issuerdn " + issuerDN + " couldn't be found in database.");
+        }
+        ejbcaWSHelperSession.isAuthorizedToRepublish(authenticationToken, certReqHistory.getUsername(),bcIssuerDN.hashCode());
+        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certReqHistory.getEndEntityInformation().getCertificateProfileId());
+        if (certificateProfile != null) {
+            if (certificateProfile.getPublisherList().size() > 0) {
+                if (publisherSession.storeCertificate(authenticationToken, certificateProfile.getPublisherList(), certReqHistory.getFingerprint(),
+                        certReqHistory.getEndEntityInformation().getPassword(), certReqHistory.getEndEntityInformation().getCertificateDN(), certReqHistory.getEndEntityInformation().getExtendedInformation())) {
+                } else {
+                    throw new PublisherException("Error: publication failed to at least one of the defined publishers.");
+                }
+            } else {
+                throw new PublisherException("Error no publisher defined for the given certificate.");
+            }
+        } else {
+            throw new PublisherException("Error : Certificate profile couldn't be found for the given certificate.");
+        }
     }
 }

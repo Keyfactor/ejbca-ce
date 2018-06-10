@@ -91,7 +91,6 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -154,7 +153,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
-import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
@@ -2337,34 +2335,11 @@ public class EjbcaWS implements IEjbcaWS {
 
     @Override
 	public void republishCertificate(String serialNumberInHex,String issuerDN) throws CADoesntExistsException, AuthorizationDeniedException, PublisherException, EjbcaException{
-		AuthenticationToken admin = getAdmin();
-
+		final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try{
-			String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
-			caSession.verifyExistenceOfCA(bcIssuerDN.hashCode());
-			CertReqHistory certreqhist = certreqHistorySession.retrieveCertReqHistory(new BigInteger(serialNumberInHex,16), bcIssuerDN);
-			if(certreqhist == null){
-				throw new PublisherException("Error: the  certificate with  serialnumber : " + serialNumberInHex +" and issuerdn " + issuerDN + " couldn't be found in database.");
-			}
-
-			ejbcaWSHelperSession.isAuthorizedToRepublish(admin, certreqhist.getUsername(),bcIssuerDN.hashCode());
-
-			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certreqhist.getEndEntityInformation().getCertificateProfileId());
-			if (certprofile != null) {
-				if (certprofile.getPublisherList().size() > 0) {
-					if (publisherSession.storeCertificate(admin, certprofile.getPublisherList(), certreqhist.getFingerprint(),
-					        certreqhist.getEndEntityInformation().getPassword(), certreqhist.getEndEntityInformation().getCertificateDN(), certreqhist.getEndEntityInformation().getExtendedInformation())) {
-					} else {
-						throw new PublisherException("Error: publication failed to at least one of the defined publishers.");
-					}
-				} else {
-					throw new PublisherException("Error no publisher defined for the given certificate.");
-				}
-			} else {
-				throw new PublisherException("Error : Certificate profile couldn't be found for the given certificate.");
-			}
+			raMasterApiProxyBean.republishCertificateWS(admin, serialNumberInHex, issuerDN);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
             throw getInternalException(e, logger);
         } finally {
