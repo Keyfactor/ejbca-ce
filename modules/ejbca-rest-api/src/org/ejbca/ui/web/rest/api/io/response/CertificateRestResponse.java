@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
@@ -28,6 +29,7 @@ import java.security.cert.X509Certificate;
 public class CertificateRestResponse {
 
     private byte[] certificate;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private BigInteger serialNumber;
 
     private CertificateRestResponse(byte[] certificate, BigInteger serialNumber) {
