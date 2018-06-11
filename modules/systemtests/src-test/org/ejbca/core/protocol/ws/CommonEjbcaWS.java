@@ -1466,6 +1466,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             ksenv = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception e) {
+        	log.info("Exception while creating PKCS12 keystore: " + e.getMessage(), e);
+            if (e.getCause() != null) {
+                log.info("Exception cause while creating PKCS12 keystore: " + e.getCause().getMessage(), e.getCause());
+            }
+            if (e.getFaultInfo() != null) {
+                log.info("Fault info while creating PKCS12 keystore: " + e.getFaultInfo().getErrorCode().getInternalErrorCode() + " - " + e.getFaultInfo().getMessage());
+            }
             assertTrue(e.getMessage(), false);
         }
 
@@ -1657,6 +1664,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             try {
                 ksenv = CommonEjbcaWS.this.ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, PASSWORD, hardTokenSN, "2048", AlgorithmConstants.KEYALGORITHM_RSA);
             } catch (EjbcaException_Exception e) {
+                log.info("Exception while creating PKCS12 keystore: " + e.getMessage(), e);
+                if (e.getCause() != null) {
+                    log.info("Exception cause while creating PKCS12 keystore: " + e.getCause().getMessage(), e.getCause());
+                }
+                if (e.getFaultInfo() != null) {
+                    log.info("Fault info while creating PKCS12 keystore: " + e.getFaultInfo().getErrorCode().getInternalErrorCode() + " - " + e.getFaultInfo().getMessage());
+                }
                 assertTrue(e.getMessage(), false);
                 return null;
             }
