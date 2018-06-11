@@ -2134,4 +2134,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
     }
+
+    @Override
+    public byte[] pkcs12ReqWS(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN, String keySpecification,
+            String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, NotFoundException, EjbcaException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.pkcs12ReqWS(authenticationToken, username, password, hardTokenSN, keySpecification, keyAlgorithm);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
 }

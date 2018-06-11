@@ -1139,4 +1139,44 @@ public interface RaMasterApi {
     */
    void republishCertificateWS(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN) 
            throws AuthorizationDeniedException, CADoesntExistsException, PublisherException, EjbcaException;
+   
+   /**
+    * Creates a server-generated keystore.
+    *
+    * The method must be preceded by
+    * a editUser call, either to set the user status to 'new' or to add non-existing users and
+    * the user's token must be set to {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS}.TOKEN_TYPE_P12.<br>
+    *
+    * Authorization requirements: <pre>
+    * - /administrator
+    * - /ca/&lt;ca of user&gt;
+    * - /ca_functionality/create_certificate
+    * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+    * - /ra_functionality/view_end_entity
+    * </pre>
+    *
+    * Additional authorization requirements for (non key recovery) clearing of password: <pre>
+    * - /endentityprofilesrules/&lt;end entity profile&gt;/edit_end_entity
+    * - /ra_functionality/edit_end_entity
+    * </pre>
+    *
+    * Additional authorization requirements for key recovery: <pre>
+    * - /endentityprofilesrules/&lt;end entity profile&gt;/keyrecovery
+    * - /ra_functionality/keyrecovery
+    * </pre>
+    *
+    * @param authenticationToken the administrator performing the action.
+    * @param username the unique username.
+    * @param password the password sent with editUser call.
+    * @param hardTokenSN If the certificate should be connected with a hard token, it is possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens certificates. Use null if no hardtokenSN should be associated with the certificate.
+    * @param keySpecification that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
+    * @param keyAlgorithm that the generated key should have, RSA, ECDSA. Use one of the constants in {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
+    * @return the generated keystore as byte array.
+    * @throws AuthorizationDeniedException if client isn't authorized to request.
+    * @throws CADoesntExistsException if a referenced CA does not exist.
+    * @throws NotFoundException if the user cannot be found.
+    * @throws EjbcaException any EjbcaException.
+    */
+   byte[] pkcs12ReqWS(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN, String keySpecification, String keyAlgorithm)
+           throws AuthorizationDeniedException, CADoesntExistsException, NotFoundException, EjbcaException;
 }
