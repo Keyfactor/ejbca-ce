@@ -65,7 +65,7 @@ public class RemoveRoleCommand extends BaseRolesCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
         } catch (AuthorizationDeniedException e) {
-            log.error("ERROR: Not authorized to remove role " + super.getFullRoleName(namespace, roleName));
+            getLogger().error("Not authorized to remove role " + super.getFullRoleName(namespace, roleName));
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         return CommandResult.SUCCESS;

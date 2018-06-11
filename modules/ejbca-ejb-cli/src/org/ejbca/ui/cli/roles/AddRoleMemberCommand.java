@@ -85,7 +85,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         try {
             role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e) {
-            getLogger().error("No authorized to role " + super.getFullRoleName(namespace, roleName) + ".");
+            getLogger().error("Not authorized to role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         if (role == null) {

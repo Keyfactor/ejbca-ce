@@ -59,7 +59,7 @@ public class ListRulesCommand extends BaseRolesCommand {
         try {
             final Role role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
             if (role == null) {
-            	getLogger().error("ERROR: No such role " + super.getFullRoleName(namespace, roleName) + ".");
+            	getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             for (final Entry<String,Boolean> entry : AccessRulesHelper.getAsListSortedByKey(role.getAccessRules())) {
