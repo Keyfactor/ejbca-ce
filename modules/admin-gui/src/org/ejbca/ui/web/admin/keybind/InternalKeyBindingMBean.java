@@ -109,7 +109,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         private final String name;
         private final int cryptoTokenId;
         private final String cryptoTokenName;
-        private final boolean cryptoTokenAvailable;
+        private final boolean authorizedToCryptotoken;
+        private final boolean authorizedToGenerateKeys;
         private final boolean cryptoTokenActive;
         private final String keyPairAlias;
         private final String nextKeyPairAlias;
@@ -124,7 +125,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         private final int certificateInternalCaId;
         private final String certificateSubjectDn;
 
-        private GuiInfo(int internalKeyBindingId, String name, int cryptoTokenId, String cryptoTokenName, boolean cryptoTokenAvailable,
+        private GuiInfo(int internalKeyBindingId, String name, int cryptoTokenId, String cryptoTokenName, final boolean authorizedToCryptotoken, boolean authorizedToGenerateKeys,
                 boolean cryptoTokenActive, String keyPairAlias, String nextKeyPairAlias, String status, String operationalStatus, String certificateId,
                 String certificateIssuerDn, String certificateSubjectDn, String certificateInternalCaName, int certificateInternalCaId, String certificateSerialNumber,
                 String caCertificateIssuerDn, String caCertificateSerialNumber) {
@@ -132,7 +133,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             this.name = name;
             this.cryptoTokenId = cryptoTokenId;
             this.cryptoTokenName = cryptoTokenName;
-            this.cryptoTokenAvailable = cryptoTokenAvailable;
+            this.authorizedToCryptotoken = authorizedToCryptotoken;
+            this.authorizedToGenerateKeys = authorizedToGenerateKeys;
             this.cryptoTokenActive = cryptoTokenActive;
             this.keyPairAlias = keyPairAlias;
             this.nextKeyPairAlias = nextKeyPairAlias;
@@ -220,8 +222,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             return nextKeyPairAlias != null;
         }
 
-        public boolean isCryptoTokenAvailable() {
-            return cryptoTokenAvailable;
+        public boolean isAuthorizedToGenerateKeys() {
+            return authorizedToGenerateKeys;
+        }
+        
+        public boolean isAuthorizedToCryptoToken() {
+            return authorizedToCryptotoken;
         }
 
         public boolean isCryptoTokenActive() {
@@ -493,13 +499,16 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 final int cryptoTokenId = current.getCryptoTokenId();
                 final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
                 final String cryptoTokenName;
-                boolean cryptoTokenAvailable = false;
+                boolean authorizedToCryptotoken = false;
+                boolean authorizedToGenerateKeys = false;
                 boolean cryptoTokenActive = false;
                 if (cryptoTokenInfo == null) {
                     cryptoTokenName = "unknown";
                 } else {
-                    cryptoTokenAvailable = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.GENERATE_KEYS.resource()
+                    authorizedToCryptotoken = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource()
                             + "/" + cryptoTokenId);
+                    authorizedToGenerateKeys = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.GENERATE_KEYS.resource()
+                            + "/" + cryptoTokenId);              
                     cryptoTokenActive = cryptoTokenInfo.isActive();
                     cryptoTokenName = cryptoTokenInfo.getName();
                 }
@@ -557,7 +566,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                         }
                     }
                 }
-                internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName, cryptoTokenAvailable,
+                internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName, authorizedToCryptotoken, authorizedToGenerateKeys,
                         cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(), status, updateOperationalStatus(current, cryptoTokenInfo),
                         current.getCertificateId(), certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId,
                         certificateSerialNumber, caCertificateIssuerDn, caCertificateSerialNumber));
