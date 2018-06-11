@@ -35,16 +35,14 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.junit.After;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
 /**
  * Tests Publisher Queue Data.
  * 
  * @version $Id$
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PublisherQueueTest {
 
     private static byte[] testcert = Base64.decode((
@@ -214,7 +212,7 @@ public class PublisherQueueTest {
         log.debug("Sleeping at: "+System.currentTimeMillis());
         // wait for a while before adding 2nd entry
         try {
-            Thread.sleep(3000);
+            Thread.sleep(6000);
         } catch (InterruptedException ex) {
             fail(ex.getMessage());
         }
@@ -223,14 +221,14 @@ public class PublisherQueueTest {
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
         log.debug("Added new data at: "+System.currentTimeMillis());
 
-        int[] lowerCreatedTimeSearchCriteria = {0, 2, 10, 0};
-        int[] upperCreateTimeSearchCriteria = {2, 10, -1, -1};
+        int[] lowerCreatedTimeSearchCriteria = {0, 3, 10, 0};
+        int[] upperCreateTimeSearchCriteria = {3, 10, -1, -1};
         actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(publisherId, lowerCreatedTimeSearchCriteria, upperCreateTimeSearchCriteria);
-        log.debug("Returned at "+System.currentTimeMillis()+", actual=" + Arrays.toString(actual));
-
+        log.debug("Returned at "+System.currentTimeMillis()+", actual=" + Arrays.toString(actual));        
+        
         assertEquals(4, actual.length);
-        assertEquals(1, actual[0]); // (~, 2) s  = 1
-        assertEquals(1, actual[1]); // (2, 10) s = 1
+        assertEquals(1, actual[0]); // (~, 3) s  = 1
+        assertEquals(1, actual[1]); // (3, 10) s = 1
         assertEquals(0, actual[2]); // (10, ~) s = 0
         assertEquals(2, actual[3]); // (~, ~) s = 2
     }
