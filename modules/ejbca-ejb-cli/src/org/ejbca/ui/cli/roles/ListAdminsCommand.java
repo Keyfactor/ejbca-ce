@@ -67,7 +67,7 @@ public class ListAdminsCommand extends BaseRolesCommand {
         try {
             role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class).getRole(getAuthenticationToken(), namespace, roleName);
         } catch (AuthorizationDeniedException e1) {
-            getLogger().error("Not authorizied to role " + super.getFullRoleName(namespace, roleName) + ".");
+            getLogger().error("Not authorized to role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         if (role == null) {
@@ -79,7 +79,7 @@ public class ListAdminsCommand extends BaseRolesCommand {
             roleMembers = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).getRoleMembersByRoleId(
                     getAuthenticationToken(), role.getRoleId());
         } catch (AuthorizationDeniedException e) {
-            getLogger().error("Not authorizied to members of role " + super.getFullRoleName(namespace, roleName) + ".");
+            getLogger().error("Not authorized to members of role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         Collections.sort(roleMembers, new Comparator<RoleMember>(){
