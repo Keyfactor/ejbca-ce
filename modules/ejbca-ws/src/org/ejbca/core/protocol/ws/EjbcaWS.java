@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -97,7 +95,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -2517,37 +2514,14 @@ public class EjbcaWS implements IEjbcaWS {
         final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
-
-        UpgradeableDataHashMap profile = null;
-        if(StringUtils.equalsIgnoreCase(profileType, "eep")) {
-            profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
-            if(profile == null) {
-                throw getEjbcaException(new EndEntityProfileNotFoundException("Could not find end entity profile with ID '" + profileId + "' in the database."),
-                                                null, ErrorCode.EE_PROFILE_NOT_EXISTS, null);
-            }
-        } else if(StringUtils.equalsIgnoreCase(profileType, "cp")) {
-            profile = certificateProfileSession.getCertificateProfile(profileId);
-            if(profile == null) {
-                throw getEjbcaException(new CertificateProfileDoesNotExistException("Could not find certificate profile with ID '" + profileId + "' in the database."),
-                        null, ErrorCode.CERT_PROFILE_NOT_EXISTS, null);
-            }
-        } else {
-            throw new UnknownProfileTypeException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
-        }
-
-        final byte[] ba;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                XMLEncoder encoder = new XMLEncoder(baos)) {
-            encoder.writeObject(profile.saveData());
-            encoder.close();
-            ba = baos.toByteArray();
-        } catch (IOException e) {
-            // Shouln't happen
+        try {
+            return raMasterApiProxyBean.getProfileWS(admin, profileId, profileType);
+        } catch(IOException e) {
             throw getInternalException(e, logger);
+        } finally {
+            logger.writeln();
+            logger.flush();
         }
-        logger.writeln();
-        logger.flush();
-        return ba;
     }
 
 	@Override
