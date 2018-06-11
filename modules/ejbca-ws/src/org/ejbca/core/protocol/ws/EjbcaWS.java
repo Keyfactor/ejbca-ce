@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -139,7 +138,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.ws.EjbcaWSHelperSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
@@ -164,7 +162,6 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -1224,76 +1221,30 @@ public class EjbcaWS implements IEjbcaWS {
     @Override
 	public KeyStore pkcs12Req(String username, String password, String hardTokenSN, String keyspec, String keyalg)
 		throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException {
-
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
-        try{
-			  AuthenticationToken admin = getAdmin();
-              logAdminName(admin,logger);
-
-			  // check CAID
-			  EndEntityInformation userdata = endEntityAccessSession.findUser(admin,username);
-			  if(userdata == null){
-			      log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-				  throw new NotFoundException(intres.getLocalizedMessage("ra.wrongusernameorpassword"));
-			  }
-			  int caid = userdata.getCAId();
-			  caSession.verifyExistenceOfCA(caid);
-			  if(!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() +caid, StandardRules.CREATECERT.resource())) {
-				  final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid +
-				          "," + StandardRules.CREATECERT.resource(), null);
-				  throw new AuthorizationDeniedException(msg);
-			  }
-			  // Check tokentype
-			  if(userdata.getTokenType() != SecConst.TOKEN_SOFT_P12){
-                  throw getEjbcaException("Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests", logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
-			  }
-
-			  boolean usekeyrecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
-			  log.debug("usekeyrecovery: "+usekeyrecovery);
-			  boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery &&  (userdata.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
-			  log.debug("userdata.getKeyRecoverable(): "+userdata.getKeyRecoverable());
-			  log.debug("userdata.getStatus(): "+userdata.getStatus());
-			  log.debug("savekeys: "+savekeys);
-			  boolean loadkeys = (userdata.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
-			  log.debug("loadkeys: "+loadkeys);
-			  int endEntityProfileId = userdata.getEndEntityProfileId();
-			  EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
-			  boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
-			  log.debug("reusecertificate: "+reusecertificate);
-
-			  try {
-                java.security.KeyStore pkcs12 = keyStoreCreateSession.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg,
-                        null, null, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
-                  final KeyStore retval = new KeyStore(pkcs12, password);
-				  final Enumeration<String> en = pkcs12.aliases();
-				  final String alias = en.nextElement();
-                  final X509Certificate cert = (X509Certificate) pkcs12.getCertificate(alias);
-                  if ( (hardTokenSN != null) && (cert != null) ) {
-                      hardTokenSession.addHardTokenCertificateMapping(admin,hardTokenSN,cert);
-                  }
-                  return retval;
-              } catch (AuthLoginException e) { // NOPMD, since we catch wide below
-                  throw e;
-              } catch (AuthStatusException e) { // NOPMD, since we catch wide below
-                  throw e;
-              } catch (Exception e) {
-                  throw getInternalException(e, logger);
-			  }
-			} catch (ClassCastException e) {
-                throw getInternalException(e, logger);
-			} catch (EJBException e) {
-                throw getInternalException(e, logger);
-			} catch (AuthStatusException e) {
-				// Don't log a bad error for this (user wrong status)
-                throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
-			} catch (AuthLoginException e) {
-                throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
-	        } catch (RuntimeException e) {	// EJBException, ...
+        try {
+		    final AuthenticationToken admin = getAdmin();
+            logAdminName(admin,logger);
+            return new KeyStore(raMasterApiProxyBean.pkcs12ReqWS(admin, username, password, hardTokenSN, keyspec, keyalg), password);
+		} catch (ClassCastException e) {
+            throw getInternalException(e, logger);
+		} catch (EJBException e) {
+            throw getInternalException(e, logger);
+		} catch (AuthStatusException e) {
+			// Don't log a bad error for this (user wrong status)
+            throw getEjbcaException(e, logger, ErrorCode.USER_WRONG_STATUS, Level.DEBUG);
+		} catch (AuthLoginException e) {
+            throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
+        } catch(EjbcaException e) {
+            // ECA-6685 Re-factor.
+            // Fix exception pattern logger thrown in RaMasterApiSessionBean.pkcs12Req to not to serialize the logger.
+            throw getEjbcaException(e.getMessage(), logger, e.getErrorCode(), null);
+        } catch (RuntimeException e) {	// EJBException, ...
 	            throw getInternalException(e, logger);
-            } finally {
-                logger.writeln();
-                logger.flush();
-			}
+        } finally {
+            logger.writeln();
+            logger.flush();
+		}
 	}
 
 	private void revokeCert(CertRevocationDto certRevocationDto, IPatternLogger logger) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, 
