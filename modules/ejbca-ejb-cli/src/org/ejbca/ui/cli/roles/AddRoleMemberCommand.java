@@ -18,12 +18,12 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.roles.Role;
@@ -92,22 +92,48 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
             getLogger().error("No such role " + super.getFullRoleName(namespace, roleName) + ".");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        final String caName = parameters.get(CA_NAME_KEY);
-        final CAInfo caInfo;
-        try {
-            caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
-        }  catch (AuthorizationDeniedException e) {
-            log.error("ERROR: CLI user not authorized to CA");
-            return CommandResult.AUTHORIZATION_FAILURE;
-        }
-        if (caInfo == null) {
-            getLogger().error("No such CA '" + caName + "'.");
+        final String matchWithKeyParam = parameters.get(MATCH_WITH_KEY);
+        if (StringUtils.isEmpty(matchWithKeyParam)) {
+            getLogger().error("No such thing to match with as '" + parameters.get(MATCH_WITH_KEY) + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-        final int caId = caInfo.getCAId();
-        final String tokenType = X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE;
-        final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(
-                tokenType, parameters.get(MATCH_WITH_KEY));
+        final String tokenType;
+        final String matchWithKey;
+        final String[] matchWithKeySplit = matchWithKeyParam.split(":");
+        if (matchWithKeySplit.length == 1) {
+            tokenType = X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE;
+            matchWithKey = matchWithKeySplit[0];
+            getLogger().info("Match TokenType is assumed to be '" + tokenType + "'.");
+        } else {
+            tokenType = matchWithKeySplit[0];
+            matchWithKey = matchWithKeySplit[1];
+            final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
+            if (authenticationTokenMetaData == null || !authenticationTokenMetaData.isUserConfigurable()) {
+                getLogger().error("TokenType '" + tokenType + "' is not configurable.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+        }
+        final int tokenIssuerId;
+        if (X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(tokenType)) {
+            final String caName = parameters.get(CA_NAME_KEY);
+            final CAInfo caInfo;
+            try {
+                caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
+            }  catch (AuthorizationDeniedException e) {
+                getLogger().error("CLI user not authorized to CA");
+                return CommandResult.AUTHORIZATION_FAILURE;
+            }
+            if (caInfo == null) {
+                getLogger().error("No such CA '" + caName + "'.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            tokenIssuerId = caInfo.getCAId();
+        } else {
+            // To be backwards compatible with existing scripts in the wild, we will still have to require parameter but we ignore the value if is unused
+            //getLogger().info("Ignoring mandatory '" + CA_NAME_KEY + "' parameter value for the selected Token Type '" + tokenType + "'.");
+            tokenIssuerId = RoleMember.NO_ISSUER;
+        }
+        final AccessMatchValue accessMatchValue = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(tokenType, matchWithKey);
         if (accessMatchValue == null) {
             getLogger().error("No such thing to match with as '" + parameters.get(MATCH_WITH_KEY) + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
@@ -121,16 +147,16 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         }
         final String matchTypeParam = parameters.get(MATCH_TYPE_KEY);
         if (StringUtils.isNotEmpty(matchTypeParam)) {
-            log.info("Parameter " + MATCH_TYPE_KEY + " is ignored. " + MATCH_WITH_KEY + " value " + accessMatchValue.name() + " implies " + accessMatchType.name() + ".");
+            getLogger().info("Parameter " + MATCH_TYPE_KEY + " is ignored. " + MATCH_WITH_KEY + " value " + accessMatchValue.name() + " implies " + accessMatchType.name() + ".");
         }
         final String description = parameters.get(DESCRIPTION_KEY);
         final String matchValue = parameters.get(MATCH_VALUE_KEY);
-        final RoleMember roleMember = new RoleMember(tokenType, caId, accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(),
+        final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(),
                 matchValue, role.getRoleId(), description);
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).persist(getAuthenticationToken(), roleMember);
         } catch (AuthorizationDeniedException e) {
-            log.error("ERROR: CLI user not authorized to edit role");
+            getLogger().error("CLI user not authorized to edit role");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         return CommandResult.SUCCESS;
@@ -150,11 +176,7 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         String availableRoles = "";
         for (final Role role : roles) {
             availableRoles += availableRoles.length() == 0 ? "" : ", ";
-            if (StringUtils.isEmpty(role.getNameSpace())) {
-                availableRoles += "'" + role.getRoleName() + "'";
-            } else {
-                availableRoles += "["+role.getNameSpace()+"] '" + role.getRoleName() + "'" + " (Not modifyable from CLI due to namespace.)";
-            }
+            availableRoles += "'" + super.getFullRoleName(role.getNameSpace(), role.getRoleName()) + "'";
         }
         sb.append("Available Roles: " + availableRoles + "\n");
         String availableCas = "";
@@ -163,12 +185,15 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         }
         sb.append("Available CAs: " + availableCas + "\n");
         String availableAccessMatchValues = "";
-        for (final AccessMatchValue accessMatchValue : X500PrincipalAccessMatchValue.values()) {
-            if (!X500PrincipalAccessMatchValue.NONE.equals(accessMatchValue)) {
-                availableAccessMatchValues += (availableAccessMatchValues.length() == 0 ? "" : ", ") + accessMatchValue;
+        for (final String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
+            final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType);
+            if (authenticationTokenMetaData.isUserConfigurable()) {
+                for (final String accessMatchValueName : authenticationTokenMetaData.getAccessMatchValueNameMap().keySet()) {
+                    availableAccessMatchValues += (availableAccessMatchValues.isEmpty() ? "" : ", ") + tokenType + ":" + accessMatchValueName;
+                }
             }
         }
-        sb.append("Match with is one of: " + availableAccessMatchValues + "\n");
+        sb.append("Match with is one of ('CertificateAuthenticationToken:' can be omitted): " + availableAccessMatchValues + "\n");
         return sb.toString();
     }
 
