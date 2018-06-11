@@ -126,11 +126,11 @@ org.cesecore.keybind.InternalKeyBindingRules
 			<h:commandButton action="#{internalKeyBindingMBean.commandDelete}"
 				value="#{web.text.INTERNALKEYBINDING_DELETE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DELETE_FULL}"
 				onclick="return confirm('#{web.text.INTERNALKEYBINDING_CONF_DELETE}')" disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-			<h:commandButton rendered="#{!guiInfo.nextKeyAliasAvailable and guiInfo.cryptoTokenAvailable}"
+			<h:commandButton rendered="#{!guiInfo.nextKeyAliasAvailable and guiInfo.authorizedToGenerateKeys}"
 				action="#{internalKeyBindingMBean.commandGenerateNewKey}"
 				value="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_SHORT}" title="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_FULL}"
 				disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
-			<h:commandButton rendered="#{guiInfo.cryptoTokenAvailable}" action="#{internalKeyBindingMBean.commandGenerateRequest}"
+			<h:commandButton rendered="#{guiInfo.authorizedToCryptoToken}" action="#{internalKeyBindingMBean.commandGenerateRequest}"
 				value="#{web.text.INTERNALKEYBINDING_GETCSR_SHORT}" title="#{web.text.INTERNALKEYBINDING_GETCSR_FULL}"
 				disabled="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:commandButton action="#{internalKeyBindingMBean.commandReloadCertificate}"
