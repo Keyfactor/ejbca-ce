@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -118,6 +119,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.util.KeyTools;
@@ -199,6 +201,7 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.scep.ScepMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.ws.UnknownProfileTypeException;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
@@ -2646,5 +2649,32 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage()); 
         }
         return null; // Should not happen. All exceptions are caught or re-thrown.
+    }
+
+    @Override
+    public byte[] getProfileWS(AuthenticationToken authenticationToken, int profileId, String profileType)
+            throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException {
+        UpgradeableDataHashMap profile = null;
+        if(StringUtils.equalsIgnoreCase(profileType, "eep")) {
+            profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
+            if(profile == null) {
+                throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, "Could not find end entity profile with ID '" + profileId + "' in the database.");
+            }
+        } else if(StringUtils.equalsIgnoreCase(profileType, "cp")) {
+            profile = certificateProfileSession.getCertificateProfile(profileId);
+            if(profile == null) {
+                throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, "Could not find certificate profile with ID '" + profileId + "' in the database.");
+            }
+        } else {
+            throw new UnknownProfileTypeException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
+        }
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(profile.saveData());
+            encoder.close(); // Is this required here?
+            return baos.toByteArray();
+        } catch (IOException e) {
+              // ECA-6685 IS handled at caller EjbcaWS as internal exception.
+            throw new EjbcaException(e.getMessage());
+        }
     }
 }

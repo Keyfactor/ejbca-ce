@@ -90,6 +90,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.core.protocol.ws.UnknownProfileTypeException;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.cvc.exception.ConstructionException;
@@ -1179,4 +1180,26 @@ public interface RaMasterApi {
     */
    byte[] pkcs12ReqWS(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN, String keySpecification, String keyAlgorithm)
            throws AuthorizationDeniedException, CADoesntExistsException, NotFoundException, EjbcaException;
+   
+   /**
+    * Fetches the profile specified by profileId and profileType in XML format.
+    *
+    * Authorization requirements:<pre>
+    * - /administrator
+    * - /endentityprofilesrules/&lt;end entity profile&gt;
+    * </pre>
+    *
+    * For detailed documentation for how to parse an End Entity Profile XML, see the org.ejbca.core.model.ra.raadmin.EndEntity class.
+    *
+    * @param authenticationToken the administrator performing the action.
+    * @param profileId ID of the profile we want to retrieve.
+    * @param profileType The type of the profile we want to retrieve. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
+    * @return a byte array containing the specified profile in XML format.
+    * @throws AuthorizationDeniedException if client isn't authorized to request.
+    * @throws UnknownProfileTypeException if the profile type is not known.
+    * @throws EjbcaException any EjbcaException.
+    * @throws IOException if the XML profile data could not be encoded.
+    */
+    byte[] getProfileWS(AuthenticationToken authenticationToken, int profileId, String profileType)
+                throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException;
 }
