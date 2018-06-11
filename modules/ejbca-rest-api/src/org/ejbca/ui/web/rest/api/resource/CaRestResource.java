@@ -24,6 +24,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -33,11 +34,13 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.CaInfoRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
 import io.swagger.annotations.Api;
@@ -106,6 +109,17 @@ public class CaRestResource extends BaseRestResource {
                 .certificateAuthorities(caInfoRestResponseList)
                 .build();
         return Response.ok(caInfosRestResponse).build();
+    }
+
+    @GET
+    @Path("/{issuer_dn}/getLatestCrl")
+    public Response getLatestCrl(@Context HttpServletRequest httpServletRequest,
+                                 @PathParam("issuer_dn") String issuerDn,
+                                 @QueryParam("deltaCrl") boolean deltaCrl) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
+        final AuthenticationToken adminToken = getAdmin(httpServletRequest, true);
+        byte[] latestCrl = raMasterApiProxy.getLatestCRLWS(adminToken, issuerDn, deltaCrl);
+        CertificateRestResponse restResponse = CertificateRestResponse.builder().setCertificate(latestCrl).build();
+        return Response.ok(restResponse).build();
     }
 
 }
