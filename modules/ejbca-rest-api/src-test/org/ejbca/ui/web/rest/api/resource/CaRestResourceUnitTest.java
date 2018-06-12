@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import org.apache.commons.codec.binary.Base64;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -41,9 +42,13 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
+import static org.easymock.EasyMock.anyBoolean;
 import static org.easymock.EasyMock.anyInt;
+import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -78,7 +83,7 @@ public class CaRestResourceUnitTest {
             return authenticationToken;
         }
     }
-    public static InMemoryRestServer server;
+    static InMemoryRestServer server;
     private static final JSONParser jsonParser = new JSONParser();
 
     @TestSubject
@@ -207,6 +212,46 @@ public class CaRestResourceUnitTest {
         assertTrue(actualString.contains(CertTools.BEGIN_CERTIFICATE));
         assertTrue(actualString.contains(CertTools.END_CERTIFICATE));
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        verify(raMasterApiProxy);
+    }
+
+    @Test
+    public void shouldReturnLatestCrlIssuedByCa() throws Exception {
+        // given
+        String expectedCertificate = "Certificate";
+
+        // when
+        expect(raMasterApiProxy.getLatestCRLWS(eq(authenticationToken), anyString(), anyBoolean())).andReturn(expectedCertificate.getBytes());
+        replay(raMasterApiProxy);
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
+        final String actualString = actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualString);
+        final String actualCertificate = (String)actualJsonObject.get("certificate");
+        byte[] decoded = Base64.decodeBase64(actualCertificate);
+        String decodedActualCertificate = new String(decoded, "utf-8");
+
+        // then
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
+        assertNotNull(actualCertificate);
+        assertEquals(expectedCertificate, decodedActualCertificate);
+        verify(raMasterApiProxy);
+    }
+
+    @Test
+    public void shouldThrowExceptionCaNotExistForLatestCaCrl() throws Exception {
+        // given
+        final String expectedMessage = "CA doesn't exist";
+        final long expectedCode = Response.Status.NOT_FOUND.getStatusCode();
+        // when
+        expect(raMasterApiProxy.getLatestCRLWS(eq(authenticationToken), anyString(), anyBoolean())).andThrow(new CADoesntExistsException(expectedMessage));
+        replay(raMasterApiProxy);
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
+        final String actualJsonString = actualResponse.getEntity(String.class);
+        // then
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
+        assertProperJsonExceptionErrorResponse(expectedCode, expectedMessage, actualJsonString);
         verify(raMasterApiProxy);
     }
 
