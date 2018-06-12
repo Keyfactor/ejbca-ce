@@ -37,6 +37,8 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.junit.After;
 import org.junit.Test;
 
+import javax.ejb.EJBTransactionRolledbackException;
+
 /**
  * Tests Publisher Queue Data.
  * 
@@ -157,7 +159,29 @@ public class PublisherQueueTest {
         assertEquals(4, publisherQueueData1.getTryCounter());
     }
 
-    
+    @Test(expected = EJBTransactionRolledbackException.class)
+    public void shouldNothingWhenIntervalsEmpty() throws Exception {
+        final int publisherId = 22222;
+        int[] actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(publisherId, new int[] { }, new int[] { });
+        assertEquals(1, actual.length);
+        assertEquals(1, actual[0]);
+
+        // Wait a while and then add some more data
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            fail(ex.getMessage());
+        }
+        // Another entry in the queue, atleast 1s after the first one
+        publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
+
+        actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(publisherId, new int[] { 0, 1, 10 }, new int[] { -1, -1, -1 });
+        assertEquals(3, actual.length);
+        assertEquals(2, actual[0]); // 0s old = 2
+        assertEquals(1, actual[1]); // 1s old = 1
+        assertEquals(0, actual[2]); // 10s old = 0
+    }
+
     @Test
     public void shouldFindPendingPublisherQueueCountsWithoutCreatedTimeUpperIntervals() throws Exception {
         final int publisherId = 22222;

@@ -306,25 +306,34 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 	 */
 	@SuppressWarnings("unchecked")
     public static List<Integer> findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId, int[] lowerBounds, int[] upperBounds) {
-    	final StringBuilder sql = new StringBuilder();
-    	long now = System.currentTimeMillis();
-    	for(int i = 0; i < lowerBounds.length; i++) {
-    		sql.append("SELECT COUNT(*) FROM PublisherQueueData where publisherId=");
-    		sql.append(publisherId);
-    		sql.append(" AND publishStatus=");
-    		sql.append(PublisherConst.STATUS_PENDING);
-    		if(lowerBounds[i] > 0) {
-	    		sql.append(" AND timeCreated < ");
-	    		sql.append(now - 1000 * lowerBounds[i]);
-    		}
-    		if(upperBounds[i] > 0) {
-	    		sql.append(" AND timeCreated > ");
-	    		sql.append(now - 1000 * upperBounds[i]);
-    		}
-    		if(i < lowerBounds.length-1) {
-    			sql.append(" UNION ALL ");
-    		}
-    	}
+	    if (lowerBounds.length == 0) {
+	        throw new IllegalArgumentException("lowerBounds and upperBounds are mandatory parameters");
+	    }
+	    
+	    final StringBuilder sql = new StringBuilder();
+	    long now = System.currentTimeMillis();
+	    
+        sql.append("select c from (");
+        
+        for(int i = 0; i < lowerBounds.length; i++) {
+            sql.append("SELECT " + i + " as id, COUNT(*) as c FROM PublisherQueueData where publisherId=");
+            sql.append(publisherId);
+            sql.append(" AND publishStatus=");
+            sql.append(PublisherConst.STATUS_PENDING);
+            if(lowerBounds[i] > 0) {
+                sql.append(" AND timeCreated < ");
+                sql.append(now - 1000 * lowerBounds[i]);
+            }
+            if(upperBounds[i] > 0) {
+                sql.append(" AND timeCreated > ");
+                sql.append(now - 1000 * upperBounds[i]);
+            }
+            if(i < lowerBounds.length-1) {
+                sql.append(" UNION ALL ");
+            }
+        }
+        sql.append(" order by id) as tmp");
+        
     	if (log.isDebugEnabled()) {
     		log.debug("findCountOfPendingEntriesForPublisher executing SQL: "+sql.toString());    			
 		}
