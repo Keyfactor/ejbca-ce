@@ -14,48 +14,42 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 /**
- * JSON input representation of key store enrollment
+ * JSON input representation of finalize enrollment
  * @version $Id$
  *
  */
-public class KeyStoreRestRequest {
+public class FinalizeRestResquest {
 
-    private String username;
+    private String responseFormat;
     private String password;
-    private String keyAlg;
-    private String keySpec;
     
-    public KeyStoreRestRequest() {}
+    public FinalizeRestResquest() {}
     
-    public String getUsername() {
-        return username;
+    public FinalizeRestResquest(String responseFormat, String password) {
+        this.responseFormat = responseFormat;
+        this.password = password;
     }
     
-    public void setUsername(String username) {
-        this.username = username;
+    public String getResponseFormat() {
+        return responseFormat;
+    }
+    
+    /**
+     * @param responseFormat of the certificate or keystore. Must be one of
+     * 'P12', 'JKS', 'PEM' or 'DER'
+     */
+    public void setResponseFormat(String responseFormat) {
+        this.responseFormat = responseFormat;
     }
     
     public String getPassword() {
         return password;
     }
     
+    /**
+     * @param password used for inital request
+     */
     public void setPassword(String password) {
         this.password = password;
-    }
-    
-    public String getKeyAlg() {
-        return keyAlg;
-    }
-    
-    public void setKeyAlg(String keyAlg) {
-        this.keyAlg = keyAlg;
-    }
-    
-    public String getKeySpec() {
-        return keySpec;
-    }
-    
-    public void setKeySpec(String keySpec) {
-        this.keySpec = keySpec;
     }
 }

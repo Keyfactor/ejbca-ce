@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -25,6 +24,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -45,12 +45,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
@@ -60,8 +62,13 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.TokenDownloadType;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
+import org.ejbca.core.model.era.RaApprovalRequestInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -70,11 +77,11 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.FinalizeRestResquest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.KeystoreRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
@@ -82,6 +89,7 @@ import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * JAX-RS resource handling certificate-related requests.
@@ -97,6 +105,7 @@ public class CertificateRestResource extends BaseRestResource {
      * Internal localization of logs and errors
      */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    private static final Logger log = Logger.getLogger(CertificateRestResource.class);
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
@@ -138,7 +147,7 @@ public class CertificateRestResource extends BaseRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Creates a keystore for the specified end entity", 
         notes = "Creates a keystore for the specified end entity", 
-        response = KeystoreRestResponse.class)
+        response = CertificateRestResponse.class)
     public Response enrollKeystore(
             @Context HttpServletRequest requestContext,
             KeyStoreRestRequest keyStoreRestRequest)
@@ -164,19 +173,10 @@ public class CertificateRestResource extends BaseRestResource {
         if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS)) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be PKCS12 or JKS");
         }
-        final String tokenTypeString = SecConst.TOKENTEXTS[tokenType -1];
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
-        final KeyStore keyStore;
-        if (tokenType == SecConst.TOKEN_SOFT_P12) {
-            keyStore = KeyStore.getInstance("PKCS12", "BC");
-        } else if (tokenType == SecConst.TOKEN_SOFT_JKS) {
-            keyStore = KeyStore.getInstance("JKS");
-        } else {
-            throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
-        }
-        keyStore.load(new ByteArrayInputStream(keyStoreBytes), keyStoreRestRequest.getPassword().toCharArray());
-        KeystoreRestResponse keystoreRestResponse = new KeystoreRestResponse(keyStore, keyStoreRestRequest.getPassword(), tokenTypeString);
-        return Response.ok(keystoreRestResponse).build();
+        final KeyStore keyStore = KeyTools.createKeyStore(keyStoreBytes, keyStoreRestRequest.getPassword());
+        CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStore, keyStoreRestRequest.getPassword());
+        return Response.ok(response).build();
     }
     
     @GET
@@ -295,6 +295,110 @@ public class CertificateRestResource extends BaseRestResource {
                 .build();
         CertificatesRestResponse certificatesRestResponse = new CertificatesRestResponse(CertificatesRestResponse.converter().toRestResponses(expiringCertificates));
         ExpiringCertificatesRestResponse response = new ExpiringCertificatesRestResponse(paginationRestResponseComponent, certificatesRestResponse);
+        return Response.ok(response).build();
+    }
+    
+    @POST
+    @Path("/{request_id}/finalize")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Finalizes enrollment after administrator approval", 
+        notes = "Finalizes enrollment after administrator approval", 
+        response = CertificateRestResponse.class)
+    public Response finalizeEnrollment(
+            @Context HttpServletRequest requestContext,
+            @ApiParam(value = "Approval request id") @PathParam("request_id") int requestId,
+            FinalizeRestResquest request)
+                    throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException, 
+                        KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
+        final AuthenticationToken admin = getAdmin(requestContext, false);
+        final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
+        final String password = request.getPassword();
+        final String responseFormat = request.getResponseFormat();
+        if (approvalRequestInfo == null) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Could not find request with Id '" + requestId + "'");
+        }
+        if (TokenDownloadType.getIdFromName(responseFormat) == null) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid parameter: response_format");
+        }
+        
+        final ApprovalRequest approvalRequest = approvalRequestInfo.getApprovalData().getApprovalRequest();
+        String requestUsername = approvalRequestInfo.getEditableData().getUsername();
+        EndEntityInformation endEntityInformation;
+        final int requestStatus = approvalRequestInfo.getStatus();
+        switch (requestStatus) {
+            case ApprovalDataVO.STATUS_WAITINGFORAPPROVAL:
+                throw new WaitingForApprovalException("Request with Id '" + requestId + "' is still waiting for approval", requestId);
+            case ApprovalDataVO.STATUS_REJECTED:
+            case ApprovalDataVO.STATUS_EXECUTIONDENIED:
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Request with Id '" + requestId + "' has been rejected");
+            case ApprovalDataVO.STATUS_APPROVED:
+            case ApprovalDataVO.STATUS_EXPIRED:
+            case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Request with Id '" + requestId + "' has expired");
+            case ApprovalDataVO.STATUS_EXECUTIONFAILED:
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Request with Id '" + requestId + "' could not be executed");
+            case ApprovalDataVO.STATUS_EXECUTED:
+                if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
+                    KeyRecoveryApprovalRequest keyRecoveryApprovalRequest = (KeyRecoveryApprovalRequest) approvalRequest;
+                    requestUsername = keyRecoveryApprovalRequest.getUsername();
+                } 
+                endEntityInformation = raMasterApi.searchUser(admin, requestUsername);
+                if (endEntityInformation == null) {
+                    log.error("Could not find endEntity for the username '" + requestUsername + "'");
+                    throw new NotFoundException("The end entity '" + requestUsername + "' does not exist");
+                } else if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+                    throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Enrollment with Id '" + requestId + "' has already been finalized");
+                } 
+                break;
+            default:
+                throw new IllegalStateException("The status of request with Id '" + requestId + "' is unknown");
+        }
+
+        final CertificateRestResponse response;
+        endEntityInformation.setPassword(password); 
+        // Initial request was a CSR
+        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
+            if (!(responseFormat.equals(TokenDownloadType.DER.name()) || responseFormat.equals(TokenDownloadType.PEM.name()))) {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid response format. Cannot create keystore for certificate request "
+                        + " with user generated keys");
+            }
+            byte[] certificateBytes = raMasterApi.createCertificate(admin, endEntityInformation); // X509Certificate
+            X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            if (responseFormat.equals(TokenDownloadType.PEM.name())) {
+                byte[] pemBytes = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
+                response = CertificateRestResponse.builder().setCertificate(pemBytes).
+                        setSerialNumber(certificate.getSerialNumber()).setResponseFormat("PEM").build();
+            } else {
+                // DER encoding
+                response = CertificateRestResponse.converter().toRestResponse(certificate);
+            } 
+        } else {
+            // Initial request was server generated key store
+            byte[] certificateBytes;
+            if (responseFormat.equals(TokenDownloadType.JKS.name())) {
+                endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_JKS);
+            } else if (responseFormat.equals(TokenDownloadType.P12.name())) {
+                endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
+            } else if (responseFormat.equals(TokenDownloadType.PEM.name())) {
+                endEntityInformation.setTokenType(EndEntityConstants.TOKEN_SOFT_PEM);
+            } else {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid response format. Must be 'JKS', 'P12' or 'PEM'");
+            }
+            
+            certificateBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
+            if (responseFormat.equals(TokenDownloadType.PEM.name())) {
+                X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+                response = CertificateRestResponse.builder().setCertificate(certificateBytes).
+                        setSerialNumber(certificate.getSerialNumber()).setResponseFormat("PEM").build();
+            } else if (responseFormat.equals(TokenDownloadType.DER.name())) {
+                final X509Certificate x509Certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+                response = CertificateRestResponse.converter().toRestResponse(x509Certificate);
+            } else {
+                // JKS or PKCS12. Will be detected by content.
+                final KeyStore keyStore = KeyTools.createKeyStore(certificateBytes, password);
+                response = CertificateRestResponse.converter().toRestResponse(keyStore, password);
+            }
+        }
         return Response.ok(response).build();
     }
 }
