@@ -191,5 +191,6 @@
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.4.4.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.4.1.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
