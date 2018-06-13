@@ -232,6 +232,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             if (log.isDebugEnabled()) {
                                 log.debug("crlissueinterval="+crlissueinterval);
                                 log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                                   
+                                log.debug("now="+now.getTime());                                   
                             }
                             long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
                             long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
