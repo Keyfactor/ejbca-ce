@@ -17,7 +17,7 @@ import org.ejbca.core.EjbcaException;
 
 
 /**
- * Is throw when connection to a publisher have failed i some way.
+ * Thrown when connection to a publisher has failed in some way.
  *
  * @version $Id$
  */
@@ -38,7 +38,7 @@ public class PublisherConnectionException extends EjbcaException {
      * Constructs an instance of <code>PublisherConnectionException</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public PublisherConnectionException(String msg) {    	
-        super(msg);        
+    public PublisherConnectionException(String msg) {
+        super(msg);
     }
 }
