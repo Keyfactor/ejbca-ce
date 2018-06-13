@@ -584,21 +584,13 @@ public class EjbcaWS implements IEjbcaWS {
 
 	@Override
     public List<Certificate> getCertificatesByExpirationTimeAndIssuer(long days, String issuer, int maxNumberOfResults) throws EjbcaException {
-        final List<java.security.cert.Certificate> certs = new ArrayList<>();        
+	    final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
-            certs.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndIssuerWS(getAdmin(), days, issuer, maxNumberOfResults));
+            certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndIssuer(getAdmin(), days, issuer, maxNumberOfResults));
         } catch (AuthorizationDeniedException e1) {
             // No authorization required.
         }
-        final ArrayList<Certificate> ret = new ArrayList<>();
-        for (java.security.cert.Certificate cert : certs) {
-            try {
-                ret.add(new Certificate(cert));
-            } catch (CertificateEncodingException e) {
-                throw getInternalException(e, TransactionLogger.getPatternLogger());
-            }
-        }
-        return ret;
+        return unwrapCertificatesOrThrowInternalException(certificates);
     }
 
     @Override
