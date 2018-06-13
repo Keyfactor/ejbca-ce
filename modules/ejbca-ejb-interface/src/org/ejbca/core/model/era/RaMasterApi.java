@@ -1040,7 +1040,7 @@ public interface RaMasterApi {
      * @throws EjbcaException on internal errors, such as badly encoded certificate.
      * @throws CertificateEncodingException if on of the certificates could not be encoded.
      */
-    List<Certificate> getLastCAChainWS(AuthenticationToken authenticationToken, String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException;
+    List<CertificateWrapper> getLastCAChainWS(AuthenticationToken authenticationToken, String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException;
     
     /** 
      * Processes a certificate issuance for the user with the given name.
