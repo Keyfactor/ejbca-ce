@@ -316,7 +316,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
         sql.append("select c from (");
         
         for(int i = 0; i < lowerBounds.length; i++) {
-            sql.append("SELECT " + i + " as id, COUNT(*) as c FROM PublisherQueueData where publisherId=");
+            sql.append("SELECT " + i + " as ordering, COUNT(*) as c FROM PublisherQueueData where publisherId=");
             sql.append(publisherId);
             sql.append(" AND publishStatus=");
             sql.append(PublisherConst.STATUS_PENDING);
@@ -332,7 +332,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
                 sql.append(" UNION ALL ");
             }
         }
-        sql.append(" order by id) as tmp");
+        sql.append(" order by ordering) tmp");
         
     	if (log.isDebugEnabled()) {
     		log.debug("findCountOfPendingEntriesForPublisher executing SQL: "+sql.toString());    			
