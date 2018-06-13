@@ -2453,13 +2453,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public List<Certificate> getCertificatesByExpirationTimeAndIssuerWS(AuthenticationToken authenticationToken, long days, String issuerDN, int maxNumberOfResults) 
+    public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndIssuer(AuthenticationToken authenticationToken, long days, String issuerDN, int maxNumberOfResults) 
             throws AuthorizationDeniedException, EjbcaException {
         final Date findDate = new Date();
         final long millis = (days * 24 * 60 * 60 * 1000);
         findDate.setTime(findDate.getTime() + millis);
         final List<java.security.cert.Certificate> result = certificateStoreSession.findCertificatesByExpireTimeAndIssuerWithLimit(findDate, issuerDN, maxNumberOfResults);
-        return result;
+        return EJBTools.wrapCertCollection(result);
     }
     
     @Override
