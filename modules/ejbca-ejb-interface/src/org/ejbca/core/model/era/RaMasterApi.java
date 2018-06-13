@@ -1039,8 +1039,9 @@ public interface RaMasterApi {
      * @throws CADoesntExistsException if the CA with the CA name given as input does not exist.
      * @throws EjbcaException on internal errors, such as badly encoded certificate.
      * @throws CertificateEncodingException if on of the certificates could not be encoded.
+     * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    List<CertificateWrapper> getLastCAChainWS(AuthenticationToken authenticationToken, String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException;
+    List<CertificateWrapper> getLastCaChain(AuthenticationToken authenticationToken, String caname) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException;
     
     /** 
      * Processes a certificate issuance for the user with the given name.

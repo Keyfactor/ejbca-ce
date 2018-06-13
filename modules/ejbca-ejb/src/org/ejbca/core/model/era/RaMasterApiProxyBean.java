@@ -2025,14 +2025,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public List<CertificateWrapper> getLastCAChainWS(AuthenticationToken authenticationToken, String caName)
+    public List<CertificateWrapper> getLastCaChain(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException {
         final List<CertificateWrapper> result = new ArrayList<>();
         CADoesntExistsException caDoesntExistException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    result.addAll( raMasterApi.getLastCAChainWS(authenticationToken, caName));
+                    result.addAll( raMasterApi.getLastCaChain(authenticationToken, caName));
                     break;
                 } catch (CADoesntExistsException e) {
                     caDoesntExistException = e;
