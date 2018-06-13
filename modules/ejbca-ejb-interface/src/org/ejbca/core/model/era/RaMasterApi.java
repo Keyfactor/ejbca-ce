@@ -994,7 +994,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException if the calling administrator isn't authorized to fetch one of the certificates (not used).
      * @throws EjbcaException if at least one of the certificates is unreadable.
      */
-    List<Certificate> getCertificatesByExpirationTimeWS(AuthenticationToken authenticationToken, long days, int maxNumberOfResults) throws AuthorizationDeniedException, EjbcaException;
+    Collection<CertificateWrapper> getCertificatesByExpirationTime(AuthenticationToken authenticationToken, long days, int maxNumberOfResults) throws AuthorizationDeniedException, EjbcaException;
     
 
     /**
