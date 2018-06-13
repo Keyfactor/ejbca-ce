@@ -990,7 +990,7 @@ public interface RaMasterApi {
      * @param authenticationToken the administrator performing the action.
      * @param days the number of days before the certificates will expire.
      * @param maxNumberOfResults the maximum number of returned certificates.
-     * @return A list of certificates, never null.
+     * @return A collection of certificate wrappers, never null.
      * @throws AuthorizationDeniedException if the calling administrator isn't authorized to fetch one of the certificates (not used).
      * @throws EjbcaException if at least one of the certificates is unreadable.
      */
@@ -1004,11 +1004,11 @@ public interface RaMasterApi {
      * @param days Expire time in days.
      * @param certificateType The type of the certificates. Use 0=Unknown  1=EndEntity  2=SUBCA  8=ROOTCA  16=HardToken.
      * @param maxNumberOfResults the maximum number of returned certificates.
-     * @return A list of certificates, never null.
+     * @return A collection of certificate wrappers, never null.
      * @throws AuthorizationDeniedException if the calling administrator isn't authorized to fetch one of the certificates (not used).
      * @throws EjbcaException if at least one of the certificates is unreadable
      */
-    List<Certificate> getCertificatesByExpirationTimeAndTypeWS(AuthenticationToken authenticationToken, long days, int certificateType, int maxNumberOfResults) throws AuthorizationDeniedException, EjbcaException;
+    Collection<CertificateWrapper> getCertificatesByExpirationTimeAndType(AuthenticationToken authenticationToken, long days, int certificateType, int maxNumberOfResults) throws AuthorizationDeniedException, EjbcaException;
     
     /**
      * Fetches a list of certificates that will expire within the given number of days and issued by the given issuer.
