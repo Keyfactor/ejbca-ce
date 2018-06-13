@@ -28,15 +28,17 @@ public class ExceptionInfoRestResponse {
     // Have to match HTTP Status codes
     private int statusCode;
     private String infoMessage;
+    private String requestId;
 
     /**
      * Simple constructor.
      */
     public ExceptionInfoRestResponse() {}
 
-    private ExceptionInfoRestResponse(final int statusCode, final String infoMessage) {
+    private ExceptionInfoRestResponse(final int statusCode, final String infoMessage, final String requestId) {
         this.statusCode = statusCode;
         this.infoMessage = infoMessage;
+        this.requestId = requestId;
     }
     
     /**
@@ -73,6 +75,20 @@ public class ExceptionInfoRestResponse {
 
     
     /**
+     * @return approval request id
+     */
+    public String getRequestId() {
+        return requestId;
+    }
+
+    /**
+     * @param requestId approval request id
+     */
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    /**
      * @return builder instance for this class.
      */
     public static ExceptionInfoRestResponseBuilder builder() {
@@ -86,6 +102,7 @@ public class ExceptionInfoRestResponse {
 
         private int statusCode;
         private String infoMessage;
+        private String requestId;
 
         ExceptionInfoRestResponseBuilder() {
         }
@@ -115,12 +132,22 @@ public class ExceptionInfoRestResponse {
         }
 
         /**
+         * Sets requestId for the approval
+         * @param requestId approval request id
+         * @return instance of this builder.
+         */
+        public ExceptionInfoRestResponseBuilder requestId(final String requestId) {
+            this.requestId = requestId;
+            return this;
+        }
+        
+        /**
          * Builds an instance of ExceptionInfoRestResponse using this builder.
          *
          * @return instance of ExceptionInfoRestResponse using this builder.
          */
         public ExceptionInfoRestResponse build() {
-            return new ExceptionInfoRestResponse(statusCode, infoMessage);
+            return new ExceptionInfoRestResponse(statusCode, infoMessage, requestId);
         }
     }
 }

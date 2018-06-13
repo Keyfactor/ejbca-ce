@@ -81,6 +81,7 @@ import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.TokenDownloadType;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
@@ -130,18 +131,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.raLocaleBean = raLocaleBean;
     }
 
-    public enum TokenDownloadType {
-        PEM(1), PEM_FULL_CHAIN(2), PKCS7(3), P12(4), JKS(5), DER(6);
-        private int value;
-
-        private TokenDownloadType(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-    }
     private boolean renderNonModifiableTemplates = false;
     private boolean renderNonModifiableFields = false;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<EndEntityProfile>();

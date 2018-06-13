@@ -22,6 +22,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.web.rest.api.exception.CesecoreExceptionClasses;
 import org.ejbca.ui.web.rest.api.exception.EjbcaExceptionClasses;
 import org.ejbca.ui.web.rest.api.exception.ExceptionClasses;
@@ -93,9 +94,11 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
         switch (ExceptionClasses.fromClass(exception.getClass())) {
             // 202
             case WaitingForApprovalException:
+                WaitingForApprovalException e = (WaitingForApprovalException) exception;
                 return ExceptionInfoRestResponse.builder()
                     .statusCode(Status.ACCEPTED.getStatusCode())
                     .infoMessage(exception.getMessage())
+                    .requestId(Integer.toString(e.getRequestId()))
                     .build();
             default:
                 return null;
