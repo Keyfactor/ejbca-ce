@@ -1058,11 +1058,25 @@ public interface RaMasterApi {
      * @throws EjbcaException any EjbcaException
      * @throws CesecoreException any CesecoreException
      * @throws CADoesntExistsException if the issuing CA associated with the user does not exist.
+     * @throws CertificateExtensionException
+     * @throws InvalidKeyException
+     * @throws SignatureException
+     * @throws InvalidKeySpecException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws IOException
+     * @throws ParseException
+     * @throws ConstructionException
+     * @throws NoSuchFieldException
+     * @throws AuthStatusException
+     * @throws AuthLoginException
+     * @throws RuntimeException
      */
     byte[] processCertReqWS(AuthenticationToken authenticationToken, final String username, final String password, final String req, final int reqType, final String hardTokenSN, final String responseType) 
-                throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
-                       InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
-                       IOException, ParseException, ConstructionException, NoSuchFieldException, RuntimeException;
+        throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
+               InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
+               IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException,
+               AuthLoginException, RuntimeException;
     
     /**
      * Fetches the latest CRL issued by the given CA.

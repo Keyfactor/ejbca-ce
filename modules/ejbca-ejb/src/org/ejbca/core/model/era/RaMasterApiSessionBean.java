@@ -2463,7 +2463,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public List<CertificateWrapper> getLastCaChain(AuthenticationToken authenticationToken, String caName)
+    public List<CertificateWrapper> getLastCAChain(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException {
         final CAInfo info = caSession.getCAInfo(authenticationToken, caName);
         if(info == null) {
@@ -2479,9 +2479,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public byte[] processCertReqWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType,
-            String hardTokenSN, String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
-        InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
-        IOException, ParseException, ConstructionException, NoSuchFieldException, RuntimeException {
+            String hardTokenSN, String responseType)
+            throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
+            InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
+            IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException,
+            AuthLoginException, RuntimeException {
         byte[] retval = null;
         // check authorization to CAID
         final EndEntityInformation userdata = endEntityAccessSession.findUser(authenticationToken, username);
