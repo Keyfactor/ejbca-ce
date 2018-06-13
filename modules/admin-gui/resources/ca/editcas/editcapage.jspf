@@ -444,7 +444,7 @@ function pageLoad() {
       <% } %>
 
         <tr id="Row<%=row++%2%>"> 
-            <td width="50%"  align="right"><%= ejbcawebbean.getText("CATYPE") %> <%= ejbcawebbean.getHelpReference("/CA_Fields.html#CA_Types") %></td>
+            <td width="50%"  align="right"><%= ejbcawebbean.getText("CATYPE") %> <%= ejbcawebbean.getHelpReference("/Certificate_Authority_Overview.html#CA_Types") %></td>
             <td width="50%" valign="top">
             <% if (!editca) { %> 
             <form name="changecatype" action="<%= THIS_FILENAME %>" method="post">
