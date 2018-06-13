@@ -579,15 +579,7 @@ public class EjbcaWS implements IEjbcaWS {
         } catch (AuthorizationDeniedException e1) {
             // No authorization required.
         }
-        final ArrayList<Certificate> result = new ArrayList<>();
-        for (final CertificateWrapper certificate : certificates) {
-            try {
-                result.add(new Certificate(certificate.getCertificate()));
-            } catch (CertificateEncodingException e) {
-                throw getInternalException(e, TransactionLogger.getPatternLogger());
-            }
-        }
-        return result;
+        return unwrapCertificatesOrThrowInternalException(certificates);
     }
 
 	@Override
@@ -611,21 +603,13 @@ public class EjbcaWS implements IEjbcaWS {
 
     @Override
     public List<Certificate> getCertificatesByExpirationTimeAndType(long days, int certificateType, int maxNumberOfResults) throws EjbcaException {
-        final List<java.security.cert.Certificate> certs = new ArrayList<>();        
+        final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
-            certs.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndTypeWS(getAdmin(), days, certificateType, maxNumberOfResults));
+            certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTimeAndType(getAdmin(), days, certificateType, maxNumberOfResults));
         } catch (AuthorizationDeniedException e1) {
             // No authorization required.
         }
-        final ArrayList<Certificate> ret = new ArrayList<>();
-        for(java.security.cert.Certificate cert : certs) {
-            try {
-                ret.add(new Certificate(cert));
-            } catch (CertificateEncodingException e) {
-                throw getInternalException(e, TransactionLogger.getPatternLogger());
-            }
-        }
-        return ret;
+        return unwrapCertificatesOrThrowInternalException(certificates);
     }
 
     @Override
@@ -2777,5 +2761,17 @@ public class EjbcaWS implements IEjbcaWS {
             return new EjbcaException(errorCode, s);
         }
         return new EjbcaException(s);
+    }
+    
+    private static ArrayList<Certificate> unwrapCertificatesOrThrowInternalException(Collection<CertificateWrapper> certificates) throws EjbcaException {
+        final ArrayList<Certificate> result = new ArrayList<>();
+        for (CertificateWrapper certificate : certificates) {
+            try {
+                result.add(new Certificate(certificate.getCertificate()));
+            } catch (CertificateEncodingException e) {
+                throw getInternalException(e, TransactionLogger.getPatternLogger());
+            }
+        }
+        return result;
     }
 }
