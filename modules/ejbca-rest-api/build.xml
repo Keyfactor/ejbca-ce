@@ -49,6 +49,8 @@
 		<path refid="lib.junit.classpath"/>
 		<path location="${build.dir}/WEB-INF/classes"/>
 		<path location="${this.dir}/../dist/systemtests-interfaces.jar"/>
+		<path location="${this.dir}/../dist/systemtests-common.jar"/>
+		<path location="${this.dir}/../dist/systemtests-ejb.jar"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.test.classpath"/>
 		<path refid="lib.resteasy-jaxrs.classpath"/>
