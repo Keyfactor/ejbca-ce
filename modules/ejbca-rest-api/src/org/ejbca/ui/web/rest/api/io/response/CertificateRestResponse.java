@@ -16,9 +16,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 /**
@@ -31,10 +37,12 @@ public class CertificateRestResponse {
     private byte[] certificate;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private BigInteger serialNumber;
+    private String responseFormat;
 
-    private CertificateRestResponse(byte[] certificate, BigInteger serialNumber) {
+    private CertificateRestResponse(byte[] certificate, BigInteger serialNumber, String responseFormat) {
         this.certificate = certificate;
         this.serialNumber = serialNumber;
+        this.responseFormat = responseFormat;
     }
 
     /**
@@ -56,6 +64,7 @@ public class CertificateRestResponse {
     }
 
     public byte[] getCertificate() {
+        // JSON serialization --> Base64 String. Don't do it manually
         return certificate;
     }
 
@@ -63,10 +72,15 @@ public class CertificateRestResponse {
         return serialNumber;
     }
 
+    public String getResponseFormat() {
+        return responseFormat;
+    }
+    
     public static class CertificateRestResponseBuilder {
         private byte[] certificate;
         private BigInteger serialNumber;
-
+        private String responseFormat;
+        
         private CertificateRestResponseBuilder() {
         }
 
@@ -80,28 +94,47 @@ public class CertificateRestResponse {
             return this;
         }
 
+        public CertificateRestResponseBuilder setResponseFormat(String responseFormat) {
+            this.responseFormat = responseFormat;
+            return this;
+        }
+        
         public CertificateRestResponse build() {
-            return new CertificateRestResponse(certificate, serialNumber);
+            return new CertificateRestResponse(certificate, serialNumber, responseFormat);
         }
     }
 
     public static class CertificateRestResponseConverter {
 
-        public CertificateRestResponse toRestResponse(Certificate certificate) throws CertificateEncodingException {
+        public CertificateRestResponse toRestResponse (Certificate certificate) throws CertificateEncodingException {
             certificate.getType();
             return CertificateRestResponse.builder()
                     .setCertificate(Base64.encode(certificate.getEncoded()))
                     .setSerialNumber(CertTools.getSerialNumber(certificate))
+                    .setResponseFormat("DER")
                     .build();
         }
 
-        public CertificateRestResponse toRestResponse(X509Certificate certificate) throws CertificateEncodingException {
+        public CertificateRestResponse toRestResponse (X509Certificate certificate) throws CertificateEncodingException {
             certificate.getType();
             return CertificateRestResponse.builder()
                     .setCertificate(certificate.getEncoded())
                     .setSerialNumber(certificate.getSerialNumber())
+                    .setResponseFormat("DER")
                     .build();
         }
-
+        
+        public CertificateRestResponse toRestResponse (KeyStore keyStore, String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+            return CertificateRestResponse.builder()
+                    .setCertificate(lockKeyStore(keyStore, password))
+                    .setResponseFormat(keyStore.getType())
+                    .build();
+        }
+    }
+    
+    private static byte[] lockKeyStore(KeyStore keyStore, String password) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        keyStore.store(baos, password.toCharArray());
+        return baos.toByteArray();
     }
 }

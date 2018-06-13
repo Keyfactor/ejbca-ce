@@ -713,6 +713,31 @@ public final class KeyTools {
     } // createJKS
 
     /**
+     * Generates KeyStore from key store byte array. Token type (JKS / P12) is determined 
+     * automatically by the byte array content
+     * @param keyStoreBytes byte array containing key store
+     * @param password of the key store
+     * @return JKS or P12 KeyStore depending of input content
+     */
+    public static KeyStore createKeyStore(byte[] keyStoreBytes, String password) throws KeyStoreException, 
+            NoSuchProviderException, IOException, NoSuchAlgorithmException, CertificateException {
+        final byte PKCS12_MAGIC = (byte)48;
+        final byte JKS_MAGIC = (byte)(0xfe);
+
+        final KeyStore keyStore;
+        if (keyStoreBytes[0] == PKCS12_MAGIC) {
+            keyStore = KeyStore.getInstance("PKCS12", "BC");
+        } else if (keyStoreBytes[0] == JKS_MAGIC) {
+            keyStore = KeyStore.getInstance("JKS");
+        } else {
+            throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
+        }
+        keyStore.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
+        return keyStore;
+    }
+    
+    
+    /**
      * Convert a KeyStore to PEM format.
      */
     public static byte[] getSinglePemFromKeyStore(final KeyStore ks, final char[] password) throws KeyStoreException, CertificateEncodingException,
