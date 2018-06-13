@@ -2731,7 +2731,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
-            final List<CertificateWrapper> certificates = raMasterApiProxyBean.getLastCAChainWS(admin, caname);
+            final List<CertificateWrapper> certificates = raMasterApiProxyBean.getLastCaChain(admin, caname);
             for (final CertificateWrapper certWrapper : certificates) {
                 retval.add(new Certificate(certWrapper.getCertificate()));
             }
