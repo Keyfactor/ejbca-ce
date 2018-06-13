@@ -2050,8 +2050,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public byte[] processCertReqWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType,
             String hardTokenSN, String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
-        InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
-        IOException, ParseException, ConstructionException, NoSuchFieldException, RuntimeException {
+            InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
+            IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException,
+            AuthLoginException, RuntimeException {
         byte[] result = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
