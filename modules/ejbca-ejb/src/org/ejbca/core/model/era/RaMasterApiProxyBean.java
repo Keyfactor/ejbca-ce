@@ -1957,14 +1957,16 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public Certificate getCertificateWS(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN)
+    public CertificateWrapper getCertificate(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        Certificate result = null;
+        CertificateWrapper result = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    result = raMasterApi.getCertificateWS(authenticationToken, certSNinHex, issuerDN);
-                    break;
+                    result = raMasterApi.getCertificate(authenticationToken, certSNinHex, issuerDN);
+                    if (result != null) {
+                    	break;
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

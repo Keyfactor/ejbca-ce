@@ -2386,17 +2386,9 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
-            String bcString = CertTools.stringToBCDNString(issuerDN);
-            int caid = bcString.hashCode();
-            caSession.verifyExistenceOfCA(caid);
-            final String[] rules = {StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", StandardRules.CAACCESS.resource() + caid};
-            if(!authorizationSession.isAuthorizedNoLogging(admin, rules)) {
-                final String authmsg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", Arrays.toString(rules), null);
-                throw new AuthorizationDeniedException(authmsg);
-            }
-            final java.security.cert.Certificate cert = raMasterApiProxyBean.getCertificateWS(admin, certSNinHex, issuerDN);
-            if(cert != null){
-                retval = new Certificate(cert);
+            final CertificateWrapper certificateWrapper = raMasterApiProxyBean.getCertificate(admin, certSNinHex, issuerDN);
+            if(certificateWrapper != null){
+                retval = new Certificate(certificateWrapper.getCertificate());
             }
         } catch (CertificateEncodingException e) {
             throw getInternalException(e, logger);
