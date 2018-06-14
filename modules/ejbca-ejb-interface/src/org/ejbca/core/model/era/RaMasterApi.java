@@ -902,12 +902,12 @@ public interface RaMasterApi {
      * @param username a unique username.
      * @param onlyValid only return valid certificates not revoked or expired ones.
      * @param now the current time as long value since epoch.
-     * @return a collection of Certificates or an empty list if no certificates, or no user, could be found.
+     * @return a collection of certificate wrappers or an empty list if no certificates, or no user, could be found.
      * @throws AuthorizationDeniedException if client isn't authorized to request.
      * @throws CertificateEncodingException if a certificate could not be encoded.
      * @throws EjbcaException any EjbcaException.
      */
-    Collection<Certificate> findCertsWS(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
+    Collection<CertificateWrapper> findCerts(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
     
     /**
      * Fetches available certificate profiles in an end entity profile.
