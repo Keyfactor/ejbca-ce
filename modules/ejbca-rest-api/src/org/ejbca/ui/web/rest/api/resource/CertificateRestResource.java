@@ -307,7 +307,7 @@ public class CertificateRestResource extends BaseRestResource {
     public Response finalizeEnrollment(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Approval request id") @PathParam("request_id") int requestId,
-            FinalizeRestResquest request)
+            @ApiParam(value = "responseFormat must be one of 'P12', 'JKS', 'DER'") FinalizeRestResquest request)
                     throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException, 
                         KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
