@@ -2354,7 +2354,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Collection<Certificate> findCertsWS(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now)
+    public Collection<CertificateWrapper> findCerts(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now)
             throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
         // Check authorization on current CA and profiles and view_end_entity by looking up the end entity
         if (endEntityAccessSession.findUser(authenticationToken,username) == null) {
@@ -2363,14 +2363,41 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData
-        Collection<java.security.cert.Certificate> certificates;
+        // Re-factor: Too much wrapping / unwrapping.
+        Collection<?> searchResults;
         if (onlyValid) {
             // We will filter out not yet valid certificates later on, but we as the database to not return any expired certificates
-            certificates = certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now);
+            searchResults = EJBTools.wrapCertCollection(certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now));
         } else {
-            certificates = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
+            searchResults = certificateStoreSession.findCertificatesByUsername(username);
         }
-        return certificates;
+        // Assume the user may have certificates from more than one CA.
+        Certificate certificate = null;
+        int caId = -1;
+        Boolean authorized = null;
+        final Map<Integer, Boolean> authorizationCache = new HashMap<>();
+        final List<CertificateWrapper> result = new ArrayList<>();
+        for (Object searchResult: searchResults) {
+            if (searchResult instanceof CertificateWrapper) {
+                certificate = EJBTools.unwrap((CertificateWrapper) searchResult);
+            } else { // Must be certificate.
+                certificate = (Certificate) searchResult;
+            }
+            caId = CertTools.getIssuerDN(certificate).hashCode();
+            authorized = authorizationCache.get(caId);
+            if (authorized == null) {
+                authorized = authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId);
+                authorizationCache.put(caId, authorized);
+            }
+            if (authorized.booleanValue()) {
+                if (searchResult instanceof CertificateWrapper) {
+                    result.add((CertificateWrapper) searchResult);
+                } else {
+                    result.add(EJBTools.wrap((Certificate) searchResult));
+                }
+            }
+        }
+        return result;
     }
     
     @Override
