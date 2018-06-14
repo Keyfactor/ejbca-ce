@@ -15,64 +15,78 @@
 
  version: $Id$
  -->
-<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	version="3.0" id="ejbca-rest-api" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee                         
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	version="3.0" id="ejbca-rest-api"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee                         
 	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-   <description><![CDATA[External interface for the EJBCA rest api]]></description>
-   <display-name>ejbca-rest-api</display-name>
-   <context-param>
-      <param-name>javax.ws.rs.Application</param-name>
-      <param-value>org.ejbca.ui.web.rest.api.RestApiApplication</param-value>
-   </context-param>
-   <context-param>
-        <param-name>resteasy.scan</param-name>
-        <param-value>true</param-value>
-   </context-param>
-   <listener>
-      <listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
-   </listener>
-   
+	<description><![CDATA[External interface for the EJBCA rest api]]></description>
+	<display-name>ejbca-rest-api</display-name>
+	<context-param>
+		<param-name>javax.ws.rs.Application</param-name>
+		<param-value>org.ejbca.ui.web.rest.api.RestApiApplication</param-value>
+	</context-param>
+	<context-param>
+		<param-name>resteasy.scan</param-name>
+		<param-value>true</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
+	</listener>
+	
+    <filter>
+        <filter-name>ServiceControlFilter</filter-name>
+        <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
+        <init-param>  
+            <param-name>serviceName</param-name>  
+            <param-value>REST</param-value>  
+        </init-param>
+    </filter>
     
-   <servlet>
-      <servlet-name>Resteasy</servlet-name>
-      <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
-   </servlet>
-   <servlet-mapping>
-      <servlet-name>Resteasy</servlet-name>
-      <url-pattern>/*</url-pattern>
-   </servlet-mapping>
-   
-   <servlet-mapping>
-      <servlet-name>default</servlet-name>
-      <url-pattern>/swagger-ui/*</url-pattern>
-   </servlet-mapping>
-   
-   <servlet>
-        <servlet-name>swagger-root</servlet-name>
-        <jsp-file>/swagger-ui-dist/index.html</jsp-file>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>swagger-root</servlet-name>
-        <url-pattern>/swagger</url-pattern>
-    </servlet-mapping>
-   
-   <security-constraint>
-      <web-resource-collection>
-         <web-resource-name>restricted methods</web-resource-name>
-         <url-pattern>/*</url-pattern>
-         <http-method>DELETE</http-method>
-         <http-method>OPTIONS</http-method>
-         <http-method>TRACE</http-method>
-      </web-resource-collection>
-      <auth-constraint />
-   </security-constraint>
-   <security-constraint>
-      <web-resource-collection>
-         <web-resource-name>require HTTPS</web-resource-name>
-         <url-pattern>/*</url-pattern>
-      </web-resource-collection>
-      <user-data-constraint>
-         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-      </user-data-constraint>
-   </security-constraint>
+    <filter-mapping>
+        <filter-name>ServiceControlFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+	<servlet>
+		<servlet-name>Resteasy</servlet-name>
+		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Resteasy</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>/swagger-ui/*</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>swagger-root</servlet-name>
+		<jsp-file>/swagger-ui-dist/index.html</jsp-file>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>swagger-root</servlet-name>
+		<url-pattern>/swagger</url-pattern>
+	</servlet-mapping>
+
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>restricted methods</web-resource-name>
+			<url-pattern>/*</url-pattern>
+			<http-method>DELETE</http-method>
+			<http-method>OPTIONS</http-method>
+			<http-method>TRACE</http-method>
+		</web-resource-collection>
+		<auth-constraint />
+	</security-constraint>
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>require HTTPS</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
 </web-app>

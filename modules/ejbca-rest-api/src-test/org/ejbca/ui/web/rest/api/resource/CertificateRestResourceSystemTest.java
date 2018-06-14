@@ -29,6 +29,8 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.AvailableProtocolsConfiguration;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -76,29 +78,33 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final String TEST_CA_NAME = "RestCertificateResourceTestCa";
     private static final String TEST_USERNAME = "keystoreFinalizeUser";
     private static final JSONParser jsonParser = new JSONParser();
+    private AvailableProtocolsConfiguration protcolConfigBackup;
     
     private static X509CA x509TestCa;
     
     @BeforeClass
     public static void beforeClass() {
         RestResourceSystemTestBase.beforeClass();
+
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
         RestResourceSystemTestBase.afterClass();
-
     }
 
     @Before
     public void setUp() throws Exception {
         CryptoProviderTools.installBCProvider();
+        protcolConfigBackup = (AvailableProtocolsConfiguration)globalConfigurationSession.
+                getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, "C=SE,CN=" + TEST_CA_NAME);
     }
 
     @After
     public void tearDown() throws AuthorizationDeniedException {
         caSession.removeCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAId());
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protcolConfigBackup);
     }
 
     @Test
@@ -194,5 +200,24 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             return null;
         }
         return approvals.iterator().next();
+    }
+    
+    /**
+     * Disables REST and then runs a simple REST access test which will expect status 403 when
+     * service is disabled by configuration.
+     * @throws Exception 
+     */
+    @Test
+    public void disableRestExpectStatusForbidden() throws Exception {
+        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
+                getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        // given
+        protcolConfig.setProtocolStatus(AvailableProtocols.REST.getName(), false);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protcolConfig);
+        // when
+        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/status").get();
+        int status = actualResponse.getStatus();
+        // then
+        assertEquals("Unexpected response after disabling protocol", 403, status);
     }
 }
