@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.config;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -22,6 +24,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.web.rest.api.exception.CesecoreExceptionClasses;
 import org.ejbca.ui.web.rest.api.exception.EjbcaExceptionClasses;
@@ -29,6 +32,7 @@ import org.ejbca.ui.web.rest.api.exception.ExceptionClasses;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.ExceptionErrorRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExceptionInfoRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.ExceptionInfoRestResponse.ExceptionInfoRestResponseBuilder;
 
 /**
  * General JAX-RS Exception handler to catch an Exception and create its appropriate response with error's status and error's message.
@@ -39,10 +43,14 @@ import org.ejbca.ui.web.rest.api.io.response.ExceptionInfoRestResponse;
 public class ExceptionHandler implements ExceptionMapper<Exception> {
 
     private static final Logger logger = Logger.getLogger(ExceptionHandler.class);
-
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    
     public static final int DEFAULT_ERROR_CODE = Status.INTERNAL_SERVER_ERROR.getStatusCode();
     public static final String DEFAULT_ERROR_MESSAGE = "General failure.";
 
+    @Context
+    HttpServletRequest requestContext;
+    
     @Override
     public Response toResponse(Exception exception) {
         ExceptionErrorRestResponse exceptionErrorRestResponse = null;
@@ -95,16 +103,30 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             // 202
             case WaitingForApprovalException:
                 WaitingForApprovalException e = (WaitingForApprovalException) exception;
-                return ExceptionInfoRestResponse.builder()
+                ExceptionInfoRestResponseBuilder response = ExceptionInfoRestResponse.builder()
                     .statusCode(Status.ACCEPTED.getStatusCode())
-                    .infoMessage(exception.getMessage())
-                    .requestId(Integer.toString(e.getRequestId()))
-                    .build();
+                    .infoMessage(exception.getMessage());
+                // Only link finalize for enrollment related requests
+                if (!(e.getMessage().equals(intres.getLocalizedMessage("ra.approvalrevoke")) ||
+                      e.getMessage().equals(intres.getLocalizedMessage("ra.approvalcaactivation")))) {
+                    response.link(getRestBaseUrl() + e.getRequestId() + "/finalize");
+                    
+                }
+                return response.build();
             default:
                 return null;
         }
     }
 
+    /**
+     * Returns the REST API base URL including correct domain name and port
+     * E.g. https://domainname:8443/ejbca/ejbca-rest-api/v1
+     * @return Rest API base URL
+     */
+    private String getRestBaseUrl() {
+        return requestContext.getRequestURL().substring(0, requestContext.getRequestURL().indexOf("/v")) + "/";
+    }
+    
     // Map EjbcaException extending exceptions
     private ExceptionErrorRestResponse mapEjbcaException(final EjbcaException ejbcaException) {
         switch (EjbcaExceptionClasses.fromClass(ejbcaException.getClass())) {
