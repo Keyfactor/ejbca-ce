@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.rest.api.io.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * A class representing the information about an "expected" exceptional event triggered by REST resource,
@@ -28,17 +29,18 @@ public class ExceptionInfoRestResponse {
     // Have to match HTTP Status codes
     private int statusCode;
     private String infoMessage;
-    private String requestId;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String link;
 
     /**
      * Simple constructor.
      */
     public ExceptionInfoRestResponse() {}
 
-    private ExceptionInfoRestResponse(final int statusCode, final String infoMessage, final String requestId) {
+    private ExceptionInfoRestResponse(final int statusCode, final String infoMessage, final String link) {
         this.statusCode = statusCode;
         this.infoMessage = infoMessage;
-        this.requestId = requestId;
+        this.link = link;
     }
     
     /**
@@ -72,20 +74,21 @@ public class ExceptionInfoRestResponse {
     public void setInfoMessage(String infoMessage) {
         this.infoMessage = infoMessage;
     }
-
     
     /**
-     * @return approval request id
+     * Returns the link used to finalize the enrollment after approval
+     * @return link to end point
      */
-    public String getRequestId() {
-        return requestId;
+    public String getLink() {
+        return link;
     }
 
     /**
-     * @param requestId approval request id
+     * Set the link used to finalize the enrollment after approval
+     * @param link to end point
      */
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setLink(String link) {
+        this.link = link;
     }
 
     /**
@@ -102,7 +105,7 @@ public class ExceptionInfoRestResponse {
 
         private int statusCode;
         private String infoMessage;
-        private String requestId;
+        private String link;
 
         ExceptionInfoRestResponseBuilder() {
         }
@@ -132,12 +135,12 @@ public class ExceptionInfoRestResponse {
         }
 
         /**
-         * Sets requestId for the approval
-         * @param requestId approval request id
+         * Set the link used to finalize the enrollment after approval
+         * @param link to end point
          * @return instance of this builder.
          */
-        public ExceptionInfoRestResponseBuilder requestId(final String requestId) {
-            this.requestId = requestId;
+        public ExceptionInfoRestResponseBuilder link(final String link) {
+            this.link = link;
             return this;
         }
         
@@ -147,7 +150,7 @@ public class ExceptionInfoRestResponse {
          * @return instance of ExceptionInfoRestResponse using this builder.
          */
         public ExceptionInfoRestResponse build() {
-            return new ExceptionInfoRestResponse(statusCode, infoMessage, requestId);
+            return new ExceptionInfoRestResponse(statusCode, infoMessage, link);
         }
     }
 }
