@@ -412,15 +412,17 @@ public class EjbcaWS implements IEjbcaWS {
             log.debug("Find certs for user '"+username+"'.");
         }
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
-        List<Certificate> retval = new ArrayList<>(0);
+        final List<Certificate> result = new ArrayList<>(0);
         try {
             final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
+            // Is this the right place for now? Was not changed.
             final long now = System.currentTimeMillis();
-            final Collection<java.security.cert.Certificate> certs = new ArrayList<>();
             try {
-                certs.addAll(raMasterApiProxyBean.findCertsWS(admin, username, onlyValid, now));
-                retval = ejbcaWSHelperSession.returnAuthorizedCertificates(admin, certs, onlyValid, now);
+                final Collection<java.security.cert.Certificate> certs = EJBTools.unwrapCertCollection(raMasterApiProxyBean.findCerts(admin, username, onlyValid, now));
+                for (java.security.cert.Certificate cert : certs) {
+                    result.add(new Certificate( cert));
+                }
             } catch (CertificateEncodingException e) { // Should never happen!
                 log.info("Certificate found for " + username + " could not be encoded: " + e.getMessage());
             }
@@ -430,7 +432,7 @@ public class EjbcaWS implements IEjbcaWS {
             logger.writeln();
             logger.flush();
         }
-        return retval;
+        return result;
     }
 
     @Override
