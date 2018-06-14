@@ -968,12 +968,12 @@ public interface RaMasterApi {
      * @param authenticationToken the administrator performing the action.
      * @param certSNinHex the certificate serial number in hexadecimal representation.
      * @param issuerDN the issuer of the certificate.
-     * @return the certificate or null if certificate couldn't be found.
+     * @return the certificate wrapper or null if certificate couldn't be found.
      * @throws AuthorizationDeniedException if the calling administrator isn't authorized to view the certificate.
      * @throws CADoesntExistsException if a referenced CA does not exist.
      * @throws EjbcaException any EjbcaException.
      */
-    Certificate getCertificateWS(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+    CertificateWrapper getCertificate(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
     
     /**
      * Fetches a list of certificates whose expiration date is before the specified number of days.
