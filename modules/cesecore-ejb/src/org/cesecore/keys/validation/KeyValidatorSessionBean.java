@@ -503,7 +503,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             final byte[] keyBytes = publicKey.getEncoded();
                             final String publicKeyEncoded = (keyBytes != null ? new String(Base64.encode(keyBytes)) : "null");
                             final String message = intres.getLocalizedMessage("validator.key.validation_successful", name, publicKeyEncoded);
-                            log.info(message);
+                            log.info(message);   
+                            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                            details.put("msg", message);
+                            auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
+                                    admin.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
                         }
                     } catch (ValidatorNotApplicableException e) {
                         // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
@@ -569,6 +573,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         } else {
                             final String message = intres.getLocalizedMessage("validator.certificate.validation_successful", name, fingerprint);
                             log.info(message);
+                            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                            details.put("msg", message);
+                            auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
+                                    authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
                         }
                     } catch (ValidatorNotApplicableException e) {
                         // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
