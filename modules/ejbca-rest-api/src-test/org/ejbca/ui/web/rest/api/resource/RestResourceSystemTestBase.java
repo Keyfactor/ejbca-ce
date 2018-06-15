@@ -208,14 +208,34 @@ public class RestResourceSystemTestBase {
     }
 
     public static void beforeClass() throws AuthorizationDeniedException {
-        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
-                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protocolConfigBackup = (AvailableProtocolsConfiguration) 
-                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protocolConfigBackup.setProtocolStatus(AvailableProtocols.REST.getName(), true);
-        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
+        backupProtocolConfiguration();
+        enableRestProtocolConfiguration();
     }
 
+    
+    protected static void enableRestProtocolConfiguration() throws AuthorizationDeniedException {
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST.getName(), true);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
+    }
+    
+    protected static void disableRestProtocolConfiguration() throws AuthorizationDeniedException {
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        availableProtocolsConfiguration.setProtocolStatus(AvailableProtocols.REST.getName(), false);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
+    }
+    
+    protected static void backupProtocolConfiguration() {
+        protocolConfigBackup = (AvailableProtocolsConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+    }
+
+    protected static void restoreProtocolConfiguration() throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protocolConfigBackup);
+    }
+    
     public static void afterClass() throws Exception {
         clearLoginCertificateSetup();
         // Remove keystores
@@ -231,7 +251,7 @@ public class RestResourceSystemTestBase {
         if(clientExecutor != null) {
             clientExecutor.close();
         }
-        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protocolConfigBackup);
+        restoreProtocolConfiguration();
     }
 
     /**

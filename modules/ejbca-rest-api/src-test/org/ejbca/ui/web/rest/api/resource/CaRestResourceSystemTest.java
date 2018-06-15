@@ -66,4 +66,21 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
     }
 
+    /**
+     * Disables REST and then runs a simple REST access test which will expect status 403 when
+     * service is disabled by configuration.
+     * @throws Exception 
+     */
+    @Test
+    public void shouldRestrictAccessToRestResourceIfProtocolDisabled() throws Exception {
+        // given
+        disableRestProtocolConfiguration();
+        // when
+        final ClientResponse<?> actualResponse = newRequest("/v1/ca/status").get();
+        final int status = actualResponse.getStatus();
+        // then
+        assertEquals("Unexpected response after disabling protocol", 403, status);
+        // restore state
+        enableRestProtocolConfiguration();
+    }
 }
