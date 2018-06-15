@@ -88,18 +88,3 @@ public class ServiceControlFilter implements Filter {
         chain.doFilter(request, response);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
