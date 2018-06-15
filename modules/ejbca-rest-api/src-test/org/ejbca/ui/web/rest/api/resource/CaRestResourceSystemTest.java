@@ -24,6 +24,8 @@ import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
+
 /**
  * A set of system tests for CaRestResource ('').
  *
@@ -32,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws AuthorizationDeniedException {
         RestResourceSystemTestBase.beforeClass();
     }
 

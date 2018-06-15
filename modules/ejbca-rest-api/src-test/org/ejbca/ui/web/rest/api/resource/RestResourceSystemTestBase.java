@@ -55,6 +55,8 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
+import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
@@ -145,6 +147,7 @@ public class RestResourceSystemTestBase {
     private static final String LOGIN_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "restapitestuser_" + new Date().getTime() + ".jks";
     private static final String SUPER_ADMINISTRATOR_ROLE_NAME = "Super Administrator Role";
     private static final RoleMember ROLE_MEMBER;
+    private static AvailableProtocolsConfiguration protocolConfigBackup;
     //
     protected static final AuthenticationToken INTERNAL_ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiTest"));
 
@@ -204,7 +207,13 @@ public class RestResourceSystemTestBase {
         }
     }
 
-    public static void beforeClass() {
+    public static void beforeClass() throws AuthorizationDeniedException {
+        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        protocolConfigBackup = (AvailableProtocolsConfiguration) 
+                globalConfigurationSession.getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        protocolConfigBackup.setProtocolStatus(AvailableProtocols.REST.getName(), true);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, availableProtocolsConfiguration);
     }
 
     public static void afterClass() throws Exception {
@@ -222,6 +231,7 @@ public class RestResourceSystemTestBase {
         if(clientExecutor != null) {
             clientExecutor.close();
         }
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protocolConfigBackup);
     }
 
     /**
