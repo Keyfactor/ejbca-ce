@@ -37,6 +37,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
      */
     public enum AvailableProtocols {
         // If you add a protocol > 6.11.0 it should be disabled by default
+        ACME("ACME", "/ejbca/acme"),
         CERT_STORE("Certstore", "/certificates"),
         CMP("CMP", "/ejbca/publicweb/cmp"),
         CRL_STORE("CRLstore", "/crls"),
@@ -97,7 +98,8 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         Boolean ret = (Boolean)data.get(protocol);
         // All protocols added > 6.11.0 should be disabled by default
         if (ret == null && (
-                protocol.equals(AvailableProtocols.EST.getName())|| 
+                protocol.equals(AvailableProtocols.ACME.getName())  ||
+                protocol.equals(AvailableProtocols.EST.getName())   || 
                 protocol.equals(AvailableProtocols.REST.getName()))) {
             setProtocolStatus(protocol, false);
             return false;
