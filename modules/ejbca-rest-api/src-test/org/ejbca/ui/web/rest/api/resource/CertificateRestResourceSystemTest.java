@@ -29,8 +29,6 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.AvailableProtocolsConfiguration;
-import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -78,7 +76,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static final String TEST_CA_NAME = "RestCertificateResourceTestCa";
     private static final String TEST_USERNAME = "keystoreFinalizeUser";
     private static final JSONParser jsonParser = new JSONParser();
-    private AvailableProtocolsConfiguration protcolConfigBackup;
     
     private static X509CA x509TestCa;
     
@@ -205,20 +202,15 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      * @throws Exception 
      */
     @Test
-    public void disableRestExpectStatusForbidden() throws Exception {
-        AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
-                getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        protcolConfigBackup = (AvailableProtocolsConfiguration)globalConfigurationSession.
-                getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+    public void shouldRestrictAccessToRestResourceIfProtocolDisabled() throws Exception {
         // given
-        protcolConfig.setProtocolStatus(AvailableProtocols.REST.getName(), false);
-        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protcolConfig);
+        disableRestProtocolConfiguration();
         // when
         final ClientResponse<?> actualResponse = newRequest("/v1/certificate/status").get();
-        int status = actualResponse.getStatus();
+        final int status = actualResponse.getStatus();
         // then
         assertEquals("Unexpected response after disabling protocol", 403, status);
         // restore state
-        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protcolConfigBackup);
+        enableRestProtocolConfiguration();
     }
 }
