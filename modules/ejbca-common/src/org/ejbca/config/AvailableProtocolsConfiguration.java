@@ -46,7 +46,7 @@ public class AvailableProtocolsConfiguration extends ConfigurationBase implement
         PUBLIC_WEB("Public Web", "/ejbca"),
         SCEP("SCEP", "/ejbca/publicweb/apply/scep"),
         RA_WEB("RA Web", "/ejbca/ra"),
-        REST("REST", "/ejbca/ejbca-rest-api"),
+        REST("REST Certificate Management", "/ejbca/ejbca-rest-api"),
         WEB_DIST("Webdist", "/ejbca/publicweb/webdist"),
         WS("Web Service", "/ejbca/ejbcaws");
 
