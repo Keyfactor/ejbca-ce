@@ -1370,11 +1370,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         for (Role role : allRoles) {
             boolean isRaRequestRole = role.hasAccessToResource(AccessRulesConstants.REGULAR_PEERCONNECTOR_INVOKEAPI);
             if (isRaRequestRole) {
+                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_ACME), Role.STATE_ALLOW);
+                role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_REST), Role.STATE_ALLOW);
                 role.getAccessRules().put(AccessRulesHelper.normalizeResource(AccessRulesConstants.REGULAR_PEERPROTOCOL_SCEP), Role.STATE_ALLOW);
                 roleDataSession.persistRole(role);
             }
         }
     }
+    
+    
 
     /**
      * From EJBCA 6.12.0, all extensions defined in ocsp.properties are selected for each key binding instead. Since this
