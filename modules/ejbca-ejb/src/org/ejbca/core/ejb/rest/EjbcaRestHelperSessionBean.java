@@ -29,8 +29,10 @@ import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -79,7 +81,9 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     @EJB
     private CertificateProfileSessionLocal certificateProfileSessionBean;
 
-
+    // Only used to verify the Peers access to /protocol/rest. Will not affect authorization for individual admins.
+    private final AuthenticationToken raRestAuthCheckToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("restServiceAuthCheck"));
+    
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException {
@@ -87,7 +91,10 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         credentials.add(cert);
         final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         final AuthenticationToken admin = authenticationSession.authenticate(subject);
-
+        
+        if (!raMasterApiProxyBean.isAuthorizedNoLogging(raRestAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST)) {
+            throw new AuthorizationDeniedException("REST resources is not authorized for this Peer connection");
+        }
         if ((admin != null) && (!allowNonAdmins)) {
             if(!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
                 final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
