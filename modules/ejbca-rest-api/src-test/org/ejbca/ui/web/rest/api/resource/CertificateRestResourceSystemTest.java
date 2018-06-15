@@ -83,7 +83,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private static X509CA x509TestCa;
     
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws AuthorizationDeniedException {
         RestResourceSystemTestBase.beforeClass();
 
     }
@@ -96,15 +96,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     @Before
     public void setUp() throws Exception {
         CryptoProviderTools.installBCProvider();
-        protcolConfigBackup = (AvailableProtocolsConfiguration)globalConfigurationSession.
-                getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, "C=SE,CN=" + TEST_CA_NAME);
     }
 
     @After
     public void tearDown() throws AuthorizationDeniedException {
         caSession.removeCA(INTERNAL_ADMIN_TOKEN, x509TestCa.getCAId());
-        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protcolConfigBackup);
     }
 
     @Test
@@ -211,6 +208,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void disableRestExpectStatusForbidden() throws Exception {
         AvailableProtocolsConfiguration protcolConfig = (AvailableProtocolsConfiguration)globalConfigurationSession.
                 getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
+        protcolConfigBackup = (AvailableProtocolsConfiguration)globalConfigurationSession.
+                getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
         // given
         protcolConfig.setProtocolStatus(AvailableProtocols.REST.getName(), false);
         globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protcolConfig);
@@ -219,5 +218,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         int status = actualResponse.getStatus();
         // then
         assertEquals("Unexpected response after disabling protocol", 403, status);
+        // restore state
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, protcolConfigBackup);
     }
 }
