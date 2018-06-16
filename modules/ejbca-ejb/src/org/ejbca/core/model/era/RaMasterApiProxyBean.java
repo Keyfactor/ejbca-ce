@@ -1945,15 +1945,18 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public Map<String, Integer> getAvailableCertificateProfilesWS(AuthenticationToken authenticationToken, int entityProfileId)
+    public Map<String, Integer> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, final int entityProfileId) 
             throws AuthorizationDeniedException, EjbcaException {
+        // Try over all instances.
         final Map<String, Integer> result = new TreeMap<>();
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    result.putAll(raMasterApi.getAvailableCertificateProfilesWS(authenticationToken, entityProfileId));
-                    break;
+                    result.putAll(raMasterApi.getAvailableCertificateProfiles(authenticationToken, entityProfileId));
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (EjbcaException e) {
+                    log.info( "End entity profiles for proxied request on CA could not be found: " + e.getMessage());
                     // Just try next implementation
                 }
             }

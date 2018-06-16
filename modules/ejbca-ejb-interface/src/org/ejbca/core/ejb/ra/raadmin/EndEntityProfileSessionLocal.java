@@ -12,10 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
+import java.util.Map;
+
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -35,11 +38,27 @@ public interface EndEntityProfileSessionLocal extends EndEntityProfileSession {
 
     /** Helper method that checks if an administrator is authorized to all CAs present in the profiles "available CAs"
      * 
-     * @param admin administrator to check
+     * @param admin administrator to check.
      * @param profile the profile to check
      * @throws AuthorizationDeniedException if admin is not authorized to one of the available CAs in the profile
      */
     void authorizedToProfileCas(AuthenticationToken admin, EndEntityProfile profile) throws AuthorizationDeniedException;
+    
+    /**
+     * Fetches available certificate profiles associated with an end entity profile.
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /endentityprofilesrules/&lt;end entity profile&gt;
+     * </pre>
+     *
+     * @param admin the authentication of the caller.
+     * @param entityProfileId id of the end entity profile.
+     * @return a map of available certificate profiles names and IDs or an empty map.
+     * @throws EjbcaException if an error occured.
+     * @throws AuthorizationDeniedException if the authorization was denied.
+     */
+    Map<String, Integer> getAvailableCertificateProfiles(AuthenticationToken admin, int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
     
     /** WARNING: This method must only be used when doing read_only operation on the profile. Otherwise
      * any changes to the profile will affect the profile in the cache and thus affect all other threads.
