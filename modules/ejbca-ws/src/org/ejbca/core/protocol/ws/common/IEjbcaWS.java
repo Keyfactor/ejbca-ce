@@ -16,6 +16,7 @@ import java.security.cert.CertificateExpiredException;
 import java.util.List;
 
 import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -599,9 +600,10 @@ public interface IEjbcaWS {
 	/**
 	 * Revokes all of a user's certificates.
 	 *
-	 * It is also possible to delete
-	 * a user after all certificates have been revoked.
+	 * It is also possible to delete a user after all certificates have been revoked.
 	 *
+	 * If the request is proxied to another EJBCA instance, at least one revocation must succeed or the operation fails with the last exception thrown.
+	 * 
 	 * Authorization requirements:<pre>
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
@@ -609,17 +611,19 @@ public interface IEjbcaWS {
 	 * - /ca/<ca of users certificate>
 	 * </pre>
 	 *
-	 * @param username unique username in EJBCA
+	 * @param username unique username in EJBCA.
 	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants
 	 * or use {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.NOT_REVOKED to un-revoke a certificate on hold.
 	 * @param deleteUser deletes the users after all the certificates have been revoked.
-	 * @throws CADoesntExistsException if a referenced CA does not exist
+	 * @throws CADoesntExistsException if a referenced CA does not exist.
 	 * @throws AuthorizationDeniedException if client isn't authorized.
-	 * @throws NotFoundException if user doesn't exist
-	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
-	 * @throws ApprovalException if there already exists an approval request for this task
-	 * @throws AlreadyRevokedException if the user already was revoked
-	 * @throws EjbcaException
+	 * @throws NotFoundException if user doesn't exist.
+	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved.
+	 * @throws ApprovalException if there already exists an approval request for this task.
+	 * @throws AlreadyRevokedException if the user already was revoked.
+	 * @throws EjbcaException any EjbcaException.
+	 * @see RevokeStatus
+	 * @see RaMasterApi#revokeUser(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser)
 	 */
 	void revokeUser(String username, int reason,
 			boolean deleteUser) throws CADoesntExistsException, AuthorizationDeniedException,

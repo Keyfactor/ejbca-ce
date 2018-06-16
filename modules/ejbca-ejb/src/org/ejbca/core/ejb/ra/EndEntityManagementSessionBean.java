@@ -94,6 +94,7 @@ import org.cesecore.util.RFC4683Tools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -187,8 +188,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private RevocationSessionLocal revocationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
-
-
 
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration() {
@@ -1491,6 +1490,29 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "revokeAndDeleteUser"),
             new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(), null), };
 
+    @Override
+    public void revokeUser(final AuthenticationToken authenticationToken, final String username, final int reason, final boolean deleteUser) throws AuthorizationDeniedException, CADoesntExistsException, 
+        ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException {
+        // Check username.
+        final EndEntityInformation userdata = endEntityAccessSession.findUser(authenticationToken,username);
+        if(userdata == null) {
+            throw new NoSuchEndEntityException("User '" + username + "' not found.");
+        }
+        // Check CA ID.
+        final int caId = userdata.getCAId();
+        caSession.verifyExistenceOfCA(caId);
+        // Authorization check is done later again in revokeUser..., and may be written to audit log.
+        // The error messages differ and MUST NOT be changed here because of the call by RaMasterAPI and EJBCA WS.
+        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId)) {     
+            throw new AuthorizationDeniedException(intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() + caId, null));
+        }
+        if (deleteUser) {
+            revokeAndDeleteUser(authenticationToken,username,reason);
+        } else {
+            revokeUser(authenticationToken,username,reason);
+        }
+    }
+    
     @Override
     public void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, NoSuchEndEntityException,
             ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
