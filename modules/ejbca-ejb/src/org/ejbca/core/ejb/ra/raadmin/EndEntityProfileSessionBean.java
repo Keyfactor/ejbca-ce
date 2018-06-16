@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -34,14 +35,17 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -75,6 +79,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private CaSessionLocal caSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
 
     @Override
     public int addEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileExistsException {
@@ -372,6 +378,24 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             LOG.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));
         }
         return returnval;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken admin, final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
+        final EndEntityProfile profile = getEndEntityProfileNoClone(entityProfileId);
+        final TreeMap<String,Integer> result = new TreeMap<>();
+        if (profile != null) {
+            final Collection<Integer> ids = profile.getAvailableCertificateProfileIds();
+            for (int id : ids) {
+                result.put(certificateProfileSession.getCertificateProfileName(id), id);
+            }
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found " + result + " certificate profiles for end entity profile with ID " + entityProfileId + " requested by " 
+                    + ((X509CertificateAuthenticationToken) admin).getCertificate().getSubjectDN());
+        }
+        return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

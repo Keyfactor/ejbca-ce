@@ -2383,17 +2383,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public Map<String, Integer> getAvailableCertificateProfilesWS(AuthenticationToken authenticationToken, int entityProfileId)
+    public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken authenticationToken, final int entityProfileId)
             throws AuthorizationDeniedException, EjbcaException {
-        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
-        final TreeMap<String,Integer> result = new TreeMap<>();
-        if (profile != null) {
-            final Collection<Integer> ids = profile.getAvailableCertificateProfileIds();
-            for (int id : ids) {
-                result.put(certificateProfileSession.getCertificateProfileName(id), id);
-            }
-        }
-        return result;
+        return endEntityProfileSession.getAvailableCertificateProfiles(authenticationToken, entityProfileId);
     }
     
     @Override
