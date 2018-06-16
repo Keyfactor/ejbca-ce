@@ -512,7 +512,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, status.revocationReason);
     }
-
+    
+    @Test
+    public void test05RevokeUser() throws Exception {
+        // ECA-6685 Implement test for EndEntityManagementSessionLocal.revokeUser.
+    }
+    
     /**
      * tests deletion of user, and user that does not exist
      * 

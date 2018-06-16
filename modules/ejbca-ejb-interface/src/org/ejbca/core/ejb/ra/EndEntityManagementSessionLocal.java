@@ -16,9 +16,12 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 
 /**
@@ -98,5 +101,32 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     void updateCAId(final AuthenticationToken admin, final String username, int newCAId) throws AuthorizationDeniedException, NoSuchEndEntityException;
 
 
-
+    /**
+     * Revokes all of a user's certificates.
+     *
+     * It is also possible to delete a user after all certificates have been revoked.
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /ra_functionality/revoke_end_entity
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/revoke_end_entity
+     * - /ca/<ca of users certificate>
+     * </pre>
+     *
+     * @param authenticationToken of the requesting administrator or client.
+     * @param username unique username in EJBCA
+     * @param reason for revocation, one of {@link org.cesecore.certificates.crl.RevokedCertInfo}.REVOKATION_REASON_ constants or use {@link org.cesecore.certificates.crl.RevokedCertInfo}.NOT_REVOKED to un-revoke a certificate on hold.
+     * @param deleteUser deletes the users after all the certificates have been revoked.
+     * @throws AuthorizationDeniedException if client isn't authorized.
+     * @throws CADoesntExistsException if a referenced CA does not exist.
+     * @throws ApprovalException if there already exists an approval request for this task.
+     * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved.
+     * @throws AlreadyRevokedException if the user already was revoked.
+     * @throws NoSuchEndEntityException if End Entity bound to certificate isn't found.
+     * @throws CouldNotRemoveEndEntityException if the user could not be deleted.
+     * @throws EjbcaException any EjbcaException.
+     */
+    void revokeUser(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser) throws AuthorizationDeniedException, 
+        CADoesntExistsException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, 
+        CouldNotRemoveEndEntityException, EjbcaException;
 }
