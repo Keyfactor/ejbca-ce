@@ -2214,27 +2214,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public void revokeUserWS(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser) throws CADoesntExistsException, AuthorizationDeniedException,
-            NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
-        // Check username.
-        final EndEntityInformation userdata = endEntityAccessSession.findUser(authenticationToken,username);
-        if(userdata == null){
-            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
-            throw new NotFoundException(msg);
-        }
-        // Check CA ID.
-        int caid = userdata.getCAId();
-        caSession.verifyExistenceOfCA(caid);
-        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() +caid)) {
-            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
-            throw new AuthorizationDeniedException(msg);
-        }
-        if (deleteUser) {
-            endEntityManagementSession.revokeAndDeleteUser(authenticationToken,username,reason);
-        } else {
-            endEntityManagementSession.revokeUser(authenticationToken,username,reason);
-        }
+    public void revokeUser(final AuthenticationToken authenticationToken, final String username, final int reason, final boolean deleteUser) throws AuthorizationDeniedException, CADoesntExistsException, 
+        ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException {
+        endEntityManagementSession.revokeUser(authenticationToken, username, reason, deleteUser);
     }
 
     @Override
