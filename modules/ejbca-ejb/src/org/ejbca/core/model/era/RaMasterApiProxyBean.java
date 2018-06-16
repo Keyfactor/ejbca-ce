@@ -1496,18 +1496,55 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public void revokeUserWS(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser) throws CADoesntExistsException, AuthorizationDeniedException,
-            NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+    public void revokeUser(final AuthenticationToken authenticationToken, final String username, final int reason, final boolean deleteUser) throws AuthorizationDeniedException, CADoesntExistsException, 
+        ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException {
         // Try over all instances.
+        boolean revoked = false;
+        int index = 0, size = raMasterApis.length;
         for (final RaMasterApi raMasterApi : raMasterApis) {
+        	++index;
             if (raMasterApi.isBackendAvailable()) {
                 try {
-                    raMasterApi.revokeUserWS(authenticationToken, username, reason, deleteUser);
+                    raMasterApi.revokeUser(authenticationToken, username, reason, deleteUser);
+                    revoked = true;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
+                    // Just try next implementation.
+                } catch (CADoesntExistsException e) {
+                    log.info( "CA for proxied request on CA could not be found: " + e.getMessage());
+                    if (!revoked && index == size) {
+                    	throw e;
+                    }
+                    // Just try next implementation.
+                } catch (NoSuchEndEntityException e) {
+                    log.info( "End entity for proxied request on CA could not be found: " + e.getMessage());
+                    if (!revoked && index == size) {
+                        throw e;
+                    }
+                    // Just try next implementation.
+                } catch (ApprovalException e) {
+                    log.info( "End entity for proxied request on CA is in approval process: " + e.getMessage());
+                    if (!revoked && index == size) {
+                        throw e;
+                    }
+                    // Just try next implementation.
+                } catch (WaitingForApprovalException e) {
+                    log.info( "End entity for proxied request on CA is in approval process: " + e.getMessage());
+                    if (!revoked && index == size) {
+                        throw e;
+                    }
+                    // Just try next implementation.
+                } catch (AlreadyRevokedException e) {
+                    log.info( "End entity for proxied request on CA is revoked already: " + e.getMessage());
+                    if (!revoked && index == size) {
+                        throw e;
+                    }
+                    // Just try next implementation.
                 } catch (CouldNotRemoveEndEntityException e) {
                 	log.info( "End entity for proxied request on CA could not be removed: " + e.getMessage());
-                	// Try next implementation.
+                	if (!revoked && index == size) {
+                        throw e;
+                    }
+                	// Just try next implementation.
                 }
             }
         }
@@ -1516,7 +1553,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public CertificateStatus getCertificateStatus(AuthenticationToken authenticationToken, String issuerDN, BigInteger serno) throws CADoesntExistsException, AuthorizationDeniedException{
         CertificateStatus ret = null;
-        // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
+        // Try remote first, since sthe certificate might be present in the RA database but the admin might not authorized to revoke it there
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {

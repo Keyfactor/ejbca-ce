@@ -559,35 +559,12 @@ public interface RaMasterApi {
             CertificateProfileDoesNotExistException;
     
     /**
-     * Revokes all of a user's certificates.
-     *
-     * It is also possible to delete
-     * a user after all certificates have been revoked.
-     *
-     * Authorization requirements:<pre>
-     * - /administrator
-     * - /ra_functionality/revoke_end_entity
-     * - /endentityprofilesrules/&lt;end entity profile&gt;/revoke_end_entity
-     * - /ca/<ca of users certificate>
-     * </pre>
-     *
-     * @param authenticationToken of the requesting administrator or client.
-     * @param username unique username in EJBCA
-     * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants
-     * or use {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.NOT_REVOKED to un-revoke a certificate on hold.
-     * @param deleteUser deletes the users after all the certificates have been revoked.
-     * @throws CADoesntExistsException if a referenced CA does not exist
-     * @throws AuthorizationDeniedException if client isn't authorized.
-     * @throws NotFoundException if user doesn't exist
-     * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
-     * @throws ApprovalException if there already exists an approval request for this task
-     * @throws AlreadyRevokedException if the user already was revoked
-     * @throws NoSuchEndEntityException if End Entity bound to certificate isn't found.
-     * @throws CouldNotRemoveEndEntityException if the user could not be deleted.
-     * @throws EjbcaException
+     * Revokes all of a user's certificates. A revocation must succeed at least on one instance, otherwise the operation fails with an exception.
+     * 
+     * @see EndEntityManagementSessionLocal#revokeUser(AuthenticationToken, String, int, boolean).
      */
-    void revokeUserWS(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser) throws CADoesntExistsException, AuthorizationDeniedException,
-            NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException;
+    void revokeUser(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser) throws AuthorizationDeniedException, CADoesntExistsException, 
+            ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException;
     
     /** 
      * @see CertificateStoreSession#getStatus(String, BigInteger)

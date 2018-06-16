@@ -1347,14 +1347,21 @@ public class EjbcaWS implements IEjbcaWS {
     @Override
 	public void revokeUser(String username, int reason, boolean deleteUser)
 			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
-
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try{
-			AuthenticationToken admin = getAdmin();
-            logAdminName(admin,logger);
-            raMasterApiProxyBean.revokeUserWS(admin, username, reason, deleteUser);
-		}  catch (NoSuchEndEntityException e) {
-			throw new NotFoundException(e.getMessage());
+			final AuthenticationToken admin = getAdmin();
+            logAdminName(admin, logger);
+//            // Check caid
+//            int caid = userdata.getCAId();
+//            caSession.verifyExistenceOfCA(caid);
+//            if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
+//                final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
+//                throw new AuthorizationDeniedException(msg);
+//            }
+            raMasterApiProxyBean.revokeUser(admin, username, reason, deleteUser);
+		} catch (NoSuchEndEntityException e) {
+		    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+		    throw new NotFoundException(intres.getLocalizedMessage("ra.wrongusernameorpassword"));
 		} catch (CouldNotRemoveEndEntityException e) {
             throw getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
