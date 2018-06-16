@@ -520,7 +520,7 @@
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->
-                <include name="ctlog-jdk7-*.jar" />
+                <include name="ctlog-*.jar" />
                 <include name="protobuf-java-*.jar" />
             </zipfileset>
 			<zipfileset prefix="lib" dir="${lib}/ext/swagger" erroronmissingdir="false">
