@@ -419,7 +419,7 @@ public class EjbcaWS implements IEjbcaWS {
             // Is this the right place for now? Was not changed.
             final long now = System.currentTimeMillis();
             try {
-                final Collection<java.security.cert.Certificate> certs = EJBTools.unwrapCertCollection(raMasterApiProxyBean.findCerts(admin, username, onlyValid, now));
+                final Collection<java.security.cert.Certificate> certs = EJBTools.unwrapCertCollection(raMasterApiProxyBean.getCertificatesByUsername(admin, username, onlyValid, now));
                 for (java.security.cert.Certificate cert : certs) {
                     result.add(new Certificate( cert));
                 }
