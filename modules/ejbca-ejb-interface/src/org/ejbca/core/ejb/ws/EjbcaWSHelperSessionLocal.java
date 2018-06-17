@@ -179,12 +179,4 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
      HardTokenDataWS convertHardTokenToWS(HardTokenInformation data, Collection<java.security.cert.Certificate> certificates, boolean includePUK) throws EjbcaException;
      
      void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException;
-     
-     /**
-      * Web services does not support Collection type so convert it to array.
-      * 
-      * @param mytree TreeMap of name and id pairs to convert to an array
-      * @return array of NameAndId objects
-      */
-     NameAndId[] convertTreeMapToArray(TreeMap<String, Integer> mytree);
 }
