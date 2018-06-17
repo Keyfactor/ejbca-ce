@@ -1946,13 +1946,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public Collection<CertificateWrapper> findCerts(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now)
+    public Collection<CertificateWrapper> getCertificatesByUsername(final AuthenticationToken authenticationToken, final String username, final boolean onlyValid, final long now)
             throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    final Collection<CertificateWrapper> certificates = raMasterApi.findCerts(authenticationToken, username, onlyValid, now);
+                    final Collection<CertificateWrapper> certificates = raMasterApi.getCertificatesByUsername(authenticationToken, username, onlyValid, now);
                     for (CertificateWrapper certificate : certificates) {
                         result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
                     }
