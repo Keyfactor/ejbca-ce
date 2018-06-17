@@ -61,7 +61,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
-import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -69,7 +68,6 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.access.AccessSet;
@@ -141,11 +139,10 @@ import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
-import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
-import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenMetaData;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -240,6 +237,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AuthorizationSystemSessionLocal authorizationSystemSession;
     @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
@@ -2311,28 +2310,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public void customLogWS(AuthenticationToken authenticationToken, int level, String type, String cAName, String username, String certificateSn, 
-            String msg, EventType event) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        // Check authorization to perform custom logging.
-        if(!authorizationSession.isAuthorized(authenticationToken, AuditLogRules.LOG_CUSTOM.resource())) {
-            final String authmsg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AuditLogRules.LOG_CUSTOM.resource(), null);
-            throw new AuthorizationDeniedException(authmsg);
-        }
-        int caId = 0;
-        if(cAName != null){
-            CAInfo cAInfo = caSession.getCAInfo(authenticationToken, cAName);
-            if (cAInfo == null) {
-                throw new CADoesntExistsException("CA with name " + cAName + " doesn't exist.");
-            } 
-            caId = cAInfo.getCAId();
-        } else {
-            caId = ((X509CertificateAuthenticationToken) authenticationToken).getCertificate().getSubjectDN().getName().hashCode();
-        }
-
-        String comment = type + " : " + msg;
-        Map<String, Object> details = new LinkedHashMap<>();
-        details.put("msg", comment);
-        auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), String.valueOf(caId), username, certificateSn, details);
+    public void customLog(final AuthenticationToken authenticationToken, final int level, final String type, final String caName, final String username, final String certificateSn, 
+    		final String msg, final EventType event) throws AuthorizationDeniedException, CADoesntExistsException {
+        caAdminSession.customLog(authenticationToken, level, type, caName, username, certificateSn, msg, event);
     }
 
     @Override

@@ -71,6 +71,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
@@ -78,8 +79,10 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
@@ -167,6 +170,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
@@ -3362,4 +3366,26 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.flushCACache();
     }
 
+    @Override
+    public void customLog(final AuthenticationToken authenticationToken, final int level, final String type, final String caName, final String username, final String certificateSn,
+            final String msg, final EventType event) throws AuthorizationDeniedException, CADoesntExistsException {
+        // Check authorization to perform custom logging.
+        if(!authorizationSession.isAuthorized(authenticationToken, AuditLogRules.LOG_CUSTOM.resource())) {
+            throw new AuthorizationDeniedException(intres.getLocalizedMessage("authorization.notauthorizedtoresource", 
+                    AuditLogRules.LOG_CUSTOM.resource(), null));
+        }
+        int caId = 0;
+        if(caName != null) {
+            final CAInfo cAInfo = caSession.getCAInfo(authenticationToken, caName);
+            if (cAInfo == null) {
+                throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
+            } 
+            caId = cAInfo.getCAId();
+        } else {
+            caId = ((X509CertificateAuthenticationToken) authenticationToken).getCertificate().getSubjectDN().getName().hashCode();
+        }
+        final Map<String, Object> details = new LinkedHashMap<>();
+        details.put("msg", type + " : " + msg);
+        auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), String.valueOf(caId), username, certificateSn, details);
+    }
 }
