@@ -70,6 +70,7 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
@@ -889,25 +890,16 @@ public interface RaMasterApi {
     /**
      * Fetches available certificate profiles in an end entity profile.
      *
-     * @see "EndEntityProfileSessionLocal#getAvailableCertificateProfiles(AuthenticationToken, int)"
+     * @see EndEntityProfileSessionLocal#getAvailableCertificateProfiles(AuthenticationToken, int)
      */
     Map<String,Integer> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
     
     /**
      * Fetches the IDs and names of available CAs in an end entity profile.
      *
-     * Authorization requirements:<pre>
-     * - /administrator
-     * - /endentityprofilesrules/&lt;end entity profile&gt;
-     * </pre>
-     *
-     * @param authenticationToken the administrator performing the action.
-     * @param entityProfileId the ID of an end entity profile where we want to find which CAs are available.
-     * @return a Map containing the name and ID pairs of available CAs in the specified end entity profile or an empty map.
-     * @throws AuthorizationDeniedException if client isn't authorized to request.
-     * @throws EjbcaException any EjbcaException.
+     * @see EndEntityProfileSessionLocal#getAvailableCAsInProfile(AuthenticationToken admin, final int entityProfileId)
      */
-    Map<String,Integer> getAvailableCAsInProfileWS(AuthenticationToken authenticationToken, final int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
+    Map<String,Integer> getAvailableCAsInProfile(AuthenticationToken authenticationToken, final int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
     
     /**
      * Fetches the end entity profiles that the administrator is authorized to use.
