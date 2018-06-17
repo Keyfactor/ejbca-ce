@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -148,6 +149,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
@@ -159,6 +161,7 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -2431,25 +2434,25 @@ public class EjbcaWS implements IEjbcaWS {
             logger.writeln();
             logger.flush();
         }
-		return ejbcaWSHelperSession.convertTreeMapToArray(ret);
+		return convertTreeMapToArray(ret);
 	}
 
     @Override
     public NameAndId[] getAuthorizedEndEntityProfiles()
             throws AuthorizationDeniedException, EjbcaException {
-        AuthenticationToken admin = getAdmin();
-        TreeMap<String,Integer> ret = new TreeMap<>();
+        final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
+        final IdNameHashMap<EndEntityProfile> result = new IdNameHashMap<>();
         try {
-            ret.putAll(raMasterApiProxyBean.getAuthorizedEndEntityProfilesWS(admin));
+            result.putAll(raMasterApiProxyBean.getAuthorizedEndEntityProfiles(admin, AccessRulesConstants.CREATE_END_ENTITY));
         } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
             logger.flush();
         }
-        return ejbcaWSHelperSession.convertTreeMapToArray(ret);
+        return convertIdNameHashMapToArray(result);
     }
 
     @Override
@@ -2466,7 +2469,7 @@ public class EjbcaWS implements IEjbcaWS {
             logger.writeln();
             logger.flush();
         }
-        return ejbcaWSHelperSession.convertTreeMapToArray(result);
+        return convertTreeMapToArray(result);
     }
 
     @Override
@@ -2483,7 +2486,7 @@ public class EjbcaWS implements IEjbcaWS {
             logger.writeln();
             logger.flush();
         }
-        return ejbcaWSHelperSession.convertTreeMapToArray(result);
+        return convertTreeMapToArray(result);
     }
 
     @Override
@@ -2763,6 +2766,46 @@ public class EjbcaWS implements IEjbcaWS {
                 result.add(new Certificate(certificate.getCertificate()));
             } catch (CertificateEncodingException e) {
                 throw getInternalException(e, TransactionLogger.getPatternLogger());
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Creates a NameAndId array by the given map of name / ID pairs.
+     * 
+     * @param map the map of name / ID pairs.
+     * @return an array of NameAndId objects in the same order as in the map.
+     */
+    private static NameAndId[] convertTreeMapToArray(final Map<String, Integer> map) {
+        NameAndId[] result;
+        if ((map == null) || (map.size() == 0)) {
+            result = new NameAndId[0];
+        } else {
+            result = new NameAndId[map.size()];
+            int i = 0;
+            for (String name : map.keySet()) {
+                result[i++] = new NameAndId(name, map.get(name));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Creates a NameAndId array by the given map of name / ID pairs.
+     * 
+     * @param map the map of name / ID pairs.
+     * @return an array of NameAndId objects in the same order as in the map.
+     */
+    private static NameAndId[] convertIdNameHashMapToArray(final IdNameHashMap<?> map) {
+        NameAndId[] result;
+        if ((map == null) || (map.size() == 0)) {
+            result = new NameAndId[0];
+        } else {
+            result = new NameAndId[map.size()];
+            int i = 0;
+            for (String name : map.nameKeySet()) {
+                result[i++] = new NameAndId(name, map.get(name).getId());
             }
         }
         return result;
