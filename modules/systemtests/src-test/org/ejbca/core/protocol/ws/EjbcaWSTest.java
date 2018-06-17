@@ -48,6 +48,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -129,6 +130,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -149,6 +151,7 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
+import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -743,7 +746,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
         int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
         approvalProfile.setNumberOfApprovalsRequired(1);
-        final int approvalProfileId = approvalProfileSession.addApprovalProfile(intAdmin, approvalProfile);
+        final int approvalProfileId = createApprovalProfile(approvalProfile, true);        
         try {
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -755,7 +758,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             principals.add(adminCert.getSubjectX500Principal());
             AuthenticationToken approvingAdmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
             try {
-                X509Certificate cert = createUserAndCert(username, caID);
+                X509Certificate cert = createUserAndCert(username, caID, true);
                 String issuerdn = cert.getIssuerDN().toString();
                 String serno = cert.getSerialNumber().toString(16);
                 // revoke via WS and verify response
@@ -2507,13 +2510,16 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     /**
      * Create a user a generate certificate.
      */
-    private X509Certificate createUserAndCert(String username, int caID) throws Exception {
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+    private X509Certificate createUserAndCert(final String username, final int caID, final boolean deleteFirst) throws Exception {
+        if (deleteFirst) {
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+        }
+        final EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(PASSWORD);
-        endEntityManagementSession.addUser(intAdmin, userdata, true);
+        endEntityManagementSession.addUser(intAdmin, userdata, true);        
         fileHandles.addAll(BatchCreateTool.createAllNew(intAdmin, new File(P12_FOLDER_NAME)));
-        Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
+        final Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
         assertEquals("Certificates for user with username " + username + " wasn't exactly one.", 1, userCerts.size());
         return (X509Certificate) userCerts.iterator().next();
     }
@@ -2534,5 +2540,26 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         stream.read(data);
         IOUtils.closeQuietly(stream);
         return data;
+    }
+
+    /** Creates an approvalProfile. Throws an exception, if it exists already. */
+    private int createApprovalProfile(final ApprovalProfile profile, final boolean deleteIfExists) throws ApprovalProfileExistsException, AuthorizationDeniedException {
+        final String name = profile.getProfileName();
+        if (deleteIfExists) {
+            final Map<Integer, String> existingApprovalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
+            if (existingApprovalProfiles != null && existingApprovalProfiles.values().contains((name))) {
+                for (Map.Entry<Integer, String> entry : existingApprovalProfiles.entrySet()) {
+                    if (name.equals(entry.getValue())) {
+                        approvalProfileSession.removeApprovalProfile(intAdmin, entry.getKey());
+                        if (log.isDebugEnabled()) {
+                            log.debug( "Removed approval profile '" + entry.getValue() + "' with ID " + entry.getKey() + ".");
+                        }
+                    }
+                }
+            }
+        }
+        final int id = approvalProfileSession.addApprovalProfile(intAdmin, profile);
+        log.info( "Created approval profile '" + name + "' with ID " + id + ".");
+        return id;
     }
 }
