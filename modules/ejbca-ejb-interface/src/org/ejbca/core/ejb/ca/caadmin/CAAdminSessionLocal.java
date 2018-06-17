@@ -17,6 +17,7 @@ import java.util.Set;
 
 import javax.ejb.Local;
 
+import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -73,4 +74,24 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * @return a Set of IDs of authorized key validators. 
      */
     Set<Integer> getAuthorizedKeyValidatorIds(AuthenticationToken admin);
+    
+    /**
+     * Writes a custom audit log into the database.
+     *
+     * Authorization requirements: <pre>
+     * - /administrator
+     * - /secureaudit/log_custom_events (must be configured in advanced mode when editing access rules)
+     * </pre>
+     *
+     * @param level the logging level of the event ({@link org.ejbca.core.ejb.audit.enums.EjbcaEventTypes}).
+     * @param type a user defined string used as a prefix in the log comment.
+     * @param caName the name of the CA related to the event or null for the administrators CA to be used.
+     * @param username the name of the related user or null if no related user exists.
+     * @param certificate the certificate related to the log event or null if no certificate is related to this log event.
+     * @param msg the message data used in the log comment. The log comment will have a syntax of 'type : msg'.
+     * @throws CADoesntExistsException if a referenced CA does not exist.
+     * @throws AuthorizationDeniedException if the administrators isn't authorized to log.
+     */
+    void customLog(AuthenticationToken authenticationToken, int level, String type, String caName, String username, String certificateSn, String msg, EventType event) 
+            throws AuthorizationDeniedException, CADoesntExistsException;            
 }
