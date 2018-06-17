@@ -2472,18 +2472,18 @@ public class EjbcaWS implements IEjbcaWS {
     @Override
     public NameAndId[] getAvailableCAsInProfile(final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
         final AuthenticationToken admin = getAdmin();
-        final TreeMap<String,Integer> ret = new TreeMap<>();
+        final TreeMap<String,Integer> result = new TreeMap<>();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
-            ret.putAll(raMasterApiProxyBean.getAvailableCAsInProfileWS(admin, entityProfileId));
+            result.putAll(raMasterApiProxyBean.getAvailableCAsInProfile(admin, entityProfileId));
         } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
             logger.flush();
         }
-        return ejbcaWSHelperSession.convertTreeMapToArray(ret);
+        return ejbcaWSHelperSession.convertTreeMapToArray(result);
     }
 
     @Override
