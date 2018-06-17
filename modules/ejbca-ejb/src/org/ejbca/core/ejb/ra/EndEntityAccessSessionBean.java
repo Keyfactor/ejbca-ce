@@ -14,11 +14,14 @@ package org.ejbca.core.ejb.ra;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -38,6 +41,7 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -633,5 +637,52 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             log.debug("Found certificate for issuer '" + issuerDN + "' and SN " + certSNinHex + " for admin " + authenticationToken.getUniqueId());
         }
         return EJBTools.wrap(result);
+    }
+    
+    @Override
+    public Collection<CertificateWrapper> findCertificatesByUsername(final AuthenticationToken authenticationToken, final String username, final boolean onlyValid, final long now)
+            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
+        // Check authorization on current CA and profiles and view_end_entity by looking up the end entity
+        if (findUser(authenticationToken,username) == null) {
+            if (log.isDebugEnabled()) {
+                log.debug(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            }
+        }
+        // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData
+        // Re-factor: Too much wrapping / unwrapping.
+        Collection<?> searchResults;
+        if (onlyValid) {
+            // We will filter out not yet valid certificates later on, but we as the database to not return any expired certificates
+            searchResults = EJBTools.wrapCertCollection(certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now));
+        } else {
+            searchResults = certificateStoreSession.findCertificatesByUsername(username);
+        }
+        // Assume the user may have certificates from more than one CA.
+        Certificate certificate = null;
+        int caId = -1;
+        Boolean authorized = null;
+        final Map<Integer, Boolean> authorizationCache = new HashMap<>();
+        final List<CertificateWrapper> result = new ArrayList<>();
+        for (Object searchResult: searchResults) {
+            if (searchResult instanceof CertificateWrapper) {
+                certificate = EJBTools.unwrap((CertificateWrapper) searchResult);
+            } else { // Must be certificate.
+                certificate = (Certificate) searchResult;
+            }
+            caId = CertTools.getIssuerDN(certificate).hashCode();
+            authorized = authorizationCache.get(caId);
+            if (authorized == null) {
+                authorized = authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId);
+                authorizationCache.put(caId, authorized);
+            }
+            if (authorized.booleanValue()) {
+                if (searchResult instanceof CertificateWrapper) {
+                    result.add((CertificateWrapper) searchResult);
+                } else {
+                    result.add(EJBTools.wrap((Certificate) searchResult));
+                }
+            }
+        }
+        return result;
     }
 }
