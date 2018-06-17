@@ -2393,14 +2393,14 @@ public class EjbcaWS implements IEjbcaWS {
     @Override
     public Certificate getCertificate(String certSNinHex, String issuerDN) throws CADoesntExistsException,
         AuthorizationDeniedException, EjbcaException {
-        Certificate retval = null;
-        AuthenticationToken admin = getAdmin(true);
+        Certificate result = null;
+        final AuthenticationToken admin = getAdmin(true);
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
             final CertificateWrapper certificateWrapper = raMasterApiProxyBean.getCertificate(admin, certSNinHex, issuerDN);
             if(certificateWrapper != null){
-                retval = new Certificate(certificateWrapper.getCertificate());
+                result = new Certificate(certificateWrapper.getCertificate());
             }
         } catch (CertificateEncodingException e) {
             throw getInternalException(e, logger);
@@ -2410,7 +2410,7 @@ public class EjbcaWS implements IEjbcaWS {
             logger.writeln();
             logger.flush();
         }
-        return retval;
+        return result;
     }
 
     @Override

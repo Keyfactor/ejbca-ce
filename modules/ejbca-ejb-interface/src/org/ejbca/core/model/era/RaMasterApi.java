@@ -70,7 +70,6 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
@@ -863,7 +862,7 @@ public interface RaMasterApi {
     /**
      * Fetches available certificate profiles in an end entity profile.
      *
-     * @see EndEntityProfileSessionLocal#getAvailableCertificateProfiles(AuthenticationToken, int)
+     * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal#getAvailableCertificateProfiles(AuthenticationToken, int)
      */
     Map<String,Integer> getAvailableCertificateProfiles(AuthenticationToken authenticationToken, int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
     
@@ -877,19 +876,7 @@ public interface RaMasterApi {
     /**
      * Fetches an issued certificate.
      *
-     * Authorization requirements:<pre>
-     * - A valid certificate
-     * - /ca_functionality/view_certificate
-     * - /ca/&lt;of the issing CA&gt;
-     * </pre>
-     *
-     * @param authenticationToken the administrator performing the action.
-     * @param certSNinHex the certificate serial number in hexadecimal representation.
-     * @param issuerDN the issuer of the certificate.
-     * @return the certificate wrapper or null if certificate couldn't be found.
-     * @throws AuthorizationDeniedException if the calling administrator isn't authorized to view the certificate.
-     * @throws CADoesntExistsException if a referenced CA does not exist.
-     * @throws EjbcaException any EjbcaException.
+     * @see org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal#getCertificate(AuthenticationToken, String, String).
      */
     CertificateWrapper getCertificate(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
     

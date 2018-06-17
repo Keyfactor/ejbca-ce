@@ -2020,20 +2020,50 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public CertificateWrapper getCertificate(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN)
+    public CertificateWrapper getCertificate(final AuthenticationToken authenticationToken, final String certSNinHex, final String issuerDN)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         CertificateWrapper result = null;
+        AuthorizationDeniedException authorizationDeniedException = null;
+        EjbcaException ejbcaException = null; 
+        CADoesntExistsException caDoesntExistsException = null; 
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     result = raMasterApi.getCertificate(authenticationToken, certSNinHex, issuerDN);
                     if (result != null) {
-                    	break;
+                    	return result;
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
-                }
+                } catch (AuthorizationDeniedException e) {
+                    log.info( "Authorization denied for proxied request on CA: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    log.info( "CA for proxied request on CA could not be found: " + e.getMessage());
+                    if (caDoesntExistsException == null) {
+                        caDoesntExistsException = e;
+                    }
+                    // Just try next implementation.
+                } catch (EjbcaException e) {
+                    log.info( "Server side exception for proxied request on CA thrown: " + e.getMessage());
+                    if (ejbcaException == null) {
+                        ejbcaException = e;
+                    }
+                    // Just try next implementation
+                } 
             }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
+        }
+        if (ejbcaException != null) {
+            throw ejbcaException;
         }
         return result;
     }

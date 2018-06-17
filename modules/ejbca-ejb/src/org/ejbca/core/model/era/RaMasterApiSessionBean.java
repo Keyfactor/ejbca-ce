@@ -2334,15 +2334,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public CertificateWrapper getCertificate(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        final String bcString = CertTools.stringToBCDNString(issuerDN);
-        final int caid = bcString.hashCode();
-        caSession.verifyExistenceOfCA(caid);
-        final String[] rules = {StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", StandardRules.CAACCESS.resource() + caid};
-        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, rules)) {
-            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", Arrays.toString(rules), null);
-            throw new AuthorizationDeniedException(msg);
-        }
-        return EJBTools.wrap(certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, new BigInteger(certSNinHex,16)));
+        return endEntityAccessSession.getCertificate(authenticationToken, certSNinHex, issuerDN);
     }
     
     @Override
