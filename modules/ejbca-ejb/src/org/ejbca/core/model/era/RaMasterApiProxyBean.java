@@ -1911,17 +1911,37 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public void customLogWS(AuthenticationToken authenticationToken, int level, String type, String cAName, String username, String certificateSn,
-            String msg, EventType event) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+    public void customLog(final AuthenticationToken authenticationToken, final int level, final String type, final String caName, final String username, final String certificateSn,
+    		final String msg, final EventType event) throws AuthorizationDeniedException, CADoesntExistsException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        CADoesntExistsException caDoesntExistsException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    raMasterApi.customLogWS(authenticationToken, level, type, cAName, username, certificateSn, msg, event);
-                    break;
+                    raMasterApi.customLog(authenticationToken, level, type, caName, username, certificateSn, msg, event);
+                    return;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    log.info( "Authorization to write custom log entry for proxied request on CA was denied: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    log.info( "CA to write custom log entry for proxied request on CA could not be found: " + e.getMessage());
+                    if (caDoesntExistsException == null) {
+                        caDoesntExistsException = e;
+                    }
                     // Just try next implementation
                 }
             }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
         }
     }
     
