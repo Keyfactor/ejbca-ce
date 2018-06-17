@@ -235,6 +235,16 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     }
     
     /**
+     * Tests fetching all available CAs associated with an end entity profile.
+     * 
+     * @throws Exception any exception.
+     */
+    @Test
+    public void test05getAvailableCAsInProfile() throws Exception {
+        // ECA-6685 Implement test.
+    }
+    
+    /**
      * Test if dynamic fields behave as expected
      * 
      * @throws Exception

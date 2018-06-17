@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -393,6 +394,30 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("Found " + result + " certificate profiles for end entity profile with ID " + entityProfileId + " requested by " 
+                    + ((X509CertificateAuthenticationToken) admin).getCertificate().getSubjectDN());
+        }
+        return result;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<String, Integer> getAvailableCAsInProfile(final AuthenticationToken admin, final int entityProfileId)
+            throws AuthorizationDeniedException, EjbcaException {
+        final EndEntityProfile profile = getEndEntityProfileNoClone(entityProfileId);
+        final TreeMap<String,Integer> result = new TreeMap<>();
+        if (profile != null) {
+            final Collection<Integer> ids = profile.getAvailableCAs();
+            final HashMap<Integer,String> map = caSession.getCAIdToNameMap();
+            String name;
+            for (int id : ids) {
+                name = map.get(id);
+                if (name != null) {
+                    result.put(name, id);
+                }
+            }
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found " + result + " CAs for end entity profile with ID " + entityProfileId + " requested by " 
                     + ((X509CertificateAuthenticationToken) admin).getCertificate().getSubjectDN());
         }
         return result;
