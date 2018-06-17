@@ -2284,7 +2284,7 @@ public class EjbcaWS implements IEjbcaWS {
     @Override
 	public void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg)
 		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
-		AuthenticationToken admin = getAdmin();
+		final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         EventType event = EjbcaEventTypes.CUSTOMLOG_ERROR;
@@ -2303,7 +2303,7 @@ public class EjbcaWS implements IEjbcaWS {
                 final java.security.cert.Certificate logCert = CertificateHelper.getCertificate(certificate.getCertificateData());
                 certificateSn = CertTools.getSerialNumberAsString(logCert);   
             }
-		    raMasterApiProxyBean.customLogWS(admin, level, type, cAName, username, certificateSn, msg, event);
+		    raMasterApiProxyBean.customLog(admin, level, type, cAName, username, certificateSn, msg, event);
 		} catch (CertificateException e) {
             throw getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
