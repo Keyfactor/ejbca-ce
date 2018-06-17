@@ -692,22 +692,6 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
       return returnval;
 	}
 
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public NameAndId[] convertTreeMapToArray(final TreeMap<String, Integer> mytree) {
-        NameAndId[] ret;
-        if ((mytree == null) || (mytree.size() == 0)) {
-            ret = new NameAndId[0];
-        } else {
-            ret = new NameAndId[mytree.size()];
-            int i = 0;
-            for (String name : mytree.keySet()) {
-                ret[i++] = new NameAndId(name, mytree.get(name));
-            }
-        }
-        return ret;
-    }
-
 	@Override
 	public void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status) {
 		try {

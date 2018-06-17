@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -1570,7 +1569,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             String certificateProfilename = certificateProfileSession.getCertificateProfileName(certificateProfileId);
             authorizedCertificateProfiles.put(certificateProfileId, certificateProfilename, certificateProfile);
         }
-
         return authorizedCertificateProfiles;
     }
 
@@ -2331,18 +2329,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public Map<String, Integer> getAvailableCAsInProfile(final AuthenticationToken authenticationToken, final int entityProfileId)
             throws AuthorizationDeniedException, EjbcaException {
         return endEntityProfileSession.getAvailableCAsInProfile(authenticationToken, entityProfileId);
-    }
-    
-    @Override
-    public Map<String, Integer> getAuthorizedEndEntityProfilesWS(AuthenticationToken authenticationToken)
-            throws AuthorizationDeniedException, EjbcaException {
-        final TreeMap<String,Integer> result = new TreeMap<>();
-        final Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.CREATE_END_ENTITY);
-        final Map<Integer,String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
-        for (final Integer id : ids) {
-            result.put(idtonamemap.get(id), id);
-        }
-        return result;
     }
     
     @Override
