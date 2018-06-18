@@ -286,7 +286,7 @@ public class EjbcaWS implements IEjbcaWS {
      * Also checks that the admin, if it exists in EJCBA, have access to /administrator, i.e. really is an administrator.
      * Does not check any other authorization though, other than that it is an administrator.
      * Also checks that the admin certificate is not revoked.
-     * 
+     *
      * If Web Services is disabled globally, an UnsupportedOperationException will be thrown
      *
      * @param wsContext web service context that contains the SSL information
@@ -367,9 +367,9 @@ public class EjbcaWS implements IEjbcaWS {
             AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
             if(!raMasterApiProxyBean.editUserWs(admin, userdata)) {
-                //If editUser returned true, then an end entity was found and modified. If not, add that user. 
+                //If editUser returned true, then an end entity was found and modified. If not, add that user.
                 raMasterApiProxyBean.addUserFromWS(admin, userdata, userdata.isClearPwd());
-            }        
+            }
         } catch (EndEntityProfileValidationException e) {
             log.debug(e.toString());
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
@@ -581,7 +581,7 @@ public class EjbcaWS implements IEjbcaWS {
     public List<Certificate> getCertificatesByExpirationTime(long days, int maxNumberOfResults) throws EjbcaException {
         final List<CertificateWrapper> certificates = new ArrayList<>();
         try {
-            certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTime(getAdmin(), days, maxNumberOfResults));
+            certificates.addAll(raMasterApiProxyBean.getCertificatesByExpirationTime(getAdmin(), days, maxNumberOfResults, 0));
         } catch (AuthorizationDeniedException e1) {
             // No authorization required.
         }
@@ -1193,7 +1193,7 @@ public class EjbcaWS implements IEjbcaWS {
             // ECA-6685 Re-factor.
             // Fix exception pattern logger thrown in RaMasterApiSessionBean.processCertReq to not to serialize the logger.
             throw getEjbcaException(e.getMessage(), logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
-        } 
+        }
         return retval;
     }
 
@@ -1226,15 +1226,15 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 	}
 
-	private void revokeCert(CertRevocationDto certRevocationDto, IPatternLogger logger) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, 
+	private void revokeCert(CertRevocationDto certRevocationDto, IPatternLogger logger) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException,
 	        ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, CertificateProfileDoesNotExistException {
-	    
+
 		if (log.isDebugEnabled()) {
-			log.debug("Revoke cert with serial number '" + certRevocationDto.getCertificateSN() + 
-			        "' from issuer '" + certRevocationDto.getIssuerDN() + 
+			log.debug("Revoke cert with serial number '" + certRevocationDto.getCertificateSN() +
+			        "' from issuer '" + certRevocationDto.getIssuerDN() +
 			        "' with reason '" + certRevocationDto.getReason() + "'.");
 		}
-		
+
 		try {
 			final AuthenticationToken admin = getAdmin();
 			logAdminName(admin, logger);
@@ -1256,7 +1256,7 @@ public class EjbcaWS implements IEjbcaWS {
 		final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
 		    CertRevocationDto certRevocationDto = new CertRevocationDto(issuerDN, certificateSN, reason);
-			try {            
+			try {
             	revokeCert(certRevocationDto, logger);
 			} catch (RevokeBackDateNotAllowedForProfileException e) {
 				throw new Error("This is should not happen since there is no back dating.",e);
@@ -1272,14 +1272,14 @@ public class EjbcaWS implements IEjbcaWS {
 	@Override
 	public void revokeCertBackdated(final String issuerDN, final String certificateSN, final int reason, String sDate) throws CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException {
-	    
+
 		final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
 		    CertRevocationDto certRevocationDto = new CertRevocationDto(issuerDN, certificateSN, reason);
-            
+
             final Date date = getValidatedDate(sDate);
             certRevocationDto.setRevocationDate(date);
-            
+
             revokeCert(certRevocationDto, logger);
 		} catch (CertificateProfileDoesNotExistException e) {
             throw new IllegalStateException("This should not happen since this method overload does not support certificateProfileId input parameter.",e);
@@ -1290,17 +1290,17 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
 	@Override
-    public void revokeCertWithMetadata(final String issuerDN, final String certificateSN, final List<KeyValuePair> metadata) 
-            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, 
-                   WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException, CertificateProfileDoesNotExistException 
+    public void revokeCertWithMetadata(final String issuerDN, final String certificateSN, final List<KeyValuePair> metadata)
+            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException,
+                   WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException, CertificateProfileDoesNotExistException
 	{
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
-	    
+
 	    try {
     	    CertRevocationDto certRevocationDto = new CertRevocationDto(issuerDN, certificateSN);
     	    certRevocationDto = parseRevocationMetadata(certRevocationDto, metadata);
             revokeCert(certRevocationDto, logger);
-            
+
 	    } finally {
             logger.writeln();
             logger.flush();
@@ -1347,7 +1347,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    }
         return date;
 	}
-	
+
     @Override
 	public void revokeUser(String username, int reason, boolean deleteUser)
 			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
@@ -1460,20 +1460,20 @@ public class EjbcaWS implements IEjbcaWS {
     }
 
     @Override
-    public KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
+    public KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN)
             throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException, WaitingForApprovalException, NotFoundException {
         if (log.isTraceEnabled()) {
             log.trace(">keyRecoverEnroll");
         }
-        
+
         // Keystore type is available in UserData but we do it this way to avoid another network round trip, looking it up.
         final byte PKCS12_MAGIC = (byte)48;
         final byte JKS_MAGIC = (byte)(0xfe);
-        
+
         final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
-        
+
         try {
             byte[] keyStoreBytes = raMasterApiProxyBean.keyRecoverEnrollWS(admin, username, certSNinHex, issuerDN, password, hardTokenSN);
             final java.security.KeyStore ks;
@@ -1485,7 +1485,7 @@ public class EjbcaWS implements IEjbcaWS {
             } else {
                 throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
             }
-            
+
             ks.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
             keyStore = new KeyStore(ks, password);
             return keyStore;
@@ -1512,7 +1512,7 @@ public class EjbcaWS implements IEjbcaWS {
             logger.flush();
         }
     }
-    
+
     @Override
 	public void revokeToken(String hardTokenSN, int reason)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
@@ -1974,7 +1974,7 @@ public class EjbcaWS implements IEjbcaWS {
 						CAInfo info = caSession.getCAInfo(admin, cAInfo.getCAId());
 						if (info == null) {
                             throw new CADoesntExistsException("CA with id " + cAInfo.getCAId() + " doesn't exist.");
-                        } 
+                        }
 						// Fetch CA Cert Chain.
 						Collection<java.security.cert.Certificate> chain =  info.getCertificateChain();
 						String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
@@ -2305,7 +2305,7 @@ public class EjbcaWS implements IEjbcaWS {
 			String certificateSn = null;
 		    if (certificate != null) {
                 final java.security.cert.Certificate logCert = CertificateHelper.getCertificate(certificate.getCertificateData());
-                certificateSn = CertTools.getSerialNumberAsString(logCert);   
+                certificateSn = CertTools.getSerialNumberAsString(logCert);
             }
 		    raMasterApiProxyBean.customLog(admin, level, type, cAName, username, certificateSn, msg, event);
 		} catch (CertificateException e) {
@@ -2761,7 +2761,7 @@ public class EjbcaWS implements IEjbcaWS {
         }
         return new EjbcaException(s);
     }
-    
+
     private static ArrayList<Certificate> unwrapCertificatesOrThrowInternalException(Collection<CertificateWrapper> certificates) throws EjbcaException {
         final ArrayList<Certificate> result = new ArrayList<>();
         for (CertificateWrapper certificate : certificates) {
@@ -2773,10 +2773,10 @@ public class EjbcaWS implements IEjbcaWS {
         }
         return result;
     }
-    
+
     /**
      * Creates a NameAndId array by the given map of name / ID pairs.
-     * 
+     *
      * @param map the map of name / ID pairs.
      * @return an array of NameAndId objects in the same order as in the map.
      */
@@ -2793,10 +2793,10 @@ public class EjbcaWS implements IEjbcaWS {
         }
         return result;
     }
-    
+
     /**
      * Creates a NameAndId array by the given map of name / ID pairs.
-     * 
+     *
      * @param map the map of name / ID pairs.
      * @return an array of NameAndId objects in the same order as in the map.
      */

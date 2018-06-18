@@ -145,7 +145,7 @@ import org.ejbca.util.query.IllegalQueryException;
 /**
  * Proxy implementation of the the RaMasterApi that will will get the result of the most preferred API implementation
  * or a mix thereof depending of the type of call.
- * 
+ *
  * @version $Id$
  */
 @Singleton
@@ -160,7 +160,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @EJB
     private RaMasterApiSessionLocal raMasterApiSession;
-    
+
     /** Note: Configuration stored <b>locally</b> on this peer. Should only be used for peer configuration, etc. */
     @EJB
     private GlobalConfigurationSessionLocal localNodeGlobalConfigurationSession;
@@ -178,7 +178,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
     private CertReqHistorySessionLocal certreqHistorySession;
-    
+
     private RaMasterApi[] raMasterApis = null;
     private RaMasterApi[] raMasterApisLocalFirst = null;
 
@@ -187,7 +187,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     /** Constructor for use from JUnit tests */
-    public RaMasterApiProxyBean(final RaMasterApiSessionLocal raMasterApiSession, 
+    public RaMasterApiProxyBean(final RaMasterApiSessionLocal raMasterApiSession,
             final GlobalConfigurationSessionLocal globalConfigurationSession,
             final KeyRecoverySessionLocal keyRecoverySession,
             final RaMasterApi... raMasterApis) {
@@ -246,7 +246,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return false;
     }
-    
+
     // Added in Master RA API version 1
     @Override
     public int getApiVersion() {
@@ -363,7 +363,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return new ArrayList<>(caInfoMap.values());
     }
-    
+
     @Override
     public LinkedHashMap<Integer, RaStyleInfo> getAllCustomRaStyles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
         for (RaMasterApi raMasterApi : raMasterApis) {
@@ -380,7 +380,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
     public List<RaStyleInfo> getAvailableCustomRaStyles(AuthenticationToken authenticationToken, int hashCodeOfCurrentList) {
         List<RaStyleInfo> raStyleInfos = new ArrayList<>();
@@ -396,7 +396,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return raStyleInfos;
     }
-    
+
     @Override
     public List<Role> getAuthorizedRoles(final AuthenticationToken authenticationToken) {
         final Map<Integer, Role> roleMap = new HashMap<>();
@@ -413,7 +413,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return new ArrayList<>(roleMap.values());
     }
-    
+
     @Override
     public Role getRole(final AuthenticationToken authenticationToken, final int roleId) throws AuthorizationDeniedException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -445,7 +445,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return new ArrayList<>(namespaceSet);
     }
-    
+
     @Override
     public Map<String,RaRoleMemberTokenTypeInfo> getAvailableRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
         final HashMap<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
@@ -470,7 +470,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
-    
+
     @Override
     public Role saveRole(final AuthenticationToken authenticationToken, final Role role) throws AuthorizationDeniedException, RoleExistsException {
         AuthorizationDeniedException authorizationDeniedException = null;
@@ -498,7 +498,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
     public boolean deleteRole(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException {
         AuthorizationDeniedException authorizationDeniedException = null;
@@ -522,7 +522,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
-    
+
     @Override
     public RoleMember getRoleMember(AuthenticationToken authenticationToken, int roleMemberId) throws AuthorizationDeniedException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -568,7 +568,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
     public boolean deleteRoleMember(AuthenticationToken authenticationToken, int roleId, int roleMemberId) throws AuthorizationDeniedException {
         AuthorizationDeniedException authorizationDeniedException = null;
@@ -644,7 +644,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
     public void extendApprovalRequest(AuthenticationToken authenticationToken, int id, long extendForMillis) throws AuthorizationDeniedException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -709,7 +709,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return searchResponse;
     }
-    
+
     @Override
     public CertificateDataWrapper searchForCertificateByIssuerAndSerial(final AuthenticationToken authenticationToken, final String issuerDN, final String serno) {
         CertificateDataWrapper searchResponse = null;
@@ -777,7 +777,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
-    
+
     @Override
     public RaRoleMemberSearchResponse searchForRoleMembers(AuthenticationToken authenticationToken,
             RaRoleMemberSearchRequest raRoleMemberSearchRequest) {
@@ -945,7 +945,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return false;
     }
-    
+
     @Override
     public boolean addUserFromWS(final AuthenticationToken admin, UserDataVOWS userDataVOWS, final boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
@@ -969,9 +969,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw authorizationDeniedException;
         }
         return false;
-        
+
     }
-    
+
     @Override
     public void checkSubjectDn(AuthenticationToken admin, EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException{
         AuthorizationDeniedException authorizationDeniedException = null;
@@ -1055,12 +1055,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw noSuchEndEntityException;
         }
     }
-    
+
     @Override
     public void finishUserAfterLocalKeyRecovery(final AuthenticationToken authenticationToken, final String username, final String password) throws AuthorizationDeniedException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
         EjbcaException userNotFoundException = null;
-        
+
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -1091,7 +1091,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw userNotFoundException;
         }
     }
-    
+
     private X509Certificate requestCertForEndEntity(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final String password, final KeyPair kp)
             throws AuthorizationDeniedException, EjbcaException {
         try {
@@ -1115,7 +1115,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throws AuthorizationDeniedException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
         EjbcaException userNotFoundException = null;
-        
+
         final String username = endEntity.getUsername();
         final EndEntityInformation storedEndEntity = searchUser(authenticationToken, username);
         if (storedEndEntity == null) {
@@ -1137,7 +1137,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (endEntityProfile == null) {
                 throw new AuthorizationDeniedException("Not authorized to End Entity Profile with ID " + storedEndEntity.getEndEntityProfileId() + ", or it does not exist.");
             }
-            
+
             final Integer cryptoTokenId = globalConfig.getLocalKeyRecoveryCryptoTokenId();
             final String keyAlias = globalConfig.getLocalKeyRecoveryKeyAlias();
             final X509Certificate cert;
@@ -1215,7 +1215,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 log.debug("Requesting key store for end entity '" + username + "'. Remote peer systems will be queried first");
             }
         }
-        
+
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -1270,7 +1270,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
     public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userdata, final String requestData, final int requestType,
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, ApprovalException, EjbcaException,
@@ -1311,10 +1311,10 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
-    public byte[] createCertificateRest(final AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest) 
-            throws CertificateProfileDoesNotExistException, CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException, 
+    public byte[] createCertificateRest(final AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest)
+            throws CertificateProfileDoesNotExistException, CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException,
             EjbcaException, EndEntityProfileValidationException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (log.isDebugEnabled()) {
@@ -1330,9 +1330,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
-    public void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws EjbcaException, AuthorizationDeniedException, 
+    public void keyRecoverWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN) throws EjbcaException, AuthorizationDeniedException,
                                 WaitingForApprovalException, ApprovalException, CADoesntExistsException {
         // Handle local key recovery (Key recovery data is stored locally)
         GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -1362,7 +1362,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             // We are done. Don't try other implementations
             return;
         }
-        
+
         // Default case
         EjbcaException ejbcaException = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -1384,12 +1384,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw ejbcaException;
         }
     }
-    
+
     @Override
-    public byte[] keyRecoverEnrollWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN, String password, String hardTokenSN) 
+    public byte[] keyRecoverEnrollWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN, String password, String hardTokenSN)
             throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, EjbcaException, WaitingForApprovalException {
         AuthorizationDeniedException authorizationDeniedException = null;
-        
+
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -1412,7 +1412,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
     public List<CertificateWrapper> getLastCertChain(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
@@ -1459,7 +1459,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return ret;
     }
-        
+
     @Override
     public void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
@@ -1495,9 +1495,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
     }
-    
+
     @Override
-    public void revokeUser(final AuthenticationToken authenticationToken, final String username, final int reason, final boolean deleteUser) throws AuthorizationDeniedException, CADoesntExistsException, 
+    public void revokeUser(final AuthenticationToken authenticationToken, final String username, final int reason, final boolean deleteUser) throws AuthorizationDeniedException, CADoesntExistsException,
         ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException {
         // Try over all instances.
         boolean revoked = false;
@@ -1574,7 +1574,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
     }
-    
+
     @Override
     public CertificateStatus getCertificateStatus(AuthenticationToken authenticationToken, String issuerDN, BigInteger serno) throws CADoesntExistsException, AuthorizationDeniedException{
         CertificateStatus ret = null;
@@ -1599,7 +1599,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, CertificateWrapper cert, boolean localKeyGeneration) throws ApprovalException, CADoesntExistsException, 
+    public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, CertificateWrapper cert, boolean localKeyGeneration) throws ApprovalException, CADoesntExistsException,
                                     AuthorizationDeniedException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
         boolean ret = false;
         final GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -1607,7 +1607,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (localKeyRecoveryThisNode) {
             localKeyGeneration = true;
         }
-        
+
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable()) {
                 try {
@@ -1627,7 +1627,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
-        
+
         // If local key generation is enabled, we have to do this locally
         if (ret && localKeyRecoveryThisNode) {
             localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
@@ -1656,7 +1656,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         // Editing was unsuccessful
         return false;
     }
-    
+
     @Override
     public boolean editUserWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOWS)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
@@ -1692,7 +1692,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
             return false;
         }
-        
+
         // Default case (everything we need should be available in one instance database)
         boolean ret = false;
         for (final RaMasterApi raMasterApi : raMasterApis) {
@@ -1735,12 +1735,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] scepDispatch(final AuthenticationToken authenticationToken, final String operation, final String message, final String scepConfigurationAlias) throws CertificateEncodingException,
-            CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException, 
-            SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException, 
-            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException, 
+            CADoesntExistsException, NoSuchEndEntityException, CustomCertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
+            SignRequestException, SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalNameException, CertificateCreateException, CertificateRevokeException,
+            CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, SignatureException, CertificateException,
             CertificateExtensionException, CertificateRenewalException, NoSuchAliasException, AuthorizationDeniedException {
         NoSuchAliasException caughtException = null;
-        
+
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
                 try {
@@ -1757,18 +1757,18 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
-        
+
         if (caughtException != null) {
             throw caughtException;
         } else {
             return null;
         }
     }
-    
+
     @Override
     public byte[] cmpDispatch(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias) throws NoSuchAliasException {
         NoSuchAliasException caughtException = null;
-        
+
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion()>=1) {
                 try {
@@ -1780,7 +1780,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         //We might not have an alias in the current RaMasterApi, so let's try another. Let's store the exception in case we need it
                         //later though.
                         caughtException = e;
-                    }                    
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -1813,7 +1813,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         // This will occur when WWW_AUTHENTICATE header (authentication method) is sent back to client. We don't want to
                         // interrupt this 'negotiation' unless all implementations fail (i.e. due to invalid authentication details).
                         caughtAuthFailedException = e;
-                    }                   
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -1865,7 +1865,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return mergedResult;
     }
-    
+
     @Override
     public int getPublisherQueueLength(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException, PublisherDoesntExistsException {
         PublisherDoesntExistsException publisherDoesntExistsException = null;
@@ -1899,20 +1899,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     return raMasterApi.getCertificateChain(authenticationToken, caid);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public List<Certificate> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days, int maxNumberOfResults, int offset) throws AuthorizationDeniedException {
-        for (RaMasterApi raMasterApi : raMasterApis) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
-                try {
-                    return raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, maxNumberOfResults, offset);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -1969,7 +1955,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw caDoesntExistsException;
         }
     }
-    
+
     @Override
     public Collection<CertificateWrapper> getCertificatesByUsername(final AuthenticationToken authenticationToken, final String username, final boolean onlyValid, final long now)
             throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
@@ -1988,7 +1974,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result.values();
     }
-    
+
     @Override
     public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken authenticationToken, final int entityProfileId) 
             throws EjbcaException {
@@ -2016,12 +2002,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
-    
+
     @Override
     public Map<String, Integer> getAvailableCAsInProfile(final AuthenticationToken authenticationToken, final int entityProfileId)
             throws AuthorizationDeniedException, EjbcaException {
         final Map<String, Integer> result = new TreeMap<>();
-        EjbcaException ejbcaException = null; 
+        EjbcaException ejbcaException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
@@ -2043,14 +2029,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
-    
+
     @Override
     public CertificateWrapper getCertificate(final AuthenticationToken authenticationToken, final String certSNinHex, final String issuerDN)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         CertificateWrapper result = null;
         AuthorizationDeniedException authorizationDeniedException = null;
-        EjbcaException ejbcaException = null; 
-        CADoesntExistsException caDoesntExistsException = null; 
+        EjbcaException ejbcaException = null;
+        CADoesntExistsException caDoesntExistsException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
@@ -2078,7 +2064,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         ejbcaException = e;
                     }
                     // Just try next implementation
-                } 
+                }
             }
         }
         if (authorizationDeniedException != null) {
@@ -2092,28 +2078,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
-    
+
     @Override
-    public Collection<CertificateWrapper> getCertificatesByExpirationTime(AuthenticationToken authenticationToken, long days, int maxNumberOfResults)
-            throws AuthorizationDeniedException, EjbcaException {
-        final Map<String, CertificateWrapper> result = new TreeMap<>();
+    public Collection<CertificateWrapper> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days,
+            int maxNumberOfResults, int offset) throws AuthorizationDeniedException {
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    final Collection<CertificateWrapper> certificates = raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, maxNumberOfResults);
-                    for (CertificateWrapper certificate : certificates) {
-                        result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
-                    }
+                    return raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, maxNumberOfResults, offset);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return result.values();
+        return null;
     }
-    
+
     @Override
-    public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndType(AuthenticationToken authenticationToken, long days, int certificateType, int maxNumberOfResults) 
+    public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndType(AuthenticationToken authenticationToken, long days, int certificateType, int maxNumberOfResults)
             throws AuthorizationDeniedException, EjbcaException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
         for (RaMasterApi raMasterApi : raMasterApis) {
@@ -2130,9 +2112,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result.values();
     }
-    
+
     @Override
-    public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndIssuer(AuthenticationToken authenticationToken, long days, String issuerDN, int maxNumberOfResults) 
+    public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndIssuer(AuthenticationToken authenticationToken, long days, String issuerDN, int maxNumberOfResults)
             throws AuthorizationDeniedException, EjbcaException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
         for (RaMasterApi raMasterApi : raMasterApis) {
@@ -2149,7 +2131,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result.values();
     }
-    
+
     @Override
     public List<CertificateWrapper> getLastCaChain(AuthenticationToken authenticationToken, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException {
@@ -2171,10 +2153,10 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return result;
     }
-    
+
     @Override
     public byte[] processCertReqWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType,
-            String hardTokenSN, String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException, 
+            String hardTokenSN, String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException,
             InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
             IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException,
             AuthLoginException, RuntimeException {
@@ -2315,5 +2297,5 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw ejbcaException;
         }
         return null;
-    }    
+    }
 }
