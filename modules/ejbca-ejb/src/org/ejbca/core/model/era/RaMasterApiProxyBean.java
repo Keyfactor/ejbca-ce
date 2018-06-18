@@ -1500,7 +1500,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException {
         // Try over all instances.
         boolean revoked = false;
-        int index = 0, size = raMasterApis.length;
+        CADoesntExistsException caDoesntExistsException = null;
+        NoSuchEndEntityException noSuchEndEntityException = null;
+        ApprovalException approvalException = null;
+        WaitingForApprovalException waitingForApprovalException = null;
+        AlreadyRevokedException alreadyRevokedException = null;
+        CouldNotRemoveEndEntityException couldNotRemoveEndEntityException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
         	++index;
             if (raMasterApi.isBackendAvailable()) {
@@ -1511,41 +1516,61 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation.
                 } catch (CADoesntExistsException e) {
                     log.info( "CA for proxied request on CA could not be found: " + e.getMessage());
-                    if (!revoked && index == size) {
-                    	throw e;
+                    if (caDoesntExistsException == null) {
+                        caDoesntExistsException = e;
                     }
                     // Just try next implementation.
                 } catch (NoSuchEndEntityException e) {
                     log.info( "End entity for proxied request on CA could not be found: " + e.getMessage());
-                    if (!revoked && index == size) {
-                        throw e;
+                    if (noSuchEndEntityException == null) {
+                        noSuchEndEntityException = e;
                     }
                     // Just try next implementation.
                 } catch (ApprovalException e) {
                     log.info( "End entity for proxied request on CA is in approval process: " + e.getMessage());
-                    if (!revoked && index == size) {
-                        throw e;
+                    if (approvalException == null) {
+                        approvalException = e;
                     }
                     // Just try next implementation.
                 } catch (WaitingForApprovalException e) {
                     log.info( "End entity for proxied request on CA is in approval process: " + e.getMessage());
-                    if (!revoked && index == size) {
-                        throw e;
+                    if (waitingForApprovalException == null) {
+                        waitingForApprovalException = e;
                     }
                     // Just try next implementation.
                 } catch (AlreadyRevokedException e) {
                     log.info( "End entity for proxied request on CA is revoked already: " + e.getMessage());
-                    if (!revoked && index == size) {
-                        throw e;
+                    if (alreadyRevokedException == null) {
+                        e = alreadyRevokedException;
                     }
                     // Just try next implementation.
                 } catch (CouldNotRemoveEndEntityException e) {
                 	log.info( "End entity for proxied request on CA could not be removed: " + e.getMessage());
-                	if (!revoked && index == size) {
-                        throw e;
+                	if (couldNotRemoveEndEntityException == null) {
+                        e = couldNotRemoveEndEntityException;
                     }
                 	// Just try next implementation.
                 }
+            }
+        }
+        if (!revoked) {
+            if (caDoesntExistsException != null) {
+                throw caDoesntExistsException;
+            }
+            if (noSuchEndEntityException != null) {
+                throw noSuchEndEntityException;
+            }
+            if (approvalException != null) {
+                throw approvalException;
+            }
+            if (waitingForApprovalException != null) {
+                throw waitingForApprovalException;
+            }
+            if (alreadyRevokedException != null) {
+                throw alreadyRevokedException;
+            }
+            if (couldNotRemoveEndEntityException != null) {
+                throw couldNotRemoveEndEntityException;
             }
         }
     }
