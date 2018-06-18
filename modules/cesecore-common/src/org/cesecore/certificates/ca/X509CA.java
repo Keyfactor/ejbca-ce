@@ -1373,8 +1373,10 @@ public class X509CA extends CA implements Serializable {
 
         // Verify any Signed Certificate Timestamps (SCTs) in the certificate before returning. If one of the (embedded) SCTs does
         // not verify over the final certificate, it won't validate in the browser and we don't want to issue such certificates.
-        ct.allSctsAreValidOrThrow(cert, getCertificateChain(),
+        if (ct != null) {
+            ct.allSctsAreValidOrThrow(cert, getCertificateChain(),
                 certGenParams == null ? null : certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs().values());
+        }
 
         //Sub CA certificates check: Check AKI against parent CA SKI and IssuerDN against parent CA SubjectDN
         if(!isRootCA && !linkCertificate){
