@@ -24,9 +24,10 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -57,6 +58,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -145,13 +147,13 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/enrollkeystore")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Creates a keystore for the specified end entity", 
-        notes = "Creates a keystore for the specified end entity", 
+    @ApiOperation(value = "Creates a keystore for the specified end entity",
+        notes = "Creates a keystore for the specified end entity",
         response = CertificateRestResponse.class)
     public Response enrollKeystore(
             @Context HttpServletRequest requestContext,
             KeyStoreRestRequest keyStoreRestRequest)
-                    throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException, 
+                    throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException,
                         NoSuchAlgorithmException, CertificateException, IOException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         EndEntityInformation endEntityInformation = raMasterApi.searchUser(admin, keyStoreRestRequest.getUsername());
@@ -165,7 +167,7 @@ public class CertificateRestResource extends BaseRestResource {
             KeyTools.checkValidKeyLength(keyStoreRestRequest.getKeySpec());
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
             throw new RestException(422, e.getMessage());
-        } 
+        }
         endEntityInformation.setPassword(keyStoreRestRequest.getPassword());
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(keyStoreRestRequest.getKeyAlg());
         endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(keyStoreRestRequest.getKeySpec());
@@ -178,11 +180,11 @@ public class CertificateRestResource extends BaseRestResource {
         CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStore, keyStoreRestRequest.getPassword());
         return Response.ok(response).build();
     }
-    
+
     @GET
     @Path("/{issuer_dn}/{certificate_serial_number}/revocationstatus")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Checks revocation status of the specified certificate", notes = "Checks revocation status of the specified certificate", 
+    @ApiOperation(value = "Checks revocation status of the specified certificate", notes = "Checks revocation status of the specified certificate",
     response = RevokeStatusRestResponse.class)
     public Response revocationStatus(
             @Context HttpServletRequest requestContext,
@@ -203,14 +205,14 @@ public class CertificateRestResource extends BaseRestResource {
         }
         return Response.ok(new RevokeStatusRestResponse(status, issuerDn, serialNumber)).build();
     }
-    
+
     /**
      * Revokes the specified certificate
      *
      * @param requestContext HttpServletRequest
      * @param issuerDN       of the certificate to revoke
      * @param serialNumber   HEX encoded SN with or without 0x prefix
-     * @param reason         revocation reason. Must be valid RFC5280 reason: 
+     * @param reason         revocation reason. Must be valid RFC5280 reason:
      *                          NOT_REVOKED, UNSPECIFIED ,KEYCOMPROMISE,
      *                          CACOMPROMISE, AFFILIATIONCHANGED, SUPERSEDED, CESSATIONOFOPERATION,
      *                          CERTIFICATEHOLD, REMOVEFROMCRL, PRIVILEGESWITHDRAWN, AACOMPROMISE
@@ -278,8 +280,8 @@ public class CertificateRestResource extends BaseRestResource {
     @GET
     @Path("/expire")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get a list of certificates that are about to expire", 
-        notes = "Get a list of certificates that are about to expire", 
+    @ApiOperation(value = "Get a list of certificates that are about to expire",
+        notes = "Get a list of certificates that are about to expire",
         response = ExpiringCertificatesRestResponse.class)
     public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext,
             @QueryParam("days") long days,
@@ -287,28 +289,30 @@ public class CertificateRestResource extends BaseRestResource {
             @QueryParam("maxNumberOfResults") int maxNumberOfResults) throws AuthorizationDeniedException, CertificateEncodingException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, true);
         int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
-        List<Certificate> expiringCertificates = raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset);
+        final Collection<Certificate> expiringCertificates = EJBTools
+                .unwrapCertCollection(raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset));
         int processedResults = offset + maxNumberOfResults;
         PaginationRestResponseComponent paginationRestResponseComponent = PaginationRestResponseComponent.builder().setMoreResults(count > processedResults)
                 .setNextOffset(offset + maxNumberOfResults)
                 .setNumberOfResults(count - processedResults)
                 .build();
-        CertificatesRestResponse certificatesRestResponse = new CertificatesRestResponse(CertificatesRestResponse.converter().toRestResponses(expiringCertificates));
+        CertificatesRestResponse certificatesRestResponse = new CertificatesRestResponse(
+                CertificatesRestResponse.converter().toRestResponses(new ArrayList<Certificate>(expiringCertificates)));
         ExpiringCertificatesRestResponse response = new ExpiringCertificatesRestResponse(paginationRestResponseComponent, certificatesRestResponse);
         return Response.ok(response).build();
     }
-    
+
     @POST
     @Path("/{request_id}/finalize")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Finalizes enrollment after administrator approval", 
-        notes = "Finalizes enrollment after administrator approval", 
+    @ApiOperation(value = "Finalizes enrollment after administrator approval",
+        notes = "Finalizes enrollment after administrator approval",
         response = CertificateRestResponse.class)
     public Response finalizeEnrollment(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Approval request id") @PathParam("request_id") int requestId,
             @ApiParam(value = "responseFormat must be one of 'P12', 'JKS', 'DER'") FinalizeRestResquest request)
-                    throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException, 
+                    throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException,
                         KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         final RaApprovalRequestInfo approvalRequestInfo = raMasterApi.getApprovalRequest(admin, requestId);
@@ -320,7 +324,7 @@ public class CertificateRestResource extends BaseRestResource {
         if (TokenDownloadType.getIdFromName(responseFormat) == null) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid parameter: response_format");
         }
-        
+
         final ApprovalRequest approvalRequest = approvalRequestInfo.getApprovalData().getApprovalRequest();
         String requestUsername = approvalRequestInfo.getEditableData().getUsername();
         EndEntityInformation endEntityInformation;
@@ -341,21 +345,21 @@ public class CertificateRestResource extends BaseRestResource {
                 if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
                     KeyRecoveryApprovalRequest keyRecoveryApprovalRequest = (KeyRecoveryApprovalRequest) approvalRequest;
                     requestUsername = keyRecoveryApprovalRequest.getUsername();
-                } 
+                }
                 endEntityInformation = raMasterApi.searchUser(admin, requestUsername);
                 if (endEntityInformation == null) {
                     log.error("Could not find endEntity for the username '" + requestUsername + "'");
                     throw new NotFoundException("The end entity '" + requestUsername + "' does not exist");
                 } else if (endEntityInformation.getStatus() == EndEntityConstants.STATUS_GENERATED) {
                     throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Enrollment with Id '" + requestId + "' has already been finalized");
-                } 
+                }
                 break;
             default:
                 throw new IllegalStateException("The status of request with Id '" + requestId + "' is unknown");
         }
 
         final CertificateRestResponse response;
-        endEntityInformation.setPassword(password); 
+        endEntityInformation.setPassword(password);
         // Initial request was a CSR
         if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN) {
             if (!(responseFormat.equals(TokenDownloadType.DER.name()) || responseFormat.equals(TokenDownloadType.PEM.name()))) {
@@ -371,7 +375,7 @@ public class CertificateRestResource extends BaseRestResource {
             } else {
                 // DER encoding
                 response = CertificateRestResponse.converter().toRestResponse(certificate);
-            } 
+            }
         } else {
             // Initial request was server generated key store
             byte[] certificateBytes;
@@ -384,7 +388,7 @@ public class CertificateRestResource extends BaseRestResource {
             } else {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid response format. Must be 'JKS', 'P12' or 'PEM'");
             }
-            
+
             certificateBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
                 X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
