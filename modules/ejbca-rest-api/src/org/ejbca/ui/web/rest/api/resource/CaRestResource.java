@@ -117,7 +117,7 @@ public class CaRestResource extends BaseRestResource {
                                  @PathParam("issuer_dn") String issuerDn,
                                  @QueryParam("deltaCrl") boolean deltaCrl) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, true);
-        byte[] latestCrl = raMasterApiProxy.getLatestCRLWS(adminToken, issuerDn, deltaCrl);
+        byte[] latestCrl = raMasterApiProxy.getLatestCrl(adminToken, issuerDn, deltaCrl);
         CertificateRestResponse restResponse = CertificateRestResponse.builder().setCertificate(latestCrl).build();
         return Response.ok(restResponse).build();
     }
