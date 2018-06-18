@@ -593,4 +593,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         }
     }
 
+    @Test
+    public void testGetProfileByIdAndType() throws Exception {
+        // ECA-6685 Implement test.
+    }
 }
