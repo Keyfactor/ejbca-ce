@@ -389,7 +389,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken admin, final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
+    public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken admin, final int entityProfileId) throws EjbcaException {
         final EndEntityProfile profile = getEndEntityProfileNoClone(entityProfileId);
         final TreeMap<String,Integer> result = new TreeMap<>();
         if (profile != null) {
@@ -399,8 +399,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             }
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Found " + result + " certificate profiles for end entity profile with ID " + entityProfileId + " requested by " 
-                    + ((X509CertificateAuthenticationToken) admin).getCertificate().getSubjectDN());
+            LOG.debug("Found " + result + " certificate profiles for end entity profile with ID " + entityProfileId + " requested by " + admin.getUniqueId());
         }
         return result;
     }

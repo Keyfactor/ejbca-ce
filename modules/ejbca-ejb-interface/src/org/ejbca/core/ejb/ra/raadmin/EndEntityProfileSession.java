@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -150,6 +151,18 @@ public interface EndEntityProfileSession {
      */
     List<String> getEndEntityProfilesUsingCertificateProfile(int certificateprofileid);
 
+    /**
+     * Fetches available certificate profiles associated with an end entity profile.
+     *
+     * No authorization required.
+     *
+     * @param admin the authentication of the caller.
+     * @param entityProfileId id of the end entity profile.
+     * @return a map of available certificate profiles names and IDs or an empty map.
+     * @throws EjbcaException if an error occured.
+     */
+    Map<String, Integer> getAvailableCertificateProfiles(AuthenticationToken admin, int entityProfileId) throws EjbcaException;
+    
     /**
      * Method to check if a CA exists in any of the end entity profiles. Used to
      * avoid desynchronization of CA data.

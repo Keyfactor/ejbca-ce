@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
@@ -34,8 +35,11 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -73,6 +77,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     private static final String ROLENAME = "EndEntityProfileSessionTest";
 
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);;
+    
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
   
@@ -224,6 +230,16 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         log.trace("<test05removeEndEntityProfiles()");
     }
 
+    private int createCertificateProfile(final AuthenticationToken admin, final String name, final int type) throws Exception {
+        certificateProfileSession.removeCertificateProfile(admin, name);
+        CertificateProfile profile = new CertificateProfile();
+        profile.setType(type);
+        certificateProfileSession.addCertificateProfile(admin, name, profile);
+        int id = certificateProfileSession.getCertificateProfileId(name);
+        assertTrue(id != 0);
+        return id;
+    }
+    
     /**
      * Tests fetching all available certificate profiles associated with an end entity profile.
      * 
@@ -231,7 +247,40 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      */
     @Test
     public void test05getAvailableCertificateProfiles() throws Exception {
-        // ECA-6685 Implement test.
+        final String cpProfileName1 = "test05CertificateProfile1";
+        final String cpProfileName2 = "test05CertificateProfile2";
+        final String eepProfileName = "test05EndEntityProfile";
+        final EndEntityProfile eeProfile = new EndEntityProfile();
+        try {
+//            eeProfile.setAvailableCertificateProfileIds(null);
+            endEntityProfileSession.addEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            final int eepId = endEntityProfileSession.getEndEntityProfileId(eepProfileName);
+            
+            // null or Arrays.asList(new Integer[] { cpId1 }) does not work here!
+            // Test no available CPs for this EEP.
+//            Map<String, Integer> map = endEntityProfileSession.getAvailableCertificateProfiles(alwaysAllowToken, eepId);
+//            assertTrue("getAvailableCertificateProfiles for an EEP with no CPs assigned should return 0.", map.size() == 0);
+            
+            // Test 0 available CPs for this EEP.
+            final int cpId1 = createCertificateProfile(alwaysAllowToken, cpProfileName1, CertificateConstants.CERTTYPE_ENDENTITY);
+            eeProfile.setAvailableCertificateProfileIds(Arrays.asList(new Integer[] { cpId1 }));
+            endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            Map<String, Integer> map = endEntityProfileSession.getAvailableCertificateProfiles(alwaysAllowToken, eepId);
+            assertTrue("getAvailableCertificateProfiles for an EEP with 1 CPs assigned should return 1.", map.size() == 1);
+            
+            // Test n>1 available CPs for this EEP.
+            final int cpId2 = createCertificateProfile(alwaysAllowToken, cpProfileName2, CertificateConstants.CERTTYPE_ENDENTITY);
+            eeProfile.setAvailableCertificateProfileIds(Arrays.asList(new Integer[] { cpId1, cpId2 }));
+            endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            map = endEntityProfileSession.getAvailableCertificateProfiles(alwaysAllowToken, eepId);
+            assertTrue("getAvailableCertificateProfiles for an EEP with 2 CPs assigned should return 2.", map.size() == 2);
+        } finally {
+//            eeProfile.setAvailableCertificateProfileIds(null);
+            endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, eepProfileName);
+            certificateProfileSession.removeCertificateProfile(alwaysAllowToken, cpProfileName1);
+            certificateProfileSession.removeCertificateProfile(alwaysAllowToken, cpProfileName2);
+        }
     }
     
     /**
