@@ -42,6 +42,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -70,11 +71,13 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
@@ -117,6 +120,8 @@ import org.junit.runners.MethodSorters;
 public class EndEntityManagementSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(EndEntityManagementSessionTest.class);
+    private static final InternalResources intres = InternalResources.getInstance();
+    
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("EndEntityManagementSessionTest");
     private static final BigInteger THROWAWAY_CERT_SERIAL = new BigInteger("123456788A43197E", 16);
     private static final String THROWAWAY_CERT_PROFILE = EndEntityManagementSessionTest.class.getName()+"-ThrowAwayRevocationProfile";
@@ -514,8 +519,91 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     }
     
     @Test
-    public void test05RevokeUser() throws Exception {
-        // ECA-6685 Implement test for EndEntityManagementSessionLocal.revokeUser.
+    public void test05RevokeOrDeleteUser() throws Exception {
+        addUser();
+
+        KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
+        assertNotNull(data1);
+        data1.setPassword("foo123");
+        endEntityManagementSession.changeUser(admin, data1, true);
+
+        final int revocationReason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
+        
+        Certificate cert = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()));
+        CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
+                
+        // 1.1 Revoke user.
+        endEntityManagementSession.revokeUser(admin, username, revocationReason, false);
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(revocationReason, status.revocationReason);
+        // Check user still exists.
+        assertTrue(endEntityManagementSession.existsUser(username));
+        
+        // 1.2 Revoke and delete user.
+        data1.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.changeUser(admin, data1, true);
+        cert = signSession.createCertificate(admin, username, "foo123", new PublicKeyWrapper(keypair.getPublic()));
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);        
+        // Check certificate was revoked.
+        endEntityManagementSession.revokeUser(admin, username, revocationReason, true);
+        status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+        assertEquals(revocationReason, status.revocationReason);
+        // Check user was deleted.
+        assertTrue(!endEntityManagementSession.existsUser(username));
+                
+        // 2.1 Test user was not found (throw new NoSuchEndEntityException("User '" + username + "' not found.")).
+        Exception exception = null;
+        try {
+            endEntityManagementSession.revokeUser(admin, username, revocationReason, false);
+        } catch(Exception e) {
+            exception = e;
+        }
+        assertTrue(exception instanceof NoSuchEndEntityException);
+        assertTrue(("User '" + username + "' not found.").equals( exception.getMessage()));
+        
+        // 2.2 Test CA was not found (throw new CADoesntExistsException("CA with id " + caid + " does not exist.")).
+        // Create new user again.
+        addUser();
+        data1 = endEntityAccessSession.findUser(admin, username);
+        assertNotNull(data1);
+        data1.setPassword("foo123");
+        endEntityManagementSession.changeUser(admin, data1, true);
+        // Test cannot be performed because NPE is thrown because of non existing CA ID in 
+        // EndEntityManagementSessionBean line 884.
+//        // Set CA ID which should not exist in DB.
+//        final int oldCaId = data1.getCAId();
+//        final int notExistingCa = 1234567890;
+//        data1.setCAId(notExistingCa); 
+//        endEntityManagementSession.changeUser(admin, data1, true);
+//        // Revoke user with non exiting CA.
+//        exception = null;
+//        try {
+//            endEntityManagementSession.revokeUser(admin, username, revocationReason, false);
+//        } catch(Exception e) {
+//            exception = e;
+//        }
+//        assertTrue(exception instanceof CADoesntExistsException);
+//        assertTrue(("CA with id " + notExistingCa + " does not exist.").equals( exception.getMessage()));
+        
+        // 2.3 Authorization denied (throw new AuthorizationDeniedException(intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() + caId, null))).
+        exception = null;
+        // Create missing authorization for CA access (can fail because of no accesno authorization to access end entity profile as well !!!)
+        final AuthenticationToken adminNoAuthToAccessCa = new UsernameBasedAuthenticationToken(new UsernamePrincipal("EndEntityManagementSessionTest-NoAuth"));
+        try {
+            endEntityManagementSession.revokeUser(adminNoAuthToAccessCa, username, revocationReason, false);
+        } catch(Exception e) {
+            exception = e;
+        }
+        assertTrue(exception instanceof AuthorizationDeniedException);
+        // ECA-6685: Improve test with auth. to end entity profile
+        // not authorized to [end entity profile 1 that existing user 678071 was created with. Admin: 678071
+        // assertEquals(intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() + data1.getCAId()), exception.getMessage());
+        
+        // 2.4 Could not delete user (throw new CouldNotRemoveEndEntityException(intres.getLocalizedMessage("ra.errorremoveentity", username))).
+        // ECA-6685: Improve test with end entity which can not be removed.
     }
     
     /**
