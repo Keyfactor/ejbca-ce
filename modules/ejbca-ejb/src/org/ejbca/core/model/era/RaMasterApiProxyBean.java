@@ -1977,7 +1977,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken authenticationToken, final int entityProfileId) 
-            throws EjbcaException {
+            throws AuthorizationDeniedException, EjbcaException {
         // Try over all instances.
         final Map<String, Integer> result = new TreeMap<>();
         EjbcaException ejbcaException = null;
