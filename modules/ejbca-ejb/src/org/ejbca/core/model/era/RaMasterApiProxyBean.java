@@ -1507,7 +1507,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         AlreadyRevokedException alreadyRevokedException = null;
         CouldNotRemoveEndEntityException couldNotRemoveEndEntityException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
-        	++index;
             if (raMasterApi.isBackendAvailable()) {
                 try {
                     raMasterApi.revokeUser(authenticationToken, username, reason, deleteUser);
