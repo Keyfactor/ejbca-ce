@@ -41,6 +41,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
@@ -80,15 +81,15 @@ public class CertificateRestResourceUnitTest {
             return authenticationToken;
         }
     }
-    
+
     public static InMemoryRestServer server;
-    
+
     @TestSubject
     private static CertificateRestResourceWithoutSecurity testClass = new CertificateRestResourceWithoutSecurity();
 
     @Mock
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
-    
+
     @BeforeClass
     public static void beforeClass() throws IOException {
         server = InMemoryRestServer.create(testClass);
@@ -155,7 +156,7 @@ public class CertificateRestResourceUnitTest {
         final int maxNumberOfResults = 0;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(0).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
-                .andReturn(Collections.<Certificate>emptyList());
+                        .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
 
         replay(raMasterApiProxy);
         // when
@@ -186,7 +187,7 @@ public class CertificateRestResourceUnitTest {
         final long expectedNumberOfResults = 6L;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
-                .andReturn(Collections.<Certificate>emptyList());
+                        .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
         replay(raMasterApiProxy);
         // when
         final ClientRequest clientRequest = server
@@ -221,7 +222,7 @@ public class CertificateRestResourceUnitTest {
         final long expectedNumberOfResults = 3L;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
-                .andReturn(Collections.<Certificate>emptyList());
+                        .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
         replay(raMasterApiProxy);
         // when
         final ClientRequest clientRequest = server
@@ -245,7 +246,7 @@ public class CertificateRestResourceUnitTest {
         assertEquals(expectedNumberOfResults, numberOfResults);
         EasyMock.verify(raMasterApiProxy);
     }
-    
+
     @Test
     public void shouldReturnRevocationStatusRevokedWithReasonUnspecified() throws Exception {
         // given
@@ -268,7 +269,7 @@ public class CertificateRestResourceUnitTest {
         assertEquals(RevocationReasons.UNSPECIFIED.getStringValue(), actualRevocationReason);
         EasyMock.verify(raMasterApiProxy);
     }
-    
+
     @Test
     public void inputBadSerialNrShouldReturnBadRequest() throws Exception {
         final String nonHexSerialNumberRequest = "/v1/certificate/testca/qwerty/revocationstatus";
