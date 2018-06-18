@@ -46,12 +46,12 @@
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
+    	<ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit" />
+    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" />
     	<antcall target="optionaltestct" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
     	<antcall target="optionaltestunidfnr" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit" />
-    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" />
     	<antcall target="createreport"/>
     </target>
     <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
