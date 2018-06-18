@@ -2320,7 +2320,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     
     @Override
     public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken authenticationToken, final int entityProfileId)
-            throws AuthorizationDeniedException, EjbcaException {
+            throws EjbcaException {
         return endEntityProfileSession.getAvailableCertificateProfiles(authenticationToken, entityProfileId);
     }
     
