@@ -1104,22 +1104,8 @@ public interface RaMasterApi {
    /**
     * Fetches the profile specified by profileId and profileType in XML format.
     *
-    * Authorization requirements:<pre>
-    * - /administrator
-    * - /endentityprofilesrules/&lt;end entity profile&gt;
-    * </pre>
-    *
-    * For detailed documentation for how to parse an End Entity Profile XML, see the org.ejbca.core.model.ra.raadmin.EndEntity class.
-    *
-    * @param authenticationToken the administrator performing the action.
-    * @param profileId ID of the profile we want to retrieve.
-    * @param profileType The type of the profile we want to retrieve. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
-    * @return a byte array containing the specified profile in XML format.
-    * @throws AuthorizationDeniedException if client isn't authorized to request.
-    * @throws UnknownProfileTypeException if the profile type is not known.
-    * @throws EjbcaException any EjbcaException.
-    * @throws IOException if the XML profile data could not be encoded.
+    * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal#getProfile(AuthenticationToken authenticationToken, int profileId, String profileType).
     */
-    byte[] getProfileWS(AuthenticationToken authenticationToken, int profileId, String profileType)
-                throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException;
+   byte[] getProfile(AuthenticationToken authenticationToken, int profileId, String profileType)
+           throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException;
 }

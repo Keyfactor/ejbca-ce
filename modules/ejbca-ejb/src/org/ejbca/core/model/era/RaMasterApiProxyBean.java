@@ -2259,16 +2259,25 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] getProfileWS(AuthenticationToken authenticationToken, int profileId, String profileType)
+    public byte[] getProfile(final AuthenticationToken authenticationToken, final int profileId, final String profileType)
             throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException {
+        EjbcaException ejbcaException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getProfileWS(authenticationToken, profileId, profileType);
+                    return raMasterApi.getProfile(authenticationToken, profileId, profileType);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (EjbcaException  e) {
+                    if (ejbcaException == null) {
+                        ejbcaException = e;
+                    }
                     // Just try next implementation
                 }
             }
+        }
+        if (ejbcaException != null) {
+            throw ejbcaException;
         }
         return null;
     }    
