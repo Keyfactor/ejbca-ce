@@ -122,6 +122,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -1866,17 +1867,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException {
-        int result;
+    public int getPublisherQueueLength(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException, PublisherDoesntExistsException {
+        PublisherDoesntExistsException publisherDoesntExistsException = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()  && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    result = raMasterApi.getPublisherQueueLengthWS(authenticationToken, name);
-                    if (result == -4) {
-                        continue;
-                    } else {
-                        return result;
-                    }
+                    return raMasterApi.getPublisherQueueLength(authenticationToken, name);
+                } catch (PublisherDoesntExistsException e) {
+                    publisherDoesntExistsException = e;
                 } catch (UnsupportedOperationException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("Trouble during back end invocation: " + e.getMessage());
@@ -1889,7 +1887,10 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
-        return -4;
+        if (publisherDoesntExistsException != null) {
+            throw publisherDoesntExistsException;
+        }
+        throw new PublisherDoesntExistsException("No peer systems are available");
     }
 
     @Override
@@ -2192,20 +2193,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] getLatestCRLWS(AuthenticationToken authenticationToken, String caName, boolean deltaCRL)
+    public byte[] getLatestCrl(AuthenticationToken authenticationToken, String caName, boolean deltaCRL)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        byte[] result = null;
+        CADoesntExistsException caDoesntExistsException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    result = raMasterApi.getLatestCRLWS(authenticationToken, caName, deltaCRL);
-                    break;
+                    return raMasterApi.getLatestCrl(authenticationToken, caName, deltaCRL);
+                } catch (CADoesntExistsException e) {
+                    caDoesntExistsException = e;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return result;
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
+        }
+        return null;
     }
 
     @Override
@@ -2253,17 +2258,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public void republishCertificateWS(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN)
+    public void republishCertificate(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN)
             throws AuthorizationDeniedException, CADoesntExistsException, PublisherException, EjbcaException {
+        CADoesntExistsException caDoesntExistsException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    raMasterApi.republishCertificateWS(authenticationToken, serialNumberInHex, issuerDN);
+                    raMasterApi.republishCertificate(authenticationToken, serialNumberInHex, issuerDN);
                     break;
+                } catch (CADoesntExistsException e) {
+                    caDoesntExistsException = e;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
+        }
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
         }
     }
 

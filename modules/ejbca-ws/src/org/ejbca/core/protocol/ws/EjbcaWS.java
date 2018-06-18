@@ -148,6 +148,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -2275,7 +2276,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try{
-			raMasterApiProxyBean.republishCertificateWS(admin, serialNumberInHex, issuerDN);
+			raMasterApiProxyBean.republishCertificate(admin, serialNumberInHex, issuerDN);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
             throw getInternalException(e, logger);
         } finally {
@@ -2534,7 +2535,7 @@ public class EjbcaWS implements IEjbcaWS {
         try {
             AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
-            return raMasterApiProxyBean.getLatestCRLWS(admin, caname, deltaCRL);
+            return raMasterApiProxyBean.getLatestCrl(admin, caname, deltaCRL);
         } catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {  // EJBException, ...
@@ -2559,7 +2560,9 @@ public class EjbcaWS implements IEjbcaWS {
         try {
             final AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
-            return raMasterApiProxyBean.getPublisherQueueLengthWS(admin, name);
+            return raMasterApiProxyBean.getPublisherQueueLength(admin, name);
+        } catch (PublisherDoesntExistsException e) {
+            return -4; // error code according to API
         } catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) { // EJBException, ...

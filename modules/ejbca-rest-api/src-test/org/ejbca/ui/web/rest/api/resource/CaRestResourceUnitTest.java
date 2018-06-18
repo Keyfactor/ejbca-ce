@@ -221,7 +221,7 @@ public class CaRestResourceUnitTest {
         String expectedCertificate = "Certificate";
 
         // when
-        expect(raMasterApiProxy.getLatestCRLWS(eq(authenticationToken), anyString(), anyBoolean())).andReturn(expectedCertificate.getBytes());
+        expect(raMasterApiProxy.getLatestCrl(eq(authenticationToken), anyString(), anyBoolean())).andReturn(expectedCertificate.getBytes());
         replay(raMasterApiProxy);
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
         final String actualString = actualResponse.getEntity(String.class);
@@ -244,7 +244,7 @@ public class CaRestResourceUnitTest {
         final String expectedMessage = "CA doesn't exist";
         final long expectedCode = Response.Status.NOT_FOUND.getStatusCode();
         // when
-        expect(raMasterApiProxy.getLatestCRLWS(eq(authenticationToken), anyString(), anyBoolean())).andThrow(new CADoesntExistsException(expectedMessage));
+        expect(raMasterApiProxy.getLatestCrl(eq(authenticationToken), anyString(), anyBoolean())).andThrow(new CADoesntExistsException(expectedMessage));
         replay(raMasterApiProxy);
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
         final String actualJsonString = actualResponse.getEntity(String.class);
