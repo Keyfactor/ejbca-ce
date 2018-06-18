@@ -13,9 +13,12 @@
 package org.cesecore.certificates.certificatetransparency;
 
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.List;
 
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 
 /**
@@ -47,7 +50,7 @@ public interface CertificateTransparency {
 
     /**
      * Overloaded method with usageMode = UsageMode.CERTIFICATE.
-     * 
+     *
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      * @see CertificateTransparency#fetchSCTList(List, CertificateProfile, CTSubmissionConfigParams, UsageMode)
      */
@@ -82,4 +85,13 @@ public interface CertificateTransparency {
      */
     void clearCaches();
 
+    /**
+     * Ensure that all SCTs in the certificate are valid or throw an exception. No checks are performed if the certificate given
+     * as input does not have an SCT extension present.
+     * @param cert The final certificate to check
+     * @param certGenParams certificate generation parameters containing the CT logs being used, may be null if the SCT extension is not present
+     * @throws CertificateCreateException if one of the SCTs are invalid or if the certificate could not be parsed
+     */
+    void allSctsAreValidOrThrow(X509Certificate leafCertificate, List<Certificate> issuerCertificates, Collection<CTLogInfo> ctLogs)
+            throws CertificateCreateException;
 }
