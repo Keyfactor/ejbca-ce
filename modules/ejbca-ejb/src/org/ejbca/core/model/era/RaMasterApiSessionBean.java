@@ -177,6 +177,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -2028,10 +2029,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }    
     
     @Override
-    public int getPublisherQueueLengthWS(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException {
+    public int getPublisherQueueLength(AuthenticationToken authenticationToken, String name) throws AuthorizationDeniedException, PublisherDoesntExistsException {
         final int id = publisherSession.getPublisherId(name);
         if (id == 0) {
-            return -4;// No publisher with this name exists.
+            throw new PublisherDoesntExistsException("Publisher does not exist: " + name);
         }
         return publisherQueueSession.getPendingEntriesCountForPublisher(id);
     }
@@ -2434,7 +2435,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] getLatestCRLWS(AuthenticationToken authenticationToken, String caName, boolean deltaCRL)
+    public byte[] getLatestCrl(AuthenticationToken authenticationToken, String caName, boolean deltaCRL)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         final CAInfo cainfo = caSession.getCAInfo(authenticationToken, caName);
         if (cainfo == null) {
@@ -2461,7 +2462,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public void republishCertificateWS(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN)
+    public void republishCertificate(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN)
             throws AuthorizationDeniedException, CADoesntExistsException, PublisherException, EjbcaException {
         final String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
         caSession.verifyExistenceOfCA(bcIssuerDN.hashCode());
