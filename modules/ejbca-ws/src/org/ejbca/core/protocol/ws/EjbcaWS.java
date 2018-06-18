@@ -2495,7 +2495,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
-            return raMasterApiProxyBean.getProfileWS(admin, profileId, profileType);
+            return raMasterApiProxyBean.getProfile(admin, profileId, profileType);
         } catch(org.ejbca.core.model.ra.UnknownProfileTypeException e) {
             throw new UnknownProfileTypeException(e.getMessage());
         } catch(IOException e) {
