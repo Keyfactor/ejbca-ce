@@ -110,14 +110,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
-import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
-import org.certificatetransparency.ctlog.CertificateInfo;
-import org.certificatetransparency.ctlog.LogInfo;
-import org.certificatetransparency.ctlog.LogSignatureVerifier;
-import org.certificatetransparency.ctlog.proto.Ct;
-import org.certificatetransparency.ctlog.proto.Ct.LogID;
-import org.certificatetransparency.ctlog.utils.VerifySignature;
 import org.cesecore.ErrorCode;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -139,7 +132,6 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CTLogException;
-import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -1381,7 +1373,8 @@ public class X509CA extends CA implements Serializable {
 
         // Verify any Signed Certificate Timestamps (SCTs) in the certificate before returning. If one of the (embedded) SCTs does
         // not verify over the final certificate, it won't validate in the browser and we don't want to issue such certificates.
-        allSctsAreValidOrThrow(cert, certGenParams);
+        ct.allSctsAreValidOrThrow(cert, getCertificateChain(),
+                certGenParams == null ? null : certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs().values());
 
         //Sub CA certificates check: Check AKI against parent CA SKI and IssuerDN against parent CA SubjectDN
         if(!isRootCA && !linkCertificate){
@@ -1419,55 +1412,6 @@ public class X509CA extends CA implements Serializable {
         return cert;
     }
 
-    /**
-     * Ensure that all SCTs in the certificate are valid or throw an exception. No checks are performed if the certificate given
-     * as input does not have an SCT extension present.
-     * @param cert The final certificate to check
-     * @param certGenParams certificate generation parameters containing the CT logs being used, may be null if the SCT extension is not present
-     * @throws CertificateCreateException if one of the SCTs are invalid or if the certificate could not be parsed
-     */
-    private void allSctsAreValidOrThrow(final X509Certificate cert, final CertificateGenerationParams certGenParams)
-            throws CertificateCreateException {
-        try {
-            if (!CertificateInfo.hasEmbeddedSCT(cert)) {
-                // Certificate transparency is not used in this cert, skip all checks
-                return;
-            }
-            final List<Certificate> certificateChain = new ArrayList<>();
-            certificateChain.add(cert);
-            certificateChain.addAll(getCertificateChain());
-            for (Ct.SignedCertificateTimestamp sct : VerifySignature.parseSCTsFromCert(cert)) {
-                final CTLogInfo ctLogInfo = getCtLogByLogId(certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs().values(), sct.getId());
-                if (ctLogInfo == null) {
-                    final String errorMessage = "The SCT with key ID " + Base64.toBase64String(sct.getId().getKeyId().toByteArray())
-                            + " in the final certificate with serial number " + cert.getSerialNumber().toString(16)
-                            + " could not be verified because I could not find the public key of the log.";
-                    throw new CertificateCreateException(errorMessage);
-                }
-                final LogInfo logInfo = new LogInfo(ctLogInfo.getLogPublicKey());
-                final LogSignatureVerifier logSignatureVerifier = new LogSignatureVerifier(logInfo);
-                final boolean sctIsValid = logSignatureVerifier.verifySignature(sct, certificateChain);
-                if (!sctIsValid) {
-                    final String errorMessage = "The SCT with key ID " + Base64.toBase64String(sct.getId().getKeyId().toByteArray())
-                            + " in the final certificate with serial number " + cert.getSerialNumber().toString(16)
-                            + " did not verify. Stopping issuance!";
-                    throw new CertificateCreateException(errorMessage);
-                }
-            }
-        } catch (final IOException e) {
-            throw new CertificateCreateException(e);
-        }
-    }
-
-    private CTLogInfo getCtLogByLogId(final Collection<CTLogInfo> ctLogInfos, final LogID logId) {
-        for (final CTLogInfo ctLogInfo : ctLogInfos) {
-            if (ctLogInfo.getLogKeyIdString().equals(Base64.toBase64String(logId.getKeyId().toByteArray()))) {
-                return ctLogInfo;
-            }
-        }
-        return null;
-    }
-
     @Override
     public X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
             IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
@@ -1484,7 +1428,7 @@ public class X509CA extends CA implements Serializable {
     /**
      * Constructs the SubjectAlternativeName extension that will end up on the generated certificate.
      *
-     * If the DNS values in the subjectAlternativeName extension contain parentheses to specify labels that should be redacted, the parentheses are removed and another extension
+     * If the DNS values in the subjectAlternativeName extension contain parentheses to specify labels that should be s, the parentheses are removed and another extension
      * containing the number of redacted labels is added.
      *
      * @param subAltNameExt
