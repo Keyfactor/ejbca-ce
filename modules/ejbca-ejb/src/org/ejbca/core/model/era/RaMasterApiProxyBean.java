@@ -143,7 +143,7 @@ import org.ejbca.ui.web.protocol.CertificateRenewalException;
 import org.ejbca.util.query.IllegalQueryException;
 
 /**
- * Proxy implementation of the the RaMasterApi that will will get the result of the most preferred API implementation
+ * Proxy implementation of the the RaMasterApi that will get the result of the most preferred API implementation
  * or a mix thereof depending of the type of call.
  *
  * @version $Id$

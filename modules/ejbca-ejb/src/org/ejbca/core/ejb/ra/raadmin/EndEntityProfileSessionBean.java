@@ -422,8 +422,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             }
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Found " + result + " CAs for end entity profile with ID " + entityProfileId + " requested by " 
-                    + ((X509CertificateAuthenticationToken) admin).getCertificate().getSubjectDN());
+            LOG.debug("Found " + result + " CAs for end entity profile with ID " + entityProfileId + " requested by " + admin.getUniqueId());
         }
         return result;
     }
