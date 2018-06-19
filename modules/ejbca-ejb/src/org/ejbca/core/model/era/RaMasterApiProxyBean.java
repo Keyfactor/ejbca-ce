@@ -2098,18 +2098,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public Collection<CertificateWrapper> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days,
-            int maxNumberOfResults, int offset) throws AuthorizationDeniedException {
-        for (RaMasterApi raMasterApi : raMasterApis) {
+    public Collection<CertificateWrapper> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, final long days,
+            final int maxNumberOfResults, final int offset) throws AuthorizationDeniedException {
+        final Map<String, CertificateWrapper> result = new TreeMap<>();
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, maxNumberOfResults, offset);
+                    final Collection<CertificateWrapper> certificates = raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, maxNumberOfResults, offset);
+                    for (CertificateWrapper certificate : certificates) {
+                        result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return null;
+        return result.values();
     }
 
     @Override
