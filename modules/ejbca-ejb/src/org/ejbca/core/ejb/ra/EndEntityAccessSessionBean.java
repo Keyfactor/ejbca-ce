@@ -642,15 +642,17 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     @Override
     public Collection<CertificateWrapper> findCertificatesByUsername(final AuthenticationToken authenticationToken, final String username, final boolean onlyValid, final long now)
             throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
-        // Check authorization on current CA and profiles and view_end_entity by looking up the end entity
-        if (findUser(authenticationToken,username) == null) {
+        if (log.isDebugEnabled()) {
+            log.debug( "Find certificates by username requested by " + authenticationToken.getUniqueId());
+        }
+        // Check authorization on current CA and profiles and view_end_entity by looking up the end entity.
+        if (findUser(authenticationToken, username) == null) {
             if (log.isDebugEnabled()) {
                 log.debug(intres.getLocalizedMessage("ra.errorentitynotexist", username));
             }
         }
-        // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData
-        // Re-factor: Too much wrapping / unwrapping.
-        Collection<?> searchResults;
+        // Even if there is no end entity, it might be the case that we don't store UserData, so we still need to check CertificateData.
+        Collection<CertificateWrapper> searchResults;
         if (onlyValid) {
             // We will filter out not yet valid certificates later on, but we as the database to not return any expired certificates
             searchResults = EJBTools.wrapCertCollection(certificateStoreSession.findCertificatesByUsernameAndStatusAfterExpireDate(username, CertificateConstants.CERT_ACTIVE, now));
@@ -664,11 +666,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         final Map<Integer, Boolean> authorizationCache = new HashMap<>();
         final List<CertificateWrapper> result = new ArrayList<>();
         for (Object searchResult: searchResults) {
-            if (searchResult instanceof CertificateWrapper) {
-                certificate = EJBTools.unwrap((CertificateWrapper) searchResult);
-            } else { // Must be certificate.
-                certificate = (Certificate) searchResult;
-            }
+            certificate = ((CertificateWrapper) searchResult).getCertificate();
             caId = CertTools.getIssuerDN(certificate).hashCode();
             authorized = authorizationCache.get(caId);
             if (authorized == null) {
@@ -676,12 +674,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 authorizationCache.put(caId, authorized);
             }
             if (authorized.booleanValue()) {
-                if (searchResult instanceof CertificateWrapper) {
-                    result.add((CertificateWrapper) searchResult);
-                } else {
-                    result.add(EJBTools.wrap((Certificate) searchResult));
-                }
+                result.add((CertificateWrapper) searchResult);
             }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug( "Found " + result.size() + " certificate(s) by username requested by " + authenticationToken.getUniqueId());
         }
         return result;
     }
