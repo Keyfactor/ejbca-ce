@@ -41,7 +41,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.CaInfoRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CaInfosRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.CrlRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
 import io.swagger.annotations.Api;
@@ -119,7 +119,7 @@ public class CaRestResource extends BaseRestResource {
                                  @QueryParam("deltaCrl") boolean deltaCrl) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, true);
         byte[] latestCrl = raMasterApiProxy.getLatestCrl(adminToken, issuerDn, deltaCrl);
-        CertificateRestResponse restResponse = CertificateRestResponse.builder().setCertificate(latestCrl).build();
+        CrlRestResponse restResponse = CrlRestResponse.builder().setCrl(latestCrl).setResponseFormat("DER").build();
         return Response.ok(restResponse).build();
     }
 

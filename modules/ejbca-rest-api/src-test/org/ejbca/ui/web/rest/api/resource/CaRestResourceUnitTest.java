@@ -231,7 +231,7 @@ public class CaRestResourceUnitTest {
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
         final String actualString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualString);
-        final String actualCertificate = (String)actualJsonObject.get("certificate");
+        final String actualCertificate = (String)actualJsonObject.get("crl");
         byte[] decoded = Base64.decodeBase64(actualCertificate);
         String decodedActualCertificate = new String(decoded, "utf-8");
 
