@@ -33,6 +33,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
@@ -82,7 +83,7 @@ public class CaRestResource extends BaseRestResource {
                                         @PathParam("subject_dn") String subjectDn) throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         subjectDn = CertTools.stringToBCDNString(subjectDn);
-        Collection<Certificate> certificateChain = raMasterApiProxy.getCertificateChain(admin, subjectDn.hashCode());
+        Collection<Certificate> certificateChain = EJBTools.unwrapCertCollection(raMasterApiProxy.getCertificateChain(admin, subjectDn.hashCode()));
 
         byte[] bytes = CertTools.getPemFromCertificateChain(certificateChain);
         return Response.ok(bytes)
