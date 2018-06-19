@@ -60,6 +60,7 @@
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
 		<path location="${build-test.dir}"/>
+		<pathelement path="${clover.jar}"/>
 	</path>
 
     <target name="clean" description="Clean up this module">
@@ -142,6 +143,7 @@
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
         		<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
