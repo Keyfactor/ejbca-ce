@@ -16,6 +16,9 @@ package org.ejbca.ui.web.rest.api;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
+import org.ejbca.ui.web.rest.api.config.SnakeCaseConverter;
+
+import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.config.BeanConfig;
 
 /**
@@ -32,6 +35,9 @@ public class RestApiApplication extends Application {
 
     public RestApiApplication() {
         super();
+        
+        ModelConverters.getInstance().addConverter(new SnakeCaseConverter());
+        
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setVersion("1.0.0");
         beanConfig.setSchemes(new String[]{"https"});
