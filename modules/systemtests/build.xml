@@ -26,6 +26,7 @@
 	     and in the case of JBoss 6 it pulls in apache cxf that does not work with client certificates, at least the same way as sun ws does -->
 	<path id="systemtests.classpath.nojee">
 		<path refid="lib.ctlog.classpath"/>
+		<path refid="lib.guava.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.mail.classpath"/>
 		<path refid="lib.easymock.classpath"/>
