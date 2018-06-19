@@ -159,9 +159,26 @@ public interface EndEntityProfileSession {
      * @param admin the authentication of the caller.
      * @param entityProfileId id of the end entity profile.
      * @return a map of available certificate profiles names and IDs or an empty map.
+     * @throws AuthorizationDeniedException if the authorization was denied (still not thrown).
      * @throws EjbcaException if an error occured.
      */
     Map<String, Integer> getAvailableCertificateProfiles(AuthenticationToken admin, int entityProfileId) throws EjbcaException;
+    
+    /**
+     * Fetches the available CAs associated with an end entity profile.
+     *
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /endentityprofilesrules/&lt;end entity profile&gt;
+     * </pre>
+     *
+     * @param admin the authentication of the caller.
+     * @param entityProfileId id of the end entity profile.
+     * @return a map of available CA names and IDs or an empty map.
+     * @throws AuthorizationDeniedException if the authorization was denied (still not thrown).
+     * @throws EjbcaException any EjbcaException.
+     */
+    Map<String,Integer> getAvailableCAsInProfile(AuthenticationToken admin, final int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
     
     /**
      * Method to check if a CA exists in any of the end entity profiles. Used to
