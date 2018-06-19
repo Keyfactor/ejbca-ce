@@ -31,6 +31,7 @@ import java.util.Set;
 
 import javax.ejb.EJBException;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -70,6 +71,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
@@ -84,6 +86,8 @@ import org.junit.Test;
  */
 public class CaAdminSessionBeanTest {
 
+    private static final Logger log = Logger.getLogger(CaAdminSessionBeanTest.class);
+
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
@@ -95,7 +99,6 @@ public class CaAdminSessionBeanTest {
     private AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("CaAdminSessionBeanTest");
 
     private static final String TEST_BC_CERT_CA = "TestBCProviderCertCA";
-    
     
     @BeforeClass
     public static void beforeClass() {
@@ -287,6 +290,33 @@ public class CaAdminSessionBeanTest {
         }
     }
 
+    @Test
+    public void testCustomLog() {
+        final String type = "TestType";
+        final String certificateSN = "123ABC";
+        final String msg = "TestMessage";
+        String caName = null;
+        
+        // 1. Test customLog.
+        // Write custom log. Try to get the CA by the users token.
+        try {
+            caAdminSession.customLog(alwaysAllowToken, type, caName, alwaysAllowToken.getUniqueId(), certificateSN, msg, EjbcaEventTypes.CUSTOMLOG_INFO);
+        } catch(Exception e) {
+            log.error("Writing custom log entry failed with exception " + e.getMessage(), e);
+            fail("Writing custom log failed with exception: " + e.getMessage());
+        }
+        // 2.1 Test authorization denied.
+        // tbd.
+        // 2.2 Test CA not found.
+        caName = "fantasyCA_123";
+        try {
+            caAdminSession.customLog(alwaysAllowToken, type, caName, alwaysAllowToken.getUniqueId(), certificateSN, msg, EjbcaEventTypes.CUSTOMLOG_INFO);
+            fail( "Writing a custom log for a non existing CA should throw an exception.");
+        } catch(Exception e) {
+            assertTrue("Writing a custom log for a non existing CA should throw a CADoesntExistsException: " + e.getClass(), e instanceof CADoesntExistsException);
+        }
+    }
+    
     private void testInvalidKeySpecsInternal(final boolean expectNoIllegalKeyException, final String certificateProfileName, final CAInfo caInfo,
             final String[] availableKeyAlgorithms, final String[] availableEcCurves, final int[] availableBitLengths, final String keyAlias,
             final String signatureAlgoritm) throws AuthorizationDeniedException,

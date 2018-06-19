@@ -2307,7 +2307,7 @@ public class EjbcaWS implements IEjbcaWS {
                 final java.security.cert.Certificate logCert = CertificateHelper.getCertificate(certificate.getCertificateData());
                 certificateSn = CertTools.getSerialNumberAsString(logCert);
             }
-		    raMasterApiProxyBean.customLog(admin, level, type, cAName, username, certificateSn, msg, event);
+		    raMasterApiProxyBean.customLog(admin, type, cAName, username, certificateSn, msg, event);
 		} catch (CertificateException e) {
             throw getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...

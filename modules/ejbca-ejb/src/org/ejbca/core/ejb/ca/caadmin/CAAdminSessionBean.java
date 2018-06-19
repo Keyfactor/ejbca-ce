@@ -3367,7 +3367,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void customLog(final AuthenticationToken authenticationToken, final int level, final String type, final String caName, final String username, final String certificateSn,
+    public void customLog(final AuthenticationToken authenticationToken, final String type, final String caName, final String username, final String certificateSn,
             final String msg, final EventType event) throws AuthorizationDeniedException, CADoesntExistsException {
         // Check authorization to perform custom logging.
         if(!authorizationSession.isAuthorized(authenticationToken, AuditLogRules.LOG_CUSTOM.resource())) {
@@ -3382,10 +3382,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             } 
             caId = cAInfo.getCAId();
         } else {
-            caId = ((X509CertificateAuthenticationToken) authenticationToken).getCertificate().getSubjectDN().getName().hashCode();
+            try {
+                caId = ((X509CertificateAuthenticationToken) authenticationToken).getCertificate().getSubjectDN().getName().hashCode();
+            } catch(Exception e) {
+                log.debug("Could not get CA by users authentication token: " + authenticationToken.getUniqueId(), e);
+            }
         }
         final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", type + " : " + msg);
         auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), String.valueOf(caId), username, certificateSn, details);
+        if (log.isDebugEnabled()) {
+            log.debug("Custom message '" + msg + "'was written to audit log by " + authenticationToken.getUniqueId());
+        }
     }
 }
