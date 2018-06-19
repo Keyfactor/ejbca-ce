@@ -1547,13 +1547,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 } catch (AlreadyRevokedException e) {
                     log.info( "End entity for proxied request on CA is revoked already: " + e.getMessage());
                     if (alreadyRevokedException == null) {
-                        e = alreadyRevokedException;
+                        alreadyRevokedException = e;
                     }
                     // Just try next implementation.
                 } catch (CouldNotRemoveEndEntityException e) {
                 	log.info( "End entity for proxied request on CA could not be removed: " + e.getMessage());
                 	if (couldNotRemoveEndEntityException == null) {
-                        e = couldNotRemoveEndEntityException;
+                        couldNotRemoveEndEntityException = e;
                     }
                 	// Just try next implementation.
                 }
