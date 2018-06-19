@@ -2339,8 +2339,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Collection<CertificateWrapper> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days,
-            int maxNumberOfResults, int offset) throws AuthorizationDeniedException {
+    public Collection<CertificateWrapper> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, final long days,
+            final int maxNumberOfResults, final int offset) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate")) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource",
                     StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate", null);
