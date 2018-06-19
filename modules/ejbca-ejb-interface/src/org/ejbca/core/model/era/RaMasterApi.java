@@ -848,7 +848,7 @@ public interface RaMasterApi {
      * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal#customLog(AuthenticationToken authenticationToken, int level, String type, String caName, String username, String certificateSn, String msg, EventType event)
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    void customLog(AuthenticationToken authenticationToken, int level, String type, String caName, String username, String certificateSn, String msg, EventType event)
+    void customLog(AuthenticationToken authenticationToken, String type, String caName, String username, String certificateSn, String msg, EventType event)
                 throws AuthorizationDeniedException, CADoesntExistsException;
 
     /**
