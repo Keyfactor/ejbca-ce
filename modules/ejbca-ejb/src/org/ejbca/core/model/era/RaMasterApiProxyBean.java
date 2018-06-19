@@ -1978,7 +1978,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public Collection<CertificateWrapper> getCertificatesByUsername(final AuthenticationToken authenticationToken, final String username, final boolean onlyValid, final long now)
             throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
-        for (RaMasterApi raMasterApi : raMasterApis) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     final Collection<CertificateWrapper> certificates = raMasterApi.getCertificatesByUsername(authenticationToken, username, onlyValid, now);

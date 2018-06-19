@@ -854,7 +854,7 @@ public interface RaMasterApi {
     /**
      * Retrieves a collection of certificates as byte array generated for a user.
      *
-     * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal#findCertificatesByUsername(AuthenticationToken, String, boolean, long)
+     * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSession#findCertificatesByUsername(AuthenticationToken, String, boolean, long)
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
     Collection<CertificateWrapper> getCertificatesByUsername(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
