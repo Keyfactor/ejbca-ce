@@ -616,7 +616,7 @@ public interface RaMasterApi {
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
 
     /**
-     * Edit End Entity information. Can only be used with API version 2 and later.
+     * Edit End Entity information (version for EjbcaWS, that takes a UserDataVOWS)
      *
      * @param authenticationToken the administrator performing the action
      * @param userDataVOWS an UserDataVOWS object with the new information
@@ -782,7 +782,7 @@ public interface RaMasterApi {
      *           invalid (depending on authentication method).
      *
      * @see EstOperationBeanLocal#dispatchRequest(Certificate, String, String, String, String, byte[])
-     * @since RA Master API version 1 (EJBCA 6.8.0)
+     * @since RA Master API version 2 (EJBCA 6.?.?)
      */
     byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
             throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException;
@@ -828,11 +828,10 @@ public interface RaMasterApi {
      * @param authenticationToken the administrator performing the action
      * @param caid  is the issuerdn.hashCode()
      * @return Collection of Certificate, the certificate chain, never null.
-     * @since RA Master API version 4 (EJBCA 6.14.0)
      * @throws AuthorizationDeniedException if client isn't authorized to request
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException;
+    Collection<CertificateWrapper> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException;
 
     /**
      * Finds count of certificates  expiring within a specified time and that have
@@ -1037,7 +1036,7 @@ public interface RaMasterApi {
     * @throws ApprovalRequestExpiredException if one of the approvals have expired, once notified it won't throw it anymore.
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
-   Integer isApprovedWS(AuthenticationToken authenticationToken, int approvalId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
+   Integer isApproved(AuthenticationToken authenticationToken, int approvalId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
 
    /**
     * Checks if a user is authorized to a given resource.
