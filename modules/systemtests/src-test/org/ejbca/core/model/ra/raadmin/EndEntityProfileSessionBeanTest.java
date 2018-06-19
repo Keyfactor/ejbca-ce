@@ -25,16 +25,22 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -46,6 +52,8 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
@@ -54,6 +62,8 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -81,7 +91,9 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-  
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken("EndEntityProfileSessionBeanTest");
     
     @BeforeClass
@@ -290,7 +302,75 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      */
     @Test
     public void test05getAvailableCAsInProfile() throws Exception {
-        // ECA-6685 Implement test.
+        final String caName1 = "test05CA1";
+        final String caName2 = "test05CA2";
+        final String eepProfileName = "test05EndEntityProfile";
+        final EndEntityProfile eeProfile = new EndEntityProfile();
+        int cryptoTokenId1 = -1; 
+        int cryptoTokenId2 = -1;
+        CAToken catoken1 = null;
+        CAToken catoken2 = null;
+        X509CAInfo caInfo1 = null;
+        X509CAInfo caInfo2 = null;
+        try {
+            endEntityProfileSession.addEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            final int eepId = endEntityProfileSession.getEndEntityProfileId(eepProfileName);
+            
+            // Test no available CAs for this EEP.
+            Map<String, Integer> map = endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, eepId);
+            assertTrue("getAvailableCAsInProfile for an EEP with no CAs assigned should return a map with size 0.", map.size() == 0);
+            
+            // Test 1 available CAs for this EEP
+            // Create first CA.
+            cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName1 + "_token", "1024");
+            catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            caInfo1 = getNewCAInfo(caName1, catoken1);
+            caAdminSession.createCA(alwaysAllowToken, caInfo1);
+            eeProfile.setAvailableCAs(Arrays.asList(new Integer[] { caInfo1.getCAId() }));
+            endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            map = endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, eepId);
+            assertTrue("getAvailableCAsInProfile for an EEP with 1 CAs assigned should return a map with size 1.", map.size() == 1);
+            assertTrue("CA name and ID must match.", map.get(caName1) == caInfo1.getCAId());
+                        
+            // Test 2 available CAs for this EEP.
+            // Create second CA.
+            cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName2 + "_token", "1024");
+            catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            caInfo2 = getNewCAInfo(caName2, catoken2);
+            caAdminSession.createCA(alwaysAllowToken, caInfo2);
+            eeProfile.setAvailableCAs(Arrays.asList(new Integer[] { caInfo1.getCAId(), caInfo2.getCAId() }));
+            endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
+            map = endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, eepId);
+            assertTrue("getAvailableCAsInProfile for an EEP with 2 CAs assigned should return a map with size 2.", map.size() == 2);
+            assertTrue("CA name and ID must match.", map.get(caName1) == caInfo1.getCAId());
+            assertTrue("CA name and ID must match.", map.get(caName2) == caInfo2.getCAId());
+        } finally {
+            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, eepProfileName);
+            if (caInfo1 != null) {
+                caSession.removeCA(alwaysAllowToken, caInfo1.getCAId());
+            }
+            if (caInfo2 != null) {
+                caSession.removeCA(alwaysAllowToken, caInfo2.getCAId());
+            }
+            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId1);
+            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, cryptoTokenId1);
+        }
+    }
+    
+    /**
+     * Creates a CAinfo for testing.
+     *  
+     * @param caname The name this CA-info will be assigned
+     * @param catoken The tokeninfo for this CA-info
+     * @return The new X509CAInfo for testing.
+     */
+    private X509CAInfo getNewCAInfo(String caname, CAToken catoken) {
+        final X509CAInfo cainfo = new X509CAInfo("CN="+caname, caname, CAConstants.CA_ACTIVE, 
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
+        cainfo.setDescription("Used for testing CA import and export");
+        cainfo.setExpireTime(new Date(System.currentTimeMillis()+364*24*3600*1000));
+        cainfo.setDeltaCRLPeriod(0 * SimpleTime.MILLISECONDS_PER_HOUR);
+        return cainfo;
     }
     
     /**
