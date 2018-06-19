@@ -287,6 +287,61 @@ public class EndEntityAccessSessionTest extends CaTestCase {
         }
     }
     
+    @Test
+    public void testGetCertificatesBySnAndIssuer() throws Exception {
+        final String username = "fooFindCertificatesBySnAndIssuer";
+        final String caName = "testFindCertificatesBySnAndIssuer";
+        Certificate certificate1 = null;
+        try {
+            // Create test CA and a test user.
+            createTestCA(caName);
+            CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, caName);
+            
+            endEntityManagementSessionRemote.addUser(alwaysAllowToken, username, "foo123", "C=SE, CN=" + username, null, null, true,
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, getTestCAId(caName));
+            
+            // 1. Search for user with no certificates at all.
+            CertificateWrapper result = endEntityAccessSession.getCertificate(alwaysAllowToken, "12345678ABC", caInfo.getSubjectDN());
+            assertTrue("No certificate should result in no certificate found.", result == null);
+            
+            // 1.1 Search for user with certificate.
+            certificate1 = createCertificateForUser(alwaysAllowToken, username);
+            result = endEntityAccessSession.getCertificate(alwaysAllowToken, CertTools.getSerialNumberAsString(certificate1), caInfo.getSubjectDN());
+            assertTrue("A certificate for the user should have been found.", result != null);
+            assertEquals("And it should be the same certificate as stired for this user.", certificate1, result.getCertificate());
+            
+            // 2. Test exceptions thrown.
+            AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken((X509Certificate) certificate1);
+            // 2.1 Search with authorization denied view end entity profile.
+            // Tbd: Could be improved. This simulates the missing access to the CA.
+            try {
+                result = endEntityAccessSession.getCertificate(adminTokenNoAuth, CertTools.getSerialNumberAsString(certificate1), caInfo.getSubjectDN());
+                fail( "An admin with no authorizations should not be able to call this function successfully.");
+            }
+            catch(AuthorizationDeniedException e) {
+                assertTrue("AuthorizationDeniedException excepted.", e instanceof AuthorizationDeniedException);
+            }
+            // 2.2 Search for a non existing CA.
+            try {
+                result = endEntityAccessSession.getCertificate(alwaysAllowToken, CertTools.getSerialNumberAsString(certificate1), "CN=fantasyCA_123");
+                fail( "An admin with no authorizations should not be able to call this function successfully.");
+            }
+            catch(CADoesntExistsException e) {
+                assertTrue("CADoesntExistsException excepted.", e instanceof CADoesntExistsException);
+            }
+        } finally {
+            internalCertificateStoreSession.removeCertificate(certificate1);
+            try {
+                endEntityManagementSessionRemote.revokeAndDeleteUser(alwaysAllowToken, username, RevocationReasons.UNSPECIFIED.ordinal());
+            } catch(Exception e) {
+                // NOOP
+            }
+            removeTestCA(caName);
+        }
+    }
+    
+    
     private void assertFindCertifcateResults(final AuthenticationToken admin, final String username, final int valid, final int invalid) throws Exception {
         Collection<CertificateWrapper> result = endEntityAccessSession.findCertificatesByUsername(alwaysAllowToken, username, false, System.currentTimeMillis());
         assertEquals("Certificate search for user with " + valid + " certificate(s) should return a collection with " + valid + " item(s) (valid=false).", valid , result.size());

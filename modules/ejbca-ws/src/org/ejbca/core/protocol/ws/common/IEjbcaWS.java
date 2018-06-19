@@ -995,7 +995,7 @@ public interface IEjbcaWS {
 	boolean deleteUserDataFromSource(List<String> userDataSourceNames, String searchString, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException, EjbcaException;
 
 	/**
-	 * Fetches issued certificate.
+	 * Fetches an issued certificate. If the request is proxied, the certificate on the first proxied instance found is returned.
 	 *
 	 * Authorization requirements:<pre>
 	 * - A valid certificate

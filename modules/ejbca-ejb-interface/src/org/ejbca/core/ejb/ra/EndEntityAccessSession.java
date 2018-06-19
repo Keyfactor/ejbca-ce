@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
@@ -132,4 +133,24 @@ public interface EndEntityAccessSession {
       */
      Collection<CertificateWrapper> findCertificatesByUsername(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now)
              throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
+     
+     /**
+      * Fetches an issued certificate.
+      *
+      * Authorization requirements:<pre>
+      * - A valid certificate
+      * - /ca_functionality/view_certificate
+      * - /ca/&lt;of the issing CA&gt;
+      * </pre>
+      *
+      * @param authenticationToken the administrator performing the action.
+      * @param certSNinHex the certificate serial number in hexadecimal representation.
+      * @param issuerDN the issuer of the certificate.
+      * @return the certificate wrapper or null if certificate couldn't be found.
+      * @throws AuthorizationDeniedException if the calling administrator isn't authorized to view the certificate.
+      * @throws CADoesntExistsException if a referenced CA does not exist.
+      * @throws EjbcaException any EjbcaException.
+      */
+     public CertificateWrapper getCertificate(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN)
+             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 }
