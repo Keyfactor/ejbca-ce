@@ -1940,14 +1940,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public void customLog(final AuthenticationToken authenticationToken, final int level, final String type, final String caName, final String username, final String certificateSn,
+    public void customLog(final AuthenticationToken authenticationToken, final String type, final String caName, final String username, final String certificateSn,
     		final String msg, final EventType event) throws AuthorizationDeniedException, CADoesntExistsException {
         AuthorizationDeniedException authorizationDeniedException = null;
         CADoesntExistsException caDoesntExistsException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    raMasterApi.customLog(authenticationToken, level, type, caName, username, certificateSn, msg, event);
+                    raMasterApi.customLog(authenticationToken, type, caName, username, certificateSn, msg, event);
                     return;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
