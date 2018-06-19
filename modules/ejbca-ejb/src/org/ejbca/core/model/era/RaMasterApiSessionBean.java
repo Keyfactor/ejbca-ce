@@ -2309,9 +2309,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public void customLog(final AuthenticationToken authenticationToken, final int level, final String type, final String caName, final String username, final String certificateSn,
+    public void customLog(final AuthenticationToken authenticationToken, final String type, final String caName, final String username, final String certificateSn,
     		final String msg, final EventType event) throws AuthorizationDeniedException, CADoesntExistsException {
-        caAdminSession.customLog(authenticationToken, level, type, caName, username, certificateSn, msg, event);
+        caAdminSession.customLog(authenticationToken, type, caName, username, certificateSn, msg, event);
     }
 
     @Override
