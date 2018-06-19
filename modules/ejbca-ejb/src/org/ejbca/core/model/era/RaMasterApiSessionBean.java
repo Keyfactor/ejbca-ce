@@ -299,7 +299,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
-    private static final int RA_MASTER_API_VERSION = 4;
+    /**
+     * Defines the current RA Master API version.
+     * 
+     * <p>List of versions:
+     * <table>
+     * <tr><th>0<td>=<td>6.6.0
+     * <tr><th>1<td>=<td>6.8.0
+     * <tr><th>2<td>=<td>6.11.0
+     * <tr><th>3<td>=<td>6.12.0
+     * <tr><th>4<td>=<td>6.14.0
+     */
+    private static final int RA_MASTER_API_VERSION = 4; // 6.14.0
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -2268,16 +2279,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Collection<Certificate> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException {
+    public Collection<CertificateWrapper> getCertificateChain(final AuthenticationToken authenticationToken, int caid) throws AuthorizationDeniedException, CADoesntExistsException {
         if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() +caid)) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
             throw new AuthorizationDeniedException(msg);
         }
         CAInfo caInfo = caSession.getCAInfoInternal(caid);
         if(caInfo == null) {
-            throw new CADoesntExistsException("CA doesn't exist");
+            throw new CADoesntExistsException("CA with ID " + caid + " doesn't exist");
         }
-        return caInfo.getCertificateChain();
+        return EJBTools.wrapCertCollection(caInfo.getCertificateChain());
     }
 
     private Date getDate(long days) {
@@ -2444,7 +2455,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Integer isApprovedWS(AuthenticationToken authenticationToken, int approvalId)
+    public Integer isApproved(AuthenticationToken authenticationToken, int approvalId)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
         return approvalSession.isApproved(approvalId);
     }

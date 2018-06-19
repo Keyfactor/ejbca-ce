@@ -2353,7 +2353,7 @@ public class EjbcaWS implements IEjbcaWS {
         try {
             final AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
-            final Integer requestResult = raMasterApiProxyBean.isApprovedWS(admin, approvalId);
+            final Integer requestResult = raMasterApiProxyBean.isApproved(admin, approvalId);
             int result;
             if (requestResult != null) {
                 result = requestResult;
