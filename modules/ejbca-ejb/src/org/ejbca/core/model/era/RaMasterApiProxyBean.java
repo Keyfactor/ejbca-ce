@@ -1563,9 +1563,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (caDoesntExistsException != null) {
                 throw caDoesntExistsException;
             }
-            if (noSuchEndEntityException != null) {
-                throw noSuchEndEntityException;
-            }
             if (approvalException != null) {
                 throw approvalException;
             }
@@ -1577,6 +1574,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
             if (couldNotRemoveEndEntityException != null) {
                 throw couldNotRemoveEndEntityException;
+            }
+            if (noSuchEndEntityException != null) {
+                throw noSuchEndEntityException;
             }
         }
     }
