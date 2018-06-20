@@ -2218,6 +2218,26 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public byte[] getLatestCrlByIssuerDn(AuthenticationToken authenticationToken, String issuerDn, boolean deltaCRL) throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
+        CADoesntExistsException caDoesntExistsException = null;
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.getLatestCrlByIssuerDn(authenticationToken, issuerDn, deltaCRL);
+                } catch (CADoesntExistsException e) {
+                    caDoesntExistsException = e;
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
+        }
+        return null;
+    }
+
+    @Override
     public Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
         for (RaMasterApi raMasterApi : raMasterApis) {

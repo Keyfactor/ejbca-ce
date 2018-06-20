@@ -854,7 +854,7 @@ public interface RaMasterApi {
     /**
      * Retrieves a collection of certificates as byte array generated for a user.
      *
-     * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSession#findCertificatesByUsername(AuthenticationToken, String, boolean, long)
+     * @see org.ejbca.core.ejb.ra.EndEntityAccessSession#findCertificatesByUsername(AuthenticationToken, String, boolean, long)
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
     Collection<CertificateWrapper> getCertificatesByUsername(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
@@ -870,7 +870,7 @@ public interface RaMasterApi {
     /**
      * Fetches the IDs and names of available CAs in an end entity profile.
      *
-     * @see EndEntityProfileSessionLocal#getAvailableCAsInProfile(AuthenticationToken admin, final int entityProfileId)
+     * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getAvailableCAsInProfile(AuthenticationToken admin, int entityProfileId)
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
     Map<String,Integer> getAvailableCAsInProfile(AuthenticationToken authenticationToken, final int entityProfileId) throws AuthorizationDeniedException, EjbcaException;
@@ -1008,6 +1008,24 @@ public interface RaMasterApi {
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
     byte[] getLatestCrl(AuthenticationToken authenticationToken, String caName, boolean deltaCRL) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+
+    /**
+     * Fetches the latest CRL by issuerDn.
+     *
+     * Authorization requirements:<pre>
+     * - /ca/&lt;caid&gt;
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @param issuerDn the subjectDn in EJBCA of the CA that issued the desired CRL.
+     * @param deltaCRL false to fetch a full CRL, true to fetch a deltaCRL (if issued).
+     * @return the latest CRL issued for the CA as a DER encoded byte array.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws EjbcaException any EjbcaException.
+     * @throws CADoesntExistsException if a referenced CA does not exist.
+     * @since RA Master API version 4 (EJBCA 6.14.0)
+     */
+    byte[] getLatestCrlByIssuerDn(AuthenticationToken authenticationToken, String issuerDn, boolean deltaCRL) throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException;
 
     /**
     * Fetches the remaining number of approvals for the given approval request.
