@@ -2449,6 +2449,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public byte[] getLatestCrlByIssuerDn(AuthenticationToken authenticationToken, String issuerDn, boolean deltaCRL) throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
+        final CAInfo cainfo = caSession.getCAInfo(authenticationToken, issuerDn.hashCode());
+        if (cainfo == null) {
+            throw new CADoesntExistsException("CA with subjectDn " + issuerDn + " doesn't exist.");
+        }
+        return crlStoreSession.getLastCRL(issuerDn, deltaCRL);
+    }
+
+    @Override
     public Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
         return approvalSession.getRemainingNumberOfApprovals(requestId);
