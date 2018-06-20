@@ -3,7 +3,7 @@ package org.ejbca.ui.web.rest.api.io.response;
 /**
  * A class representing general information about crl.
  *
- * @version $Id: CrlRestResponse.java $
+ * version $Id: CaRestResource.java 29283 2018-06-19 12:25:27Z jekaterina_b_helmes $
  */
 public class CrlRestResponse {
     private byte[] crl;
