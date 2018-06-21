@@ -1456,7 +1456,11 @@ public class EjbcaWebBean implements Serializable {
     public boolean isEstConfigurationPresent() {
         return enterpriseEjbLocalHelper.isRunningEnterprise();
     }
-
+    
+    public boolean isRestConfigurationPresent() {
+        return enterpriseEjbLocalHelper.isRunningEnterprise();
+    }
+    
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {
             reloadEstConfiguration();
