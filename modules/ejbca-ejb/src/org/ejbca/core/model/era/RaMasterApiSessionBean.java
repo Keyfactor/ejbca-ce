@@ -2353,6 +2353,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndType(AuthenticationToken authenticationToken, long days, int certificateType, int maxNumberOfResults)
             throws AuthorizationDeniedException, EjbcaException {
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate")) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource",
+                    StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate", null);
+            throw new AuthorizationDeniedException(msg);
+        }
         final Date findDate = new Date();
         final long millis = (days * 24 * 60 * 60 * 1000);
         findDate.setTime(findDate.getTime() + millis);
@@ -2363,6 +2368,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndIssuer(AuthenticationToken authenticationToken, long days, String issuerDN, int maxNumberOfResults)
             throws AuthorizationDeniedException, EjbcaException {
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate")) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource",
+                    StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate", null);
+            throw new AuthorizationDeniedException(msg);
+        }
         final Date findDate = new Date();
         final long millis = (days * 24 * 60 * 60 * 1000);
         findDate.setTime(findDate.getTime() + millis);
