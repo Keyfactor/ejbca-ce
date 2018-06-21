@@ -2704,14 +2704,14 @@ public class EjbcaWS implements IEjbcaWS {
         if (log.isTraceEnabled()) {
             log.trace(">getLastCAChain: "+caname);
         }
-        final List<Certificate> retval = new ArrayList<>();
-        AuthenticationToken admin = getAdmin();
+        final List<Certificate> result = new ArrayList<>();
+        final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
-            final List<CertificateWrapper> certificates = raMasterApiProxyBean.getLastCaChain(admin, caname);
+            final Collection<CertificateWrapper> certificates = raMasterApiProxyBean.getLastCaChain(admin, caname);
             for (final CertificateWrapper certWrapper : certificates) {
-                retval.add(new Certificate(certWrapper.getCertificate()));
+                result.add(new Certificate(certWrapper.getCertificate()));
             }
         } catch (CertificateEncodingException e) {
             throw getInternalException(e, logger);
@@ -2724,7 +2724,7 @@ public class EjbcaWS implements IEjbcaWS {
         if (log.isTraceEnabled()) {
             log.trace("<getLastCAChain: "+caname);
         }
-        return retval;
+        return result;
     }
 
     private static EjbcaException getInternalException(Throwable t, IPatternLogger logger) {
