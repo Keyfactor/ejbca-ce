@@ -19,6 +19,7 @@ import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 
 /*! \mainpage The CESeCore project
 *
@@ -185,6 +186,23 @@ public interface CaSession {
      */
     CAInfo getCAInfo(AuthenticationToken admin, int caid) throws  AuthorizationDeniedException;
 
+    /**
+     * Fetches the current certificate chain for a CA.
+     *
+     * <pre>
+     * <b>Authorization requirements:</b>
+     * - /administrator
+     * - /ca/&lt;ca in question&gt;
+     * </pre>
+     *
+     * @param caName the unique name of the CA whose certificate chain should be returned.
+     * @return a list of X509 Certificates or CVC Certificates with the root certificate last, or an empty list if the CA's status is "Waiting for certificate response".
+     * @throws AuthorizationDeniedException if the client does not fulfill the authorization requirements specified above.
+     * @throws CADoesntExistsException if the CA with the CA name given as input does not exist.
+     */
+    Collection<CertificateWrapper> getCaChain(AuthenticationToken authenticationToken, String caName)
+            throws AuthorizationDeniedException, CADoesntExistsException;
+    
     /**
      * Method used to remove a CA from the system. You should first check that
      * the CA isn't used by any EndEntity, Profile or AccessRule before it is

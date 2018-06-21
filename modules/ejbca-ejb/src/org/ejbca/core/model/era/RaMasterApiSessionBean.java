@@ -2381,18 +2381,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public List<CertificateWrapper> getLastCaChain(AuthenticationToken authenticationToken, String caName)
-            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException {
-        final CAInfo info = caSession.getCAInfo(authenticationToken, caName);
-        if(info == null) {
-            throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
-        }
-        final List<CertificateWrapper> result = new ArrayList<>();
-        if (info.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE){
-            return result;
-        }
-        result.addAll(EJBTools.wrapCertCollection(info.getCertificateChain()));
-        return result;
+    public Collection<CertificateWrapper> getLastCaChain(final AuthenticationToken authenticationToken, final String caName)
+            throws AuthorizationDeniedException, CADoesntExistsException {
+        return caSession.getCaChain(authenticationToken, caName);
     }
 
     @Override
