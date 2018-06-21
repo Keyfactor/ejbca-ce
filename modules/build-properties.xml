@@ -438,6 +438,10 @@
 		<available file="${mod.ejbca-entity.path}/src-cli/org" type="dir"/>
 	</condition>
 	
+    <condition property="mod.ejbca-rest-api.exists">
+        <available file="${mod.ejbca-rest-api.path}/build.xml"/>
+    </condition>
+	
     <condition property="mod.statedump.exists">
         <available file="${mod.statedump.path}/build.xml" />
     </condition>
