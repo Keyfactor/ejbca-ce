@@ -2017,7 +2017,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public Collection<CertificateWrapper> getCertificatesByUsername(final AuthenticationToken authenticationToken, final String username, final boolean onlyValid, final long now)
-            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
+            throws AuthorizationDeniedException, CertificateEncodingException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        CertificateEncodingException certificateEncodingException = null;
         final Map<String, CertificateWrapper> result = new TreeMap<>();
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
@@ -2028,8 +2030,26 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    log.info( "Authorization to get certificates by username for proxied request on CA was denied: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (CertificateEncodingException e) {
+                    log.info( "Certificate found by username for proxied request on CA could not be encoded: " + e.getMessage());
+                    if (certificateEncodingException == null) {
+                        certificateEncodingException = e;
+                    }
+                    // Just try next implementation
                 }
             }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (certificateEncodingException != null) {
+            throw certificateEncodingException;
         }
         return result.values();
     }

@@ -641,7 +641,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     
     @Override
     public Collection<CertificateWrapper> findCertificatesByUsername(final AuthenticationToken authenticationToken, final String username, final boolean onlyValid, final long now)
-            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
+            throws AuthorizationDeniedException, CertificateEncodingException {
         if (log.isDebugEnabled()) {
             log.debug( "Find certificates by username requested by " + authenticationToken.getUniqueId());
         }

@@ -129,10 +129,9 @@ public interface EndEntityAccessSession {
       * @return a collection of certificate wrappers or an empty list if no certificates, or no user, could be found.
       * @throws AuthorizationDeniedException if client isn't authorized to request.
       * @throws CertificateEncodingException if a certificate could not be encoded.
-      * @throws EjbcaException any EjbcaException.
       */
      Collection<CertificateWrapper> findCertificatesByUsername(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now)
-             throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
+             throws AuthorizationDeniedException, CertificateEncodingException;
      
      /**
       * Fetches an issued certificate.

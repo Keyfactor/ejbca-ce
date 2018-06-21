@@ -2316,7 +2316,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public Collection<CertificateWrapper> getCertificatesByUsername(final AuthenticationToken authenticationToken, final String username, final boolean onlyValid, final long now)
-            throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException {
+            throws AuthorizationDeniedException, CertificateEncodingException {
         return endEntityAccessSession.findCertificatesByUsername(authenticationToken, username, onlyValid, now);
     }
 
