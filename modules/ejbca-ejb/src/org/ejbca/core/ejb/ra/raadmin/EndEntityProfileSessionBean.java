@@ -40,7 +40,6 @@ import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -407,7 +406,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Map<String, Integer> getAvailableCAsInProfile(final AuthenticationToken admin, final int entityProfileId)
-            throws AuthorizationDeniedException, EjbcaException {
+            throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         final EndEntityProfile profile = getEndEntityProfileNoClone(entityProfileId);
         final TreeMap<String,Integer> result = new TreeMap<>();
         if (profile != null) {
@@ -420,6 +419,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                     result.put(name, id);
                 }
             }
+        } else {
+            throw new EndEntityProfileNotFoundException(entityProfileId);
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("Found " + result + " CAs for end entity profile with ID " + entityProfileId + " requested by " + admin.getUniqueId());
