@@ -975,6 +975,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().isEstConfigurationPresent();
     }
 
+    /** @return true if REST is enabled. Should be false for EJBCA CE */
+    public boolean isRestAvailable() {
+        return getEjbcaWebBean().isRestConfigurationPresent();
+    }
+    
     public class ProtocolGuiInfo {
         private String protocol;
         private String url;
@@ -1014,6 +1019,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.EST.getName()) && !isEstAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST.getName()) && !isRestAvailable()) {
                 available = false;
             }
             return available;
