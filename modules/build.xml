@@ -199,7 +199,7 @@
         <ant antfile="${mod.acme.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 
-    <target name="ejbca-rest-api-clean" if="${ejbca-rest-api.exists}">
+    <target name="ejbca-rest-api-clean">
         <ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 
@@ -444,7 +444,7 @@
 		<ant antfile="${mod.acme.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-rest-api" if="ejbca-rest-api.exists.true" description="Build EJBCA rest api">
+	<target name="ejbca-rest-api" description="Build EJBCA rest api">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -598,7 +598,7 @@
 	</target>
 
 
-	<target name="ejbca-rest-api-war" if="${ejbca-rest-api.exists}" depends="ejbca-common-web" description="Build the Ejbca rest api WAR">
+	<target name="ejbca-rest-api-war" depends="ejbca-common-web" description="Build the Ejbca rest api WAR">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="false">
 				<property name="runoncesetup.hasrun" value="true"/>
 				<property name="external-deps-satfisfied" value="isset"/>
