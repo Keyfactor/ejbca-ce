@@ -132,6 +132,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CTLogException;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -1374,8 +1375,11 @@ public class X509CA extends CA implements Serializable {
         // Verify any Signed Certificate Timestamps (SCTs) in the certificate before returning. If one of the (embedded) SCTs does
         // not verify over the final certificate, it won't validate in the browser and we don't want to issue such certificates.
         if (ct != null) {
-            ct.allSctsAreValidOrThrow(cert, getCertificateChain(),
-                certGenParams == null ? null : certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs().values());
+            Collection<CTLogInfo> ctLogs = 
+                    (certGenParams == null || certGenParams.getCTSubmissionConfigParams() == null || certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs() == null) 
+                    ? null 
+                    : certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs().values();
+            ct.allSctsAreValidOrThrow(cert, getCertificateChain(), ctLogs);
         }
 
         //Sub CA certificates check: Check AKI against parent CA SKI and IssuerDN against parent CA SubjectDN
