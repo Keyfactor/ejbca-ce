@@ -36,6 +36,9 @@ public class EndEntityProfileNotFoundException extends Exception {
 
     public EndEntityProfileNotFoundException(Throwable cause) {
         super(cause);
-    } 
-
+    }
+    
+    public EndEntityProfileNotFoundException(final int endEntityProfileId) {
+        super("Could not find end entity profile with ID " + endEntityProfileId + ".");
+    }
 }
