@@ -1,16 +1,20 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
  *                                                                       *
- *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General Public           *
- *  License as published by the Free Software Foundation; either         *
- *  version 2.1 of the License, or any later version.                    *
- *                                                                       *
- *  See terms of license at gnu.org.                                     *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           * 
+ *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.web.rest.api.helpers;
+
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Properties;
 
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
@@ -22,10 +26,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.util.*;
 
 /**
  * A helper class to create a test CAInfo object using builder pattern.

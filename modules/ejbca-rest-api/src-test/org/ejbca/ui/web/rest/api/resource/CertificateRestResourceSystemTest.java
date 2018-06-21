@@ -1,16 +1,27 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
  *                                                                       *
- *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General Public           *
- *  License as published by the Free Software Foundation; either         *
- *  version 2.1 of the License, or any later version.                    *
- *                                                                       *
- *  See terms of license at gnu.org.                                     *
+ *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
+ *  The use of the Proprietary Modules are subject to specific           * 
+ *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.web.rest.api.resource;
+
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.security.KeyStore;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -28,6 +39,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
@@ -49,21 +61,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.cesecore.util.Base64;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
-import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.security.KeyStore;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
 
 /**
  * A unit test class for CertificateRestResource to test its content.
