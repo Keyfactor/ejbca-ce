@@ -2241,20 +2241,35 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public List<CertificateWrapper> getLastCaChain(AuthenticationToken authenticationToken, String caName)
-            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, CertificateEncodingException {
+    public Collection<CertificateWrapper> getLastCaChain(final AuthenticationToken authenticationToken, final String caName)
+            throws AuthorizationDeniedException, CADoesntExistsException {
         final List<CertificateWrapper> result = new ArrayList<>();
+        AuthorizationDeniedException authorizationDeniedException = null;
         CADoesntExistsException caDoesntExistException = null;
-        for (RaMasterApi raMasterApi : raMasterApis) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            // Try locally since on RA local CAs are visible only for superadmin role (may be a bug!).
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     return raMasterApi.getLastCaChain(authenticationToken, caName);
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Authorization was denied to access CA with name " + caName, e);
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
                 } catch (CADoesntExistsException e) {
-                    caDoesntExistException = e;
+                    log.info("CA with name " + caName + " for proxied request on CA could not be found.", e);
+                    if (caDoesntExistException == null) {
+                        caDoesntExistException = e;
+                    }
+                    // Just try next implementation
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
         }
         if (caDoesntExistException != null) {
             throw caDoesntExistException;
