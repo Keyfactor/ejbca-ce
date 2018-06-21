@@ -457,20 +457,20 @@
 				replacement-context-root="/ejbca/acme"
 		/>
 		<war-replacement-in-module
-						replacement-tag="!--@est.war@-->"
-						replacement-file="${eardd.src}/META-INF/application.xml"
-						replacement-enabled="${mod.est.exists}"
-						replacement-web-uri="est.war"
-						replacement-context-root="/.well-known/est"
+                	replacement-tag="!--@est.war@-->"
+                	replacement-file="${eardd.src}/META-INF/application.xml"
+	                replacement-enabled="${mod.est.exists}"
+        	        replacement-web-uri="est.war"
+			replacement-context-root="/.well-known/est"
 		/>
 		<war-replacement-in-module
 				replacement-tag="!--@ejbca-rest-api.war@-->"
 				replacement-file="${eardd.src}/META-INF/application.xml"
-				replacement-enabled="true"
+			    replacement-enabled="${mod.ejbca-rest-api.exists}"
 				replacement-web-uri="ejbca-rest-api.war"
 				replacement-context-root="/ejbca/ejbca-rest-api"
 		/>
-
+		
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
