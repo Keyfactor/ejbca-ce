@@ -2064,25 +2064,25 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public Map<String, Integer> getAvailableCAsInProfile(final AuthenticationToken authenticationToken, final int entityProfileId)
-            throws AuthorizationDeniedException, EjbcaException {
-        EjbcaException ejbcaException = null;
+            throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
+        EndEntityProfileNotFoundException endEntityProfileNotFoundException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     return raMasterApi.getAvailableCAsInProfile(authenticationToken, entityProfileId);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
-                } catch (EjbcaException e) {
+                } catch (EndEntityProfileNotFoundException e) {
                     log.info( "CAs associated with end entity profile " + entityProfileId + " for proxied request on CA could not be found: " + e.getMessage());
-                    if (ejbcaException == null) {
-                    	ejbcaException = e;
+                    if (endEntityProfileNotFoundException == null) {
+                        endEntityProfileNotFoundException = e;
                     }
                     // Just try next implementation
                 }
             }
         }
-        if (ejbcaException != null) {
-        	throw ejbcaException;
+        if (endEntityProfileNotFoundException != null) {
+        	throw endEntityProfileNotFoundException;
         }
         return new TreeMap<String, Integer>();
     }

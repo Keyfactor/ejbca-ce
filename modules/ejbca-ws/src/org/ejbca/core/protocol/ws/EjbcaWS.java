@@ -2483,6 +2483,8 @@ public class EjbcaWS implements IEjbcaWS {
             result.putAll(raMasterApiProxyBean.getAvailableCAsInProfile(admin, entityProfileId));
         } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
+        } catch (EndEntityProfileNotFoundException e) {
+            // NOOP.
         } finally {
             logger.writeln();
             logger.flush();

@@ -316,11 +316,12 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             endEntityProfileSession.addEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             final int eepId = endEntityProfileSession.getEndEntityProfileId(eepProfileName);
             
-            // Test no available CAs for this EEP.
+            // 1. Test results.
+            // 1.1 Test no available CAs for this EEP.
             Map<String, Integer> map = endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, eepId);
             assertTrue("getAvailableCAsInProfile for an EEP with no CAs assigned should return a map with size 0.", map.size() == 0);
             
-            // Test 1 available CAs for this EEP
+            // 1.2 Test 1 available CAs for this EEP
             // Create first CA.
             cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName1 + "_token", "1024");
             catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -332,7 +333,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             assertTrue("getAvailableCAsInProfile for an EEP with 1 CAs assigned should return a map with size 1.", map.size() == 1);
             assertTrue("CA name and ID must match.", map.get(caName1) == caInfo1.getCAId());
                         
-            // Test 2 available CAs for this EEP.
+            // 1.3 Test 2 available CAs for this EEP.
             // Create second CA.
             cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(alwaysAllowToken, "foo123".toCharArray(), caName2 + "_token", "1024");
             catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -344,6 +345,19 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             assertTrue("getAvailableCAsInProfile for an EEP with 2 CAs assigned should return a map with size 2.", map.size() == 2);
             assertTrue("CA name and ID must match.", map.get(caName1) == caInfo1.getCAId());
             assertTrue("CA name and ID must match.", map.get(caName2) == caInfo2.getCAId());
+            
+            // 2. Test exception handling.
+            // 2.1 Test end entity profile not found.
+            final int notExistingEepId = eepId + 1234;
+            try {
+                assertNull(endEntityProfileSession.getEndEntityProfile(notExistingEepId));
+                endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, notExistingEepId);
+                fail("Request all CAs associated with an ent entity profile which does not exist must throw an exception.");
+            } catch(Exception e) {
+                assertTrue("Request all CAs associated with an ent entity profile which does not exist must throw an EndEntityProfileNotFoundException: " + notExistingEepId , e instanceof EndEntityProfileNotFoundException);
+                assertEquals("Could not find end entity profile with ID " + notExistingEepId + ".", e .getMessage());
+            }
+            
         } finally {
             endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, eepProfileName);
             if (caInfo1 != null) {

@@ -2328,7 +2328,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public Map<String, Integer> getAvailableCAsInProfile(final AuthenticationToken authenticationToken, final int entityProfileId)
-            throws AuthorizationDeniedException, EjbcaException {
+            throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         return endEntityProfileSession.getAvailableCAsInProfile(authenticationToken, entityProfileId);
     }
 
