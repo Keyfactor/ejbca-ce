@@ -1355,13 +1355,6 @@ public class EjbcaWS implements IEjbcaWS {
         try{
 			final AuthenticationToken admin = getAdmin();
             logAdminName(admin, logger);
-//            // Check caid
-//            int caid = userdata.getCAId();
-//            caSession.verifyExistenceOfCA(caid);
-//            if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
-//                final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
-//                throw new AuthorizationDeniedException(msg);
-//            }
             raMasterApiProxyBean.revokeUser(admin, username, reason, deleteUser);
 		} catch (NoSuchEndEntityException e) {
 		    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));

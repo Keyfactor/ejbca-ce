@@ -2161,6 +2161,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final int maxNumberOfResults, final int offset) throws AuthorizationDeniedException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
         AuthorizationDeniedException authorizationDeniedException = null;
+        boolean oneSucceeded = false;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
@@ -2168,14 +2169,16 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     for (CertificateWrapper certificate : certificates) {
                         result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
                     }
+                    oneSucceeded = true;
                 } catch (AuthorizationDeniedException e) {
+                    log.debug("Authorization was denied in getCertificatesByExpirationTime", e);
                     authorizationDeniedException = e;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        if (authorizationDeniedException != null) {
+        if (!oneSucceeded && authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
         return result.values();
@@ -2186,6 +2189,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throws AuthorizationDeniedException, EjbcaException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
         AuthorizationDeniedException authorizationDeniedException = null;
+        boolean oneSucceeded = false;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
@@ -2193,14 +2197,16 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     for (CertificateWrapper certificate : certificates) {
                         result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
                     }
+                    oneSucceeded = true;
                 } catch (AuthorizationDeniedException e) {
+                    log.debug("Authorization was denied in getCertificatesByExpirationTime", e);
                     authorizationDeniedException = e;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        if (authorizationDeniedException != null) {
+        if (!oneSucceeded && authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
         return result.values();
@@ -2211,6 +2217,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throws AuthorizationDeniedException, EjbcaException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
         AuthorizationDeniedException authorizationDeniedException = null;
+        boolean oneSucceeded = false;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
@@ -2218,14 +2225,16 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     for (CertificateWrapper certificate : certificates) {
                         result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
                     }
+                    oneSucceeded = true;
                 } catch (AuthorizationDeniedException e) {
+                    log.debug("Authorization was denied in getCertificatesByExpirationTime", e);
                     authorizationDeniedException = e;
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        if (authorizationDeniedException != null) {
+        if (!oneSucceeded && authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
         return result.values();
