@@ -877,7 +877,7 @@ public interface RaMasterApi {
      * @see org.ejbca.core.ejb.ra.EndEntityAccessSession#findCertificatesByUsername(AuthenticationToken, String, boolean, long)
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    Collection<CertificateWrapper> getCertificatesByUsername(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException;
+    Collection<CertificateWrapper> getCertificatesByUsername(AuthenticationToken authenticationToken, String username, boolean onlyValid, long now) throws AuthorizationDeniedException, CertificateEncodingException;
 
     /**
      * Fetches available certificate profiles in an end entity profile.
