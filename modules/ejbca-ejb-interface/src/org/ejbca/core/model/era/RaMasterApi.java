@@ -1042,11 +1042,11 @@ public interface RaMasterApi {
     * @return the remaining number of approvals for this request (with 0 meaning that the request has passed or -1 if the request has been denied) or null if the request was proxied to another instance and the request has failed.
     * @throws AuthorizationDeniedException if client isn't authorized to request.
     * @throws ApprovalException if a request of the given ID didn't exist.
-    * @throws ApprovalRequestExpiredException if approval request was expired before having a definite status
+    * @throws ApprovalRequestExpiredException if approval request was expired before having a definite status.
     * @since RA Master API version 4 (EJBCA 6.14.0)
     *
     */
-   Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
+   Integer getRemainingNumberOfApprovals(AuthenticationToken authenticationToken, int requestId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
 
    /**
     * Looks up if a requested action has been approved.
