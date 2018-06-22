@@ -2440,8 +2440,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] getLatestCrl(AuthenticationToken authenticationToken, String caName, boolean deltaCRL)
-            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+    public byte[] getLatestCrl(final AuthenticationToken authenticationToken, final String caName, final boolean deltaCRL)
+            throws AuthorizationDeniedException, CADoesntExistsException {
         final CAInfo cainfo = caSession.getCAInfo(authenticationToken, caName);
         if (cainfo == null) {
             throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
