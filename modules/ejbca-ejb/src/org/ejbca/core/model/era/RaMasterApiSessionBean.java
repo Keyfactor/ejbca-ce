@@ -2459,7 +2459,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId)
+    public Integer getRemainingNumberOfApprovals(final AuthenticationToken authenticationToken, final int requestId)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
         return approvalSession.getRemainingNumberOfApprovals(requestId);
     }
