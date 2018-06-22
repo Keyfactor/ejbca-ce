@@ -1012,10 +1012,9 @@ public interface RaMasterApi {
      * @return the latest CRL issued for the CA as a DER encoded byte array.
      * @throws AuthorizationDeniedException if client isn't authorized to request.
      * @throws CADoesntExistsException if a referenced CA does not exist.
-     * @throws EjbcaException any EjbcaException.
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    byte[] getLatestCrl(AuthenticationToken authenticationToken, String caName, boolean deltaCRL) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+    byte[] getLatestCrl(AuthenticationToken authenticationToken, String caName, boolean deltaCRL) throws AuthorizationDeniedException, CADoesntExistsException;
 
     /**
      * Fetches the latest CRL by issuerDn.

@@ -2528,7 +2528,7 @@ public class EjbcaWS implements IEjbcaWS {
     public byte[] getLatestCRL(final String caname, final boolean deltaCRL) throws CADoesntExistsException, EjbcaException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         try {
-            AuthenticationToken admin = getAdmin(true);
+            final AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
             return raMasterApiProxyBean.getLatestCrl(admin, caname, deltaCRL);
         } catch (AuthorizationDeniedException e) {
