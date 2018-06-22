@@ -2437,6 +2437,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public byte[] getProfile(final AuthenticationToken authenticationToken, final int profileId, final String profileType)
             throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException {
+        AuthorizationDeniedException authorizationDeniedException = null;
         EjbcaException ejbcaException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
@@ -2444,7 +2445,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     return raMasterApi.getProfile(authenticationToken, profileId, profileType);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
+                } catch (AuthorizationDeniedException  e) {
+                    log.info("Authorization was denied to access the profile with ID " + profileId + " and type " + profileType + " for proxied request on CA.");
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
                 } catch (EjbcaException  e) {
+                    log.info("Profile with ID " + profileId + " and type " + profileType + " could not be found for proxied request on CA.");
                     if (ejbcaException == null) {
                         ejbcaException = e;
                     }
@@ -2452,8 +2460,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
+        // UnknownProfileTypeException and technical errors (IOException) are not to catch here.
         if (ejbcaException != null) {
             throw ejbcaException;
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
         }
         return null;
     }
