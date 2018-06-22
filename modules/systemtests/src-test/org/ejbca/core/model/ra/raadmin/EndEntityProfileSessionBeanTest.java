@@ -20,6 +20,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.beans.XMLEncoder;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -31,6 +34,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
+import org.cesecore.ErrorCode;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -52,6 +56,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
@@ -63,10 +68,12 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -735,9 +742,53 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             log.trace("<testAuthorization");
         }
     }
-
+        
     @Test
-    public void testGetProfileByIdAndType() throws Exception {
-        // ECA-6685 Implement test.
+    public void test05GetEndEntityProfileByIdAndType() throws Exception {
+        log.trace(">test05GetEndEntityProfileByIdAndType()");
+
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile("TEST");
+        assertNotNull("The end entity profile stored must exist for this test. Check sequence of tests.", profile);
+        int profileId = -1;
+        try {
+            profileId = endEntityProfileSession.getEndEntityProfileId("TEST");
+        } catch (EndEntityProfileNotFoundException e) {
+            fail( "The end entity profile stored must exist for this test. Check sequence of tests.");
+        }
+        
+        // 1. Test get for type 'eep'.
+        byte[] profile1 = endEntityProfileSession.getProfile(alwaysAllowToken, profileId, "eep");
+        assertNotNull("The end entity profile stored must have been retrieved by ID and type 'eep' as well.", profile1);
+
+        // 2 Test exception handling.
+        // 2.1 Test non existing profile.
+        final int notExistingId = -2342999;
+        profile = endEntityProfileSession.getEndEntityProfile(notExistingId);
+        if (null != profile) {
+            try {
+                profile1 = endEntityProfileSession.getProfile(alwaysAllowToken, notExistingId, "eep");
+                fail("Try to load a non existing EEP should throw an exception: " + profile1);
+            } catch(Exception e) {
+                assertTrue(e instanceof EjbcaException);
+                assertEquals("The EjbcaException thrown if en EEP was not found must have the desired error code.", 
+                        ErrorCode.EE_PROFILE_NOT_EXISTS, ((EjbcaException) e).getErrorCode());
+                assertEquals("The EjbcaException thrown if en EEP was not found must have the desired error message.", 
+                        "Could not find end entity profile with ID '" + profileId + "' in the database.", e.getMessage());
+            }
+        }
+        // 2.2 Test non existing profile type.
+        final String notExistingType = "eepFantasyTypeThatShouldNotExist";
+        try {
+            profile1 = endEntityProfileSession.getProfile(alwaysAllowToken, profileId, notExistingType);
+            fail("Try to load an existing EEP (with wrong type '" + notExistingType + "') should throw an exception: " + profile1);
+        } catch(Exception e) {
+            assertTrue(e instanceof UnknownProfileTypeException);
+            assertEquals("Unknown profile type '" + notExistingType + 
+                    "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles", e.getMessage());
+        }
+        
+        // Tbd. Test for certificate profiles, or more generic for other profile types as well (must be implemented first).
+        
+        log.trace("<test05GetEndEntityProfileByIdAndType()");
     }
 }
