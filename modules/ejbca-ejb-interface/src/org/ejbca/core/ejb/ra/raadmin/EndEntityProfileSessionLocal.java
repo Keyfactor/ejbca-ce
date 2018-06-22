@@ -12,15 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.io.IOException;
-import java.util.Map;
-
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.EjbcaException;
-import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -71,26 +66,4 @@ public interface EndEntityProfileSessionLocal extends EndEntityProfileSession {
      * @return EndEntityProfile (shared in cache) or null if it does not exist
      */
     EndEntityProfile getEndEntityProfileNoClone(java.lang.String profilename);
-
-    /**
-     * Fetches the profile specified by profileId and profileType in XML format.
-     *
-     * Authorization requirements:<pre>
-     * - /administrator
-     * - /endentityprofilesrules/&lt;end entity profile&gt;
-     * </pre>
-     *
-     * For detailed documentation for how to parse an End Entity Profile XML, see the org.ejbca.core.model.ra.raadmin.EndEntity class.
-     *
-     * @param authenticationToken the administrator performing the action.
-     * @param profileId ID of the profile we want to retrieve.
-     * @param profileType The type of the profile we want to retrieve. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles.
-     * @return a byte array containing the specified profile in XML format.
-     * @throws AuthorizationDeniedException if client isn't authorized to request.
-     * @throws UnknownProfileTypeException if the profile type is not known.
-     * @throws EjbcaException any EjbcaException.
-     * @throws IOException if the XML profile data could not be encoded.
-     */
-     byte[] getProfile(AuthenticationToken authenticationToken, int profileId, String profileType)
-                 throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException;
 }
