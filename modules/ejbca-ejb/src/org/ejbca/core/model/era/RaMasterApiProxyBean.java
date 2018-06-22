@@ -2346,15 +2346,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public Integer getRemainingNumberOfApprovalsWS(AuthenticationToken authenticationToken, int requestId)
+    public Integer getRemainingNumberOfApprovals(final AuthenticationToken authenticationToken, final int requestId)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
         ApprovalException approvalException = null;
+        ApprovalRequestExpiredException approvalRequestExpiredException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getRemainingNumberOfApprovalsWS(authenticationToken, requestId);
+                    return raMasterApi.getRemainingNumberOfApprovals(authenticationToken, requestId);
                 } catch (ApprovalException e) {
-                    approvalException = e;
+                    if (approvalException == null) {
+                        approvalException = e;
+                     // Just try next implementation
+                    }
+                } catch (ApprovalRequestExpiredException e) {
+                    if (approvalRequestExpiredException == null) {
+                        approvalRequestExpiredException = e;
+                     // Just try next implementation
+                    }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -2363,7 +2372,10 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (approvalException != null) {
             throw approvalException;
         }
-        return null; // If all requests have failed. Should only be possible, if the request was proxied to another instance.
+        if (approvalRequestExpiredException != null) {
+            throw approvalRequestExpiredException;
+        }
+        return null;
     }
 
     @Override
