@@ -2305,7 +2305,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public byte[] getLatestCrl(final AuthenticationToken authenticationToken, final String caName, final boolean deltaCRL)
             throws AuthorizationDeniedException, CADoesntExistsException {
         CADoesntExistsException caDoesntExistsException = null;
-        for (RaMasterApi raMasterApi : raMasterApis) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     return raMasterApi.getLatestCrl(authenticationToken, caName, deltaCRL);
