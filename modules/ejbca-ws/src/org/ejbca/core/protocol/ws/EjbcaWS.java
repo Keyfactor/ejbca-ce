@@ -2346,14 +2346,8 @@ public class EjbcaWS implements IEjbcaWS {
         try {
             final AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
-            final Integer requestResult = raMasterApiProxyBean.isApproved(admin, approvalId);
-            int result;
-            if (requestResult != null) {
-                result = requestResult;
-            } else {
-                result = -9;
-            }
-            return result;
+            // Local instance is requested in any case; request to RaMasterAPI should never fail.
+            return raMasterApiProxyBean.isApproved(admin, approvalId);
 		} catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
@@ -2370,7 +2364,7 @@ public class EjbcaWS implements IEjbcaWS {
         try {
             final AuthenticationToken admin = getAdmin(true);
             logAdminName(admin, logger);
-            final Integer requestResult = raMasterApiProxyBean.getRemainingNumberOfApprovalsWS(admin, requestId);
+            final Integer requestResult = raMasterApiProxyBean.getRemainingNumberOfApprovals(admin, requestId);
             int result;
             if (requestResult != null) {
                 result = requestResult;
