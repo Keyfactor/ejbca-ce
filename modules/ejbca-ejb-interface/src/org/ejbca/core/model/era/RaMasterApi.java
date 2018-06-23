@@ -1053,12 +1053,7 @@ public interface RaMasterApi {
     *
     * Authorization requirements: a valid client certificate.
     *
-    * @param authenticationToken the administrator performing the action.
-    * @param approvalId unique id for the action.
-    * @return the number of approvals left, 0 if approved otherwise is the ApprovalDataVO.STATUS constants returned indicating the status or null if the request was proxied to another instance and the request has failed.
-    * @throws AuthorizationDeniedException if client isn't authorized to request.
-    * @throws ApprovalException if approvalId does not exist.
-    * @throws ApprovalRequestExpiredException if one of the approvals have expired, once notified it won't throw it anymore.
+    * @see org.ejbca.core.ejb.approval.ApprovalSession#isApproved(int)
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
    Integer isApproved(AuthenticationToken authenticationToken, int approvalId) throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException;
