@@ -2356,14 +2356,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     return raMasterApi.getRemainingNumberOfApprovals(authenticationToken, requestId);
                 } catch (ApprovalException e) {
                     if (approvalException == null) {
-                        approvalException = e;
-                     // Just try next implementation
+                        approvalException = e; 
                     }
+                    // Just try next implementation
                 } catch (ApprovalRequestExpiredException e) {
                     if (approvalRequestExpiredException == null) {
                         approvalRequestExpiredException = e;
-                     // Just try next implementation
                     }
+                    // Just try next implementation
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -2379,15 +2379,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public Integer isApproved(AuthenticationToken authenticationToken, int approvalId)
+    public Integer isApproved(final AuthenticationToken authenticationToken, final int approvalId)
             throws AuthorizationDeniedException, ApprovalException, ApprovalRequestExpiredException {
         ApprovalException approvalException = null;
+        ApprovalRequestExpiredException approvalRequestExpiredException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     return raMasterApi.isApproved(authenticationToken, approvalId);
-                } catch (ApprovalException e) { // not found
-                    approvalException = e;
+                } catch (ApprovalException e) {
+                    if (approvalException == null) {
+                        approvalException = e; 
+                    }
+                    // Just try next implementation
+                } catch (ApprovalRequestExpiredException e) {
+                    if (approvalRequestExpiredException == null) {
+                        approvalRequestExpiredException = e;
+                    }
+                    // Just try next implementation
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -2396,7 +2405,10 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (approvalException != null) {
             throw approvalException;
         }
-        return null; // If all requests have failed. Should only be possible, if the request was proxied to another instance.
+        if (approvalRequestExpiredException != null) {
+            throw approvalRequestExpiredException;
+        }
+        return null;
     }
 
     @Override
