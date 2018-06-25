@@ -36,12 +36,6 @@ public class JsfDynamicUiHtmlOutputLabel extends HtmlOutputText implements Dynam
     private DynamicUiProperty<?> dynamicUiProperty;
 
     /**
-     * Default constructor.
-     */
-    public JsfDynamicUiHtmlOutputLabel() {
-    }
-
-    /**
      * Sets the dynamic UI property reference.
      * @param property the dynamic UI property.
      */

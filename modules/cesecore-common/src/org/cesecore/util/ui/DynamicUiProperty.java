@@ -133,10 +133,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     /**
-     * Constructor. Note the T must implement toString().
+     * Constructs a dynamic UI property rendered as a simple label in the UI.
      *
-     * @param name the name of this property, for display in the UI.
-     * @param defaultValue the default value, if any.
+     * @param name the name of this property, for display in the UI
      */
     @SuppressWarnings("unchecked")
     public DynamicUiProperty(final String name) {
@@ -336,7 +335,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         }
         return result;
     }
-    
+
     /**
      * Gets the name (or key) of the property.
      * @return the name.
@@ -652,7 +651,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             this.values.add((T) object);
         }
     }
-    
+
     /**
      * Sets the current value of type <T>.
      * @param object the value.
@@ -977,14 +976,14 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
                 + ", possibleValues=" + possibleValues + ", renderingHint=" + renderingHint + ", labeled=" + labeled + ", labels=" + labels
                 + ", labelOnly=" + labelOnly + ", type=" + type + ", hasMultipleValues=" + hasMultipleValues + "]";
     }
-    
+
     /** Delegation method for {@link DynamicUIModel#addDynamicUiComponent}. */
     public void addDynamicUiComponent(final DynamicUiComponent component) {
         getDynamicUiModel().addDynamicUiComponent(name, component);
     }
-    
-    /** 
-     * Update the view components attributes here! 
+
+    /**
+     * Update the view components attributes here!
      */
     public void updateViewComponents() {
         for (DynamicUiComponent component : getDynamicUiModel().getViewComponents(name)) {
