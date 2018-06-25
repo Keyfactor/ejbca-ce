@@ -226,7 +226,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
             setPublicKeyModulusDontAllowPowerOfPrime(false);
         }
         if (null == data.get(PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS)) {
-            setPublicKeyModulusDontAllowRocaWeakKeys(false);
+            setPublicKeyModulusDontAllowRocaWeakKeys(true);
         }
     }
 
