@@ -1144,11 +1144,11 @@ public class EjbcaWS implements IEjbcaWS {
 
     private byte[] processCertReq(final String username, final String password, final String req, final int reqType,
             final String hardTokenSN, final String responseType, final IPatternLogger logger) throws EjbcaException, CesecoreException, CADoesntExistsException, AuthorizationDeniedException {
-        byte[] retval = null;
+        byte[] result = null;
         try {
             final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-            retval = raMasterApiProxyBean.processCertReqWS(admin, username, password, req, reqType, hardTokenSN, responseType);
+            result = raMasterApiProxyBean.processCertificateRequest(admin, username, password, req, reqType, hardTokenSN, responseType);
         } catch (CertificateExtensionException e) {
             throw getInternalException(e, logger);
         } catch (InvalidKeyException e) {
@@ -1189,11 +1189,9 @@ public class EjbcaWS implements IEjbcaWS {
         } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } catch(EjbcaException e) {
-            // ECA-6685 Re-factor.
-            // Fix exception pattern logger thrown in RaMasterApiSessionBean.processCertReq to not to serialize the logger.
             throw getEjbcaException(e.getMessage(), logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
         }
-        return retval;
+        return result;
     }
 
     @Override
