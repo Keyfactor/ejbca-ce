@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -614,4 +616,19 @@ public class KeyStoreTools {
         return cert;
     }
 
+    /**
+     * Encodes a Keystore to a byte array.
+     * @param keyStore the keystore.
+     * @param password the password.
+     * @return the keystore encoded as byte array.
+     */
+    public static byte[] getAsByteArray(final KeyStore keyStore, final String password) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            keyStore.store(outputStream, password.toCharArray());
+            return outputStream.toByteArray();
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            log.error(e); //should never happen if keyStore is valid object
+        }
+        return null;
+    }
 }

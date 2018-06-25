@@ -13,8 +13,6 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -34,10 +32,13 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -51,19 +52,29 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.CertificateSignatureException;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
@@ -76,10 +87,17 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyStoreCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, KeyStoreCreateSessionRemote {
+    
     private static final Logger log = Logger.getLogger(KeyStoreCreateSessionBean.class);
 
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
 	private EndEntityAuthenticationSessionLocal authenticationSession;
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -87,11 +105,77 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
     private CaSessionLocal caSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
     private SignSessionLocal signSession;
+    @EJB
+    private HardTokenSessionLocal hardTokenSession;
+
+    @Override
+    public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification, final String keyAlgorithm)
+            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException {
+        // Check if user exists.
+        final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
+        if(endEntity == null) {
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            throw new NotFoundException(intres.getLocalizedMessage("ra.wrongusernameorpassword"));
+        }
+        // Check CA ID and authorization.
+        final int caId = endEntity.getCAId();
+        caSession.verifyExistenceOfCA(caId);
+        if(!authorizationSession.isAuthorized(authenticationToken, StandardRules.CAACCESS.resource() + caId, StandardRules.CREATECERT.resource())) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caId +
+                    "," + StandardRules.CREATECERT.resource(), null);
+            throw new AuthorizationDeniedException(msg);
+        }
+        // Check token type.
+        if(endEntity.getTokenType() != SecConst.TOKEN_SOFT_P12) { // logger
+            throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE, "Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests");
+        }
+        final boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
+        if (log.isDebugEnabled()) {
+            log.debug("usekeyrecovery: " + useKeyRecovery);
+        }
+        final boolean saveKeys = endEntity.getKeyRecoverable() && useKeyRecovery && (endEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
+        if (log.isDebugEnabled()) {
+            log.debug("userdata.getKeyRecoverable(): " + endEntity.getKeyRecoverable());
+            log.debug("userdata.getStatus(): " + endEntity.getStatus());
+            log.debug("savekeys: " + saveKeys);
+        }
+        final boolean loadKeys = (endEntity.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
+        if (log.isDebugEnabled()) {
+            log.debug("loadkeys: " + loadKeys);
+        }
+        final int endEntityProfileId = endEntity.getEndEntityProfileId();
+        final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+        final boolean reuseCertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
+        if (log.isDebugEnabled()) {
+            log.debug("reusecertificate: " + reuseCertificate);
+        }
+        try {
+            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId,
+                    keySpecification, keyAlgorithm, null, null, false, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
+            final String alias = keyStore.aliases().nextElement();
+            final X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
+            if ((hardTokenSN != null) && (certificate != null)) {
+                hardTokenSession.addHardTokenCertificateMapping(authenticationToken,hardTokenSN,certificate);
+            }
+            return KeyStoreTools.getAsByteArray(keyStore, password);
+        } catch (AuthLoginException e) { // Is handled as EjbcaException at caller (EjbcaWS).
+            throw e;
+        } catch (AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
+            throw e;
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Re-throw exception in RA master API: " + e.getMessage(), e);
+            }
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        }
+    }
 
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
@@ -104,13 +188,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, null, createJKS, loadkeys,
                 savekeys,
                 reusecertificate, endEntityProfileId);
-        try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            keyStore.store(outputStream, password.toCharArray());
-            return outputStream.toByteArray();
-        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
-            log.error(e); //should never happen if keyStore is valid object
-        }
-        return null;
+        return KeyStoreTools.getAsByteArray(keyStore, password);
     }
 
     @Override
