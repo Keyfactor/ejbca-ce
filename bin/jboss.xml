@@ -200,9 +200,9 @@
         <jboss:admsilent arg="/system-property=org.apache.catalina.connector.URI_ENCODING:remove" failonerror="false" />
         <jboss:admsilent arg="/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:remove" failonerror="false" />
         <jboss:admsilent arg="/system-property=org.apache.tomcat.util.http.Parameters.MAX_COUNT:remove" failonerror="false" />
-        <jboss:admsilent arg="/interfaces=/interface=http:remove" failonerror="false" />
-        <jboss:admsilent arg="/interfaces=/interface=httpspub:remove" failonerror="false" />
-        <jboss:admsilent arg="/interfaces=/interface=httpspriv:remove" failonerror="false" />
+        <jboss:admsilent arg="/interface=http:remove" failonerror="false" />
+        <jboss:admsilent arg="/interface=httpspub:remove" failonerror="false" />
+        <jboss:admsilent arg="/interface=httpspriv:remove" failonerror="false" />
 		<jboss:jbosswaitready/>
         <jboss:admsilent arg=":reload" />
 		<jboss:jbosswaitready/>
@@ -226,9 +226,9 @@
         <echo message="Setting-up web configuration for JBoss 7 (ejbca must be deployed)." />
         <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
         <antcall target="jee:web-configureJBoss7Cleanup" />
-        <jboss:adm arg='/interfaces=/interface=http:add(inet-address="${httpsserver.bindaddress.pubhttp}")' />
-        <jboss:adm arg='/interfaces=/interface=httpspub:add(inet-address="${httpsserver.bindaddress.pubhttps}")' />
-        <jboss:adm arg='/interfaces=/interface=httpspriv:add(inet-address="${httpsserver.bindaddress.privhttps}")' />
+        <jboss:adm arg='/interface=http:add(inet-address="${httpsserver.bindaddress.pubhttp}")' />
+        <jboss:adm arg='/interface=httpspub:add(inet-address="${httpsserver.bindaddress.pubhttps}")' />
+        <jboss:adm arg='/interface=httpspriv:add(inet-address="${httpsserver.bindaddress.privhttps}")' />
         <jboss:adm arg='/socket-binding-group=standard-sockets/socket-binding=http:add(port="${httpserver.pubhttp}",interface="http")' />
         <jboss:adm arg="/subsystem=web/connector=http:add(protocol=HTTP/1.1, scheme=http, socket-binding=http)" />
         <jboss:adm arg='/subsystem=web/connector=http:write-attribute(name=redirect-port, value="${httpserver.privhttps}")' />
