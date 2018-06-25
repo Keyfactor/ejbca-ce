@@ -54,14 +54,15 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @version $Id$
  */
 public class JsfDynamicUiPsmFactory {
-    
+
     /** Class logger. */
     private static final Logger log = Logger.getLogger(JsfDynamicUiPsmFactory.class);
 
     private static final String STYLE_CLASS_SUB_ITEM = "subItem";
-    
+
     /**
-     * Initializes the dynamic UI properties on a grid panel with two columns, label on the left, UI component on the right.
+     * Initializes the dynamic UI properties on a grid panel with two columns, label on the left, UI component on the right,
+     * and an optional help text below the UI component.
      * @param panelGrid the panel grid instance to (re-)build.
      * @param model DynamicUiModel to extract properties from
      * @param i18nPrefix the name prefix for the I18N message resources.
@@ -69,7 +70,6 @@ public class JsfDynamicUiPsmFactory {
      */
     public static final void initGridInstance(final HtmlPanelGrid panelGrid, final DynamicUiModel model,
             final String i18nPrefix) throws DynamicUiModelException {
-        final Map<String, DynamicUiProperty<? extends Serializable>> properties = model.getProperties();
         if (log.isDebugEnabled()) {
             log.debug("Build dynamic UI model PSM " + model + ", i18nPrefix is '" + i18nPrefix + "'.");
         }
@@ -78,22 +78,35 @@ public class JsfDynamicUiPsmFactory {
         panelGrid.getChildren().clear();
         panelGrid.setColumns(2);
         // Build PSM fields by PIM.
-        HtmlOutputLabel label;
-        UIComponentBase component;
         int index = 0;
-        for (DynamicUiProperty<? extends Serializable> property : properties.values()) {
-            label = new HtmlOutputLabel();
+        for (final DynamicUiProperty<? extends Serializable> property : model.getProperties().values()) {
+            final HtmlOutputLabel label = new HtmlOutputLabel();
             label.setValue(getText(i18nPrefix, property.getName()));
             label.setStyleClass(STYLE_CLASS_SUB_ITEM);
             if (index == 0) { // Re-factor: Set header bold.
                 label.setStyle("font-weight: bold;");
             }
             panelGrid.getChildren().add(label);
+
             if (!property.isLabelOnly()) {
-                component = createComponentInstance(i18nPrefix, property);
-                panelGrid.getChildren().add(component);
-                if (log.isDebugEnabled()) {
-                    log.debug("Registered UIComponent " + component + " for dynamic UI property " + property.getName());
+                final UIComponentBase component = createComponentInstance(i18nPrefix, property);
+                final String helpText = getHelpText(i18nPrefix, property.getName());
+                if (helpText != null) {
+                    final HtmlPanelGrid innerGrid = new HtmlPanelGrid();
+                    innerGrid.setColumns(1);
+                    final HtmlOutputLabel helpLabel = new HtmlOutputLabel();
+                    helpLabel.setValue(helpText);
+                    innerGrid.getChildren().add(component);
+                    innerGrid.getChildren().add(helpLabel);
+                    panelGrid.getChildren().add(innerGrid);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Registered UIComponent with property name " + property.getName() + " + help text.");
+                    }
+                } else {
+                    panelGrid.getChildren().add(component);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Registered UIComponent with property name " + property.getName() + ".");
+                    }
                 }
             } else {
                 label.setStyle("font-weight: bold;");
@@ -106,7 +119,7 @@ public class JsfDynamicUiPsmFactory {
 
     /**
      * Create a concrete UIComponentBase instance based on the dynamic UI property.
-     * 
+     *
      * @param i18nPrefix the message resources prefix.
      * @param property the dynamic UI property ({@link DynamicUiProperty}).
      * @return the JSF component.
@@ -159,7 +172,7 @@ public class JsfDynamicUiPsmFactory {
             }
         }
         if (component == null) {
-            throw new DynamicUiModelException("DynmicUiRendering component could not be found ...: " + property);
+            throw new DynamicUiModelException("DynamicUiRendering component could not be found: " + property);
         }
         return component;
     }
@@ -354,7 +367,7 @@ public class JsfDynamicUiPsmFactory {
      * @param property the dynamic UI property.
      * @return the file chooser instance.
      */
-    public static final HtmlInputFileUpload createFileChooserInstance(final DynamicUiProperty<?> property) {        
+    public static final HtmlInputFileUpload createFileChooserInstance(final DynamicUiProperty<?> property) {
         final HtmlInputFileUpload result = new HtmlInputFileUpload();
         setUIInputAttributes(result, property);
         result.setStorage("file");
@@ -372,8 +385,8 @@ public class JsfDynamicUiPsmFactory {
         final String name = property.getName();
         component.setId(name);
         component.setRendered(true);
-    }    
-    
+    }
+
     /**
      * Sets the common properties for a component.
      * @param component the component.
@@ -387,7 +400,7 @@ public class JsfDynamicUiPsmFactory {
             component.setValue(property.getValues());
         }
     }
-    
+
     /**
      * Sets the common properties for a component.
      * @param component the component.
@@ -410,6 +423,21 @@ public class JsfDynamicUiPsmFactory {
     }
 
     /**
+     * Gets an I18N help message.
+     * @param i18nPrefix the name prefix.
+     * @param name the name.
+     * @return the I18N help message if present, null otherwise
+     */
+    private static final String getHelpText(final String i18nPrefix, final String name) {
+        final String template = i18nPrefix.concat(name).toUpperCase().concat("HELP");
+        final String text = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(template);
+        if (template.equals(text)) {
+            return null;
+        }
+        return text;
+    }
+
+    /**
      * Adds an ajax behavior listener to the component if the dynamic UI properties action callback is not null.
      * @param property the dynamic UI property.
      * @param component the JSF UIInput component.
@@ -429,12 +457,12 @@ public class JsfDynamicUiPsmFactory {
             }
             behavior.setRender(render);
             behavior.setTransient(false);
-            behavior.setImmediate(true); 
+            behavior.setImmediate(true);
             component.addClientBehavior(eventName, behavior);
         }
     }
 
-    /** 
+    /**
      * Avoid instantiation.
      */
     private JsfDynamicUiPsmFactory() {
