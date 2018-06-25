@@ -14,14 +14,14 @@ package org.ejbca.ui.web.rest.api.io.request;
  * @version $Id$
  *
  */
-public class FinalizeRestResquest {
+public class FinalizeRestRequest {
 
     private String responseFormat;
     private String password;
     
-    public FinalizeRestResquest() {}
+    public FinalizeRestRequest() {}
     
-    public FinalizeRestResquest(String responseFormat, String password) {
+    public FinalizeRestRequest(String responseFormat, String password) {
         this.responseFormat = responseFormat;
         this.password = password;
     }
