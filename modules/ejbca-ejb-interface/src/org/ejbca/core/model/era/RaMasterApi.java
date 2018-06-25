@@ -1063,14 +1063,10 @@ public interface RaMasterApi {
     *
     * Authorization requirements: a valid client certificate.
     *
-    * @param authenticationToken the administrator performing the action.
-    * @param resource the access rule to test.
-    * @return true if the user is authorized to the resource otherwise false.
-    * @throws AuthorizationDeniedException if client isn't authorized to request.
-    * @see RevokeStatus.
+    * @see org.cesecore.authorization.AuthorizationSession#isAuthorized(AuthenticationToken, String...)
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
-   boolean isAuthorizedWS(AuthenticationToken authenticationToken, String resource) throws AuthorizationDeniedException;
+   boolean isAuthorized(AuthenticationToken authenticationToken, String... resource);
 
    /**
     * Republishes a selected certificate.

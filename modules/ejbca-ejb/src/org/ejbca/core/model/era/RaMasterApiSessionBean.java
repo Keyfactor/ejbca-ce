@@ -2471,7 +2471,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public boolean isAuthorizedWS(AuthenticationToken authenticationToken, String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorized(final AuthenticationToken authenticationToken, final String... resource) {
         return authorizationSession.isAuthorized(authenticationToken, resource);
     }
 

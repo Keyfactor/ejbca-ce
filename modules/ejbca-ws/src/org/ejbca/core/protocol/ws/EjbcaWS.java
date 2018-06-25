@@ -1611,12 +1611,12 @@ public class EjbcaWS implements IEjbcaWS {
 
     @Override
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public boolean isAuthorized(String resource) throws EjbcaException{
+	public boolean isAuthorized(String resource) throws EjbcaException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
             final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-			return raMasterApiProxyBean.isAuthorizedWS(admin, resource);
+			return raMasterApiProxyBean.isAuthorized(admin, resource);
 		} catch (AuthorizationDeniedException ade) {
             return false;
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
