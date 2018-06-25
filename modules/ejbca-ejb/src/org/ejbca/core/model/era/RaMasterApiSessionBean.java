@@ -2502,73 +2502,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] pkcs12ReqWS(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN, String keySpecification,
-            String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, NotFoundException, EjbcaException {
-        // Check CA ID.
-        final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
-        if(endEntity == null) {
-            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-            throw new NotFoundException(intres.getLocalizedMessage("ra.wrongusernameorpassword"));
-        }
-        final int caId = endEntity.getCAId();
-        caSession.verifyExistenceOfCA(caId);
-        if(!authorizationSession.isAuthorized(authenticationToken, StandardRules.CAACCESS.resource() + caId, StandardRules.CREATECERT.resource())) {
-            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caId +
-                    "," + StandardRules.CREATECERT.resource(), null);
-            throw new AuthorizationDeniedException(msg);
-        }
-        // Check token type.
-        if(endEntity.getTokenType() != SecConst.TOKEN_SOFT_P12) { // logger
-            // ECA-6685 Re-factor. But fixed at caller EjbcaWS.
-            // throw getEjbcaException("Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests", logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
-            throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE, "Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests");
-        }
-        final boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
-        if (log.isDebugEnabled()) {
-            log.debug("usekeyrecovery: " + useKeyRecovery);
-        }
-        final boolean saveKeys = endEntity.getKeyRecoverable() && useKeyRecovery && (endEntity.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
-        if (log.isDebugEnabled()) {
-            log.debug("userdata.getKeyRecoverable(): " + endEntity.getKeyRecoverable());
-            log.debug("userdata.getStatus(): " + endEntity.getStatus());
-            log.debug("savekeys: " + saveKeys);
-        }
-        final boolean loadKeys = (endEntity.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
-        if (log.isDebugEnabled()) {
-            log.debug("loadkeys: " + loadKeys);
-        }
-        final int endEntityProfileId = endEntity.getEndEntityProfileId();
-        final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
-        final boolean reuseCertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
-        if (log.isDebugEnabled()) {
-            log.debug("reusecertificate: " + reuseCertificate);
-        }
-        try {
-            final KeyStore keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(authenticationToken, username, password, caId,
-                    keySpecification, keyAlgorithm, null, null, false, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
-            final String alias = keyStore.aliases().nextElement();
-            final X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
-            if ((hardTokenSN != null) && (certificate != null)) {
-                hardTokenSession.addHardTokenCertificateMapping(authenticationToken,hardTokenSN,certificate);
-            }
-            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                keyStore.store(outputStream, password.toCharArray()); // endEntity.getPassword().toCharArray() -> NPE
-                return outputStream.toByteArray();
-            } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
-                log.error(e); //should never happen if keyStore is valid object
-            }
-        } catch (AuthLoginException e) { // NOPMD, since we catch wide below
-            throw e;
-        } catch (AuthStatusException e) { // NOPMD, since we catch wide below
-            throw e;
-        } catch (Exception e) {
-            // ECA-6685 getInternalException(e, logger);
-            if (log.isDebugEnabled()) {
-                log.debug("Re-throw exception in RA master API: " + e.getMessage(), e);
-            }
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
-        }
-        return null; // Should not happen. All exceptions are caught or re-thrown.
+    public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
+            final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, NotFoundException, EjbcaException {
+        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, hardTokenSN, keySpecification, keyAlgorithm);
     }
 
     @Override

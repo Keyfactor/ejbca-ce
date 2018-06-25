@@ -34,9 +34,11 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.CertificateSignatureException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
@@ -47,9 +49,51 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 public interface KeyStoreCreateSession {
 
     /**
+     * Creates a server-generated keystore.
+     *
+     * The method must be preceded by
+     * a editUser call, either to set the userstatus to 'new' or to add non-existing users and
+     * the user's token must be set to {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS}.TOKEN_TYPE_P12.<br>
+     *
+     * Authorization requirements: <pre>
+     * - /administrator
+     * - /ca/&lt;ca of user&gt;
+     * - /ca_functionality/create_certificate
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
+     * - /ra_functionality/view_end_entity
+     * </pre>
+     *
+     * Additional authorization requirements for (non key recovery) clearing of password: <pre>
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/edit_end_entity
+     * - /ra_functionality/edit_end_entity
+     * </pre>
+     *
+     * Additional authorization requirements for key recovery: <pre>
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/keyrecovery
+     * - /ra_functionality/keyrecovery
+     * </pre>
+     *
+     * @param authenticationToken administrator performing the action.
+     * @param username the unique username.
+     * @param password the password sent with editUser call.
+     * @param hardTokenSN If the certificate should be connected with a hard token, it is
+     * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
+     * certificates. Use null if no hardtokenSN should be associated with the certificate.
+     * @param keySpecification that the generated key should have, examples are 2048 for RSA or secp256r1 for ECDSA.
+     * @param keyAlgorithm that the generated key should have, RSA, ECDSA. Use one of the constants in {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
+     * @return the generated or reused key store as byte array.
+     * @throws CADoesntExistsException if a referenced CA does not exist.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws NotFoundException if the user could not be found.
+     * @throws EjbcaException any EjbcaException.
+     */
+    byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN, String keySpecification, String keyAlgorithm)
+            throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException;
+    
+    /**
      * This method generates a new pkcs12 or jks token for a user, and key recovers the token, if the user is configured for that in EJBCA.
      *
-     * @param administrator administrator performing the action
+     * @param administrator administrator performing the action.
      * @param username username in ejbca
      * @param password password for user
      * @param caid caid of the CA the user is registered for
