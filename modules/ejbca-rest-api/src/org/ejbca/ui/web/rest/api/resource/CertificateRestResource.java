@@ -77,7 +77,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.FinalizeRestResquest;
+import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
@@ -309,7 +309,7 @@ public class CertificateRestResource extends BaseRestResource {
     public Response finalizeEnrollment(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Approval request id") @PathParam("request_id") int requestId,
-            @ApiParam(value = "responseFormat must be one of 'P12', 'JKS', 'DER'") FinalizeRestResquest request)
+            @ApiParam(value = "responseFormat must be one of 'P12', 'JKS', 'DER'") FinalizeRestRequest request)
                     throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException,
                         KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
@@ -333,12 +333,12 @@ public class CertificateRestResource extends BaseRestResource {
             case ApprovalDataVO.STATUS_REJECTED:
             case ApprovalDataVO.STATUS_EXECUTIONDENIED:
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Request with Id '" + requestId + "' has been rejected");
-            case ApprovalDataVO.STATUS_APPROVED:
             case ApprovalDataVO.STATUS_EXPIRED:
             case ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED:
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Request with Id '" + requestId + "' has expired");
             case ApprovalDataVO.STATUS_EXECUTIONFAILED:
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Request with Id '" + requestId + "' could not be executed");
+            case ApprovalDataVO.STATUS_APPROVED:
             case ApprovalDataVO.STATUS_EXECUTED:
                 if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
                     KeyRecoveryApprovalRequest keyRecoveryApprovalRequest = (KeyRecoveryApprovalRequest) approvalRequest;

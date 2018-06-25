@@ -46,7 +46,7 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
-import org.ejbca.ui.web.rest.api.io.request.FinalizeRestResquest;
+import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -151,7 +151,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             approvalExecutionSession.approve(approvalAdmin, approvalId, approval);
             
             // Attempt REST finalize
-            final FinalizeRestResquest requestObject = new FinalizeRestResquest("P12", "foo123");
+            final FinalizeRestRequest requestObject = new FinalizeRestRequest("P12", "foo123");
             final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
             final String requestBody = objectMapper.writeValueAsString(requestObject);
             final ClientRequest request = newRequest("/v1/certificate/" + requestId + "/finalize");
