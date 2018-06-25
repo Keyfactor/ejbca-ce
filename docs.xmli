@@ -19,6 +19,7 @@
     <property name="docs.dist"    location="doc/dist"/>
     <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
+    <property name="docs.dest.rest" location="tmp/htdocs/docs/rest"/>
     <property name="docs.dest.logtypes" location="tmp/htdocs/docs/logtypes"/>
     <property name="site.src"     location="doc/xdocs/site"/>
     <property name="site.dest"    location="tmp/htdocs"/>
@@ -159,6 +160,7 @@
         <echo message="WS=${ws.objects.dir}"/>
         <mkdir dir="${jdocs.ws.tmp}"/>
         <mkdir dir="${docs.dest.ws}"/>
+        <mkdir dir="${docs.dest.rest}"/>
 	    <copy overwrite="yes" todir="${jdocs.ws.tmp}">
 		  <fileset dir="${ws.client.gen.src}">
 			<exclude name="**/${client.ws.class}.java"/>
@@ -171,6 +173,15 @@
 	  	    <arg value="${ws.client.gen.src}/${ws.client.gen.relative-path}/${client.ws.class}.java"/>
 		    <arg value="${jdocs.ws.tmp}"/>
 	  	</java>
+	  	<java dir="${ejbca.home}"
+	  	    classname="net.wasdev.maven.plugins.swaggerdocgen.GenerateSwaggerFile"
+	  	    classpath="${ejbca.home}/lib/ext/swagger docs/swaggerdocgen-maven-plugin-1.2-jar-with-dependencies.jar;${ejbca.home}/dist/*;${ejbca.home}/modules/dist/ejbca-interface.jar;${ejbca.home}/lib/jee/javaee-api-6.0-6.jar;${ejbca.home}/lib/log4j-1.2.17.jar"
+	  	    fork="true">
+            <arg line="${ejbca.home}/modules/dist/ejbca-rest-api.war ${docs.dest.rest}swagger.json" />
+	  	</java>
+	  	<java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.3.1.jar" fork="true">
+                    <arg line="generate -i ${docs.dest.rest}swagger.json -l html2 -o ${docs.dest.rest}"/>
+                </java>
 	    <javadoc destdir="${docs.dest.ws}"
 	             author="true"
 	             version="true"
