@@ -1375,9 +1375,9 @@ public class X509CA extends CA implements Serializable {
         // Verify any Signed Certificate Timestamps (SCTs) in the certificate before returning. If one of the (embedded) SCTs does
         // not verify over the final certificate, it won't validate in the browser and we don't want to issue such certificates.
         if (ct != null) {
-            Collection<CTLogInfo> ctLogs = 
-                    (certGenParams == null || certGenParams.getCTSubmissionConfigParams() == null || certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs() == null) 
-                    ? null 
+            Collection<CTLogInfo> ctLogs =
+                    (certGenParams == null || certGenParams.getCTSubmissionConfigParams() == null || certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs() == null)
+                    ? null
                     : certGenParams.getCTSubmissionConfigParams().getConfiguredCTLogs().values();
             ct.allSctsAreValidOrThrow(cert, getCertificateChain(), ctLogs);
         }
@@ -1434,7 +1434,7 @@ public class X509CA extends CA implements Serializable {
     /**
      * Constructs the SubjectAlternativeName extension that will end up on the generated certificate.
      *
-     * If the DNS values in the subjectAlternativeName extension contain parentheses to specify labels that should be s, the parentheses are removed and another extension
+     * If the DNS values in the subjectAlternativeName extension contain parentheses to specify labels that should be redacted, the parentheses are removed and another extension
      * containing the number of redacted labels is added.
      *
      * @param subAltNameExt
