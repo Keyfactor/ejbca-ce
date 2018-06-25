@@ -27,6 +27,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.ApiParam;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -63,7 +64,7 @@ public class CaRestResource extends BaseRestResource {
 
     @GET
     @Path("/status")
-    @ApiOperation(value = "Get the status of this RestResource", notes = "Get the status of this RestResource", response = RestResourceStatusRestResponse.class)
+    @ApiOperation(value = "Get the status of this RestResource", response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
         return super.status();
@@ -76,9 +77,10 @@ public class CaRestResource extends BaseRestResource {
     @GET
     @Path("/{subject_dn}/certificate/download")
     @Produces(MediaType.WILDCARD)
-    @ApiOperation(value = "Get PEM file with CA certificates", notes = "Get PEM file with CA certificates")
+    @ApiOperation(value = "Get PEM file with CA certificates")
     public Response getCertificateAsPem(@Context HttpServletRequest requestContext,
-                                        @PathParam("subject_dn") String subjectDn) throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
+                                        @ApiParam(value = "CAs subject DN", required = true) @PathParam("subject_dn") String subjectDn)
+            throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         subjectDn = CertTools.stringToBCDNString(subjectDn);
         Collection<Certificate> certificateChain = EJBTools.unwrapCertCollection(raMasterApiProxy.getCertificateChain(admin, subjectDn.hashCode()));
@@ -112,9 +114,12 @@ public class CaRestResource extends BaseRestResource {
 
     @GET
     @Path("/{issuer_dn}/getLatestCrl")
+    @ApiOperation(value = "Returns the latest CRL issued by this CA",
+            response = CrlRestResponse.class)
     public Response getLatestCrl(@Context HttpServletRequest httpServletRequest,
-                                 @PathParam("issuer_dn") String issuerDn,
-                                 @QueryParam("deltaCrl") boolean deltaCrl) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
+                                 @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
+                                 @ApiParam(value = "true to get the latest deltaCRL, false to get the latest complete CRL", required = false, defaultValue = "false")
+                                     @QueryParam("deltaCrl") boolean deltaCrl) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, true);
         byte[] latestCrl = raMasterApiProxy.getLatestCrlByIssuerDn(adminToken, issuerDn, deltaCrl);
         CrlRestResponse restResponse = CrlRestResponse.builder().setCrl(latestCrl).setResponseFormat("DER").build();
