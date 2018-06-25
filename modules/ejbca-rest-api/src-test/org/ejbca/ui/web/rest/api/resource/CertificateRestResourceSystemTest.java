@@ -23,12 +23,15 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -39,6 +42,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
@@ -67,8 +71,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @version $Id: CertificateRestResourceSystemTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
+
+    private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
     private static final String TEST_CA_NAME = "RestCertificateResourceTestCa";
-    private static final String TEST_USERNAME = "keystoreFinalizeUser";
+    private static final String TEST_USERNAME = "CertificateRestSystemTestUser";
     private static final JSONParser jsonParser = new JSONParser();
     
     private static X509CA x509TestCa;
@@ -110,6 +116,50 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
     }
 
+    @Test
+    public void shouldRevokeCertificate() throws Exception {
+        try {
+            // Create test user & generate certificate
+            EndEntityInformation userdata = new EndEntityInformation(TEST_USERNAME, "CN=" + TEST_USERNAME, x509TestCa.getCAId(), null, null, new EndEntityType(
+                    EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_P12, 0, new ExtendedInformation());
+            userdata.setPassword("foo123");
+            userdata.setStatus(EndEntityConstants.STATUS_NEW);
+            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
+            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+            final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(), 
+                    "1024", "RSA", false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+            final KeyStore keyStore = KeyTools.createKeyStore(keyStoreBytes, "foo123");
+            String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
+            String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(TEST_USERNAME));
+            String issuerDn = "C=SE,CN=" + TEST_CA_NAME;
+            // Attempt revocation through REST
+            final ClientRequest request = newRequest("/v1/certificate/" + issuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE");
+            final ClientResponse<?> actualResponse = request.put();
+            final String actualJsonString = actualResponse.getEntity(String.class);
+            assertJsonContentType(actualResponse);
+            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            final String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
+            final String responseSerialNr = (String) actualJsonObject.get("serial_number");
+            final String responseStatus = (String) actualJsonObject.get("status");
+            final String responseReason = (String) actualJsonObject.get("revocation_reason");
+            
+            // Verify rest response
+            assertEquals(issuerDn, responseIssuerDn);
+            assertEquals(serialNr, responseSerialNr);
+            assertEquals("Revoked", responseStatus);
+            assertEquals("KEY_COMPROMISE", responseReason);
+            
+            // Verify actual database value
+            CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
+            String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
+            assertEquals("KEY_COMPROMISE", databaseReason);
+        } finally {
+            endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
+        }
+    }
+    
     @Test
     public void finalizeKeyStoreExpectPkcs12Response() throws Exception {
         // Create an add end entity approval request
