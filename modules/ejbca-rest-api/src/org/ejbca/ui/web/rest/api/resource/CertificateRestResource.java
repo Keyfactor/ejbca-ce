@@ -84,7 +84,6 @@ import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 
 import io.swagger.annotations.Api;
@@ -201,7 +200,7 @@ public class CertificateRestResource extends BaseRestResource {
             // Returning an ID which doesn't exist makes no sense, replace with SDN.
             throw new CADoesntExistsException("CA '" + issuerDn + "' does not exist.");
         }
-        return Response.ok(new RevokeStatusRestResponse(status, issuerDn, serialNumber)).build();
+        return Response.ok(RevokeStatusRestResponse.converter().toRestResponse(status, issuerDn, serialNumber)).build();
     }
 
     /**
@@ -215,12 +214,12 @@ public class CertificateRestResource extends BaseRestResource {
      *                          CACOMPROMISE, AFFILIATIONCHANGED, SUPERSEDED, CESSATIONOFOPERATION,
      *                          CERTIFICATEHOLD, REMOVEFROMCRL, PRIVILEGESWITHDRAWN, AACOMPROMISE
      * @param date           revocation date (optional). Must be valid ISO8601 date string
-     * @return JSON representation of serialNr, revocation status, date and optional message
+     * @return JSON representation of serialNr, issuerDn, revocation status, date and optional message.
      */
     @PUT
     @Path("/{issuer_dn}/{certificate_serial_number}/revoke")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Revokes the specified certificate", notes = "Revokes the specified certificate", response = RevocationResultRestResponse.class)
+    @ApiOperation(value = "Revokes the specified certificate", notes = "Revokes the specified certificate", response = RevokeStatusRestResponse.class)
     public Response revokeCertificate(
             @Context HttpServletRequest requestContext,
             @PathParam("issuer_dn") String issuerDN,
@@ -250,12 +249,15 @@ public class CertificateRestResource extends BaseRestResource {
             revocationDate = new Date();
         }
         raMasterApi.revokeCert(admin, serialNr, revocationDate, issuerDN, revocationReason, false);
-        final RevocationResultRestResponse result = RevocationResultRestResponse.builder()
-                .serialNumber(serialNr)
-                .revocationDate(revocationDate)
-                .status(RevocationResultRestResponse.STATUS_REVOKED)
-                .message("Successfully revoked")
-                .build();
+        
+        final RevokeStatusRestResponse result = RevokeStatusRestResponse.builder().
+            serialNumber(serialNumber).
+            issuerDn(issuerDN).
+            revocationDate(revocationDate).
+            status(RevokeStatusRestResponse.STATUS_REVOKED).
+            revocationReason(reason).
+            message("Successfully revoked").
+            build();
         return Response.ok(result).build();
     }
 
