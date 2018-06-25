@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.ejb.EJBTransactionRolledbackException;
+
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -37,28 +39,26 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.junit.After;
 import org.junit.Test;
 
-import javax.ejb.EJBTransactionRolledbackException;
-
 /**
  * Tests Publisher Queue Data.
- * 
+ *
  * @version $Id$
  */
 public class PublisherQueueTest {
 
     private static byte[] testcert = Base64.decode((
             "MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
-            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw" 
+            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
             + "ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
-            + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" 
+            + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB"
             + "hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy"
-            + "Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe" 
+            + "Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe"
             + "ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G"
-            + "A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM" 
+            + "A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM"
             + "MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw"
-            + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS" 
+            + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS"
             + "5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
-            + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+" 
+            + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
             + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
     private static final Logger log = Logger.getLogger(PublisherQueueTest.class);
@@ -71,7 +71,7 @@ public class PublisherQueueTest {
         Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(publisherId);
         assertEquals(0, c.size());
     }
-    
+
     @Test
     public void testInsertedPendingPublisherQueueHasProperValues() throws Exception {
         final int publisherId = 11111;
@@ -93,13 +93,13 @@ public class PublisherQueueTest {
     public void testQueueDataHasProperValuesAfterUpdate() throws Exception {
         final int publisherId = 11112;
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
-        
+
         Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(publisherId);
         Iterator<PublisherQueueData> iterator = c.iterator();
         PublisherQueueData publisherQueueData1 = iterator.next();
         assertEquals("XX", publisherQueueData1.getFingerprint());
         Date lastUpdate1 = publisherQueueData1.getLastUpdate();
-        
+
         String xxpk = publisherQueueData1.getPk(); // Keep for later so we can set to success
 
         PublisherQueueVolatileInformation vd = new PublisherQueueVolatileInformation();
@@ -108,7 +108,7 @@ public class PublisherQueueTest {
         ExtendedInformation ei = new ExtendedInformation();
         ei.setSubjectDirectoryAttributes("directoryAttr");
         vd.setExtendedInformation(ei);
-        
+
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CRL, "YY", vd, PublisherConst.STATUS_PENDING);
 
         c = publisherQueueSession.getPendingEntriesForPublisher(publisherId);
@@ -144,14 +144,14 @@ public class PublisherQueueTest {
         assertTrue(testedYY);
 
         publisherQueueSession.updateData(xxpk, PublisherConst.STATUS_SUCCESS, 4);
-        
+
         c = publisherQueueSession.getEntriesByFingerprint("XX");
         assertEquals(1, c.size());
         iterator = c.iterator();
         publisherQueueData1 = iterator.next();
         assertEquals("XX", publisherQueueData1.getFingerprint());
         Date lastUpdate2 = publisherQueueData1.getLastUpdate();
-        
+
         assertTrue(lastUpdate2.after(lastUpdate1));
         assertNotNull(publisherQueueData1.getTimeCreated());
         assertEquals(PublisherConst.STATUS_SUCCESS, publisherQueueData1.getPublishStatus());
@@ -164,7 +164,8 @@ public class PublisherQueueTest {
         publisherQueueSession.addQueueData(publisherId, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
         int[] lowerCreatedTimeSearchCriteria = {};
         int[] upperCreatedTimeSearchCriteria = {};
-        int[] actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(publisherId, lowerCreatedTimeSearchCriteria, upperCreatedTimeSearchCriteria);
+        publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(publisherId, lowerCreatedTimeSearchCriteria,
+                upperCreatedTimeSearchCriteria);
     }
 
     @Test
@@ -325,7 +326,7 @@ public class PublisherQueueTest {
 
     @Test
     public void shouldFindPendingPublisherQueueCountsWithCreatedTimeIntervalsTenAndNull() throws Exception {
-	
+
         final int publisherId = 11118;
 
         // verify that there is nothing in the queue in the beginning
@@ -357,8 +358,8 @@ public class PublisherQueueTest {
         int[] lowerCreatedTimeSearchCriteria = {10};
         int[] upperCreateTimeSearchCriteria = {-1};
         actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(publisherId, lowerCreatedTimeSearchCriteria, upperCreateTimeSearchCriteria);
-        log.debug("Returned at "+System.currentTimeMillis()+", actual=" + Arrays.toString(actual));        
-        
+        log.debug("Returned at "+System.currentTimeMillis()+", actual=" + Arrays.toString(actual));
+
         assertEquals(1, actual.length);
         assertEquals(0, actual[0]); // (10, ~) s = 0
     }

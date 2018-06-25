@@ -43,9 +43,6 @@ public class DynamicUiModelBase implements DynamicUiModel {
     /** List of dynamic UI properties. */
     private final LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> properties = new LinkedHashMap<>();
 
-    /** Map of help texts **/
-    private final Map<DynamicUiProperty<? extends Serializable>, String> helpTexts = new LinkedHashMap<DynamicUiProperty<? extends Serializable>, String>();
-
     /** Property change support for dynamic UI components (MUST have same content as java.util.Map 'viewComponents'. */
     protected PropertyChangeSupport propertyChangeSupport;
 

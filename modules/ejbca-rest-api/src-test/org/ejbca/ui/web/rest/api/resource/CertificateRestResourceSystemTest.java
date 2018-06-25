@@ -23,7 +23,6 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -68,8 +67,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @version $Id: CertificateRestResourceSystemTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
-
-    private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
     private static final String TEST_CA_NAME = "RestCertificateResourceTestCa";
     private static final String TEST_USERNAME = "keystoreFinalizeUser";
     private static final JSONParser jsonParser = new JSONParser();
