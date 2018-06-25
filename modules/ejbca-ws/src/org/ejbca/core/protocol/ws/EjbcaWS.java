@@ -1203,7 +1203,7 @@ public class EjbcaWS implements IEjbcaWS {
         try {
 		    final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-            return new KeyStore(raMasterApiProxyBean.pkcs12ReqWS(admin, username, password, hardTokenSN, keyspec, keyalg), password);
+            return new KeyStore(raMasterApiProxyBean.generateOrKeyRecoverToken(admin, username, password, hardTokenSN, keyspec, keyalg), password);
 		} catch (ClassCastException e) {
             throw getInternalException(e, logger);
 		} catch (EJBException e) {
@@ -1214,8 +1214,6 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (AuthLoginException e) {
             throw getEjbcaException(e, logger, ErrorCode.LOGIN_ERROR, Level.ERROR);
         } catch(EjbcaException e) {
-            // ECA-6685 Re-factor.
-            // Fix exception pattern logger thrown in RaMasterApiSessionBean.pkcs12Req to not to serialize the logger.
             throw getEjbcaException(e.getMessage(), logger, e.getErrorCode(), null);
         } catch (RuntimeException e) {	// EJBException, ...
 	            throw getInternalException(e, logger);
