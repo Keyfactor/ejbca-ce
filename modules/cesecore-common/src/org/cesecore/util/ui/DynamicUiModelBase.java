@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Base implementation for domain objects (or other objects) with dynamic UI properties.
- * 
+ *
  * @version $Id$
  *
  */
@@ -42,15 +42,18 @@ public class DynamicUiModelBase implements DynamicUiModel {
 
     /** List of dynamic UI properties. */
     private final LinkedHashMap<String, DynamicUiProperty<? extends Serializable>> properties = new LinkedHashMap<>();
-    
+
+    /** Map of help texts **/
+    private final Map<DynamicUiProperty<? extends Serializable>, String> helpTexts = new LinkedHashMap<DynamicUiProperty<? extends Serializable>, String>();
+
     /** Property change support for dynamic UI components (MUST have same content as java.util.Map 'viewComponents'. */
     protected PropertyChangeSupport propertyChangeSupport;
-    
+
     protected Map<String,List<DynamicUiComponent>> viewComponents;
-  
+
     // True if the dynamic UI input components shall be disabled (i.e. view only).
     protected boolean disabled = false;
-    
+
     /**
      * Default constructor, required for serialization.
      */
@@ -97,7 +100,7 @@ public class DynamicUiModelBase implements DynamicUiModel {
         }
         putData(name, value);
     }
-    
+
     @Override
     public Map<String,Object> getRawData() {
         final LinkedHashMap<String,Object> result = new LinkedHashMap<String,Object>();
@@ -112,7 +115,7 @@ public class DynamicUiModelBase implements DynamicUiModel {
                     result.put(entry.getKey(), entry.getValue().getValues());
                 }
             } else {
-                // BigItnteger is written into XML object as String (XMLEncoder cannot write 
+                // BigItnteger is written into XML object as String (XMLEncoder cannot write
                 // data type classes without default constructor).
                 if (BigInteger.class.equals(entry.getValue().getType()) && entry.getValue() != null && entry.getValue().getValue() != null) {
                     result.put(entry.getKey(), entry.getValue().getValue().toString());
@@ -139,7 +142,7 @@ public class DynamicUiModelBase implements DynamicUiModel {
     private void putData(final String key, final Object value) {
         data.put(key, value);
     }
-    
+
     @Override
     public void addDynamicUiComponent(final String name, final DynamicUiComponent component) {
         propertyChangeSupport.addPropertyChangeListener(name, (PropertyChangeListener) component);
@@ -148,7 +151,7 @@ public class DynamicUiModelBase implements DynamicUiModel {
         }
         viewComponents.get(name).add(component);
     }
-    
+
     @Override
     public void removeDynamicUiComponent(final String name, final DynamicUiComponent component) {
         propertyChangeSupport.removePropertyChangeListener(name, (PropertyChangeListener) component);
@@ -156,7 +159,7 @@ public class DynamicUiModelBase implements DynamicUiModel {
             viewComponents.get(name).remove(component);
         }
     }
-    
+
     @Override
     public List<DynamicUiComponent> getViewComponents(String name) {
         final List<DynamicUiComponent> result = new ArrayList<DynamicUiComponent>();
