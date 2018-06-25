@@ -420,7 +420,6 @@ public class EjbcaWS implements IEjbcaWS {
         try {
             final AuthenticationToken admin = getAdmin();
             logAdminName(admin,logger);
-            // Is this the right place for now? Was not changed.
             final long now = System.currentTimeMillis();
             try {
                 final Collection<java.security.cert.Certificate> certs = EJBTools.unwrapCertCollection(raMasterApiProxyBean.getCertificatesByUsername(admin, username, onlyValid, now));
