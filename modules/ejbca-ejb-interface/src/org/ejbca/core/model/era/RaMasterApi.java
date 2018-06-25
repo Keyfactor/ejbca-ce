@@ -964,36 +964,12 @@ public interface RaMasterApi {
     Collection<CertificateWrapper> getLastCaChain(AuthenticationToken authenticationToken, String caname) throws AuthorizationDeniedException, CADoesntExistsException;
 
     /**
-     * Processes a certificate issuance for the user with the given name.
+     * Processes a certificate request for the user with the given name.
      *
-     * @param authenticationToken the administrator performing the action.
-     * @param username the users name.
-     * @param password the users password
-     * @param req the certificate request.
-     * @param reqType the request type.
-     * @param hardTokenSN the hard token SN, if available.
-     * @param responseType the response type.
-     * @return the base 64 encoded user certificate as byte array.
-     * @throws AuthorizationDeniedException if client isn't authorized to request.
-     * @throws EjbcaException any EjbcaException
-     * @throws CesecoreException any CesecoreException
-     * @throws CADoesntExistsException if the issuing CA associated with the user does not exist.
-     * @throws CertificateExtensionException
-     * @throws InvalidKeyException
-     * @throws SignatureException
-     * @throws InvalidKeySpecException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws IOException
-     * @throws ParseException
-     * @throws ConstructionException
-     * @throws NoSuchFieldException
-     * @throws AuthStatusException
-     * @throws AuthLoginException
-     * @throws RuntimeException
+     * @see org.ejbca.core.ejb.ca.sign.SignSession#createCertificateWS(AuthenticationToken, String, String, String, int, String, String).
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    byte[] processCertReqWS(AuthenticationToken authenticationToken, final String username, final String password, final String req, final int reqType, final String hardTokenSN, final String responseType)
+    byte[] processCertificateRequest(AuthenticationToken authenticationToken, String username, String password, String req, int reqType, String hardTokenSN, String responseType)
         throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException,
                InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
                IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException,
