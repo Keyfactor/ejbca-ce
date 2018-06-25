@@ -48,7 +48,7 @@ import org.easymock.TestSubject;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
-import org.ejbca.ui.web.rest.api.io.response.RevocationResultRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONObject;
@@ -119,7 +119,7 @@ public class CertificateRestResourceUnitTest {
         // given
         final int expectedCode = Status.OK.getStatusCode();
         final String expectedMessage = "Successfully revoked";
-        final String expectedStatus = RevocationResultRestResponse.STATUS_REVOKED;
+        final String expectedStatus = RevokeStatusRestResponse.STATUS_REVOKED;
         final Long expectedSerialNumber = StringTools.getBigIntegerFromHexString("12345").longValue();
         final String expectedRevocationDateString = DATE_FORMAT_ISO8601.format(new Date());
         // when
