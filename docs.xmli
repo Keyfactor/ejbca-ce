@@ -180,7 +180,8 @@
             <arg line="${ejbca.home}/modules/dist/ejbca-rest-api.war ${docs.dest.rest}swagger.json" />
 	  	</java>
 	  	<java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.3.1.jar" fork="true">
-                    <arg line="generate -i ${docs.dest.rest}swagger.json -l html2 -o ${docs.dest.rest}"/>
+                    <arg line="generate -i ${docs.dest.rest}swagger.json -l html2 -o ${docs.dest.rest}
+                    -t ${ejbca.home}/modules/ejbca-rest-api/htmlDocsTemplate"/>
                 </java>
 	    <javadoc destdir="${docs.dest.ws}"
 	             author="true"
