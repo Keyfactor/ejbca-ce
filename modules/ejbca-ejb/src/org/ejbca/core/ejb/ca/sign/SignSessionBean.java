@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -25,6 +26,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -43,6 +45,8 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
@@ -76,9 +80,11 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -96,11 +102,13 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -110,7 +118,11 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.protocol.ws.common.CertificateHelper;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
 
 /**
  * Creates and signs certificates.
@@ -154,7 +166,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private RevocationSessionLocal revocationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-
+    @EJB
+    private HardTokenSessionLocal hardTokenSession;
+    
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
@@ -534,6 +548,56 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace("<createCertificate(pk, ku, date)");
         }
         return cert;
+    }
+    
+    @Override
+    public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final String username, final String password, final String req, final int reqType,
+            final String hardTokenSN, final String responseType)
+            throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException,
+            InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
+            IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException, RuntimeException {
+        byte[] result = null;
+        // Check user exists.
+        final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
+        if (endEntity == null) {
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            throw new NotFoundException(msg);
+        }
+        // Check CA exists and user is authorized to access it.
+        final int caId = endEntity.getCAId();
+        caSession.verifyExistenceOfCA(caId);
+        // Check token type.
+        if (endEntity.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
+            throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE, "Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
+        }
+        // Authorization for {StandardRules.CAACCESS.resource() + caid, StandardRules.CREATECERT.resource()} is done in the
+        // CertificateCreateSessionBean.createCertificate call which is called in the end
+        final RequestMessage requestMessage = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
+        if (requestMessage != null) {
+            result = getCertResponseFromPublicKeyWS(authenticationToken, requestMessage, hardTokenSN, responseType);
+        }
+        return result;
+    }
+
+    // Tbd re-factor: CertificateHelper from WS package causes cyclic module dependency.
+    private byte[] getCertResponseFromPublicKeyWS(final AuthenticationToken admin, final RequestMessage msg, final String hardTokenSN,
+            final String responseType) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
+            CertificateExtensionException, CertificateParsingException {
+        byte[] result = null;
+        final ResponseMessage response = createCertificate(admin, msg, X509ResponseMessage.class, null);
+        final Certificate certificate = CertTools.getCertfromByteArray(response.getResponseMessage(), java.security.cert.Certificate.class);
+        if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
+            result = certificate.getEncoded();
+        } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+            result = createPKCS7(admin, (X509Certificate) certificate, false);
+        } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
+            result = createPKCS7(admin, (X509Certificate) certificate, true);
+        }
+        if (hardTokenSN != null) {
+            hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, certificate);
+        }
+        return result;
     }
 
     @Override

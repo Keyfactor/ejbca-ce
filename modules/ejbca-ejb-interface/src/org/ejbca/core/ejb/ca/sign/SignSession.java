@@ -12,12 +12,20 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
 import java.util.Date;
 
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -41,9 +49,12 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.PublicKeyWrapper;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
 
 /**
  * @version $Id$
@@ -303,6 +314,42 @@ public interface SignSession {
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, NoSuchEndEntityException;
 
+     /**
+      * Creates a certificate for the user with the given name.
+      *
+      * @param authenticationToken the administrator performing the action.
+      * @param username the users name.
+      * @param password the users password
+      * @param req the certificate request.
+      * @param reqType the request type.
+      * @param hardTokenSN the hard token SN, if available.
+      * @param responseType the response type.
+      * @return the base 64 encoded user certificate as byte array.
+      * @throws AuthorizationDeniedException if client isn't authorized to request.
+      * @throws EjbcaException any EjbcaException.
+      * @throws CesecoreException any CesecoreException.
+      * @throws CADoesntExistsException if the issuing CA associated with the user does not exist.
+      * @throws CertificateExtensionException if a certificate extension could not be added to the certificate.
+      * @throws InvalidKeyException if the key is not valid.
+      * @throws SignatureException if a signature does not match (i.e. CSRs POP validation).
+      * @throws InvalidKeySpecException if the key specification is not available.
+      * @throws NoSuchAlgorithmException if the key algorithm is not available.
+      * @throws NoSuchProviderException if the required crypto provider is not installed.
+      * @throws IOException if the certificate could not be encoded.
+      * @throws ParseException if a CVC certificate could not be parsed.
+      * @throws ConstructionException if a CVC could not be assembled.
+      * @throws NoSuchFieldException is thrown if a CVC request can not be parsed.
+      * @throws AuthStatusException if the user has the wrong user status.
+      * @throws AuthLoginException if the users password does not match.
+      * @throws RuntimeException any Runtime exception.
+      */
+     byte[] createCertificateWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType,
+             String hardTokenSN, String responseType)
+             throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
+             CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, 
+             InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, 
+             ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException, RuntimeException;
+     
     /**
      * Method that generates a request failed response message. The request
      * should already have been decrypted and verified.

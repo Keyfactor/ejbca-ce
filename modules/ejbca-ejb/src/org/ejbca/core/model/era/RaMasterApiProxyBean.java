@@ -2307,25 +2307,49 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] processCertReqWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType,
-            String hardTokenSN, String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException,
-            InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
-            IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException,
-            AuthLoginException, RuntimeException {
+    public byte[] processCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String req, final int reqType,
+            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
+            CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, InvalidKeySpecException, 
+            NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, ParseException, ConstructionException, 
+            NoSuchFieldException, AuthStatusException, AuthLoginException, RuntimeException {
+        AuthorizationDeniedException authorizationDeniedException = null;
         NotFoundException notFoundException = null;
+        CADoesntExistsException caDoesntExistsException = null;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.processCertReqWS(authenticationToken, username, password, req, reqType, hardTokenSN, responseType);
-                } catch (NotFoundException e) {
-                    notFoundException = e;
+                    return raMasterApi.processCertificateRequest(authenticationToken, username, password, req, reqType, hardTokenSN, responseType);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Authorization was denied to process certificate request for proxied request: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (NotFoundException e) {
+                    log.info("User with name " + username + " for proxied request could not be found: " + e.getMessage());
+                    if (notFoundException == null) {
+                        notFoundException = e;
+                    }
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    log.info("CA for for poxied request cold not be found:" + e.getMessage());
+                    if (caDoesntExistsException == null) {
+                        caDoesntExistsException = e;
+                    }
                     // Just try next implementation
                 }
             }
         }
         if (notFoundException != null) {
             throw notFoundException;
+        }
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
         }
         return null;
     }
