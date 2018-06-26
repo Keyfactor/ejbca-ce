@@ -471,6 +471,14 @@
 				replacement-context-root="/ejbca/ejbca-rest-api"
 		/>
 		
+		<war-replacement-in-module
+                replacement-tag="!--@swagger-ui.war@-->"
+                replacement-file="${eardd.src}/META-INF/application.xml"
+                replacement-enabled="${mod.ejbca-rest-api.exists}"
+                replacement-web-uri="swagger-ui.war"
+                replacement-context-root="/ejbca/swagger-ui"
+		        />
+		
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
@@ -566,7 +574,8 @@
                 <include name="peerconnector-ejb.jar" />
                 <include name="unidfnr-ejb.jar" />
                 <include name="ra-gui.war" />
-		<include name="ejbca-rest-api.war"/>
+                <include name="ejbca-rest-api.war"/>
+            	<include name="swagger-ui.war"/>
                 <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
 				<include name="${in-test-mode-include}acme.war" />
             </fileset>
@@ -1320,7 +1329,10 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="ejbca-rest-api-war" />
     </target>
 
-
+    <target name="swagger-ui.war">
+        <ant dir="modules" target="swagger-ui-war" />
+    </target>
+    	
     <target name="status.war">
     	<ant dir="modules" target="va-ejbca-war" />
     </target>
