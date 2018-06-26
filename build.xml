@@ -576,8 +576,7 @@
                 <include name="ra-gui.war" />
                 <include name="ejbca-rest-api.war"/>
             	<include name="swagger-ui.war"/>
-                <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
-				<include name="${in-test-mode-include}acme.war" />
+				<include name="acme.war" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
@@ -607,13 +606,9 @@
         		<include name="peerconnector-entity.jar" />
         		<include name="va-publisher.jar" />
         		<include name="caa.jar" />
-	                <include name="unidfnr-ejb.jar" />
-	                <include name="ejbca-ejb.jar" />
-
-
-
-                <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
-				<include name="${in-test-mode-include}acme-common.jar" />
+	            <include name="unidfnr-ejb.jar" />
+	            <include name="ejbca-ejb.jar" />
+				<include name="acme-common.jar" />
         	</zipfileset>
             <!-- Include XStream for the use from statedump-ejb.jar -->
             <zipfileset prefix="lib" dir="${lib}/xstream" erroronmissingdir="false">
@@ -900,8 +895,6 @@
 		    	<exclude name="**/hs_err*" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
-		    	<!-- Exclude ACME until finished. -->
-		    	<exclude name="modules/acme/**" />
 		    	<!-- Exclude Web Tests -->
 		    	<exclude name="modules/ejbca-webtest/**"/>
 		    	<!-- Exclude internal Confluence information -->
