@@ -191,4 +191,13 @@ public interface CertificateProfileSession {
      */
     public boolean existsPublisherIdInCertificateProfiles(int publisherid);
 
+    /**
+     * Returns the given certificate profile in XML format
+     * 
+     * @param profileId the id of the certificate profile
+     * @return the certificate profile encoded as XML
+     * @throws CertificateProfileDoesNotExistException if the profile with the given ID didn't exist. 
+     */
+    byte[] getProfileAsXml(int profileId) throws CertificateProfileDoesNotExistException;
+
 }
