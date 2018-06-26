@@ -135,7 +135,7 @@ public class CertificateRestResource extends BaseRestResource {
             X509Certificate cert = CertTools.getCertfromByteArray(certificate, X509Certificate.class);
             CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(cert);
             return Response.ok(enrollCertificateRestResponse).build();
-        } catch (EjbcaException | EndEntityProfileNotFoundException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
+        } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
     }
