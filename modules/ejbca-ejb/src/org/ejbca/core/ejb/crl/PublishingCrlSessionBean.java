@@ -248,8 +248,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 nextUpdate = lastBaseCrlInfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
                                 if (crlissueinterval > 0) {
                                     long u = lastBaseCrlInfo.getCreateDate().getTime() + crlissueinterval;
-                                    // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
-                                    // we need to issue one when the CRL expires
+                                    // If this period for some reason (we missed to issue some?) is larger than when the CRL expires
+                                    // we need to issue one when the CRL expires, but normally we want to generate one now if crlissueinterval kicks in
                                     if ((u + overlap) < nextUpdate) {
                                         nextUpdate = u;
                                         // When we issue CRLs before the real expiration date we don't use overlap
@@ -266,7 +266,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             }
                             if (now.getTime() + overlap >= nextUpdate) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Creating CRL for CA, because:"+now.getTime()+overlap+" >= "+nextUpdate);                                                
+                                    log.debug("Creating CRL for CA, because:"+(now.getTime()+overlap)+" >= "+nextUpdate);                                                
                                 }
                                 if (internalCreateCRL(admin, ca, lastBaseCrlInfo) != null) {
                                     ret = true;                                 
