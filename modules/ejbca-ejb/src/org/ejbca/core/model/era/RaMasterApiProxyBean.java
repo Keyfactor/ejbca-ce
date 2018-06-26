@@ -2549,50 +2549,79 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] getProfileXml(final AuthenticationToken authenticationToken, final int profileId, final String profileType)
-            throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException {
+    public byte[] getEndEntityProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
+            throws AuthorizationDeniedException, EndEntityProfileNotFoundException{
         AuthorizationDeniedException authorizationDeniedException = null;
-        EjbcaException ejbcaException = null;
-        UnknownProfileTypeException unknownProfileTypeException = null;
+        EndEntityProfileNotFoundException endEntityProfileNotFoundException = null;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getProfileXml(authenticationToken, profileId, profileType);
+                    return raMasterApi.getEndEntityProfileAsXml(authenticationToken, profileId);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 } catch (AuthorizationDeniedException  e) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Authorization was denied to access the profile with ID " + profileId + " and type " + profileType + " for proxied request on CA. " + e.getMessage());
+                        log.debug("Authorization was denied to access the End Entity Profile with ID " + profileId + " for proxied request on CA. " + e.getMessage());
                     }
                     if (authorizationDeniedException == null) {
                         authorizationDeniedException = e;
                     }
                     // Just try next implementation
-                } catch (UnknownProfileTypeException e) {
+                }  catch (EndEntityProfileNotFoundException  e) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Profile type " + profileType + " was not supported (next peer will be tried, if any). " + e.getMessage());
+                        log.debug("End Entity Profile with ID " + profileId +  " could not be found for proxied request on CA. " + e.getMessage());
                     }
-                    unknownProfileTypeException = e;
-                } catch (EjbcaException  e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Profile with ID " + profileId + " and type " + profileType + " could not be found for proxied request on CA. " + e.getMessage());
-                    }
-                    if (ejbcaException == null) {
-                        ejbcaException = e;
+                    if (endEntityProfileNotFoundException == null) {
+                        endEntityProfileNotFoundException = e;
                     }
                     // Just try next implementation
                 }
             }
         }
-        // UnknownProfileTypeException and technical errors (IOException) are not to catch here.
-        if (ejbcaException != null) {
-            throw ejbcaException;
+        if (endEntityProfileNotFoundException != null) {
+            throw endEntityProfileNotFoundException;
         }
         if (authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
-        if (unknownProfileTypeException != null) {
-            throw unknownProfileTypeException;
+        return null;
+    }
+    
+    @Override
+    public byte[] getCertificateProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
+            throws AuthorizationDeniedException, CertificateProfileDoesNotExistException{
+        AuthorizationDeniedException authorizationDeniedException = null;
+        CertificateProfileDoesNotExistException certificateProfileNotFoundException = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.getCertificateProfileAsXml(authenticationToken, profileId);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Authorization was denied to access the End Entity Profile with ID " + profileId + " for proxied request on CA. " + e.getMessage());
+                    }
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                }  catch (CertificateProfileDoesNotExistException  e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("End Entity Profile with ID " + profileId +  " could not be found for proxied request on CA. " + e.getMessage());
+                    }
+                    if (certificateProfileNotFoundException == null) {
+                        certificateProfileNotFoundException = e;
+                    }
+                    // Just try next implementation
+                }
+            }
+        }
+        if (certificateProfileNotFoundException != null) {
+            throw certificateProfileNotFoundException;
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
         }
         return null;
     }

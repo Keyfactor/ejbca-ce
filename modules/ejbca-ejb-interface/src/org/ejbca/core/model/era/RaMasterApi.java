@@ -1078,13 +1078,22 @@ public interface RaMasterApi {
            throws AuthorizationDeniedException, CADoesntExistsException, NotFoundException, EjbcaException;
 
    /**
-    * Fetches the profile specified by profileId and profileType in XML format.
+    * Fetches the end entity profile specified by profileId in XML format.
     *
     * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getProfile
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
-   byte[] getProfileXml(AuthenticationToken authenticationToken, int profileId, String profileType)
-           throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException;
+    byte[] getEndEntityProfileAsXml(AuthenticationToken authenticationToken, int profileId)
+            throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
+    
+    /**
+     * Fetches the certificate profile specified by profileId in XML format.
+     *
+     * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getProfile
+     * @since RA Master API version 4 (EJBCA 6.14.0)
+     */
+     byte[] getCertificateProfileAsXml(AuthenticationToken authenticationToken, int profileId)
+             throws AuthorizationDeniedException, CertificateProfileDoesNotExistException;
 
    /**
     * Generates a CV certificate for a user.

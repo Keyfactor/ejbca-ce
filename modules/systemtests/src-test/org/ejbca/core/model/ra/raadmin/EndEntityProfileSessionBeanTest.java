@@ -739,52 +739,5 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         }
     }
         
-    @Test
-    public void test05GetEndEntityProfileByIdAndType() throws Exception {
-        log.trace(">test05GetEndEntityProfileByIdAndType()");
-
-        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile("TEST");
-        assertNotNull("The end entity profile stored must exist for this test. Check sequence of tests.", profile);
-        int profileId = -1;
-        try {
-            profileId = endEntityProfileSession.getEndEntityProfileId("TEST");
-        } catch (EndEntityProfileNotFoundException e) {
-            fail( "The end entity profile stored must exist for this test. Check sequence of tests.");
-        }
-        
-        // 1. Test get for type 'eep'.
-        byte[] profile1 = endEntityProfileSession.getProfile(alwaysAllowToken, profileId, "eep");
-        assertNotNull("The end entity profile stored must have been retrieved by ID and type 'eep' as well.", profile1);
-
-        // 2 Test exception handling.
-        // 2.1 Test non existing profile.
-        final int notExistingId = -2342999;
-        profile = endEntityProfileSession.getEndEntityProfile(notExistingId);
-        if (null != profile) {
-            try {
-                profile1 = endEntityProfileSession.getProfile(alwaysAllowToken, notExistingId, "eep");
-                fail("Try to load a non existing EEP should throw an exception: " + profile1);
-            } catch(Exception e) {
-                assertTrue(e instanceof EjbcaException);
-                assertEquals("The EjbcaException thrown if en EEP was not found must have the desired error code.", 
-                        ErrorCode.EE_PROFILE_NOT_EXISTS, ((EjbcaException) e).getErrorCode());
-                assertEquals("The EjbcaException thrown if en EEP was not found must have the desired error message.", 
-                        "Could not find end entity profile with ID '" + profileId + "' in the database.", e.getMessage());
-            }
-        }
-        // 2.2 Test non existing profile type.
-        final String notExistingType = "eepFantasyTypeThatShouldNotExist";
-        try {
-            profile1 = endEntityProfileSession.getProfile(alwaysAllowToken, profileId, notExistingType);
-            fail("Try to load an existing EEP (with wrong type '" + notExistingType + "') should throw an exception: " + profile1);
-        } catch(Exception e) {
-            assertTrue(e instanceof UnknownProfileTypeException);
-            assertEquals("Unknown profile type '" + notExistingType + 
-                    "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles", e.getMessage());
-        }
-        
-        // Tbd. Test for certificate profiles, or more generic for other profile types as well (must be implemented first).
-        
-        log.trace("<test05GetEndEntityProfileByIdAndType()");
-    }
+  
 }

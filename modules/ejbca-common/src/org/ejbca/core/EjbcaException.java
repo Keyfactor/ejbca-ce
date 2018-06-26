@@ -95,7 +95,7 @@ public class EjbcaException extends Exception {
      * @param errorCode defines the cause of the exception.
      * @param exception exception to be embedded.
      */
-    public EjbcaException(ErrorCode errorCode, Exception exception) {
+    public EjbcaException(ErrorCode errorCode, Throwable exception) {
         super(exception);
         this.errorCode = errorCode;
     }

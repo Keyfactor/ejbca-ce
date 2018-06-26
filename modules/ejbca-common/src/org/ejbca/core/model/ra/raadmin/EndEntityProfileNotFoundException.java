@@ -12,13 +12,16 @@
  *************************************************************************/
 package org.ejbca.core.model.ra.raadmin;
 
+import org.cesecore.ErrorCode;
+import org.ejbca.core.EjbcaException;
+
 /**
  * Thrown when an end entity profile was not found. 
  * 
  * @version $Id$
  *
  */
-public class EndEntityProfileNotFoundException extends Exception {
+public class EndEntityProfileNotFoundException extends EjbcaException {
 
     private static final long serialVersionUID = 1901011578701643327L;
 
@@ -35,7 +38,7 @@ public class EndEntityProfileNotFoundException extends Exception {
     }
 
     public EndEntityProfileNotFoundException(Throwable cause) {
-        super(cause);
+        super(ErrorCode.EE_PROFILE_NOT_EXISTS, cause);
     }
     
     public EndEntityProfileNotFoundException(final int endEntityProfileId) {

@@ -36,7 +36,6 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -57,7 +56,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -635,31 +633,22 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public byte[] getProfile(final AuthenticationToken authenticationToken, final int profileId, final String profileType)
-            throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException {
+    public byte[] getProfileAsXml(final int profileId) throws EndEntityProfileNotFoundException {
         UpgradeableDataHashMap profile = null;
-        if(StringUtils.equalsIgnoreCase(profileType, "eep")) {
-            profile = getEndEntityProfileNoClone(profileId);
-            if(profile == null) {
-                throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, "Could not find end entity profile with ID '" + profileId + "' in the database.");
-            }
-        } else if(StringUtils.equalsIgnoreCase(profileType, "cp")) {
-            profile = certificateProfileSession.getCertificateProfile(profileId);
-            if(profile == null) {
-                throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, "Could not find certificate profile with ID '" + profileId + "' in the database.");
-            }
-        } else {
-            throw new UnknownProfileTypeException("Unknown profile type '" + profileType + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
+        profile = getEndEntityProfileNoClone(profileId);
+        if (profile == null) {
+            throw new EndEntityProfileNotFoundException("Could not find end entity profile with ID '" + profileId + "' in the database.");
         }
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
             encoder.close(); // Is this required here?
             return baos.toByteArray();
         } catch (IOException e) {
+            String msg = "Could not encode profile with ID " + profileId + " to XML: " + e.getMessage();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Could not encode profile with ID " + profileId + " type " + profileType + " to XML: " + e.getMessage(), e);
+                LOG.debug(msg, e);
             }
-            throw e;
+            throw new IllegalStateException(msg, e);
         }
     }
 

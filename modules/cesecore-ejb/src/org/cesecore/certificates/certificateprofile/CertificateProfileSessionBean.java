@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.certificateprofile;
 
+import java.beans.XMLEncoder;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +32,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -43,8 +47,10 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 /**
  * Bean managing certificate profiles, see CertificateProfileSession for Javadoc.
@@ -539,5 +545,25 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             ret = authorizationSession.isAuthorizedNoLogging(admin, rules.toArray(new String[rules.size()]));
         }
         return ret;
+    }
+    
+    @Override
+    public byte[] getProfileAsXml(final int profileId) throws CertificateProfileDoesNotExistException {
+        UpgradeableDataHashMap profile = null;
+        profile = getCertificateProfile(profileId);
+        if (profile == null) {
+            throw new CertificateProfileDoesNotExistException("Could not find certificate profile with ID '" + profileId + "' in the database.");
+        }
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
+            encoder.writeObject(profile.saveData());
+            encoder.close(); // Is this required here?
+            return baos.toByteArray();
+        } catch (IOException e) {
+            String msg = "Could not encode profile with ID " + profileId + " to XML: " + e.getMessage();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(msg, e);
+            }
+            throw new IllegalStateException(msg, e);
+        }
     }
 }

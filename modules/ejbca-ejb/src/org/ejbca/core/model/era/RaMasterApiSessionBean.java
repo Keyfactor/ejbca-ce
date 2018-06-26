@@ -2467,9 +2467,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] getProfileXml(final AuthenticationToken authenticationToken, final int profileId, final String profileType)
-            throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException {
-        return endEntityProfileSession.getProfile(authenticationToken, profileId, profileType);
+    public byte[] getEndEntityProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
+            throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
+        return endEntityProfileSession.getProfileAsXml(profileId);
+    }
+    
+    @Override
+    public byte[] getCertificateProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
+            throws AuthorizationDeniedException, CertificateProfileDoesNotExistException {
+        return certificateProfileSession.getProfileAsXml(profileId);
     }
     
     @Override
