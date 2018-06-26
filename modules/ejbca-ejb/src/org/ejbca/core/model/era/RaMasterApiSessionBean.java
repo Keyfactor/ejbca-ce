@@ -27,6 +27,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
@@ -191,6 +192,7 @@ import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
@@ -2449,7 +2451,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                         certReqHistory.getEndEntityInformation().getPassword(), certReqHistory.getEndEntityInformation().getCertificateDN(), certReqHistory.getEndEntityInformation().getExtendedInformation())) {
                 } else {
                     throw new PublisherException("Error: publication failed to at least one of the defined publishers.");
-                }
+                } 
             } else {
                 throw new PublisherException("Error no publisher defined for the given certificate.");
             }
@@ -2468,5 +2470,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public byte[] getProfileXml(final AuthenticationToken authenticationToken, final int profileId, final String profileType)
             throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException {
         return endEntityProfileSession.getProfile(authenticationToken, profileId, profileType);
+    }
+    
+    @Override
+    public Collection<CertificateWrapper> processCVCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcreq)
+            throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+            ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException {
+        return signSessionLocal.createCVCertificateWS(authenticationToken, username, password, cvcreq);
     }
 }

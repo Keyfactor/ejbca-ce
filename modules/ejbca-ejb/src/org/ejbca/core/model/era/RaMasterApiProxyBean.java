@@ -27,6 +27,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
@@ -133,6 +134,7 @@ import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -2591,6 +2593,52 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         if (unknownProfileTypeException != null) {
             throw unknownProfileTypeException;
+        }
+        return null;
+    }
+    
+    @Override
+    public Collection<CertificateWrapper> processCVCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcreq)
+            throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+            ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        NotFoundException notFoundException = null;
+        CADoesntExistsException caDoesntExistsException = null;
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.processCVCertificateRequest(authenticationToken, username, password, cvcreq);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Authorization was denied to process certificate request for proxied request: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (NotFoundException e) {
+                    log.info("User with name " + username + " for proxied request could not be found: " + e.getMessage());
+                    if (notFoundException == null) {
+                        notFoundException = e;
+                    }
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    log.info("CA for for poxied request cold not be found:" + e.getMessage());
+                    if (caDoesntExistsException == null) {
+                        caDoesntExistsException = e;
+                    }
+                    // Just try next implementation
+                }
+            }
+        }
+        if (notFoundException != null) {
+            throw notFoundException;
+        }
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
         }
         return null;
     }
