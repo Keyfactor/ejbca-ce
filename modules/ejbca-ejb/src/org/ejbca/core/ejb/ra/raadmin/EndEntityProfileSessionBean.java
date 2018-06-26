@@ -46,7 +46,6 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
 import org.ejbca.core.EjbcaException;
@@ -109,7 +108,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             throw new EndEntityProfileExistsException(msg);
         } else {
             // Check authorization before adding
-            authorizedToProfile(admin, profile);
+            authorizedToEditProfile(admin, profile);
             try {
                 entityManager.persist(new EndEntityProfileData(Integer.valueOf(profileid), profilename, profile));
                 flushProfileCache();
@@ -146,7 +145,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             if (pdl != null) {
                 // Check authorization before cloning
                 final EndEntityProfile profile = pdl.getProfile();
-                authorizedToProfile(admin, profile);
+                authorizedToEditProfile(admin, profile);
             	try {
             		final int profileid = findFreeEndEntityProfileId();
             		entityManager.persist(new EndEntityProfileData(profileid, newname, (EndEntityProfile)profile.clone()));
@@ -510,7 +509,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         	throw new EndEntityProfileNotFoundException("End entity profile of name \"" + profilename + "\" not found.");
         } else {
             // Check authorization before editing
-            authorizedToProfile(admin, profile);
+            authorizedToEditProfile(admin, profile);
             // Get the diff of what changed
             Map<Object, Object> diff = pdl.getProfile().diff(profile);
             pdl.setProfile(profile);
@@ -535,7 +534,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     			}
     		} else {
     		    // Check authorization before removing
-                authorizedToProfile(admin, pdl.getProfile());
+                authorizedToEditProfile(admin, pdl.getProfile());
     		    try {
     		        entityManager.remove(pdl);
     		        flushProfileCache();
@@ -568,7 +567,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             	LOG.info(msg);
             } else {
                 // Check authorization before renaming
-                authorizedToProfile(admin, pdl.getProfile());
+                authorizedToEditProfile(admin, pdl.getProfile());
                 pdl.setProfileName(newprofilename);
                 flushProfileCache();
                 final String msg = INTRES.getLocalizedMessage("ra.renamedprofile", oldprofilename, newprofilename);
@@ -633,12 +632,14 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public byte[] getProfileAsXml(final int profileId) throws EndEntityProfileNotFoundException {
-        UpgradeableDataHashMap profile = null;
+    public byte[] getProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
+            throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        EndEntityProfile profile = null;
         profile = getEndEntityProfileNoClone(profileId);
         if (profile == null) {
             throw new EndEntityProfileNotFoundException("Could not find end entity profile with ID '" + profileId + "' in the database.");
         }
+        authorizedToViewProfile(authenticationToken, profile);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
             encoder.close(); // Is this required here?
@@ -659,12 +660,25 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         return foundfree;
     }
+    
+    /**
+     * Help function that checks if administrator is authorized to view profile.
+     * @param profile is the end entity profile or null for EndEntityConstants.EMPTY_END_ENTITY_PROFILE
+     */
+    private void authorizedToViewProfile(final AuthenticationToken admin, final EndEntityProfile profile)  throws AuthorizationDeniedException {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES) && profile != null) {
+            authorizedToProfileCas(admin, profile);
+        } else {
+            final String msg = INTRES.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, admin.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
 
     /**
      * Help function that checks if administrator is authorized to edit profile.
      * @param profile is the end entity profile or null for EndEntityConstants.EMPTY_END_ENTITY_PROFILE
      */
-    private void authorizedToProfile(final AuthenticationToken admin, final EndEntityProfile profile)  throws AuthorizationDeniedException {
+    private void authorizedToEditProfile(final AuthenticationToken admin, final EndEntityProfile profile)  throws AuthorizationDeniedException {
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null) {
             authorizedToProfileCas(admin, profile);
         } else {

@@ -97,7 +97,7 @@ public interface CertificateProfileSession {
      *            CertificateConstants.CERTTYPE_SUBCA,
      *            CertificateConstants.CERTTYPE_ROOTCA,
      *            CertificateConstants.CERTTYPE_HARDTOKEN (i.e EndEntity
-     *            certificates and Hardtoken fixed profiles) or 0 for all.
+     *            certificates and Hardtoken fixed profiles) or CertificateConstants.CERTTYPE_UNKNOWN for all.
      *            Retrieves certificate profile names sorted.
      * @return Collection of id:s (Integer)
      */
@@ -194,10 +194,12 @@ public interface CertificateProfileSession {
     /**
      * Returns the given certificate profile in XML format
      * 
+     * @param authenticationToken the administrator requesting the action
      * @param profileId the id of the certificate profile
      * @return the certificate profile encoded as XML
      * @throws CertificateProfileDoesNotExistException if the profile with the given ID didn't exist. 
+     * @throws AuthorizationDeniedException if the profile contained CAs that the admin wasn't authorized to
      */
-    byte[] getProfileAsXml(int profileId) throws CertificateProfileDoesNotExistException;
+    byte[] getProfileAsXml(final AuthenticationToken authenticationToken, final int profileId) throws CertificateProfileDoesNotExistException, AuthorizationDeniedException;
 
 }

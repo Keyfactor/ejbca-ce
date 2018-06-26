@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,6 @@ import java.util.Map;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -197,13 +195,15 @@ public interface EndEntityProfileSession {
      * Authorization requirements:<pre>
      * - /administrator
      * - /endentityprofilesrules/&lt;end entity profile&gt;
+     * - /ca/&lt;ca name&gt;
      * </pre>
      *
      * For detailed documentation for how to parse an End Entity Profile XML, see the org.ejbca.core.model.ra.raadmin.EndEntity class.
      *
      * @param profileId ID of the profile we want to retrieve.
      * @return a byte array containing the specified profile in XML format.
+     * @throws AuthorizationDeniedException if the requesting admin wasn't authorized to the profile or any of the CA's therein
      * @throws EndEntityProfileNotFoundException if the profile was not found
      */
-    byte[] getProfileAsXml(int profileId) throws EndEntityProfileNotFoundException;
+    byte[] getProfileAsXml(AuthenticationToken authenticationToken, int profileId) throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
 }
