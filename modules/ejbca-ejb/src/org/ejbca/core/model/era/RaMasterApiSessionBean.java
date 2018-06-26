@@ -1965,10 +1965,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         boolean keyRecoverySuccessful;
         boolean authorized = true;
         // If called from the wrong instance, return to proxybean and try next implementation
-        if (endEntityAccessSession.findUser(authenticationToken, username) == null) {
+        final EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(authenticationToken, username);
+        if (endEntityInformation == null) {
             return false;
         }
-        int endEntityProfileId = endEntityAccessSession.findUser(authenticationToken, username).getEndEntityProfileId();
+        int endEntityProfileId = endEntityInformation.getEndEntityProfileId();
         if (((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableEndEntityProfileLimitations()) {
             authorized = authorizationSession.isAuthorized(authenticationToken, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(endEntityProfileId) + AccessRulesConstants.KEYRECOVERY_RIGHTS,
                                                             AccessRulesConstants.REGULAR_RAFUNCTIONALITY + AccessRulesConstants.KEYRECOVERY_RIGHTS);
@@ -2464,7 +2465,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] getProfile(final AuthenticationToken authenticationToken, final int profileId, final String profileType)
+    public byte[] getProfileXml(final AuthenticationToken authenticationToken, final int profileId, final String profileType)
             throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException {
         return endEntityProfileSession.getProfile(authenticationToken, profileId, profileType);
     }

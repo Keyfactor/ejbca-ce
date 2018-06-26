@@ -1078,9 +1078,9 @@ public interface RaMasterApi {
    /**
     * Fetches the profile specified by profileId and profileType in XML format.
     *
-    * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getProfile(AuthenticationToken authenticationToken, int profileId, String profileType).
+    * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getProfile
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
-   byte[] getProfile(AuthenticationToken authenticationToken, int profileId, String profileType)
+   byte[] getProfileXml(AuthenticationToken authenticationToken, int profileId, String profileType)
            throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException;
 }
