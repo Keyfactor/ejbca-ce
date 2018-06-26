@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="modules/admin-gui/resources"/>
+	<classpathentry excluding="**/*.min.js/|**/bower_components/*/|**/node_modules/*/|absolute-path.js|index.js|swagger-ui-bundle.js|swagger-ui-standalone-preset.js|swagger-ui.js" kind="src" path="modules/swagger-ui/build/swagger-ui-dist"/>
+	<classpathentry excluding="**/*.min.js/|**/bower_components/*/|**/node_modules/*/|absolute-path.js|index.js|swagger-ui-bundle.js|swagger-ui-standalone-preset.js|swagger-ui.js" kind="src" path="modules/swagger-ui/swagger-ui-dist"/>
 	<classpathentry excluding="**/*.min.js/|**/bower_components/*/|**/node_modules/*/|absolute-path.js|index.js|swagger-ui-bundle.js|swagger-ui-standalone-preset.js|swagger-ui.js" kind="src" path="modules/ejbca-rest-api/swagger-ui-dist"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/resources"/>
 	<classpathentry kind="src" path="modules/ra-gui/resources"/>
