@@ -1658,7 +1658,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             endEntityManagementSession.deleteUser(admin, username);
         } catch (NoSuchEndEntityException | CouldNotRemoveEndEntityException e) {
-            log.error(e);
+            log.info(e.getMessage());
         }
     }
 
