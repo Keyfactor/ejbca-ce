@@ -124,7 +124,7 @@ public class OCSPUnidExtension implements OCSPExtension {
         	return null;
         }
 
-        String successMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, serialNumber);
+        String successMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, serialNumber);
         log.info(successMsg);
         
         return generateUnidFnrOCSPResponce(fnr);
