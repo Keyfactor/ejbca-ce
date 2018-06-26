@@ -20,6 +20,7 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
+import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
@@ -51,8 +53,12 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
@@ -313,7 +319,30 @@ public interface SignSession {
             AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, NoSuchEndEntityException;
-
+     
+     /**
+      * Generates a CV certificate for a user.
+      *
+      * @param authenticationToken the administrator performing the action.
+      * @param username the user name of the user requesting the certificate.
+      * @param password the password for initial enrollment, not used for renewal requests that can be authenticated using signatures with keys with valid certificates.
+      * @param cvcreq Base64 encoded CVC request message.
+      * @return the full certificate chain for the IS, with IS certificate in pos 0, DV in 1, CVCA in 2.
+      * @throws AuthorizationDeniedException if administrator is not authorized to edit end entity or if an authenticated request can not be verified.
+      * @throws CADoesntExistsException if a referenced CA does not exist.
+      * @throws UserDoesntFullfillEndEntityProfile if the request data does not full fill the end entity profile restrictions.
+      * @throws NotFoundException if the user could not be found.
+      * @throws ApprovalException if an approval was denied.
+      * @throws EjbcaException any EjbcaException.
+      * @throws WaitingForApprovalException if there is a pending approval.
+      * @throws SignRequestException if the provided request is invalid, for example not containing a username or password.
+      * @throws CertificateExpiredException if the users old certificate has expired.
+      * @throws CesecoreException any CesecoreException.
+      */
+     Collection<CertificateWrapper> createCVCertificateWS(AuthenticationToken authenticationToken, String username, String password, String cvcreq) throws 
+            AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+            ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
+     
      /**
       * Creates a certificate for the user with the given name.
       *
