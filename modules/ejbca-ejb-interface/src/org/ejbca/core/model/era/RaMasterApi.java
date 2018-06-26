@@ -22,6 +22,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
@@ -89,6 +90,7 @@ import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -1083,4 +1085,14 @@ public interface RaMasterApi {
     */
    byte[] getProfileXml(AuthenticationToken authenticationToken, int profileId, String profileType)
            throws AuthorizationDeniedException, UnknownProfileTypeException, EjbcaException, IOException;
+
+   /**
+    * Generates a CV certificate for a user.
+    *
+    * @see org.ejbca.core.ejb.ca.sign.SignSession#createCVCertificateWS(AuthenticationToken, String, String, String).
+    * @since RA Master API version 4 (EJBCA 6.14.0)
+    */
+   Collection<CertificateWrapper> processCVCertificateRequest(AuthenticationToken authenticationToken, String username, String password, String cvcreq)
+           throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+           ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
 }
