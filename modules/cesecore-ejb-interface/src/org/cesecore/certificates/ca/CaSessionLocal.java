@@ -92,7 +92,7 @@ public interface CaSessionLocal extends CaSession {
      * @see #getCAForEdit(AuthenticationToken, String)
      * 
      * @param admin AuthenticationToken of admin
-     * @param caid identifies the CA
+     * @param caid identifies the CA (CertTools.stringToBCDNString(StringTools.strip(caSubjectDN)).hashCode())
      * @return the CA object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
@@ -126,7 +126,7 @@ public interface CaSessionLocal extends CaSession {
      * @see #getCA(AuthenticationToken, String)
      * 
      * @param admin AuthenticationToken of admin
-     * @param caid identifies the CA
+     * @param caid identifies the CA (CertTools.stringToBCDNString(StringTools.strip(caSubjectDN)).hashCode())
      * @return CA value object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
@@ -163,7 +163,7 @@ public interface CaSessionLocal extends CaSession {
     /**
      * Verify that a CA exists.
      * 
-     * @param caid is the id of the CA
+     * @param caid is the id of the CA (CertTools.stringToBCDNString(StringTools.strip(caSubjectDN))
      * @throws CADoesntExistsException if the CA is not found
      */
     void verifyExistenceOfCA(int caid) throws CADoesntExistsException;
@@ -192,7 +192,7 @@ public interface CaSessionLocal extends CaSession {
      * Note! No authorization checks performed in this internal method
      * 
      * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 if a name is to be used instead
+     *            numerical id of CA (CertTools.stringToBCDNString(StringTools.strip(caSubjectDN)).hashCode()) that we search for, or -1 if a name is to be used instead
      * @param name
      *            human readable name of CA, used instead of caid if caid == -1, can be null if caid != -1
      * @param fromCache if we should use the CA cache or return a new, decoupled, instance from the database, to be used when you need
@@ -206,7 +206,7 @@ public interface CaSessionLocal extends CaSession {
      * 
      * Note! No authorization checks performed in this internal method
      * 
-     * @param caid numerical id of CA (subjectDN.hashCode()) that we search for
+     * @param caid numerical id of CA (CertTools.stringToBCDNString(StringTools.strip(caSubjectDN)).hashCode()) that we search for
      * @return CA value object, or null if it doesn't exist.
      */
     CAInfo getCAInfoInternal(final int caid);
@@ -222,7 +222,7 @@ public interface CaSessionLocal extends CaSession {
      * @see #getCAForEdit(AuthenticationToken, String)
      * 
      * @param admin AuthenticationToken of admin
-     * @param caid identifies the CA
+     * @param caid identifies the CA (CertTools.stringToBCDNString(StringTools.strip(caSubjectDN)).hashCode())
      * @return the CA object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
