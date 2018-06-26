@@ -32,7 +32,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -50,7 +49,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 /**
  * Bean managing certificate profiles, see CertificateProfileSession for Javadoc.
@@ -236,19 +234,19 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAllCaIds());
 
         // Add fixed certificate profiles.
-        if (certprofiletype == 0 || certprofiletype == CertificateConstants.CERTTYPE_ENDENTITY
+        if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN || certprofiletype == CertificateConstants.CERTTYPE_ENDENTITY
                 || certprofiletype == CertificateConstants.CERTTYPE_HARDTOKEN) {
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER));
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER));
         }
-        if (certprofiletype == 0 || certprofiletype == CertificateConstants.CERTTYPE_SUBCA) {
+        if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN || certprofiletype == CertificateConstants.CERTTYPE_SUBCA) {
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA));
         }
-        if (certprofiletype == 0 || certprofiletype == CertificateConstants.CERTTYPE_ROOTCA) {
+        if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN || certprofiletype == CertificateConstants.CERTTYPE_ROOTCA) {
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA));
         }
-        if (certprofiletype == 0 || certprofiletype == CertificateConstants.CERTTYPE_HARDTOKEN) {
+        if (certprofiletype == CertificateConstants.CERTTYPE_UNKNOWN || certprofiletype == CertificateConstants.CERTTYPE_HARDTOKEN) {
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH));
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
@@ -278,7 +276,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             }
         }
         return returnval;
-    } // getAuthorizedCertificateProfileIds
+    } 
     
     @Override
     public List<Integer> getAuthorizedCertificateProfileWithMissingCAs(final AuthenticationToken admin) {
@@ -529,7 +527,6 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             throw new AuthorizationDeniedException(msg);            
         }
     }
-
     public boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, boolean logging, String... resources) {
         // We need to check that admin also have rights to the passed in resources
         final List<String> rules = new ArrayList<>(Arrays.asList(resources));
@@ -548,12 +545,16 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
     
     @Override
-    public byte[] getProfileAsXml(final int profileId) throws CertificateProfileDoesNotExistException {
+    public byte[] getProfileAsXml(final AuthenticationToken authenticationToken, final int profileId) throws CertificateProfileDoesNotExistException, AuthorizationDeniedException {
         UpgradeableDataHashMap profile = null;
         profile = getCertificateProfile(profileId);
         if (profile == null) {
             throw new CertificateProfileDoesNotExistException("Could not find certificate profile with ID '" + profileId + "' in the database.");
         }
+        if(!getAuthorizedCertificateProfileIds(authenticationToken, CertificateConstants.CERTTYPE_UNKNOWN).contains(profileId)) {
+            throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to a CA within certificate profile with id " + profileId);
+        }
+        
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
             encoder.close(); // Is this required here?
