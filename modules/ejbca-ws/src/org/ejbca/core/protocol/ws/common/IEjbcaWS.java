@@ -1093,10 +1093,16 @@ public interface IEjbcaWS {
 	/**
 	 * Fetches the profile specified by profileId and profileType in XML format.
 	 *
-	 * Authorization requirements:<pre>
+	 * Authorization requirements for an EEP:<pre>
 	 * - /administrator
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;
+	 * - any CA's referenced to in the EEP, or in any CPs referenced to in the EEP
 	 * </pre>
+	 * 
+	 * Authorization requirements for an CP:<pre>
+     * - /administrator
+     * - any CA's referenced to in the CP
+     * </pre>
 	 *
 	 * For detailed documentation for how to parse an End Entity Profile XML, see the org.ejbca.core.model.ra.raadmin.EndEntity class.
 	 *
@@ -1104,7 +1110,7 @@ public interface IEjbcaWS {
 	 * @param profileType The type of the profile we want to retrieve. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
 	 * @return a byte array containing the specified profile in XML format
 	 * @throws EjbcaException if a profile of the specified type was not found
-	 * @throws AuthorizationDeniedException is not thrown from this method
+	 * @throws AuthorizationDeniedException if the requesting user wasn't authorized to the requested profile
 	 * @throws UnknownProfileTypeException if the submitted profile type was not 'eep' or 'cp'
 	 */
 	 byte[] getProfile(int profileId, String profileType)
