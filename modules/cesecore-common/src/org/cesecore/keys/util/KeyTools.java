@@ -146,7 +146,7 @@ public final class KeyTools {
      * @param keyAlg
      *            algorithm of keys to generate, typical value is RSA, DSA or ECDSA, see AlgorithmConstants.KEYALGORITHM_XX
      * 
-     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants
+     * @see org.cesecore.certificates.util.AlgorithmConstants
      * @see org.bouncycastle.asn1.x9.X962NamedCurves
      * @see org.bouncycastle.asn1.nist.NISTNamedCurves
      * @see org.bouncycastle.asn1.sec.SECNamedCurves
@@ -466,12 +466,13 @@ public final class KeyTools {
      *            CA-certificate or null if only one cert in chain, in that case use 'cert'.
      * 
      * @return KeyStore containing PKCS12-keystore
-     * 
-     * @exception Exception
-     *                if input parameters are not OK or certificate generation fails
+     * @throws CertificateException if the certificate couldn't be parsed
+     * @throws CertificateEncodingException if the encoded bytestream of the certificate couldn't be retrieved
+     * @throws NoSuchAlgorithmException if the algorithm defined in privKey couldn't be found
+     * @throws InvalidKeySpecException if the key specification defined in privKey couldn't be found
      */
     public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate cacert)
-            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         final Certificate[] chain;
 
         if (cacert == null) {
@@ -497,11 +498,13 @@ public final class KeyTools {
      * @param cacerts
      *            Collection of X509Certificate, or null if only one cert in chain, in that case use 'cert'.
      * @return KeyStore containing PKCS12-keystore
-     * @exception Exception
-     *                if input parameters are not OK or certificate generation fails
+     * @throws CertificateException if the certificate couldn't be parsed
+     * @throws CertificateEncodingException if the encoded bytestream of the certificate couldn't be retrieved
+     * @throws NoSuchAlgorithmException if the algorithm defined in privKey couldn't be found
+     * @throws InvalidKeySpecException if the key specification defined in privKey couldn't be found
      */
     public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Collection<Certificate> cacerts)
-            throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         final Certificate[] chain;
         if (cacerts == null) {
             chain = null;
@@ -641,9 +644,6 @@ public final class KeyTools {
      * 
      * @return KeyStore containing JKS-keystore
      * @throws KeyStoreException is storing the certificate failed, perhaps because the alias is already being used?
-     * 
-     * @exception Exception
-     *                if input parameters are not OK or certificate generation fails
      */
     public static KeyStore createJKS(final String alias, final PrivateKey privKey, final String password, final X509Certificate cert,
             final Certificate[] cachain) throws KeyStoreException {
@@ -1072,8 +1072,6 @@ public final class KeyTools {
      * @throws InvalidKeyException
      *             if the public key can not be used to verify a string signed by the private key, because the key is wrong or the signature operation
      *             fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
-     * @throws TaskWithSigningException 
-     * @throws NoSuchProviderException
      *             if the provider is not installed.
      */
     public static void testKey(final PrivateKey priv, final PublicKey pub, final String sProvider) throws InvalidKeyException { // NOPMD:this is not a junit test
@@ -1289,7 +1287,7 @@ public final class KeyTools {
 
     /** 
      * Get the ASN.1 encoded PublicKey as a Java PublicKey Object.
-     * @param the ASN.1 encoded PublicKey
+     * @param asn1EncodedPublicKey the ASN.1 encoded PublicKey
      * @return the ASN.1 encoded PublicKey as a Java Object
      */
     public static PublicKey getPublicKeyFromBytes(byte[] asn1EncodedPublicKey) {
@@ -1356,7 +1354,7 @@ public final class KeyTools {
     
     /**
      * Returns the modulus of the public key.
-     * @param public key
+     * @param publicKey public key
      * @return modulus of the public key
      */
     public static String getKeyModulus(final PublicKey publicKey) {
@@ -1377,7 +1375,7 @@ public final class KeyTools {
     
     /**
      * Returns the exponent of the public key.
-     * @param public key
+     * @param publicKey public key
      * @return modulus of the public key
      */
     public static String getKeyPublicExponent(final PublicKey publicKey) {
@@ -1390,7 +1388,7 @@ public final class KeyTools {
     
     /**
      * Generates the SHA256 fingerprint of the given text string.
-     * @param input on what to generate the fingerprint
+     * @param text input on what to generate the fingerprint
      * @return SHA256 fingerprint of given input string 
      */
     public static String getSha256Fingerprint(String text) {
@@ -1400,7 +1398,7 @@ public final class KeyTools {
     
     /**
      * Returns the signature of the given JcaPKCS10CertificationRequest.
-     * @param BouncyCastle JcaPKCS10CertificationRequest certification request
+     * @param certificationRequest BouncyCastle JcaPKCS10CertificationRequest certification request
      * @return signature of given certification request
      */
     public static String getCertificateRequestSignature(JcaPKCS10CertificationRequest certificationRequest) {
