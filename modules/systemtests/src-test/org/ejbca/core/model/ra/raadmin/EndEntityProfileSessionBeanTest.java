@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
-import org.cesecore.ErrorCode;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -64,12 +63,10 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -227,7 +224,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void test05removeEndEntityProfiles() throws Exception {
+    public void testRemoveEndEntityProfiles() throws Exception {
         log.trace(">test05removeEndEntityProfiles()");
         boolean ret = false;
         try {
@@ -261,36 +258,28 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @throws Exception any exception.
      */
     @Test
-    public void test05getAvailableCertificateProfiles() throws Exception {
+    public void testGetAvailableCertificateProfiles() throws Exception {
         final String cpProfileName1 = "test05CertificateProfile1";
         final String cpProfileName2 = "test05CertificateProfile2";
         final String eepProfileName = "test05EndEntityProfile";
         final EndEntityProfile eeProfile = new EndEntityProfile();
         try {
-//            eeProfile.setAvailableCertificateProfileIds(null);
             endEntityProfileSession.addEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             final int eepId = endEntityProfileSession.getEndEntityProfileId(eepProfileName);
-            
-            // null or Arrays.asList(new Integer[] { cpId1 }) does not work here!
-            // Test no available CPs for this EEP.
-//            Map<String, Integer> map = endEntityProfileSession.getAvailableCertificateProfiles(alwaysAllowToken, eepId);
-//            assertTrue("getAvailableCertificateProfiles for an EEP with no CPs assigned should return 0.", map.size() == 0);
-            
             // Test 0 available CPs for this EEP.
             final int cpId1 = createCertificateProfile(alwaysAllowToken, cpProfileName1, CertificateConstants.CERTTYPE_ENDENTITY);
             eeProfile.setAvailableCertificateProfileIds(Arrays.asList(new Integer[] { cpId1 }));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             Map<String, Integer> map = endEntityProfileSession.getAvailableCertificateProfiles(alwaysAllowToken, eepId);
-            assertTrue("getAvailableCertificateProfiles for an EEP with 1 CPs assigned should return 1.", map.size() == 1);
+            assertEquals("getAvailableCertificateProfiles for an EEP with 1 CPs assigned should return 1.", map.size(), 1);
             
             // Test n>1 available CPs for this EEP.
             final int cpId2 = createCertificateProfile(alwaysAllowToken, cpProfileName2, CertificateConstants.CERTTYPE_ENDENTITY);
             eeProfile.setAvailableCertificateProfileIds(Arrays.asList(new Integer[] { cpId1, cpId2 }));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             map = endEntityProfileSession.getAvailableCertificateProfiles(alwaysAllowToken, eepId);
-            assertTrue("getAvailableCertificateProfiles for an EEP with 2 CPs assigned should return 2.", map.size() == 2);
+            assertEquals("getAvailableCertificateProfiles for an EEP with 2 CPs assigned should return 2.", map.size(), 2);
         } finally {
-//            eeProfile.setAvailableCertificateProfileIds(null);
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
             endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, eepProfileName);
             certificateProfileSession.removeCertificateProfile(alwaysAllowToken, cpProfileName1);
@@ -304,7 +293,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @throws Exception any exception.
      */
     @Test
-    public void test05getAvailableCAsInProfile() throws Exception {
+    public void testGetAvailableCAsInProfile() throws Exception {
         final String caName1 = "test05CA1";
         final String caName2 = "test05CA2";
         final String eepProfileName = "test05EndEntityProfile";
@@ -357,8 +346,11 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                 endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, notExistingEepId);
                 fail("Request all CAs associated with an ent entity profile which does not exist must throw an exception.");
             } catch(Exception e) {
-                assertTrue("Request all CAs associated with an ent entity profile which does not exist must throw an EndEntityProfileNotFoundException: " + notExistingEepId , e instanceof EndEntityProfileNotFoundException);
-                assertEquals("Could not find end entity profile with ID " + notExistingEepId + ".", e .getMessage());
+                assertTrue(
+                        "Request all CAs associated with an ent entity profile which does not exist must throw an EndEntityProfileNotFoundException: "
+                                + notExistingEepId,
+                        e instanceof EndEntityProfileNotFoundException);
+                assertEquals("Could not find end entity profile with ID " + notExistingEepId + ".", e.getMessage());
             }
             
         } finally {
