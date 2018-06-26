@@ -159,6 +159,7 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
+import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -2182,12 +2183,20 @@ public class EjbcaWS implements IEjbcaWS {
     public byte[] getProfile(int profileId, String profileType) throws AuthorizationDeniedException, EjbcaException, UnknownProfileTypeException {
         final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
-        logAdminName(admin,logger);
+        logAdminName(admin, logger);
         try {
-            return raMasterApiProxyBean.getProfileXml(admin, profileId, profileType);
-        } catch(org.ejbca.core.model.ra.UnknownProfileTypeException e) {
+            if (StringUtils.equalsIgnoreCase(profileType, "eep")) {
+                return raMasterApiProxyBean.getEndEntityProfileAsXml(admin, profileId);
+            } else if (StringUtils.equalsIgnoreCase(profileType, "cp")) {
+                return raMasterApiProxyBean.getCertificateProfileAsXml(admin, profileId);
+            } else {
+                throw new UnknownProfileTypeException("Unknown profile type '" + profileType
+                        + "'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles");
+            }
+
+        } catch (org.ejbca.core.model.ra.UnknownProfileTypeException e) {
             throw new UnknownProfileTypeException(e.getMessage());
-        } catch(IOException e) {
+        } catch (CertificateProfileDoesNotExistException e) {
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();

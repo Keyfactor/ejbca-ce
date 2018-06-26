@@ -1103,9 +1103,9 @@ public interface IEjbcaWS {
 	 * @param profileId ID of the profile we want to retrieve.
 	 * @param profileType The type of the profile we want to retrieve. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
 	 * @return a byte array containing the specified profile in XML format
-	 * @throws EjbcaException if an error occured
-	 * @throws AuthorizationDeniedException
-	 * @throws UnknownProfileTypeException
+	 * @throws EjbcaException if a profile of the specified type was not found
+	 * @throws AuthorizationDeniedException is not thrown from this method
+	 * @throws UnknownProfileTypeException if the submitted profile type was not 'eep' or 'cp'
 	 */
 	 byte[] getProfile(int profileId, String profileType)
                  throws EjbcaException, AuthorizationDeniedException, UnknownProfileTypeException;
