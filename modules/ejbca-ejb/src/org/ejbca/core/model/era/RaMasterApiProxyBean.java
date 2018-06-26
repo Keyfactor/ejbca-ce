@@ -1661,7 +1661,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             localKeyGeneration = true;
         }
 
-        for (final RaMasterApi raMasterApi : raMasterApis) {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
                 try {
                     ret = raMasterApi.markForRecovery(authenticationToken, username, newPassword, cert, localKeyGeneration);
