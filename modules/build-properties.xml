@@ -170,7 +170,8 @@
     <property name="mod.webtest.path" location="${mod.path}/ejbca-webtest"/>
     <property name="mod.ejbca-rest-api.path" location="${mod.path}/ejbca-rest-api" />
     <property name="mod.ejbca-rest-api.war" location="${mod.dist.path}/ejbca-rest-api.war" />
-
+    <property name="mod.swagger-ui.path" location="${mod.path}/swagger-ui" />
+    <property name="mod.swagger-ui.war" location="${mod.dist.path}/swagger-ui.war" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
