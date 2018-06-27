@@ -24,13 +24,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  *
  */
 public class RevokeStatusRestResponse {
-
-    public static final String STATUS_REVOKED       = "Revoked";
-    public static final String STATUS_NOT_REVOKED   = "Not Revoked";
     
     private String issuerDn;
     private String serialNumber;
-    private String status;
+    private boolean isRevoked;
     private String revocationReason;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Date revocationDate;
@@ -39,10 +36,10 @@ public class RevokeStatusRestResponse {
     
     public RevokeStatusRestResponse() {}
     
-    private RevokeStatusRestResponse(String issuerDn, String serialNumber, String status, String revocationReason, Date revocationDate, String message) {
+    private RevokeStatusRestResponse(String issuerDn, String serialNumber, boolean revoked, String revocationReason, Date revocationDate, String message) {
         this.issuerDn = issuerDn;
         this.serialNumber = serialNumber;
-        this.status = status;
+        this.isRevoked = revoked;
         this.revocationReason = revocationReason;
         this.revocationDate = revocationDate;
         this.message = message;
@@ -69,13 +66,11 @@ public class RevokeStatusRestResponse {
     public static class RevokeStatusRestResponseBuilder {
         private String issuerDn;
         private String serialNumber;
-        private String status;
+        private boolean isRevoked;
         private String revocationReason;
         private Date revocationDate;
         private String message;
         
-        RevokeStatusRestResponseBuilder() {}
-
         public RevokeStatusRestResponseBuilder issuerDn(String issuerDn) {
             this.issuerDn = issuerDn;
             return this;
@@ -86,8 +81,8 @@ public class RevokeStatusRestResponse {
             return this;
         }
 
-        public RevokeStatusRestResponseBuilder status(String status) {
-            this.status = status;
+        public RevokeStatusRestResponseBuilder revoked(boolean revoked) {
+            this.isRevoked = revoked;
             return this;
         }
 
@@ -107,7 +102,7 @@ public class RevokeStatusRestResponse {
         }
         
         public RevokeStatusRestResponse build() {
-            return new RevokeStatusRestResponse(issuerDn, serialNumber, status, revocationReason, revocationDate, message);
+            return new RevokeStatusRestResponse(issuerDn, serialNumber, isRevoked, revocationReason, revocationDate, message);
         }
     }
     
@@ -115,7 +110,7 @@ public class RevokeStatusRestResponse {
         
         public RevokeStatusRestResponse toRestResponse(CertificateStatus certificateStatus, String issuerDn, String serialNumber) {
             return RevokeStatusRestResponse.builder().
-                status(certificateStatus.isRevoked() ? STATUS_REVOKED : STATUS_NOT_REVOKED).
+                revoked(certificateStatus.isRevoked()).
                 revocationReason(RevocationReasons.getFromDatabaseValue(certificateStatus.revocationReason).getStringValue()).
                 revocationDate(certificateStatus.isRevoked() ? certificateStatus.revocationDate : null).
                 issuerDn(issuerDn).
@@ -141,8 +136,8 @@ public class RevokeStatusRestResponse {
     /**
      * @return revocation status. "REVOKED" or "NOT REVOKED"
      */
-    public String getStatus() {
-        return status;
+    public boolean isRevoked() {
+        return isRevoked;
     }
     
     /**

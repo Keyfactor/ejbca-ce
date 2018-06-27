@@ -254,7 +254,7 @@ public class CertificateRestResource extends BaseRestResource {
             serialNumber(serialNumber).
             issuerDn(issuerDN).
             revocationDate(revocationDate).
-            status(RevokeStatusRestResponse.STATUS_REVOKED).
+            revoked(true).
             revocationReason(reason).
             message("Successfully revoked").
             build();
