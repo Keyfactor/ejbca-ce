@@ -48,7 +48,6 @@ import org.easymock.TestSubject;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
-import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.json.simple.JSONObject;
@@ -119,28 +118,28 @@ public class CertificateRestResourceUnitTest {
         // given
         final int expectedCode = Status.OK.getStatusCode();
         final String expectedMessage = "Successfully revoked";
-        final String expectedStatus = RevokeStatusRestResponse.STATUS_REVOKED;
-        final Long expectedSerialNumber = StringTools.getBigIntegerFromHexString("12345").longValue();
+        final boolean expectedRevoked = true;
+        final String expectedSerialNumber = "1a2b3c";
         final String expectedRevocationDateString = DATE_FORMAT_ISO8601.format(new Date());
         // when
         raMasterApiProxy.revokeCert(anyObject(AuthenticationToken.class), anyObject(BigInteger.class), anyObject(Date.class), anyString(), anyInt(), anyBoolean());
         replay(raMasterApiProxy);
         final ClientRequest clientRequest = server
-                .newRequest("/v1/certificate/TestCa/12345/revoke")
+                .newRequest("/v1/certificate/TestCa/1a2b3c/revoke")
                 .queryParameter("reason", RevocationReasons.KEYCOMPROMISE.getStringValue())
                 .queryParameter("date", expectedRevocationDateString);
         final ClientResponse<?> actualResponse = clientRequest.put();
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final Object actualMessage = actualJsonObject.get("message");
-        final Object actualStatus = actualJsonObject.get("status");
+        final Object actualStatus = actualJsonObject.get("revoked");
         final Object actualSerialNumber = actualJsonObject.get("serial_number");
         final Object actualRevocationDate = actualJsonObject.get("revocation_date");
         // than
         assertEquals(expectedCode, actualResponse.getStatus());
         assertJsonContentType(actualResponse);
         assertEquals(expectedMessage, actualMessage);
-        assertEquals(expectedStatus, actualStatus);
+        assertEquals(expectedRevoked, actualStatus);
         assertEquals(expectedSerialNumber, actualSerialNumber);
         assertEquals(expectedRevocationDateString, actualRevocationDate);
         verify(raMasterApiProxy);
@@ -259,11 +258,11 @@ public class CertificateRestResourceUnitTest {
         final Status actualStatus = actualResponse.getResponseStatus();
         final String actualJsonString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final String actualRevocationStatus = (String) actualJsonObject.get("status");
-        final String actualRevocationReason = (String) actualJsonObject.get("reason");
+        final boolean actualRevocationStatus = (boolean) actualJsonObject.get("revoked");
+        final String actualRevocationReason = (String) actualJsonObject.get("revocation_reason");
         // then
         assertEquals(Status.OK, actualStatus);
-        assertEquals("REVOKED", actualRevocationStatus);
+        assertEquals(true, actualRevocationStatus);
         assertEquals(RevocationReasons.UNSPECIFIED.getStringValue(), actualRevocationReason);
         EasyMock.verify(raMasterApiProxy);
     }
