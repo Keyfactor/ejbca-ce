@@ -856,6 +856,8 @@ public class EjbcaWS implements IEjbcaWS {
             result = raMasterApiProxyBean.processCertificateRequest(admin, username, password, req, reqType, hardTokenSN, responseType);
         } catch (CertificateExtensionException e) {
             throw getInternalException(e, logger);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (InvalidKeyException e) {
             throw getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
         } catch (IllegalKeyException e) {
