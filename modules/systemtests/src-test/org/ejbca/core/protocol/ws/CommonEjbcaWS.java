@@ -199,6 +199,7 @@ import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
+import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.PinDataWS;
 import org.ejbca.core.protocol.ws.client.gen.RevokeBackDateNotAllowedForProfileException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
@@ -1995,26 +1996,92 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
                 keys.getPublic(), new DERSet(), keys.getPrivate(), null);
 
+        // 1. Test successful invocations.
+        // 1.1 Test PKCS#10 request with certificate returned.
         CertificateResponse certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
                 CertificateHelper.RESPONSETYPE_CERTIFICATE);
-
         assertNotNull(certenv);
         assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
-
         assertNotNull(cert);
         assertTrue(cert.getSubjectDN().toString().equals(getDN(CA1_WSTESTUSER1)));
 
+        // 1.2 Test PKCS#10 request with PKCS#7 container returned.
         ejbcaraws.editUser(userdatas.get(0));
         certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
                 CertificateHelper.RESPONSETYPE_PKCS7);
         assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
         CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
         assertTrue(cmsSignedData != null);
-
         Store<X509CertificateHolder> certStore = cmsSignedData.getCertificates();
         assertTrue(certStore.getMatches(null).size() == 1);
 
+        // 2. Test exception handling.
+        // 2.1 Test invalid user status (not NEW or FAILED).
+        userdatas.get(0).setStatus(EndEntityConstants.STATUS_GENERATED);
+        ejbcaraws.editUser(userdatas.get(0));
+        try {
+            certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            fail("Calling pkcs10Request for a user with status GENERATED should throw an exception.");
+        } catch(EjbcaException_Exception e) {
+            assertTrue(e.getMessage().contains("Got request with status GENERATED (40), NEW, FAILED or INPROCESS required"));
+        }
+        
+        // 2.2 Test user not found.
+        userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
+        ejbcaraws.editUser(userdatas.get(0));
+        try {
+            certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1 + "not_found_123", PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            fail("Calling pkcs10Request for a non existing user should throw an exception.");
+        } catch(NotFoundException_Exception e) {
+            assertTrue(e.getMessage().contains("Wrong username or password"));
+        }
+        
+        // 2.3 Test invalid password.
+        userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
+        ejbcaraws.editUser(userdatas.get(0));
+        try {
+            certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD + "invalid_123", new String(Base64.encode(pkcs10.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            fail("Calling pkcs10Request for an existing user but invalid password should throw an exception.");
+        } catch(EjbcaException_Exception e) {
+            assertTrue(e.getMessage().contains("Got request for user with invalid password"));
+        }
+        
+        // 2.4 Test some malformed PKCS#10 message.
+        userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
+        ejbcaraws.editUser(userdatas.get(0));
+        try {
+            certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, "Malformed_PKCS#10_request", null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            fail("Calling pkcs10Request with a malformed PKCS#10 request should throw an exception.");
+        } catch(EjbcaException_Exception e) {
+            assertTrue(e.getMessage().contains("Fault occurred while processing"));
+        }
+        // Tbd: Test CADoesntExistsException (not possible anymore because of NPE in changeUser (checks DB foreign key references now!).
+        // Tbd: Test AuthorizationDeniedException (where possible).
+        // Tbd: Test CertificateExtensionException -> EjbcaException
+        // Tbd: Test InvalidKeyException -> EjbcaException
+        // Tbd: Test IllegalKeyException -> EjbcaException
+        // Tbd: Test CertificateExtensionException -> EjbcaException
+        // Tbd: Test CertificateExtensionException -> EjbcaException
+        // Tbd: Test SignatureException -> EjbcaException
+        // Tbd: Test SignRequestSignatureException -> EjbcaException
+        // Tbd: Test CertificateExtensionException -> EjbcaException
+        // Tbd: Test CertificateExtensionException -> EjbcaException
+        // Tbd: Test InvalidKeySpecException -> EjbcaException
+        // Tbd: Test CertificateCreateException -> EjbcaException
+        // Tbd: Test NoSuchAlgorithmException -> EjbcaException
+        // Tbd: Test NoSuchProviderException -> EjbcaException
+        // Tbd: Test CertificateException -> EjbcaException   
+        // Tbd: Test ParseException -> EjbcaException (CVC)
+        // Tbd: Test ConstructionException -> EjbcaException (CVC)
+        // Tbd: Test CertificateCreateException -> EjbcaException
+        // Tbd: Test NoSuchFieldException -> EjbcaException
+        // Tbd: Test IOException -> EjbcaException
+        // Tbd: Test RuntimeException -> EjbcaException
     }
     protected void getAvailableCAsInProfile() throws Exception {
 
