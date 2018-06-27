@@ -468,11 +468,7 @@
     </condition>
 
     <condition property="mod.acme.exists">
-        <and>
-            <available file="${mod.acme.path}/build.xml"/>
-            <!-- Only include ACME in non-production mode builds for now. TODO: Change this when production ready. -->
-	    	<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
-        </and>
+    	<available file="${mod.acme.path}/build.xml"/>
     </condition>
 	
 	<condition property="mod.caa.exists">
