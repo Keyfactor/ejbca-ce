@@ -1162,7 +1162,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             //If in view mode, only display used values.
             for(int id : usedExtensions) {
                 if (!cceConfig.isCustomCertExtensionSupported(id)) {
-                    String note = id + " (No longer used. Please unselect this option)";
+                    String note = "ID #" + id + " (No longer used. Please unselect this option)";
                     ret.add(new SelectItem(id, note));
                 } else {
                     ret.add(new SelectItem(id, getEjbcaWebBean().getText(cceConfig.getCustomCertificateExtension(id).getDisplayName())));
