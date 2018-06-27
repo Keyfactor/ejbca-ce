@@ -252,8 +252,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                     // we need to issue one when the CRL expires, but normally we want to generate one now if crlissueinterval kicks in
                                     if ((u + overlap) < nextUpdate) {
                                         nextUpdate = u;
-                                        // When we issue CRLs before the real expiration date we don't use overlap
-                                        overlap = 0;
+                                        // When we issue CRLs before the real expiration date we don't use overlap, 
+                                        // but we need to consider the poll time to not miss generating some CRLs when we use a crlissueinterval
+                                        overlap = addtocrloverlaptime;
                                     }
                                 }                                   
                                 if (log.isDebugEnabled()) {
