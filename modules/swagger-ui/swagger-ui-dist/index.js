@@ -1,6 +1,6 @@
 try {
-  module.exports.SwaggerUIBundle = require("./swagger-ui/swagger-ui-dist/swagger-ui-bundle.js")
-  module.exports.SwaggerUIStandalonePreset = require("./swagger-ui/swagger-ui-dist/swagger-ui-standalone-preset.js")
+  module.exports.SwaggerUIBundle = require("./swagger-ui/resources/swagger-ui-dist/swagger-ui-bundle.js")
+  module.exports.SwaggerUIStandalonePreset = require("./swagger-ui/resources/swagger-ui-dist/swagger-ui-standalone-preset.js")
 } catch(e) {
   // swallow the error if there's a problem loading the assets.
   // allows this module to support providing the assets for browserish contexts,
@@ -13,5 +13,5 @@ try {
 // `absolutePath` and `getAbsoluteFSPath` are both here because at one point,
 // we documented having one and actually implemented the other.
 // They were both retained so we don't break anyone's code.
-module.exports.absolutePath = require("./swagger-ui/swagger-ui-dist/absolute-path.js")
-module.exports.getAbsoluteFSPath = require("./swagger-ui/swagger-ui-dist/absolute-path.js")
+module.exports.absolutePath = require("./swagger-ui/resources/swagger-ui-dist/absolute-path.js")
+module.exports.getAbsoluteFSPath = require("./swagger-ui/resources/swagger-ui-dist/absolute-path.js")

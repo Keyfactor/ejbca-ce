@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <title>Swagger UI</title>
     
-    <link rel="stylesheet" type="text/css" href="./swagger-ui/swagger-ui-dist/swagger-ui.css" >
-    <link rel="icon" type="image/png" href="./swagger-ui/swagger-ui-dist/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="./swagger-ui/swagger-ui-dist/favicon-16x16.png" sizes="16x16" />
+    <link rel="stylesheet" type="text/css" href="./swagger-ui/resources/swagger-ui-dist/swagger-ui.css" >
+    <link rel="icon" type="image/png" href="./swagger-ui/resources/swagger-ui-dist/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="./swagger-ui/resources/swagger-ui-dist/favicon-16x16.png" sizes="16x16" />
     <style>
       html
       {
@@ -33,14 +33,14 @@
   <body>
     <div id="swagger-ui"></div>
 
-    <script src="./swagger-ui/swagger-ui-dist/swagger-ui-bundle.js" charset="UTF-8"> </script>
-    <script src="./swagger-ui/swagger-ui-dist/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script src="./swagger-ui/resources/swagger-ui-dist/swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="./swagger-ui/resources/swagger-ui-dist/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
     <script>
     window.onload = function() {
 
       // Build a system
       const ui = SwaggerUIBundle({
-        url: "./swagger.json",
+        url: "./ejbca-rest-api/swagger.json",
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
