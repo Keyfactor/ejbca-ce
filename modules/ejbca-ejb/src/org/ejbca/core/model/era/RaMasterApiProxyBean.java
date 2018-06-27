@@ -2360,10 +2360,17 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public byte[] getLatestCrl(final AuthenticationToken authenticationToken, final String caName, final boolean deltaCRL)
             throws AuthorizationDeniedException, CADoesntExistsException {
         CADoesntExistsException caDoesntExistsException = null;
+        byte[] result = null;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getLatestCrl(authenticationToken, caName, deltaCRL);
+                    // If there is a CA, there should be an initial CRL as well, assuming its not about an external CA.
+                    result = raMasterApi.getLatestCrl(authenticationToken, caName, deltaCRL);
+                    if (result != null) {
+                        return result;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
                 } catch (CADoesntExistsException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("CA with name " + caName + " for proxied request on CA could not be found. " + e.getMessage());
@@ -2371,8 +2378,6 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     if (caDoesntExistsException == null) { 
                         caDoesntExistsException = e;
                     }
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
                 }
             }
         }
