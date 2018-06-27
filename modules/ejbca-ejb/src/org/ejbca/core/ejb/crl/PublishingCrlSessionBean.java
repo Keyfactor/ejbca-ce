@@ -236,7 +236,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 log.debug("now="+now.getTime()); 
                             }
                             long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
-                            long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
+                            // nextScheduledUpdate is the calculated time when EJBCA should issue a new CRL, based on the settings. Normally _not_ the same as nextUpdate in the 
+                            // CRL, which is the time a CRL expires. We always want to issue a CRL before the old one expires, at least "overlap" time before.
+                            // if crlinfo == 0, we will issue a crl now
+                            long nextScheduledUpdate = 0; 
                             if (lastBaseCrlInfo != null) {
                                 if (log.isDebugEnabled()) {
                                     log.debug("lastCRLCreateTime="+lastBaseCrlInfo.getCreateDate().getTime());
@@ -245,29 +248,29 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 // CRL issueinterval in hours. If this is 0, we should only issue a CRL when
                                 // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
                                 // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
-                                nextUpdate = lastBaseCrlInfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
+                                nextScheduledUpdate = lastBaseCrlInfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
                                 if (crlissueinterval > 0) {
                                     long u = lastBaseCrlInfo.getCreateDate().getTime() + crlissueinterval;
                                     // If this period for some reason (we missed to issue some?) is larger than when the CRL expires
                                     // we need to issue one when the CRL expires, but normally we want to generate one now if crlissueinterval kicks in
-                                    if ((u + overlap) < nextUpdate) {
-                                        nextUpdate = u;
-                                        // When we issue CRLs before the real expiration date we don't use overlap, 
-                                        // but we need to consider the poll time to not miss generating some CRLs when we use a crlissueinterval
+                                    if ((u + overlap) < nextScheduledUpdate) {
+                                        nextScheduledUpdate = u;
+                                        // When we issue CRLs before the real expiration date we don't use overlap, but we need to consider the 
+                                        // service poll time to not miss generating some CRLs when we use a crlissueinterval and run the CRL Update Worker 
                                         overlap = addtocrloverlaptime;
                                     }
                                 }                                   
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Calculated nextUpdate to "+nextUpdate);
+                                    log.debug("Calculated nextScheduledUpdate to "+nextScheduledUpdate);
                                 }
                             } else {
                                 // If crlinfo is null (no crl issued yet) nextUpdate will be 0 and a new CRL should be generated
                                 String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());                                                
                                 log.info(msg);
                             }
-                            if (now.getTime() + overlap >= nextUpdate) {
+                            if (now.getTime() + overlap >= nextScheduledUpdate) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("Creating CRL for CA, because:"+(now.getTime()+overlap)+" >= "+nextUpdate);                                                
+                                    log.debug("Creating CRL for CA, because:"+(now.getTime()+overlap)+" >= "+nextScheduledUpdate);                                                
                                 }
                                 if (internalCreateCRL(admin, ca, lastBaseCrlInfo) != null) {
                                     ret = true;                                 
