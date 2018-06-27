@@ -868,6 +868,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // Check user exists.
         final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
         if (endEntity == null) {
+            // Why 2 different error messages?
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
             String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             throw new NotFoundException(msg);
