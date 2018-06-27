@@ -1175,7 +1175,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             }
             for (int id : usedExtensions) {
                 if (!cceConfig.isCustomCertExtensionSupported(id)) {
-                    String note = id + " (No longer used. Please unselect this option)";
+                    String note = "ID #" + id + " (No longer used. Please unselect this option)";
                     ret.add(new SelectItem(id, note));
                 }
             }
