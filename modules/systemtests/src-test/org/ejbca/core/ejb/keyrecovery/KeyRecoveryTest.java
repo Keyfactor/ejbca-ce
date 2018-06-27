@@ -59,6 +59,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
@@ -72,6 +73,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -122,7 +124,8 @@ public class KeyRecoveryTest extends CaTestCase {
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-
+    private static final GlobalConfigurationProxySessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     private AuthenticationToken admin;
 
     @BeforeClass
@@ -429,6 +432,8 @@ public class KeyRecoveryTest extends CaTestCase {
         final String format = "PKCS12";
         String fingerprint = null;
         try {
+            setGlobalConfigurationEnableKeyRecovery(true);
+
             // Create test CA.
             createTestCA(testCaName);
             final int caId = caSession.getCAInfo(internalAdmin, testCaName).getCAId();
@@ -553,6 +558,7 @@ public class KeyRecoveryTest extends CaTestCase {
                 assertTrue("Requesting a key recovery for a CA with no authorization should throw an AuthorizationDeniedException.", e instanceof AuthorizationDeniedException);
             }
         } finally {
+            setGlobalConfigurationEnableKeyRecovery(false);
             if (usercert != null) {
                 keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(usercert));
                 assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(usercert)));
@@ -567,5 +573,11 @@ public class KeyRecoveryTest extends CaTestCase {
             removeOldCa(testCaName);
             log.trace("<testGenerateOrRecoverKeystore");
         }
+    }
+    
+    private void setGlobalConfigurationEnableKeyRecovery(final boolean enabled) throws AuthorizationDeniedException {
+        final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfig.setEnableKeyRecovery(enabled);
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalConfig);
     }
 }
