@@ -73,7 +73,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
  */
 public class CaImportCRLCommand extends BaseCaAdminCommand {
 
-    private static final Logger log = Logger.getLogger(CaImportCertDirCommand.class);
+    private static final Logger log = Logger.getLogger(CaImportCRLCommand.class);
 
     public static final String MISSING_USERNAME_PREFIX = "*** Missing During CRL Import to: ";
 
