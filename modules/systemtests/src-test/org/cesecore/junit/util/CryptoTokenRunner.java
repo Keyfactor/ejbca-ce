@@ -50,7 +50,7 @@ import org.junit.runners.model.Statement;
  */
 public abstract class CryptoTokenRunner extends BlockJUnit4ClassRunner {
 
-    private static final Logger log = Logger.getLogger(CryptoTokenTestRunner.class);
+    private static final Logger log = Logger.getLogger(CryptoTokenRunner.class);
     
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
