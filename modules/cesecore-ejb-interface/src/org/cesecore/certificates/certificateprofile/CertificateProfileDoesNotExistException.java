@@ -16,7 +16,7 @@ import org.cesecore.CesecoreException;
 
 
 /**
- * An exception thrown when someone tries to change a certificate profile that doesn't already exits
+ * An exception thrown when someone tries to access a certificate profile that doesn't exist.
  *
  * @version $Id$
  */
@@ -26,7 +26,7 @@ public class CertificateProfileDoesNotExistException extends CesecoreException {
 
 
     /**
-     * Creates a new instance of <code>CertificateProfileDoesntExistsException</code> without detail message.
+     * Creates a new instance of <code>CertificateProfileDoesNotExistException</code> without detail message.
      */
     public CertificateProfileDoesNotExistException() {
         super();
@@ -34,7 +34,7 @@ public class CertificateProfileDoesNotExistException extends CesecoreException {
     
     
     /**
-     * Constructs an instance of <code>CertificateProfileDoesntExistsException</code> with the specified detail message.
+     * Constructs an instance of <code>CertificateProfileDoesNotExistException</code> with the specified detail message.
      * @param msg the detail message.
      */
     public CertificateProfileDoesNotExistException(String msg) {
