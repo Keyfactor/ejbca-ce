@@ -224,8 +224,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         final Date now = new Date();
         if (log.isDebugEnabled()) {
             log.debug("Running CRL check for " + caInfo.getName() + " with the following parameters: " + System.lineSeparator()
-                    + "  CRL Issue Interval: " + caInfo.getCRLIssueInterval() + System.lineSeparator() + "  CRL Overlap Time: "
-                    + caInfo.getCRLOverlapTime() + System.lineSeparator() + "  Periodic Interval: " + periodicInterval + System.lineSeparator()
+                    + "  CRL Issue Interval: " + caInfo.getCRLIssueInterval() + System.lineSeparator() 
+                    + "  CRL Overlap Time: " + caInfo.getCRLOverlapTime() + System.lineSeparator() 
+                    + "  Periodic Interval: " + periodicInterval + System.lineSeparator()
                     + "  Current Time: " + now.getTime());
         }
         final CRLInfo lastCrlInfo = crlSession.getLastCRLInfo(CertTools.getSubjectDN(caCertificate), /* Delta CRL? */ false);
@@ -234,11 +235,13 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 log.debug("No CRL information for " + caInfo.getName() + " found.");
             } else {
                 log.debug("Read CRL information for " + caInfo.getName()
-                        + ". Below follows information about the most recently issued CRL from this CA." + System.lineSeparator() + "CRL Number: "
-                        + lastCrlInfo.getLastCRLNumber() + System.lineSeparator() + "Expiration Date: " + lastCrlInfo.getExpireDate());
+                        + ". Below follows information about the most recently issued CRL from this CA." + System.lineSeparator() 
+                        + "CRL Number: " + lastCrlInfo.getLastCRLNumber() + System.lineSeparator() 
+                        + "Expiration Date: " + lastCrlInfo.getExpireDate());
             }
         }
-
+        
+        // TODO Handle the case where lastCrlInfo == null
         if (caInfo.getCRLOverlapTime() > 0
                 && now.getTime() + periodicInterval >= lastCrlInfo.getExpireDate().getTime() - caInfo.getCRLOverlapTime()) {
             if (log.isDebugEnabled()) {
