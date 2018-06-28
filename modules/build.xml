@@ -204,7 +204,7 @@
         <ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 
-    <target name="swagger-ui-clean" if="${mod.ejbca-rest-api.exists}">
+    <target name="swagger-ui-clean" if="${mod.swagger-ui.exists}">
         <ant antfile="${mod.swagger-ui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
         	
@@ -452,8 +452,11 @@
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-    <target name="swagger-ui" if="${mod.ejbca-rest-api.exists}" description="Build EJBCA swagger-ui">
-        <ant antfile="${mod.swagger-ui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+    <target name="swagger-ui" if="${mod.swagger-ui.exists}" description="Build EJBCA swagger-ui">
+        <ant antfile="${mod.swagger-ui.path}/build.xml" target="build" inheritall="false">
+        	<property name="runoncesetup.hasrun" value="true"/>
+    		<property name="external-deps-satfisfied" value="isset"/>
+        </ant>
     </target>
         	
 	<target name="admin-gui" depends="ejbca-common-web" description="Build the EJBCA Admin GUI WAR">
@@ -612,7 +615,7 @@
 		</ant>
 	</target>
 	
-	<target name="swagger-ui-war" if="${mod.ejbca-rest-api.exists}" description="Build the swagger-ui WAR">
+	<target name="swagger-ui-war" if="${mod.swagger-ui.exists}" description="Build the swagger-ui WAR">
 		<ant antfile="${mod.swagger-ui.path}/build.xml" target="build" inheritall="false">
                 <property name="runoncesetup.hasrun" value="true"/>
                 <property name="external-deps-satfisfied" value="isset"/>
