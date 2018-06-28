@@ -41,6 +41,11 @@ public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySess
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     
     @Override
+    public void deferLocalForTest() {
+        raMasterApiProxyBean.deferLocalForTest();
+    }
+    
+    @Override
     public byte[] cmpDispatch(byte[] pkiMessageBytes, String cmpConfigurationAlias)
             throws NoSuchAliasException {
         AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("TestRaMasterApiProxySessionBean");
