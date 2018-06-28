@@ -16,7 +16,7 @@ import org.cesecore.CesecoreException;
 
 
 /**
- * An exception thrown when someone tries to change an profile that doesn't already exits
+ * An exception thrown when someone tries to access a profile that doesn't exist.
  * 
  * @version $Id$
  */
