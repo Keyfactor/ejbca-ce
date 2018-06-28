@@ -90,8 +90,13 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     }
 
     @Override
-    public String getIssuer() {
-        return null;
+    public List<String> getIssuers() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public String getIssuersString() {
+        return "";
     }
 
     @Override
