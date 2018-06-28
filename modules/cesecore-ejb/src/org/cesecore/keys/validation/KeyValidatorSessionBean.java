@@ -429,14 +429,17 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     if (!result.getKey()) {
                         // Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
                         // We want thorough logging in order to trouble shoot though
-                        final String message = intres.getLocalizedMessage("validator.caa.validation_failed", validatorName, validator.getIssuer(), messages);
-                        final String shortMessage = intres.getLocalizedMessage("validator.caa.validation_failed_error_page", validatorName, validator.getIssuer());
+                        final String message = intres.getLocalizedMessage("validator.caa.validation_failed", validatorName,
+                                validator.getIssuersString(), messages);
+                        final String shortMessage = intres.getLocalizedMessage("validator.caa.validation_failed_error_page", validatorName,
+                                validator.getIssuersString());
                         log.info(EventTypes.VALIDATOR_VALIDATION_FAILED + ";" + EventStatus.FAILURE + ";" + ModuleTypes.VALIDATOR + ";" + ServiceTypes.CORE + ";msg=" + message);
                         final int index = validator.getFailedAction();
                         performValidationFailedActions(index, message, shortMessage);
                     } else {
                         // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
-                        final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName, validator.getIssuer(),
+                        final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName,
+                                validator.getIssuersString(),
                                 messages);
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", message);
@@ -503,7 +506,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             final byte[] keyBytes = publicKey.getEncoded();
                             final String publicKeyEncoded = (keyBytes != null ? new String(Base64.encode(keyBytes)) : "null");
                             final String message = intres.getLocalizedMessage("validator.key.validation_successful", name, publicKeyEncoded);
-                            log.info(message);   
+                            log.info(message);
                             final Map<String, Object> details = new LinkedHashMap<String, Object>();
                             details.put("msg", message);
                             auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
