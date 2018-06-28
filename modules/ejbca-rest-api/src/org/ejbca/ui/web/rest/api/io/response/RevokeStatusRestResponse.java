@@ -3,7 +3,7 @@
  *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
  *                                                                       *
  *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
+ *  The use of the Proprietary Modules are subject to specific           *
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  *
  */
 public class RevokeStatusRestResponse {
-    
     private String issuerDn;
     private String serialNumber;
     private boolean isRevoked;
@@ -33,9 +32,9 @@ public class RevokeStatusRestResponse {
     private Date revocationDate;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String message;
-    
+
     public RevokeStatusRestResponse() {}
-    
+
     private RevokeStatusRestResponse(String issuerDn, String serialNumber, boolean revoked, String revocationReason, Date revocationDate, String message) {
         this.issuerDn = issuerDn;
         this.serialNumber = serialNumber;
@@ -70,7 +69,7 @@ public class RevokeStatusRestResponse {
         private String revocationReason;
         private Date revocationDate;
         private String message;
-        
+
         public RevokeStatusRestResponseBuilder issuerDn(String issuerDn) {
             this.issuerDn = issuerDn;
             return this;
@@ -100,14 +99,14 @@ public class RevokeStatusRestResponse {
             this.message = message;
             return this;
         }
-        
+
         public RevokeStatusRestResponse build() {
             return new RevokeStatusRestResponse(issuerDn, serialNumber, isRevoked, revocationReason, revocationDate, message);
         }
     }
-    
+
     public static class RevokeStatusRestResponseConverter {
-        
+
         public RevokeStatusRestResponse toRestResponse(CertificateStatus certificateStatus, String issuerDn, String serialNumber) {
             return RevokeStatusRestResponse.builder().
                 revoked(certificateStatus.isRevoked()).
@@ -118,42 +117,42 @@ public class RevokeStatusRestResponse {
                 build();
         }
     }
-    
+
     /**
      * @return subject DN of the certificates issuing CA
      */
     public String getIssuerDn() {
         return issuerDn;
     }
-    
+
     /**
      * @return HEX encoded certificate serial number
      */
     public String getSerialNumber() {
         return serialNumber;
     }
-    
+
     /**
      * @return revocation status. "REVOKED" or "NOT REVOKED"
      */
     public boolean isRevoked() {
         return isRevoked;
     }
-    
+
     /**
      * @return RFC5280 revocation reason or null of not revoked
      */
     public String getRevocationReason() {
         return revocationReason;
     }
-    
+
     /**
      * @return revocation date or null of not revoked
      */
     public Date getRevocationDate() {
         return revocationDate;
     }
-    
+
     /**
      * @return optional revocation message
      */
