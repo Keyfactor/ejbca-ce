@@ -1793,7 +1793,9 @@ public class X509CA extends CA implements Serializable {
             }
             if (data.get(CRLOVERLAPTIME) == null) {
                 // Default value 10 minutes
-                setCRLOverlapTime(10);
+                // This used to be setting of 10, as an Integer, but was refactored to a long (ms) in v18->19, 
+                // therefore we have to update this to reflect that as well. If's probably not hurting anyone here, it's too old, but right is right.
+                setCRLOverlapTime(10 * SimpleTime.MILLISECONDS_PER_MINUTE);
             }
             boolean useprintablestring = true;
             if (data.get("alwaysuseutf8subjectdn") == null) {
