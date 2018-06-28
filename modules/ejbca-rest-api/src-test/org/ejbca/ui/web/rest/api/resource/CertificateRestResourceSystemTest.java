@@ -142,13 +142,13 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
             final String responseIssuerDn = (String) actualJsonObject.get("issuer_dn");
             final String responseSerialNr = (String) actualJsonObject.get("serial_number");
-            final String responseStatus = (String) actualJsonObject.get("status");
+            final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
             final String responseReason = (String) actualJsonObject.get("revocation_reason");
             
             // Verify rest response
             assertEquals(issuerDn, responseIssuerDn);
             assertEquals(serialNr, responseSerialNr);
-            assertEquals("Revoked", responseStatus);
+            assertEquals(true, responseStatus);
             assertEquals("KEY_COMPROMISE", responseReason);
             
             // Verify actual database value
