@@ -461,7 +461,6 @@
 	<istrue value="${unidfnr.enabled}"/>
       </and>
     </condition>
-
     
     <condition property="mod.est.exists">
         <available file="${mod.est-war.path}/build.xml" />
@@ -471,6 +470,14 @@
     	<available file="${mod.acme.path}/build.xml"/>
     </condition>
 	
+    <condition property="mod.swagger-ui.exists">
+        <and>
+        	<equals arg1="${mod.ejbca-rest-api.exists}" arg2="true" casesensitive="false"/>
+            <!-- Exclude Swagger UI in production mode builds. -->
+            <equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
+        </and>
+    </condition>
+
 	<condition property="mod.caa.exists">
 		<available file="${mod.caa.path}/build.xml" />
     </condition>
