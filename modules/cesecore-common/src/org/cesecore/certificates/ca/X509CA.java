@@ -1536,15 +1536,13 @@ public class X509CA extends CA implements Serializable {
     /**
      * Generate a CRL or a deltaCRL
      *
-     * @param certs
-     *            list of revoked certificates
-     * @param crlnumber
-     *            CRLNumber for this CRL
-     * @param isDeltaCRL
-     *            true if we should generate a DeltaCRL
-     * @param basecrlnumber
-     *            caseCRLNumber for a delta CRL, use 0 for full CRLs
-     * @return CRL
+     * @param cryptoToken the cryptoToken with keys used to sign the CRL
+     * @param certs list of revoked certificates
+     * @param crlPeriod the validity period of the generated CRL, the CRLs nextUpdate will be set to (currentTimeMillis + crlPeriod)
+     * @param crlnumber CRLNumber for this CRL
+     * @param isDeltaCRL true if we should generate a DeltaCRL
+     * @param basecrlnumber caseCRLNumber for a delta CRL, use 0 for full CRLs
+     * @return X509CRLHolder with the generated CRL
      * @throws CryptoTokenOfflineException
      * @throws IllegalCryptoTokenException
      * @throws IOException
