@@ -33,6 +33,12 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 public interface TestRaMasterApiProxySessionRemote {
 
     /**
+     * De-prioritizes the local RA Master API implementation, causing it to not be called if a remote connection is available.
+     * Used in tests, to test "remote" peer connections to localhost.
+     */
+    void deferLocalForTest();
+    
+    /**
      * Adds (end entity) user.
      * @param admin authentication token
      * @param endEntity end entity data as EndEntityInformation object

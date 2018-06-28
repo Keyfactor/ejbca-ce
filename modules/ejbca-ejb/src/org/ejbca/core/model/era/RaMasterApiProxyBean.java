@@ -56,6 +56,7 @@ import javax.ejb.Startup;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -130,7 +131,6 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -227,6 +227,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         this.raMasterApis = implementations.toArray(new RaMasterApi[implementations.size()]);
         Collections.reverse(implementations);
         this.raMasterApisLocalFirst = implementations.toArray(new RaMasterApi[implementations.size()]);
+    }
+    
+    // Use in tests only!
+    @Override
+    public void deferLocalForTest() {
+        raMasterApisLocalFirst = (RaMasterApi[]) ArrayUtils.removeElement(raMasterApisLocalFirst, raMasterApiSession);
+        raMasterApisLocalFirst = (RaMasterApi[]) ArrayUtils.add(raMasterApisLocalFirst, raMasterApiSession);
     }
 
     @Override

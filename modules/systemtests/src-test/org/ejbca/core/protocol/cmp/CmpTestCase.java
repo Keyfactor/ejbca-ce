@@ -1177,7 +1177,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
     public static void checkCmpPKIErrorMessage(byte[] pkiMessageBytes, String sender, X500Name recipient, int expectedErrorCode, String errorMsg) throws IOException {
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
-        assertNotNull(pkiMessage);
+        assertNotNull("Response should not be null", pkiMessage);
         final PKIHeader pkiHeader = pkiMessage.getHeader();
         assertEquals(pkiHeader.getSender().getTagNo(), 4);
         final X500Name senderName = X500Name.getInstance(pkiHeader.getSender().getName());

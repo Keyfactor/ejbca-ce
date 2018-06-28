@@ -31,6 +31,13 @@ public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
      */
     boolean isBackendAvailable(Class<? extends RaMasterApi> apiType);
 
+    /**
+     * De-prioritizes the local RA Master API implementation, causing it to not be called if a remote connection is available.
+     * Used in tests, to test "remote" peer connections to localhost.
+     */
+    void deferLocalForTest();
+
     /** @return a RaCertificateSearchResponse from a search with a given username */
     RaCertificateSearchResponse searchForCertificatesByUsername(final AuthenticationToken authenticationToken, final String username);
+
 }
