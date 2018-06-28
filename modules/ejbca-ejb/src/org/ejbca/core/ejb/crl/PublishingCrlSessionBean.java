@@ -324,10 +324,12 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 log.debug("addtocrloverlaptime="+addtocrloverlaptime);
                                 log.debug("now="+now.getTime());
                             }
-                            long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
+                            // Overlaptime is in minutes, and addtocrloverlaptime is the service poll time if a CRL Update Service is used
+                            // the initial value here is used as long as crlissueinterval == 0
+                            long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; 
                             // nextScheduledUpdate is the calculated time when EJBCA should issue a new CRL, based on the settings. Normally _not_ the same as nextUpdate in the
                             // CRL, which is the time a CRL expires. We always want to issue a CRL before the old one expires, at least "overlap" time before.
-                            // if crlinfo == 0, we will issue a crl now
+                            // if lastBaseCrlInfo == null, there is no CRL at all and we must issue a CRL ASAP
                             long nextScheduledUpdate = 0;
                             if (lastBaseCrlInfo != null) {
                                 if (log.isDebugEnabled()) {
