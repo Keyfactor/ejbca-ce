@@ -895,6 +895,7 @@
 		    	<exclude name="**/hs_err*" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
+		    	<exclude name="modules/swagger-ui/**" />
 		    	<!-- Exclude Web Tests -->
 		    	<exclude name="modules/ejbca-webtest/**"/>
 		    	<!-- Exclude internal Confluence information -->
