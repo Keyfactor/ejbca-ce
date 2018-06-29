@@ -1095,12 +1095,13 @@ public interface IEjbcaWS {
 	 *
 	 * Authorization requirements for an EEP:<pre>
 	 * - /administrator
-	 * - /endentityprofilesrules/&lt;end entity profile&gt;
+	 * - /ra_functionality/view_end_entity_profiles
 	 * - any CA's referenced to in the EEP, or in any CPs referenced to in the EEP
 	 * </pre>
 	 * 
 	 * Authorization requirements for an CP:<pre>
      * - /administrator
+     * - /ca_functionality/view_certificate_profiles
      * - any CA's referenced to in the CP
      * </pre>
 	 *

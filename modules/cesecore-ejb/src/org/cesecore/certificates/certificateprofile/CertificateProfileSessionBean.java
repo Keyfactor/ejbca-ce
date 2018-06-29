@@ -546,13 +546,13 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     
     @Override
     public byte[] getProfileAsXml(final AuthenticationToken authenticationToken, final int profileId) throws CertificateProfileDoesNotExistException, AuthorizationDeniedException {
-        UpgradeableDataHashMap profile = null;
+        CertificateProfile profile = null;
         profile = getCertificateProfile(profileId);
         if (profile == null) {
             throw new CertificateProfileDoesNotExistException("Could not find certificate profile with ID '" + profileId + "' in the database.");
         }
-        if(!getAuthorizedCertificateProfileIds(authenticationToken, CertificateConstants.CERTTYPE_UNKNOWN).contains(profileId)) {
-            throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to a CA within certificate profile with id " + profileId);
+        if(!authorizedToProfileWithResource(authenticationToken, profile, true, StandardRules.CERTIFICATEPROFILEVIEW.resource())) {
+            throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to view certificate profile with id " + profileId);
         }
         
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
