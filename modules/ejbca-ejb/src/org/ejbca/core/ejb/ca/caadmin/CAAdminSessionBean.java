@@ -3383,7 +3383,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             caId = cAInfo.getCAId();
         } else {
             try {
-                caId = ((X509CertificateAuthenticationToken) authenticationToken).getCertificate().getSubjectDN().getName().hashCode();
+                caId = CertTools.getIssuerDN(((X509CertificateAuthenticationToken) authenticationToken).getCertificate()).hashCode();
             } catch(Exception e) {
                 log.debug("Could not get CA by users authentication token: " + authenticationToken.getUniqueId(), e);
             }
