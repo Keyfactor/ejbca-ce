@@ -655,7 +655,7 @@ public class EjbcaWS implements IEjbcaWS {
         // Get and old status that we can remember so we can reset status if this fails in the last step.
         int olduserStatus = EndEntityConstants.STATUS_GENERATED;
         try {
-            final List<java.security.cert.Certificate> certificates = EJBTools.unwrapCertCollection(raMasterApiProxyBean.processCVCertificateRequest(admin, username, password, cvcreq));
+            final List<java.security.cert.Certificate> certificates = EJBTools.unwrapCertCollection(raMasterApiProxyBean.processCardVerifiableCertificateRequest(admin, username, password, cvcreq));
             final List<Certificate> result = convertCertificateCollectionToWsObjects(certificates);
             log.trace("<cvcRequest");
             return result;
