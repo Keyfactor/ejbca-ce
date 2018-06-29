@@ -2170,7 +2170,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
-            result.putAll(raMasterApiProxyBean.getAvailableCAsInProfile(admin, entityProfileId));
+            result.putAll(raMasterApiProxyBean.getAvailableCasInProfile(admin, entityProfileId));
         } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } catch (EndEntityProfileNotFoundException e) {
