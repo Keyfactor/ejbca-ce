@@ -2117,13 +2117,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public Map<String, Integer> getAvailableCAsInProfile(final AuthenticationToken authenticationToken, final int entityProfileId)
+    public Map<String, Integer> getAvailableCasInProfile(final AuthenticationToken authenticationToken, final int entityProfileId)
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         EndEntityProfileNotFoundException endEntityProfileNotFoundException = null;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getAvailableCAsInProfile(authenticationToken, entityProfileId);
+                    return raMasterApi.getAvailableCasInProfile(authenticationToken, entityProfileId);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 } catch (EndEntityProfileNotFoundException e) {
