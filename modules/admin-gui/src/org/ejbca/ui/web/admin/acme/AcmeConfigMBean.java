@@ -13,18 +13,25 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.protocol.acme.storage.AcmeConfiguration;
 import org.ejbca.ui.web.protocol.acme.storage.GlobalAcmeConfiguration;
 
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JavaServer Faces Managed Bean for managing ACME configuration.
@@ -44,6 +51,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
 
 
     private final GlobalConfigurationSessionLocal globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
+    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
+    private final EndEntityProfileSessionLocal endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
     private final AuthenticationToken authenticationToken = getAdmin();
 
     public AcmeConfigMBean() {
@@ -163,16 +172,57 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         return currentAliasStr;
     }
 
+    /** @return a list of EndEntity profiles that this admin is authorized to */
+    public List<SelectItem> getAuthorizedEEProfileNames() {
+        Collection<Integer> endEntityProfileIds = endentityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
+        Map<Integer, String> nameMap = endentityProfileSession.getEndEntityProfileIdToNameMap();
+        final List<SelectItem> ret = new ArrayList<>();
+        for (Integer id: endEntityProfileIds) {
+            String name = nameMap.get(id);
+            ret.add(new SelectItem(name, name));
+        }
+        return ret;
+    }
+
     public void setCurrentAliasStr(String currentAliasStr) {
         this.currentAliasStr = currentAliasStr;
     }
 
+    public boolean isCurrentAliasEditMode() {
+        return currentAliasEditMode;
+    }
+
+    public void setCurrentAliasEditMode(boolean currentAliasEditMode) {
+        this.currentAliasEditMode = currentAliasEditMode && isAllowedToEdit();
+    }
+
+    public void toggleCurrentAliasEditMode() {
+        currentAliasEditMode ^= true;
+        currentAliasEditMode = currentAliasEditMode && isAllowedToEdit();
+    }
+    public boolean isAllowedToEdit() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+    }
+
     public class AcmeAliasGuiInfo {
         String alias;
+        String endEntityProfileId;
+        boolean preAuthorizationAllowed;
+        boolean requireExternalAccountBinding;
+        String urlTemplate;
+        boolean wildcardCertificateIssuanceAllowed;
 
         public AcmeAliasGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig, String alias) {
             if (alias != null) {
                 this.alias = alias;
+                AcmeConfiguration acmeConfiguration = globalAcmeConfigurationConfig.getAcmeConfiguration(alias);
+                if(acmeConfiguration != null) {
+                    this.endEntityProfileId = String.valueOf(acmeConfiguration.getEndEntityProfileId());
+                    this.preAuthorizationAllowed = acmeConfiguration.isPreAuthorizationAllowed();
+                    this.requireExternalAccountBinding = acmeConfiguration.isRequireExternalAccountBinding();
+                    this.urlTemplate = acmeConfiguration.getWebSiteUrl();
+                    this.wildcardCertificateIssuanceAllowed = acmeConfiguration.isWildcardCertificateIssuanceAllowed();
+                }
             }
         }
 
@@ -182,6 +232,46 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
 
         public void setAlias(String alias) {
             this.alias = alias;
+        }
+
+        public String getEndEntityProfileId() {
+            return endEntityProfileId;
+        }
+
+        public void setEndEntityProfileId(String endEntityProfileId) {
+            this.endEntityProfileId = endEntityProfileId;
+        }
+
+        public boolean isPreAuthorizationAllowed() {
+            return preAuthorizationAllowed;
+        }
+
+        public void setPreAuthorizationAllowed(boolean preAuthorizationAllowed) {
+            this.preAuthorizationAllowed = preAuthorizationAllowed;
+        }
+
+        public boolean isRequireExternalAccountBinding() {
+            return requireExternalAccountBinding;
+        }
+
+        public void setRequireExternalAccountBinding(boolean requireExternalAccountBinding) {
+            this.requireExternalAccountBinding = requireExternalAccountBinding;
+        }
+
+        public String getUrlTemplate() {
+            return urlTemplate;
+        }
+
+        public void setUrlTemplate(String urlTemplate) {
+            this.urlTemplate = urlTemplate;
+        }
+
+        public boolean isWildcardCertificateIssuanceAllowed() {
+            return wildcardCertificateIssuanceAllowed;
+        }
+
+        public void setWildcardCertificateIssuanceAllowed(boolean wildcardCertificateIssuanceAllowed) {
+            this.wildcardCertificateIssuanceAllowed = wildcardCertificateIssuanceAllowed;
         }
     }
 }
