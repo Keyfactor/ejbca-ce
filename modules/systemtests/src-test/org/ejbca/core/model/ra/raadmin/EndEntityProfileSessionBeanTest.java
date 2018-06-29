@@ -310,7 +310,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             
             // 1. Test results.
             // 1.1 Test no available CAs for this EEP.
-            Map<String, Integer> map = endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, eepId);
+            Map<String, Integer> map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
             assertTrue("getAvailableCAsInProfile for an EEP with no CAs assigned should return a map with size 0.", map.size() == 0);
             
             // 1.2 Test 1 available CAs for this EEP
@@ -321,7 +321,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             caAdminSession.createCA(alwaysAllowToken, caInfo1);
             eeProfile.setAvailableCAs(Arrays.asList(new Integer[] { caInfo1.getCAId() }));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
-            map = endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, eepId);
+            map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
             assertTrue("getAvailableCAsInProfile for an EEP with 1 CAs assigned should return a map with size 1.", map.size() == 1);
             assertTrue("CA name and ID must match.", map.get(caName1) == caInfo1.getCAId());
                         
@@ -333,7 +333,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             caAdminSession.createCA(alwaysAllowToken, caInfo2);
             eeProfile.setAvailableCAs(Arrays.asList(new Integer[] { caInfo1.getCAId(), caInfo2.getCAId() }));
             endEntityProfileSession.changeEndEntityProfile(alwaysAllowToken, eepProfileName, eeProfile);
-            map = endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, eepId);
+            map = endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, eepId);
             assertTrue("getAvailableCAsInProfile for an EEP with 2 CAs assigned should return a map with size 2.", map.size() == 2);
             assertTrue("CA name and ID must match.", map.get(caName1) == caInfo1.getCAId());
             assertTrue("CA name and ID must match.", map.get(caName2) == caInfo2.getCAId());
@@ -343,7 +343,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             final int notExistingEepId = eepId + 1234;
             try {
                 assertNull(endEntityProfileSession.getEndEntityProfile(notExistingEepId));
-                endEntityProfileSession.getAvailableCAsInProfile(alwaysAllowToken, notExistingEepId);
+                endEntityProfileSession.getAvailableCasInProfile(alwaysAllowToken, notExistingEepId);
                 fail("Request all CAs associated with an ent entity profile which does not exist must throw an exception.");
             } catch(Exception e) {
                 assertTrue(

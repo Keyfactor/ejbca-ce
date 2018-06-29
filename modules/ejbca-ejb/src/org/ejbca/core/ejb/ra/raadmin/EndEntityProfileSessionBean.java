@@ -402,7 +402,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, Integer> getAvailableCAsInProfile(final AuthenticationToken admin, final int entityProfileId)
+    public Map<String, Integer> getAvailableCasInProfile(final AuthenticationToken admin, final int entityProfileId)
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         final EndEntityProfile profile = getEndEntityProfileNoClone(entityProfileId);
         final TreeMap<String,Integer> result = new TreeMap<>();
