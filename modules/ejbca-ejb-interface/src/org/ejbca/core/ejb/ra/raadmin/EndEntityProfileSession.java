@@ -178,7 +178,7 @@ public interface EndEntityProfileSession {
      * @throws AuthorizationDeniedException if the authorization was denied (still not thrown).
      * @throws EndEntityProfileNotFoundException if the end entity could not be found.
      */
-    Map<String,Integer> getAvailableCAsInProfile(AuthenticationToken admin, final int entityProfileId) throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
+    Map<String,Integer> getAvailableCasInProfile(AuthenticationToken admin, final int entityProfileId) throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
     
     /**
      * Method to check if a CA exists in any of the end entity profiles. Used to
