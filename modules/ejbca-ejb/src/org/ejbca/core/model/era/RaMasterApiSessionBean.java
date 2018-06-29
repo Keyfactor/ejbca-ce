@@ -2479,9 +2479,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
     
     @Override
-    public Collection<CertificateWrapper> processCVCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcreq)
+    public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcreq)
             throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
             ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException {
-        return signSessionLocal.createCVCertificateWS(authenticationToken, username, password, cvcreq);
+        return signSessionLocal.createCardVerifiableCertificateWS(authenticationToken, username, password, cvcreq);
     }
 }
