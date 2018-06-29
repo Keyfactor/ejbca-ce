@@ -1747,6 +1747,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         int profileid = 4711;
         try {
             ejbcaraws.getProfile(profileid, "foo");
+            fail("Unknown type should have thrown an exception.");
         } catch(UnknownProfileTypeException_Exception e) {
             String expectedmsg = "Unknown profile type 'foo'. Recognized types are 'eep' for End Entity Profiles and 'cp' for Certificate Profiles";
             assertEquals(expectedmsg, e.getMessage());
