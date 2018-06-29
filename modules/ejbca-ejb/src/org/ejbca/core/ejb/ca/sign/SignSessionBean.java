@@ -579,7 +579,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
     
     @Override
-    public Collection<CertificateWrapper> createCVCertificateWS(final AuthenticationToken authenticationToken, final String username, String password,
+    public Collection<CertificateWrapper> createCardVerifiableCertificateWS(final AuthenticationToken authenticationToken, final String username, String password,
             final String cvcreq) throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
             ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException
         {

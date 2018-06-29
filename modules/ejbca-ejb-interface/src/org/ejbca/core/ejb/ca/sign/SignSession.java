@@ -339,7 +339,7 @@ public interface SignSession {
       * @throws CertificateExpiredException if the users old certificate has expired.
       * @throws CesecoreException any CesecoreException.
       */
-     Collection<CertificateWrapper> createCVCertificateWS(AuthenticationToken authenticationToken, String username, String password, String cvcreq) throws 
+     Collection<CertificateWrapper> createCardVerifiableCertificateWS(AuthenticationToken authenticationToken, String username, String password, String cvcreq) throws 
             AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
             ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
      

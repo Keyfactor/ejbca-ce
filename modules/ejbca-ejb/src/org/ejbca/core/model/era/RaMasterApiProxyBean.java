@@ -2639,7 +2639,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
-    public Collection<CertificateWrapper> processCVCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcreq)
+    public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcreq)
             throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
             ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException {
         AuthorizationDeniedException authorizationDeniedException = null;
@@ -2648,7 +2648,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.processCVCertificateRequest(authenticationToken, username, password, cvcreq);
+                    return raMasterApi.processCardVerifiableCertificateRequest(authenticationToken, username, password, cvcreq);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 } catch (AuthorizationDeniedException e) {
@@ -2672,14 +2672,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 }
             }
         }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
         if (notFoundException != null) {
             throw notFoundException;
         }
         if (caDoesntExistsException != null) {
             throw caDoesntExistsException;
-        }
-        if (authorizationDeniedException != null) {
-            throw authorizationDeniedException;
         }
         return null;
     }

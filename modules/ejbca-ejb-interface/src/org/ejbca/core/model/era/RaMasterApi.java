@@ -85,7 +85,6 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -1150,10 +1149,10 @@ public interface RaMasterApi {
    /**
     * Generates a CV certificate for a user.
     *
-    * @see org.ejbca.core.ejb.ca.sign.SignSession#createCVCertificateWS(AuthenticationToken, String, String, String).
+    * @see org.ejbca.core.ejb.ca.sign.SignSession#createCardVerifiableCertificateWS(AuthenticationToken, String, String, String).
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
-   Collection<CertificateWrapper> processCVCertificateRequest(AuthenticationToken authenticationToken, String username, String password, String cvcreq)
+   Collection<CertificateWrapper> processCardVerifiableCertificateRequest(AuthenticationToken authenticationToken, String username, String password, String cvcreq)
            throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
            ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
 }
