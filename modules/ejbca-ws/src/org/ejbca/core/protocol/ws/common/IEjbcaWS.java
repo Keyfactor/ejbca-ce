@@ -948,7 +948,9 @@ public interface IEjbcaWS {
 	int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException, ApprovalRequestExpiredException;
 
 	/**
-	 * Generates a Custom Log event in the database.
+	 * Generates a Custom Log event in the database. In a setup with connected peer systems,
+	 * the log entry is written at the first peer where the CA exists, starting with remote systems,
+	 * then the local system.
 	 *
 	 * Authorization requirements: <pre>
 	 * - /administrator
