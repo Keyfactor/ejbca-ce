@@ -1129,18 +1129,20 @@ public interface RaMasterApi {
            throws AuthorizationDeniedException, CADoesntExistsException, NotFoundException, EjbcaException;
 
    /**
-    * Fetches the end entity profile specified by profileId in XML format.
+    * Fetches the end entity profile by ID in XML format.
     *
-    * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getProfile
+    * @param profileId the end entity profile ID.
+    * @return the XML formatted end entity profile as byte array.
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
     byte[] getEndEntityProfileAsXml(AuthenticationToken authenticationToken, int profileId)
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
     
     /**
-     * Fetches the certificate profile specified by profileId in XML format.
+     * Fetches the certificate profile by ID in XML format.
      *
-     * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getProfile
+     * @param profileId the certificate profile ID.
+     * @return the XML formatted end certificate profile as byte array.
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
      byte[] getCertificateProfileAsXml(AuthenticationToken authenticationToken, int profileId)
