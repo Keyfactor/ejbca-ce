@@ -642,13 +642,10 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         authorizedToViewProfile(authenticationToken, profile);
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
-            encoder.close(); // Is this required here?
             return baos.toByteArray();
         } catch (IOException e) {
             String msg = "Could not encode profile with ID " + profileId + " to XML: " + e.getMessage();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(msg, e);
-            }
+            LOG.debug(msg, e);
             throw new IllegalStateException(msg, e);
         }
     }
