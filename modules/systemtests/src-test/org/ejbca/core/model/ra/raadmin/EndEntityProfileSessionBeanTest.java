@@ -224,7 +224,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void testRemoveEndEntityProfiles() throws Exception {
+    public void test05RemoveEndEntityProfiles() throws Exception {
         log.trace(">test05removeEndEntityProfiles()");
         boolean ret = false;
         try {
@@ -258,7 +258,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @throws Exception any exception.
      */
     @Test
-    public void testGetAvailableCertificateProfiles() throws Exception {
+    public void test05GetAvailableCertificateProfiles() throws Exception {
         final String cpProfileName1 = "test05CertificateProfile1";
         final String cpProfileName2 = "test05CertificateProfile2";
         final String eepProfileName = "test05EndEntityProfile";
@@ -293,7 +293,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @throws Exception any exception.
      */
     @Test
-    public void testGetAvailableCAsInProfile() throws Exception {
+    public void test05GetAvailableCAsInProfile() throws Exception {
         final String caName1 = "test05CA1";
         final String caName2 = "test05CA2";
         final String eepProfileName = "test05EndEntityProfile";
@@ -389,7 +389,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void testEndEntityProfilesDynamicFields() throws Exception {
+    public void test06EndEntityProfilesDynamicFields() throws Exception {
         log.trace(">test06testEndEntityProfilesDynamicFields()");
         String testProfileName = "TESTDYNAMICFIELDS";
         String testString1 = "testString1";
@@ -431,7 +431,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void testPasswordAutoGeneration() throws Exception {
+    public void test07PasswordAutoGeneration() throws Exception {
         log.trace(">test07PasswordAutoGeneration()");
         // Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
@@ -455,7 +455,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-   public void testFieldIds() throws Exception {
+   public void test08FieldIds() throws Exception {
         log.trace(">test08FieldIds()");
         EndEntityProfile profile = new EndEntityProfile();
 
@@ -478,7 +478,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
-    public void testClone() throws Exception {
+    public void test09Clone() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
         EndEntityProfile clone = (EndEntityProfile)profile.clone();
         HashMap profmap = (HashMap)profile.saveData();
@@ -502,7 +502,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
      * @throws EndEntityProfileNotFoundException 
      */
     @Test
-    public void testCardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException {
+    public void test10CardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException {
  	log.trace(">test10CardnumberRequired()");
 
     	try {
@@ -552,7 +552,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
     @Test
-   public void testEndEntityProfileReferenceDetection() throws Exception {
+   public void test11EndEntityProfileReferenceDetection() throws Exception {
         log.trace(">test11EndEntityProfileReferenceDetection()");
         final String NAME = "EndEntityProfileReferenceDetection";
         try {
@@ -579,7 +579,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
     @Test
-   public void testOperationsOnEmptyProfile() throws Exception {
+   public void test12OperationsOnEmptyProfile() throws Exception {
         log.trace(">test12OperationsOnEmptyProfile()");
     	final EndEntityProfile profile = new EndEntityProfile();
         try {
@@ -730,6 +730,4 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             log.trace("<testAuthorization");
         }
     }
-        
-  
 }
