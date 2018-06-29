@@ -198,7 +198,8 @@ public interface CertificateProfileSession {
      * @param profileId the id of the certificate profile
      * @return the certificate profile encoded as XML
      * @throws CertificateProfileDoesNotExistException if the profile with the given ID didn't exist. 
-     * @throws AuthorizationDeniedException if the profile contained CAs that the admin wasn't authorized to
+     * @throws AuthorizationDeniedException if the profile contained CAs that the admin wasn't authorized to, or the admin wasn't authorized to 
+     * view profiles
      */
     byte[] getProfileAsXml(final AuthenticationToken authenticationToken, final int profileId) throws CertificateProfileDoesNotExistException, AuthorizationDeniedException;
 
