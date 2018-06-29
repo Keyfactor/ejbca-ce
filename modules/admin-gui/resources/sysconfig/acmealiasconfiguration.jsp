@@ -35,6 +35,53 @@ org.cesecore.authorization.control.StandardRules
                 <h:outputText value="#{acmeConfigMBean.currentAlias.alias}"/>
             </h1>
 
+            <div class="message"><h:messages layout="table" errorClass="alert"/></div>
+            <h:form id="currentAliasForm">
+                <h:panelGrid columns="2">
+                    <h:outputLink value="adminweb/sysconfig/acmeconfiguration.jsf"><h:outputText value="#{web.text.ACME_ALIAS_NAV_BACK}"/></h:outputLink>
+                    <h:commandButton action="#{acmeConfigMBean.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{!acmeConfigMBean.currentAliasEditMode && acmeConfigMBean.allowedToEdit}"/>
+
+                    <h:panelGroup id="placeholder1" />
+                    <h:panelGroup id="placeholder2" rendered="#{!acmeConfigMBean.currentAliasEditMode && acmeConfigMBean.allowedToEdit}"/>
+
+                    <h:outputLabel for="currentAlias" value="#{web.text.ACME_ALIAS}:"/>
+                    <h:panelGroup id="currentAlias">
+                        <h:outputText value="#{acmeConfigMBean.currentAlias.alias}" />
+                    </h:panelGroup>
+
+
+                    <h:outputLabel for="eep" value="#{web.text.ACME_END_ENTITY_PROFILE}" />
+                    <h:panelGroup id="eep"  >
+                        <h:panelGroup >
+                            <h:selectOneMenu id="selectOneMenuEEP" value="#{acmeConfigMBean.currentAlias.endEntityProfileId}"
+                                             disabled="#{!acmeConfigMBean.currentAliasEditMode}">
+                                <f:selectItems value="#{acmeConfigMBean.authorizedEEProfileNames}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:outputLabel for="preautorisation" value="#{web.text.ACME_PREAUTHORIZATION_ALLOWED}" />
+                    <h:selectBooleanCheckbox id="preautorisation" value="#{acmeConfigMBean.currentAlias.preAuthorizationAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+
+                    <h:outputLabel for="accbinding" value="#{web.text.ACME_REQUIRE_EXTERNAL_ACCOUNT_BINDING}" />
+                    <h:selectBooleanCheckbox id="accbinding" value="#{acmeConfigMBean.currentAlias.preAuthorizationAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+
+                    <h:outputLabel for="wildcard" value="#{web.text.ACME_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED}" />
+                    <h:selectBooleanCheckbox id="wildcard" value="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+
+                    <h:outputLabel for="raprefix" value="#{web.text.ACME_WEBSITE_URL}" />
+                    <h:panelGroup id="raprefix" >
+                        <h:inputText  value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                            <f:validator validatorId="legalCharsValidator"/>
+                        </h:inputText>
+                        <h:outputText value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup/>
+
+                </h:panelGrid>
+            </h:form>
+
         </div> <!-- Container -->
 
         <% // Include Footer
