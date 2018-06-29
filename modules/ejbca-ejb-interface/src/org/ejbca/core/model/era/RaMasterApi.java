@@ -943,10 +943,10 @@ public interface RaMasterApi {
     /**
      * Fetches the IDs and names of available CAs in an end entity profile.
      *
-     * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getAvailableCAsInProfile(AuthenticationToken admin, int entityProfileId)
+     * @see org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession#getAvailableCasInProfile(AuthenticationToken admin, int entityProfileId)
      * @since RA Master API version 4 (EJBCA 6.14.0)
      */
-    Map<String,Integer> getAvailableCAsInProfile(AuthenticationToken authenticationToken, int entityProfileId) throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
+    Map<String,Integer> getAvailableCasInProfile(AuthenticationToken authenticationToken, int entityProfileId) throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
 
     /**
      * Fetches an issued certificate.
