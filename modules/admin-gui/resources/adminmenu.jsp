@@ -54,6 +54,7 @@ org.ejbca.util.HTMLTools
        
        final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() + "/roles.xhtml";
        
+       final String ACMECONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/acmeconfiguration.jsf";
        final String SCEPCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/scepconfiguration.jsf";
        
        final String ESTCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/estconfiguration.jsp";
@@ -351,9 +352,20 @@ org.ejbca.util.HTMLTools
 %>
 
 <%
-    // If authorized to edit CMP Configuration then display related links.
+
+    // If authorized to edit ACME Configuration then display related links.
       if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){ 
           if(!configheaderprinted){      
+        out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
+        configheaderprinted = true;
+          } %>
+				<li><a href="<%= ACMECONFIGURATION_LINK %>"><%=ejbcawebbean.getText("NAV_ACMECONFIGURATION") %></a></li>
+<% } %>
+<%
+
+    // If authorized to edit CMP Configuration then display related links.
+      if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){
+          if(!configheaderprinted){
         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
         configheaderprinted = true;
           } %>

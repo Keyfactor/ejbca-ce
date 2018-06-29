@@ -38,6 +38,7 @@
 		<path location="${mod.edition-specific-interface.lib}"/>
 		<path location="${mod.edition-specific-ejb.lib}"/>
 		<path location="${mod.statedump-common.lib}"/>
+		<path location="${mod.acme-common.jar}"/>
 	</path>
 	
     <target name="clean" description="Clean up this module">
