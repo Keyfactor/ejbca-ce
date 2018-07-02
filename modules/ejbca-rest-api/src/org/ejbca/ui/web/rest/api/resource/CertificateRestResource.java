@@ -185,7 +185,7 @@ public class CertificateRestResource extends BaseRestResource {
     public Response revocationStatus(
             @Context HttpServletRequest requestContext,
             @PathParam("issuer_dn") String issuerDn,
-            @PathParam("certificate_serial_number") String serialNumber) throws AuthorizationDeniedException, RestException, CADoesntExistsException {
+            @PathParam("certificate_serial_number") String serialNumber) throws AuthorizationDeniedException, RestException, CADoesntExistsException, NotFoundException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         final BigInteger serialNr;
         final CertificateStatus status;
@@ -198,6 +198,9 @@ public class CertificateRestResource extends BaseRestResource {
         } catch (CADoesntExistsException e) {
             // Returning an ID which doesn't exist makes no sense, replace with SDN.
             throw new CADoesntExistsException("CA '" + issuerDn + "' does not exist.");
+        }
+        if (status == null || status.equals(CertificateStatus.NOT_AVAILABLE)) {
+            throw new NotFoundException("Certificate with serial number '" + serialNumber + "' and issuer DN '" + issuerDn + "' was not found");
         }
         return Response.ok(RevokeStatusRestResponse.converter().toRestResponse(status, issuerDn, serialNumber)).build();
     }
