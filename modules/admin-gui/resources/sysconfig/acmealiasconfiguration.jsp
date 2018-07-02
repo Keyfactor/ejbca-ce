@@ -69,8 +69,8 @@ org.cesecore.authorization.control.StandardRules
                     <h:outputLabel for="wildcard" value="#{web.text.ACME_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED}" />
                     <h:selectBooleanCheckbox id="wildcard" value="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
 
-                    <h:outputLabel for="raprefix" value="#{web.text.ACME_WEBSITE_URL}" />
-                    <h:panelGroup id="raprefix" >
+                    <h:outputLabel for="webUrl" value="#{web.text.ACME_WEBSITE_URL}" />
+                    <h:panelGroup id="webUrl" >
                         <h:inputText  value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
                             <f:validator validatorId="legalCharsValidator"/>
                         </h:inputText>

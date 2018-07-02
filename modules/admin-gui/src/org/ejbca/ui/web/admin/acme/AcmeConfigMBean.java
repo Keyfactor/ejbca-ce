@@ -11,6 +11,7 @@ package org.ejbca.ui.web.admin.acme;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -45,6 +46,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
 
     private GlobalAcmeConfiguration globalAcmeConfigurationConfig;
     private AcmeAliasGuiInfo currentAlias = null;
+    private AcmeGlobalGuiInfo globalInfo = null;
     private boolean currentAliasEditMode = false;
     private String currentAliasStr;
     private String newAlias = "";
@@ -66,6 +68,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         aliasGuiList = null;
         currentAliasEditMode = false;
         globalAcmeConfigurationConfig = (GlobalAcmeConfiguration) globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
+        globalInfo = new AcmeGlobalGuiInfo(globalAcmeConfigurationConfig);
+
     }
     /** Build a list sorted by name from the existing ACME configuration aliases */
     public ListDataModel<AcmeAliasGuiInfo> getAliasGuiList() {
@@ -90,6 +94,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isNotEmpty(newAlias) && !globalAcmeConfigurationConfig.aliasExists(newAlias)) {
             AcmeConfiguration newConfig = new AcmeConfiguration();
             newConfig.setConfigurationId(newAlias);
+            newConfig.initialize(newAlias);
             globalAcmeConfigurationConfig.updateAcmeConfiguration(newConfig);
             try {
                 globalConfigSession.saveConfiguration(authenticationToken, globalAcmeConfigurationConfig);
@@ -184,6 +189,14 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    public List<SelectItem> getAliasSeletItemList() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for (String alias : globalAcmeConfigurationConfig.getAcmeConfigurationIds()) {
+            ret.add(new SelectItem(alias, alias));
+        }
+        return ret;
+    }
+
     /** Invoked when admin cancels a ACME alias create or edit. */
     public void cancelCurrentAlias() {
         flushCache();
@@ -211,6 +224,18 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         flushCache();
     }
 
+    public void saveGlobalConfigs(){
+        globalAcmeConfigurationConfig.setDefaultAcmeConfigurationId(globalInfo.getDefaultAcmeConfiguration());
+        globalAcmeConfigurationConfig.setReplayNonceValidity(Long.valueOf(globalInfo.getReplayNonceValidity()));
+        try {
+            globalConfigSession.saveConfiguration(authenticationToken, globalAcmeConfigurationConfig);
+        } catch (AuthorizationDeniedException e) {
+            String msg = "Cannot save ACME configurations. Administrator is not authorized.";
+            log.info(msg + e.getLocalizedMessage());
+            super.addNonTranslatedErrorMessage(msg);
+        }
+    }
+
     public void setCurrentAliasStr(String currentAliasStr) {
         this.currentAliasStr = currentAliasStr;
     }
@@ -229,6 +254,14 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     }
     public boolean isAllowedToEdit() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+    }
+
+    public AcmeGlobalGuiInfo getGlobalInfo() {
+        return globalInfo;
+    }
+
+    public void setGlobalInfo(AcmeGlobalGuiInfo globalInfo) {
+        this.globalInfo = globalInfo;
     }
 
     public class AcmeAliasGuiInfo {
@@ -299,6 +332,43 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
 
         public void setWildcardCertificateIssuanceAllowed(boolean wildcardCertificateIssuanceAllowed) {
             this.wildcardCertificateIssuanceAllowed = wildcardCertificateIssuanceAllowed;
+        }
+
+
+    }
+    public class AcmeGlobalGuiInfo {
+        private String defaultAcmeConfiguration;
+        private String replayNonceValidity;
+        private List<String> sharedSecret;
+
+        public AcmeGlobalGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig) {
+            this.defaultAcmeConfiguration = globalAcmeConfigurationConfig.getDefaultAcmeConfigurationId();
+            this.replayNonceValidity = String.valueOf(globalAcmeConfigurationConfig.getReplayNonceValidity());
+            this.sharedSecret = globalAcmeConfigurationConfig.getReplayNonceSharedSecrets(PKCSObjectIdentifiers.id_hmacWithSHA256.getId());
+        }
+
+        public String getDefaultAcmeConfiguration() {
+            return defaultAcmeConfiguration;
+        }
+
+        public void setDefaultAcmeConfiguration(String defaultAcmeConfiguration) {
+            this.defaultAcmeConfiguration = defaultAcmeConfiguration;
+        }
+
+        public String getReplayNonceValidity() {
+            return replayNonceValidity;
+        }
+
+        public void setReplayNonceValidity(String replayNonceValidity) {
+            this.replayNonceValidity = replayNonceValidity;
+        }
+
+        public List<String> getSharedSecret() {
+            return sharedSecret;
+        }
+
+        public void setSharedSecret(List<String> sharedSecret) {
+            this.sharedSecret = sharedSecret;
         }
     }
 }
