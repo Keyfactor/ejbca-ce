@@ -212,6 +212,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             acmeConfig.setRequireExternalAccountBinding(currentAlias.isRequireExternalAccountBinding());
             acmeConfig.setWildcardCertificateIssuanceAllowed(currentAlias.isWildcardCertificateIssuanceAllowed());
             acmeConfig.setWebSiteUrl(currentAlias.getUrlTemplate());
+            acmeConfig.setDnsResolver(currentAlias.getDnsResolver());
+            acmeConfig.setDnssecTrustAnchor(currentAlias.getDnssecTrustAnchor());
             globalAcmeConfigurationConfig.updateAcmeConfiguration(acmeConfig);
             try {
                 globalConfigSession.saveConfiguration(authenticationToken, globalAcmeConfigurationConfig);
@@ -271,6 +273,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         private boolean requireExternalAccountBinding;
         private String urlTemplate;
         private boolean wildcardCertificateIssuanceAllowed;
+        private String dnsResolver;
+        private String dnssecTrustAnchor;
 
         public AcmeAliasGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig, String alias) {
             if (alias != null) {
@@ -282,6 +286,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
                     this.requireExternalAccountBinding = acmeConfiguration.isRequireExternalAccountBinding();
                     this.urlTemplate = acmeConfiguration.getWebSiteUrl();
                     this.wildcardCertificateIssuanceAllowed = acmeConfiguration.isWildcardCertificateIssuanceAllowed();
+                    this.dnsResolver = acmeConfiguration.getDnsResolver();
+                    this.dnssecTrustAnchor = acmeConfiguration.getDnssecTrustAnchor();
                 }
             }
         }
@@ -332,6 +338,22 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
 
         public void setWildcardCertificateIssuanceAllowed(boolean wildcardCertificateIssuanceAllowed) {
             this.wildcardCertificateIssuanceAllowed = wildcardCertificateIssuanceAllowed;
+        }
+
+        public String getDnssecTrustAnchor() {
+            return dnssecTrustAnchor;
+        }
+
+        public void setDnssecTrustAnchor(String dnssecTrustAnchor) {
+            this.dnssecTrustAnchor = dnssecTrustAnchor;
+        }
+
+        public String getDnsResolver() {
+            return dnsResolver;
+        }
+
+        public void setDnsResolver(String dnsResolver) {
+            this.dnsResolver = dnsResolver;
         }
 
 
