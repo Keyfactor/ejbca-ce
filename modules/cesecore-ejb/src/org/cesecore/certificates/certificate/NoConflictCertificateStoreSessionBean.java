@@ -50,6 +50,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 
 /**
@@ -100,7 +101,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
      */
     @Override
     public boolean canRevokeNonExisting(final String issuerDN) {
-        final int caid = issuerDN.hashCode();
+        final int caid = CertTools.stringToBCDNString(StringTools.strip(issuerDN)).hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
         return canRevokeNonExisting(cainfo, issuerDN);
     }
@@ -111,7 +112,8 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
      * @param issuerDN Subject DN of CA, for safety check against CAId collisions.
      */
     private boolean canRevokeNonExisting(final CAInfo cainfo, final String issuerDN) {
-        if (cainfo == null || !cainfo.getSubjectDN().equals(issuerDN) || !cainfo.isAcceptRevocationNonExistingEntry()) {
+        String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        if (cainfo == null || !cainfo.getSubjectDN().equals(dn) || !cainfo.isAcceptRevocationNonExistingEntry()) {
             return false;
         }
         // XXX this option can be set in the certificate profile as well! does it make sense to have mixed locations? it would make CRL generation more complex!
@@ -133,7 +135,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         }
 
         // Throw away CA or missing certificate
-        final int caid = issuerdn.hashCode();
+        final int caid = CertTools.stringToBCDNString(StringTools.strip(issuerdn)).hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
         if (!canRevokeNonExisting(cainfo, issuerdn)) {
             if (cainfo == null && log.isDebugEnabled()) {
