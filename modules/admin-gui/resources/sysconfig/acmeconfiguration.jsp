@@ -97,6 +97,33 @@ org.cesecore.authorization.control.StandardRules
                 </h:commandLink>
 
             </h:form>
+            <h:panelGroup/>
+
+            <h3><h:outputText value="#{web.text.ACME_GLOBAL_CONFIGS}"/></h3>
+            <h:form id="acmeConfigs" rendered="#{acmeConfigMBean.allowedToEdit}">
+
+                <h:panelGrid columns="2">
+                    <h:outputLabel for="defaultConfig" value="#{web.text.ACME_DEFAULT_CONFIG}" />
+                    <h:panelGroup id="defaultConfig"  >
+                        <h:panelGroup >
+                            <h:selectOneMenu id="selectOneMenuEEP" value="#{acmeConfigMBean.globalInfo.defaultAcmeConfiguration}">
+                                <f:selectItems value="#{acmeConfigMBean.aliasSeletItemList}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:outputLabel for="replayNonce" value="#{web.text.ACME_REPLAY_NONCE_VALIDITY}" />
+                    <h:panelGroup id="replayNonce" >
+                        <h:inputText  value="#{acmeConfigMBean.globalInfo.replayNonceValidity}" >
+                            <f:validator validatorId="legalCharsValidator"/>
+                        </h:inputText>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:commandButton action="#{acmeConfigMBean.saveGlobalConfigs}" value="#{web.text.SAVE}"/>
+                    </h:panelGroup>
+                </h:panelGrid>
+
+            </h:form>
 
         </div> <!-- Container -->
 
