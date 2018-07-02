@@ -76,6 +76,23 @@ org.cesecore.authorization.control.StandardRules
                         </h:inputText>
                         <h:outputText value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
+                    
+                    <h:outputLabel for="dnsResolver" value="#{web.text.ACME_DNS_RESOLVER}" />
+                    <h:panelGroup id="dnsResolver" >
+                        <h:inputText  value="#{acmeConfigMBean.currentAlias.dnsResolver}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                            <f:validator validatorId="legalCharsValidator"/>
+                        </h:inputText>
+                        <h:outputText value="#{acmeConfigMBean.currentAlias.dnsResolver}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                    </h:panelGroup>
+                    
+                    <h:outputLabel for="dnssecTrustAnchor" value="#{web.text.ACME_DNSSEC_TRUST_ANCHOR}" />
+                    <h:panelGroup id="dnssecTrustAnchor" >
+                        <h:inputTextarea  value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}"  rendered="#{acmeConfigMBean.currentAliasEditMode}"
+                        	cols="45" rows="3" >
+                            <f:validator validatorId="legalCharsValidator"/>
+                        </h:inputTextarea>
+                        <h:outputText value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                    </h:panelGroup>
 
                     <h:panelGroup/>
 
