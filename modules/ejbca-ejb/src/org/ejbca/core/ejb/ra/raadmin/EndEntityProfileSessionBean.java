@@ -302,7 +302,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             // Check authorization for the endentityAccessRule here. The built in EMPTY EE profile is obviously not included in the cache, so added manually above
             if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEBASE + "/" + entry.getKey().toString() + endentityAccessRule)) {
                 authorizedToProfile = true;
-                if (availableCasString != null) {
+                if (StringUtils.isNotBlank(availableCasString)) {
                     for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
                         try {
                             final int caIdInt = Integer.parseInt(caidString);
