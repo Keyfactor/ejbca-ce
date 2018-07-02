@@ -188,7 +188,6 @@ import org.ejbca.core.model.ra.KeyStoreGeneralRaException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.UnknownProfileTypeException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
@@ -2394,7 +2393,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
             CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, 
             InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, 
-            ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException, RuntimeException {
+            ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException {
         return signSessionLocal.createCertificateWS(authenticationToken, username, password, req, reqType, hardTokenSN, responseType);
     }
 
