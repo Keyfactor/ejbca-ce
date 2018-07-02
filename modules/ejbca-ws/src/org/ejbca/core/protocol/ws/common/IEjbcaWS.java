@@ -128,6 +128,10 @@ public interface IEjbcaWS {
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
 	 *
+	 * <p>If authorization was denied or a certificate could not be encoded on the local system, 
+     *    then the request will be forwarded to upstream peer systems (if any) and the resulting 
+     *    certificates where merged by its fingerprint.</p>
+     * 
 	 * @param username a unique username
 	 * @param onlyValid only return valid certs not revoked or expired ones.
 	 * @return a collection of Certificates or an empty list if no certificates, or no user, could be found
@@ -146,6 +150,9 @@ public interface IEjbcaWS {
      * - /ca/&lt;ca in question&gt;
      * </pre>
      *
+     * <p>If the CA does not exist or authorization was denied on the local system, 
+     *     then the request will be forwarded to upstream peer systems (if any).</p>
+     *     
      * @param caname the unique name of the CA whose certificate chain should be returned
      * @return a list of X509 Certificates or CVC Certificates with the root certificate last, or an empty list if the CA's status is "Waiting for certificate response"
      * @throws AuthorizationDeniedException if the client does not fulfill the authorization requirements specified above
@@ -267,7 +274,10 @@ public interface IEjbcaWS {
 	 *  Generates a certificate for a user.
 	 *
 	 *  Works the same as pkcs10Request.
-	 *
+	 *  
+	 *  <p>If the CA does not exist, the user could not be found or authorization was denied on the local system, 
+	 *     then the request will be forwarded to upstream peer systems (if any).</p>
+     * 
 	 * @see #pkcs10Request(String, String, String, String, String)
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
@@ -288,8 +298,9 @@ public interface IEjbcaWS {
 	/**
 	 *  Generates a certificate for a user.
 	 *
-	 *  Works the same as pkcs10Request.
-	 *
+	 *  <p>If the CA does not exist, the user could not be found or authorization was denied on the local system, 
+     *     then the request will be forwarded to upstream peer systems (if any).</p>
+     *
 	 * @see #pkcs10Request(String, String, String, String, String)
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
@@ -313,6 +324,9 @@ public interface IEjbcaWS {
 	 * Uses the same authorizations as editUser and pkcs10Request
 	 * responseType is always {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_CERTIFICATE.
 	 *
+	 * <p>If the CA does not exist, the user could not be found or authorization was denied on the local system, 
+     *     then the request will be forwarded to upstream peer systems (if any).</p>
+     *     
 	 * @see #editUser(UserDataVOWS)
 	 * @see #pkcs10Request(String, String, String, String, String)
 	 * @param username the user name of the user requesting the certificate.
@@ -499,6 +513,9 @@ public interface IEjbcaWS {
      * - /ra_functionality/keyrecovery
      * </pre>
      *
+     * <p>If the CA does not exist, the user could not be found or authorization was denied on the local system, 
+     *     then the request will be forwarded to upstream peer systems (if any).</p>
+     *     
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
@@ -530,12 +547,15 @@ public interface IEjbcaWS {
 	 * </pre>
 	 * <p>
 	 * To use this call the certificate to be used must be from a certificate profile that has 'Allow back dated revocation' enabled.
-	 * </p><p>
-	 * If {@link RevokeBackDateNotAllowedForProfileException} is throwed then the CA is not
+	 * </p>
+	 * <p>If {@link RevokeBackDateNotAllowedForProfileException} is throwed then the CA is not
 	 * allowing back date and you could then revoke with {@link #revokeCert(String, String, int)}.
 	 * {@link DateNotValidException} means that the date parameter can't be parsed and in this case it might also
 	 * be better with a fall back to {@link #revokeCert(String, String, int)}.
 	 * </p>
+	 * 
+	 * <p>If the CA does not exist on the local system, then the request will be forwarded to upstream peer systems (if any).</p>
+	 * 
 	 * @param issuerDN of the certificate to revoke
 	 * @param certificateSN Certificate serial number in hex format of the certificate to revoke (without any "0x", "h" or similar)
 	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants,
@@ -563,6 +583,8 @@ public interface IEjbcaWS {
 	/**
 	 * Same as {@link #revokeCertBackdated(String, String, int, String)} but revocation date is current time.
 	 *
+	 * <p>If the CA does not exist on the local system, then the request will be forwarded to upstream peer systems (if any).</p>
+	 *
 	 * @param issuerDN
 	 * @param certificateSN
 	 * @param reason
@@ -580,6 +602,8 @@ public interface IEjbcaWS {
 	 /**
      * Revokes a user certificate. Allows to specify column values via metadata input param.
      * Metadata is a list of key-value pairs, keys can be for example: certificateProfileId, reason, revocationdate
+     * 
+     * <p>If the CA does not exist on the local system, then the request will be forwarded to upstream peer systems (if any).</p>
      * 
      * @throws CADoesntExistsException if a referenced CA does not exist
      * @throws AuthorizationDeniedException if client isn't authorized.
@@ -611,6 +635,10 @@ public interface IEjbcaWS {
 	 * - /ca/<ca of users certificate>
 	 * </pre>
 	 *
+	 * <p>If the CA does not exist, the user could not be found, or its waiting for approval, approval was denied, is revoked 
+	 *    already or could not be deleted on the local system, then the request will be forwarded to upstream peer systems (if any).
+	 *    The requested is processed on all instances available.</p>
+     *     
 	 * @param username unique username in EJBCA.
 	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants
 	 * or use {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.NOT_REVOKED to un-revoke a certificate on hold.
@@ -761,6 +789,9 @@ public interface IEjbcaWS {
 	 *
 	 * Authorization requirements: a valid client certificate
 	 *
+	 * <p> This request will be process locally and is forwarded upstream peer systems (if any) 
+	 *     until an instance with an active CA was found there the authorization can be verified. </p>
+     * 
 	 * @param resource the access rule to test
 	 * @return true if the user is authorized to the resource otherwise false.
 	 * @throws EjbcaException
@@ -911,6 +942,9 @@ public interface IEjbcaWS {
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
 	 *
+	 * <p>If the CA does not exist on the local system, then the request will be forwarded 
+	 *    to upstream peer systems (if any).</p>
+     *     
 	 * @param serialNumberInHex of the certificate to republish
 	 * @param issuerDN of the certificate to republish
 	 * @throws CADoesntExistsException if a referenced CA does not exist
@@ -927,6 +961,9 @@ public interface IEjbcaWS {
 	 *
 	 * Authorization requirements: A valid certificate
 	 *
+	 * <p>If an approval was found but it is pending or suspended on the local system, 
+     *    then the request will be forwarded to upstream peer systems (if any).</p>
+
 	 * @param approvalId unique id for the action
 	 * @return the number of approvals left, 0 if approved otherwise is the ApprovalDataVO.STATUS constants returned indicating the status. If the request was proxied to a CA instance, and the request fails for technical reasons -9 is returned.
 	 * @throws ApprovalException if approvalId does not exist
@@ -937,7 +974,9 @@ public interface IEjbcaWS {
 			EjbcaException, ApprovalRequestExpiredException;
 
 	/**
-	 *
+	 * <p>If an approval was found but it is pending or suspended on the local system, 
+     *    then the request will be forwarded to upstream peer systems (if any).</p>
+     *     
 	 * @param requestId the ID of an approval request
      * @return the remaining number of approvals for this request (with 0 meaning that the request has passed) or -1 if the request has been denied. If the request was proxied to a CA instance, and the request fails for technical reasons -9 is returned.
 	 * @throws ApprovalException if a request of the given ID didn't exist
@@ -957,6 +996,9 @@ public interface IEjbcaWS {
 	 * - /secureaudit/log_custom_events (must be configured in advanced mode when editing access rules)
 	 * </pre>
 	 *
+	 * <p>If the CA does not exist or authorization was denied on the local system, then the request will 
+	 *    be forwarded to upstream peer systems (if any).</p>
+     * 
 	 * @param level of the event, one of IEjbcaWS.CUSTOMLOG_LEVEL_ constants
 	 * @param type userdefined string used as a prefix in the log comment
 	 * @param caName of the ca related to the event, use null if no specific CA is related.
@@ -1005,6 +1047,9 @@ public interface IEjbcaWS {
 	 * - /ca/&lt;of the issing CA&gt;
 	 * </pre>
 	 *
+	 * <p>If the CA does not exist or authorization was denied on the local system, 
+     *     then the request will be forwarded to upstream peer systems (if any).</p>
+     *     
 	 * @param certSNinHex the certificate serial number in hexadecimal representation
 	 * @param issuerDN the issuer of the certificate
 	 * @return the certificate (in WS representation) or null if certificate couldn't be found.
@@ -1026,6 +1071,9 @@ public interface IEjbcaWS {
 	 *
 	 * If not turned of in jaxws.properties then only a valid certificate required
 	 *
+	 * <p>If the CA does not exist, the user could not be found or authorization was denied on the local system, 
+     *     then the request will be forwarded to upstream peer systems (if any).</p>
+     * 
 	 * Authored by Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 *
 	 * @return array of NameAndId of available CAs, if no CAs are found will an empty array be returned of size 0, never null.
@@ -1082,6 +1130,9 @@ public interface IEjbcaWS {
 	 *
 	 * If not turned of in jaxws.properties then only a valid certificate required
 	 *
+	 * <p>If the end entity profile does not exist or authorization was denied on the local system, 
+     *     then the request will be forwarded to upstream peer systems (if any).</p>
+     * 
 	 * Authorws by Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 *
 	 * @param entityProfileId id of an end entity profile where we want to find which CAs are available
@@ -1109,6 +1160,9 @@ public interface IEjbcaWS {
 	 *
 	 * For detailed documentation for how to parse an End Entity Profile XML, see the org.ejbca.core.model.ra.raadmin.EndEntity class.
 	 *
+	 * <p>If the end entity profile (or certificate profile) does not exist or authorization was denied on the local system, 
+     *    then the request will be forwarded to upstream peer systems (if any).</p>
+     *     
 	 * @param profileId ID of the profile we want to retrieve.
 	 * @param profileType The type of the profile we want to retrieve. 'eep' for End Entity Profiles and 'cp' for Certificate Profiles
 	 * @return a byte array containing the specified profile in XML format
@@ -1144,6 +1198,9 @@ public interface IEjbcaWS {
      * - /ca/&lt;caid&gt;
      * </pre>
      *
+     * <p>If the CA does not exist on the local system, then the request will be forwarded 
+     *    to upstream peer systems (if any).</p>
+     *     
      * @param caname the name in EJBCA of the CA that issued the desired CRL
      * @param deltaCRL false to fetch a full CRL, true to fetch a deltaCRL (if issued)
      * @return the latest CRL issued for the CA as a DER encoded byte array
@@ -1249,6 +1306,9 @@ public interface IEjbcaWS {
      * called for deployment scenarios, where the request is proxied to multiple different CA instances not sharing 
      * the same data store.
      *
+     * <p>If the publisher does not exist on the local system, then the request will be forwarded 
+     *    to upstream peer systems (if any).</p>
+     *     
      * @param name of the queue
      * @return the length or -4 if the publisher does not exist.
      * @throws EjbcaException
@@ -1267,6 +1327,9 @@ public interface IEjbcaWS {
      * - /ca/&lt;ca of user&gt;
      * </pre>
      *
+     * <p>If authorization was denied on the local system, then the request will be forwarded 
+     *    to upstream peer systems (if any).</p>
+     *     
      * @param days the number of days before the certificates will expire
      * @param maxNumberOfResults the maximum number of returned certificates
      * @return A list of certificates, never null
@@ -1278,6 +1341,9 @@ public interface IEjbcaWS {
     /**
      * List certificates that will expire within the given number of days and issued by the given issuer
      *
+     * <p>If authorization was denied on the local system, then the request will be forwarded 
+     *    to upstream peer systems (if any).</p>
+     *     
      * @param days Expire time in days
      * @param issuerDN The issuerDN of the certificates
      * @param maxNumberOfResults the maximum number of returned certificates
@@ -1289,6 +1355,9 @@ public interface IEjbcaWS {
     /**
      * List certificates that will expire within the given number of days and of the given type
      *
+     * <p>If authorization was denied on the local system, then the request will be forwarded 
+     *    to upstream peer systems (if any).</p>
+     *     
      * @param days Expire time in days
      * @param certificateType The type of the certificates. Use 0=Unknown  1=EndEntity  2=SUBCA  8=ROOTCA  16=HardToken
      * @param maxNumberOfResults the maximum number of returned certificates
