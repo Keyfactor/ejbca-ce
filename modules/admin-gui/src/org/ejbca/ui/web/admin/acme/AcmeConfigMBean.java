@@ -60,14 +60,14 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         globalAcmeConfigurationConfig = (GlobalAcmeConfiguration) globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
     }
 
-    /** Force reload from underlying (cache) layer for the current SCEP configuration alias */
+    /** Force reload from underlying (cache) layer for the current ACME configuration alias */
     private void flushCache() {
         currentAlias = null;
         aliasGuiList = null;
         currentAliasEditMode = false;
         globalAcmeConfigurationConfig = (GlobalAcmeConfiguration) globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
     }
-    /** Build a list sorted by name from the existing SCEP configuration aliases */
+    /** Build a list sorted by name from the existing ACME configuration aliases */
     public ListDataModel<AcmeAliasGuiInfo> getAliasGuiList() {
         flushCache();
         final List<AcmeAliasGuiInfo> list = new ArrayList<>();
@@ -179,9 +179,36 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         for (Integer id: endEntityProfileIds) {
             String name = nameMap.get(id);
-            ret.add(new SelectItem(name, name));
+            ret.add(new SelectItem(id, name));
         }
         return ret;
+    }
+
+    /** Invoked when admin cancels a ACME alias create or edit. */
+    public void cancelCurrentAlias() {
+        flushCache();
+    }
+
+    /** Invoked when admin saves the ACME alias configurations */
+    public void saveCurrentAlias() {
+        if (currentAlias != null) {
+            String alias = currentAlias.getAlias();
+            AcmeConfiguration acmeConfig = globalAcmeConfigurationConfig.getAcmeConfiguration(currentAliasStr);
+            acmeConfig.setEndEntityProfileId(Integer.valueOf(currentAlias.endEntityProfileId));
+            acmeConfig.setPreAuthorizationAllowed(currentAlias.isPreAuthorizationAllowed());
+            acmeConfig.setRequireExternalAccountBinding(currentAlias.isRequireExternalAccountBinding());
+            acmeConfig.setWildcardCertificateIssuanceAllowed(currentAlias.isWildcardCertificateIssuanceAllowed());
+            acmeConfig.setWebSiteUrl(currentAlias.getUrlTemplate());
+            globalAcmeConfigurationConfig.updateAcmeConfiguration(acmeConfig);
+            try {
+                globalConfigSession.saveConfiguration(authenticationToken, globalAcmeConfigurationConfig);
+            } catch (AuthorizationDeniedException e) {
+                String msg = "Cannot save alias. Administrator is not authorized.";
+                log.info(msg + e.getLocalizedMessage());
+                super.addNonTranslatedErrorMessage(msg);
+            }
+        }
+        flushCache();
     }
 
     public void setCurrentAliasStr(String currentAliasStr) {
@@ -205,12 +232,12 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public class AcmeAliasGuiInfo {
-        String alias;
-        String endEntityProfileId;
-        boolean preAuthorizationAllowed;
-        boolean requireExternalAccountBinding;
-        String urlTemplate;
-        boolean wildcardCertificateIssuanceAllowed;
+        private String alias;
+        private String endEntityProfileId;
+        private boolean preAuthorizationAllowed;
+        private boolean requireExternalAccountBinding;
+        private String urlTemplate;
+        private boolean wildcardCertificateIssuanceAllowed;
 
         public AcmeAliasGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig, String alias) {
             if (alias != null) {
