@@ -73,7 +73,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
@@ -134,7 +133,7 @@ public class CertificateRestResource extends BaseRestResource {
             );
             X509Certificate cert = CertTools.getCertfromByteArray(certificate, X509Certificate.class);
             CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(cert);
-            return Response.ok(enrollCertificateRestResponse).build();
+            return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
         }
@@ -175,7 +174,7 @@ public class CertificateRestResource extends BaseRestResource {
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
         final KeyStore keyStore = KeyTools.createKeyStore(keyStoreBytes, keyStoreRestRequest.getPassword());
         CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStore, keyStoreRestRequest.getPassword());
-        return Response.ok(response).build();
+        return Response.status(Status.CREATED).entity(response).build();
     }
 
     @GET
@@ -403,6 +402,6 @@ public class CertificateRestResource extends BaseRestResource {
                 response = CertificateRestResponse.converter().toRestResponse(keyStore, password);
             }
         }
-        return Response.ok(response).build();
+        return Response.status(Status.CREATED).entity(response).build();
     }
 }
