@@ -1026,7 +1026,7 @@ public interface RaMasterApi {
         throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException,
                InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
                IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException,
-               AuthLoginException, RuntimeException;
+               AuthLoginException;
 
     /**
      * Fetches the latest CRL issued by the given CA.

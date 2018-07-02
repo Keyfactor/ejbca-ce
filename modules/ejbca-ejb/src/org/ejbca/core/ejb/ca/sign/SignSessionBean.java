@@ -863,14 +863,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final String hardTokenSN, final String responseType)
             throws AuthorizationDeniedException, EjbcaException, CesecoreException, CADoesntExistsException, CertificateExtensionException,
             InvalidKeyException, SignatureException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException,
-            IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException, RuntimeException {
+            IOException, ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException {
         byte[] result = null;
         // Check user exists.
         final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
         if (endEntity == null) {
-            // Why 2 different error messages?
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword"); // Don't leak whether it was the username or the password.
             throw new NotFoundException(msg);
         }
         // Check CA exists and user is authorized to access it.

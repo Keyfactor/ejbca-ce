@@ -2320,7 +2320,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
             CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, InvalidKeySpecException, 
             NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, ParseException, ConstructionException, 
-            NoSuchFieldException, AuthStatusException, AuthLoginException, RuntimeException {
+            NoSuchFieldException, AuthStatusException, AuthLoginException {
         AuthorizationDeniedException authorizationDeniedException = null;
         NotFoundException notFoundException = null;
         CADoesntExistsException caDoesntExistsException = null;
@@ -2337,28 +2337,31 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     }
                     // Just try next implementation
                 } catch (NotFoundException e) {
-                    log.info("User with name " + username + " for proxied request could not be found: " + e.getMessage());
+                    log.info("User with name '" + username + "' for proxied request could not be found: " + e.getMessage());
                     if (notFoundException == null) {
                         notFoundException = e;
                     }
                     // Just try next implementation
                 } catch (CADoesntExistsException e) {
-                    log.info("CA for for poxied request cold not be found:" + e.getMessage());
+                    log.info("CA for proxied request could not be found:" + e.getMessage());
                     if (caDoesntExistsException == null) {
                         caDoesntExistsException = e;
                     }
                     // Just try next implementation
+                } catch(ParseException | ConstructionException | NoSuchFieldException e) {
+                	log.info("CV certificate request for proxied request could not processed:" + e.getMessage());
+                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
                 }
             }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
         }
         if (notFoundException != null) {
             throw notFoundException;
         }
         if (caDoesntExistsException != null) {
             throw caDoesntExistsException;
-        }
-        if (authorizationDeniedException != null) {
-            throw authorizationDeniedException;
         }
         return null;
     }
