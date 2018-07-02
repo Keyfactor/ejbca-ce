@@ -3390,7 +3390,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         final Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", type + " : " + msg);
-        auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), String.valueOf(caId), username, certificateSn, details);
+        auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), String.valueOf(caId), certificateSn, username, details);
         if (log.isDebugEnabled()) {
             log.debug("Custom message '" + msg + "'was written to audit log by " + authenticationToken.getUniqueId());
         }
