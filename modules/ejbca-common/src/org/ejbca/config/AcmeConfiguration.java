@@ -39,6 +39,11 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_ORDER_VALIDITY = "orderValidity";
     private static final String KEY_PRE_AUTHORIZATION_VALIDITY = "preAuthorizationValidity";
     private static final String KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = "wildcardCertificateIssuanceAllowed";
+    private static final String KEY_DNS_RESOLVER = "dnsResolver";
+    private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
+    
+    private static final String IANA_ROOT_ANCHOR_DEFAULT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
+    private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
 
 
     private static final int DEFAULT_END_ENTITY_PROFILE_ID = EndEntityConstants.NO_END_ENTITY_PROFILE;
@@ -185,10 +190,27 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
     
     public boolean isWildcardCertificateIssuanceAllowed() {
-        return Boolean.valueOf((String)super.data.get(KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED));
+        return Boolean.valueOf((String) super.data.get(KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED));
     }
+    
     public void setWildcardCertificateIssuanceAllowed(final boolean wildcardCertificateIssuanceAllowed) {
         super.data.put(KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED, String.valueOf(wildcardCertificateIssuanceAllowed));
+    }
+    
+    public String getDnssecTrustAnchor() {
+        return (String) super.data.get(KEY_DNSSEC_TRUST_ANCHOR);
+    }
+
+    public void setDnssecTrustAnchor(String dnssecTrustAnchor) {
+        super.data.put(KEY_DNSSEC_TRUST_ANCHOR, String.valueOf(dnssecTrustAnchor));
+    }
+
+    public String getDnsResolver() {
+        return (String) super.data.get(KEY_DNS_RESOLVER);
+    }
+
+    public void setDnsResolver(String dnsResolver) {
+        super.data.put(KEY_DNS_RESOLVER, String.valueOf(dnsResolver));
     }
 
     /** Initializes a new acme configuration with default values. */
@@ -201,6 +223,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL, DEFAULT_REQUIRE_NEW_APPROVAL);
             setWildcardCertificateIssuanceAllowed(DEFAULT__WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
             setWebSiteUrl(DEFAULT_WEBSITE_URL);
+            setDnsResolver(DNS_RESOLVER_DEFAULT);
+            setDnssecTrustAnchor(IANA_ROOT_ANCHOR_DEFAULT);
         }
     }
 
