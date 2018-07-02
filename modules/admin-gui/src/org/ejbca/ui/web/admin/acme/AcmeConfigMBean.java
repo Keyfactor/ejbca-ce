@@ -19,8 +19,8 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.protocol.acme.storage.AcmeConfiguration;
-import org.ejbca.ui.web.protocol.acme.storage.GlobalAcmeConfiguration;
+import org.ejbca.config.AcmeConfiguration;
+import org.ejbca.config.GlobalAcmeConfiguration;
 
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
