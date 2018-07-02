@@ -370,14 +370,13 @@ public interface SignSession {
       * @throws NoSuchFieldException is thrown if a CVC request can not be parsed.
       * @throws AuthStatusException if the user has the wrong user status.
       * @throws AuthLoginException if the users password does not match.
-      * @throws RuntimeException any Runtime exception.
       */
      byte[] createCertificateWS(AuthenticationToken authenticationToken, String username, String password, String req, int reqType,
              String hardTokenSN, String responseType)
              throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
              CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, 
              InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, 
-             ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException, RuntimeException;
+             ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException;
      
     /**
      * Method that generates a request failed response message. The request
