@@ -556,6 +556,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); XMLEncoder encoder = new XMLEncoder(baos)) {
             encoder.writeObject(profile.saveData());
+            encoder.close();
             return baos.toByteArray();
         } catch (IOException e) {
             String msg = "Could not encode profile with ID " + profileId + " to XML: " + e.getMessage();
