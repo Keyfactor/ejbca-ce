@@ -36,7 +36,13 @@ public interface NoConflictCertificateStoreSession  {
     /** @see CertificateStoreSession#getStatus */
     CertificateStatus getStatus(String issuerDN, BigInteger serno);
     
-    /** @see CertificateStoreSession#getCertificateDataByIssuerAndSerno */
+    /**
+     * Gets full certificate meta data for the cert specified by issuer DN and serial number.
+     * 
+     * @param issuerDN issuer DN of the desired certificate.
+     * @param serno serial number of the desired certificate!
+     * @return the sought certificate, or null if not found
+     */
     CertificateDataWrapper getCertificateDataByIssuerAndSerno(String issuerdn, BigInteger certserno);
 
     /**
