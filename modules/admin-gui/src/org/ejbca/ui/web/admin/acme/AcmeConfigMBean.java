@@ -214,6 +214,10 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             acmeConfig.setWebSiteUrl(currentAlias.getUrlTemplate());
             acmeConfig.setDnsResolver(currentAlias.getDnsResolver());
             acmeConfig.setDnssecTrustAnchor(currentAlias.getDnssecTrustAnchor());
+            String termsOfServiceUrl = acmeConfig.getTermsOfServiceUrl();
+            if (StringUtils.isNotEmpty(currentAlias.getTersmOfServiceUrl()) && (StringUtils.isEmpty(termsOfServiceUrl) || !termsOfServiceUrl.equals(currentAlias.getTersmOfServiceUrl()))) {
+                acmeConfig.setTermsOfServiceUrl(currentAlias.getTersmOfServiceUrl(), currentAlias.tersmOfServiceApproval);
+            }
             globalAcmeConfigurationConfig.updateAcmeConfiguration(acmeConfig);
             try {
                 globalConfigSession.saveConfiguration(authenticationToken, globalAcmeConfigurationConfig);
@@ -275,6 +279,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         private boolean wildcardCertificateIssuanceAllowed;
         private String dnsResolver;
         private String dnssecTrustAnchor;
+        private String tersmOfServiceUrl;
+        private Boolean tersmOfServiceApproval;
 
         public AcmeAliasGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig, String alias) {
             if (alias != null) {
@@ -288,6 +294,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
                     this.wildcardCertificateIssuanceAllowed = acmeConfiguration.isWildcardCertificateIssuanceAllowed();
                     this.dnsResolver = acmeConfiguration.getDnsResolver();
                     this.dnssecTrustAnchor = acmeConfiguration.getDnssecTrustAnchor();
+                    this.tersmOfServiceUrl = String.valueOf(acmeConfiguration.getTermsOfServiceUrl());
                 }
             }
         }
@@ -356,7 +363,21 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             this.dnsResolver = dnsResolver;
         }
 
+        public String getTersmOfServiceUrl() {
+            return tersmOfServiceUrl;
+        }
 
+        public void setTersmOfServiceUrl(String tersmOfServiceUrl) {
+            this.tersmOfServiceUrl = tersmOfServiceUrl;
+        }
+
+        public Boolean getTersmOfServiceApproval() {
+            return tersmOfServiceApproval;
+        }
+
+        public void setTersmOfServiceApproval(Boolean tersmOfServiceApproval) {
+            this.tersmOfServiceApproval = tersmOfServiceApproval;
+        }
     }
     public class AcmeGlobalGuiInfo {
         private String defaultAcmeConfiguration;
