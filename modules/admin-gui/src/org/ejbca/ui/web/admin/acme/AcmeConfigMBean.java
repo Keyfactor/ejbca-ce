@@ -382,12 +382,10 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     public class AcmeGlobalGuiInfo {
         private String defaultAcmeConfiguration;
         private String replayNonceValidity;
-        private List<String> sharedSecret;
 
         public AcmeGlobalGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig) {
             this.defaultAcmeConfiguration = globalAcmeConfigurationConfig.getDefaultAcmeConfigurationId();
             this.replayNonceValidity = String.valueOf(globalAcmeConfigurationConfig.getReplayNonceValidity());
-            this.sharedSecret = globalAcmeConfigurationConfig.getReplayNonceSharedSecrets(PKCSObjectIdentifiers.id_hmacWithSHA256.getId());
         }
 
         public String getDefaultAcmeConfiguration() {
@@ -406,12 +404,5 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             this.replayNonceValidity = replayNonceValidity;
         }
 
-        public List<String> getSharedSecret() {
-            return sharedSecret;
-        }
-
-        public void setSharedSecret(List<String> sharedSecret) {
-            this.sharedSecret = sharedSecret;
-        }
     }
 }
