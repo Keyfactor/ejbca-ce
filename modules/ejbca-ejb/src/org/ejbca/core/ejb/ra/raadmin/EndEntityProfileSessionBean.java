@@ -48,7 +48,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -385,7 +384,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken admin, final int entityProfileId) throws EjbcaException {
+    public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken admin, final int entityProfileId) throws EndEntityProfileNotFoundException {
         final EndEntityProfile profile = getEndEntityProfileNoClone(entityProfileId);
         final TreeMap<String,Integer> result = new TreeMap<>();
         if (profile != null) {
@@ -393,6 +392,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             for (int id : ids) {
                 result.put(certificateProfileSession.getCertificateProfileName(id), id);
             }
+        } else {
+            throw new EndEntityProfileNotFoundException("End entity profile with ID " + entityProfileId + " could not be found.");
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("Found " + result + " certificate profiles for end entity profile with ID " + entityProfileId + " requested by " + admin.getUniqueId());
@@ -417,7 +418,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                 }
             }
         } else {
-            throw new EndEntityProfileNotFoundException(entityProfileId);
+            throw new EndEntityProfileNotFoundException("End entity profile with ID " + entityProfileId + " could not be found.");
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("Found " + result + " CAs for end entity profile with ID " + entityProfileId + " requested by " + admin.getUniqueId());
