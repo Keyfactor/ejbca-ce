@@ -72,7 +72,7 @@ org.cesecore.authorization.control.StandardRules
                     <h:outputLabel for="webUrl" value="#{web.text.ACME_WEBSITE_URL}" />
                     <h:panelGroup id="webUrl" >
                         <h:inputText  value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
-                            <f:validator validatorId="legalCharsValidator"/>
+                            <f:validator validatorId="urlValidator"/>
                         </h:inputText>
                         <h:outputText value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
@@ -80,7 +80,7 @@ org.cesecore.authorization.control.StandardRules
                     <h:outputLabel for="termsUrl" value="#{web.text.ACME_TERMS_URL}" />
                     <h:panelGroup id="termsUrl" >
                         <h:inputText  value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
-                            <f:validator validatorId="legalCharsValidator"/>
+                            <f:validator validatorId="urlValidator"/>
                         </h:inputText>
                         <h:outputText value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
