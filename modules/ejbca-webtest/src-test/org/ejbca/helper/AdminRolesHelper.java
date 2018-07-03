@@ -55,7 +55,8 @@ public final class AdminRolesHelper {
     public static void addRole(WebDriver webDriver, String roleName, boolean assertSuccess) {
         webDriver.findElement(By.xpath("//input[@value='Add' and @type='submit']")).click();
         webDriver.findElement(By.xpath("//input[@title='Mandatory role name']")).sendKeys(roleName);
-        webDriver.findElement(By.id("modal:j_idt154")).click();
+        WebElement popupSpan = webDriver.findElement(By.id("modal:add"));
+        popupSpan.findElement(By.xpath("..//input[@value='Add']")).click();
         
         if (assertSuccess) {
             assertExists(webDriver, roleName);
