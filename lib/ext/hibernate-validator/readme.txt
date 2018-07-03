@@ -1,0 +1,2 @@
+"Project";                  "Library Name";                     "License type(s)";      "License text";                 "Source";                                                                                       "Comment";
+"JSR 303 by Hibernate";     "hibernate-validator-4.3.1.Final";  "ALv2";                 "LICENSE-APACHE-2.0";           "https://github.com/hibernate/hibernate-validator";                                             "Not needed for running CESeCore. Needed for REST API. TODO ECA-7118 Upgrade to hibernate-validator version 5+";
