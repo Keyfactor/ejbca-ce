@@ -121,7 +121,7 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enrolls a PKCS10 certificate", notes = "Enrolls a PKCS10 certificate", response = CertificateRestResponse.class)
+    @ApiOperation(value = "Enrollment by PKCS10 request", notes = "Enroll certificate given PKCS10 CSR", response = CertificateRestResponse.class, code = 201)
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
 
@@ -143,9 +143,10 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/enrollkeystore")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Creates a keystore for the specified end entity",
+    @ApiOperation(value = "Keystore enrollment",
         notes = "Creates a keystore for the specified end entity",
-        response = CertificateRestResponse.class)
+        response = CertificateRestResponse.class,
+        code = 201)
     public Response enrollKeystore(
             @Context HttpServletRequest requestContext,
             KeyStoreRestRequest keyStoreRestRequest)
@@ -307,9 +308,10 @@ public class CertificateRestResource extends BaseRestResource {
     @POST
     @Path("/{request_id}/finalize")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Finalizes enrollment after administrator approval",
-        notes = "Finalizes enrollment after administrator approval",
-        response = CertificateRestResponse.class)
+    @ApiOperation(value = "Finalize enrollment",
+        notes = "Finalizes enrollment after administrator approval using request Id",
+        response = CertificateRestResponse.class,
+        code = 201)
     public Response finalizeEnrollment(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Approval request id") @PathParam("request_id") int requestId,
