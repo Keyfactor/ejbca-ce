@@ -44,12 +44,6 @@ org.cesecore.authorization.control.StandardRules
                     <h:panelGroup id="placeholder1" />
                     <h:panelGroup id="placeholder2" rendered="#{!acmeConfigMBean.currentAliasEditMode && acmeConfigMBean.allowedToEdit}"/>
 
-                    <h:outputLabel for="currentAlias" value="#{web.text.ACME_ALIAS}:"/>
-                    <h:panelGroup id="currentAlias">
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.alias}" />
-                    </h:panelGroup>
-
-
                     <h:outputLabel for="eep" value="#{web.text.ACME_END_ENTITY_PROFILE}" />
                     <h:panelGroup id="eep"  >
                         <h:panelGroup >
@@ -71,7 +65,7 @@ org.cesecore.authorization.control.StandardRules
 
                     <h:outputLabel for="webUrl" value="#{web.text.ACME_WEBSITE_URL}" />
                     <h:panelGroup id="webUrl" >
-                        <h:inputText  value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                        <h:inputText  value="#{acmeConfigMBean.currentAlias.urlTemplate}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}">
                             <f:validator validatorId="urlValidator"/>
                         </h:inputText>
                         <h:outputText value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
@@ -79,7 +73,7 @@ org.cesecore.authorization.control.StandardRules
 
                     <h:outputLabel for="termsUrl" value="#{web.text.ACME_TERMS_URL}" />
                     <h:panelGroup id="termsUrl" >
-                        <h:inputText  value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                        <h:inputText  value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}">
                             <f:validator validatorId="urlValidator"/>
                         </h:inputText>
                         <h:outputText value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
