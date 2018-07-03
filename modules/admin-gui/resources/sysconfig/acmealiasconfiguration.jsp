@@ -79,10 +79,10 @@ org.cesecore.authorization.control.StandardRules
 
                     <h:outputLabel for="termsUrl" value="#{web.text.ACME_TERMS_URL}" />
                     <h:panelGroup id="termsUrl" >
-                        <h:inputText  value="#{acmeConfigMBean.currentAlias.tersmOfServiceUrl}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                        <h:inputText  value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{acmeConfigMBean.currentAliasEditMode}">
                             <f:validator validatorId="legalCharsValidator"/>
                         </h:inputText>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.tersmOfServiceUrl}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:outputText value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
 
                     <h:outputLabel for="versionApproval" value="#{web.text.ACME_TERMS_APPROVAL}" />
