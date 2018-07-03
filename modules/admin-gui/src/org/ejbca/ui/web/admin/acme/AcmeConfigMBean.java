@@ -215,8 +215,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             acmeConfig.setDnsResolver(currentAlias.getDnsResolver());
             acmeConfig.setDnssecTrustAnchor(currentAlias.getDnssecTrustAnchor());
             String termsOfServiceUrl = acmeConfig.getTermsOfServiceUrl();
-            if (StringUtils.isNotEmpty(currentAlias.getTersmOfServiceUrl()) && (StringUtils.isEmpty(termsOfServiceUrl) || !termsOfServiceUrl.equals(currentAlias.getTersmOfServiceUrl()))) {
-                acmeConfig.setTermsOfServiceUrl(currentAlias.getTersmOfServiceUrl(), currentAlias.tersmOfServiceApproval);
+            if (StringUtils.isNotEmpty(currentAlias.getTermsOfServiceUrl()) && (StringUtils.isEmpty(termsOfServiceUrl) || !termsOfServiceUrl.equals(currentAlias.getTermsOfServiceUrl()))) {
+                acmeConfig.setTermsOfServiceUrl(currentAlias.getTermsOfServiceUrl(), currentAlias.tersmOfServiceApproval);
             }
             globalAcmeConfigurationConfig.updateAcmeConfiguration(acmeConfig);
             try {
@@ -279,7 +279,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         private boolean wildcardCertificateIssuanceAllowed;
         private String dnsResolver;
         private String dnssecTrustAnchor;
-        private String tersmOfServiceUrl;
+        private String termsOfServiceUrl;
         private Boolean tersmOfServiceApproval;
 
         public AcmeAliasGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig, String alias) {
@@ -294,7 +294,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
                     this.wildcardCertificateIssuanceAllowed = acmeConfiguration.isWildcardCertificateIssuanceAllowed();
                     this.dnsResolver = acmeConfiguration.getDnsResolver();
                     this.dnssecTrustAnchor = acmeConfiguration.getDnssecTrustAnchor();
-                    this.tersmOfServiceUrl = String.valueOf(acmeConfiguration.getTermsOfServiceUrl());
+                    this.termsOfServiceUrl = String.valueOf(acmeConfiguration.getTermsOfServiceUrl());
                 }
             }
         }
@@ -363,12 +363,12 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             this.dnsResolver = dnsResolver;
         }
 
-        public String getTersmOfServiceUrl() {
-            return tersmOfServiceUrl;
+        public String getTermsOfServiceUrl() {
+            return termsOfServiceUrl;
         }
 
-        public void setTersmOfServiceUrl(String tersmOfServiceUrl) {
-            this.tersmOfServiceUrl = tersmOfServiceUrl;
+        public void setTermsOfServiceUrl(String termsOfServiceUrl) {
+            this.termsOfServiceUrl = termsOfServiceUrl;
         }
 
         public Boolean getTersmOfServiceApproval() {

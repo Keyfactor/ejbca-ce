@@ -114,8 +114,8 @@ org.cesecore.authorization.control.StandardRules
 
                     <h:outputLabel for="replayNonce" value="#{web.text.ACME_REPLAY_NONCE_VALIDITY}" />
                     <h:panelGroup id="replayNonce" >
-                        <h:inputText  value="#{acmeConfigMBean.globalInfo.replayNonceValidity}" >
-                            <f:validator validatorId="legalCharsValidator"/>
+                        <h:inputText title="#{web.text.FORMAT_INTEGER}" value="#{acmeConfigMBean.globalInfo.replayNonceValidity}" validatorMessage="#{web.text.ONLYNUMBERS_INNONCEVILIDITY}">
+                            <f:validateLongRange minimum="0" maximum="9223372036854775807"/>
                         </h:inputText>
                     </h:panelGroup>
                     <h:panelGroup>
