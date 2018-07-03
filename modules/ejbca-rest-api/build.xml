@@ -42,6 +42,8 @@
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
+		<path refid="lib.resteasy-jaxrs.classpath"/>
+		<path refid="lib.hibernate-validator.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -53,7 +55,6 @@
 		<path location="${this.dir}/../dist/systemtests-ejb.jar"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.test.classpath"/>
-		<path refid="lib.resteasy-jaxrs.classpath"/>
 	</path>
 
 	<path id="test.classpath">
@@ -71,6 +72,10 @@
 
     <target name="build" description="Build this module" depends="compile">
     	<copy file="${this.dir}/resources/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
+		<copy file="${this.dir}/resources/WEB-INF/ValidationMessages.properties" tofile="${build.dir}/WEB-INF/classes/ValidationMessages.properties"/>
+		<copy file="${this.dir}/resources/WEB-INF/beans.xml" tofile="${build.dir}/WEB-INF/beans.xml"/>
+		<copy file="${this.dir}/resources/META-INF/validation.xml" tofile="${build.dir}/META-INF/validation.xml"/>
+		<copy file="${this.dir}/resources/META-INF/validation-mapping.xml" tofile="${build.dir}/META-INF/validation-mapping.xml"/>
     	<war destfile="${mod.ejbca-rest-api.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
     </target>
 
