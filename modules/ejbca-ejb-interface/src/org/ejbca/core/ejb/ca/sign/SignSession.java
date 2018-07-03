@@ -353,7 +353,7 @@ public interface SignSession {
       * @param reqType the request type.
       * @param hardTokenSN the hard token SN, if available.
       * @param responseType the response type.
-      * @return the base 64 encoded user certificate as byte array.
+      * @return DER-encoded certificate as byte array.
       * @throws AuthorizationDeniedException if client isn't authorized to request.
       * @throws EjbcaException any EjbcaException.
       * @throws CesecoreException any CesecoreException.
