@@ -159,10 +159,10 @@ public interface EndEntityProfileSession {
      * @param admin the authentication of the caller.
      * @param entityProfileId id of the end entity profile.
      * @return a map of available certificate profiles names and IDs or an empty map.
+     * @throws EndEntityProfileNotFoundException if a profile with the ID entityProfileId could not be found
      * @throws AuthorizationDeniedException if the authorization was denied (still not thrown).
-     * @throws EjbcaException if an error occured.
      */
-    Map<String, Integer> getAvailableCertificateProfiles(AuthenticationToken admin, int entityProfileId) throws EjbcaException;
+    Map<String, Integer> getAvailableCertificateProfiles(AuthenticationToken admin, int entityProfileId) throws EndEntityProfileNotFoundException;
     
     /**
      * Fetches the available CAs associated with an end entity profile.
