@@ -2393,8 +2393,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
             CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, 
             InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, 
-            ParseException, ConstructionException, NoSuchFieldException, AuthStatusException, AuthLoginException {
-        return signSessionLocal.createCertificateWS(authenticationToken, username, password, req, reqType, hardTokenSN, responseType);
+            AuthStatusException, AuthLoginException {
+        try {
+            return signSessionLocal.createCertificateWS(authenticationToken, username, password, req, reqType, hardTokenSN, responseType);
+        } catch (ParseException | ConstructionException | NoSuchFieldException e) {
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        }
     }
 
     @Override
