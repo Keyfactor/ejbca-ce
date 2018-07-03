@@ -80,7 +80,7 @@ public class CaInfoBuilder {
           + "YvoMnA+KCcoPWC4bG1H22L7XPaIoprUarL3GzqkL6QtlYqLUniYGdno="
     ).getBytes());
 
-    private static Certificate testCaCertificate;
+    public static Certificate testCaCertificate;
     static {
         try {
             testCaCertificate = CertTools.getCertfromByteArray(testCaCertificateBytes, Certificate.class);

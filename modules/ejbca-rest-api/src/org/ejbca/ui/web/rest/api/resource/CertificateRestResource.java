@@ -25,10 +25,12 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -78,16 +80,19 @@ import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.ejbca.ui.web.rest.api.service.CertificateRestService;
 
 /**
  * JAX-RS resource handling certificate-related requests.
@@ -108,6 +113,12 @@ public class CertificateRestResource extends BaseRestResource {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
 
+    @Inject
+    private CertificateRestService certificateRestService;
+
+    public CertificateRestResource(){
+    }
+
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
@@ -124,7 +135,6 @@ public class CertificateRestResource extends BaseRestResource {
     @ApiOperation(value = "Enrollment by PKCS10 request", notes = "Enroll certificate given PKCS10 CSR", response = CertificateRestResponse.class, code = 201)
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
-
         try {
             AuthenticationToken authenticationToken = getAdmin(requestContext, false);
             byte[] certificate = raMasterApi.createCertificateRest(
@@ -373,7 +383,7 @@ public class CertificateRestResource extends BaseRestResource {
             byte[] certificateBytes = raMasterApi.createCertificate(admin, endEntityInformation); // X509Certificate
             X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
-                byte[] pemBytes = CertTools.getPemFromCertificateChain(Arrays.asList((Certificate) certificate));
+                byte[] pemBytes = CertTools.getPemFromCertificateChain(Collections.singletonList((Certificate) certificate));
                 response = CertificateRestResponse.builder().setCertificate(pemBytes).
                         setSerialNumber(certificate.getSerialNumber()).setResponseFormat("PEM").build();
             } else {
@@ -408,5 +418,25 @@ public class CertificateRestResource extends BaseRestResource {
             }
         }
         return Response.status(Status.CREATED).entity(response).build();
+    }
+
+    @POST
+    @Path("/search")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Searches for certificates confirming giving criteria.",
+            notes = "Searches for certificates confirming giving criteria.",
+            response = SearchCertificatesRestResponse.class
+    )
+    public Response searchCertificates(
+            @Context HttpServletRequest requestContext,
+            @ApiParam(value = "A collection of search criteria and maximum number of results.") final SearchCertificatesRestRequest searchCertificatesRestRequest
+    ) throws AuthorizationDeniedException, RestException, CertificateEncodingException {
+        final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
+        validateObject(searchCertificatesRestRequest);
+        certificateRestService.authorizeSearchCertificatesRestRequestReferences(authenticationToken, searchCertificatesRestRequest);
+        final SearchCertificatesRestResponse searchCertificatesRestResponse = certificateRestService.searchCertificates(authenticationToken, searchCertificatesRestRequest);
+        return Response.ok(searchCertificatesRestResponse).build();
     }
 }

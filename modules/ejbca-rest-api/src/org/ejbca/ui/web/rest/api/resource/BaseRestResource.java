@@ -7,12 +7,15 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.rest.api.resource;
 
 import java.security.cert.X509Certificate;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import javax.ws.rs.core.Response;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -27,6 +30,8 @@ import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
  * @version $Id$
  */
 public abstract class BaseRestResource {
+
+    private static final Validator validator =  Validation.buildDefaultValidatorFactory().getValidator();
 
     private static final String RESOURCE_STATUS = "OK";
     private static final String RESOURCE_VERSION = "1.0";
@@ -63,5 +68,20 @@ public abstract class BaseRestResource {
         }
         return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certs[0]);
     }
-    
+
+    // TODO ECA-7119 Due to limited validation exception handling support in JAX-RS 1.1, we validate the object programmatically to handle the response properly.
+    // TODO ECA-7119 Within JAX-RS 2.0, configure the error handler to support a ValidationException and use @Valid annotation for input parameters
+    /**
+     * This method triggers the validation over input object and throws RestException in case of validation violation.
+     *
+     * @param object the object for validation.
+     * @throws RestException in case of constraint violation.
+     */
+    protected void validateObject(final Object object) throws RestException {
+        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(object);
+        if(!constraintViolations.isEmpty()) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), constraintViolations.iterator().next().getMessage());
+        }
+    }
+
 }
