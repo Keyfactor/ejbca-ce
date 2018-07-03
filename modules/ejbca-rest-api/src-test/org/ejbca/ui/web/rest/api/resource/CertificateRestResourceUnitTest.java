@@ -16,12 +16,14 @@ import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -32,24 +34,31 @@ import java.util.Collections;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.util.EJBTools;
-import org.cesecore.util.StringTools;
-import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
+import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
+import org.ejbca.ui.web.rest.api.service.CertificateRestService;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.AfterClass;
@@ -62,7 +71,7 @@ import org.junit.runner.RunWith;
  * <br/>
  * The testing is organized through deployment of this resource with mocked dependencies into InMemoryRestServer.
  *
- * @version $Id: CertificateRestResourceUnitTest.java 29080 2018-05-31 11:12:13Z andrey_s_helmes $
+ * @version $Id: CertificateRestResourceUnitTest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
  * @see org.ejbca.ui.web.rest.api.InMemoryRestServer
  */
 @RunWith(EasyMockRunner.class)
@@ -70,6 +79,7 @@ public class CertificateRestResourceUnitTest {
 
     private static final DateFormat DATE_FORMAT_ISO8601 = JsonDateSerializer.DATE_FORMAT_ISO8601;
     private static final JSONParser jsonParser = new JSONParser();
+    private static final ObjectMapper objectMapper = new ObjectMapperContextResolver().getContext(null);
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
     // Extend class to test without security
     private static class CertificateRestResourceWithoutSecurity extends CertificateRestResource {
@@ -86,6 +96,9 @@ public class CertificateRestResourceUnitTest {
 
     @Mock
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
+
+    @Mock
+    private CertificateRestService certificateRestService;
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -151,8 +164,8 @@ public class CertificateRestResourceUnitTest {
         final long days = 1;
         final int offset = 0;
         final int maxNumberOfResults = 0;
-        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(0).times(1);
-        expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
+        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime(anyObject(AuthenticationToken.class), anyInt())).andReturn(0).times(1);
+        expect(raMasterApiProxy.getCertificatesByExpirationTime(anyObject(AuthenticationToken.class), eq(days), eq(maxNumberOfResults), eq(offset)))
                         .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
 
         replay(raMasterApiProxy);
@@ -171,7 +184,7 @@ public class CertificateRestResourceUnitTest {
         assertEquals(Status.OK, actualStatus);
         assertJsonContentType(actualResponse);
         assertFalse(moreResults);
-        EasyMock.verify(raMasterApiProxy);
+        verify(raMasterApiProxy);
     }
 
     @Test
@@ -182,8 +195,8 @@ public class CertificateRestResourceUnitTest {
         final int maxNumberOfResults = 4;
         final long expectedNextOffset = 4L;
         final long expectedNumberOfResults = 6L;
-        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
-        expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
+        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime(anyObject(AuthenticationToken.class), anyInt())).andReturn(10).times(1);
+        expect(raMasterApiProxy.getCertificatesByExpirationTime(anyObject(AuthenticationToken.class), eq(days), eq(maxNumberOfResults), eq(offset)))
                         .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
         replay(raMasterApiProxy);
         // when
@@ -206,7 +219,7 @@ public class CertificateRestResourceUnitTest {
         assertTrue(moreResults);
         assertEquals(expectedNextOffset, nextOffset);
         assertEquals(expectedNumberOfResults, numberOfResults);
-        EasyMock.verify(raMasterApiProxy);
+        verify(raMasterApiProxy);
     }
 
     @Test
@@ -217,8 +230,8 @@ public class CertificateRestResourceUnitTest {
         final int maxNumberOfResults = 4;
         final long expectedNextOffset = 7L;
         final long expectedNumberOfResults = 3L;
-        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), anyInt())).andReturn(10).times(1);
-        expect(raMasterApiProxy.getCertificatesByExpirationTime((AuthenticationToken)EasyMock.anyObject(), eq(days), eq(maxNumberOfResults), eq(offset)))
+        expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime(anyObject(AuthenticationToken.class), anyInt())).andReturn(10).times(1);
+        expect(raMasterApiProxy.getCertificatesByExpirationTime(anyObject(AuthenticationToken.class), eq(days), eq(maxNumberOfResults), eq(offset)))
                         .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
         replay(raMasterApiProxy);
         // when
@@ -241,7 +254,7 @@ public class CertificateRestResourceUnitTest {
         assertTrue(moreResults);
         assertEquals(expectedNextOffset, nextOffset);
         assertEquals(expectedNumberOfResults, numberOfResults);
-        EasyMock.verify(raMasterApiProxy);
+        verify(raMasterApiProxy);
     }
 
     @Test
@@ -249,7 +262,7 @@ public class CertificateRestResourceUnitTest {
         // given
         final int reasonUnspecified = 0;
         final CertificateStatus response = new CertificateStatus("REVOKED", new Date().getTime(), reasonUnspecified, 123456);
-        expect(raMasterApiProxy.getCertificateStatus((AuthenticationToken)EasyMock.anyObject(), anyString(), anyObject(BigInteger.class))).andReturn(response);
+        expect(raMasterApiProxy.getCertificateStatus(anyObject(AuthenticationToken.class), anyString(), anyObject(BigInteger.class))).andReturn(response);
         replay(raMasterApiProxy);
         // when
         final ClientRequest clientRequest = server
@@ -264,7 +277,7 @@ public class CertificateRestResourceUnitTest {
         assertEquals(Status.OK, actualStatus);
         assertEquals(true, actualRevocationStatus);
         assertEquals(RevocationReasons.UNSPECIFIED.getStringValue(), actualRevocationReason);
-        EasyMock.verify(raMasterApiProxy);
+        verify(raMasterApiProxy);
     }
 
     @Test
@@ -275,5 +288,99 @@ public class CertificateRestResourceUnitTest {
         final ClientResponse<?> actualResponse = clientRequest.get();
         final Status actualStatus = actualResponse.getResponseStatus();
         assertEquals(Status.BAD_REQUEST, actualStatus);
+    }
+
+    @Test
+    public void shouldReturnEmptyListOnCertificatesSearch() throws Exception {
+        // given
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.QUERY.name())
+                .value("A")
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(10)
+                .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
+                .build();
+        final boolean expectedMoreResults = false;
+        certificateRestService.authorizeSearchCertificatesRestRequestReferences(anyObject(AuthenticationToken.class), anyObject(SearchCertificatesRestRequest.class));
+        expectLastCall();
+        expect(certificateRestService.searchCertificates(anyObject(AuthenticationToken.class), anyObject(SearchCertificatesRestRequest.class))).andReturn(new SearchCertificatesRestResponse());
+        replay(certificateRestService);
+        // when
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/certificate/search")
+                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
+                .post();
+        final Status actualStatus = actualResponse.getResponseStatus();
+        final String actualJsonString = actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+        final Boolean actualMoreResults  = (Boolean) actualJsonObject.get("more_results");
+        // then
+        verify(certificateRestService);
+        assertEquals(Status.OK, actualStatus);
+        assertJsonContentType(actualResponse);
+        assertNotNull(actualCertificates);
+        assertEquals(0, actualCertificates.size());
+        assertNotNull(actualMoreResults);
+        assertEquals(expectedMoreResults, actualMoreResults);
+    }
+
+    @Test
+    public void shouldReturnListWithOneCertificateOnCertificatesSearch() throws Exception {
+        // given
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.QUERY.name())
+                .value("A")
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(10)
+                .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
+                .build();
+        final boolean expectedMoreResults = true;
+        final String expectedCertificate = "QUJD";
+        final Long expectedCertificateSerial = 121212L;
+        final String expectedCertificateFormat = "SUPER";
+        final CertificateRestResponse certificateRestResponse = CertificateRestResponse.builder()
+                .setCertificate("ABC".getBytes())
+                .setSerialNumber(BigInteger.valueOf(expectedCertificateSerial))
+                .setResponseFormat(expectedCertificateFormat)
+                .build();
+        final SearchCertificatesRestResponse expectedSearchCertificatesRestResponse = SearchCertificatesRestResponse.builder()
+                .moreResults(expectedMoreResults)
+                .certificates(Collections.singletonList(certificateRestResponse))
+                .build();
+        certificateRestService.authorizeSearchCertificatesRestRequestReferences(anyObject(AuthenticationToken.class), anyObject(SearchCertificatesRestRequest.class));
+        expectLastCall();
+        expect(certificateRestService.searchCertificates(anyObject(AuthenticationToken.class), anyObject(SearchCertificatesRestRequest.class))).andReturn(expectedSearchCertificatesRestResponse);
+        replay(certificateRestService);
+        // when
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/certificate/search")
+                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
+                .post();
+        final Status actualStatus = actualResponse.getResponseStatus();
+        final String actualJsonString = actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+        final Boolean actualMoreResults  = (Boolean) actualJsonObject.get("more_results");
+        // then
+        verify(certificateRestService);
+        assertEquals(Status.OK, actualStatus);
+        assertJsonContentType(actualResponse);
+        assertNotNull(actualCertificates);
+        assertEquals(1, actualCertificates.size());
+        final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
+        final Object actualCertificate = actualCertificate0JsonObject.get("certificate");
+        final Object actualSerialNumber = actualCertificate0JsonObject.get("serial_number");
+        final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
+        assertNotNull(actualCertificate);
+        assertEquals(expectedCertificate, actualCertificate);
+        assertNotNull(actualSerialNumber);
+        assertEquals(expectedCertificateSerial, actualSerialNumber);
+        assertNotNull(actualResponseFormat);
+        assertEquals(expectedCertificateFormat, actualResponseFormat);
+        assertNotNull(actualMoreResults);
+        assertEquals(expectedMoreResults, actualMoreResults);
     }
 }
