@@ -350,7 +350,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
                         "Request all CAs associated with an ent entity profile which does not exist must throw an EndEntityProfileNotFoundException: "
                                 + notExistingEepId,
                         e instanceof EndEntityProfileNotFoundException);
-                assertEquals("Could not find end entity profile with ID " + notExistingEepId + ".", e.getMessage());
+                assertEquals("End entity profile with ID " + notExistingEepId + " could not be found.", e.getMessage());
             }
             
         } finally {
