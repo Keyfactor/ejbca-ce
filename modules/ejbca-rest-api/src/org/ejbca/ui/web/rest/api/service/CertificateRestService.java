@@ -13,16 +13,13 @@
 package org.ejbca.ui.web.rest.api.service;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
@@ -35,11 +32,8 @@ import java.util.List;
  */
 public class CertificateRestService extends RestService {
 
-    @Inject
-    public CertificateRestService(
-            final EjbcaRestHelperSessionLocal ejbcaRestHelperSession,
-            final RaMasterApiProxyBeanLocal raMasterApi) {
-        super(ejbcaRestHelperSession, raMasterApi);
+    public CertificateRestService() {
+        super();
     }
 
     /**
