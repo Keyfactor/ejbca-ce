@@ -49,7 +49,8 @@ import org.junit.runner.RunWith;
 
 
 /**
- *
+ * This class contains unit tests for EjbcaRestHelper class
+ * 
  * @version $Id: EjbcaRestHelperUnitTest.java 29025 2018-05-25 08:45:54Z tarmo_r_helmes $
  *
  */
@@ -284,9 +285,14 @@ public class EjbcaRestHelperUnitTest {
         EndEntityInformation endEntityInformation = testClass.convertToEndEntityInformation(authenticationToken, request);
 
         // then
-        assertEquals(endEntityProfileId, endEntityInformation.getEndEntityProfileId());
-        assertEquals(certificateProfileId, endEntityInformation.getCertificateProfileId());
-        assertEquals("C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", endEntityInformation.getDN());
+        assertEquals("The injected endentity profile id in 'given' section didnt get converted into result properly", 
+                endEntityProfileId, endEntityInformation.getEndEntityProfileId());
+        
+        assertEquals("The injected certificate profile id in 'given' section didnt get converted into result properly",
+                certificateProfileId, endEntityInformation.getCertificateProfileId());
+        
+        assertEquals("End entiy DN got incorrectly parsed pkcs10 certificate request",
+                "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", endEntityInformation.getDN());
 
         EasyMock.verify();
     }
@@ -296,7 +302,7 @@ public class EjbcaRestHelperUnitTest {
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
         String actualResult = testClass.getSubjectDn(pkcs10CertificateRequest);
         String expectedResult = "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6";
-        assertEquals(expectedResult, actualResult);
+        assertEquals("End entiy DN got incorrectly parsed from pkcs10 certificate request", expectedResult, actualResult);
     }
 
     @Test
@@ -304,6 +310,6 @@ public class EjbcaRestHelperUnitTest {
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
         String actualResult = testClass.getSubjectAltName(pkcs10CertificateRequest);
         String expectedResult = "dNSName=somedns.com, iPAddress=192.168.1.7, dNSName=some.other.dns.com, directoryName=CN=Test\\,L=XX";
-        assertEquals(expectedResult, actualResult);
+        assertEquals("Subject AN got incorrectly parsed from pkcs10 certificate request", expectedResult, actualResult);
     }
 }
