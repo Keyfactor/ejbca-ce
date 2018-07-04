@@ -1071,8 +1071,7 @@ public interface IEjbcaWS {
 	 *
 	 * If not turned of in jaxws.properties then only a valid certificate required
 	 *
-	 * <p>If the CA does not exist, the user could not be found or authorization was denied on the local system, 
-     *     then the request will be forwarded to upstream peer systems (if any).</p>
+	 * <p>If the local system is not a CA, then the request will be forwarded to upstream peer systems (if any).</p>
      * 
 	 * Authored by Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 *
