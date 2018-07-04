@@ -1,0 +1,660 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "API reference documentation.",
+    "version": "1.0.0",
+    "title": "Certificate Management REST Interface"
+  },
+  "basePath": "/ejbca/ejbca-rest-api",
+  "tags": [
+    {
+      "name": "v1/ca"
+    },
+    {
+      "name": "v1/certificate"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/v1/ca/status": {
+      "get": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Get the status of this RestResource",
+        "description": "",
+        "operationId": "status",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RestResourceStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ca/{subject_dn}/certificate/download": {
+      "get": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Get PEM file with CA certificates",
+        "description": "",
+        "operationId": "getCertificateAsPem",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "subject_dn",
+            "in": "path",
+            "description": "CAs subject DN",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/v1/ca/{issuer_dn}/getLatestCrl": {
+      "get": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Returns the latest CRL issued by this CA",
+        "description": "",
+        "operationId": "getLatestCrl",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "deltaCrl",
+            "in": "query",
+            "description": "true to get the latest deltaCRL, false to get the latest complete CRL",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CrlRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ca": {
+      "get": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Returns the Response containing the list of CAs with general information per CA as Json",
+        "description": "Returns the Response containing the list of CAs with general information per CA as Json",
+        "operationId": "listCas",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CaInfosRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/status": {
+      "get": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Get the status of this RestResource",
+        "description": "Get the status of this RestResource",
+        "operationId": "status_1",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RestResourceStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revoke": {
+      "put": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Revokes the specified certificate",
+        "description": "Revokes the specified certificate",
+        "operationId": "revokeCertificate",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "certificate_serial_number",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RevokeStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/expire": {
+      "get": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Get a list of certificates that are about to expire",
+        "description": "Get a list of certificates that are about to expire",
+        "operationId": "getCertificatesAboutToExpire",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "maxNumberOfResults",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/ExpiringCertificatesRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/{request_id}/finalize": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Finalize enrollment",
+        "description": "Finalizes enrollment after administrator approval using request Id",
+        "operationId": "finalizeEnrollment",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "description": "Approval request id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "responseFormat must be one of 'P12', 'JKS', 'DER'",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/FinalizeRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CertificateRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/search": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Searches for certificates confirming giving criteria.",
+        "description": "The structure for search request JSON body is the following:\n<code>{\n&nbsp; \"max_number_of_results\": 10,\n&nbsp; \"criteria\": [\n&nbsp;&nbsp; {\n&nbsp;&nbsp;&nbsp; \"property\": \"QUERY\",\n&nbsp;&nbsp;&nbsp; \"value\": \"STRING VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"STRING OPERATION\" \n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"END_ENTITY_PROFILE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"CERTIFICATE_PROFILE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"CA\",\n&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"STATUS\",\n&nbsp;&nbsp;&nbsp; \"value\": \"STATUS STRING VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp; \"property\": \"ISSUED_DATE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\", \n&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\" \n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"EXPIRE_DATE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"REVOCATION_DATE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\"\n&nbsp;&nbsp; } ]\n}\n</code>where:\n<ul>\n<li>STRING VALUE - a search value, eg. 'SuperCA';</li>\n<li>STRING OPERATION - 'EQUAL' or 'LIKE';</li>\n<li>INTEGER VALUE - An appropriate integer identifier of End Entity Profile, Certificate Profile or CA;</li>\n<li>STATUS STRING VALUE - One of 'CERT_ACTIVE, 'CERT_REVOKED', 'REVOCATION_REASON_UNSPECIFIED', 'REVOCATION_REASON_KEYCOMPROMISE', 'REVOCATION_REASON_CACOMPROMISE', 'REVOCATION_REASON_AFFILIATIONCHANGED', 'REVOCATION_REASON_SUPERSEDED', 'REVOCATION_REASON_CESSATIONOFOPERATION', 'REVOCATION_REASON_CERTIFICATEHOLD', 'REVOCATION_REASON_REMOVEFROMCRL', 'REVOCATION_REASON_PRIVILEGESWITHDRAWN', 'REVOCATION_REASON_AACOMPROMISE';</li>\n<li>DATE VALUE - ISO 8601 Date string, eg. '2018-06-15T14:07:09Z';</li>\n<li>DATE OPERATION - 'BEFORE' or 'AFTER'.</li>\n</ul>",
+        "operationId": "searchCertificates",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "A collection of search criteria and maximum number of results.",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/SearchCertificatesRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/SearchCertificatesRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/pkcs10enroll": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Enrollment by PKCS10 request",
+        "description": "Enroll certificate given PKCS10 CSR",
+        "operationId": "enrollPkcs10Certificate",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/EnrollCertificateRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CertificateRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/enrollkeystore": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Keystore enrollment",
+        "description": "Creates a keystore for the specified end entity",
+        "operationId": "enrollKeystore",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/KeyStoreRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CertificateRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revocationstatus": {
+      "get": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Checks revocation status of the specified certificate",
+        "description": "Checks revocation status of the specified certificate",
+        "operationId": "revocationStatus",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "certificate_serial_number",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RevokeStatusRestResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "RestResourceStatusRestResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        }
+      }
+    },
+    "CrlRestResponse": {
+      "type": "object",
+      "properties": {
+        "crl": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "response_format": {
+          "type": "string"
+        }
+      }
+    },
+    "CaInfoRestResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "name": {
+          "type": "string"
+        },
+        "subject_dn": {
+          "type": "string"
+        },
+        "issuer_dn": {
+          "type": "string"
+        },
+        "expiration_date": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "CaInfosRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificate_authorities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CaInfoRestResponse"
+          }
+        }
+      }
+    },
+    "RevokeStatusRestResponse": {
+      "type": "object",
+      "properties": {
+        "issuer_dn": {
+          "type": "string"
+        },
+        "serial_number": {
+          "type": "string"
+        },
+        "revocation_reason": {
+          "type": "string"
+        },
+        "revocation_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "message": {
+          "type": "string"
+        },
+        "revoked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CertificateRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "serial_number": {
+          "type": "integer"
+        },
+        "response_format": {
+          "type": "string"
+        }
+      }
+    },
+    "CertificatesRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CertificateRestResponse"
+          }
+        }
+      }
+    },
+    "ExpiringCertificatesRestResponse": {
+      "type": "object",
+      "properties": {
+        "pagination_rest_response_component": {
+          "$ref": "#/definitions/PaginationRestResponseComponent"
+        },
+        "certificates_rest_response": {
+          "$ref": "#/definitions/CertificatesRestResponse"
+        }
+      }
+    },
+    "PaginationRestResponseComponent": {
+      "type": "object",
+      "properties": {
+        "more_results": {
+          "type": "boolean"
+        },
+        "next_offset": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "number_of_results": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "FinalizeRestRequest": {
+      "type": "object",
+      "properties": {
+        "response_format": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "SearchCertificatesRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CertificateRestResponse"
+          }
+        },
+        "more_results": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SearchCertificateCriteriaRestRequest": {
+      "type": "object",
+      "properties": {
+        "property": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        }
+      }
+    },
+    "SearchCertificatesRestRequest": {
+      "type": "object",
+      "properties": {
+        "max_number_of_results": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SearchCertificateCriteriaRestRequest"
+          }
+        }
+      }
+    },
+    "EnrollCertificateRestRequest": {
+      "type": "object",
+      "properties": {
+        "certificate_request": {
+          "type": "string"
+        },
+        "certificate_profile_name": {
+          "type": "string"
+        },
+        "end_entity_profile_name": {
+          "type": "string"
+        },
+        "certificate_authority_name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "KeyStoreRestRequest": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "key_alg": {
+          "type": "string"
+        },
+        "key_spec": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
