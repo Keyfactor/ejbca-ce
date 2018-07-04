@@ -2149,6 +2149,8 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
         try {
             result.putAll(raMasterApiProxyBean.getAvailableCertificateProfiles(admin, entityProfileId));
+        } catch (EndEntityProfileNotFoundException e) {
+            // NOOP.
         } catch (RuntimeException e) {  // EJBException, ...
             throw getInternalException(e, logger);
         } finally {
