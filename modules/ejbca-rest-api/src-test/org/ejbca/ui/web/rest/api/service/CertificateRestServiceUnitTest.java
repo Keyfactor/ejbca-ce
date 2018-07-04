@@ -16,7 +16,6 @@ import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
@@ -55,13 +54,10 @@ public class CertificateRestServiceUnitTest {
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
 
     @Mock
-    private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-
-    @Mock
     private RaMasterApiProxyBeanLocal raMasterApi;
 
     @TestSubject
-    private CertificateRestService certificateService = new CertificateRestService(ejbcaRestHelperSession, raMasterApi);
+    private CertificateRestService certificateService = new CertificateRestService();
 
     @Test(expected = RestException.class)
     public void shouldThrowRestExceptionOnUnauthorizedEndEntityProfileId() throws RestException {

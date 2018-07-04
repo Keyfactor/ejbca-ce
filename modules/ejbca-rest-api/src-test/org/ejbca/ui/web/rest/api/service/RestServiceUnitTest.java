@@ -16,7 +16,6 @@ import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
 import org.junit.Test;
@@ -43,13 +42,10 @@ public class RestServiceUnitTest {
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
 
     @Mock
-    private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
-
-    @Mock
     private RaMasterApiProxyBeanLocal raMasterApi;
 
     @TestSubject
-    private RestService service = new RestService(ejbcaRestHelperSession, raMasterApi);
+    private RestService service = new RestService();
 
     @Test
     public void shouldUseRaMasterApiToGetListOfAuthorizedEndEntityProfileIds() {

@@ -14,9 +14,9 @@ package org.ejbca.ui.web.rest.api.service;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
-import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
+import javax.ejb.EJB;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +28,10 @@ import java.util.Map;
  */
 public class RestService {
 
-    protected EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
+    @EJB
     protected RaMasterApiProxyBeanLocal raMasterApi;
 
-    public RestService(final EjbcaRestHelperSessionLocal ejbcaRestHelperSession, final RaMasterApiProxyBeanLocal raMasterApi) {
-        this.ejbcaRestHelperSession = ejbcaRestHelperSession;
-        this.raMasterApi = raMasterApi;
+    public RestService() {
     }
 
     /**
