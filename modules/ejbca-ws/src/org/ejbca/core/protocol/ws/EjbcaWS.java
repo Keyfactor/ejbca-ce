@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -2106,18 +2105,14 @@ public class EjbcaWS implements IEjbcaWS {
 
     @Override
 	public NameAndId[] getAvailableCAs() throws EjbcaException, AuthorizationDeniedException {
-		TreeMap<String,Integer> ret = new TreeMap<>();
-		AuthenticationToken admin = getAdmin(true);
+		final TreeMap<String,Integer> result = new TreeMap<>();
+		final AuthenticationToken admin = getAdmin(true);
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			Collection<Integer> caids = caSession.getAuthorizedCaIds(admin);
-			HashMap<Integer, String> map = caSession.getCAIdToNameMap();
-			for (Integer id : caids ) {
-				String name = map.get(id);
-				if (name != null) {
-					ret.put(name, id);
-				}
+			final Collection<CAInfo> cas = raMasterApiProxyBean.getAuthorizedCas(admin);
+			for (CAInfo ca: cas) {
+				result.put(ca.getName(), ca.getCAId());
 			}
         } catch (RuntimeException e) {	// EJBException, ...
             throw getInternalException(e, logger);
@@ -2125,7 +2120,7 @@ public class EjbcaWS implements IEjbcaWS {
             logger.writeln();
             logger.flush();
         }
-		return convertTreeMapToArray(ret);
+		return convertTreeMapToArray(result);
 	}
 
     @Override
