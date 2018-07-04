@@ -228,14 +228,8 @@
 
     <target name="doc-rest" if="${mod.rest-api.exists}">
         <mkdir dir="${docs.dest.rest}"/>
-        <java dir="${ejbca.home}"
-            classname="net.wasdev.maven.plugins.swaggerdocgen.GenerateSwaggerFile"
-            classpath="${ejbca.home}/lib/ext/swagger docs/swaggerdocgen-maven-plugin-1.2-jar-with-dependencies.jar;${ejbca.home}/dist/*;${ejbca.home}/modules/dist/ejbca-interface.jar;${ejbca.home}/lib/jee/javaee-api-6.0-6.jar;${ejbca.home}/lib/log4j-1.2.17.jar"
-            fork="true">
-            <arg line="${ejbca.home}/modules/dist/ejbca-rest-api.war ${docs.dest.rest}/swagger.json" />
-        </java>
         <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/swagger-codegen-cli-2.3.1.jar" fork="true">
-            <arg line="generate -i ${docs.dest.rest}/swagger.json -l html2 -o ${docs.dest.rest}
+            <arg line="generate -i ${mod.ejbca-rest-api.path}/resources/swagger.json -l html2 -o ${docs.dest.rest}
             -t ${ejbca.home}/modules/ejbca-rest-api/htmlDocsTemplate"/>
         </java>
     </target>
