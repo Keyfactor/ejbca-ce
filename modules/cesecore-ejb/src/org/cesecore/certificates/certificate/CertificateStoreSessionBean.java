@@ -558,7 +558,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByExpireTimeWithLimit(), time=" + expireTime);
         }
-        // First make expiretime in well know format
+        // First make expire time in well know format
         if (log.isDebugEnabled()) {
             log.debug("Looking for certs that expire before: " + expireTime);
         }
