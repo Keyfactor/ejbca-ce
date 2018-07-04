@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -82,7 +83,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     private static final Logger log = Logger.getLogger(CertificateStoreSessionTest.class);
     private static KeyPair keys;
 
-    private static final String USERNAME = "foo";
+    private static final String USERNAME = "CertificateStoreSessionTest";
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -140,44 +141,41 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     @Test
     public void test02FindByExpireTime() throws Exception {
-    	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
-    	String fp = CertTools.getFingerprintAsString(cert);
-    	try {
-    		CertificateInfo data = certificateStoreSession.getCertificateInfo(fp);
-    		assertNotNull("Failed to find cert", data);
-    		log.debug("expiredate=" + data.getExpireDate());
-
-    		// Seconds in a year
-    		long yearmillis = 365 * 24 * 60 * 60 * 1000;
-    		long findDateSecs = data.getExpireDate().getTime() - (yearmillis * 200);
-    		Date findDate = new Date(findDateSecs);
-
-    		log.info("1. Looking for cert with expireDate=" + findDate);
-
-    		Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
-    		log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
-    		assertTrue("No certs should have expired before this date", certs.size() == 0);
+        Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
+        String fp = CertTools.getFingerprintAsString(cert);
+        try {
+            CertificateInfo data = certificateStoreSession.getCertificateInfo(fp);
+            assertNotNull("Failed to find cert", data);
+            log.debug("expiredate=" + data.getExpireDate());
+            // Seconds in a year
+            long yearmillis = 365 * 24 * 60 * 60 * 1000;
+            long findDateSecs = data.getExpireDate().getTime() - (yearmillis * 200);
+            Date findDate = new Date(findDateSecs);
+            log.info("1. Looking for cert with expireDate=" + findDate);
+            Collection<Certificate> certs = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
+            log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
+            assertEquals("No certs should have expired before this date", 0, certs.size());
             Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
             log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
-            assertTrue("No certs should have expired before this date", usernames.size() == 0);
-    		findDateSecs = data.getExpireDate().getTime() + (yearmillis * 200);
-    		findDate = new Date(findDateSecs);
-    		log.info("2. Looking for cert with expireDate=" + findDate+", "+findDate.getTime());
-    		Collection<Certificate> certs2 = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
-    		log.debug("findCertificatesByExpireTime returned " + certs2.size() + " certs.");
-    		assertTrue("Some certs should have expired before this date", certs2.size() != 0);
+            assertEquals("No certs should have expired before this date", 0, usernames.size());
+            findDateSecs = data.getExpireDate().getTime() + (yearmillis * 200);
+            findDate = new Date(findDateSecs);
+            log.info("2. Looking for cert with expireDate=" + findDate+", "+findDate.getTime());
+            Collection<Certificate> certs2 = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate));
+            log.debug("findCertificatesByExpireTime returned " + certs2.size() + " certs.");
+            assertNotEquals("Some certs should have expired before this date", 0, certs2.size());
             usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
             log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
-            assertTrue("Some certs should have expired before this date", usernames.size() != 0);
-    		for (final Certificate tmpcert : certs2) {
+            assertNotEquals("Some certs should have expired before this date", 0, usernames.size());
+            for (final Certificate tmpcert : certs2) {
                 Date retDate = CertTools.getNotAfter(tmpcert);
                 log.debug(retDate);
                 assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
-    		}
-    	} finally {
-    		internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
-    	}
-	}
+            }
+        } finally {
+            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert));
+        }
+    }
 
 	/**
 	 * finds certs by issuer and serialno
