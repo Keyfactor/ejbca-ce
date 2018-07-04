@@ -426,7 +426,55 @@ public class CertificateRestResource extends BaseRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Searches for certificates confirming giving criteria.",
-            notes = "Searches for certificates confirming giving criteria.",
+            notes = "The structure for search request JSON body is the following:\n" +
+                    "<code>" +
+                    "{\n" +
+                    "&nbsp; \"max_number_of_results\": 10,\n" +
+                    "&nbsp; \"criteria\": [\n" +
+                    "&nbsp;&nbsp; {\n" +
+                    "&nbsp;&nbsp;&nbsp; \"property\": \"QUERY\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"value\": \"STRING VALUE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"operation\": \"STRING OPERATION\" \n" +
+                    "&nbsp;&nbsp; },{\n" +
+                    "&nbsp;&nbsp;&nbsp; \"property\": \"END_ENTITY_PROFILE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n" +
+                    "&nbsp;&nbsp; },{\n" +
+                    "&nbsp;&nbsp;&nbsp; \"property\": \"CERTIFICATE_PROFILE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n" +
+                    "&nbsp;&nbsp; },{\n" +
+                    "&nbsp;&nbsp;&nbsp; \"property\": \"CA\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n" +
+                    "&nbsp;&nbsp; },{\n" +
+                    "&nbsp;&nbsp;&nbsp; \"property\": \"STATUS\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"value\": \"STATUS STRING VALUE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n" +
+                    "&nbsp;&nbsp; },{\n" +
+                    "&nbsp;&nbsp; \"property\": \"ISSUED_DATE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\", \n" +
+                    "&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\" \n" +
+                    "&nbsp;&nbsp; },{\n" +
+                    "&nbsp;&nbsp;&nbsp; \"property\": \"EXPIRE_DATE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\"\n" +
+                    "&nbsp;&nbsp; },{\n" +
+                    "&nbsp;&nbsp;&nbsp; \"property\": \"REVOCATION_DATE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\",\n" +
+                    "&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\"\n" +
+                    "&nbsp;&nbsp; } ]\n" +
+                    "}\n" +
+                    "</code>" +
+                    "where:\n" +
+                    "<ul>\n" +
+                    "<li>STRING VALUE - a search value, eg. 'SuperCA';</li>\n" +
+                    "<li>STRING OPERATION - 'EQUAL' or 'LIKE';</li>\n" +
+                    "<li>INTEGER VALUE - An appropriate integer identifier of End Entity Profile, Certificate Profile or CA;</li>\n" +
+                    "<li>STATUS STRING VALUE - One of 'CERT_ACTIVE, 'CERT_REVOKED', 'REVOCATION_REASON_UNSPECIFIED', 'REVOCATION_REASON_KEYCOMPROMISE', 'REVOCATION_REASON_CACOMPROMISE', 'REVOCATION_REASON_AFFILIATIONCHANGED', 'REVOCATION_REASON_SUPERSEDED', 'REVOCATION_REASON_CESSATIONOFOPERATION', 'REVOCATION_REASON_CERTIFICATEHOLD', 'REVOCATION_REASON_REMOVEFROMCRL', 'REVOCATION_REASON_PRIVILEGESWITHDRAWN', 'REVOCATION_REASON_AACOMPROMISE';</li>\n" +
+                    "<li>DATE VALUE - ISO 8601 Date string, eg. '2018-06-15T14:07:09Z';</li>\n" +
+                    "<li>DATE OPERATION - 'BEFORE' or 'AFTER'.</li>\n" +
+                    "</ul>",
             response = SearchCertificatesRestResponse.class
     )
     public Response searchCertificates(
