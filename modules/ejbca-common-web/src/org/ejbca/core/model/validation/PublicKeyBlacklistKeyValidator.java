@@ -32,7 +32,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.profiles.Profile;
-import org.cesecore.util.ui.DynamicUiModelBase;
+import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -94,7 +94,7 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     
     @Override
     public void initDynamicUiModel() {
-        uiModel = new DynamicUiModelBase(data);
+        uiModel = new DynamicUiModel(data);
         uiModel.add(new DynamicUiProperty<String>("settings"));
         final LinkedHashMap<String,String> labels = new LinkedHashMap<String,String>();
         labels.put("-1", "ALL");
