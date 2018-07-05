@@ -53,6 +53,7 @@
 		<path location="${this.dir}/../dist/systemtests-interfaces.jar"/>
 		<path location="${this.dir}/../dist/systemtests-common.jar"/>
 		<path location="${this.dir}/../dist/systemtests-ejb.jar"/>
+		<path location="${this.dir}/../../lib/hibernate/"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.test.classpath"/>
 	</path>
@@ -88,7 +89,7 @@
 		<mkdir dir="${build.dir}/WEB-INF/classes"/>
 	</target>
 
-	<target name="compile-tests" depends="build, ejbca-ejb, with.clover">
+	<target name="compile-tests" depends="ejbca-ejb, build, with.clover">
 		<mkdir dir="${build-test.dir}" />
 		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy file="${jndi.properties.file}" tofile="${build-test.dir}/jndi.properties" failonerror="true"/>
