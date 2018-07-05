@@ -36,7 +36,7 @@ import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.ExternalProcessTools;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
-import org.cesecore.util.ui.DynamicUiModelBase;
+import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 
 /**
@@ -117,7 +117,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
 
     @Override
     public void initDynamicUiModel() {
-        uiModel = new DynamicUiModelBase(data);
+        uiModel = new DynamicUiModel(data);
         uiModel.add(new DynamicUiProperty<String>("settings"));
         final DynamicUiProperty<String> cmd = new DynamicUiProperty<String>(String.class, EXTERNAL_COMMAND, getExternalCommand());
         cmd.setRequired(true);

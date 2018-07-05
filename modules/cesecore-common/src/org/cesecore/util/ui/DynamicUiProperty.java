@@ -459,8 +459,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      * Gets the current value.
      * @return the value.
      */
-    public T getValue()
-    {
+    public T getValue() {
         if (hasMultipleValues) {
             throw new IllegalStateException("Attempted to draw single value from a dynamic property with multiple value for " + getName());
         }

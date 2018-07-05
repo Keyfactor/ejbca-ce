@@ -36,15 +36,5 @@ public interface DnsNameValidator extends Validator, DynamicUiModelAware {
      */
     Entry<Boolean, List<String>> validate(final ExecutorService executorService, String... domainNames);
 
-    /**
-     * Returns the name of the issuers as a semicolon-separated string.
-     * @return a semicolon separated string of issuer names
-     */
-    String getIssuersString();
-
-    /**
-     * Returns the name of the issuers as a list.
-     * @return a list of issuer names
-     */
-    List<String> getIssuers();
+    String getIssuer();
 }
