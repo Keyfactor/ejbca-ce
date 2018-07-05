@@ -35,8 +35,9 @@ public class UrlValidator implements Validator {
     public void validate(FacesContext facesContext, UIComponent uiComponent, Object o) throws ValidatorException {
         StringBuilder url = new StringBuilder();
         String urlValue = o.toString();
-
-        log.debug("Validating component " + uiComponent.getClientId(facesContext) + " with value \"" + urlValue + "\"");
+        if (log.isDebugEnabled()) {
+            log.debug("Validating component " + uiComponent.getClientId(facesContext) + " with value \"" + urlValue + "\"");
+        }
 
         url.append(urlValue);
         try {
