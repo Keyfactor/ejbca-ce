@@ -96,6 +96,7 @@
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath">
 			<sourcepath location="${mod.systemtests.path}/src-test/"/>
+			<sourcepath location="${mod.systemtests.path}/src-interface/"/>
 		</javac>
 		<copy file="${internal.properties.file}" todir="${build-test.dir}" failonerror="true"/>
 	</target>
