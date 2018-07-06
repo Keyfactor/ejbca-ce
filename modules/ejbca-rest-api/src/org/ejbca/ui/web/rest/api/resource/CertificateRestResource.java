@@ -122,7 +122,9 @@ public class CertificateRestResource extends BaseRestResource {
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get the status of this RestResource", notes = "Get the status of this RestResource", response = RestResourceStatusRestResponse.class)
+    @ApiOperation(value = "Get the status of this REST Resource", 
+                  notes = "Returns status and version of the resource.", 
+                  response = RestResourceStatusRestResponse.class)
     @Override
     public Response status() {
         return super.status();
@@ -132,7 +134,9 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enrollment by PKCS10 request", notes = "Enroll certificate given PKCS10 CSR", response = CertificateRestResponse.class, code = 201)
+    @ApiOperation(value = "Enrollment by PKCS10 request",
+                  notes = "Enroll certificate given PKCS10 CSR.\nGiven CSR must be base64 encoded PEM format", 
+                  response = CertificateRestResponse.class, code = 201)
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext, EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
         try {
@@ -154,7 +158,12 @@ public class CertificateRestResource extends BaseRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Keystore enrollment",
-        notes = "Creates a keystore for the specified end entity",
+        notes = "Creates a keystore for the specified end entity\n" +
+                "where:\n" +
+                "<ul>\n" +
+                "<li>key_alg - E.g. 'RSA' or 'ECDSA';</li>\n" +
+                "<li>key_spec - E.g. '1024', '2048' or 'secp256r1' (for ECDSA);</li>\n" +
+                "</ul>",
         response = CertificateRestResponse.class,
         code = 201)
     public Response enrollKeystore(
@@ -195,7 +204,9 @@ public class CertificateRestResource extends BaseRestResource {
     response = RevokeStatusRestResponse.class)
     public Response revocationStatus(
             @Context HttpServletRequest requestContext,
+            @ApiParam(value = "Subject DN of the issuing CA")
             @PathParam("issuer_dn") String issuerDn,
+            @ApiParam(value = "hex serial number (without prefix, e.g. '00')") 
             @PathParam("certificate_serial_number") String serialNumber) throws AuthorizationDeniedException, RestException, CADoesntExistsException, NotFoundException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         final BigInteger serialNr;
@@ -235,9 +246,16 @@ public class CertificateRestResource extends BaseRestResource {
     @ApiOperation(value = "Revokes the specified certificate", notes = "Revokes the specified certificate", response = RevokeStatusRestResponse.class)
     public Response revokeCertificate(
             @Context HttpServletRequest requestContext,
+            @ApiParam(value = "Subject DN of the issuing CA")
             @PathParam("issuer_dn") String issuerDN,
+            @ApiParam(value = "hex serial number (without prefix, e.g. '00')")
             @PathParam("certificate_serial_number") String serialNumber,
+            @ApiParam(value = "Must be valid RFC5280 reason. One of\n" + 
+                    " NOT_REVOKED, UNSPECIFIED ,KEYCOMPROMISE,\n" + 
+                    " CACOMPROMISE, AFFILIATIONCHANGED, SUPERSEDED, CESSATIONOFOPERATION,\n" + 
+                    " CERTIFICATEHOLD, REMOVEFROMCRL, PRIVILEGESWITHDRAWN, AACOMPROMISE")
             @QueryParam("reason") String reason,
+            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date)
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException, CADoesntExistsException, AlreadyRevokedException,
             NoSuchEndEntityException, WaitingForApprovalException {
@@ -294,11 +312,14 @@ public class CertificateRestResource extends BaseRestResource {
     @Path("/expire")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Get a list of certificates that are about to expire",
-        notes = "Get a list of certificates that are about to expire",
+        notes = "List of certificates expiring within specified number of days",
         response = ExpiringCertificatesRestResponse.class)
     public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext,
+            @ApiParam(value = "Request certificates expiring within this number of days")
             @QueryParam("days") long days,
+            @ApiParam(value = "Next offset to display results of, if maxNumberOfResults is exceeded")
             @QueryParam("offset") int offset,
+            @ApiParam(value = "Maximum number of certificates to display. If result exceeds this value. Modify 'offset' to retrieve more results")
             @QueryParam("maxNumberOfResults") int maxNumberOfResults) throws AuthorizationDeniedException, CertificateEncodingException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, true);
         int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
