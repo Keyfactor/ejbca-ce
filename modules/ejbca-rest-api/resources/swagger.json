@@ -40,33 +40,6 @@
         }
       }
     },
-    "/v1/ca/{subject_dn}/certificate/download": {
-      "get": {
-        "tags": [
-          "v1/ca"
-        ],
-        "summary": "Get PEM file with CA certificates",
-        "description": "",
-        "operationId": "getCertificateAsPem",
-        "produces": [
-          "*/*"
-        ],
-        "parameters": [
-          {
-            "name": "subject_dn",
-            "in": "path",
-            "description": "CAs subject DN",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "successful operation"
-          }
-        }
-      }
-    },
     "/v1/ca/{issuer_dn}/getLatestCrl": {
       "get": {
         "tags": [
@@ -101,6 +74,33 @@
             "schema": {
               "$ref": "#/definitions/CrlRestResponse"
             }
+          }
+        }
+      }
+    },
+    "/v1/ca/{subject_dn}/certificate/download": {
+      "get": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Get PEM file with CA certificates",
+        "description": "",
+        "operationId": "getCertificateAsPem",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "subject_dn",
+            "in": "path",
+            "description": "CAs subject DN",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "successful operation"
           }
         }
       }
@@ -149,48 +149,35 @@
         }
       }
     },
-    "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revoke": {
-      "put": {
+    "/v1/certificate/pkcs10enroll": {
+      "post": {
         "tags": [
           "v1/certificate"
         ],
-        "summary": "Revokes the specified certificate",
-        "description": "Revokes the specified certificate",
-        "operationId": "revokeCertificate",
+        "summary": "Enrollment by PKCS10 request",
+        "description": "Enroll certificate given PKCS10 CSR",
+        "operationId": "enrollPkcs10Certificate",
+        "consumes": [
+          "application/json"
+        ],
         "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "name": "issuer_dn",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "certificate_serial_number",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "reason",
-            "in": "query",
+            "in": "body",
+            "name": "body",
             "required": false,
-            "type": "string"
-          },
-          {
-            "name": "date",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/EnrollCertificateRestRequest"
+            }
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/RevokeStatusRestResponse"
+              "$ref": "#/definitions/CertificateRestResponse"
             }
           }
         }
@@ -280,13 +267,60 @@
         }
       }
     },
+    "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revoke": {
+      "put": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Revokes the specified certificate",
+        "description": "Revokes the specified certificate",
+        "operationId": "revokeCertificate",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "certificate_serial_number",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RevokeStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
     "/v1/certificate/search": {
       "post": {
         "tags": [
           "v1/certificate"
         ],
         "summary": "Searches for certificates confirming giving criteria.",
-        "description": "The structure for search request JSON body is the following:\n<code>{\n&nbsp; \"max_number_of_results\": 10,\n&nbsp; \"criteria\": [\n&nbsp;&nbsp; {\n&nbsp;&nbsp;&nbsp; \"property\": \"QUERY\",\n&nbsp;&nbsp;&nbsp; \"value\": \"STRING VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"STRING OPERATION\" \n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"END_ENTITY_PROFILE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"CERTIFICATE_PROFILE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"CA\",\n&nbsp;&nbsp;&nbsp; \"value\": \"INTEGER VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"STATUS\",\n&nbsp;&nbsp;&nbsp; \"value\": \"STATUS STRING VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"EQUAL\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp; \"property\": \"ISSUED_DATE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\", \n&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\" \n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"EXPIRE_DATE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\"\n&nbsp;&nbsp; },{\n&nbsp;&nbsp;&nbsp; \"property\": \"REVOCATION_DATE\",\n&nbsp;&nbsp;&nbsp; \"value\": \"DATE VALUE\",\n&nbsp;&nbsp;&nbsp; \"operation\": \"DATE OPERATION\"\n&nbsp;&nbsp; } ]\n}\n</code>where:\n<ul>\n<li>STRING VALUE - a search value, eg. 'SuperCA';</li>\n<li>STRING OPERATION - 'EQUAL' or 'LIKE';</li>\n<li>INTEGER VALUE - An appropriate integer identifier of End Entity Profile, Certificate Profile or CA;</li>\n<li>STATUS STRING VALUE - One of 'CERT_ACTIVE, 'CERT_REVOKED', 'REVOCATION_REASON_UNSPECIFIED', 'REVOCATION_REASON_KEYCOMPROMISE', 'REVOCATION_REASON_CACOMPROMISE', 'REVOCATION_REASON_AFFILIATIONCHANGED', 'REVOCATION_REASON_SUPERSEDED', 'REVOCATION_REASON_CESSATIONOFOPERATION', 'REVOCATION_REASON_CERTIFICATEHOLD', 'REVOCATION_REASON_REMOVEFROMCRL', 'REVOCATION_REASON_PRIVILEGESWITHDRAWN', 'REVOCATION_REASON_AACOMPROMISE';</li>\n<li>DATE VALUE - ISO 8601 Date string, eg. '2018-06-15T14:07:09Z';</li>\n<li>DATE OPERATION - 'BEFORE' or 'AFTER'.</li>\n</ul>",
+        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
         "operationId": "searchCertificates",
         "consumes": [
           "application/json"
@@ -298,7 +332,7 @@
           {
             "in": "body",
             "name": "body",
-            "description": "A collection of search criteria and maximum number of results.",
+            "description": "Maximum number of results and collection of search criterias.",
             "required": false,
             "schema": {
               "$ref": "#/definitions/SearchCertificatesRestRequest"
@@ -310,74 +344,6 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/SearchCertificatesRestResponse"
-            }
-          }
-        }
-      }
-    },
-    "/v1/certificate/pkcs10enroll": {
-      "post": {
-        "tags": [
-          "v1/certificate"
-        ],
-        "summary": "Enrollment by PKCS10 request",
-        "description": "Enroll certificate given PKCS10 CSR",
-        "operationId": "enrollPkcs10Certificate",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/EnrollCertificateRestRequest"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
-            }
-          }
-        }
-      }
-    },
-    "/v1/certificate/enrollkeystore": {
-      "post": {
-        "tags": [
-          "v1/certificate"
-        ],
-        "summary": "Keystore enrollment",
-        "description": "Creates a keystore for the specified end entity",
-        "operationId": "enrollKeystore",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/KeyStoreRestRequest"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
             }
           }
         }
@@ -413,6 +379,40 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/RevokeStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/enrollkeystore": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Keystore enrollment",
+        "description": "Creates a keystore for the specified end entity",
+        "operationId": "enrollKeystore",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/KeyStoreRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CertificateRestResponse"
             }
           }
         }
@@ -482,30 +482,6 @@
         }
       }
     },
-    "RevokeStatusRestResponse": {
-      "type": "object",
-      "properties": {
-        "issuer_dn": {
-          "type": "string"
-        },
-        "serial_number": {
-          "type": "string"
-        },
-        "revocation_reason": {
-          "type": "string"
-        },
-        "revocation_date": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "message": {
-          "type": "string"
-        },
-        "revoked": {
-          "type": "boolean"
-        }
-      }
-    },
     "CertificateRestResponse": {
       "type": "object",
       "properties": {
@@ -520,6 +496,29 @@
           "type": "integer"
         },
         "response_format": {
+          "type": "string"
+        }
+      }
+    },
+    "EnrollCertificateRestRequest": {
+      "type": "object",
+      "properties": {
+        "certificate_request": {
+          "type": "string"
+        },
+        "certificate_profile_name": {
+          "type": "string"
+        },
+        "end_entity_profile_name": {
+          "type": "string"
+        },
+        "certificate_authority_name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
           "type": "string"
         }
       }
@@ -573,6 +572,30 @@
         }
       }
     },
+    "RevokeStatusRestResponse": {
+      "type": "object",
+      "properties": {
+        "issuer_dn": {
+          "type": "string"
+        },
+        "serial_number": {
+          "type": "string"
+        },
+        "revocation_reason": {
+          "type": "string"
+        },
+        "revocation_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "message": {
+          "type": "string"
+        },
+        "revoked": {
+          "type": "boolean"
+        }
+      }
+    },
     "SearchCertificatesRestResponse": {
       "type": "object",
       "properties": {
@@ -591,15 +614,36 @@
       "type": "object",
       "properties": {
         "property": {
-          "type": "string"
+          "type": "string",
+          "description": "A search property",
+          "enum": [
+            "QUERY",
+            "END_ENTITY_PROFILE",
+            "CERTIFICATE_PROFILE",
+            "CA",
+            "STATUS",
+            "ISSUED_DATE",
+            "EXPIRE_DATE",
+            "REVOCATION_DATE"
+          ]
         },
         "value": {
-          "type": "string"
+          "type": "string",
+          "example": "'SuperCA', '2018-06-15T14:07:09Z', 1",
+          "description": "A search value. This could be sting value, ISO 8601 Date string, an appropriate integer identifier of End Entity Profile or Certificate Profile or CA"
         },
         "operation": {
-          "type": "string"
+          "type": "string",
+          "description": "An operation for property on inserted value. 'EQUAL' for string and integer values, 'LIKE' for string values, 'BEFORE' or 'AFTER' for date values",
+          "enum": [
+            "EQUAL",
+            "LIKE",
+            "BEFORE",
+            "AFTER"
+          ]
         }
-      }
+      },
+      "description": "Use one of alloved values as property(see enum values below)\nQUERY is used to search by SubjectDn, SubjectAn, Username or SerialNr \nAvailable STATUS values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE"
     },
     "SearchCertificatesRestRequest": {
       "type": "object",
@@ -610,32 +654,10 @@
         },
         "criteria": {
           "type": "array",
+          "description": "A List of search criterias.",
           "items": {
             "$ref": "#/definitions/SearchCertificateCriteriaRestRequest"
           }
-        }
-      }
-    },
-    "EnrollCertificateRestRequest": {
-      "type": "object",
-      "properties": {
-        "certificate_request": {
-          "type": "string"
-        },
-        "certificate_profile_name": {
-          "type": "string"
-        },
-        "end_entity_profile_name": {
-          "type": "string"
-        },
-        "certificate_authority_name": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
         }
       }
     },
