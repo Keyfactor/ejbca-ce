@@ -44,6 +44,7 @@
 		<path location="${mod.ejbca-ws.lib}"/>
 		<path refid="lib.resteasy-jaxrs.classpath"/>
 		<path refid="lib.hibernate-validator.classpath"/>
+		<path refid="lib.jboss-logging.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -93,7 +94,6 @@
 		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy file="${jndi.properties.file}" tofile="${build-test.dir}/jndi.properties" failonerror="true"/>
 		<copy file="${jboss-ejb-client.properties}" todir="${build-test.dir}" failonerror="true"/>
-		<copy file="${this.dir}/../../lib/hibernate/jboss-logging-3.1.0.GA.jar" todir="${build-test.dir}" failonerror="true"/>
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath">
 			<sourcepath location="${mod.systemtests.path}/src-test/"/>
