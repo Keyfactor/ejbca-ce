@@ -53,7 +53,6 @@
 		<path location="${this.dir}/../dist/systemtests-interfaces.jar"/>
 		<path location="${this.dir}/../dist/systemtests-common.jar"/>
 		<path location="${this.dir}/../dist/systemtests-ejb.jar"/>
-		<path location="${this.dir}/../../lib/hibernate/"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.test.classpath"/>
 	</path>
@@ -97,7 +96,6 @@
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath">
 			<sourcepath location="${mod.systemtests.path}/src-test/"/>
-			<sourcepath location="${mod.systemtests.path}/src-interface/"/>
 		</javac>
 		<copy file="${internal.properties.file}" todir="${build-test.dir}" failonerror="true"/>
 	</target>
