@@ -9,6 +9,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest;
@@ -24,11 +26,34 @@ import java.util.EnumSet;
  *
  * @version $Id: SearchCertificateCriteriaRestRequest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
  */
+@ApiModel(description = "Use one of alloved values as property(see enum values below).\n" +
+        "QUERY is used to search by SubjectDn, SubjectAn, Username or SerialNr \n" +
+        "Available STATUS values are: CERT_ACTIVE, CERT_REVOKED, " +
+        "REVOCATION_REASON_UNSPECIFIED, " +
+        "REVOCATION_REASON_KEYCOMPROMISE, " +
+        "REVOCATION_REASON_CACOMPROMISE, " +
+        "REVOCATION_REASON_AFFILIATIONCHANGED, " +
+        "REVOCATION_REASON_SUPERSEDED, " +
+        "REVOCATION_REASON_CESSATIONOFOPERATION, " +
+        "REVOCATION_REASON_CERTIFICATEHOLD, " +
+        "REVOCATION_REASON_REMOVEFROMCRL, " +
+        "REVOCATION_REASON_PRIVILEGESWITHDRAWN, " +
+        "REVOCATION_REASON_AACOMPROMISE")
 @ValidSearchCertificateCriteriaRestRequest
 public class SearchCertificateCriteriaRestRequest {
 
+    @ApiModelProperty(value = "A search property",
+            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE"
+    )
     private String property;
+
+    @ApiModelProperty(value = "A search value. This could be sting value, ISO 8601 Date string, an appropriate integer identifier of End Entity Profile or Certificate Profile or CA",
+            example = "'SuperCA', '2018-06-15T14:07:09Z', 1")
     private String value;
+
+    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string and integer values, 'LIKE' for string values, 'BEFORE' or 'AFTER' for date values",
+            allowableValues = "EQUAL,LIKE,BEFORE, AFTER",
+            dataType = "java.lang.String")
     private String operation;
 
     public SearchCertificateCriteriaRestRequest() {

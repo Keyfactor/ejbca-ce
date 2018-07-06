@@ -9,6 +9,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList;
@@ -38,6 +39,7 @@ public class SearchCertificatesRestRequest {
 
     @ValidSearchCertificateMaxNumberOfResults
     private Integer maxNumberOfResults;
+    @ApiModelProperty(value = "A List of search criterias." )
     @ValidSearchCertificateCriteriaRestRequestList
     @Valid
     private List<SearchCertificateCriteriaRestRequest> criteria = new ArrayList<>();
