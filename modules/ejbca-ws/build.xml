@@ -81,7 +81,7 @@
     </target>
 	
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
-    <target name="compile" depends="compile-external-deps">
+    <target name="compile" depends="compile-external-deps, with.clover">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile.classpath">
@@ -90,7 +90,7 @@
     </target>
 
     <target name="compile-library-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common"/></target>
-    <target name="compile-library" depends="compile-library-external-deps">
+    <target name="compile-library" depends="compile-library-external-deps, with.clover">
     	<mkdir dir="${build-lib.dir}" />
         <javac destdir="${build-lib.dir}" debug="on" includeantruntime="no" srcdir="${src.dir}"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-library.classpath">

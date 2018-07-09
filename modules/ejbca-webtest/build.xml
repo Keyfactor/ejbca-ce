@@ -41,7 +41,7 @@
 		<mkdir dir="${build.dir}/resources"/>
 	</target>
 
-	<target name="build" depends="make_directories, copyWindows, copy">
+	<target name="build" depends="make_directories, copyWindows, copy, with.clover">
         <javac srcdir="${src.dir}" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath"/>
         </javac>
