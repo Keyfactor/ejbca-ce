@@ -23,7 +23,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -158,12 +157,7 @@ public class CertificateRestResource extends BaseRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Keystore enrollment",
-        notes = "Creates a keystore for the specified end entity\n" +
-                "where:\n" +
-                "<ul>\n" +
-                "<li>key_alg - E.g. 'RSA' or 'ECDSA';</li>\n" +
-                "<li>key_spec - E.g. '1024', '2048' or 'secp256r1' (for ECDSA);</li>\n" +
-                "</ul>",
+        notes = "Creates a keystore for the specified end entity",
         response = CertificateRestResponse.class,
         code = 201)
     public Response enrollKeystore(
