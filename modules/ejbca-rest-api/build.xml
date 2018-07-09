@@ -80,7 +80,7 @@
     	<war destfile="${mod.ejbca-rest-api.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
     </target>
 
-	<target name="compile" depends="with.clover,setup">
+	<target name="compile" depends="with.clover, setup">
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
@@ -109,7 +109,7 @@
 				else="-ea">
 			<istrue value="${remoteDebug}"/>
 		</condition>
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}" fork="true">
+		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}" fork="true" forkmode="once">
 			<classpath>
 				<path refid="test.classpath"/>
 			</classpath>
