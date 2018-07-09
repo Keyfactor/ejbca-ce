@@ -34,7 +34,7 @@
 		<path refid="lib.commons-codec.classpath"/>
 	</path>
 
-	<target name="jar">
+	<target name="jar" depends="with.clover">
 		<mkdir dir="${build.dir}/classes" />
 		<javac srcdir="${cesecore-entity.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="compile.classpath" />
@@ -52,7 +52,7 @@
 		<delete dir="${build-test.dir}" />
 	</target>
 
-	<target name="compile-tests" depends="jar">
+	<target name="compile-tests" depends="jar, with.clover">
 		<mkdir dir="${build-test.dir}" />
 		<javac destdir="${build-test.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
 			<src path="${cesecore-common.dir}/cesecore-common/src-test"/>

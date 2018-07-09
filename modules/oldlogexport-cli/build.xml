@@ -46,7 +46,7 @@
 		<delete dir="${mod.oldlogexport.dist}" />
     </target>
 	
-    <target name="compile" depends="setup, cesecore-entity">
+    <target name="compile" depends="setup, cesecore-entity, with.clover">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="utf-8" target="${java.target.version}" classpathref="oldlogexport.lib.classpath">
             <src path="${ejbca.home}/modules/ejbca-ejb/src" />
