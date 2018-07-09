@@ -108,7 +108,7 @@
     </target>
 	
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ws-common"/></target>
-    <target name="compile" depends="compile-external-deps">
+    <target name="compile" depends="compile-external-deps, with.clover">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-withws.classpath">

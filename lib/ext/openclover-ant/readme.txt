@@ -1,0 +1,2 @@
+"Project";                      "Library Name";             "License type(s)";      "License text";         "Source";                                                                                                   "Comment";
+"OpenClover 4.2.1 for Ant";     "clover.jar";               "ALv2";                 "LICENSE-APACHE-2.0";   "https://bitbucket.org/openclover/clover/src/75a40bed8815d47dd61dbdca90a3c4454ac54dd1/?at=ant-prod-4.2.1";  "Needed for code coverage reporting.";

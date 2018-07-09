@@ -67,6 +67,7 @@
 		<path refid="systemtests.classpath.nojee"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
+		<pathelement path="${clover.jar}"/>
 	</path>
 
 	<path id="common.classpath">
@@ -133,7 +134,7 @@
 		<delete dir="${this.dir}/reports" />
 	</target>
 
-	<target name="systemtest-compile-interfaces" depends="ejbca-properties">
+	<target name="systemtest-compile-interfaces" depends="ejbca-properties, with.clover">
 		<mkdir dir="${build.interface.dir}" />
 		<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" classpathref="interfaces.classpath" target="${java.target.version}">
@@ -143,7 +144,7 @@
 		<copy file="${systemtests.properties.file}" todir="${build.interface.dir}" failonerror="false"/>
 	</target>
 
-	<target name="systemtest-compile-common" depends="ejbca-properties">
+	<target name="systemtest-compile-common" depends="ejbca-properties, with.clover">
 		<mkdir dir="${build.common.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.common.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" classpathref="common.classpath" target="${java.target.version}">
@@ -155,7 +156,7 @@
 		</javac>
 	</target>
 
-	<target name="systemtest-compile-src" depends="">
+	<target name="systemtest-compile-src" depends="with.clover">
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="UTF-8" classpathref="compile-ejb.classpath" target="${java.target.version}">	
@@ -179,7 +180,7 @@
 		</jar>
 	</target>
 
-	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-common, ejbca-ws-cli, ejbca-db-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
+	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-common, ejbca-ws-cli, ejbca-db-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws, with.clover">
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="systemtests.classpath" target="${java.target.version}">

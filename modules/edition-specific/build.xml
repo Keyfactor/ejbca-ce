@@ -23,7 +23,7 @@
 		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 	
-	<target name="build" depends="">
+	<target name="build" depends="with.clover">
         <mkdir dir="${build-interface.dir}/classes"/>
         <javac srcdir="${src-interface.dir}" destdir="${build-interface.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
             <classpath refid="compile.classpath"/>

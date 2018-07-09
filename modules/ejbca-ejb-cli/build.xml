@@ -72,7 +72,7 @@
     	<delete dir="${mod.ejbca-ejb-cli.dist}" />
     </target>
 	
-    <target name="compile" depends="setup">
+    <target name="compile" depends="setup, with.clover">
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}">

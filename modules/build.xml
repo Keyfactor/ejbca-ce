@@ -13,36 +13,60 @@
 
 
     <!-- =================================================================== -->
-    <!-- Clover stuff                                                        -->
+    <!-- OpenClover stuff                                                    -->
     <!-- =================================================================== -->
-    <property name="clover.jar" location="${env.CLOVER_HOME}/clover-ant-3.0.2/lib/clover.jar"/>
-    <property name="clover.out.dir" location="${ejbca.home}"/>
-    <property name="clover.db" location="${clover.out.dir}/.clover/clover.db"/>
+    <property name="clover.jar" location="${ejbca.home}/lib/ext/openclover-ant/clover.jar"/>
 	<taskdef resource="cloverlib.xml" classpath="${clover.jar}" onerror="ignore"/>
+	<property name="clover.out.dir" location="${ejbca.home}/reports/clover"/>
+	<property name="clover.testresults.dir" location="${ejbca.home}/reports/test"/>
+	<property name="clover.db" location="${clover.out.dir}/clover.db"/>
 	<target name="-check.clover">
-		<available property="clover.installed" classname="com.cenqua.clover.CloverInstr" />
+		<property environment="env"/>
+		<condition property="clover.enabled">
+			<and>
+				<isset property="env.ENABLE_CLOVER"/>
+				<available classname="com.atlassian.clover.CloverInstr" />
+			</and>
+		</condition>
 	</target>
-	<target name="with.clover" depends="-check.clover" if="clover.installed">
+	<target name="with.clover" depends="-check.clover" if="clover.enabled">
+		<mkdir dir="${clover.out.dir}"/>
 		<clover-setup initstring="${clover.db}">
 			<fileset dir="${ejbca.home}">
 				<exclude name="**/org/apache/**/*.java"/>
 				<exclude name="**/com/novosec/**/*.java"/>
+				<exclude name="**/org/jboss/**/*.java"/>
+				<exclude name="**/org/owasp/**/*.java"/>
 			</fileset>
-		</clover-setup>			
+			<testsources dir="${ejbca.home}">
+				<testclass name=".*Test"/>
+				<testclass name=".*UnitTest"/>
+			</testsources>
+		</clover-setup>
 	</target>
-	<target name="clover.xml" depends="-check.clover" if="clover.installed">
+	<target name="clover.xml" depends="-check.clover" if="clover.enabled">
 	    <clover-report initstring="${clover.db}">
-	       <current outfile="${clover.out.dir}/clover_html/clover.xml">
-	          <format type="xml"/>
+	       <current outfile="${clover.out.dir}/clover.xml" title="EJBCA">
+			   <format type="xml"/>
+			   <testresults dir="${clover.testresults.dir}">
+				   <include name="TEST-*.xml"/>
+			   </testresults>
 	       </current>
 	    </clover-report>
 	 </target>
-	<target name="clover.html" depends="-check.clover" if="clover.installed">
-		<clover-html-report initstring="${clover.db}" outdir="${clover.out.dir}/clover_html" title="EJBCA"/>
+	<target name="clover.html" depends="-check.clover" if="clover.enabled">
+		<clover-report initstring="${clover.db}">
+			<current outfile="${clover.out.dir}/clover_html" title="EJBCA" summary="true">
+				<format type="html"/>
+				<testresults dir="${clover.testresults.dir}">
+					<include name="TEST-*.xml"/>
+				</testresults>
+			</current>
+		</clover-report>
 	 </target>
-	<target name="clover.clean" depends="-check.clover" if="clover.installed">
+	<target name="clover.clean" depends="-check.clover" if="clover.enabled">
 		<clover-clean initstring="${clover.db}"/>
-	    <delete dir="${clover.out.dir}/clover_html"/>
+	    <delete dir="${clover.out.dir}"/>
 	</target>
 	<!-- End Clover stuff -->
 
@@ -104,6 +128,7 @@
 		<antcall target="estclean"/>
 		<antcall target="ejbca-rest-api-clean"/>
 		<antcall target="swagger-ui-clean"/>
+		<antcall target="clover.clean"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
@@ -528,9 +553,10 @@
 	</target>
 	
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
-	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, 
+	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients,
-					systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-api, swagger-ui"/>
+					systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-api, swagger-ui">
+	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
 		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
