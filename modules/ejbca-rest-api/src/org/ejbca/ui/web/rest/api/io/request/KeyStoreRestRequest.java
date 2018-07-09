@@ -9,6 +9,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * JSON input representation of key store enrollment
  * @version $Id$
@@ -18,7 +20,11 @@ public class KeyStoreRestRequest {
 
     private String username;
     private String password;
+    @ApiModelProperty(value = "Key algorithm used for enrollment",
+        example = "RSA, DSA, ECDSA")
     private String keyAlg;
+    @ApiModelProperty(value = "Key specification to use",
+        example = "1024, 2048, secp256r1 (for ECDSA)")
     private String keySpec;
     
     public KeyStoreRestRequest() {}
