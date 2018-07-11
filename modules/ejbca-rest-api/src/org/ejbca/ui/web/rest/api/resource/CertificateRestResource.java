@@ -245,9 +245,9 @@ public class CertificateRestResource extends BaseRestResource {
             @ApiParam(value = "hex serial number (without prefix, e.g. '00')")
             @PathParam("certificate_serial_number") String serialNumber,
             @ApiParam(value = "Must be valid RFC5280 reason. One of\n" + 
-                    " NOT_REVOKED, UNSPECIFIED ,KEYCOMPROMISE,\n" + 
-                    " CACOMPROMISE, AFFILIATIONCHANGED, SUPERSEDED, CESSATIONOFOPERATION,\n" + 
-                    " CERTIFICATEHOLD, REMOVEFROMCRL, PRIVILEGESWITHDRAWN, AACOMPROMISE")
+                    " NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n" + 
+                    " CA_COMPROMISE, AFFILIATIONCHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n" + 
+                    " CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGESWITHDRAWN, AACOMPROMISE")
             @QueryParam("reason") String reason,
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date)
