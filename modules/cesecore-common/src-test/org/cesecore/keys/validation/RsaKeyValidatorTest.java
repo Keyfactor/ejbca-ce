@@ -356,8 +356,9 @@ public class RsaKeyValidatorTest {
         RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
                 "rsa-parameter-validation-test-1", "Description", null, -1, null, -1, -1, new Integer[] {});
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
+        keyValidator.setPublicKeyModulusDontAllowRocaWeakKeys(false);
 
-        // Do not enable validation of ROCA, everything should pass
+        // With disabled validation of ROCA, everything should pass
         List<String> bitLengths = new ArrayList<String>();
         bitLengths.add("1024");
         bitLengths.add("2048");
