@@ -33,8 +33,12 @@
 #password.encryption.count=100
 
 # ------------ Basic CA configuration ---------------------
-# This password is used internally to protect CA keystores in database (i.e. the CAs private key).
-# foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
+# This password is used internally to protect CA keystores in database unless a password has been set manually. 
+# CA keystores are the CAs private key, where a password can be defined manually instead when creating the Crypto Token, 
+# and Extended CA Services, such as the 'CMS Service', where a manual password can not be defined..
+# Default value is foo123, which is needed to keep compatibility with default installations of EJBCA 3.0, please change this if possible.
+# This value is not very important if you don't use the CMS Service (which most do not), if you define your own 
+# Crypto Token Authentication Codes, which is recommended.
 # Note! If changing this value AFTER installation of EJBCA you must do 'ant clean; ant bootstrap' in order to activate changes.
 #ca.keystorepass=foo123
 #ca.keystorepass=!secret!
