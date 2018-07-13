@@ -1157,4 +1157,23 @@ public interface RaMasterApi {
    Collection<CertificateWrapper> processCardVerifiableCertificateRequest(AuthenticationToken authenticationToken, String username, String password, String cvcreq)
            throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
            ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
+
+    /**
+     * Get AcmeAccount by accountId.
+     *
+     * @return the AcmeAccount.
+     */
+   LinkedHashMap<Object,Object> getAcmeAccountDataById(final String accountId);
+    /**
+     * Get AcmeAccount by publicKeyStorageId.
+     *
+     * @return the AcmeAccount.
+     */
+   String getAcmeAccountIdByPublicKeyStorageId(final String publicKeyStorageId);
+    /**
+     * Create or update the AcmeAccount.
+     *
+     * @return the persisted version of the AcmeAccount.
+     */
+   String persistAcmeAccount(final String accountIdParam, final String currentKeyId, final LinkedHashMap<Object,Object> dataMap);
 }

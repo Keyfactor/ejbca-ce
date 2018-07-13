@@ -193,6 +193,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
+import org.ejbca.core.protocol.acme.AcmeAccountDataSession;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -295,6 +296,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private RoleDataSessionLocal roleDataSession;
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
+    @EJB
+    private AcmeAccountDataSession acmeAccountDataSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -2486,5 +2489,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
             ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException {
         return signSessionLocal.createCardVerifiableCertificateWS(authenticationToken, username, password, cvcreq);
+    }
+
+    @Override
+    public LinkedHashMap<Object, Object> getAcmeAccountDataById(String accountId) {
+        return acmeAccountDataSession.getAccountDataById(accountId);
+    }
+
+    @Override
+    public String getAcmeAccountIdByPublicKeyStorageId(String publicKeyStorageId) {
+        return acmeAccountDataSession.getAccountIdByPublicKeyStorageId(publicKeyStorageId);
+    }
+
+    @Override
+    public String persistAcmeAccount(String accountIdParam, String currentKeyId, LinkedHashMap<Object, Object> dataMap) {
+        return acmeAccountDataSession.persist(accountIdParam, currentKeyId, dataMap);
     }
 }
