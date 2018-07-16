@@ -40,6 +40,7 @@
 	<path id="compile.classpath">
 		<path refid="common-compile.classpath"/>
 		<path refid="lib.ejbca-common.classpath"/>
+		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
@@ -168,7 +169,7 @@
 		
 	</target>
 
-    <target name="test-ocspmon" description="Test ocsp monitoring." depends="compile-test, handlepersistence, handleorm">
+    <target name="test-ocspmon" description="Test OCSP monitoring." depends="compile-test, handlepersistence, handleorm">
     	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
 		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
@@ -230,8 +231,8 @@
     </target>
 
 	<!-- Monolitic build of the EJBCA DB CLI -->
-    <target name="build-cli" depends="with.clover, handlepersistence, handleorm">
-		<fail message="DatabaseCLI tool is not distributed with this version of EJBCA">
+    <target name="build-cli" depends="with.clover, handlepersistence, handleorm, build">
+		<fail message="Database CLI tool is not distributed with this version of EJBCA">
 		    <condition>
 		    	<not>
 		    		<available file="${src-cli.dir}/org" type="dir"/>
