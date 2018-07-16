@@ -29,6 +29,8 @@ import java.util.Date;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -101,6 +103,7 @@ import org.ejbca.ui.web.rest.api.service.CertificateRestService;
 @Api(tags = "v1/certificate")
 @Path("v1/certificate")
 @Stateless
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateRestResource extends BaseRestResource {
 
     /**
