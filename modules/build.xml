@@ -13,23 +13,26 @@
 
 
     <!-- =================================================================== -->
-    <!-- OpenClover stuff                                                    -->
+    <!-- OpenClover 4.2 stuff                                                    -->
     <!-- =================================================================== -->
     <property name="clover.jar" location="${ejbca.home}/lib/ext/openclover-ant/clover.jar"/>
 	<taskdef resource="cloverlib.xml" classpath="${clover.jar}" onerror="ignore"/>
 	<property name="clover.out.dir" location="${ejbca.home}/reports/clover"/>
 	<property name="clover.testresults.dir" location="${ejbca.home}/reports/test"/>
 	<property name="clover.db" location="${clover.out.dir}/clover.db"/>
-	<target name="-check.clover">
+	<target name="check.clover">
 		<property environment="env"/>
 		<condition property="clover.enabled">
 			<and>
-				<isset property="env.ENABLE_CLOVER"/>
 				<available classname="com.atlassian.clover.CloverInstr" />
+				<or>
+					<isset property="env.ENABLE_CLOVER"/>
+					<isset property="ENABLE_CLOVER"/>
+				</or>
 			</and>
 		</condition>
 	</target>
-	<target name="with.clover" depends="-check.clover" if="clover.enabled">
+	<target name="with.clover" depends="check.clover" if="clover.enabled">
 		<mkdir dir="${clover.out.dir}"/>
 		<clover-setup initstring="${clover.db}">
 			<fileset dir="${ejbca.home}">
@@ -44,7 +47,7 @@
 			</testsources>
 		</clover-setup>
 	</target>
-	<target name="clover.xml" depends="-check.clover" if="clover.enabled">
+	<target name="clover.xml" depends="check.clover" if="clover.enabled">
 	    <clover-report initstring="${clover.db}">
 	       <current outfile="${clover.out.dir}/clover.xml" title="EJBCA">
 			   <format type="xml"/>
@@ -54,7 +57,7 @@
 	       </current>
 	    </clover-report>
 	 </target>
-	<target name="clover.html" depends="-check.clover" if="clover.enabled">
+	<target name="clover.html" depends="check.clover" if="clover.enabled">
 		<clover-report initstring="${clover.db}">
 			<current outfile="${clover.out.dir}/clover_html" title="EJBCA" summary="true">
 				<format type="html"/>
@@ -64,7 +67,7 @@
 			</current>
 		</clover-report>
 	 </target>
-	<target name="clover.clean" depends="-check.clover" if="clover.enabled">
+	<target name="clover.clean" depends="check.clover" if="clover.enabled">
 		<clover-clean initstring="${clover.db}"/>
 	    <delete dir="${clover.out.dir}"/>
 	</target>
