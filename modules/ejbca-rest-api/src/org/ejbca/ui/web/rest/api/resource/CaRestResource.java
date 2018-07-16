@@ -17,6 +17,8 @@ import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -55,6 +57,7 @@ import io.swagger.annotations.ApiOperation;
 @Path("/v1/ca")
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CaRestResource extends BaseRestResource {
 
     @EJB
