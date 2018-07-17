@@ -23,7 +23,7 @@ import java.util.LinkedHashMap;
  * Class that receives a Acme message and passes it on to the correct message handler.
  * Not available in Community Edition
  *
- * @version $Id: EstOperationsSessionBean.java 27609 2017-12-20 15:55:45Z mikekushner $
+ * @version $Id: AcmeAccountDataSessionBean.java 27609 2017-12-20 15:55:45Z mikekushner $
  */
 @Stateless
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
