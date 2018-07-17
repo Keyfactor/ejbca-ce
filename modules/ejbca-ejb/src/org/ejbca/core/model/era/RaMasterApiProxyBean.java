@@ -228,7 +228,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         Collections.reverse(implementations);
         this.raMasterApisLocalFirst = implementations.toArray(new RaMasterApi[implementations.size()]);
     }
-    
+
     // Use in tests only!
     @Override
     public void deferLocalForTest() {
@@ -2091,7 +2091,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken authenticationToken, final int entityProfileId) 
+    public Map<String, Integer> getAvailableCertificateProfiles(final AuthenticationToken authenticationToken, final int entityProfileId)
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException{
         // Try over all instances.
         final Map<String, Integer> result = new TreeMap<>();
@@ -2325,9 +2325,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] processCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String req, final int reqType,
-            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
-            CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, InvalidKeySpecException, 
-            NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, ParseException, ConstructionException, 
+            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, EjbcaException, CesecoreException,
+            CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, InvalidKeySpecException,
+            NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, ParseException, ConstructionException,
             NoSuchFieldException, AuthStatusException, AuthLoginException {
         AuthorizationDeniedException authorizationDeniedException = null;
         NotFoundException notFoundException = null;
@@ -2393,7 +2393,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     if (log.isDebugEnabled()) {
                         log.debug("CA with name " + caName + " for proxied request on CA could not be found. " + e.getMessage());
                     }
-                    if (caDoesntExistsException == null) { 
+                    if (caDoesntExistsException == null) {
                         caDoesntExistsException = e;
                     }
                 }
@@ -2436,7 +2436,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     return raMasterApi.getRemainingNumberOfApprovals(authenticationToken, requestId);
                 } catch (ApprovalException e) {
                     if (approvalException == null) {
-                        approvalException = e; 
+                        approvalException = e;
                     }
                     // Just try next implementation
                 } catch (ApprovalRequestExpiredException e) {
@@ -2469,7 +2469,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     return raMasterApi.isApproved(authenticationToken, approvalId);
                 } catch (ApprovalException e) {
                     if (approvalException == null) {
-                        approvalException = e; 
+                        approvalException = e;
                     }
                     // Just try next implementation
                 } catch (ApprovalRequestExpiredException e) {
@@ -2609,7 +2609,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
     public byte[] getCertificateProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
             throws AuthorizationDeniedException, CertificateProfileDoesNotExistException{
@@ -2648,7 +2648,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
     @Override
     public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcreq)
             throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
@@ -2735,5 +2735,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         }
         return null;
+    }
+
+    @Override
+    public HashSet<String> getCaaIdentities(AuthenticationToken authenticationToken, int caId)
+            throws AuthorizationDeniedException, CADoesntExistsException {
+        for (RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.getCaaIdentities(authenticationToken, caId);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                }
+            }
+        }
+        log.warn("All " + raMasterApis.length + " upstream peers are unavailable. Returning an empty set of CAA identities.");
+        return new HashSet<String>();
     }
 }
