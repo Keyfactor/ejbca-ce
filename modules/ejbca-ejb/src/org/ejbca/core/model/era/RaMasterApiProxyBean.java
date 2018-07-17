@@ -2049,6 +2049,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         AuthorizationDeniedException authorizationDeniedException = null;
         CertificateEncodingException certificateEncodingException = null;
         final Map<String, CertificateWrapper> result = new TreeMap<>();
+        final List<CertificateWrapper> ret = new ArrayList<>();
         boolean oneSucceeded = false;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
@@ -2085,7 +2086,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (!oneSucceeded && certificateEncodingException != null) {
             throw certificateEncodingException;
         }
-        return result.values();
+        ret.addAll(result.values());
+        return ret;
     }
 
     @Override
@@ -2194,6 +2196,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public Collection<CertificateWrapper> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, final long days,
             final int maxNumberOfResults, final int offset) throws AuthorizationDeniedException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
+        final List<CertificateWrapper> ret = new ArrayList<>();
         AuthorizationDeniedException authorizationDeniedException = null;
         boolean oneSucceeded = false;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -2215,13 +2218,15 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (!oneSucceeded && authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
-        return result.values();
+        ret.addAll(result.values());
+        return ret;
     }
 
     @Override
     public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndType(AuthenticationToken authenticationToken, long days, int certificateType, int maxNumberOfResults)
             throws AuthorizationDeniedException, EjbcaException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
+        final List<CertificateWrapper> ret = new ArrayList<>();
         AuthorizationDeniedException authorizationDeniedException = null;
         boolean oneSucceeded = false;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -2243,13 +2248,15 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (!oneSucceeded && authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
-        return result.values();
+        ret.addAll(result.values());
+        return ret;
     }
 
     @Override
     public Collection<CertificateWrapper> getCertificatesByExpirationTimeAndIssuer(AuthenticationToken authenticationToken, long days, String issuerDN, int maxNumberOfResults)
             throws AuthorizationDeniedException, EjbcaException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
+        final List<CertificateWrapper> ret = new ArrayList<>();
         AuthorizationDeniedException authorizationDeniedException = null;
         boolean oneSucceeded = false;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
@@ -2271,7 +2278,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (!oneSucceeded && authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
-        return result.values();
+        ret.addAll(result.values());
+        return ret;
     }
 
     @Override
