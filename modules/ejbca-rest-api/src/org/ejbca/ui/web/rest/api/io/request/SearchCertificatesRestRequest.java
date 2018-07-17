@@ -33,19 +33,16 @@ import static org.ejbca.ui.web.rest.api.config.JsonDateSerializer.DATE_FORMAT_IS
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResults
  *
- * @version $Id: SearchCertificatesRestRequest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: SearchCertificatesRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 public class SearchCertificatesRestRequest {
 
     @ValidSearchCertificateMaxNumberOfResults
     private Integer maxNumberOfResults;
-    @ApiModelProperty(value = "A List of search criterias." )
+    @ApiModelProperty(value = "A List of search criteria." )
     @ValidSearchCertificateCriteriaRestRequestList
     @Valid
     private List<SearchCertificateCriteriaRestRequest> criteria = new ArrayList<>();
-
-    public SearchCertificatesRestRequest() {
-    }
 
     public Integer getMaxNumberOfResults() {
         return maxNumberOfResults;
@@ -141,18 +138,15 @@ public class SearchCertificatesRestRequest {
                         break;
                     }
                     case END_ENTITY_PROFILE: {
-                        final Integer endEntityProfileId = Integer.parseInt(criteriaValue);
-                        raCertificateSearchRequest.getEepIds().add(endEntityProfileId);
+                        raCertificateSearchRequest.getEepIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
                         break;
                     }
                     case CERTIFICATE_PROFILE: {
-                        final Integer certificateProfileId = Integer.parseInt(criteriaValue);
-                        raCertificateSearchRequest.getCpIds().add(certificateProfileId);
+                        raCertificateSearchRequest.getCpIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
                         break;
                     }
                     case CA: {
-                        final Integer caId = Integer.parseInt(criteriaValue);
-                        raCertificateSearchRequest.getCaIds().add(caId);
+                        raCertificateSearchRequest.getCaIds().add(searchCertificateCriteriaRestRequest.getIdentifier());
                         break;
                     }
                     case STATUS: {

@@ -118,9 +118,6 @@ public class CertificateRestResource extends BaseRestResource {
     @Inject
     private CertificateRestService certificateRestService;
 
-    public CertificateRestResource(){
-    }
-
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
@@ -443,7 +440,7 @@ public class CertificateRestResource extends BaseRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Searches for certificates confirming giving criteria.",
+            value = "Searches for certificates confirming given criteria.",
             notes = "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
             response = SearchCertificatesRestResponse.class
     )
