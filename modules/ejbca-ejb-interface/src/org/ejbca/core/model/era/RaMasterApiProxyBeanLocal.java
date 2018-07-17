@@ -18,15 +18,15 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * Interface for EJB access to the RaMasterApi proxy singleton
- * 
+ *
  * @version $Id$
  */
 @Local
 public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
-    
+
     /**
-     * 
-     * @param apiType the implementation of RaMasterApi to check for 
+     *
+     * @param apiType the implementation of RaMasterApi to check for
      * @return returns true if an API of a certain type is available
      */
     boolean isBackendAvailable(Class<? extends RaMasterApi> apiType);
@@ -39,5 +39,4 @@ public interface RaMasterApiProxyBeanLocal extends RaMasterApi {
 
     /** @return a RaCertificateSearchResponse from a search with a given username */
     RaCertificateSearchResponse searchForCertificatesByUsername(final AuthenticationToken authenticationToken, final String username);
-
 }

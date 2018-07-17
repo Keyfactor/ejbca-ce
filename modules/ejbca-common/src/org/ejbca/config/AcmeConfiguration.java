@@ -11,7 +11,6 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +27,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final long serialVersionUID = 1L;
 
     private String configurationId = null;
+    private List<String> caaIdentities = new ArrayList<String>();
 
     private static final String KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING = "requireExternalAccountBinding";
     private static final String KEY_PRE_AUTHORIZATION_ALLOWED = "preAuthorizationAllowed";
@@ -41,7 +41,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = "wildcardCertificateIssuanceAllowed";
     private static final String KEY_DNS_RESOLVER = "dnsResolver";
     private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
-    
+
     private static final String IANA_ROOT_ANCHOR_DEFAULT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
 
@@ -158,12 +158,11 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
 
     public List<String> getCaaIdentities() {
-        /*
-         * TODO: ECA-5627 will implement CAA support.
-         * It seems likely that this might be configured per CA and hence would be derived from the
-         * default CA of the configured end entity profile ID here.
-         */
-        return new ArrayList<String>(Arrays.asList("ca.example.com"));
+        return caaIdentities;
+    }
+
+    public void setCaaIdentities(final List<String> caaIdentities) {
+        this.caaIdentities = caaIdentities;
     }
 
     /** @return how long a new order will be valid for in milliseconds */
@@ -188,15 +187,15 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public int getValidChallengesPerAuthorization() {
         return 1;
     }
-    
+
     public boolean isWildcardCertificateIssuanceAllowed() {
         return Boolean.valueOf((String) super.data.get(KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED));
     }
-    
+
     public void setWildcardCertificateIssuanceAllowed(final boolean wildcardCertificateIssuanceAllowed) {
         super.data.put(KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED, String.valueOf(wildcardCertificateIssuanceAllowed));
     }
-    
+
     public String getDnssecTrustAnchor() {
         return (String) super.data.get(KEY_DNSSEC_TRUST_ANCHOR);
     }
