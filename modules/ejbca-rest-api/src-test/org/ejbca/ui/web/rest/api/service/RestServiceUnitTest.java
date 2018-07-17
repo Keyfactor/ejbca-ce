@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * A unit test class for CertificateRestService.
  *
- * @version $Id: RestServiceUnitTest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: RestServiceUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 @RunWith(EasyMockRunner.class)
 public class RestServiceUnitTest {
@@ -48,53 +48,57 @@ public class RestServiceUnitTest {
     private RestService service = new RestService();
 
     @Test
-    public void shouldUseRaMasterApiToGetListOfAuthorizedEndEntityProfileIds() {
+    public void shouldUseRaMasterApiToGetMapOfAuthorizedEndEntityProfiles() {
         // given
         final Integer expectedId = 121;
+        final String expectedName = "A";
         final Map<Integer, String> expectedMap = new HashMap<>();
-        expectedMap.put(expectedId, "A");
+        expectedMap.put(expectedId, expectedName);
         expect(raMasterApi.getAuthorizedEndEntityProfileIdsToNameMap(authenticationToken)).andReturn(expectedMap);
         replay(raMasterApi);
         // when
-        final List<Integer> actualResult = service.getAuthorizedEndEntityProfileIds(authenticationToken);
+        final Map<Integer, String> actualResult = service.getAuthorizedEndEntityProfiles(authenticationToken);
         // then
         verify(raMasterApi);
-        assertEquals(1, actualResult.size());
-        assertEquals(expectedId, actualResult.get(0));
+        assertEquals("Should return map.", 1, actualResult.size());
+        assertEquals("Should return unmodified response.", expectedName, actualResult.get(expectedId));
     }
 
     @Test
-    public void shouldUseRaMasterApiToGetListOfAuthorizedCertificateProfileIds() {
+    public void shouldUseRaMasterApiToGetMapOfAuthorizedCertificateProfiles() {
         // given
         final Integer expectedId = 121;
+        final String expectedName = "A";
         final Map<Integer, String> expectedMap = new HashMap<>();
-        expectedMap.put(expectedId, "A");
+        expectedMap.put(expectedId, expectedName);
         expect(raMasterApi.getAuthorizedCertificateProfileIdsToNameMap(authenticationToken)).andReturn(expectedMap);
         replay(raMasterApi);
         // when
-        final List<Integer> actualResult = service.getAuthorizedCertificateProfileIds(authenticationToken);
+        final Map<Integer, String> actualResult = service.getAuthorizedCertificateProfiles(authenticationToken);
         // then
         verify(raMasterApi);
-        assertEquals(1, actualResult.size());
-        assertEquals(expectedId, actualResult.get(0));
+        assertEquals("Should return map.", 1, actualResult.size());
+        assertEquals("Should return unmodified response.", expectedName, actualResult.get(expectedId));
     }
 
     @Test
-    public void shouldUseRaMasterApiToGetListOfAuthorizedCas() {
+    public void shouldUseRaMasterApiToGetMapOfAuthorizedCas() {
         // given
         final Integer expectedId = 121;
+        final String expectedName = "A";
         final CAInfo cAInfo = CaInfoBuilder.builder()
                 .id(expectedId)
+                .name(expectedName)
                 .build();
         final List<CAInfo> expectedList = Collections.singletonList(cAInfo);
         expect(raMasterApi.getAuthorizedCas(authenticationToken)).andReturn(expectedList);
         replay(raMasterApi);
         // when
-        final List<Integer> actualResult = service.getAuthorizedCAIds(authenticationToken);
+        final Map<Integer, String> actualResult = service.getAuthorizedCAs(authenticationToken);
         // then
         verify(raMasterApi);
-        assertEquals(1, actualResult.size());
-        assertEquals(expectedId, actualResult.get(0));
+        assertEquals("Should return map.", 1, actualResult.size());
+        assertEquals("Should return unmodified response.", expectedName, actualResult.get(expectedId));
     }
 
 }

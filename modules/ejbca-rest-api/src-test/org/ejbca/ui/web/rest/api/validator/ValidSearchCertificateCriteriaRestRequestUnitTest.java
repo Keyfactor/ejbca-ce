@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * A unit test class for annotation @ValidSearchCertificateCriteriaRestRequest and its validator.
  *
- * @version $Id: ValidSearchCertificateCriteriaRestRequestUnitTest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: ValidSearchCertificateCriteriaRestRequestUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 public class ValidSearchCertificateCriteriaRestRequestUnitTest {
 
@@ -47,8 +47,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -63,8 +63,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -79,8 +79,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -95,8 +95,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -111,8 +111,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -127,8 +127,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -143,8 +143,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -159,8 +159,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -174,7 +174,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -182,13 +182,13 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // given
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("END_ENTITY_PROFILE")
-                .value("7")
+                .value("A")
                 .operation("EQUAL")
                 .build();
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -196,13 +196,13 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // given
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CERTIFICATE_PROFILE")
-                .value("11")
+                .value("A")
                 .operation("EQUAL")
                 .build();
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -210,13 +210,13 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // given
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("CA")
-                .value("13")
+                .value("A")
                 .operation("EQUAL")
                 .build();
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -230,7 +230,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -244,7 +244,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -258,7 +258,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -272,7 +272,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -287,8 +287,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -303,8 +303,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -319,8 +319,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -335,8 +335,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -351,8 +351,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -367,8 +367,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -383,14 +383,13 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
     public void validationShouldFailOnValueWithImproperInteger() {
         // given
-        final String expectedMessage = "Invalid search criteria content, value does not contain proper integer.";
         final SearchCertificateCriteriaRestRequest testClass = SearchCertificateCriteriaRestRequest.builder()
                 .property("END_ENTITY_PROFILE")
                 .value("A")
@@ -399,8 +398,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -415,8 +413,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Valid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -430,7 +428,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -444,7 +442,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -458,7 +456,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -472,7 +470,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -486,7 +484,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -500,7 +498,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -514,7 +512,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -528,7 +526,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -542,7 +540,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -556,7 +554,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -570,7 +568,7 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.",0, constraintViolations.size());
     }
 
     @Test
@@ -585,8 +583,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -601,8 +599,8 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificateCriteriaRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.",1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
 }

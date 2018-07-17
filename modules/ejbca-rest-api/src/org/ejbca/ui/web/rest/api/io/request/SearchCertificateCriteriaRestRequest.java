@@ -9,6 +9,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -24,11 +25,11 @@ import java.util.EnumSet;
  *
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest
  *
- * @version $Id: SearchCertificateCriteriaRestRequest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: SearchCertificateCriteriaRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
-@ApiModel(description = "Use one of alloved values as property(see enum values below).\n" +
-        "QUERY is used to search by SubjectDn, SubjectAn, Username or SerialNr \n" +
-        "Available STATUS values are: CERT_ACTIVE, CERT_REVOKED, " +
+@ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
+        "QUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \n" +
+        "Available STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, " +
         "REVOCATION_REASON_UNSPECIFIED, " +
         "REVOCATION_REASON_KEYCOMPROMISE, " +
         "REVOCATION_REASON_CACOMPROMISE, " +
@@ -38,7 +39,16 @@ import java.util.EnumSet;
         "REVOCATION_REASON_CERTIFICATEHOLD, " +
         "REVOCATION_REASON_REMOVEFROMCRL, " +
         "REVOCATION_REASON_PRIVILEGESWITHDRAWN, " +
-        "REVOCATION_REASON_AACOMPROMISE")
+        "REVOCATION_REASON_AACOMPROMISE;\n" +
+        "\n" +
+        "END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \n" +
+        "ISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
+        "ISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
+        "EXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
+        "EXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
+        "REVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \n" +
+        "REVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \n"
+)
 @ValidSearchCertificateCriteriaRestRequest
 public class SearchCertificateCriteriaRestRequest {
 
@@ -47,14 +57,18 @@ public class SearchCertificateCriteriaRestRequest {
     )
     private String property;
 
-    @ApiModelProperty(value = "A search value. This could be sting value, ISO 8601 Date string, an appropriate integer identifier of End Entity Profile or Certificate Profile or CA",
-            example = "'SuperCA', '2018-06-15T14:07:09Z', 1")
+    @ApiModelProperty(value = "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA",
+            example = "'SuperCA', '2018-06-15T14:07:09Z', 'MyEndEntityProfile'")
     private String value;
 
-    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string and integer values, 'LIKE' for string values, 'BEFORE' or 'AFTER' for date values",
+    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
             allowableValues = "EQUAL,LIKE,BEFORE, AFTER",
             dataType = "java.lang.String")
     private String operation;
+
+    // Internal usage of identifier for EndEntityProfile, CertificateProfile or CAId
+    @JsonIgnore
+    private int identifier;
 
     public SearchCertificateCriteriaRestRequest() {
     }
@@ -81,6 +95,14 @@ public class SearchCertificateCriteriaRestRequest {
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public int getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(int identifier) {
+        this.identifier = identifier;
     }
 
     /**
@@ -119,15 +141,6 @@ public class SearchCertificateCriteriaRestRequest {
          */
         public static EnumSet<CriteriaProperty> STRING_PROPERTIES() {
             return EnumSet.of(QUERY, STATUS);
-        }
-
-        /**
-         * The subset of criteria properties that expect Integer input for SearchCertificateCriteriaRestRequest.value.
-         *
-         * @return subset of criteria properties.
-         */
-        public static EnumSet<CriteriaProperty> INTEGER_PROPERTIES() {
-            return EnumSet.of(END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA);
         }
 
         /**
@@ -172,15 +185,6 @@ public class SearchCertificateCriteriaRestRequest {
          */
         public static EnumSet<CriteriaOperation> STRING_OPERATIONS() {
             return EnumSet.of(EQUAL, LIKE);
-        }
-
-        /**
-         * The subset of criteria operations that are allowed for Integer input in SearchCertificateCriteriaRestRequest.value.
-         *
-         * @return subset of criteria operations.
-         */
-        public static EnumSet<CriteriaOperation> INTEGER_OPERATIONS() {
-            return EnumSet.of(EQUAL);
         }
 
         /**
@@ -257,6 +261,8 @@ public class SearchCertificateCriteriaRestRequest {
         }
     }
 
+
+
     /**
      * Return a builder instance for this class.
      *
@@ -270,6 +276,7 @@ public class SearchCertificateCriteriaRestRequest {
         private String property;
         private String value;
         private String operation;
+        private int identifier;
 
         private SearchCertificateCriteriaRestRequestBuilder() {
         }
@@ -289,11 +296,17 @@ public class SearchCertificateCriteriaRestRequest {
             return this;
         }
 
+        public SearchCertificateCriteriaRestRequestBuilder identifier(final int identifier) {
+            this.identifier = identifier;
+            return this;
+        }
+
         public SearchCertificateCriteriaRestRequest build() {
             final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = new SearchCertificateCriteriaRestRequest();
             searchCertificateCriteriaRestRequest.setProperty(property);
             searchCertificateCriteriaRestRequest.setValue(value);
             searchCertificateCriteriaRestRequest.setOperation(operation);
+            searchCertificateCriteriaRestRequest.setIdentifier(identifier);
             return searchCertificateCriteriaRestRequest;
         }
     }

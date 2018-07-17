@@ -46,8 +46,8 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         // when
         final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.", 1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -58,8 +58,8 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         // when
         final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.", 1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -70,8 +70,8 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         // when
         final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.", 1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -82,8 +82,8 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         // when
         final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(1, constraintViolations.size());
-        assertEquals(expectedMessage, constraintViolations.iterator().next().getMessage());
+        assertEquals("Invalid object.", 1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -93,6 +93,6 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
         // when
         final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
         // then
-        assertEquals(0, constraintViolations.size());
+        assertEquals("Valid object.", 0, constraintViolations.size());
     }
 }

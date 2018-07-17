@@ -33,7 +33,7 @@ import org.cesecore.util.StringTools;
  * @see org.cesecore.certificates.ca.CAInfo
  * @see org.cesecore.certificates.ca.X509CAInfo
  *
- * @version $Id: CaInfoBuilder.java 28909 2018-05-22 12:16:53Z andrey_s_helmes $
+ * @version $Id: CaInfoBuilder.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 public class CaInfoBuilder {
 
@@ -90,6 +90,7 @@ public class CaInfoBuilder {
     }
 
     private int id;
+    private String name = TEST_CA_NAME;
     private Date expirationDate;
 
     /**
@@ -112,6 +113,18 @@ public class CaInfoBuilder {
      */
     public CaInfoBuilder id(final int id) {
         this.id = id;
+        return this;
+    }
+
+    /**
+     * Sets the name of this CaInfo.
+     *
+     * @param name name.
+     *
+     * @return instance of this builder.
+     */
+    public CaInfoBuilder name(final String name) {
+        this.name = name;
         return this;
     }
 
@@ -154,7 +167,7 @@ public class CaInfoBuilder {
     public CAInfo build() {
         final X509CAInfo x509CaInfo = new X509CAInfo(
                 CertTools.getSubjectDN(testCaCertificate),
-                TEST_CA_NAME,
+                name,
                 CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 "1d",

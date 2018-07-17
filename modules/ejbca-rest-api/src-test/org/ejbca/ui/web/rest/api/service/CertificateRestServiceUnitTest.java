@@ -46,7 +46,7 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRest
 /**
  * A unit test class for CertificateRestService.
  *
- * @version $Id: CertificateRestServiceUnitTest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: CertificateRestServiceUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 @RunWith(EasyMockRunner.class)
 public class CertificateRestServiceUnitTest {
@@ -60,7 +60,7 @@ public class CertificateRestServiceUnitTest {
     private CertificateRestService certificateService = new CertificateRestService();
 
     @Test(expected = RestException.class)
-    public void shouldThrowRestExceptionOnUnauthorizedEndEntityProfileId() throws RestException {
+    public void shouldThrowRestExceptionOnUnauthorizedEndEntityProfileName() throws RestException {
         // given
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.END_ENTITY_PROFILE.name())
@@ -78,7 +78,7 @@ public class CertificateRestServiceUnitTest {
     }
 
     @Test(expected = RestException.class)
-    public void shouldThrowRestExceptionOnUnauthorizedCertificateProfileId() throws RestException {
+    public void shouldThrowRestExceptionOnUnauthorizedCertificateProfileName() throws RestException {
         // given
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.CERTIFICATE_PROFILE.name())
@@ -96,7 +96,7 @@ public class CertificateRestServiceUnitTest {
     }
 
     @Test(expected = RestException.class)
-    public void shouldThrowRestExceptionOnUnauthorizedCAId() throws RestException {
+    public void shouldThrowRestExceptionOnUnauthorizedCAName() throws RestException {
         // given
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.CA.name())
@@ -113,17 +113,35 @@ public class CertificateRestServiceUnitTest {
         certificateService.authorizeSearchCertificatesRestRequestReferences(authenticationToken, searchCertificatesRestRequest);
     }
 
+    @Test(expected = RestException.class)
+    public void shouldThrowRestExceptionOnAuthorizationOfUnknownCriteriaProperty() throws RestException {
+        // given
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                .property("BLAH")
+                .value("1")
+                .operation(CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(11)
+                .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
+                .build();
+        expect(raMasterApi.getAuthorizedCas(authenticationToken)).andReturn(new ArrayList<CAInfo>());
+        replay(raMasterApi);
+        // when
+        certificateService.authorizeSearchCertificatesRestRequestReferences(authenticationToken, searchCertificatesRestRequest);
+    }
+
     @Test
-    public void shouldAskOnceRaMasterApiForEndEntityProfileIds() throws RestException {
+    public void shouldAskOnceRaMasterApiForEndEntityProfiles() throws RestException {
         // given
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.END_ENTITY_PROFILE.name())
-                .value("1")
+                .value("A")
                 .operation(CriteriaOperation.EQUAL.name())
                 .build();
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest2 = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.END_ENTITY_PROFILE.name())
-                .value("2")
+                .value("B")
                 .operation(CriteriaOperation.EQUAL.name())
                 .build();
         final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
@@ -142,16 +160,16 @@ public class CertificateRestServiceUnitTest {
     }
 
     @Test
-    public void shouldAskOnceRaMasterApiForCertificateProfileIds() throws RestException {
+    public void shouldAskOnceRaMasterApiForCertificateProfiles() throws RestException {
         // given
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.CERTIFICATE_PROFILE.name())
-                .value("1")
+                .value("A")
                 .operation(CriteriaOperation.EQUAL.name())
                 .build();
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest2 = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.CERTIFICATE_PROFILE.name())
-                .value("2")
+                .value("B")
                 .operation(CriteriaOperation.EQUAL.name())
                 .build();
         final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
@@ -170,16 +188,16 @@ public class CertificateRestServiceUnitTest {
     }
 
     @Test
-    public void shouldAskOnceRaMasterApiForCAIds() throws RestException {
+    public void shouldAskOnceRaMasterApiForCAs() throws RestException {
         // given
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.CA.name())
-                .value("1")
+                .value("A")
                 .operation(CriteriaOperation.EQUAL.name())
                 .build();
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest2 = SearchCertificateCriteriaRestRequest.builder()
                 .property(CriteriaProperty.CA.name())
-                .value("2")
+                .value("B")
                 .operation(CriteriaOperation.EQUAL.name())
                 .build();
         final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
@@ -187,8 +205,8 @@ public class CertificateRestServiceUnitTest {
                 .criteria(Arrays.asList(searchCertificateCriteriaRestRequest1, searchCertificateCriteriaRestRequest2))
                 .build();
         final List<CAInfo> authorizedCAInfos = Arrays.asList(
-                CaInfoBuilder.builder().id(1).build(),
-                CaInfoBuilder.builder().id(2).build()
+                CaInfoBuilder.builder().id(1).name("A").build(),
+                CaInfoBuilder.builder().id(2).name("B").build()
         );
         expect(raMasterApi.getAuthorizedCas(authenticationToken)).andReturn(authorizedCAInfos).times(1);
         replay(raMasterApi);
@@ -217,7 +235,7 @@ public class CertificateRestServiceUnitTest {
         final SearchCertificatesRestResponse actualSearchCertificatesRestResponse = certificateService.searchCertificates(authenticationToken, searchCertificatesRestRequest);
         // then
         verify(raMasterApi);
-        assertNotNull(actualSearchCertificatesRestResponse);
+        assertNotNull("Should return non null response.", actualSearchCertificatesRestResponse);
     }
 
 }
