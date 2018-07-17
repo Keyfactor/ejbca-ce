@@ -76,6 +76,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -118,6 +119,8 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
+import org.cesecore.keys.validation.Validator;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleDataSessionLocal;
@@ -192,6 +195,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.validation.CaaValidator;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSession;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -297,6 +301,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private RoleMemberSessionLocal roleMemberSession;
     @EJB
+    private KeyValidatorSessionLocal keyValidatorSession;
+    @EJB
     private AcmeAccountDataSession acmeAccountDataSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
@@ -304,7 +310,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     /**
      * Defines the current RA Master API version.
-     * 
+     *
      * <p>List of versions:
      * <table>
      * <tr><th>0<td>=<td>6.6.0
@@ -2393,9 +2399,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] processCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String req, final int reqType,
             final String hardTokenSN, final String responseType)
-            throws AuthorizationDeniedException, EjbcaException, CesecoreException, 
-            CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException, 
-            InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException, 
+            throws AuthorizationDeniedException, EjbcaException, CesecoreException,
+            CADoesntExistsException, CertificateExtensionException, InvalidKeyException, SignatureException,
+            InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException,
             AuthStatusException, AuthLoginException {
         try {
             return signSessionLocal.createCertificateWS(authenticationToken, username, password, req, reqType, hardTokenSN, responseType);
@@ -2457,7 +2463,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                         certReqHistory.getEndEntityInformation().getPassword(), certReqHistory.getEndEntityInformation().getCertificateDN(), certReqHistory.getEndEntityInformation().getExtendedInformation())) {
                 } else {
                     throw new PublisherException("Error: publication failed to at least one of the defined publishers.");
-                } 
+                }
             } else {
                 throw new PublisherException("Error no publisher defined for the given certificate.");
             }
@@ -2477,18 +2483,35 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         return endEntityProfileSession.getProfileAsXml(authenticationToken, profileId);
     }
-    
+
     @Override
     public byte[] getCertificateProfileAsXml(final AuthenticationToken authenticationToken, final int profileId)
             throws AuthorizationDeniedException, CertificateProfileDoesNotExistException {
         return certificateProfileSession.getProfileAsXml(authenticationToken, profileId);
     }
-    
+
     @Override
     public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcreq)
             throws AuthorizationDeniedException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, NotFoundException,
             ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException {
         return signSessionLocal.createCardVerifiableCertificateWS(authenticationToken, username, password, cvcreq);
+    }
+
+    @Override
+    public HashSet<String> getCaaIdentities(final AuthenticationToken authenticationToken, final int caId)
+            throws AuthorizationDeniedException, CADoesntExistsException {
+        final HashSet<String> caaIdentities = new HashSet<String>();
+        final CA ca = caSession.getCA(authenticationToken, caId);
+        if (ca == null) {
+            throw new CADoesntExistsException("The CA with id " + caId + " does not exist on peer.");
+        }
+        for (final int validatorId : ca.getValidators()) {
+            final Validator validator = keyValidatorSession.getValidator(validatorId);
+            if (validator instanceof CaaValidator) {
+                caaIdentities.addAll(((CaaValidator) validator).getIssuers());
+            }
+        }
+        return caaIdentities;
     }
 
     @Override

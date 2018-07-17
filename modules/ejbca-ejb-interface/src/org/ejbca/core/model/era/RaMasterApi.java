@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * API of available methods on the CA that can be invoked by the RA.
  *
  * <p>Implementation restrictions:
- * 
+ *
  * <ul>
  * <li> Keep in mind that there is latency, so batch things and don't for things twice unless it is expected to have change.
  * <li> Method names must be unique and signature is not allowed change after a release
@@ -116,7 +117,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * <li> Try to put complex business logic into "business logic EJBs" such as CaSession etc. rather than here.
  * <li> Remember to put @since attributes on new methods.
  * </ul>
- * 
+ *
  * <p>See the "RA Master API conventions" page in Confluence for more detailed information.
  *
  * @version $Id$
@@ -1137,7 +1138,7 @@ public interface RaMasterApi {
     */
     byte[] getEndEntityProfileAsXml(AuthenticationToken authenticationToken, int profileId)
             throws AuthorizationDeniedException, EndEntityProfileNotFoundException;
-    
+
     /**
      * Fetches the certificate profile by ID in XML format.
      *
@@ -1159,17 +1160,29 @@ public interface RaMasterApi {
            ApprovalException, EjbcaException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
 
     /**
+    * Retrieves a set of all CAA identities for a CA, based on the CAA validators enabled. An empty set
+    * of CAA identities are returned if no CAA validators are enabled.
+    * @throws CADoesntExistsException if there is no CA with the given id
+    * @throws AuthorizationDeniedException if authorisation was denied to the CA with the given id
+    * @since RA Master API version 4 (EJBCA 6.14.0)
+    * @return a set of CAA identities, never null
+    */
+    HashSet<String> getCaaIdentities(AuthenticationToken authenticationToken, int caId) throws AuthorizationDeniedException, CADoesntExistsException;
+
+    /**
      * Get AcmeAccount by accountId.
      *
      * @return the AcmeAccount.
      */
    LinkedHashMap<Object,Object> getAcmeAccountDataById(final String accountId);
+
     /**
      * Get AcmeAccount by publicKeyStorageId.
      *
      * @return the AcmeAccount.
      */
    String getAcmeAccountIdByPublicKeyStorageId(final String publicKeyStorageId);
+
     /**
      * Create or update the AcmeAccount.
      *
