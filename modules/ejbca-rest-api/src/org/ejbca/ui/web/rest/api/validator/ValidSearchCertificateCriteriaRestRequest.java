@@ -26,7 +26,6 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CriteriaOperation.DATE_OPERATIONS;
 import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL;
-import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CriteriaOperation.INTEGER_OPERATIONS;
 import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest.CriteriaOperation.STRING_OPERATIONS;
 
 /**
@@ -48,11 +47,14 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRest
  *     <li>Not empty;</li>
  *     <li>In case of END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA:
  *         <ul>
- *             <li>The value has to be an integer.</li>
+ *             <li>The value has to be exact string.</li>
  *         </ul>
  *     </li>
  *     <li>In case of STATUS:
- *
+ *         <ul>
+ *             <li>The value has to be one of SearchCertificateCriteriaRestRequest.CertificateStatus.</li>
+ *         </ul>
+ *     </li>
  *     <li>In case of ISSUED_DATE, EXPIRE_DATE and REVOCATION_DATE:
  *         <ul>
  *             <li>The value has to contain a date in ISO8601 format, eg. 2019-04-18T07:47:26Z</li>
@@ -79,7 +81,7 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRest
  *     <li>SearchCertificateCriteriaRestRequest.CriteriaProperty.REVOCATION_DATE supports operations SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER and SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE;</li>
  * </ul>
  *
- * @version $Id: ValidSearchCertificateCriteriaRestRequest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: ValidSearchCertificateCriteriaRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 @Target({TYPE, FIELD, PARAMETER})
 @Retention(RUNTIME)
@@ -135,7 +137,7 @@ public @interface ValidSearchCertificateCriteriaRestRequest {
             }
             // Check the correlation between Property - Value - Operator
             switch (criteriaProperty) {
-                // Value: Any
+                // Value: Any String
                 // Operation: EQUAL, LIKE
                 case QUERY: {
                     if (!STRING_OPERATIONS().contains(criteriaOperation)) {
@@ -144,20 +146,13 @@ public @interface ValidSearchCertificateCriteriaRestRequest {
                     }
                     break;
                 }
-                // Value: Integer
+                // Value: Any String
                 // Operation: EQUAL
                 case END_ENTITY_PROFILE:
                 case CERTIFICATE_PROFILE:
                 case CA: {
-                    if (!INTEGER_OPERATIONS().contains(criteriaOperation)) {
+                    if (criteriaOperation != EQUAL) {
                         ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequest.invalid.operation.notEqual}");
-                        return false;
-                    }
-                    try {
-                        Integer.parseInt(value);
-                    }
-                    catch (NumberFormatException nfEx) {
-                        ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequest.invalid.value.notInteger}");
                         return false;
                     }
                     break;

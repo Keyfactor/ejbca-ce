@@ -17,14 +17,14 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 import javax.ejb.EJB;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * General service layer to support REST resource operations.
  *
- * @version $Id: RestService.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: RestService.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 public class RestService {
 
@@ -35,38 +35,36 @@ public class RestService {
     }
 
     /**
-     * Returns the list of End Entity Profile Ids accessible within given authentication token.
+     * Returns the map of End Entity Profiles (id, name) accessible within given authentication token.
      *
      * @param authenticationToken authentication token.
      * @return The list of End Entity Profile Ids.
      */
-    public List<Integer> getAuthorizedEndEntityProfileIds(final AuthenticationToken authenticationToken) {
-        final Map<Integer, String> availableEndEntityProfilesMap = raMasterApi.getAuthorizedEndEntityProfileIdsToNameMap(authenticationToken);
-        return new ArrayList<>(availableEndEntityProfilesMap.keySet());
+    public Map<Integer, String> getAuthorizedEndEntityProfiles(final AuthenticationToken authenticationToken) {
+        return raMasterApi.getAuthorizedEndEntityProfileIdsToNameMap(authenticationToken);
     }
 
     /**
-     * Returns the list of Certificate Profile Ids accessible within given authentication token.
+     * Returns the map of Certificate Profiles (id, name) accessible within given authentication token.
      *
      * @param authenticationToken authentication token.
      * @return The list of Certificate Profile Ids.
      */
-    public List<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken authenticationToken) {
-        final Map<Integer, String> availableCertificateProfilesMap = raMasterApi.getAuthorizedCertificateProfileIdsToNameMap(authenticationToken);
-        return new ArrayList<>(availableCertificateProfilesMap.keySet());
+    public Map<Integer, String> getAuthorizedCertificateProfiles(final AuthenticationToken authenticationToken) {
+        return raMasterApi.getAuthorizedCertificateProfileIdsToNameMap(authenticationToken);
     }
 
     /**
-     * Returns the list of CA Ids accessible within given authentication token.
+     * Returns the map of CAs (id, name) accessible within given authentication token.
      *
      * @param authenticationToken authentication token.
      * @return The list of CA Ids.
      */
-    public List<Integer> getAuthorizedCAIds(final AuthenticationToken authenticationToken) {
-        final List<Integer> authorizedCAIds = new ArrayList<>();
+    public Map<Integer, String> getAuthorizedCAs(final AuthenticationToken authenticationToken) {
+        final Map<Integer, String> authorizedCAIds = new HashMap<>();
         final List<CAInfo> caInfosList = raMasterApi.getAuthorizedCas(authenticationToken);
         for(final CAInfo caInfo : caInfosList) {
-            authorizedCAIds.add(caInfo.getCAId());
+            authorizedCAIds.put(caInfo.getCAId(), caInfo.getName());
         }
         return authorizedCAIds;
     }

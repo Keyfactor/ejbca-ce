@@ -28,7 +28,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * A unit test class for SearchCertificatesRestResponse.
  *
- * @version $Id: SearchCertificatesRestResponseUnitTest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: SearchCertificatesRestResponseUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 public class SearchCertificatesRestResponseUnitTest {
 
@@ -45,13 +45,13 @@ public class SearchCertificatesRestResponseUnitTest {
         // when
         final SearchCertificatesRestResponse actualSearchCertificatesRestResponse = SearchCertificatesRestResponse.converter().toRestResponse(raCertificateSearchResponse);
         // then
-        assertEquals(expectedMoreResults, actualSearchCertificatesRestResponse.isMoreResults());
-        assertNotNull(actualSearchCertificatesRestResponse.getCertificates());
-        assertEquals(1, actualSearchCertificatesRestResponse.getCertificates().size());
+        assertEquals("Should properly convert.", expectedMoreResults, actualSearchCertificatesRestResponse.isMoreResults());
+        assertNotNull("Should properly convert.", actualSearchCertificatesRestResponse.getCertificates());
+        assertEquals("Should properly convert.", 1, actualSearchCertificatesRestResponse.getCertificates().size());
         final CertificateRestResponse actualCertificateRestResponse = actualSearchCertificatesRestResponse.getCertificates().get(0);
-        assertEquals(expectedSerialNumber, actualCertificateRestResponse.getSerialNumber());
-        assertArrayEquals(Base64.encode(CaInfoBuilder.testCaCertificate.getEncoded()), actualCertificateRestResponse.getCertificate());
-        assertEquals(expectedResponseFormat, actualCertificateRestResponse.getResponseFormat());
+        assertEquals("Should properly convert.", expectedSerialNumber, actualCertificateRestResponse.getSerialNumber());
+        assertArrayEquals("Should properly convert.", Base64.encode(CaInfoBuilder.testCaCertificate.getEncoded()), actualCertificateRestResponse.getCertificate());
+        assertEquals("Should properly convert.", expectedResponseFormat, actualCertificateRestResponse.getResponseFormat());
     }
 
 }

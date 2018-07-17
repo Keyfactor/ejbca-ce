@@ -71,7 +71,7 @@ import org.junit.runner.RunWith;
  * <br/>
  * The testing is organized through deployment of this resource with mocked dependencies into InMemoryRestServer.
  *
- * @version $Id: CertificateRestResourceUnitTest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
+ * @version $Id: CertificateRestResourceUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  * @see org.ejbca.ui.web.rest.api.InMemoryRestServer
  */
 @RunWith(EasyMockRunner.class)
@@ -318,12 +318,12 @@ public class CertificateRestResourceUnitTest {
         final Boolean actualMoreResults  = (Boolean) actualJsonObject.get("more_results");
         // then
         verify(certificateRestService);
-        assertEquals(Status.OK, actualStatus);
+        assertEquals("Should have proper response.", Status.OK, actualStatus);
         assertJsonContentType(actualResponse);
         assertNotNull(actualCertificates);
-        assertEquals(0, actualCertificates.size());
-        assertNotNull(actualMoreResults);
-        assertEquals(expectedMoreResults, actualMoreResults);
+        assertEquals("Should have proper response.", 0, actualCertificates.size());
+        assertNotNull("Should have proper response.", actualMoreResults);
+        assertEquals("Should have proper response.", expectedMoreResults, actualMoreResults);
     }
 
     @Test
@@ -366,21 +366,21 @@ public class CertificateRestResourceUnitTest {
         final Boolean actualMoreResults  = (Boolean) actualJsonObject.get("more_results");
         // then
         verify(certificateRestService);
-        assertEquals(Status.OK, actualStatus);
+        assertEquals("Should have proper response.", Status.OK, actualStatus);
         assertJsonContentType(actualResponse);
-        assertNotNull(actualCertificates);
-        assertEquals(1, actualCertificates.size());
+        assertNotNull("Should have proper response.", actualCertificates);
+        assertEquals("Should have proper response.", 1, actualCertificates.size());
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
         final Object actualCertificate = actualCertificate0JsonObject.get("certificate");
         final Object actualSerialNumber = actualCertificate0JsonObject.get("serial_number");
         final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
-        assertNotNull(actualCertificate);
-        assertEquals(expectedCertificate, actualCertificate);
-        assertNotNull(actualSerialNumber);
-        assertEquals(expectedCertificateSerial, actualSerialNumber);
-        assertNotNull(actualResponseFormat);
-        assertEquals(expectedCertificateFormat, actualResponseFormat);
-        assertNotNull(actualMoreResults);
-        assertEquals(expectedMoreResults, actualMoreResults);
+        assertNotNull("Should have proper response.", actualCertificate);
+        assertEquals("Should have proper response.", expectedCertificate, actualCertificate);
+        assertNotNull("Should have proper response.", actualSerialNumber);
+        assertEquals("Should have proper response.", expectedCertificateSerial, actualSerialNumber);
+        assertNotNull("Should have proper response.", actualResponseFormat);
+        assertEquals("Should have proper response.", expectedCertificateFormat, actualResponseFormat);
+        assertNotNull("Should have proper response.", actualMoreResults);
+        assertEquals("Should have proper response.", expectedMoreResults, actualMoreResults);
     }
 }
