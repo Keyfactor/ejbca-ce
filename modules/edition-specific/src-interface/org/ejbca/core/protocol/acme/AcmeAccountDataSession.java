@@ -16,7 +16,7 @@ import javax.ejb.Local;
 import java.util.LinkedHashMap;
 
 /**
- * @version $Id: EstDispatcherSession.java 25797 2017-05-04 15:52:00Z jeklund $
+ * @version $Id: AcmeAccountDataSession.java 25797 2017-05-04 15:52:00Z jeklund $
  */
 //@Local
 public interface AcmeAccountDataSession {
