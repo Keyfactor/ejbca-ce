@@ -2196,7 +2196,7 @@ public class EjbcaWS implements IEjbcaWS {
 
         } catch (org.ejbca.core.model.ra.UnknownProfileTypeException e) {
             throw new UnknownProfileTypeException(e.getMessage());
-        } catch (CertificateProfileDoesNotExistException e) {
+        } catch (CertificateProfileDoesNotExistException | EndEntityProfileNotFoundException e) {
             throw getInternalException(e, logger);
         } finally {
             logger.writeln();
