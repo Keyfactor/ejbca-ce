@@ -34,10 +34,10 @@ public class CertificateRestResponse {
 
     private byte[] certificate;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private BigInteger serialNumber;
+    private String serialNumber;
     private String responseFormat;
 
-    private CertificateRestResponse(byte[] certificate, BigInteger serialNumber, String responseFormat) {
+    private CertificateRestResponse(byte[] certificate, String serialNumber, String responseFormat) {
         this.certificate = certificate;
         this.serialNumber = serialNumber;
         this.responseFormat = responseFormat;
@@ -66,7 +66,7 @@ public class CertificateRestResponse {
         return certificate;
     }
 
-    public BigInteger getSerialNumber() {
+    public String getSerialNumber() {
         return serialNumber;
     }
 
@@ -76,7 +76,7 @@ public class CertificateRestResponse {
     
     public static class CertificateRestResponseBuilder {
         private byte[] certificate;
-        private BigInteger serialNumber;
+        private String serialNumber;
         private String responseFormat;
         
         private CertificateRestResponseBuilder() {
@@ -87,7 +87,7 @@ public class CertificateRestResponse {
             return this;
         }
 
-        public CertificateRestResponseBuilder setSerialNumber(BigInteger serialNumber) {
+        public CertificateRestResponseBuilder setSerialNumber(String serialNumber) {
             this.serialNumber = serialNumber;
             return this;
         }
@@ -108,7 +108,7 @@ public class CertificateRestResponse {
             certificate.getType();
             return CertificateRestResponse.builder()
                     .setCertificate(Base64.encode(certificate.getEncoded()))
-                    .setSerialNumber(CertTools.getSerialNumber(certificate))
+                    .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
                     .setResponseFormat("DER")
                     .build();
         }
@@ -117,7 +117,7 @@ public class CertificateRestResponse {
             certificate.getType();
             return CertificateRestResponse.builder()
                     .setCertificate(certificate.getEncoded())
-                    .setSerialNumber(certificate.getSerialNumber())
+                    .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
                     .setResponseFormat("DER")
                     .build();
         }
