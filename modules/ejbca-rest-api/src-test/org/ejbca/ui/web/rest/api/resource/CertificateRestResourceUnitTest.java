@@ -340,11 +340,11 @@ public class CertificateRestResourceUnitTest {
                 .build();
         final boolean expectedMoreResults = true;
         final String expectedCertificate = "QUJD";
-        final Long expectedCertificateSerial = 121212L;
+        final String expectedCertificateSerial = "121212";
         final String expectedCertificateFormat = "SUPER";
         final CertificateRestResponse certificateRestResponse = CertificateRestResponse.builder()
                 .setCertificate("ABC".getBytes())
-                .setSerialNumber(BigInteger.valueOf(expectedCertificateSerial))
+                .setSerialNumber(expectedCertificateSerial)
                 .setResponseFormat(expectedCertificateFormat)
                 .build();
         final SearchCertificatesRestResponse expectedSearchCertificatesRestResponse = SearchCertificatesRestResponse.builder()
