@@ -99,7 +99,7 @@ public class SearchCertificatesRestResponse {
             for(final CertificateDataWrapper certificateDataWrapper : raCertificateSearchResponse.getCdws()) {
                 final Certificate certificate = certificateDataWrapper.getCertificate();
                 final CertificateRestResponse certificateRestResponse = CertificateRestResponse.builder()
-                        .setSerialNumber(CertTools.getSerialNumber(certificate))
+                        .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
                         .setCertificate(Base64.encode(certificate.getEncoded()))
                         .setResponseFormat("DER")
                         .build();

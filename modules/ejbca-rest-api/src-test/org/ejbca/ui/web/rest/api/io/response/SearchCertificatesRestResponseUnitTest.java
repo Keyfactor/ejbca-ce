@@ -36,7 +36,7 @@ public class SearchCertificatesRestResponseUnitTest {
     public void shouldProperlyConvertRaCertificateSearchResponse() throws CertificateEncodingException {
         // given
         final boolean expectedMoreResults = true;
-        final BigInteger expectedSerialNumber = CertTools.getSerialNumber(CaInfoBuilder.testCaCertificate);
+        final String expectedSerialNumber = CertTools.getSerialNumberAsString(CaInfoBuilder.testCaCertificate);
         final String expectedResponseFormat = "DER";
         final List<CertificateDataWrapper> certificateDataWrappersList = Collections.singletonList(new CertificateDataWrapper(CaInfoBuilder.testCaCertificate, null, null));
         final RaCertificateSearchResponse raCertificateSearchResponse = new RaCertificateSearchResponse();
