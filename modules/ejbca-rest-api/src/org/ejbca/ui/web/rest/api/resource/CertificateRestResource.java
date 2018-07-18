@@ -311,7 +311,7 @@ public class CertificateRestResource extends BaseRestResource {
     public Response getCertificatesAboutToExpire(@Context HttpServletRequest requestContext,
             @ApiParam(value = "Request certificates expiring within this number of days")
             @QueryParam("days") long days,
-            @ApiParam(value = "Next offset to display results of, if maxNumberOfResults is exceeded")
+            @ApiParam(value = "Next offset to display results of, if maxNumberOfResults is exceeded. Starts from 0.")
             @QueryParam("offset") int offset,
             @ApiParam(value = "Maximum number of certificates to display. If result exceeds this value. Modify 'offset' to retrieve more results")
             @QueryParam("maxNumberOfResults") int maxNumberOfResults) throws AuthorizationDeniedException, CertificateEncodingException, RestException {
@@ -400,7 +400,7 @@ public class CertificateRestResource extends BaseRestResource {
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
                 byte[] pemBytes = CertTools.getPemFromCertificateChain(Collections.singletonList((Certificate) certificate));
                 response = CertificateRestResponse.builder().setCertificate(pemBytes).
-                        setSerialNumber(certificate.getSerialNumber()).setResponseFormat("PEM").build();
+                        setSerialNumber(CertTools.getSerialNumberAsString(certificate)).setResponseFormat("PEM").build();
             } else {
                 // DER encoding
                 response = CertificateRestResponse.converter().toRestResponse(certificate);
@@ -422,7 +422,7 @@ public class CertificateRestResource extends BaseRestResource {
             if (responseFormat.equals(TokenDownloadType.PEM.name())) {
                 X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
                 response = CertificateRestResponse.builder().setCertificate(certificateBytes).
-                        setSerialNumber(certificate.getSerialNumber()).setResponseFormat("PEM").build();
+                        setSerialNumber(CertTools.getSerialNumberAsString(certificate)).setResponseFormat("PEM").build();
             } else if (responseFormat.equals(TokenDownloadType.DER.name())) {
                 final X509Certificate x509Certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
                 response = CertificateRestResponse.converter().toRestResponse(x509Certificate);
