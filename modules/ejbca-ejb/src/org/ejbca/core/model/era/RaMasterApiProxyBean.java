@@ -1992,16 +1992,17 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public int getCountOfCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days) throws AuthorizationDeniedException {
+        int result = 0;
         for (RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getCountOfCertificatesByExpirationTime(authenticationToken, days);
+                    result += raMasterApi.getCountOfCertificatesByExpirationTime(authenticationToken, days);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
             }
         }
-        return 0;
+        return result;
     }
 
     @Override
@@ -2197,14 +2198,26 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final int maxNumberOfResults, final int offset) throws AuthorizationDeniedException {
         final Map<String, CertificateWrapper> result = new TreeMap<>();
         final List<CertificateWrapper> ret = new ArrayList<>();
+        int resultCount = 0;
         AuthorizationDeniedException authorizationDeniedException = null;
         boolean oneSucceeded = false;
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    final Collection<CertificateWrapper> certificates = raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, maxNumberOfResults, offset);
-                    for (CertificateWrapper certificate : certificates) {
-                        result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
+                    resultCount += raMasterApi.getCountOfCertificatesByExpirationTime(authenticationToken, days);
+                    if (resultCount > offset && result.size() < maxNumberOfResults) {
+                        int nodeOffset;
+                        if (result.size() > 0) {
+                            nodeOffset = 0;
+                        } else {
+                            nodeOffset = offset > resultCount ? (offset - resultCount) : offset;
+                        }
+                        final Collection<CertificateWrapper> certificates = raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, (maxNumberOfResults - result.size()), nodeOffset);
+                        for (CertificateWrapper certificate : certificates) {
+                            if (result.size() < maxNumberOfResults) {
+                                result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
+                            }
+                        }
                     }
                     oneSucceeded = true;
                 } catch (AuthorizationDeniedException e) {
