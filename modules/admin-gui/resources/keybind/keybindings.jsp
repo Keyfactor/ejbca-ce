@@ -167,7 +167,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h3>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULTRESPONDER}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULTRESPONDER}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>			
-			<%= ejbcawebbean.getHelpReference("/Building_and_Configuring_the_OCSP_Responder.html") %>
+			<%= ejbcawebbean.getHelpReference("/OCSP.html") %>
 		</h3>
 		<h:panelGrid columns="2">
 			<h:selectOneMenu id="defaultResponderTarget" value="#{internalKeyBindingMBean.defaultResponderTarget}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
@@ -180,7 +180,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h3>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_ENABLED_NONCE_CA}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_ENABLE_NONCE_CA}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>	
-			<%= ejbcawebbean.getHelpReference("/Building_and_Configuring_the_OCSP_Responder.html") %>		
+			<%= ejbcawebbean.getHelpReference("/OCSP.html") %>		
 			</h3>
 		<h:panelGrid columns="2">
 			<h:panelGroup>
@@ -195,7 +195,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h3>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_DEFAULT_RESPONDERIDTYPE}" rendered="#{internalKeyBindingMBean.forbiddenToEdit}"/>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_SET_DEFAULT_RESPONDERIDTYPE}" rendered="#{!internalKeyBindingMBean.forbiddenToEdit}"/>			
-			<%= ejbcawebbean.getHelpReference("/Building_and_Configuring_the_OCSP_Responder.html") %>
+			<%= ejbcawebbean.getHelpReference("/OCSP.html") %>
 		</h3>
 		<h:panelGrid columns="2">
 			<h:selectOneMenu id="defaultResponderId" value="#{internalKeyBindingMBean.responderIdType}" disabled="#{internalKeyBindingMBean.forbiddenToEdit}" >
