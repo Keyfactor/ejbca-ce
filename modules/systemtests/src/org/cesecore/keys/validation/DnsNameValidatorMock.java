@@ -95,6 +95,11 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     }
 
     @Override
+    public Set<String> getIssuers() {
+        return new HashSet<String>();
+    }
+
+    @Override
     protected Class<? extends Profile> getImplementationClass() {
         return DnsNameValidatorMock.class;
     }
