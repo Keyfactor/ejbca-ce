@@ -14,6 +14,7 @@ package org.cesecore.keys.validation;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.cesecore.util.ui.DynamicUiModelAware;
@@ -37,4 +38,9 @@ public interface DnsNameValidator extends Validator, DynamicUiModelAware {
     Entry<Boolean, List<String>> validate(final ExecutorService executorService, String... domainNames);
 
     String getIssuer();
+
+    /*
+     * @return a set of issuer names for this validator
+     */
+    Set<String> getIssuers();
 }
