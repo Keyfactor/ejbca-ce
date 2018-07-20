@@ -119,6 +119,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.roles.Role;
@@ -195,7 +196,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.model.validation.CaaValidator;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSession;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -2507,8 +2507,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         for (final int validatorId : ca.getValidators()) {
             final Validator validator = keyValidatorSession.getValidator(validatorId);
-            if (validator instanceof CaaValidator) {
-                caaIdentities.addAll(((CaaValidator) validator).getIssuers());
+            if (validator instanceof DnsNameValidator) {
+                caaIdentities.addAll(((DnsNameValidator) validator).getIssuers());
             }
         }
         return caaIdentities;
