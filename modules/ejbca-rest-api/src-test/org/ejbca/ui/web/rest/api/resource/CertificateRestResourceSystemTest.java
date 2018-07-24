@@ -104,7 +104,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             + "-----END CERTIFICATE REQUEST-----\n";
     
     @BeforeClass
-    public static void beforeClass() throws AuthorizationDeniedException {
+    public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
 
     }
