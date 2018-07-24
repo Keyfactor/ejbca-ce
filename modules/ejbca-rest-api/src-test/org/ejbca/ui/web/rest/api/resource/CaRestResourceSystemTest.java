@@ -32,7 +32,7 @@ import org.junit.Test;
 public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
     @BeforeClass
-    public static void beforeClass() throws AuthorizationDeniedException {
+    public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
     }
 

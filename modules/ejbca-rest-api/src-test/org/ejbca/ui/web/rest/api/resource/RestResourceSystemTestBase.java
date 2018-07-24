@@ -206,7 +206,7 @@ public class RestResourceSystemTestBase {
         }
     }
 
-    public static void beforeClass() throws AuthorizationDeniedException {
+    public static void beforeClass() throws Exception {
         backupProtocolConfiguration();
         enableRestProtocolConfiguration();
     }
