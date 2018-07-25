@@ -109,7 +109,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
-        CryptoProviderTools.installBCProvider();
+        CryptoProviderTools.installBCProvider()
         x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, "C=SE,CN=" + TEST_CA_NAME);
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setAllowValidityOverride(true);
