@@ -89,7 +89,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
     public static final DateFormat DATE_FORMAT_ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
     private static final TimeZone TIME_ZONE_UTC = TimeZone.getTimeZone("UTC");
 
-    private static X509CA x509TestCa
+    private static X509CA x509TestCa;
     private static KeyPair keys;
     private static int certificateProfileId;
     private static int endEntityProfileId;
