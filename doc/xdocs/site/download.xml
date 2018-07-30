@@ -27,7 +27,7 @@
   <section name="Virtual Machine for Testing">
     <p>
     Get a feeling for, and start testing, EJBCA easily by downloading and running our 
-    <a href="https://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>, currently running EJBCA Community 6.5.0.5.
+    <a href="https://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>, currently running EJBCA Community 6.10.
     The VM features a full EJBCA Community v6 install, running on WildFly 10 and Java 8, using a <a href="http://www.mariadb.org/" target="_mariadb">MariaDB</a> database backend. 
     It comes with a readme file with instructions and some usage hints. The VM is a 2.5GB VirtualBox OVA, but can easily be converted to run on KVM and VWware<sup>&#174;</sup>. 
     </p><p>The VM should not be used in production as admin keys are pre-generated, i.e. identical on all VMs, and the image is not hardened for production.
