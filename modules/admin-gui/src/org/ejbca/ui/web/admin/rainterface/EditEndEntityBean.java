@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -58,11 +59,16 @@ public class EditEndEntityBean {
 
         // Remove old extensiondata
         Map data = (Map) extendedInformation.getData();
-        for (Object o : data.keySet()) {
+        // We have to use an iterator in order to remove an item while iterating, if we try to remove an object from
+        // the map while looping over keys we will get a ConcurrentModificationException
+        Iterator it = data.keySet().iterator();
+        while (it.hasNext()) {
+            Object o = it.next();
             if (o instanceof String) {
                 String key = (String) o;
                 if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
-                    data.remove(key);
+                    //it.remove() will delete the item from the map
+                    it.remove();
                 }
             }
         }
