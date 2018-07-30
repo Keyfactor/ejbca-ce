@@ -7,6 +7,7 @@ CREATE UNIQUE INDEX auditrecorddata_idx2 ON AuditRecordData (nodeId,sequenceNumb
 -- Selecting log entries from IntegrityProtectedDevice logs in the AdminGUI is usually
 -- done using time constraints.
 CREATE INDEX auditrecorddata_idx3 ON AuditRecordData (timeStamp);
+CREATE INDEX auditrecorddata_idx4 ON AuditRecordData (searchDetail2);
 
 -- unique to ensure that no two CRLs with the same CRLnumber from the same issuer is created
 CREATE UNIQUE INDEX crldata_idx3 ON CRLData (cRLNumber, issuerDN);
