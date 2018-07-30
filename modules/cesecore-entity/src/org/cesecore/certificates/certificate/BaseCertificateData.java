@@ -22,6 +22,7 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.util.Base64;
@@ -110,7 +111,8 @@ public abstract class BaseCertificateData extends ProtectedData {
     /**
      * Set to revocation reason if status == CERT_REVOKED
      *
-     * @return revocation reason
+     * @return revocation reason, RevokedCertInfo.NOT_REVOKED etc
+     * @see RevokedCertInfo#NOT_REVOKED etc
      */
     public abstract int getRevocationReason();
     
