@@ -27,6 +27,9 @@ import org.cesecore.util.ui.DynamicUiModelAware;
  */
 public interface DnsNameValidator extends Validator, DynamicUiModelAware {
 
+    /** The validator type. */
+    final String CAA_TYPE_IDENTIFIER = "CAA_VALIDATOR";
+    
     /**
      * Validates DNS names, specifically the dnsName value in the SubjectAltName (SAN) extension
      *
