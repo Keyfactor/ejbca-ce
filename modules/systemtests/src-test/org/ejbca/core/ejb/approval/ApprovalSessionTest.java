@@ -247,8 +247,8 @@ public class ApprovalSessionTest extends CaTestCase {
         // TODO: before is had both a cert and username input?
 
         originalValidity = approvalProfile.getRequestExpirationPeriod();
-        approvalProfile.setApprovalExpirationPeriod(500);
-        approvalProfile.setRequestExpirationPeriod(500);
+        approvalProfile.setApprovalExpirationPeriod(1000);
+        approvalProfile.setRequestExpirationPeriod(1000);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
         removeApprovalIds = new ArrayList<>();
