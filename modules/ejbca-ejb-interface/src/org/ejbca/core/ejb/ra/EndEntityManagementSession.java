@@ -130,7 +130,7 @@ public interface EndEntityManagementSession {
      * @throws ApprovalException if an approval already exists for this request.
      * @throws CertificateSerialNumberException if the CA requires that Subject DN Serial Numbers be unique, and the one specified here already exists.
      */
-    void addUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd)
+    EndEntityInformation addUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, EndEntityExistsException, WaitingForApprovalException,
             CADoesntExistsException, IllegalNameException, CustomFieldException, ApprovalException, CertificateSerialNumberException;
 

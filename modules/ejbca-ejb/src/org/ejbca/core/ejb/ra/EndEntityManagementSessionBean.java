@@ -285,10 +285,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd)
+    public EndEntityInformation addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd)
             throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
-        addUser(admin, endEntity, clearpwd, null);
+        return addUser(admin, endEntity, clearpwd, null);
     }
 
     /**
@@ -306,7 +306,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @throws WaitingForApprovalException to mark that a request has been created and is awaiting approval
 
      */
-    private void addUser(final AuthenticationToken admin, EndEntityInformation endEntity, final boolean clearpwd,
+    private EndEntityInformation addUser(final AuthenticationToken admin, EndEntityInformation endEntity, final boolean clearpwd,
             final AuthenticationToken lastApprovingAdmin)
             throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
@@ -525,6 +525,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (log.isTraceEnabled()) {
             log.trace("<addUser(" + username + ", password, " + dn + ", " + email + ")");
         }
+        return endEntity;
     }
     
     /* Does not check authorization. Calling code is responsible for this. */
