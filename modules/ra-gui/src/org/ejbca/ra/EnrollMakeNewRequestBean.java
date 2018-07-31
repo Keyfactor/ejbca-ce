@@ -754,67 +754,41 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
 
-        //Add end-entity
-        try {
-            if (raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, /*clearpwd=*/false)) {
-                log.info("End entity with username " + endEntityInformation.getUsername() + " has been successfully added by client " + raAuthenticationBean.getAuthenticationToken());
-            } else {
-                raLocaleBean.addMessageInfo("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername());
-                log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to generate certificate for end entity with username " +  endEntityInformation.getUsername());
-                return null;
-            }
-        } catch (AuthorizationDeniedException e) {
-            raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
-            log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
-            return null;
-        } catch (WaitingForApprovalException e) {
-            requestId = e.getRequestId();
-            log.info("Request with ID " + requestId + " is still waiting for approval");
-            return null;
-        } catch(EjbcaException e){
-            ErrorCode errorCode = EjbcaException.getErrorCode(e);
-            if(errorCode != null){
-                if(errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)){
-                    raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
-                    log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
-                }else{
-                    raLocaleBean.addMessageError(errorCode);
-                    log.info("EjbcaException has been caught. Error Code: " + errorCode, e);
-                }
-            }else{
-                raLocaleBean.addMessageError("enroll_end_entity_could_not_be_added", endEntityInformation.getUsername(), e.getMessage());
-                log.info("Client " + raAuthenticationBean.getAuthenticationToken() +" failed to add end entity " + endEntityInformation.getUsername() + ". Contact your administrator or check the logs.", e);
-            }
-            return null;
-        }
-
-        //The end-entity has been added now! Make sure clean-up is done in this "try-finally" block if something goes wrong
         try{
+            //Add end-entity
             //Generates a keystore token if user has specified "ON SERVER" key pair generation.
             //Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
             byte[] ret = null;
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
-                    ret = raMasterApiProxyBean.generateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+                    ret = raMasterApiProxyBean.addUserAndCreateCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 } catch (AuthorizationDeniedException e) {
                     raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
                     log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
-                } catch(EjbcaException e) {
+                    return null;
+                } catch (WaitingForApprovalException e) {
+                    requestId = e.getRequestId();
+                    log.info("Request with ID " + requestId + " is still waiting for approval");
+                    return null;
+                } catch (EjbcaException e) {
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
-                        if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+                        if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
+                            raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
+                            log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
+                        } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
-                            log.info("Subject DN " + subjectDn.getValue() + " already exists for another user" , e);
+                            log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
                             raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), errorCode);
-                            log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
+                            log.info("Keystore could not be generated for user " + endEntityInformation.getUsername() + ": " + e.getMessage() + ", " + errorCode);
                         } else {
                             raLocaleBean.addMessageError(errorCode);
                             log.info("Exception creating keystore. Error Code: " + errorCode, e);
                         }
                     } else {
                         raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
-                        log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage());
+                        log.info("Keystore could not be generated for user " + endEntityInformation.getUsername() + ": " + e.getMessage());
                     }
                 } catch(Exception e) {
                     raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
@@ -823,11 +797,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
             } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
                     endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
-                    final byte[] certificateDataToDownload = raMasterApiProxyBean.createCertificate(raAuthenticationBean.getAuthenticationToken(),
-                            endEntityInformation);
-                    if(certificateDataToDownload == null){
+                    final byte[] certificateDataToDownload = raMasterApiProxyBean.addUserAndCreateCertificate(raAuthenticationBean.getAuthenticationToken(),
+                            endEntityInformation, false);
+                    if (certificateDataToDownload == null) {
                         raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), "null");
-                        log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername()+": null");
+                        log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername() + ": null");
                     } else if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
                         X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
                         LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
@@ -847,10 +821,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 } catch (AuthorizationDeniedException e) {
                     raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
                     log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
-                } catch (EjbcaException | CertificateEncodingException | CertificateParsingException | ClassCastException | CMSException | IOException e) {
+                } catch (WaitingForApprovalException e) {
+                    requestId = e.getRequestId();
+                    log.info("Request with ID " + requestId + " is still waiting for approval");
+                    return null;
+                }catch (EjbcaException | CertificateEncodingException | CertificateParsingException | ClassCastException | CMSException | IOException e) {
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
-                        if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+                        if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
+                            raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
+                            log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
+                        } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
                             log.info("Subject DN " + subjectDn.getValue() + " already exists for another user" , e);
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
@@ -1175,7 +1156,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return selectedKeyPairGeneration;
     }
 
-    /** @param selectedKeyPairGeneration the selectedKeyPairGeneration to set */
+    /** @param selectedKeyStoreGeneration the selectedKeyPairGeneration to set */
     public void setSelectedKeyPairGeneration(final String selectedKeyStoreGeneration) {
         final String currentSelection = this.selectedKeyPairGeneration==null ? null : this.selectedKeyPairGeneration.name();
         if (!StringUtils.equals(selectedKeyStoreGeneration, currentSelection)) {
