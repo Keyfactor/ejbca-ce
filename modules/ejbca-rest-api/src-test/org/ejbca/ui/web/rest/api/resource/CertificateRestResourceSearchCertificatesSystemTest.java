@@ -581,7 +581,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
     }
 
     @Test
-    public void shouldReturnEmmptyList() throws Exception {
+    public void shouldReturnEmptyList() throws Exception {
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
                 .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.END_ENTITY_PROFILE.name())
                 .value(TEST_EEP_NAME)
