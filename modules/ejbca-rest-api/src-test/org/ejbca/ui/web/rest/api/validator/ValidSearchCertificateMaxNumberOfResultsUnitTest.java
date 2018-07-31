@@ -9,6 +9,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestBuilder;
 import org.junit.Test;
 
 import javax.validation.ConstraintViolation;
@@ -20,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * A unit test class for annotation @ValidSearchCertificateMaxNumberOfResults and its validator.
+ * <br/>
+ * <b>Note: </b> Due to test compilation issue ECA-7148, we use an original input class SearchCertificatesRestRequest instead of simplified annotated class.
  *
  * @version $Id: ValidSearchCertificateMaxNumberOfResultsUnitTest.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
  */
@@ -27,24 +31,15 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
 
     private static final Validator validator =  Validation.buildDefaultValidatorFactory().getValidator();
 
-    // We create a simple class for testing to check that annotation triggers the validation and reports about a validation failure
-    public class TestClassForAnnotation {
-
-        @ValidSearchCertificateMaxNumberOfResults
-        private Integer maxNumberOfResults;
-
-        public TestClassForAnnotation(final Integer maxNumberOfResults) {
-            this.maxNumberOfResults = maxNumberOfResults;
-        }
-    }
-
     @Test
     public void validationShouldFailOnNullValue() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be null.";
-        final TestClassForAnnotation testClass = new TestClassForAnnotation(null);
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults()
+                .maxNumberOfResults(null)
+                .build();
         // when
-        final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
+        final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals("Invalid object.", 1, constraintViolations.size());
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
@@ -54,9 +49,9 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     public void validationShouldFailOnNegativeValue() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be less or equal to zero.";
-        final TestClassForAnnotation testClass = new TestClassForAnnotation(-1);
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().maxNumberOfResults(-1).build();
         // when
-        final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
+        final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals("Invalid object.", 1, constraintViolations.size());
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
@@ -66,9 +61,9 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     public void validationShouldFailOnZeroValue() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be less or equal to zero.";
-        final TestClassForAnnotation testClass = new TestClassForAnnotation(0);
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().maxNumberOfResults(0).build();
         // when
-        final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
+        final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals("Invalid object.", 1, constraintViolations.size());
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
@@ -78,9 +73,9 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     public void validationShouldFailOnValueAboveMaximum() {
         // given
         final String expectedMessage = "Invalid maximum number of results, cannot be more than 400.";
-        final TestClassForAnnotation testClass = new TestClassForAnnotation(401);
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().maxNumberOfResults(401).build();
         // when
-        final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
+        final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals("Invalid object.", 1, constraintViolations.size());
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
@@ -89,9 +84,9 @@ public class ValidSearchCertificateMaxNumberOfResultsUnitTest {
     @Test
     public void validationShouldPassOnNormalValue() {
         // given
-        final TestClassForAnnotation testClass = new TestClassForAnnotation(201);
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestBuilder.withDefaults().maxNumberOfResults(201).build();
         // when
-        final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
+        final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals("Valid object.", 0, constraintViolations.size());
     }
