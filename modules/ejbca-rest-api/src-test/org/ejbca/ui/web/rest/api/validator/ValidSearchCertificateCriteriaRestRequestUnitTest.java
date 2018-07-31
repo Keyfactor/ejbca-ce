@@ -29,18 +29,6 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Test
-    public void validationShouldFailOnNull() {
-        // given
-        final String expectedMessage = "Invalid search criteria content, cannot be null.";
-        final ValidSearchCertificateCriteriaRestRequestTestClass testClass = new ValidSearchCertificateCriteriaRestRequestTestClass(null);
-        // when
-        final Set<ConstraintViolation<ValidSearchCertificateCriteriaRestRequestTestClass>> constraintViolations = validator.validate(testClass);
-        // then
-        assertEquals("Invalid object.",1, constraintViolations.size());
-        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
-    }
-
-    @Test
     public void validationShouldFailOnNullProperty() {
         // given
         final String expectedMessage = "Invalid search criteria content, property cannot be null or empty.";
