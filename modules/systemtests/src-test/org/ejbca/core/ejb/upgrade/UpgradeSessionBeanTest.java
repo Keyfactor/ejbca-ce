@@ -78,6 +78,7 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -99,6 +100,7 @@ import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -132,6 +134,11 @@ public class UpgradeSessionBeanTest {
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
     private GlobalUpgradeConfiguration gucBackup;
     private GlobalConfiguration gcBackup;
+    
+    @BeforeClass
+    public static void beforeClass() {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
     
     @Before
     public void setUp() {
