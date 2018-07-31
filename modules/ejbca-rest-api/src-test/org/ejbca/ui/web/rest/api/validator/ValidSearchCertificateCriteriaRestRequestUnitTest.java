@@ -28,24 +28,13 @@ public class ValidSearchCertificateCriteriaRestRequestUnitTest {
 
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-    // We create a simple class for testing to check that annotation triggers the validation and reports about a validation failure
-    public class TestClassForAnnotation {
-
-        @ValidSearchCertificateCriteriaRestRequest
-        private SearchCertificateCriteriaRestRequest criteria;
-
-        TestClassForAnnotation(final SearchCertificateCriteriaRestRequest criteria) {
-            this.criteria = criteria;
-        }
-    }
-
     @Test
     public void validationShouldFailOnNull() {
         // given
         final String expectedMessage = "Invalid search criteria content, cannot be null.";
-        final TestClassForAnnotation testClass = new TestClassForAnnotation(null);
+        final ValidSearchCertificateCriteriaRestRequestTestClass testClass = new ValidSearchCertificateCriteriaRestRequestTestClass(null);
         // when
-        final Set<ConstraintViolation<TestClassForAnnotation>> constraintViolations = validator.validate(testClass);
+        final Set<ConstraintViolation<ValidSearchCertificateCriteriaRestRequestTestClass>> constraintViolations = validator.validate(testClass);
         // then
         assertEquals("Invalid object.",1, constraintViolations.size());
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
