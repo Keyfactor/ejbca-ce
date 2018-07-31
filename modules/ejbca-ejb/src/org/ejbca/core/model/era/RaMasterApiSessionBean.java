@@ -2528,4 +2528,74 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public String persistAcmeAccount(String accountIdParam, String currentKeyId, LinkedHashMap<Object, Object> dataMap) {
         return acmeAccountDataSession.persist(accountIdParam, currentKeyId, dataMap);
     }
+
+    @Override
+    public byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
+        //Authorization
+        if (!endEntityManagementSession.isAuthorizedToEndEntityProfile(authenticationToken, endEntity.getEndEntityProfileId(),
+                AccessRulesConstants.DELETE_END_ENTITY)) {
+            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + authenticationToken
+                    + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
+            return null;
+        }
+
+        try {
+            endEntity = endEntityManagementSession.addUser(authenticationToken, endEntity, clearpwd);
+        } catch (CesecoreException e) {
+            //Wrapping the CesecoreException.errorCode
+            throw new EjbcaException(e);
+        } catch (EndEntityProfileValidationException e) {
+            //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
+            throw new EndEntityProfileValidationRaException(e);
+        }
+        KeyStore keyStore;
+        try {
+            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntity.getEndEntityProfileId());
+            boolean usekeyrecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
+            EndEntityInformation data = endEntityAccessSession.findUser(endEntity.getUsername());
+            if (data == null) {
+                throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '" + endEntity.getUsername() + "' does not exist");
+            }
+            final boolean savekeys = data.getKeyRecoverable() && usekeyrecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
+            final boolean loadkeys = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
+            final boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
+            final String encodedValidity = endEntity.getExtendedInformation().getCertificateEndTime();
+            final Date notAfter = encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date());
+            keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(authenticationToken,
+                    endEntity.getUsername(), // Username
+                    endEntity.getPassword(), // Enrollment code
+                    endEntity.getCAId(), // The CA signing the private keys
+                    endEntity.getExtendedInformation().getKeyStoreAlgorithmSubType(), // Keylength
+                    endEntity.getExtendedInformation().getKeyStoreAlgorithmType(), // Signature algorithm
+                    null, // Not valid before
+                    notAfter, // Not valid after
+                    endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, // Type of token
+                    loadkeys, // Perform key recovery?
+                    savekeys, // Save private keys?
+                    reusecertificate, // Reuse recovered cert?
+                    endEntity.getEndEntityProfileId()); // Identifier for end entity
+        } catch (KeyStoreException | InvalidAlgorithmParameterException | CADoesntExistsException | IllegalKeyException
+                | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
+                | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
+                | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
+                | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
+            throw new KeyStoreGeneralRaException(e);
+        }
+        if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM) {
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
+                return outputStream.toByteArray();
+            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+                log.error(e); //should never happen if keyStore is valid object
+            }
+        } else {
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                keyStore.store(outputStream, endEntity.getPassword().toCharArray());
+                return outputStream.toByteArray();
+            } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+                log.error(e); //should never happen if keyStore is valid object
+            }
+        }
+        return null;
+    }
 }

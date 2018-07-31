@@ -518,6 +518,23 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, EjbcaException;
 
     /**
+     * Adds (end entity) user and generates keystore for this end entity. Used to enroll certificate from RA. It can be of PKCS12 or JKS type.
+     * Keystore can be loaded with:
+     *
+     * KeyStore ks = KeyStore.getInstance(endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_SOFT_P12 ? "PKCS12" : "JKS");
+     * ks.load(new ByteArrayInputStream(keystoreAsByteArray), endEntityInformation.getPassword().toCharArray());
+     * @param authenticationToken authentication token
+     * @param endEntity end entity data as EndEntityInformation object
+     * @param clearpwd should password be stored in clear way(true) or hashed (false)
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
+     * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
+     * @return true if used has been added, false otherwise
+     * @since Initial RA Master API version (EJBCA 6.14.0)
+     */
+    byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException;
+
+    /**
      * Generates a certificate. This variant is used from the Web Service interface.
      * @param authenticationToken authentication token.
      * @param userdata end entity information, encoded as a UserDataVOWS (web service value object). Must have been enriched by the WS setUserDataVOWS/enrichUserDataWithRawSubjectDn methods.
