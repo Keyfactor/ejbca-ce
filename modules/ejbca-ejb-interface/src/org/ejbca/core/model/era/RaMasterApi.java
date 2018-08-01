@@ -532,7 +532,7 @@ public interface RaMasterApi {
      * @return generated keystore. If the provided data is invalid, then this can in certain cases be null.
      * @since Initial RA Master API version (EJBCA 6.14.0)
      */
-    byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException;
+    byte[] addUserAndGenerateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException;
 
     /**
      * Generates a certificate. This variant is used from the Web Service interface.
