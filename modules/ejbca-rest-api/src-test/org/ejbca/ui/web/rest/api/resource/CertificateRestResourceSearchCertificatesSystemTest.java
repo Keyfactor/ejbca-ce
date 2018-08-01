@@ -351,6 +351,56 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
 
     @Test
+    public void shouldFindByCA() throws Exception {
+        ///given
+        String expectedCn = "searchCertCn";
+        X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
+        String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
+        certificates.add(certificate);
+        String expectedCertificateFormat = "DER";
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.CA.name())
+                .value(TEST_CA_NAME)
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(10)
+                .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
+                .build();
+        //when
+        final ClientResponse<?> actualResponse = newRequest("/v1/certificate/search")
+                .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
+                .post();
+        final String actualJsonString = actualResponse.getEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+        final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
+        final String actualSerialNumber = (String) actualCertificate0JsonObject.get("serial_number");
+        final Object actualResponseFormat = actualCertificate0JsonObject.get("response_format");
+        final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+
+        //then
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertNotNull(actualCertificateString);
+
+        byte [] certBytes2 = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
+        X509Certificate actualCertificate = CertTools.getCertfromByteArray(certBytes2, X509Certificate.class);
+        String issuerDN = CertTools.getIssuerDN(actualCertificate);
+        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
+        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+
+        assertNotNull("Serial number not null.", actualSerialNumber);
+        assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
+        assertNotNull("Should have proper response.", actualResponseFormat);
+        assertEquals("Should have proper response format.", expectedCertificateFormat, actualResponseFormat);
+        assertNotNull("IssuerDN not null.", issuerDN);
+        assertEquals("IssuerDN should be as expected.", TEST_CA_NAME, actualCaName);
+        assertNotNull("SubjectDN not null.", actualSubjectDN);
+        assertEquals("Common name should be as expected", expectedCn, actualCName);
+    }
+
+    @Test
     public void shouldFindByCertificateStatus() throws Exception {
         ///given
         String expectedCn = "searchCertCn";
