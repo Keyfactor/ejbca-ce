@@ -230,12 +230,6 @@ public interface SignSession {
      * @param admin         Information about the administrator or admin performing the event.
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
-     * @param keyUsage      integer with bit mask describing desired keys usage. Bit mask is packed in
-     *                      in integer using constants from CertificateDataBean. ex. int keyusage =
-     *                      CertificateDataBean.digitalSignature | CertificateDataBean.nonRepudiation; gives
-     *                      digitalSignature and nonRepudiation. ex. int keyusage = CertificateDataBean.keyCertSign
-     *                      | CertificateDataBean.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default
-     *                      keyUsage should be used, or should be taken from extensions in the request.
      * @param responseClass The implementation class that will be used as the response message.
      * @param suppliedUserData Optional (can be null) supplied user data, if we are running without storing UserData this will be used. Should only
      *  be supplied when we issue certificates in a single transaction.
