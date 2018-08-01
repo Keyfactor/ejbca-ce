@@ -761,7 +761,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             byte[] ret = null;
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
-                    ret = raMasterApiProxyBean.addUserAndCreateCertificate(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
+                    ret = raMasterApiProxyBean.addUserAndGenerateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 } catch (AuthorizationDeniedException e) {
                     raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
                     log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
@@ -797,7 +797,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             } else if (KeyPairGeneration.PROVIDED_BY_USER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
                     endEntityInformation.getExtendedInformation().setCertificateRequest(CertTools.getCertificateRequestFromPem(getCertificateRequest()).getEncoded());
-                    final byte[] certificateDataToDownload = raMasterApiProxyBean.addUserAndCreateCertificate(raAuthenticationBean.getAuthenticationToken(),
+                    final byte[] certificateDataToDownload = raMasterApiProxyBean.addUserAndGenerateKeyStore(raAuthenticationBean.getAuthenticationToken(),
                             endEntityInformation, false);
                     if (certificateDataToDownload == null) {
                         raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), "null");
