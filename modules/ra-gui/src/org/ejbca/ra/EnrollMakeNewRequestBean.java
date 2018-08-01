@@ -773,10 +773,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 } catch (EjbcaException e) {
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
-                        if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
-                            raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
-                            log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
-                        } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+                        if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
                             log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
@@ -828,10 +825,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }catch (EjbcaException | CertificateEncodingException | CertificateParsingException | ClassCastException | CMSException | IOException e) {
                     ErrorCode errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
-                        if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
-                            raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
-                            log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
-                        } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+                        if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
                             log.info("Subject DN " + subjectDn.getValue() + " already exists for another user" , e);
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
