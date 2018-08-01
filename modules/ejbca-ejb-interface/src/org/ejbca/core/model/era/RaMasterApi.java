@@ -518,6 +518,18 @@ public interface RaMasterApi {
             throws AuthorizationDeniedException, EjbcaException;
 
     /**
+     * Adds (end entity) user and generates certificate from CSR for this end entity. Used for client side generated key pairs.
+     * @param authenticationToken authentication token
+     * @param endEntity end entity information. CertificateRequest (CSR) must be set under extendedInformation of the endEntityInformation.
+     * @param clearpwd should password be stored in clear way(true) or hashed (false)
+     * @return certificate binary data. If the certificate request is invalid, then this can in certain cases be null.
+     * @throws AuthorizationDeniedException
+     * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
+     * @since Initial RA Master API version (EJBCA 6.6.0)
+     */
+    byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd)
+            throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException;
+    /**
      * Adds (end entity) user and generates keystore for this end entity. Used to enroll certificate from RA. It can be of PKCS12 or JKS type.
      * Keystore can be loaded with:
      *
