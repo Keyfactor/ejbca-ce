@@ -71,6 +71,7 @@
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<pathelement path="${clover.jar}"/>
 	</path>
 
 	<condition property="exclude.ee-ejbbridge-implementation" value="org/ejbca/core/ejb/EnterpriseEditionEjbBridgeSessionBean.java" else="exclude.ee-ejbbridge-implementation.nonexistingvalue">
