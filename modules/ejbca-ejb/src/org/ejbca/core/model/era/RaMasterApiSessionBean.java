@@ -2598,4 +2598,46 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return null;
     }
+
+
+    @Override
+    public byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
+        if(endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null){
+            throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
+        }
+        //Authorization
+        if (!endEntityManagementSession.isAuthorizedToEndEntityProfile(authenticationToken, endEntityInformation.getEndEntityProfileId(),
+                AccessRulesConstants.DELETE_END_ENTITY)) {
+            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + authenticationToken
+                    + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
+            return null;
+        }
+
+        try {
+            endEntityInformation = endEntityManagementSession.addUser(authenticationToken, endEntityInformation, clearpwd);
+        } catch (CesecoreException e) {
+            //Wrapping the CesecoreException.errorCode
+            throw new EjbcaException(e);
+        } catch (EndEntityProfileValidationException e) {
+            //Wraps @WebFault Exception based with @NonSensitive EjbcaException based
+            throw new EndEntityProfileValidationRaException(e);
+        }
+        PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
+        req.setUsername(endEntityInformation.getUsername());
+        req.setPassword(endEntityInformation.getPassword());
+        final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
+        req.setNotAfter(encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date()));
+        try {
+            ResponseMessage resp = signSessionLocal.createCertificate(authenticationToken, req, X509ResponseMessage.class, null);
+            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            return cert.getEncoded();
+        } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
+                | CADoesntExistsException | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
+                | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
+                | InvalidAlgorithmException | CertificateExtensionException e) {
+            throw new EjbcaException(e);
+        } catch (CertificateParsingException | CertificateEncodingException e) {
+            throw new IllegalStateException("Internal error with creating X509Certificate from CertificateResponseMessage");
+        }
+    }
 }
