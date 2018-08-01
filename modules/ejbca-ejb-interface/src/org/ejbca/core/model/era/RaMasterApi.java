@@ -529,7 +529,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
-     * @return true if used has been added, false otherwise
+     * @return generated keystore. If the provided data is invalid, then this can in certain cases be null.
      * @since Initial RA Master API version (EJBCA 6.14.0)
      */
     byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException;
