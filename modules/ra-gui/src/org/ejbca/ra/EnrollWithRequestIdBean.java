@@ -200,7 +200,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.info(e);
             }
         } else {
-            log.debug("No token was generated an error meesage should have been logged");
+            log.debug("No token was generated an error message should have been logged");
         }
         reset();
     }
@@ -219,7 +219,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.info(e);
             }
         } else {
-            log.debug("No token was generated an error meesage should have been logged");
+            log.debug("No token was generated an error message should have been logged");
         }
         reset();
     }
@@ -244,7 +244,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                 log.info(e);
             }
         } else {
-            log.debug("No token was generated an error meesage should have been logged");
+            log.debug("No token was generated an error message should have been logged");
         }
         reset();
     }
