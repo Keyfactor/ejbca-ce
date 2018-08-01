@@ -43,7 +43,21 @@ public class ProfileAndTraceInterceptor {
         final Logger targetLogger = Logger.getLogger(targetMethodClass);
         invocationStartTime = System.nanoTime();
         if (targetLogger.isTraceEnabled()) {
-            targetLogger.trace(">" + targetMethodName + "(" + Arrays.toString(invocationContext.getParameters()) + ")");
+            StringBuilder sb = new StringBuilder("(");
+            for (Object obj : invocationContext.getParameters()) {
+                if (sb.length() > 1) {
+                    sb.append("; ");
+                }
+                if (obj instanceof Object[]) {
+                    // We want to print all arguments, which are stored as an array in the array, 
+                    // and not just the object like [Ljava.lang.String;@2dd07417]
+                    sb.append(Arrays.toString((Object[])obj));
+                } else {
+                    sb.append(obj.toString());                    
+                }
+            }    
+            sb.append(")");
+            targetLogger.trace(">" + targetMethodName + sb.toString());
         }
         Object returnValue = null;
         Exception returnException = null; 
