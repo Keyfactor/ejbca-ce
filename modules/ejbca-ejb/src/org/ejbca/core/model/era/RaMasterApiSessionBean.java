@@ -2530,7 +2530,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
+    public byte[] addUserAndGenerateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         //Authorization
         if (!endEntityManagementSession.isAuthorizedToEndEntityProfile(authenticationToken, endEntity.getEndEntityProfileId(),
                 AccessRulesConstants.DELETE_END_ENTITY)) {
