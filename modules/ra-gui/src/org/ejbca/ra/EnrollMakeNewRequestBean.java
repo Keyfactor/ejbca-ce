@@ -990,6 +990,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         
         validateCsr(fileContents);
+        if (algorithmFromCsr != null) { // valid CSR
+            uploadCsr();
+        }
     }
     
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
