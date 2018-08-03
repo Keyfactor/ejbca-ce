@@ -754,6 +754,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
 
+        ErrorCode errorCode = null; // we need to be able to check for USER_ALREADY_EXISTS error during cleanup
         try{
             //Add end-entity
             //Generates a keystore token if user has specified "ON SERVER" key pair generation.
@@ -771,9 +772,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     log.info("Request with ID " + requestId + " is still waiting for approval");
                     return null;
                 } catch (EjbcaException e) {
-                    ErrorCode errorCode = EjbcaException.getErrorCode(e);
+                    errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
-                        if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+                        if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
+                            raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
+                            log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
+                        } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
                             log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
@@ -823,9 +827,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     log.info("Request with ID " + requestId + " is still waiting for approval");
                     return null;
                 }catch (EjbcaException | CertificateEncodingException | CertificateParsingException | ClassCastException | CMSException | IOException e) {
-                    ErrorCode errorCode = EjbcaException.getErrorCode(e);
+                    errorCode = EjbcaException.getErrorCode(e);
                     if (errorCode != null) {
-                        if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
+                        if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
+                            raLocaleBean.addMessageError("enroll_username_already_exists", endEntityInformation.getUsername());
+                            log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
+                        } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                             raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
                             log.info("Subject DN " + subjectDn.getValue() + " already exists for another user" , e);
                         } else if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
@@ -843,11 +850,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
             return ret;
         } finally {
-            //End entity clean-up must be done if enrollment could not be completed (but end-entity has been added)
+            //End entity clean-up must be done if enrollment could not be completed (but end-entity has been added and wasn't already existing)
             try {
-                EndEntityInformation fromCA = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
-                if(fromCA != null && fromCA.getStatus() != EndEntityConstants.STATUS_GENERATED){
-                    raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
+                if (errorCode == null || !errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
+                    EndEntityInformation fromCA = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
+                    if(fromCA != null && fromCA.getStatus() != EndEntityConstants.STATUS_GENERATED){
+                        raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
+                    }   
                 }
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException(e);
