@@ -32,6 +32,8 @@ import org.ejbca.core.model.approval.ApprovalException;
  */
 public interface ApprovalProfile extends Profile, Serializable, Cloneable, Comparable<ApprovalProfile> {
 
+    public static final int NO_PROFILE_ID = -1;
+    
     static final String TYPE_NAME = "APPROVAL_PROFILE";
 
     final String PROPERTY_NOTIFICATION_EMAIL_RECIPIENT = "notification_email_recipient";
