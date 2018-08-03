@@ -38,16 +38,14 @@
 <li>Smart card logon certificates for Windows, Linux and Mac OS X.</li>
 <li>Configurable certificate profiles for different types and contents of certificates.</li>
 <li>Standard and custom certificate extensions supported.</li>
-<li>Supports the Simple Certificate Enrollment Protocol (<a href="docs/SCEP.html">SCEP</a>).</li>
 <li>Qualified Certificate Statement (RFC3739) for issuing EU/ETSI qualified certificates.</li>
 <li>Supports the Online Certificate Status Protocol (<a href="docs/OCSP.html">OCSP</a> - RFC2560, RFC6960 and RFC5019), including AIA-extension.</li>
 <li>Supports RFC4387 for distribution of CA certificates and CRLs over HTTP.</li>
 <li>Support for RFC4683, Subject Identification Method (SIM).</li>
 <li>Validation Authority service serving OCSP responses (RFC2560/5019), CA certificates and CRLS (RFC4387).</li>
 <li>Supports the German <a href="http://www.t7ev.org/T7-de/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.</li> 
-<li>Supports <a href="docs/CMP.html">CMP</a> (RFC4210 and RFC4211).</li>
-<li>Supports <a href="docs/EST.html">EST</a> (RFC7030).</li>
 <li>Key recovery to store private keys for recovery for selected users and certificates.</li>
+<li>Standard integration protocols and APIs. SCEP, CMP, EST, ACME, REST and SOAP WS (see Integration Features).</li>
 </ul>    
 </subsection>
   <subsection name="ePassport, eID and eDL PKI features">
@@ -65,11 +63,16 @@
 <li>Built on the JEE 6 specification.</li>
 <li>Flexible, component based architecture.</li>
 <li>Run standalone or integrated in any JEE application.</li>
+<li><a href="docs/Web_Service_Interface.html">Web service</a> (WS) interface for remote administration and integration.</li>
+<li>Supports the Simple Certificate Enrollment Protocol (<a href="docs/SCEP.html">SCEP</a>).</li>
+<li>Supports <a href="docs/CMP.html">CMP</a> (RFC4210 and RFC4211).</li>
+<li>Supports <a href="docs/EST.html">EST</a> (RFC7030, Enterprise only).</li>
+<li>Supports <a href="docs/ACME.html">ACME</a> (Enterprise only).</li>
+<li><a href="docs/Certificate_Management_REST_Interface.html">REST Certificate Management API</a> (Enterprise only).</li>
 <li>External Validation Authority and OCSP responder also works with any other CA than EJBCA and support large scale OCSP deployments.</li>
 <li>Validation Authority and OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
 <li>Simple OCSP client in pure java.</li>
 <li><a href="docs/Customizing_EJBCA.html">Plug-in functionality</a> allowing you to enhance with your own functionality and work flows.</li>
-<li>Web service (WS) interface for remote administration and integration.</li>
 <li>Command line interface for scripts etc.</li>
 <li>Administration GUI localizable and available in several languages - Japaneese, English, French, German, Italian, Portuguese, Spanish, Chinese, ...</li>
 <li>Internal log messages are localizable for different languages.</li>
@@ -130,6 +133,8 @@
 <li>EAC PKI (EAC 1.11 and 2.10) for ePassports and eIDs, Country Verifying CA (CVCA) and Document Verifiers (DV) issuing Inspection System (IS) certificates.</li>
 <li>Certified access control and authorization module, for assurance and high trust role separation.</li>
 <li>Support for EST protocol, <a href="https://tools.ietf.org/html/rfc7030">RFC7030</a>, Enrollment over Secure Transport.</li>
+<li>Support for ACME protocol, <a href="https://datatracker.ietf.org/doc/draft-ietf-acme-acme/">IETF Draft</a>.</li>
+<li><a href="docs/Certificate_Management_REST_Interface.html">REST Certificate Management API</a></li>
 <li>Support for Native <a href="https://www.primekey.com/products/software/ejbca-enterprise/#additionals">Autoenrollment in Windows environment</a> with add-on autoenrollment proxy module.</li>
 <li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/CMP.html">CMP</a> with multiple Vendor CAs and vendor certificate authentication.</li>
 <li><a href="docs/CMP.html">CMP Proxy</a> to add an additional network layer, with message check, between the CA and CMP clients.</li>
