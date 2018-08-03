@@ -76,7 +76,7 @@ org.ejbca.util.HTMLTools
   RequestHelper.setDefaultCharacterEncoding(request);
 
 	Map<String, String> requestMap = new HashMap<String, String>();
-	byte[] filebuffer = rabean.getfileBuffer(request, requestMap);
+	byte[] filebuffer = rabean.getFileBuffer(request, requestMap, 250*1024*1024); // 250 MB max
 	
 	if(StringUtils.equals(ACTION_IMPORT_CRL, requestMap.get(ACTION))) {
 		String msg = cabean.importCRL(requestMap.get(SELECT_CA_IMPORTCRL), filebuffer);
