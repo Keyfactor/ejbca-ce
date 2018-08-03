@@ -2876,6 +2876,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
+    public boolean isCaAllowed(int caId) {
+        List<Integer> availableCAs = getAvailableCAs();
+        return availableCAs.contains(-1) || availableCAs.contains(caId);
+    }
+    
     @Override
     public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);
