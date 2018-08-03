@@ -52,8 +52,10 @@ public class ProfileAndTraceInterceptor {
                     // We want to print all arguments, which are stored as an array in the array, 
                     // and not just the object like [Ljava.lang.String;@2dd07417]
                     sb.append(Arrays.toString((Object[])obj));
-                } else {
+                } else if (obj != null) {
                     sb.append(obj.toString());                    
+                } else {
+                    sb.append("null");
                 }
             }    
             sb.append(")");
