@@ -1050,13 +1050,18 @@ public class RAInterfaceBean implements Serializable {
     //-------------------------------------------------------
     //         Import/Export  profiles related code
     //-------------------------------------------------------
-    public byte[]  getfileBuffer(HttpServletRequest request, Map<String, String> requestMap) throws IOException, FileUploadException {
+    public byte[]  getfileBuffer(final HttpServletRequest request, final Map<String, String> requestMap) throws IOException, FileUploadException {
+        return getFileBuffer(request, requestMap, 60_000);
+    }
+    
+    public byte[]  getFileBuffer(final HttpServletRequest request, final Map<String, String> requestMap, final int maxSize) throws IOException, FileUploadException {
         byte[] fileBuffer = null;
         if (ServletFileUpload.isMultipartContent(request)) {
             final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-            diskFileItemFactory.setSizeThreshold(59999);
+            diskFileItemFactory.setSizeThreshold(maxSize); // it makes no sense to write to a temporary file
             ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
-            upload.setSizeMax(60000);
+            upload.setSizeMax(maxSize);
+            upload.setFileSizeMax(maxSize);
             final List<FileItem> items = upload.parseRequest(request);
             for (final FileItem item : items) {
                 if (item.isFormField()) {
