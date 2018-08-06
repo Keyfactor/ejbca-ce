@@ -51,7 +51,10 @@ public class SelectItemComparator implements Comparator<SelectItem>, Serializabl
             log.trace("compare(" + o1.getLabel() + "," + o2.getLabel() + "). 1 is special: " + special1 + ",  2 is special: " + special2 + ",  value comparison: " + ObjectUtils.compare(o1.getLabel(), o2.getLabel()));
         }
         if (special1 == special2) {
-            return ObjectUtils.compare(o1.getLabel(), o2.getLabel());
+            if (o1.getLabel() == null && o2.getLabel() == null) { return 0; }
+            else if (o1.getLabel() == null) { return -1; }
+            else if (o2.getLabel() == null) { return 1; }
+            else { return o1.getLabel().compareToIgnoreCase(o2.getLabel()); }
         } else if (special1) {
             return -1;
         } else {
