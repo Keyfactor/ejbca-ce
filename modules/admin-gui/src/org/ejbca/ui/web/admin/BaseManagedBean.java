@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
+import org.ejbca.util.SelectItemComparator;
 
 /**
  * Base EJBCA JSF Managed Bean, all managed beans of EJBCA should inherit this class
@@ -113,12 +114,7 @@ public abstract class BaseManagedBean implements Serializable {
 
 	/** Sort the provided list by the SelectItems' labels. */
 	protected void sortSelectItemsByLabel(List<SelectItem> selectItems) {
-	    Collections.sort(selectItems, new Comparator<SelectItem>() {
-            @Override
-            public int compare(final SelectItem item1, final SelectItem item2) {
-                return item1.getLabel().compareToIgnoreCase(item2.getLabel());
-            }
-	    });
+	    Collections.sort(selectItems, new SelectItemComparator());
 	}
 
     /**
