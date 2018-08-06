@@ -19,11 +19,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.persistence.Entity;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.cesecore.dbprotection.ProtectedData;
@@ -35,8 +33,8 @@ import org.cesecore.util.Base64PutHashMap;
  *
  * @version $Id: AcmeAccountData.java 25919 2017-05-30 17:09:24Z jeklund $
  */
-@Entity
-@Table(name = "AcmeAccountData")
+//@Entity
+//@Table(name = "AcmeAccountData")
 public class AcmeAccountData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
