@@ -435,15 +435,6 @@ CREATE TABLE AcmeNonceData (
     PRIMARY KEY (nonce)
 );
 
-CREATE TABLE AcmeAccountData (
-    accountId TEXT BINARY NOT NULL,
-    currentKeyId TEXT BINARY NOT NULL,
-    rawData TEXT,
-    rowProtection TEXT,
-    rowVersion INT4 NOT NULL,
-    PRIMARY KEY (accountId)
-);
-
 alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
 
 alter table AdminEntityData add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData;
