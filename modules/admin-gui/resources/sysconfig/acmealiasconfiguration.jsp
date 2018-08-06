@@ -45,12 +45,15 @@ org.cesecore.authorization.control.StandardRules
                     <h:panelGroup id="placeholder2" rendered="#{!acmeConfigMBean.currentAliasEditMode && acmeConfigMBean.allowedToEdit}"/>
 
                     <h:outputLabel for="eep" value="#{web.text.ACME_END_ENTITY_PROFILE}" />
-                    <h:panelGroup id="eep"  >
-                        <h:panelGroup >
+                    <h:panelGroup id="eep" >
+                        <h:panelGroup layout="block" styleClass="">
                             <h:selectOneMenu id="selectOneMenuEEP" value="#{acmeConfigMBean.currentAlias.endEntityProfileId}"
                                              disabled="#{!acmeConfigMBean.currentAliasEditMode}">
-                                <f:selectItems value="#{acmeConfigMBean.authorizedEEProfileNames}"/>
+                                <f:selectItems value="#{acmeConfigMBean.usableEEProfileNames}"/>
                             </h:selectOneMenu>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="">
+                        	<h:outputText id="defaultCaText" value="#{acmeConfigMBean.defaultCaText}" styleClass="help"/>
                         </h:panelGroup>
                     </h:panelGroup>
 
@@ -104,7 +107,8 @@ org.cesecore.authorization.control.StandardRules
 
                     <h:panelGroup>
                         <h:commandButton action="#{acmeConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{acmeConfigMBean.currentAliasEditMode}"/>
-                        <h:commandButton action="#{acmeConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{acmeConfigMBean.currentAliasEditMode}"/>
+                        <h:commandButton action="#{acmeConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{acmeConfigMBean.currentAliasEditMode}"
+                        	disabled="#{acmeConfigMBean.saveCurrentAliasDisabled} }"/>
                     </h:panelGroup>
                 </h:panelGrid>
             </h:form>

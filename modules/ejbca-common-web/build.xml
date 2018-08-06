@@ -18,6 +18,7 @@
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.commons-io.classpath"/>		
+		<path refid="lib.jsf.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.mail.classpath"/>
