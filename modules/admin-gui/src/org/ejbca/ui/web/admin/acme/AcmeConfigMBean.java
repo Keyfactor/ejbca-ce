@@ -190,7 +190,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
                 ret.add(new SelectItem(id, name));
             }
         }
-        Collections.sort(ret, new SelectItemComparator());
+        sortSelectItemsByLabel(ret);
         return ret;
     }
     
