@@ -16,10 +16,12 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.util.SelectItemComparator;
 import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 
@@ -177,16 +179,28 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         return currentAliasStr;
     }
 
-    /** @return a list of EndEntity profiles that this admin is authorized to */
-    public List<SelectItem> getAuthorizedEEProfileNames() {
+    /** @return a list of EndEntity profiles that this admin is authorized to, and that are usable for ACME */
+    public List<SelectItem> getUsableEEProfileNames() {
         Collection<Integer> endEntityProfileIds = endentityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
         Map<Integer, String> nameMap = endentityProfileSession.getEndEntityProfileIdToNameMap();
         final List<SelectItem> ret = new ArrayList<>();
-        for (Integer id: endEntityProfileIds) {
-            String name = nameMap.get(id);
-            ret.add(new SelectItem(id, name));
+        for (Integer id : endEntityProfileIds) {
+            if (id != EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
+                String name = nameMap.get(id);
+                ret.add(new SelectItem(id, name));
+            }
         }
+        Collections.sort(ret, new SelectItemComparator());
         return ret;
+    }
+    
+    /** Returns an information text to show below the End Entity Profile selection. */
+    public String getDefaultCaText() {
+        if (endentityProfileSession.getEndEntityProfileIdToNameMap().isEmpty()) {
+            return getEjbcaWebBean().getText("ACME_MUST_HAVE_ONE_PROFILE");
+        } else {
+            return getEjbcaWebBean().getText("ACME_DEFAULT_CA_WILL_BE_USED");
+        }
     }
 
     public List<SelectItem> getAliasSeletItemList() {
@@ -228,6 +242,10 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
         flushCache();
+    }
+    
+    public boolean isSaveCurrentAliasDisabled() {
+        return endentityProfileSession.getEndEntityProfileIdToNameMap().isEmpty();
     }
 
     public void saveGlobalConfigs(){
