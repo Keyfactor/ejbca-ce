@@ -9,25 +9,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.acme;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.util.SelectItemComparator;
-import org.ejbca.config.AcmeConfiguration;
-import org.ejbca.config.GlobalAcmeConfiguration;
-
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +16,25 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+import javax.faces.context.FacesContext;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.AcmeConfiguration;
+import org.ejbca.config.GlobalAcmeConfiguration;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.util.SelectItemComparator;
 
 /**
  * JavaServer Faces Managed Bean for managing ACME configuration.
@@ -196,7 +196,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     
     /** Returns an information text to show below the End Entity Profile selection. */
     public String getDefaultCaText() {
-        if (endentityProfileSession.getEndEntityProfileIdToNameMap().isEmpty()) {
+        if (getUsableEEProfileNames().isEmpty()) {
             return getEjbcaWebBean().getText("ACME_MUST_HAVE_ONE_PROFILE");
         } else {
             return getEjbcaWebBean().getText("ACME_DEFAULT_CA_WILL_BE_USED");
@@ -245,7 +245,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isSaveCurrentAliasDisabled() {
-        return endentityProfileSession.getEndEntityProfileIdToNameMap().isEmpty();
+        return getUsableEEProfileNames().isEmpty(); 
     }
 
     public void saveGlobalConfigs(){
