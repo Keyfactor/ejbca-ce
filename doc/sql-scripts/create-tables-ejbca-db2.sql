@@ -411,7 +411,7 @@ CREATE TABLE AcmeNonceData (
 
 CREATE TABLE AcmeAccountData (
     accountId VARCHAR(254) NOT NULL,
-    currentKeyId VARCHAR(254)) NOT NULL,
+    currentKeyId VARCHAR(254) NOT NULL,
     rawData CLOB(10K),
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
