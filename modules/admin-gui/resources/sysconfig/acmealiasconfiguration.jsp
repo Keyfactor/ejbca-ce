@@ -108,7 +108,7 @@ org.cesecore.authorization.control.StandardRules
                     <h:panelGroup>
                         <h:commandButton action="#{acmeConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{acmeConfigMBean.currentAliasEditMode}"/>
                         <h:commandButton action="#{acmeConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{acmeConfigMBean.currentAliasEditMode}"
-                        	disabled="#{acmeConfigMBean.saveCurrentAliasDisabled} }"/>
+                        	disabled="#{acmeConfigMBean.saveCurrentAliasDisabled}"/>
                     </h:panelGroup>
                 </h:panelGrid>
             </h:form>
