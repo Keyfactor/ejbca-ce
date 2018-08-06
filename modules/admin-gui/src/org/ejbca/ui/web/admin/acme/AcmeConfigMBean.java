@@ -34,7 +34,6 @@ import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.util.SelectItemComparator;
 
 /**
  * JavaServer Faces Managed Bean for managing ACME configuration.
