@@ -905,7 +905,6 @@
 		    	<include name="**/*.sh" />
 		    	<exclude name="bin/backup/**" />
 		    	<exclude name="modules/statedump/**" />
-		    	<exclude name="modules/configdump/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
@@ -1016,52 +1015,6 @@ After building, you will need to re-deploy EJBCA.
         </echo>
     </target>
 	
-    <!-- ======================================================================= -->
-    <!-- Make a ZIP source release for Configdump, if available.                 -->
-    <!-- Creates a fat source zip containing all Configedump source files and    -->
-    <!-- can be included in your IDE to be able to browse the source.            -->
-	<!-- 																		 -->
-	<!-- Note that this zip is not standalone but needs to be unzipped inside an -->
-	<!-- existing EJBCA installation and built there.							 -->
-    <!-- ======================================================================= -->
-    <target name="ziprelease-configdump-src" if="${mod.configdump.exists}" description="Make a source zip for the Configdump modules">
-        <property name="configdump.src.basezipfile" value="configdump-${app.version.number}-src"/>
-        <delete file="../${configdump.src.basezipfile}.zip"/>
-
-        <property name="configdump.src.release.dir" location="${tmp}/configdump-release-src"/>
-        <delete dir="${configdump.src.release.dir}"/>
-        <mkdir dir="${configdump.src.release.dir}"/>
-        <copy todir="${configdump.src.release.dir}">
-            <fileset dir="${basedir}/modules/">
-                <include name="configdump/src-*/**/*.java" />
-                <include name="configdump/*.txt" />
-                <include name="configdump/*.xml" />
-                <include name="configdump/resources/**" />
-            </fileset>
-        </copy>
-
-        <zip destfile="../${configdump.src.basezipfile}.zip">
-            <zipfileset dir="${configdump.src.release.dir}" filemode="600" dirmode="700">
-            </zipfileset>
-        </zip>
-
-        <antcall target="signjar">
-            <param name="signjar.file" value="../${configdump.src.basezipfile}.zip"/>
-        </antcall>
-        <checksum file="../${configdump.src.basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes" format="MD5SUM"/>
-        <checksum file="../${configdump.src.basezipfile}.zip" algorithm="SHA1" property="configdumpsrcSHA1"/>
-        <checksum file="../${configdump.src.basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes" format="MD5SUM"/>
-        <checksum file="../${configdump.src.basezipfile}.zip" algorithm="SHA-256" property="configdumpsrcSHA256"/>
-        <echo>
-File:             ../${configdump.src.basezipfile}.zip
-SHA1 checksum:    ${configdumpsrcSHA1}
-SHA-256 checksum: ${configdumpsrcSHA256}
-        	
-Note that this zip is not standalone but needs to be unzipped inside an existing EJBCA installation and built there.
-After building, you will need to re-deploy EJBCA.
-        </echo>
-    </target>
-
     <!-- ======================================================================= -->
     <!-- Make a ZIP source release for CmpClient, if available.                  -->
     <!-- Creates a fat source zip containing all CmpClient source files and can  -->
