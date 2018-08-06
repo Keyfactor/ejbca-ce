@@ -1024,6 +1024,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (protocol.equals(AvailableProtocols.REST.getName()) && !isRestAvailable()) {
                 available = false;
             }
+            // The following if must be removed when Acme is going to be enabled in production.
+            if (protocol.equals(AvailableProtocols.ACME.getName())) {
+                available = false;
+            }
             return available;
         }
 
