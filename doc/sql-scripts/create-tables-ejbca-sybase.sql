@@ -438,3 +438,12 @@ CREATE TABLE AcmeNonceData (
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (nonce)
 );
+
+CREATE TABLE AcmeAccountData (
+    accountId VARCHAR(255) NOT NULL,
+    currentKeyId VARCHAR(255) NOT NULL,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (accountId)
+);
