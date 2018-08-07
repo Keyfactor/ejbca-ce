@@ -120,13 +120,14 @@ public class RestLoggingFilter implements Filter {
         final long startTime = System.currentTimeMillis();
         
         final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        final StringBuilder sbInfo = new StringBuilder();
+        final StringBuilder sbInfo = new StringBuilder(200);
         sbInfo.append(httpServletRequest.getMethod() + " " + httpServletRequest.getRequestURL().toString() + " received from " + servletRequest.getRemoteAddr());
         sbInfo.append("  X-Forwarded-For: " + httpServletRequest.getHeader("X-Forwarded-For"));
         log.info(sbInfo.toString());
         
         if (log.isTraceEnabled()) {
-            final StringBuilder sb = new StringBuilder(sbInfo);
+            final StringBuilder sb = new StringBuilder(200);
+            sb.append(sbInfo);
             sb.append("\nRequest headers:\n");
             final Enumeration<String> requestHeaderNames = httpServletRequest.getHeaderNames();
             while (requestHeaderNames.hasMoreElements()) {
@@ -160,11 +161,12 @@ public class RestLoggingFilter implements Filter {
             final String requestData = new String(requestBaos.toByteArray(), StandardCharsets.UTF_8);
             sb.append("  ").append(requestData).append("\n");
             
-            final long endTime = System.currentTimeMillis();
             
             final String responseData = new String(responseBaos.toByteArray(), StandardCharsets.UTF_8);
             sb.append("Response data:\n");
             sb.append(responseData).append("\n");
+            
+            final long endTime = System.currentTimeMillis();
             sb.append("Time taken: ").append(endTime-startTime).append("ms").append("\n");;
             
             log.trace(sb.toString());
