@@ -136,6 +136,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
+import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
@@ -2709,11 +2710,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public LinkedHashMap<Object, Object> getAcmeAccountDataById(String accountId) {
+    public AcmeAccount getAcmeAccountById(String accountId) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getAcmeAccountDataById(accountId);
+                    return raMasterApi.getAcmeAccountById(accountId);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -2723,11 +2724,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public String getAcmeAccountIdByPublicKeyStorageId(String publicKeyStorageId) {
+    public AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.getAcmeAccountIdByPublicKeyStorageId(publicKeyStorageId);
+                    return raMasterApi.getAcmeAccountByPublicKeyStorageId(publicKeyStorageId);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
@@ -2737,11 +2738,11 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public String persistAcmeAccount(String accountIdParam, String currentKeyId, LinkedHashMap<Object, Object> dataMap) {
+    public String persistAcmeAccount(final AcmeAccount acmeAccount) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.persistAcmeAccount(accountIdParam, currentKeyId, dataMap);
+                    return raMasterApi.persistAcmeAccount(acmeAccount);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

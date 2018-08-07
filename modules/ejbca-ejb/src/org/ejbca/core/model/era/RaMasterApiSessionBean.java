@@ -197,7 +197,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
-import org.ejbca.core.protocol.acme.AcmeAccountDataSession;
+import org.ejbca.core.protocol.acme.AcmeAccount;
+import org.ejbca.core.protocol.acme.AcmeAccountDataSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -303,7 +304,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @EJB
     private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
-    private AcmeAccountDataSession acmeAccountDataSession;
+    private AcmeAccountDataSessionLocal acmeAccountDataSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -2515,18 +2516,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public LinkedHashMap<Object, Object> getAcmeAccountDataById(String accountId) {
-        return acmeAccountDataSession.getAccountDataById(accountId);
+    public AcmeAccount getAcmeAccountById(String accountId) {
+        return acmeAccountDataSession.getAcmeAccount(accountId);
     }
 
     @Override
-    public String getAcmeAccountIdByPublicKeyStorageId(String publicKeyStorageId) {
-        return acmeAccountDataSession.getAccountIdByPublicKeyStorageId(publicKeyStorageId);
+    public AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId) {
+        return acmeAccountDataSession.getAcmeAccountByPublicKeyStorageId(publicKeyStorageId);
     }
 
     @Override
-    public String persistAcmeAccount(String accountIdParam, String currentKeyId, LinkedHashMap<Object, Object> dataMap) {
-        return acmeAccountDataSession.persist(accountIdParam, currentKeyId, dataMap);
+    public String persistAcmeAccount(final AcmeAccount acmeAccount) {
+        return acmeAccountDataSession.persist(acmeAccount);
     }
 
     @Override
