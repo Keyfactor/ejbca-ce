@@ -2876,6 +2876,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
+    /**
+     * Checks that provided caId is allowed. Returns true, if caId belongs to availableCas or if any CA is allowed (-1 is in availableCAs list)
+     *
+     * @param caId caId to verify
+     */
     public boolean isCaAllowed(int caId) {
         List<Integer> availableCAs = getAvailableCAs();
         return availableCAs.contains(-1) || availableCAs.contains(caId);
