@@ -91,6 +91,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
+import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -1201,21 +1202,21 @@ public interface RaMasterApi {
     /**
      * Get AcmeAccount by accountId.
      *
-     * @return the AcmeAccount.
+     * @return the sought AcmeAccount or null if not found
      */
-   LinkedHashMap<Object,Object> getAcmeAccountDataById(final String accountId);
+    AcmeAccount getAcmeAccountById(String accountId);
 
     /**
      * Get AcmeAccount by publicKeyStorageId.
      *
-     * @return the AcmeAccount.
+     * @return the sought AcmeAccount or null if not found
      */
-   String getAcmeAccountIdByPublicKeyStorageId(final String publicKeyStorageId);
+    AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId);
 
     /**
      * Create or update the AcmeAccount.
      *
      * @return the persisted version of the AcmeAccount.
      */
-   String persistAcmeAccount(final String accountIdParam, final String currentKeyId, final LinkedHashMap<Object,Object> dataMap);
+   String persistAcmeAccount(final AcmeAccount acmeAccount);
 }

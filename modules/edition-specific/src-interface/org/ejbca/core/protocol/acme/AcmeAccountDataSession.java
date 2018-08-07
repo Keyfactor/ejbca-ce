@@ -12,33 +12,30 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme;
 
-import javax.ejb.Local;
-import java.util.LinkedHashMap;
-
 /**
  * @version $Id: AcmeAccountDataSession.java 25797 2017-05-04 15:52:00Z jeklund $
  */
-//@Local
 public interface AcmeAccountDataSession {
 
     /**
-     * Get AcmeAccount by accountId.
-     *
-     * @return the AcmeAccount.
+     *  
+     * @param accountId the ID of the account
+     * @return the sought account, or null if none exists
      */
-    LinkedHashMap<Object,Object> getAccountDataById(final String accountId);
-
+    AcmeAccount getAcmeAccount(final String accountId);
+    
     /**
-     * Get AcmeAccount by publicKeyStorageId.
-     *
-     * @return the AcmeAccount.
+     *  
+     * @param publicKeyStorageId the ID of the account
+     * @return the sought account, or null if none exists
      */
-    String getAccountIdByPublicKeyStorageId(final String publicKeyStorageId);
-
+    AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId);
+    
     /**
      * Create or update the AcmeAccount.
      *
      * @return the persisted version of the AcmeAccount.
      */
-    String persist(final String accountIdParam, final String currentKeyId, final LinkedHashMap<Object,Object> dataMap);
+    String persist(final AcmeAccount acmeAccount);
+    
 }
