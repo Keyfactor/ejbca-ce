@@ -9,21 +9,20 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.security.cert.CertificateEncodingException;
+import java.util.Collections;
+import java.util.List;
+
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.ui.web.rest.api.helpers.CaInfoBuilder;
 import org.junit.Test;
-
-import java.math.BigInteger;
-import java.security.cert.CertificateEncodingException;
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * A unit test class for SearchCertificatesRestResponse.
