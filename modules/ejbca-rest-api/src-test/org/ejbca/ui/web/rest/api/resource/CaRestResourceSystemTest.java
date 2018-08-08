@@ -16,7 +16,6 @@ import static org.junit.Assert.assertEquals;
 
 import javax.ws.rs.core.Response.Status;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.jboss.resteasy.client.ClientResponse;
 import org.junit.After;
 import org.junit.AfterClass;
