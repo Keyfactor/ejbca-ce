@@ -1828,7 +1828,7 @@ function pageLoad() {
         if (editca && !isexternal && !waitingresponse && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId) && cainfo.getSignedBy()!=CAInfo.SIGNEDBYEXTERNALCA && !isRevoked) { %>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
     <tr id="Row<%=row++%2%>"> 
-        <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RENEWCA") %> <%= ejbcawebbean.getHelpReference("/Renewing_a_SubCA_Signed_by_an_External_CA.html.html") %></td>
+        <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RENEWCA") %> <%= ejbcawebbean.getHelpReference("/Renewing_a_SubCA_Signed_by_an_External_CA.html") %></td>
         <td width="51%" valign="top">
             <table>
                 <tbody>
