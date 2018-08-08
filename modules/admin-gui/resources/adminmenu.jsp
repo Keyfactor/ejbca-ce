@@ -354,14 +354,13 @@ org.ejbca.util.HTMLTools
 <%
 
     // If authorized to edit ACME Configuration then display related links.
-    // Should be hidden for release 6.14
-    //  if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE) && ejbcawebbean.isAcmeConfigurationPresent() ){
-    //      if(!configheaderprinted){      
-    //    out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
-    //    configheaderprinted = true;
-    //      } %>
-<%-- 			<li><a href="<%= ACMECONFIGURATION_LINK %>"><%=ejbcawebbean.getText("NAV_ACMECONFIGURATION") %></a></li>
- --%><% //} %>
+      if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE) && ejbcawebbean.isAcmeConfigurationPresent() ){
+          if(!configheaderprinted){      
+        out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
+        configheaderprinted = true;
+          } %>
+ 			<li><a href="<%= ACMECONFIGURATION_LINK %>"><%=ejbcawebbean.getText("NAV_ACMECONFIGURATION") %></a></li>
+ <% } %>
 <%
 
     // If authorized to edit CMP Configuration then display related links.
