@@ -46,7 +46,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
 
@@ -527,6 +526,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             throw new AuthorizationDeniedException(msg);            
         }
     }
+    @Override
     public boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, boolean logging, String... resources) {
         // We need to check that admin also have rights to the passed in resources
         final List<String> rules = new ArrayList<>(Arrays.asList(resources));
