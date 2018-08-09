@@ -1279,7 +1279,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test27EjbcaVersion() {
         final String version = ejbcaraws.getEjbcaVersion();
         // We don't know which specific version we are testing
-        final String expectedSubString = "EJBCA 6.14";
+        final String expectedSubString = "EJBCA 6.15";
         assertTrue("Wrong version: "+version + " (expected to contain " + expectedSubString + ")", version.contains(expectedSubString));    }
 
     @Test
