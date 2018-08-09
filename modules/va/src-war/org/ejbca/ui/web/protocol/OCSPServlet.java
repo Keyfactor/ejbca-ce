@@ -386,6 +386,9 @@ public class OCSPServlet extends HttpServlet {
             // Max age is retrieved in milliseconds, but it must be in seconds in the cache-control header
             long maxAge = ocspResponseInformation.getMaxAge();
             if (maxAge >= (nextUpdate - thisUpdate)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("max-age ("+maxAge+") is >= (nextUpdate - thisUpdate): ("+nextUpdate+" - "+thisUpdate+")");
+                }
                 maxAge = nextUpdate - thisUpdate - 1;
                 log.warn(intres.getLocalizedMessage("ocsp.shrinkmaxage", maxAge));
             } 
