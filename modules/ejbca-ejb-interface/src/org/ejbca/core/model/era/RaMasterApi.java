@@ -92,6 +92,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
+import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -1219,4 +1220,11 @@ public interface RaMasterApi {
      * @return the persisted version of the AcmeAccount.
      */
    String persistAcmeAccount(final AcmeAccount acmeAccount);
+   
+   /**
+    * Create or update the AcmeOrder.
+    *
+    * @return the persisted version of the AcmeOrder.
+    */
+  String persistAcmeOrder(final AcmeOrder acmeOrder);
 }

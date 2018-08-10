@@ -199,6 +199,8 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeOrder;
+import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -305,6 +307,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
     private AcmeAccountDataSessionLocal acmeAccountDataSession;
+    @EJB
+    private AcmeOrderDataSessionLocal acmeOrderDataSession;
+    
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -2530,6 +2535,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return acmeAccountDataSession.persist(acmeAccount);
     }
 
+    @Override
+    public String persistAcmeOrder(final AcmeOrder acmeOrder) {
+        return acmeOrderDataSession.persist(acmeOrder);
+    }
+    
     @Override
     public byte[] addUserAndGenerateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         //Authorization
