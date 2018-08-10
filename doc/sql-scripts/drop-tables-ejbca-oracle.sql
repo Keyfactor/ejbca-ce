@@ -1,4 +1,6 @@
 drop table AccessRulesData cascade constraints;
+drop table AcmeChallengeData cascade constraints;
+drop table AcmeNonceData cascade constraints;
 drop table AdminEntityData cascade constraints;
 drop table AdminGroupData cascade constraints;
 drop table AdminPreferencesData cascade constraints;
