@@ -2532,7 +2532,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public String persistAcmeAccount(final AcmeAccount acmeAccount) {
-        return acmeAccountDataSession.persist(acmeAccount);
+        return acmeAccountDataSession.createOrUpdate(acmeAccount);
     }
 
     @Override
