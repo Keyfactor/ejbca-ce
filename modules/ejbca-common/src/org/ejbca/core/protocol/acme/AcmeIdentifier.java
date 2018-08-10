@@ -19,7 +19,7 @@ package org.ejbca.core.protocol.acme;
  * @version $Id$
  */
 public interface AcmeIdentifier {
-
+    
     String getType();
 
     void setType(String type);

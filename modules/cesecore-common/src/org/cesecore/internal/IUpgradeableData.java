@@ -27,30 +27,30 @@ public interface IUpgradeableData {
      *
      * @return float version, for example 11 or 11.1
      */
-    public abstract float getLatestVersion();
+    float getLatestVersion();
 
     /**
      * Function returning the current version of the class data.
      *
      * @return float version, for example 11 or 11.1
      */
-    public abstract float getVersion();
+    float getVersion();
 
     /**
      * Function sending the data to be saved to the database.
      *
      * @return Object to be stored in database, i.e. a HashMap for UpgradeableDataHashMap.
      */
-    public abstract Object saveData();
+    Object saveData();
 
     /**
      * Function loading saved data into to data structure.
      */
-    public abstract void loadData(Object data);
+    void loadData(Object data);
 
     /**
      * Function that should handle the update of the data in the class so it's up to date with the
      * latest version.
      */
-    public abstract void upgrade();
+    void upgrade();
 }
