@@ -61,6 +61,7 @@
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <class>org.ejbca.acme.AcmeNonceData</class>
         <class>org.ejbca.acme.AcmeAccountData</class>
+        <class>org.ejbca.acme.AcmeChallengeData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>

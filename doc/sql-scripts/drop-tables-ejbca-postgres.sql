@@ -1,6 +1,8 @@
 alter table AccessRulesData drop constraint FKABB4C1DFDBBC970;
 alter table AdminEntityData drop constraint FKD9A99EBCB3A110AD;
 drop table if exists AccessRulesData cascade;
+drop table if exists AcmeChallengeData cascade;
+drop table if exists AcmeNonceData cascade;
 drop table if exists AdminEntityData cascade;
 drop table if exists AdminGroupData cascade;
 drop table if exists AdminPreferencesData cascade;
