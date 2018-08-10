@@ -13,10 +13,13 @@
 
 package org.ejbca.core.protocol.acme;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+
+import org.cesecore.internal.IUpgradeableData;
 
 /**
  * Interface for AcmeAccount implementations
@@ -25,7 +28,7 @@ import java.util.Set;
  *
  */
 
-public interface AcmeAccount {
+public interface AcmeAccount extends Serializable, IUpgradeableData {
 
     String URL_PROTOCOL_MAILTO_START = "mailto:";
 
