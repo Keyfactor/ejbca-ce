@@ -439,11 +439,11 @@ CREATE TABLE AcmeNonceData (
     PRIMARY KEY (nonce)
 );
 
-CREATE TABLE AcmeAccountData (
-    accountId VARCHAR(255) NOT NULL,
-    currentKeyId VARCHAR(255) NOT NULL,
+CREATE TABLE AcmeChallengeData (
+    challengeId VARCHAR(255) NOT NULL,
+    type VARCHAR(20) NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (accountId)
+    PRIMARY KEY (challengeId)
 );

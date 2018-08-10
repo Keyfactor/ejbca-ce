@@ -444,6 +444,15 @@ CREATE TABLE AcmeAccountData (
     PRIMARY KEY (accountId)
 );
 
+CREATE TABLE AcmeChallengeData (
+    challengeId TEXT BINARY NOT NULL,
+    type TEXT BINARY NOT NULL,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (challengeId)
+);
+
 alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
 
 alter table AdminEntityData add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData;

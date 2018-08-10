@@ -417,6 +417,14 @@ CREATE TABLE AcmeAccountData (
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (accountId)
 );
+CREATE TABLE AcmeChallengeData (
+    challengeId VARCHAR(256) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    rawData CLOB(10 K),
+    rowProtection CLOB(10 K),
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (challengeId)
+);
 
 alter table AccessRulesData add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData;
 
