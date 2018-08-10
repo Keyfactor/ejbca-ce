@@ -39,5 +39,7 @@ public interface AcmeAccountDataSessionLocal extends AcmeAccountDataSession {
      * @return the sought object, or null if not found
      */
     AcmeAccountData findByPublicKeyStorageId(final String publicKeyStorageId);
+    
+
 
 }

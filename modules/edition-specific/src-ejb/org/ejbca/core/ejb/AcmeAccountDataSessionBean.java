@@ -34,7 +34,7 @@ import org.ejbca.core.protocol.acme.AcmeAccountDataSessionRemote;
 public class AcmeAccountDataSessionBean implements AcmeAccountDataSessionRemote, AcmeAccountDataSessionLocal {
     
     @Override
-    public String persist(final AcmeAccount acmeAccount) {
+    public String createOrUpdate(final AcmeAccount acmeAccount) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
     
@@ -61,5 +61,10 @@ public class AcmeAccountDataSessionBean implements AcmeAccountDataSessionRemote,
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AcmeAccount getAcmeAccountByPublicKeyStorageId(final String accountId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public void remove(String accountId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");        
     }
 }
