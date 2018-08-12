@@ -25,6 +25,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -356,7 +357,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     boolean uploadCsrDoneRendered = false;
-    
+
     /** @return true if the the CSR has been uploaded */
     public boolean isUploadCsrDoneRendered() {
         return this.uploadCsrDoneRendered;
@@ -468,7 +469,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isProvideRequestInfoRendered() {
         return isKeyAlgorithmAvailable();
     }
-    
+
     private boolean isKeyAlgorithmAvailable() {
         if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum()) && StringUtils.isNotEmpty(getSelectedAlgorithm())) {
             return true;
@@ -516,7 +517,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     private boolean renderCsrDetailedInfo = false;
-    
+
     public boolean isRenderCsrDetailedInfo() {
         return renderCsrDetailedInfo;
     }
@@ -528,11 +529,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void renderCsrDetailedInfoToggle() {
         renderCsrDetailedInfo = !renderCsrDetailedInfo;
     }
-    
+
     public void renderNonModifiableTemplatesToggle() {
         renderNonModifiableTemplates = !renderNonModifiableTemplates;
     }
-    
+
     public void renderNonModifiableFieldsToggle() {
         renderNonModifiableFields = !renderNonModifiableFields;
     }
@@ -566,7 +567,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 getSubjectAlternativeName().update();
             }
             // Don't make the effort to populate Subject Directory Attribute fields. Too little real world use for that.
-            
+
             uploadCsrDoneRendered = true;
         }
     }
@@ -856,7 +857,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     EndEntityInformation fromCA = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
                     if(fromCA != null && fromCA.getStatus() != EndEntityConstants.STATUS_GENERATED){
                         raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
-                    }   
+                    }
                 }
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException(e);
@@ -881,10 +882,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
-        String fileName = CertTools.getPartFromDN(getEndEntityInformation().getDN(), "CN");
-        if(fileName == null){
-            fileName = "certificatetoken";
-        }
+        final String fileName = getFileName();
         ec.setResponseHeader("Content-Disposition",
                 "attachment; filename=\"" + fileName + fileExtension +  "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         try (final OutputStream output = ec.getResponseOutputStream()) {
@@ -895,6 +893,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", fileName), e);
             log.info("Token " + fileName + " could not be downloaded", e);
         }
+    }
+
+    /**
+     * Calculates the filename for a token (P12 or PEM file) sent back to the client based on
+     * the common name of the certificate.
+     * @return the file name to use in the content disposition header
+     */
+    private String getFileName() {
+        final String commonName = CertTools.getPartFromDN(getEndEntityInformation().getDN(), "CN");
+        if (StringUtils.isEmpty(commonName)) {
+            return "certificatetoken";
+        }
+        if (StringUtils.isAsciiPrintable(commonName)) {
+            return commonName;
+        }
+        return Base64.getEncoder().encodeToString(commonName.getBytes());
     }
 
     /**
@@ -984,12 +998,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
     }
-    
+
     public void actionUpdateCsrInfoFields() {
         String fileName = uploadFile.getName();
-        
+
         csrFileName = fileName;
-        
+
         String fileContents;
         try {
             fileContents = new String(uploadFile.getBytes());
@@ -997,13 +1011,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError("enroll_invalid_certificate_request");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_certificate_request")));
         }
-        
+
         validateCsr(fileContents);
         if (algorithmFromCsr != null) { // valid CSR
             uploadCsr();
         }
     }
-    
+
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public final void validateCsr(String csrValue) throws ValidatorException {
         algorithmFromCsr = null;
@@ -1023,23 +1037,23 @@ public class EnrollMakeNewRequestBean implements Serializable {
         try {
             final String keySpecification = AlgorithmTools.getKeySpecification(jcaPKCS10CertificationRequest.getPublicKey());
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(jcaPKCS10CertificationRequest.getPublicKey());
-            
+
             final CertificateProfile certificateProfile = getCertificateProfile();
             if (!certificateProfile.isKeyTypeAllowed(keyAlgorithm, keySpecification)) {
                 raLocaleBean.addMessageError("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification);
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_key_algorithm_is_not_available", keyAlgorithm + "_" + keySpecification)));
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
-            
+
             certificateRequest = csrValue;
-            
+
             PublicKey publicKey = jcaPKCS10CertificationRequest.getPublicKey();
             publicKeyModulus = KeyTools.getKeyModulus(publicKey);
-            
+
             publicKeyExponent = KeyTools.getKeyPublicExponent(publicKey);
             sha256Fingerprint = KeyTools.getSha256Fingerprint(certificateRequest);
             signature = KeyTools.getCertificateRequestSignature(jcaPKCS10CertificationRequest);
-            
+
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             raLocaleBean.addMessageError("enroll_unknown_key_algorithm");
             throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_unknown_key_algorithm")));
@@ -1603,7 +1617,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
-    
+
     public UploadedFile getUploadFile() {
         return uploadFile;
     }
@@ -1611,7 +1625,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setUploadFile(UploadedFile uploadFile) {
         this.uploadFile = uploadFile;
     }
-    
+
     public String getPublicKeyModulus() {
         return publicKeyModulus;
     }
@@ -1635,7 +1649,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setSha256Fingerprint(String sha256Fingerprint) {
         this.sha256Fingerprint = sha256Fingerprint;
     }
-    
+
     public String getSignature() {
         return signature;
     }
