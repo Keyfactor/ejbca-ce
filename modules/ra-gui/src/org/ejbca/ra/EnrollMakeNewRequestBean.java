@@ -25,7 +25,6 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,6 +50,7 @@ import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -908,7 +908,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (StringUtils.isAsciiPrintable(commonName)) {
             return commonName;
         }
-        return Base64.getEncoder().encodeToString(commonName.getBytes());
+        return Base64.encodeBase64String(commonName.getBytes());
     }
 
     /**
