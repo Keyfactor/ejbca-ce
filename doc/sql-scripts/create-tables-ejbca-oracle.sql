@@ -451,6 +451,7 @@ CREATE TABLE AcmeAccountData (
 
 CREATE TABLE AcmeChallengeData (
     challengeId VARCHAR2(255 byte) NOT NULL,
+    authorizationId VARCHAR2(255 byte) NOT NULL,
     type VARCHAR2(20 byte) NOT NULL,
     rawData CLOB,
     rowProtection CLOB,

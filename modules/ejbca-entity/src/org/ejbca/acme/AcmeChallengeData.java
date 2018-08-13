@@ -32,11 +32,18 @@ public class AcmeChallengeData extends ProtectedData implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String challengeId;
+    private String authorizationId;
     private String type;
     private String rawData;
     private int rowVersion = 0;
     private String rowProtection;
 
+    public AcmeChallengeData(final String challengeId, final String authorizationId, final String type,  final LinkedHashMap<Object,Object> dataMap) {
+        setChallengeId(challengeId);
+        setAuthorizationId(authorizationId);
+        setType(type);
+        setDataMap(dataMap);
+    }
 
     //@Column
     public String getChallengeId() {
@@ -45,6 +52,10 @@ public class AcmeChallengeData extends ProtectedData implements Serializable {
     public void setChallengeId(String challengeId) {
         this.challengeId = challengeId;
     }
+
+    //@Column
+    public String getAuthorizationId() { return authorizationId; }
+    public void setAuthorizationId(String authorizationId) { this.authorizationId = authorizationId; }
 
     //@Column
     public String getType() {
@@ -96,7 +107,7 @@ public class AcmeChallengeData extends ProtectedData implements Serializable {
     @Override
     protected String getProtectString(final int version) {
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking so we will not include that in the database protection
-        return new ProtectionStringBuilder().append(getChallengeId()).append(getType()).append(getRawData()).toString();
+        return new ProtectionStringBuilder().append(getChallengeId()).append(getAuthorizationId()).append(getType()).append(getRawData()).toString();
     }
 
     @Transient
