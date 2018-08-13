@@ -61,3 +61,6 @@ CREATE INDEX noconflictcertificatedata_idx1 ON NoConflictCertificateData (serial
 CREATE INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData (fingerprint);
 CREATE INDEX noconflictcertificatedata_idx3 ON NoConflictCertificateData (issuerDN,status);
 CREATE INDEX noconflictcertificatedata_idx4 ON NoConflictCertificateData (certificateProfileId);
+
+-- index for searching for ACME accounts by public key
+CREATE INDEX acmeaccountdata_idx1 ON AcmeAccountData (currentKeyId);
