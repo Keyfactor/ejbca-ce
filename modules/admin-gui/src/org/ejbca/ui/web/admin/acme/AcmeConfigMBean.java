@@ -295,6 +295,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         private String urlTemplate;
         private boolean wildcardCertificateIssuanceAllowed;
         private String dnsResolver;
+        private String dnsPort;
         private String dnssecTrustAnchor;
         private String termsOfServiceUrl;
         private Boolean tersmOfServiceApproval;
@@ -310,6 +311,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
                     this.urlTemplate = acmeConfiguration.getWebSiteUrl();
                     this.wildcardCertificateIssuanceAllowed = acmeConfiguration.isWildcardCertificateIssuanceAllowed();
                     this.dnsResolver = acmeConfiguration.getDnsResolver();
+                    this.dnsPort = acmeConfiguration.getDnsPort();
                     this.dnssecTrustAnchor = acmeConfiguration.getDnssecTrustAnchor();
                     this.termsOfServiceUrl = String.valueOf(acmeConfiguration.getTermsOfServiceUrl());
                 }
@@ -378,6 +380,14 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
 
         public void setDnsResolver(String dnsResolver) {
             this.dnsResolver = dnsResolver;
+        }
+        
+        public String getDnsPort() {
+            return dnsPort;
+        }
+
+        public void setDnsPort(final String dnsPort) {
+            this.dnsPort = dnsPort;
         }
 
         public String getTermsOfServiceUrl() {
