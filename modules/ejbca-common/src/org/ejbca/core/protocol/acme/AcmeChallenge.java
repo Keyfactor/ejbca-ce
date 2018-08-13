@@ -28,6 +28,10 @@ public interface AcmeChallenge {
 
     void setChallengeId(String challengeId);
 
+    String getAuthorizationId();
+
+    void setAuthorizationId(String authorizationId);
+
     String getType();
 
     void setType(String type);

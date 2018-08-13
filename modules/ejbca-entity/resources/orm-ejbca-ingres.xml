@@ -63,7 +63,8 @@
     <entity class="org.ejbca.acme.AcmeChallengeData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="challengeId"><column name="challengeId" column-definition="VARCHAR(256)"/></id>
-            <basic fetch="EAGER" name="type"><column name="currentKeyId" column-definition="VARCHAR(20)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="authorizationId"><column name="authorizationId" column-definition="VARCHAR(256)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="type"><column name="type" column-definition="VARCHAR(20)" nullable="false"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="LONG VARCHAR"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
