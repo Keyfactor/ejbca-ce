@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventType;
@@ -1222,9 +1223,23 @@ public interface RaMasterApi {
    String persistAcmeAccount(final AcmeAccount acmeAccount);
    
    /**
+    * Get AcmeOrder by orderId.
+    *
+    * @return the sought AcmeOrder or null if not found
+    */
+   AcmeOrder getAcmeOrderById(String orderId);
+
+   /**
+    * Get AcmeOrder by accountId.
+    *
+    * @return the collection of sought AcmeOrders or null if not found
+    */
+   Set<AcmeOrder> getAcmeOrdersByAccountId(final String accountId);
+   
+   /**
     * Create or update the AcmeOrder.
     *
-    * @return the persisted version of the AcmeOrder.
+    * @return id of the persisted AcmeOrder.
     */
   String persistAcmeOrder(final AcmeOrder acmeOrder);
 }

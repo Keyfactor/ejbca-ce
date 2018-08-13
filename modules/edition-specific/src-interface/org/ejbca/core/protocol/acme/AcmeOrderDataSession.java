@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme;
 
+import java.util.Set;
+
 /**
  * @version $Id: AcmeOrderDataSession.java 25797 2017-05-04 15:52:00Z tarmor $
  */
@@ -25,10 +27,16 @@ public interface AcmeOrderDataSession {
     AcmeOrder getAcmeOrder(final String orderId);
     
     /**
+     *  
+     * @param accountId the ID of the order's associated account
+     * @return the sought order, or null if none exists
+     */
+    Set<AcmeOrder> getAcmeOrdersByAccountId(final String accountId);
+    
+    /**
      * Create or update the AcmeOrder.
      *
      * @return the persisted version of the AcmeOrder.
      */
     String persist(final AcmeOrder acmeOrder);
-    
 }
