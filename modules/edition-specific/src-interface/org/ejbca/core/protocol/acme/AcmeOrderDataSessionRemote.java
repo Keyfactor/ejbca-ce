@@ -24,6 +24,5 @@ import javax.ejb.Remote;
 
 @Remote
 public interface AcmeOrderDataSessionRemote extends AcmeOrderDataSession {
-
    
 }

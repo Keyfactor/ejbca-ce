@@ -13,6 +13,8 @@
 
 package org.ejbca.core.ejb;
 
+import java.util.Set;
+
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -34,11 +36,6 @@ import org.ejbca.core.protocol.acme.AcmeOrderDataSessionRemote;
 public class AcmeOrderDataSessionBean implements AcmeOrderDataSessionRemote, AcmeOrderDataSessionLocal {
     
     @Override
-    public String persist(final AcmeOrder acmeOrder) {
-        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
-    }
-    
-    @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AcmeOrderData find(final String orderId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
@@ -50,4 +47,20 @@ public class AcmeOrderDataSessionBean implements AcmeOrderDataSessionRemote, Acm
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
         
     }
+
+    @Override
+    public Set<AcmeOrder> getAcmeOrdersByAccountId(String accountId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
+    @Override
+    public Set<AcmeOrderData> findByAccountId(String accountId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
+    @Override
+    public String persist(final AcmeOrder acmeOrder) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
 }

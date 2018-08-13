@@ -48,7 +48,6 @@ public class AcmeAccountDataSessionBean implements AcmeAccountDataSessionRemote,
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AcmeAccount getAcmeAccount(final String accountId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
-        
     }
     
     @Override
