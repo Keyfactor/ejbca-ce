@@ -451,6 +451,7 @@ CREATE TABLE AcmeAccountData (
 
 CREATE TABLE AcmeChallengeData (
     challengeId VARCHAR(255,0) NOT NULL,
+    authorizationId VARCHAR(255,0) NOT NULL,
     type VARCHAR(20,0) NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
