@@ -93,6 +93,14 @@ org.cesecore.authorization.control.StandardRules
                         </h:inputText>
                         <h:outputText value="#{acmeConfigMBean.currentAlias.dnsResolver}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
+
+                    <h:outputLabel for="dnsPort" value="#{web.text.ACME_DNS_PORT}" />
+                    <h:panelGroup id="dnsPort" >
+                        <h:inputText  value="#{acmeConfigMBean.currentAlias.dnsPort}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                            <f:validator validatorId="legalCharsValidator"/>
+                        </h:inputText>
+                        <h:outputText value="#{acmeConfigMBean.currentAlias.dnsPort}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                    </h:panelGroup>
                     
                     <h:outputLabel for="dnssecTrustAnchor" value="#{web.text.ACME_DNSSEC_TRUST_ANCHOR}" />
                     <h:panelGroup id="dnssecTrustAnchor" >
