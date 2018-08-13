@@ -12,12 +12,17 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.CodeSource;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -57,6 +62,8 @@ import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -89,7 +96,7 @@ import org.ejbca.util.JDBCUtil;
 @TransactionManagement(TransactionManagementType.BEAN)  // By legacy we create a global config here this way
 public class StartupSingletonBean {
 
-    private final Logger log = Logger.getLogger(StartupSingletonBean.class);
+    private static final Logger log = Logger.getLogger(StartupSingletonBean.class);
     private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Application internal");
     
     @EJB
@@ -133,6 +140,54 @@ public class StartupSingletonBean {
         //logSession.log(EjbcaEventTypes.EJBCA_STOPPING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, null, null, details);                
     }
 
+    
+    /** Checks that a class is loaded by a classloader that is local to the ejbca.ear deployment.
+     * This check is probably JBoss / WildFly specific but not certain. We want to check this so we can detect if JBoss / WildFly bundles jars that we use so we risk having a version conflict.
+     * 
+     * A classloader that is from the main/core JBoss/WildFly modules is typically printed like:
+     * <code>
+     * org.bouncycastle.jcajce.provider.asymmetric.x509.X509CertificateObject(6034186b).ClassLoader=ModuleClassLoader for Module "org.bouncycastle" from local module loader @649d209a 
+     * </code> 
+     * while a classloader from the ejbca.ear space is printed like:
+     * <code>
+     * org.bouncycastle.jcajce.provider.asymmetric.x509.X509CertificateObject(362bcba0).ClassLoader=ModuleClassLoader for Module "deployment.ejbca.ear" from Service Module Loader
+     * </code>
+     * 
+     * @param clazz the class that we want to check which classloader it comes from. For example org.bouncycastle.jcajce.provider.asymmetric.x509.X509CertificateObject.class
+     */
+    private static void checkClassLoaderIsEJBCA(Class clazz) {
+        StringBuffer results = new StringBuffer();
+        ClassLoader cl = clazz.getClassLoader();
+        results.append("\n" + clazz.getName() + "(" + Integer.toHexString(clazz.hashCode()) + ").ClassLoader=" + cl);
+        // We want classes (that we check here) to be loaded from the EJBCA application classloader, and not by the 
+        // JBoss/WildFly main classloader
+        if (results.indexOf("ejbca.ear") == -1) {
+            CodeSource clazzCS = clazz.getProtectionDomain().getCodeSource();
+            if (clazzCS != null) {
+                results.append("\n++++CodeSource: "+clazzCS);
+            } else {
+                results.append("\n++++Null CodeSource");
+            }
+            log.error("BouncyCastle is not loaded by an EJBCA classloader, version conflict is likely: "+clazz.getName()+": "+results.toString());            
+        } else {
+            log.info("BouncyCastle provider is from our ejbca.ear classloader.");
+        }
+    }
+    /** A test certificate we use to test load a certificate in order to figure out which classloader the
+     * BouncyCaslte Provider is using, i.e. who did Security.addProvider(new BouncyCastleProvider()), if it was us or JBoss/WildFly
+     * @see #checkClassLoaderIsEJBCA
+     * @see #startup()
+     */
+    private static byte[] testcertbytes = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
+            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky" + "NDA2NDgwNFoXDTA1MDkyMzA2NTgwNFowMzEQMA4GA1UEAxMHcDEydGVzdDESMBAG"
+            + "A1UEChMJUHJpbWVUZXN0MQswCQYDVQQGEwJTRTCBnTANBgkqhkiG9w0BAQEFAAOB" + "iwAwgYcCgYEAnPAtfpU63/0h6InBmesN8FYS47hMvq/sliSBOMU0VqzlNNXuhD8a"
+            + "3FypGfnPXvjJP5YX9ORu1xAfTNao2sSHLtrkNJQBv6jCRIMYbjjo84UFab2qhhaJ" + "wqJgkQNKu2LHy5gFUztxD8JIuFPoayp1n9JL/gqFDv6k81UnDGmHeFcCARGjggEi"
+            + "MIIBHjAPBgNVHRMBAf8EBTADAQEAMA8GA1UdDwEB/wQFAwMHoAAwOwYDVR0lBDQw" + "MgYIKwYBBQUHAwEGCCsGAQUFBwMCBggrBgEFBQcDBAYIKwYBBQUHAwUGCCsGAQUF"
+            + "BwMHMB0GA1UdDgQWBBTnT1aQ9I0Ud4OEfNJkSOgJSrsIoDAfBgNVHSMEGDAWgBRj" + "e/R2qFQkjqV0pXdEpvReD1eSUTAiBgNVHREEGzAZoBcGCisGAQQBgjcUAgOgCQwH"
+            + "Zm9vQGZvbzASBgNVHSAECzAJMAcGBSkBAQEBMEUGA1UdHwQ+MDwwOqA4oDaGNGh0" + "dHA6Ly8xMjcuMC4wLjE6ODA4MC9lamJjYS93ZWJkaXN0L2NlcnRkaXN0P2NtZD1j"
+            + "cmwwDQYJKoZIhvcNAQEFBQADgYEAU4CCcLoSUDGXJAOO9hGhvxQiwjGD2rVKCLR4" + "emox1mlQ5rgO9sSel6jHkwceaq4A55+qXAjQVsuy76UJnc8ncYX8f98uSYKcjxo/"
+            + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ" + "QUOBOvc=").getBytes());
+
     @PostConstruct
     private void startup() {
         //
@@ -170,6 +225,16 @@ public class StartupSingletonBean {
                 break;
             }
         }
+        // Verify that the classloader uses "our" BC version
+        log.trace(">init checking classloader of BouncyCastle provider");
+        try {
+            final CertificateFactory cf = CertTools.getCertificateFactory();
+            final X509Certificate testcert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(testcertbytes));
+            checkClassLoaderIsEJBCA(testcert.getClass());
+        } catch (CertificateException e1) {
+            log.error("Can not parse certificate, this should never happen: ", e1);
+        }
+
         /* 
          * Trigger ServiceLoader for AuthenticationTokens at startup, since this is a critical function it makes
          * debugging nicer if the available tokens are shown at startup
