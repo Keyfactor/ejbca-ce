@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.acme;
 
+import java.util.Set;
+
 import javax.ejb.Local;
 
 import org.ejbca.acme.AcmeOrderData;
@@ -32,5 +34,11 @@ public interface AcmeOrderDataSessionLocal extends AcmeOrderDataSession {
      * @return the sought object, or null if not found
      */
     AcmeOrderData find(final String orderId);
+    
+    /**
+     * @param accountId the account ID of an AcmeOrderData row
+     * @return the sought object, or null if not found
+     */
+    Set<AcmeOrderData> findByAccountId(final String accountId);
     
 }
