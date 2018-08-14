@@ -93,6 +93,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
+import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -1242,4 +1243,18 @@ public interface RaMasterApi {
     * @return id of the persisted AcmeOrder.
     */
   String persistAcmeOrder(final AcmeOrder acmeOrder);
+
+    /**
+     * Get AcmeAuthorization by authorizationId.
+     *
+     * @return the sought AcmeAuthorization or null if not found
+     */
+  AcmeAuthorization getAcmeAuthorizationById (final String authorizationId);
+
+    /**
+     * Create or update the AcmeAuthorization.
+     *
+     * @return id of the persisted AcmeAuthorization.
+     */
+    String persistAcmeAuthorization(final AcmeAuthorization acmeAuthorization);
 }
