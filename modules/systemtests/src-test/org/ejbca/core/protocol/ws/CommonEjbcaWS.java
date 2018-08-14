@@ -527,11 +527,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
             WaitingForApprovalException_Exception, IllegalQueryException_Exception, EndEntityProfileNotFoundException_Exception {
 
-   // Test to add a user.
+        // Test to add a user.
         final UserDataVOWS user = new UserDataVOWS();
         user.setUsername(userName);
         user.setPassword(PASSWORD);
-        user.setClearPwd(true);
+        user.setClearPwd(false);
         user.setSubjectDN("CN=" + userName);
         user.setCaName(caName);
         user.setEmail(null);
@@ -653,7 +653,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             profile.addField(DnComponents.JURISDICTIONCOUNTRY);
             profile.addField(DnComponents.DATEOFBIRTH);
             profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-            profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
+            profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, false); // not allowing clear text password is the most common option
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
             profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             if ( this.certificateProfileSession.getCertificateProfileId(WS_CERTPROF_EI)==0 ) {
@@ -754,7 +754,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         UserDataVOWS user1 = new UserDataVOWS();
         user1.setUsername(CA1_WSTESTUSER1);
         user1.setPassword(PASSWORD);
-        user1.setClearPwd(true);
+        user1.setClearPwd(false);
         user1.setSubjectDN(getDN(CA1_WSTESTUSER1));
         user1.setCaName(CA1);
         user1.setStatus(EndEntityConstants.STATUS_NEW);
@@ -1458,7 +1458,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Change password to foo456 and status to NEW
         userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
         userdatas.get(0).setPassword("foo456");
-        userdatas.get(0).setClearPwd(true);
+        userdatas.get(0).setClearPwd(false);
         ejbcaraws.editUser(userdatas.get(0));
 
         KeyStore ksenv = null;
@@ -1499,7 +1499,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdatas.size() == 1);
         userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
         userdatas.get(0).setPassword("foo456");
-        userdatas.get(0).setClearPwd(true);
+        userdatas.get(0).setClearPwd(false);
         ejbcaraws.editUser(userdatas.get(0));
         // A new PK12 request now should return the same key and certificate
         KeyStore ksenv2 = ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -2261,7 +2261,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 adminUser.setCertificateProfileId(cpid);
                 adminUser.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
                 log.info("Adding new user: "+adminUser.getUsername());
-                endEntityManagementSession.addUser(intAdmin, adminUser, true);
+                endEntityManagementSession.addUser(intAdmin, adminUser, false);
             } else {
                 adminUser.setStatus(EndEntityConstants.STATUS_NEW);
                 adminUser.setPassword("foo123");
