@@ -64,3 +64,6 @@ CREATE INDEX noconflictcertificatedata_idx4 ON NoConflictCertificateData (certif
 
 -- index for searching for ACME accounts by public key
 CREATE INDEX acmeaccountdata_idx1 ON AcmeAccountData (currentKeyId);
+
+-- index for searching for ACME orders by account id
+CREATE INDEX acmeorderdata_idx1 ON AcmeOrderData (accountId);
