@@ -37,4 +37,5 @@ drop table if exists ServiceData;
 drop table if exists UserData;
 drop table if exists UserDataSourceData;
 drop table if exists NoConflictCertificateData;
+drop table if exists AcmeNonceData;
 drop table if exists AcmeAccountData;
