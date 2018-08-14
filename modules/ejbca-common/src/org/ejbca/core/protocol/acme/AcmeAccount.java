@@ -71,10 +71,6 @@ public interface AcmeAccount extends Serializable, IUpgradeableData {
 
     List<AcmeAuthorization> getAuthorizations();
 
-    List<String> getAuthorizationsFor(String orderId, Set<AcmeIdentifier> acmeIdentifiers);
-
-    AcmeAuthorization getAuthorizationById(String authorizationId);
-
     void removeAuthorization(AcmeAuthorization acmeAuthorization);
 
     AcmeOrder getAcmeOrderById(String orderId);

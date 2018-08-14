@@ -466,7 +466,7 @@ CREATE TABLE AcmeChallengeData (
 CREATE TABLE AcmeAuthorizationData (
     authorizationId TEXT BINARY NOT NULL,
     orderId TEXT BINARY NOT NULL,
-    type TEXT BINARY NOT NULL,
+    accountId TEXT BINARY NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
