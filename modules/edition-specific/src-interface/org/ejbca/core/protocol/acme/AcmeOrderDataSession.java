@@ -39,4 +39,10 @@ public interface AcmeOrderDataSession {
      * @return the persisted version of the AcmeOrder.
      */
     String createOrUpdate(final AcmeOrder acmeOrder);
+    
+    /**
+     * Remove the AcmeOrder.
+     *
+     */
+    void remove(final String orderId);
 }
