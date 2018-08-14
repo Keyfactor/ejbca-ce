@@ -448,7 +448,6 @@ CREATE TABLE AcmeAccountData (
     PRIMARY KEY (accountId)
 );
 
-
 CREATE TABLE AcmeChallengeData (
     challengeId VARCHAR2(255 byte) NOT NULL,
     authorizationId VARCHAR2(255 byte) NOT NULL,
@@ -457,4 +456,14 @@ CREATE TABLE AcmeChallengeData (
     rowProtection CLOB,
     rowVersion NUMBER(10) NOT NULL,
     PRIMARY KEY (challengeId)
+);
+
+CREATE TABLE AcmeAuthorizationData (
+    authorizationId VARCHAR2(255 byte) NOT NULL,
+    orderId VARCHAR2(255 byte) NOT NULL,
+    type VARCHAR2(20 byte) NOT NULL,
+    rawData CLOB,
+    rowProtection CLOB,
+    rowVersion NUMBER(10) NOT NULL,
+    PRIMARY KEY (authorizationId)
 );
