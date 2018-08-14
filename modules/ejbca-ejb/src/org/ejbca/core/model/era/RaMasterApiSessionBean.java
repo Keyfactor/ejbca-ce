@@ -1731,14 +1731,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean savekeys = data.getKeyRecoverable() && usekeyrecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
             final boolean loadkeys = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
             final boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
-            final String encodedValidity = endEntity.getExtendedInformation().getCertificateEndTime();
+            ExtendedInformation ei = endEntity.getExtendedInformation();
+            if (ei == null) {
+                // ExtendedInformation is optional, and we don't want any NPEs here
+            	// Make it easy for ourselves and create a default one if there is none in the end entity
+                ei = new ExtendedInformation();
+            }
+            final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null : ValidityDate.getDate(encodedValidity, new Date());
             keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(admin, // Authentication token
                     endEntity.getUsername(), // Username
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
-                    endEntity.getExtendedInformation().getKeyStoreAlgorithmSubType(), // Keylength
-                    endEntity.getExtendedInformation().getKeyStoreAlgorithmType(), // Signature algorithm
+                    ei.getKeyStoreAlgorithmSubType(), // Keylength
+                    ei.getKeyStoreAlgorithmType(), // Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
                     endEntity.getTokenType() == SecConst.TOKEN_SOFT_JKS, // Type of token
