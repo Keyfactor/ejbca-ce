@@ -418,6 +418,15 @@ CREATE TABLE AcmeAccountData (
     PRIMARY KEY (accountId)
 );
 
+CREATE TABLE AcmeOrderData (
+    orderId VARCHAR(254) NOT NULL,
+    accountId VARCHAR(254) NOT NULL,
+    rawData CLOB(10K),
+    rowProtection CLOB(10K),
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (orderId)
+);
+
 CREATE TABLE AcmeChallengeData (
     challengeId VARCHAR(254) NOT NULL,
     authorizationId VARCHAR(254) NOT NULL,

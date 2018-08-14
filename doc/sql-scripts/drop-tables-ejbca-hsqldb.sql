@@ -1,9 +1,6 @@
 alter table AccessRulesData drop constraint FKABB4C1DFDBBC970;
 alter table AdminEntityData drop constraint FKD9A99EBCB3A110AD;
 drop table AccessRulesData if exists;
-drop table AcmeAuthorizationData if exists;
-drop table AcmeChallengeData if exists;
-drop table AcmeNonceData if exists;
 drop table AdminEntityData if exists;
 drop table AdminGroupData if exists;
 drop table AdminPreferencesData if exists;
@@ -37,5 +34,8 @@ drop table ServiceData if exists;
 drop table UserData if exists;
 drop table UserDataSourceData if exists;
 drop table NoConflictCertificateData if exists;
+drop table AcmeAuthorizationData if exists;
+drop table AcmeChallengeData if exists;
 drop table AcmeNonceData if exists;
 drop table AcmeAccountData if exists;
+drop table AcmeOrderData if exists;
