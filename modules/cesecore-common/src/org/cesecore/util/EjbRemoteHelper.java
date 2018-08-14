@@ -40,6 +40,8 @@ public enum EjbRemoteHelper {
     /** The EJB used by system test ProtocolLookupServerHttpTest. */
     public final static String MODULE_UNIDFNR = "unidfnr-ejb";
     
+    public final static String MODULE_EDITION_SPECIFIC= "edition-specific-ejb";
+    
     private Map<Class<?>, Object> interfaceCache; 
     
     /**

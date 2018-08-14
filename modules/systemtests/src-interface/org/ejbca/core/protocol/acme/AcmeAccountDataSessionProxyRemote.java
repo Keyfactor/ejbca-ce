@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,36 +10,18 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.core.protocol.acme;
 
-import javax.ejb.Local;
-
-import org.ejbca.acme.AcmeAccountData;
+import javax.ejb.Remote;
 
 /**
- * Local interface for AcmeAccountDataSession
+ * Test proxy for AcmeAccountDataSession
  * 
  * @version $Id$
  *
  */
-
-@Local
-public interface AcmeAccountDataSessionLocal extends AcmeAccountDataSession {
-
-    /**
-     * @param accountId the account ID of an AcmeAccountData row
-     * @return the sought object, or null if not found
-     */
-    AcmeAccountData find(final String accountId);
-
-    /**
-     * 
-     * @param publicKeyStorageId the public key storage ID
-     * @return the sought object, or null if not found
-     */
-    AcmeAccountData findByPublicKeyStorageId(final String publicKeyStorageId);
-    
+@Remote
+public interface AcmeAccountDataSessionProxyRemote {
     /**
      * Create or update the AcmeAccount.
      *
@@ -53,5 +35,4 @@ public interface AcmeAccountDataSessionLocal extends AcmeAccountDataSession {
      * @param accountId the ACME account ID
      */
     void remove(final String accountId);
-
 }
