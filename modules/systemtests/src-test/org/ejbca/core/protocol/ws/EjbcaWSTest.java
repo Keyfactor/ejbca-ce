@@ -941,7 +941,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test20KeyRecoverNewest() throws Exception {
-        log.trace(">keyRecover");
+        log.trace(">test20KeyRecoverNewest");
         GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean krenabled = gc.getEnableKeyRecovery();
         if (krenabled == true) {
@@ -1051,12 +1051,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         String key1 = new String(Hex.encode(privK.getEncoded()));
         String key2 = new String(Hex.encode(privK2.getEncoded()));
         assertEquals(key1, key2);
-        log.trace("<keyRecover");
+        log.trace("<test20KeyRecoverNewest");
     }
 
     @Test
     public void test20bKeyRecoverAny() throws Exception {
-        log.trace(">keyRecoverAny");
+        log.trace(">test20bKeyRecoverAny");
         final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
         boolean keyrecovery = gc.getEnableKeyRecovery();
@@ -1208,13 +1208,47 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 String key2 = new String(Hex.encode(privK2.getEncoded()));
                 assertEquals(key1, key2);
             }
+
+            // Try the single keyRecoverEnroll command as well, making a single call instead of a "keyRecover" followed by a "p12Req".
+            for (final java.security.KeyStore ks : keyStores){
+                Enumeration<String> en = ks.aliases();
+                String alias = en.nextElement();
+                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+                if(!ks.isKeyEntry(alias)) {
+                    alias = en.nextElement();
+                }
+                X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+                assertEquals("CN="+username, cert.getSubjectDN().toString());
+                PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
+                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerDN().toString());
+
+                // Try the single keyRecoverEnroll command
+                KeyStore ksenv = ejbcaraws.keyRecoverEnroll(username, cert.getSerialNumber().toString(16), cert.getIssuerDN().toString(), "foo456", null);
+                java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
+                assertNotNull(ks2);
+                en = ks2.aliases();
+                alias = en.nextElement();
+                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+                if(!ks.isKeyEntry(alias)) {
+                    alias = en.nextElement();
+                }
+                X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
+                assertEquals("CN="+username, cert2.getSubjectDN().toString());
+                PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
+                // Compare certificates
+                assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
+                // Compare keys
+                String key1 = new String(Hex.encode(privK.getEncoded()));
+                String key2 = new String(Hex.encode(privK2.getEncoded()));
+                assertEquals(key1, key2);
+            }
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
             gc.setEnableKeyRecovery(keyrecovery);
             globalConfigurationSession.saveConfiguration(intAdmin, gc);
         }
 
-        log.trace("<keyRecoverAny");
+        log.trace("<test20bKeyRecoverAny");
     }
     
     @Test
