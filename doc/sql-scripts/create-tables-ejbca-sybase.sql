@@ -431,6 +431,15 @@ CREATE TABLE NoConflictCertificateData (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE AcmeOrderData (
+    orderId VARCHAR(255) NOT NULL,
+    accountId VARCHAR(255) NOT NULL,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INTEGER NOT NULL,
+    PRIMARY KEY (orderId)
+);
+
 CREATE TABLE AcmeNonceData (
     nonce VARCHAR(255) NOT NULL,
     timeExpires DECIMAL(20,0) NOT NULL,
