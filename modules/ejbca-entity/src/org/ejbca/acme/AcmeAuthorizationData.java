@@ -9,9 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.persistence.Entity;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.cesecore.dbprotection.ProtectedData;
@@ -22,15 +24,22 @@ import org.cesecore.util.Base64PutHashMap;
 /**
  * @version $Id: AcmeAuthorizationData.java 25797 2018-08-10 15:52:00Z jekaterina $
  */
-//@Entity
-//@Table(name = "AcmeAuthorizationData")
-public class AcmeAuthorizationData  extends ProtectedData implements Serializable {
+@Entity
+@Table(name = "AcmeAuthorizationData")
+public class AcmeAuthorizationData extends ProtectedData implements Serializable {
 
     private String authorizationId;
     private String orderId;
+    private String accountId;
     private String rawData;
     private int rowVersion = 0;
     private String rowProtection;
+
+    public AcmeAuthorizationData(final String authorizationId, final String orderId, final LinkedHashMap<Object, Object> dataMap) {
+        setAuthorizationId(authorizationId);
+        setOrderId(orderId);
+        setDataMap(dataMap);
+    }
 
     //@Column
     public String getAuthorizationId() {
@@ -48,22 +57,34 @@ public class AcmeAuthorizationData  extends ProtectedData implements Serializabl
         this.orderId = orderId;
     }
 
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
     //@Column @Lob
-    public String getRawData() { return rawData; }
-    public void setRawData(String rawData) { this.rawData = rawData; }
+    public String getRawData() {
+        return rawData;
+    }
+    public void setRawData(String rawData) {
+        this.rawData = rawData;
+    }
 
 
     @Transient
     @SuppressWarnings("unchecked")
-    public LinkedHashMap<Object,Object> getDataMap() {
+    public LinkedHashMap<Object, Object> getDataMap() {
         try (final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(getRawData().getBytes(StandardCharsets.UTF_8)));) {
             // Handle Base64 encoded string values
-            return new Base64GetHashMap((Map<?,?>)decoder.readObject());
+            return new Base64GetHashMap((Map<?, ?>) decoder.readObject());
         }
     }
 
     @Transient
-    public void setDataMap(final LinkedHashMap<Object,Object> dataMap) {
+    public void setDataMap(final LinkedHashMap<Object, Object> dataMap) {
         // We must base64 encode string for UTF safety
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (final XMLEncoder encoder = new XMLEncoder(baos);) {
@@ -73,14 +94,22 @@ public class AcmeAuthorizationData  extends ProtectedData implements Serializabl
     }
 
     //@Version @Column
-    public int getRowVersion() { return rowVersion; }
-    public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+    public int getRowVersion() {
+        return rowVersion;
+    }
+    public void setRowVersion(int rowVersion) {
+        this.rowVersion = rowVersion;
+    }
 
     //@Column @Lob
     @Override
-    public String getRowProtection() { return rowProtection; }
+    public String getRowProtection() {
+        return rowProtection;
+    }
     @Override
-    public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
+    public void setRowProtection(String rowProtection) {
+        this.rowProtection = rowProtection;
+    }
 
 
     //
