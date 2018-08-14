@@ -31,6 +31,10 @@ public interface AcmeAuthorization {
 
     void setAuthorizationId(String authorizationId);
 
+    String getAccountId();
+
+    void setAccountId(String accountId);
+
     AcmeIdentifier getAcmeIdentifier();
 
     void setAcmeIdentifier(AcmeIdentifier acmeIdentifier);

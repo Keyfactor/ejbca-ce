@@ -70,6 +70,7 @@
         <attributes>
             <id name="authorizationId"><column name="authorizationId" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="orderId"><column name="orderId" column-definition="VARCHAR(256)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>

@@ -64,6 +64,12 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#persist(String, String, LinkedHashMap) */
     String persistAcmeOrderData(AcmeOrder acmeOrder);
 
+    /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorization(String) */
+    AcmeAuthorization getAcmeAuthorizationById(String authorizationId);
+
+    /** @see org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#createOrUpdate(AcmeAuthorization) */
+    String persistAcmeAuthorizationData(AcmeAuthorization acmeAuthorization);
+
     /** @see org.ejbca.core.protocol.acme.AcmeNonceDataSessionBean#useNonce(String, long, long) */
     boolean useAcmeReplayNonce(String nonce, long timeCreated, long timeExpires);
 

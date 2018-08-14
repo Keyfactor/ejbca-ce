@@ -30,7 +30,7 @@ import org.ejbca.acme.AcmeOrderData;
 public interface AcmeOrderDataSessionLocal extends AcmeOrderDataSession {
 
     /**
-     * @param accountId the account ID of an AcmeAccountData row
+     * @param orderId the order ID of an AcmeOrderData row
      * @return the sought object, or null if not found
      */
     AcmeOrderData find(final String orderId);

@@ -462,7 +462,7 @@ CREATE TABLE AcmeOrderData (
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(250) BINARY NOT NULL,
     orderId VARCHAR(250) BINARY NOT NULL,
-    type VARCHAR(20) BINARY NOT NULL,
+    accountId VARCHAR(250) BINARY NOT NULL,
     rawData LONGTEXT,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,

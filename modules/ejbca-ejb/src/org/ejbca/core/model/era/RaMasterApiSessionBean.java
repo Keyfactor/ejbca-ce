@@ -199,6 +199,8 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeAuthorization;
+import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -309,6 +311,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AcmeAccountDataSessionLocal acmeAccountDataSession;
     @EJB
     private AcmeOrderDataSessionLocal acmeOrderDataSession;
+    @EJB
+    private AcmeAuthorizationDataSessionLocal acmeAuthorizationDataSession;
     
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
@@ -324,8 +328,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>2<td>=<td>6.11.0
      * <tr><th>3<td>=<td>6.12.0
      * <tr><th>4<td>=<td>6.14.0
+     * <tr><th>4<td>=<td>6.15.0
      */
-    private static final int RA_MASTER_API_VERSION = 4; // 6.14.0
+    private static final int RA_MASTER_API_VERSION = 5; // 6.15.0
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -2555,7 +2560,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public String persistAcmeOrder(final AcmeOrder acmeOrder) {
         return acmeOrderDataSession.createOrUpdate(acmeOrder);
     }
-    
+
+    @Override
+    public AcmeAuthorization getAcmeAuthorizationById(String authorizationId) {
+        return acmeAuthorizationDataSession.getAcmeAuthorization(authorizationId);
+    }
+
+    @Override
+    public String persistAcmeAuthorization(AcmeAuthorization acmeAuthorization) {
+        return acmeAuthorizationDataSession.createOrUpdate(acmeAuthorization);
+    }
+
     @Override
     public byte[] addUserAndGenerateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         //Authorization

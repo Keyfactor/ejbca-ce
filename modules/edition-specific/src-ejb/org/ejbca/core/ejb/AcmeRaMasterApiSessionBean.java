@@ -31,6 +31,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.acme.AcmeAccount;
+import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeRaMasterApiSessionLocal;
 
@@ -86,7 +87,17 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
     public String persistAcmeOrderData(final AcmeOrder acmeOrder) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
-    
+
+    @Override
+    public AcmeAuthorization getAcmeAuthorizationById(String authorizationId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public String persistAcmeAuthorizationData(AcmeAuthorization acmeAuthorization) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
     @Override
     public boolean useAcmeReplayNonce(final String nonce, final long timeCreated, final long timeExpires) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");

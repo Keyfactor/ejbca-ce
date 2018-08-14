@@ -137,6 +137,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
+import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -2713,7 +2714,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public AcmeAccount getAcmeAccountById(String accountId) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
                 try {
                     return raMasterApi.getAcmeAccountById(accountId);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
@@ -2727,7 +2728,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
                 try {
                     return raMasterApi.getAcmeAccountByPublicKeyStorageId(publicKeyStorageId);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
@@ -2741,7 +2742,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public String persistAcmeAccount(final AcmeAccount acmeAccount) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
                 try {
                     return raMasterApi.persistAcmeAccount(acmeAccount);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
@@ -2755,7 +2756,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public AcmeOrder getAcmeOrderById(String orderId) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
                 try {
                     return raMasterApi.getAcmeOrderById(orderId);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
@@ -2767,9 +2768,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public AcmeAuthorization getAcmeAuthorizationById(String authorizationId) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                try {
+                    return raMasterApi.getAcmeAuthorizationById(authorizationId);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public Set<AcmeOrder> getAcmeOrdersByAccountId(final String accountId) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
                 try {
                     return raMasterApi.getAcmeOrdersByAccountId(accountId);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
@@ -2783,9 +2798,23 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public String persistAcmeOrder(final AcmeOrder acmeOrder) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
                 try {
                     return raMasterApi.persistAcmeOrder(acmeOrder);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String persistAcmeAuthorization(AcmeAuthorization acmeAuthorization) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                try {
+                    return raMasterApi.persistAcmeAuthorization(acmeAuthorization);
                 }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
