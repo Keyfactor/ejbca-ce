@@ -461,3 +461,13 @@ CREATE TABLE AcmeChallengeData (
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (challengeId)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
+
+CREATE TABLE AcmeAuthorizationData (
+    authorizationId VARCHAR(250) BINARY NOT NULL,
+    orderId VARCHAR(250) BINARY NOT NULL,
+    type VARCHAR(20) BINARY NOT NULL,
+    rawData LONGTEXT,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (authorizationId)
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=ND;
