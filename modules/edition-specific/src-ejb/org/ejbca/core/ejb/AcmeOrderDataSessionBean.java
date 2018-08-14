@@ -59,7 +59,7 @@ public class AcmeOrderDataSessionBean implements AcmeOrderDataSessionRemote, Acm
     }
     
     @Override
-    public String persist(final AcmeOrder acmeOrder) {
+    public String createOrUpdate(final AcmeOrder acmeOrder) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
