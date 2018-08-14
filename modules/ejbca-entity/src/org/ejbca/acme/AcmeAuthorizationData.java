@@ -28,6 +28,8 @@ import org.cesecore.util.Base64PutHashMap;
 @Table(name = "AcmeAuthorizationData")
 public class AcmeAuthorizationData extends ProtectedData implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private String authorizationId;
     private String orderId;
     private String accountId;
@@ -35,9 +37,14 @@ public class AcmeAuthorizationData extends ProtectedData implements Serializable
     private int rowVersion = 0;
     private String rowProtection;
 
-    public AcmeAuthorizationData(final String authorizationId, final String orderId, final LinkedHashMap<Object, Object> dataMap) {
+    public AcmeAuthorizationData() {
+        
+    }
+            
+    public AcmeAuthorizationData(final String authorizationId, final String orderId, final String accountId, final LinkedHashMap<Object, Object> dataMap) {
         setAuthorizationId(authorizationId);
         setOrderId(orderId);
+        setAccountId(accountId);
         setDataMap(dataMap);
     }
 
