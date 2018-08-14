@@ -1,6 +1,7 @@
 alter table AccessRulesData drop foreign key FKABB4C1DFDBBC970;
 alter table AdminEntityData drop foreign key FKD9A99EBCB3A110AD;
 drop table if exists AccessRulesData;
+drop table if exists AcmeAuthorizationData;
 drop table if exists AcmeChallengeData;
 drop table if exists AcmeNonceData;
 drop table if exists AdminEntityData;

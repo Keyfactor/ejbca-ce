@@ -457,3 +457,13 @@ CREATE TABLE AcmeChallengeData (
     rowVersion INT4 NOT NULL,
     PRIMARY KEY (challengeId)
 );
+
+CREATE TABLE AcmeAuthorizationData (
+    authorizationId VARCHAR(256) NOT NULL,
+    orderId VARCHAR(256) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    rawData LONG VARCHAR,
+    rowProtection LONG VARCHAR,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (authorizationId)
+);

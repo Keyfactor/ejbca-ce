@@ -1,4 +1,5 @@
 drop table AccessRulesData;
+drop table AcmeAuthorizationData;
 drop table AcmeChallengeData;
 drop table AcmeNonceData;
 drop table AdminEntityData;
