@@ -33,21 +33,5 @@ public interface AcmeAccountDataSession {
      * @return the sought account, or null if none exists
      */
     AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId);
-    
-    /**
-     * Create or update the AcmeAccount.
-     * TODO: This should me moved into Local, but test proxies must be created first.
-     *
-     * @return the persisted version of the AcmeAccount.
-     */
-    String createOrUpdate(final AcmeAccount acmeAccount);
-    
-    /**
-     * Removes an ACME account with the given ID. Fails silently if no such ACME account exists. 
-     * TODO: This should me moved into Local, but test proxies must be created first.
-     * 
-     * @param accountId the ACME account ID
-     */
-    void remove(final String accountId);
-    
+        
 }
