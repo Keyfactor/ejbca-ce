@@ -38,5 +38,5 @@ public interface AcmeOrderDataSession {
      *
      * @return the persisted version of the AcmeOrder.
      */
-    String persist(final AcmeOrder acmeOrder);
+    String createOrUpdate(final AcmeOrder acmeOrder);
 }
