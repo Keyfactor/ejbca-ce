@@ -35,4 +35,5 @@ drop table ServiceData;
 drop table UserData;
 drop table UserDataSourceData;
 drop table NoConflictCertificateData;
+drop table AcmeNonceData;
 drop table AcmeAccountData;
