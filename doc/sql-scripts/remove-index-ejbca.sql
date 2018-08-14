@@ -35,3 +35,6 @@ DROP INDEX noconflictcertificatedata_idx1 ON NoConflictCertificateData;
 DROP INDEX noconflictcertificatedata_idx2 ON NoConflictCertificateData;
 DROP INDEX noconflictcertificatedata_idx3 ON NoConflictCertificateData;
 DROP INDEX noconflictcertificatedata_idx4 ON NoConflictCertificateData;
+
+DROP INDEX acmeaccountdata_idx1 ON AcmeAccountData;
+DROP INDEX acmeorderdata_idx1 ON AcmeOrderData;

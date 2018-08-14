@@ -444,6 +444,15 @@ CREATE TABLE AcmeAccountData (
     PRIMARY KEY (accountId)
 );
 
+CREATE TABLE AcmeOrderData (
+    orderId TEXT BINARY NOT NULL,
+    accountId TEXT BINARY NOT NULL,
+    rawData TEXT,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (orderId)
+);
+
 CREATE TABLE AcmeChallengeData (
     challengeId TEXT BINARY NOT NULL,
     authorizationId TEXT BINARY NOT NULL,
