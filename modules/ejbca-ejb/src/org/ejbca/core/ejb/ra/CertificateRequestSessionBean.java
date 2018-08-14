@@ -295,7 +295,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             InvalidKeySpecException, CertificateException, InvalidAlgorithmParameterException, KeyStoreException, NoSuchEndEntityException {
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
-        addOrEditUser(admin, userdata, true, true);
+        addOrEditUser(admin, userdata, false, true);
         // Process request
         byte[] ret = null;
         try {
