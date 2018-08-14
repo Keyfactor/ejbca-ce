@@ -64,6 +64,7 @@
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <class>org.ejbca.acme.AcmeNonceData</class>
         <class>org.ejbca.acme.AcmeAccountData</class>
+        <class>org.ejbca.acme.AcmeAuthorizationData</class>
         <class>org.ejbca.acme.AcmeChallengeData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
@@ -116,6 +117,7 @@
         <class>org.ejbca.core.ejb.services.ServiceData</class>    
         <class>org.ejbca.acme.AcmeNonceData</class>
         <class>org.ejbca.acme.AcmeAccountData</class>  
+        <class>org.ejbca.acme.AcmeAuthorizationData</class>
         <class>org.ejbca.acme.AcmeChallengeData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
