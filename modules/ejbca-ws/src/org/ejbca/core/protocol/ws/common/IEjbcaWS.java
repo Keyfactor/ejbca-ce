@@ -282,6 +282,9 @@ public interface IEjbcaWS {
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param crmf the CRMF request message (only the public key is used.)
+     * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
+     * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
+     * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param responseType indicating which type of answer that should be returned, on of the
 	 *                     {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @throws CADoesntExistsException if a referenced CA does not exist
@@ -305,6 +308,9 @@ public interface IEjbcaWS {
 	 * @param username the unique username
 	 * @param password the password sent with editUser call
 	 * @param spkac the SPKAC (netscape) request message (only the public key is used.)
+     * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
+     * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
+     * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param responseType indicating which type of answer that should be returned, on of the
 	 *                     {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.RESPONSETYPE_ parameters.
 	 * @throws CADoesntExistsException if a referenced CA does not exist
@@ -727,7 +733,9 @@ public interface IEjbcaWS {
      * @param certSNinHex unique certificate serialnumber in EJBCA, hex encoded
      * @param issuerDN DN of CA, in EJBCA, that issued the certificate
      * @param password new password
-     * @param hardTokenSN of the hardToken
+     * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
+     * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
+     * certificates. Use null if no hardtokenSN should be associated with the certificate.
      * @return the generated keystore
      * @throws AuthorizationDeniedException if the requesting administrator is unauthorized to perform this operation
      * @throws CADoesntExistsException referenced CA cannot be found in any EJBCA instance
