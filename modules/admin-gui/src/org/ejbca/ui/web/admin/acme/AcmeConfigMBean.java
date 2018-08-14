@@ -226,6 +226,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             acmeConfig.setWildcardCertificateIssuanceAllowed(currentAlias.isWildcardCertificateIssuanceAllowed());
             acmeConfig.setWebSiteUrl(currentAlias.getUrlTemplate());
             acmeConfig.setDnsResolver(currentAlias.getDnsResolver());
+            acmeConfig.setDnsPort(currentAlias.getDnsPort());
             acmeConfig.setDnssecTrustAnchor(currentAlias.getDnssecTrustAnchor());
             String termsOfServiceUrl = acmeConfig.getTermsOfServiceUrl();
             if (StringUtils.isNotEmpty(currentAlias.getTermsOfServiceUrl()) && (StringUtils.isEmpty(termsOfServiceUrl) || !termsOfServiceUrl.equals(currentAlias.getTermsOfServiceUrl()))) {
