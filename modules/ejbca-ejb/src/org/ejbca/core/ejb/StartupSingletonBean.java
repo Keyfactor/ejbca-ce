@@ -155,7 +155,7 @@ public class StartupSingletonBean {
      * 
      * @param clazz the class that we want to check which classloader it comes from. For example org.bouncycastle.jcajce.provider.asymmetric.x509.X509CertificateObject.class
      */
-    private static void checkClassLoaderIsEJBCA(Class clazz) {
+    private static void checkClassLoaderIsEJBCA(Class<? extends X509Certificate> clazz) {
         StringBuffer results = new StringBuffer();
         ClassLoader cl = clazz.getClassLoader();
         results.append("\n" + clazz.getName() + "(" + Integer.toHexString(clazz.hashCode()) + ").ClassLoader=" + cl);
