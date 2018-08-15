@@ -468,7 +468,7 @@ CREATE TABLE AcmeChallengeData (
 );
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(255,0) NOT NULL,
-    orderId VARCHAR(255,0) NOT NULL,
+    orderId VARCHAR(255,0),
     accountId VARCHAR(255,0) NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
