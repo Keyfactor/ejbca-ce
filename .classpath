@@ -177,8 +177,6 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-159.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-159.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-1.19.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
@@ -194,5 +192,7 @@
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/hibernate-validator/hibernate-validator-4.3.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-160.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-160.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
