@@ -51,10 +51,6 @@ public interface AcmeOrder {
 
     void setCertificateId(String certificateId);
 
-    List<String> getAuthorizationIds();
-
-    void setAuthorizationIds(List<String> authorizationIds);
-
     AcmeProblemResponse getError();
 
     void setError(AcmeProblemResponse acmeProblemResponse);
