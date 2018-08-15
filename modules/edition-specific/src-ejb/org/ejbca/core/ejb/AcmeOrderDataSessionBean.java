@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.Stateless;
@@ -67,5 +68,9 @@ public class AcmeOrderDataSessionBean implements AcmeOrderDataSessionRemote, Acm
     public void remove(final String orderId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
-
+    
+    @Override
+    public void removeAll(final List<String> orderIds) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
 }

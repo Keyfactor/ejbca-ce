@@ -1244,6 +1244,18 @@ public interface RaMasterApi {
     */
   String persistAcmeOrder(final AcmeOrder acmeOrder);
 
+  /**
+   * remove the AcmeOrder.
+   *
+   */
+  void removeAcmeOrder(String orderId);
+
+  /**
+   * remove the provided list of AcmeOrders.
+   *
+   */
+  void removeAcmeOrders(List<String> orderIds);
+  
     /**
      * Get AcmeAuthorization by authorizationId.
      *

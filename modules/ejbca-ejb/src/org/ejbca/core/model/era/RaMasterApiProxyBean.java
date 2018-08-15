@@ -2838,6 +2838,32 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public void removeAcmeOrder(final String orderId) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                try {
+                    raMasterApi.removeAcmeOrder(orderId);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+    }
+    
+    @Override
+    public void removeAcmeOrders(final List<String> orderIds) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                try {
+                    raMasterApi.removeAcmeOrders(orderIds);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+    }
+    
+    @Override
     public String persistAcmeAuthorization(AcmeAuthorization acmeAuthorization) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {

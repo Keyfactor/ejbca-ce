@@ -62,9 +62,15 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getAcmeOrdersByAccountId(String) */
     Set<AcmeOrder> getAcmeOrdersByAccountId(String accountId);
 
-    /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#persist(String, String, LinkedHashMap) */
+    /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#persist(AcmeOrder) */
     String persistAcmeOrderData(AcmeOrder acmeOrder);
 
+    /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#remove(String) */
+    void removeAcmeOrder(String orderId);
+    
+	/** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#removeAll(List<String>) */
+    void removeAcmeOrders(List<String> orderId);
+    
     /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorization(String) */
     AcmeAuthorization getAcmeAuthorizationById(String authorizationId);
 

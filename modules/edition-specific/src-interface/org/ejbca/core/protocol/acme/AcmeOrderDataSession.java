@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,4 +46,10 @@ public interface AcmeOrderDataSession {
      *
      */
     void remove(final String orderId);
+    
+	   /**
+     * Remove the AcmeOrders.
+     *
+     */
+    void removeAll(final List<String> orderIds);
 }
