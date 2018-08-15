@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.Stateless;
@@ -90,6 +91,11 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
 
     @Override
     public AcmeAuthorization getAcmeAuthorizationById(String authorizationId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public List<AcmeAuthorization> getAcmeAuthorizationsByOrderId(String orderId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
