@@ -69,10 +69,6 @@ public interface AcmeAccount extends Serializable, IUpgradeableData {
 
     List<AcmeOrder> getAcmeOrders();
 
-    List<AcmeAuthorization> getAuthorizations();
-
-    void removeAuthorization(AcmeAuthorization acmeAuthorization);
-
     AcmeOrder getAcmeOrderById(String orderId);
 
     float getLatestVersion();
