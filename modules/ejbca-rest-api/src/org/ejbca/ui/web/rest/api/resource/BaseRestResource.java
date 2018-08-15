@@ -31,7 +31,8 @@ import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
  */
 public abstract class BaseRestResource {
 
-    private static final Validator validator =  Validation.buildDefaultValidatorFactory().getValidator();
+    private static Validator validator = null;
+    private static Object mutex = new Object();
 
     private static final String RESOURCE_STATUS = "OK";
     private static final String RESOURCE_VERSION = "1.0";
@@ -78,10 +79,22 @@ public abstract class BaseRestResource {
      * @throws RestException in case of constraint violation.
      */
     protected void validateObject(final Object object) throws RestException {
-        final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(object);
+        
+        final Set<ConstraintViolation<Object>> constraintViolations = getValidator().validate(object);
         if(!constraintViolations.isEmpty()) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), constraintViolations.iterator().next().getMessage());
         }
+    }
+    
+    private static Validator getValidator() {
+        if (validator == null) {
+            synchronized (mutex) {
+                if (validator == null) { // check again inside synchronized block to avoid race condition
+                    validator = Validation.buildDefaultValidatorFactory().getValidator();
+                }
+            }
+        }
+        return validator;
     }
 
 }
