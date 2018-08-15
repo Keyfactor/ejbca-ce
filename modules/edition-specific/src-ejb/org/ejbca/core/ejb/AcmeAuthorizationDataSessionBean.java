@@ -36,6 +36,11 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
     }
 
     @Override
+    public List<AcmeAuthorization> getAcmeAuthorizationsByAccountId(String accountId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AcmeAuthorizationData find(String authorizationId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
@@ -44,6 +49,11 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<AcmeAuthorizationData> findByOrderId(String orderId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public List<AcmeAuthorizationData> findByAccountId(String accountId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
