@@ -473,7 +473,7 @@ CREATE TABLE AcmeChallengeData (
 
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(250) BINARY NOT NULL,
-    orderId VARCHAR(250) BINARY NOT NULL,
+    orderId VARCHAR(250) BINARY,
     accountId VARCHAR(250) BINARY NOT NULL,
     rawData LONGTEXT,
     rowProtection LONGTEXT,
