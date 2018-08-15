@@ -47,13 +47,13 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.core.model.era.RaMasterApi#searchForCertificate(AuthenticationToken, String) */
     CertificateDataWrapper searchForCertificate(AuthenticationToken authenticationToken, String fingerprint);
 
-    /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#getAccountById(String) */
+    /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#getAcmeAccount(String) */
     AcmeAccount getAcmeAccount(String accountId);
 
-    /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#getAccountById(String) */
+    /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#getAcmeAccountByPublicKeyStorageId(String)  */
     AcmeAccount getAcmeAccountByPublicKeyStorageId(String publicKeyStorageId);
 
-    /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#persist(String, String, LinkedHashMap) */
+    /** @see org.ejbca.core.protocol.acme.AcmeAccountDataSessionBean#createOrUpdate(AcmeAccount) */
     String persistAcmeAccountData(AcmeAccount acmeAccount);
 
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getAcmeOrderById(String) */
@@ -68,8 +68,11 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorization(String) */
     AcmeAuthorization getAcmeAuthorizationById(String authorizationId);
 
-    /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorizationsByOrderId(String) (String) */
+    /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorizationsByOrderId(String) */
     List<AcmeAuthorization> getAcmeAuthorizationsByOrderId(String orderId);
+
+    /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorizationsByAccountId(String) */
+    List<AcmeAuthorization> getAcmeAuthorizationsByAccountId(String accountId);
 
     /** @see org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#createOrUpdate(AcmeAuthorization) */
     String persistAcmeAuthorizationData(AcmeAuthorization acmeAuthorization);
