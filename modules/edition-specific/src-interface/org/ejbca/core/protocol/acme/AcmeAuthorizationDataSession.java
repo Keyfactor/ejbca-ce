@@ -19,8 +19,8 @@ public interface AcmeAuthorizationDataSession {
     /**
      *
      * @param orderId the ID of the order
-     * @return list of sought authorizations, or empty list if none exists
+     * @return list of sought authorizations, or null if none exists
      */
-    List<AcmeAuthorization> getAcmeAuthorizationsByOrderIdId(final String orderId);
+    List<AcmeAuthorization> getAcmeAuthorizationsByOrderId(final String orderId);
 
 }
