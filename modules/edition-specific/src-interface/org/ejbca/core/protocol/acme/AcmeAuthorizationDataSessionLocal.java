@@ -29,6 +29,13 @@ public interface AcmeAuthorizationDataSessionLocal extends AcmeAuthorizationData
     List<AcmeAuthorizationData> findByOrderId(final String orderId);
 
     /**
+     *
+     * @param accountId the account ID
+     * @return the list of sought objects, or null if not found
+     */
+    List<AcmeAuthorizationData> findByAccountId(final String accountId);
+
+    /**
      * Create or update the AcmeAuthorization.
      *
      * @return the id of persisted version of the AcmeAuthorization.
