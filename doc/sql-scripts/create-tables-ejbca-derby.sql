@@ -439,7 +439,7 @@ CREATE TABLE AcmeChallengeData (
 
 CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(256) NOT NULL,
-    orderId VARCHAR(256) NOT NULL,
+    orderId VARCHAR(256),
     accountId VARCHAR(256) NOT NULL,
     rawData CLOB(10 K),
     rowProtection CLOB(10 K),

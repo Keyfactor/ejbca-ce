@@ -66,7 +66,7 @@
     <entity class="org.ejbca.acme.AcmeAuthorizationData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="authorizationId"><column name="authorizationId" column-definition="VARCHAR(255)"/></id>
-            <basic fetch="EAGER" name="orderId"><column name="orderId" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="orderId"><column name="orderId" column-definition="VARCHAR(255)" nullable="true"/></basic>
             <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(255)" nullable="false"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
