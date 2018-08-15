@@ -52,11 +52,6 @@ public class AcmeRandomnessSingletonBean implements AcmeRandomnessSingletonLocal
     }
 
     @Override
-    public String generateAcmeOrderId() {
-        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
-    }
-
-    @Override
     public String generateAcmeChallengeId()  {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }

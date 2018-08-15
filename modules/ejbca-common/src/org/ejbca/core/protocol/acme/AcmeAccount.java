@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.cesecore.internal.IUpgradeableData;
 
@@ -67,14 +66,9 @@ public interface AcmeAccount extends Serializable, IUpgradeableData {
      * @throws AcmeProblemException */
     String getContactEmail() throws AcmeProblemException;
 
-    List<AcmeOrder> getAcmeOrders();
-
-    AcmeOrder getAcmeOrderById(String orderId);
-
     float getLatestVersion();
 
     void upgrade();
 
     LinkedHashMap<Object, Object> getRawData();
-
 }
