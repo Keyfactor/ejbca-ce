@@ -40,8 +40,6 @@ public interface AcmeRandomnessSingletonLocal {
 
     String generateAcmeAccountId();
 
-    String generateAcmeOrderId();
-
     String generateAcmeChallengeId();
 
     byte[] generateReplayNonceSharedSecret(int byteCount);
