@@ -493,31 +493,29 @@ public final class StringTools {
     }
 
     /**
-     * Takes input and converts from Base64 if the string begins with B64:, i.e. is on format "B64:<base64 encoded string>".
+     * Takes a string given as input and converts it from Base64 if the string
+     * begins with the case-insensitive prefix b64, i.e. is on format "b64:<base64 encoded string>".
      *
-     * @param s String to Base64 decode
-     * @return Base64 decoded string, or original string if it was not base 64 encoded
+     * @param input String to Base64 decode
+     * @return Base64 decoded string, or original string if it was not base64 encoded
      */
-    public static String getBase64String(final String s) {
-        if (StringUtils.isEmpty(s)) {
-            return s;
+    public static String getBase64String(final String input) {
+        if (StringUtils.isEmpty(input)) {
+            return input;
         }
-        String s1 = null;
-        if (s.startsWith("B64:")) {
-            s1 = new String(s.substring(4));
-            String n = null;
-            try {
-                // Since we used getBytes(s, "UTF-8") in the method putBase64String, we must use UTF-8 when doing the reverse
-                n = new String(Base64.decode(s1.getBytes("UTF-8")), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                n = s;
-            } catch (DecoderException e) {
-                // We get this if we try to decode something that is not base 64
-                n = s;
-            }
-            return n;
+        if (!input.toLowerCase().startsWith("b64:")) {
+            return input;
         }
-        return s;
+        final String base64Data = input.substring(4);
+        if (base64Data.length() == 0) {
+            return input;
+        }
+        try {
+            // Since we used getBytes(s, "UTF-8") in the method putBase64String, we must use UTF-8 when doing the reverse
+            return new String(Base64.decode(base64Data.getBytes("UTF-8")), "UTF-8");
+        } catch (UnsupportedEncodingException | DecoderException e) {
+            return input;
+        }
     }
 
     /**
