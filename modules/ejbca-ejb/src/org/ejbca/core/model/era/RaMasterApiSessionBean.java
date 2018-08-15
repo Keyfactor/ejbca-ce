@@ -2562,6 +2562,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public void removeAcmeOrder(String orderId) {
+        acmeOrderDataSession.remove(orderId);
+    }
+    
+    @Override
+    public void removeAcmeOrders(List<String> orderIds) {
+        acmeOrderDataSession.removeAll(orderIds);
+    }
+    
+    @Override
     public AcmeAuthorization getAcmeAuthorizationById(String authorizationId) {
         return acmeAuthorizationDataSession.getAcmeAuthorization(authorizationId);
     }
