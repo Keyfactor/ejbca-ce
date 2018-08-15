@@ -42,10 +42,4 @@ public interface AcmeAuthorizationDataSessionLocal extends AcmeAuthorizationData
      */
     void remove(final String authorizationId);
 
-    /**
-     * Removes an ACME authorization with the related to given order ID. Fails silently if no such ACME Authorization exists.
-     *
-     * @param orderId the ACME order ID
-     */
- //   void removeByOrderId(final String orderId);
 }
