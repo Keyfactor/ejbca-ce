@@ -1251,6 +1251,13 @@ public interface RaMasterApi {
      */
   AcmeAuthorization getAcmeAuthorizationById (final String authorizationId);
 
+  /**
+     * Get AcmeAuthorizations by orderId.
+     *
+     * @return the list of sought AcmeAuthorizations or null if not found
+     */
+  List<AcmeAuthorization> getAcmeAuthorizationsByOrderId (final String orderId);
+
     /**
      * Create or update the AcmeAuthorization.
      *

@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.acme;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.Local;
@@ -66,6 +67,9 @@ public interface AcmeRaMasterApiSessionLocal {
 
     /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorization(String) */
     AcmeAuthorization getAcmeAuthorizationById(String authorizationId);
+
+    /** @see  org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#getAcmeAuthorizationsByOrderId(String) (String) */
+    List<AcmeAuthorization> getAcmeAuthorizationsByOrderId(String orderId);
 
     /** @see org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#createOrUpdate(AcmeAuthorization) */
     String persistAcmeAuthorizationData(AcmeAuthorization acmeAuthorization);

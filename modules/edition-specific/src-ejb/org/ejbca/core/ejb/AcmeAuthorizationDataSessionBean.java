@@ -31,7 +31,7 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<AcmeAuthorization> getAcmeAuthorizationsByOrderIdId(String orderId) {
+    public List<AcmeAuthorization> getAcmeAuthorizationsByOrderId(String orderId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
