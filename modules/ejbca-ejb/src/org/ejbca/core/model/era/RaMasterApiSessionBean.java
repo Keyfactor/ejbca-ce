@@ -201,6 +201,8 @@ import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
+import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeChallengeDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
@@ -313,6 +315,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AcmeOrderDataSessionLocal acmeOrderDataSession;
     @EJB
     private AcmeAuthorizationDataSessionLocal acmeAuthorizationDataSession;
+    @EJB
+    private AcmeChallengeDataSessionLocal acmeChallengeDataSession;
     
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
@@ -2589,6 +2593,26 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public String persistAcmeAuthorization(AcmeAuthorization acmeAuthorization) {
         return acmeAuthorizationDataSession.createOrUpdate(acmeAuthorization);
+    }
+
+    @Override
+    public AcmeChallenge getAcmeChallengeById(String challengeId) {
+        return acmeChallengeDataSession.getAcmeChallenge(challengeId);
+    }
+
+    @Override
+    public List<AcmeChallenge> getAcmeChallengesByAuthorizationId(String authorizationId) {
+        return acmeChallengeDataSession.getAcmeChallengesByAuthorizationId(authorizationId);
+    }
+
+    @Override
+    public String persistAcmeChallenge(AcmeChallenge acmeChallenge) {
+        return acmeChallengeDataSession.createOrUpdate(acmeChallenge);
+    }
+
+    @Override
+    public void persistAcmeChallengeList(List<AcmeChallenge> acmeChallenges) {
+        acmeChallengeDataSession.createOrUpdateList(acmeChallenges);
     }
 
     @Override
