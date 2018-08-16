@@ -2266,7 +2266,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 adminUser.setStatus(EndEntityConstants.STATUS_NEW);
                 adminUser.setPassword("foo123");
                 log.info("Changing user: "+adminUser.getUsername());
-                endEntityManagementSession.changeUser(intAdmin, adminUser, true);
+                endEntityManagementSession.changeUser(intAdmin, adminUser, false);
             }
             Date certNotAfterDate = new Date((new Date()).getTime() + (12 * 60 * 60 * 1000)); // cert will expire in 12 hours from now
             signSession.createCertificate(intAdmin, testUsername, "foo123",   new PublicKeyWrapper(key.getPublic()), KeyUsage.cRLSign, new Date(), certNotAfterDate);
