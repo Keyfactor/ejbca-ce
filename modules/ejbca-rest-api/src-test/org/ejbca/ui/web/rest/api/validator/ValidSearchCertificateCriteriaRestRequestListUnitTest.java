@@ -9,19 +9,21 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestBuilder;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+import org.apache.log4j.Logger;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestBuilder;
+import org.junit.Test;
 
 /**
  * A unit test class for annotation @ValidSearchCertificateCriteriaRestRequestList and its validator.
@@ -31,6 +33,7 @@ import static org.junit.Assert.assertEquals;
  * @version $Id: ValidSearchCertificateCriteriaRestRequestListUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
+    private static Logger log = Logger.getLogger(ValidSearchCertificateCriteriaRestRequestListUnitTest.class);
 
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -119,7 +122,7 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
         // when
         final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
         // then
-        System.out.println(constraintViolations);
+        log.info(constraintViolations);
         assertEquals("Up to 12 are allowed.",1, constraintViolations.size());
         assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
     }
