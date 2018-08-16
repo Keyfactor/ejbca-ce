@@ -92,7 +92,6 @@ public class TimeUnitFormatTest {
         // test negative value
         time = "-1y-2mo-3d-4h-5m-6s-7ms";
         millis = parser.parseMillis(time);
-        System.out.println("MILLIS: " + millis);
         assertEquals("'" + time + "' input long value.", -1 * MILLISECONDS_PER_YEAR - 2 * MILLISECONDS_PER_MONTH - 3 * MILLISECONDS_PER_DAY
                 - 4 * MILLISECONDS_PER_HOUR - 5 * MILLISECONDS_PER_MINUTE - 6 * MILLISECONDS_PER_SECOND - 7, millis);
         assertEquals("'" + time + "' input formatted.", "-1y -2mo -3d -4h -5m -6s -7ms", parser.format(millis, MILLISECONDS_FACTOR, TYPE_DAYS));

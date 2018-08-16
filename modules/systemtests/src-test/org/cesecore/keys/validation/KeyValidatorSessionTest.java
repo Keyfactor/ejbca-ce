@@ -321,7 +321,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             // B-1: Check valid RSA key -> issuance MUST be OK.
             keyPair = generateRsaKeyPair(2048); // KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
             publicKey = keyPair.getPublic();
-            System.out.println("Keytype: "+publicKey.getAlgorithm());
+            log.info("Keytype: "+publicKey.getAlgorithm());
             try {
                 final boolean result = keyValidatorProxySession.validatePublicKey(internalAdmin, testCA, testUser, testCertificateProfile,
                         new Date(new Date().getTime() - 1000 * 86400), new Date(new Date().getTime() + 1000 * 86400), publicKey);
