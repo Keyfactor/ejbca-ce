@@ -94,6 +94,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
+import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -1283,4 +1284,31 @@ public interface RaMasterApi {
      * @return id of the persisted AcmeAuthorization.
      */
     String persistAcmeAuthorization(final AcmeAuthorization acmeAuthorization);
+
+
+    /**
+     * Get AcmeChallenge by challengeId.
+     *
+     * @return the sought AcmeChallenge or null if not found
+     */
+    AcmeChallenge getAcmeChallengeById (final String challengeId);
+
+    /**
+     * Get AcmeChallenges by authorizationId.
+     *
+     * @return the sought AcmeChallenge list or null if not found
+     */
+    List<AcmeChallenge> getAcmeChallengesByAuthorizationId(String authorizationId);
+
+    /**
+     * Create or update the AcmeChallenge.
+     * @return id of the persisted AcmeChallenge.
+     */
+    String persistAcmeChallenge(final AcmeChallenge acmeChallenge);
+
+    /**
+     * Create or update the AcmeChallenges.
+     *
+     */
+    void persistAcmeChallengeList(final List<AcmeChallenge> acmeChallenges);
 }

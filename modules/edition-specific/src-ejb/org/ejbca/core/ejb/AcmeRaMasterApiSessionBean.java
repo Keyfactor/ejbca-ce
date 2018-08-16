@@ -33,6 +33,7 @@ import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
+import org.ejbca.core.protocol.acme.AcmeChallenge;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeRaMasterApiSessionLocal;
 
@@ -116,6 +117,26 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
 
     @Override
     public String persistAcmeAuthorizationData(AcmeAuthorization acmeAuthorization) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public AcmeChallenge getAcmeChallengeById(String challengeId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public List<AcmeChallenge> getAcmeChallengesByAuthorizationId(String authorizationId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public void persistAcmeChallengeData(AcmeChallenge acmeChallenge) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
+    public void persistAcmeChallengeDataList(List<AcmeChallenge> acmeChallenges) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 

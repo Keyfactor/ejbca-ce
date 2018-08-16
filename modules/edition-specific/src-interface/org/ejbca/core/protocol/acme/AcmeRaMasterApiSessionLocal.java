@@ -83,6 +83,18 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#createOrUpdate(AcmeAuthorization) */
     String persistAcmeAuthorizationData(AcmeAuthorization acmeAuthorization);
 
+    /** @see org.ejbca.core.protocol.acme.AcmeChallengeDataSessionBean#getAcmeChallenge(String) */
+    AcmeChallenge getAcmeChallengeById (final String challengeId);
+
+    /** @see org.ejbca.core.protocol.acme.AcmeChallengeDataSessionBean#getAcmeChallengesByAuthorizationId(String)  */
+    List<AcmeChallenge> getAcmeChallengesByAuthorizationId (final String authorizationId);
+
+    /** @see org.ejbca.core.protocol.acme.AcmeChallengeDataSessionBean#createOrUpdate(AcmeChallenge) */
+    void persistAcmeChallengeData(AcmeChallenge acmeChallenge);
+
+    /** @see org.ejbca.core.protocol.acme.AcmeChallengeDataSessionBean#createOrUpdateList(List)*/
+    void persistAcmeChallengeDataList(List<AcmeChallenge> acmeChallenges);
+
     /** @see org.ejbca.core.protocol.acme.AcmeNonceDataSessionBean#useNonce(String, long, long) */
     boolean useAcmeReplayNonce(String nonce, long timeCreated, long timeExpires);
 
