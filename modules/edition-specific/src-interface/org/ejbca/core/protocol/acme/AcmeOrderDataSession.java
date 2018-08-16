@@ -40,6 +40,13 @@ public interface AcmeOrderDataSession {
      * @return the persisted version of the AcmeOrder.
      */
     String createOrUpdate(final AcmeOrder acmeOrder);
+
+    /**
+     * Create or update the AcmeOrders.
+     *
+     * @return the list of persisted versions of the AcmeOrders.
+     */
+    List<String> createOrUpdate(final List<AcmeOrder> acmeOrders);
     
     /**
      * Remove the AcmeOrder.

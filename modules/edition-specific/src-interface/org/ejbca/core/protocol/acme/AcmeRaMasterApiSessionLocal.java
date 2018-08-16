@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.acme;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -65,6 +64,9 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#persist(AcmeOrder) */
     String persistAcmeOrderData(AcmeOrder acmeOrder);
 
+    /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#persist(List<AcmeOrder>) */
+    List<String> persistAcmeOrderData(List<AcmeOrder> acmeOrders);
+    
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#remove(String) */
     void removeAcmeOrder(String orderId);
     

@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme;
 
+import java.util.List;
+
 import javax.ejb.Remote;
 
 /**
@@ -28,6 +30,13 @@ public interface AcmeOrderDataSessionProxyRemote {
      * @return the persisted version of the AcmeOrder.
      */
     String createOrUpdate(final AcmeOrder acmeOrder);
+    
+    /**
+     * Create or update the AcmeOrders.
+     *
+     * @return list of ids of the persisted versions of the AcmeOrders.
+     */
+    List<String> createOrUpdate(final List<AcmeOrder> acmeOrders);
     
     /**
      * Removes an ACME order with the given ID. Fails silently if no such ACME order exists. 

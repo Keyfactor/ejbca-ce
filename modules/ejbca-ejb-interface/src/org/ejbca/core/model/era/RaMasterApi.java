@@ -1246,6 +1246,13 @@ public interface RaMasterApi {
   String persistAcmeOrder(final AcmeOrder acmeOrder);
 
   /**
+   * Create or update the AcmeOrders.
+   *
+   * @return list of ids of the persisted AcmeOrders.
+   */
+ List<String> persistAcmeOrders(final List<AcmeOrder> acmeOrders);
+ 
+  /**
    * remove the AcmeOrder.
    *
    */

@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.protocool.acme;
 
+import java.util.List;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -38,6 +40,11 @@ public class AcmeOrderDataSessionProxyBean implements AcmeOrderDataSessionProxyR
         return acmeOrderDataSession.createOrUpdate(acmeOrder);
     }
 
+    @Override
+    public List<String> createOrUpdate(List<AcmeOrder> acmeOrders) {
+        return acmeOrderDataSession.createOrUpdate(acmeOrders);
+    }
+    
     @Override
     public void remove(String orderId) {
         acmeOrderDataSession.remove(orderId);

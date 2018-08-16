@@ -2566,6 +2566,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public List<String> persistAcmeOrders(final List<AcmeOrder> acmeOrders) {
+        return acmeOrderDataSession.createOrUpdate(acmeOrders);
+    }
+    
+    @Override
     public void removeAcmeOrder(String orderId) {
         acmeOrderDataSession.remove(orderId);
     }

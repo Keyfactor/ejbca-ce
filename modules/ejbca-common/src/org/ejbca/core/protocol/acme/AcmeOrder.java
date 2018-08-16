@@ -65,4 +65,7 @@ public interface AcmeOrder {
     
     LinkedHashMap<Object, Object> getRawData();
 
+    void setIsActive(boolean isActive);
+
+    boolean getIsActive();
 }
