@@ -1222,15 +1222,15 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             approvalRequestItems = new ArrayList<>();
             Map<ApprovalRequestType, Integer> approvals = certificateProfile.getApprovals();
             for (ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+                int approvalProfileId;
+                if (approvals.containsKey(approvalRequestType)) {
+                    approvalProfileId = approvals.get(approvalRequestType);
+                } else {
+                    approvalProfileId = -1;
+                }
                 // In certificate profiles we don't want to display the "CA Service Activation" approval type, 
-                // because it is not relevant for certificate profiles
-                if (!approvalRequestType.equals(ApprovalRequestType.ACTIVATECA)) {
-                    int approvalProfileId;
-                    if (approvals.containsKey(approvalRequestType)) {
-                        approvalProfileId = approvals.get(approvalRequestType);
-                    } else {
-                        approvalProfileId = -1;
-                    }
+                // because it is not relevant for certificate profiles But if we have a configuration here, we'll display it
+                if (!approvalRequestType.equals(ApprovalRequestType.ACTIVATECA) || approvalProfileId != -1) {
                     approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));                    
                 }
             }
