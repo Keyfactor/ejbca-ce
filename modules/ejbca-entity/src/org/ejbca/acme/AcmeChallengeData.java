@@ -38,7 +38,11 @@ public class AcmeChallengeData extends ProtectedData implements Serializable {
     private int rowVersion = 0;
     private String rowProtection;
 
-    public AcmeChallengeData(final String challengeId, final String authorizationId, final String type,  final LinkedHashMap<Object,Object> dataMap) {
+
+    public AcmeChallengeData() {
+    }
+
+    public AcmeChallengeData(final String challengeId, final String authorizationId, final String type, final LinkedHashMap<Object,Object> dataMap) {
         setChallengeId(challengeId);
         setAuthorizationId(authorizationId);
         setType(type);
