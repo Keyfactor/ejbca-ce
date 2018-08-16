@@ -47,17 +47,9 @@ public interface AcmeAuthorization {
 
     void setWildcard(boolean wildcard);
 
-    List<AcmeChallenge> getChallenges();
-
-    void setChallenges(List<AcmeChallenge> acmeChallenges);
-
     AcmeAuthorizationStatus getStatus();
 
     void setStatus(AcmeAuthorizationStatus acmeAuthorizationStatus);
-
-    AcmeChallenge getChallengesById(String challengeId);
-
-    int getValidChallengeCount();
 
     float getLatestVersion();
 
