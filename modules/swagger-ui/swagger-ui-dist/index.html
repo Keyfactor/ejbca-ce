@@ -40,7 +40,7 @@
 
       // Build a system
       const ui = SwaggerUIBundle({
-        url: "./ejbca-rest-api/swagger.json",
+        urls: [{"name": "REST API", "url":"./ejbca-rest-api/swagger.json"}, {"name": "ACME", "url":"./acme/swagger.json"}],
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
