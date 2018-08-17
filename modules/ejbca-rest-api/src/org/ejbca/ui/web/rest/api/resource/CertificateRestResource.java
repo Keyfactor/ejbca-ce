@@ -247,7 +247,7 @@ public class CertificateRestResource extends BaseRestResource {
             @ApiParam(value = "Must be valid RFC5280 reason. One of\n" + 
                     " NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n" + 
                     " CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n" + 
-                    " CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGESWITHDRAWN, AA_COMPROMISE")
+                    " CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE")
             @QueryParam("reason") String reason,
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date)
