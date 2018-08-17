@@ -42,6 +42,12 @@ public interface AcmeAuthorizationDataSessionLocal extends AcmeAuthorizationData
      */
     String createOrUpdate(final AcmeAuthorization acmeAuthorization);
 
+
+    /**
+     * Create or update the AcmeAuthorizations .
+     */
+    void createOrUpdateList(final List<AcmeAuthorization> acmeAuthorizations);
+
     /**
      * Removes an ACME authorization with the given ID. Fails silently if no such ACME Authorization exists.
      *

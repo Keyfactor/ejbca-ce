@@ -1292,6 +1292,11 @@ public interface RaMasterApi {
      */
     String persistAcmeAuthorization(final AcmeAuthorization acmeAuthorization);
 
+    /**
+     * Create or update the AcmeAuthorizations.
+     */
+    void persistAcmeAuthorizationList(final List<AcmeAuthorization> acmeAuthorizations);
+
 
     /**
      * Get AcmeChallenge by challengeId.
