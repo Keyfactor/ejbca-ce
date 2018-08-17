@@ -12,6 +12,18 @@ import org.ejbca.acme.AcmeChallengeData;
 @Local
 public interface AcmeChallengeDataSessionLocal extends AcmeChallengeDataSession{
 
+    /**
+     * Create or update the AcmeChallenge.
+     *
+     * @return the persisted version of the AcmeChallenge.
+     */
+    String createOrUpdate(final AcmeChallenge acmeChallenge);
+
+    /**
+     * Create or update the AcmeChallenges.
+     *
+     */
+    void createOrUpdateList(final List<AcmeChallenge> acmeChallenges);
 
     /**
      * @param challengeId the challenge ID of an AcmeChallengeData row
