@@ -235,13 +235,36 @@ public class CrmfRARequestTest extends CmpTestCase {
         final KeyPair key4 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final String userName1 = "cmptest1";
         final String userName2 = "cmptest2";
-        final X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=" + userName1);
-        final X500Name userDN2 = new X500Name("C=SE,O=PrimeKey,CN=" + userName2);
+        final String serial1 = "cmptest1serial";
+        final String serial2 = "cmptest2serial";
+        final String surName1 = "cmptest1surname";
+        final String surName2 = "cmptest2surname";
+        final X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=" + userName1+",SN="+serial1+",SURNAME="+surName1);
+        final X500Name userDN2 = new X500Name("C=SE,O=PrimeKey,CN=" + userName2+",SN="+serial2+",SURNAME="+surName2);
+        X509Certificate cert1 = null;
+        X509Certificate cert2 = null;
+        Certificate user1Cert = null;
         try {
-            
+            // We should not have any users already with this DN
+            if (endEntityManagementSession.existsUser(userName1)) {
+                try {
+                    this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, userName1, ReasonFlags.unused);
+                } catch (NoSuchEndEntityException e) {// Do nothing.
+                }
+            }
+            if (endEntityManagementSession.existsUser(userName2)) {
+                try {
+                    this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, userName2, ReasonFlags.unused);
+                } catch (NoSuchEndEntityException e) {// Do nothing.
+                }
+            }
             // check that several certificates could be created for one user and one key.
-            crmfHttpUserTest(userDN1, key1, null, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), this.cacert, ISSUER_DN);
-            crmfHttpUserTest(userDN2, key2, null, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), this.cacert, ISSUER_DN);
+            cert1 = crmfHttpUserTest(userDN1, key1, null, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), this.cacert, ISSUER_DN);
+            assertNotNull("Failed to create a certificate with CMP", cert1);
+            assertTrue("A user with "+userName1+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName1));
+            cert2 = crmfHttpUserTest(userDN2, key2, null, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), this.cacert, ISSUER_DN);
+            assertNotNull("Failed to create a certificate with CMP", cert2);
+            assertTrue("A user with "+userName2+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName2));
             // check that the request fails when asking for certificate for another user with same key.
             crmfHttpUserTest(
                     userDN2,
@@ -263,7 +286,6 @@ public class CrmfRARequestTest extends CmpTestCase {
                 log.debug("created user: samednuser1, foo123, CN=SameDNUser,O=EJBCA Sample,C=SE");
             } catch (Exception e) {/* Do nothing. */}
             
-            Certificate user1Cert = null;
             try {
                 user1Cert = this.signSession.createCertificate(ADMIN, "samednuser1", "foo123", new PublicKeyWrapper(key3.getPublic()));
             } catch(Exception e) {
@@ -279,6 +301,9 @@ public class CrmfRARequestTest extends CmpTestCase {
                     null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), this.cacert, ISSUER_DN);
             
         } finally {
+            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert1));
+            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert2));
+            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(user1Cert));
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, userName1);
             } catch (NoSuchEndEntityException e) {// Do nothing.
@@ -296,6 +321,32 @@ public class CrmfRARequestTest extends CmpTestCase {
             } catch (NoSuchEndEntityException e) {// Do nothing.
             }
         }
+        
+        // Also make a test with another DN component username generator, serialNumber as we remap this to SN
+        try {
+            this.cmpConfiguration.setRANameGenParams(cmpAlias, "SN");
+            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+            // We should not have any users already with this DN
+            if (endEntityManagementSession.existsUser(serial1)) {
+                try {
+                    this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, userName1, ReasonFlags.unused);
+                } catch (NoSuchEndEntityException e) {// Do nothing.
+                }
+            }
+            // check that a certificate can be created and that the user is based on serialNumber now.
+            cert1 = crmfHttpUserTest(userDN1, key1, null, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), this.cacert, ISSUER_DN);
+            assertNotNull("Failed to create a certificate with CMP", cert1);
+            assertTrue("A user with "+serial1+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(serial1));
+        } finally {
+            this.cmpConfiguration.setRANameGenParams(cmpAlias, "CN");
+            this.globalConfSession.saveConfiguration(ADMIN, this.cmpConfiguration);
+            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert1));
+            try {
+                this.endEntityManagementSession.deleteUser(ADMIN, serial1);
+            } catch (NoSuchEndEntityException e) {// Do nothing.
+            }
+        }
+
     }
 
     @Test
