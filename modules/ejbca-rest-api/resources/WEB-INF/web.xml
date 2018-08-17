@@ -50,6 +50,15 @@
 	<servlet>
 		<servlet-name>Resteasy</servlet-name>
 		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+		    <init-param>     
+		         <param-name>swagger.scanner.id</param-name> 
+			     <param-value>restapi</param-value> 
+			</init-param> 
+			
+			<init-param> 
+			     <param-name>swagger.config.id</param-name> 
+			     <param-value>restapi</param-value> 
+			</init-param>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>Resteasy</servlet-name>
