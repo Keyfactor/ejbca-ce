@@ -228,9 +228,9 @@ public class CertificateRestResource extends BaseRestResource {
      * @param issuerDN       of the certificate to revoke
      * @param serialNumber   HEX encoded SN with or without 0x prefix
      * @param reason         revocation reason. Must be valid RFC5280 reason:
-     *                          NOT_REVOKED, UNSPECIFIED ,KEYCOMPROMISE,
-     *                          CACOMPROMISE, AFFILIATIONCHANGED, SUPERSEDED, CESSATIONOFOPERATION,
-     *                          CERTIFICATEHOLD, REMOVEFROMCRL, PRIVILEGESWITHDRAWN, AACOMPROMISE
+     *                          NOT_REVOKED, UNSPECIFIED , KEY_COMPROMISE,
+     *                          CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,
+     *                          CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE
      * @param date           revocation date (optional). Must be valid ISO8601 date string
      * @return JSON representation of serialNr, issuerDn, revocation status, date and optional message.
      */
@@ -246,8 +246,8 @@ public class CertificateRestResource extends BaseRestResource {
             @PathParam("certificate_serial_number") String serialNumber,
             @ApiParam(value = "Must be valid RFC5280 reason. One of\n" + 
                     " NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n" + 
-                    " CA_COMPROMISE, AFFILIATIONCHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n" + 
-                    " CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGESWITHDRAWN, AACOMPROMISE")
+                    " CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n" + 
+                    " CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGESWITHDRAWN, AA_COMPROMISE")
             @QueryParam("reason") String reason,
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date)
