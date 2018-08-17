@@ -8,19 +8,6 @@ import java.util.List;
 public interface AcmeChallengeDataSession {
 
     /**
-     * Create or update the AcmeChallenge.
-     *
-     * @return the persisted version of the AcmeChallenge.
-     */
-    String createOrUpdate(final AcmeChallenge acmeChallenge);
-
-    /**
-     * Create or update the AcmeChallenges.
-     *
-     */
-    void createOrUpdateList(final List<AcmeChallenge> acmeChallenges);
-
-    /**
      *
      * @param challengeId the ID of the challenge
      * @return the sought challenge, or null if none exists
