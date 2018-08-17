@@ -63,6 +63,11 @@ public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSe
     }
 
     @Override
+    public void createOrUpdateList(List<AcmeAuthorization> acmeAuthorizations) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
     public void remove(String authorizationId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
