@@ -85,6 +85,9 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#createOrUpdate(AcmeAuthorization) */
     String persistAcmeAuthorizationData(AcmeAuthorization acmeAuthorization);
 
+    /** @see org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionBean#createOrUpdateList(List) */
+    void persistAcmeAuthorizationDataList(List<AcmeAuthorization> acmeAuthorizations);
+
     /** @see org.ejbca.core.protocol.acme.AcmeChallengeDataSessionBean#getAcmeChallenge(String) */
     AcmeChallenge getAcmeChallengeById (final String challengeId);
 

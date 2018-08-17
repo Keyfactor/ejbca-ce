@@ -126,6 +126,11 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
     }
 
     @Override
+    public void persistAcmeAuthorizationDataList(List<AcmeAuthorization> acmeAuthorizations) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+
+    @Override
     public AcmeChallenge getAcmeChallengeById(String challengeId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
