@@ -50,4 +50,9 @@ public class AcmeChallengeDataSessionBean implements AcmeChallengeDataSessionLoc
     public List<AcmeChallengeData> findByAuthorizationId(String accountId) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
+
+    @Override
+    public void remove(String challengeId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
 }
