@@ -46,7 +46,27 @@ import org.cesecore.util.CertTools;
 /** QCStatement (rfc3739)
  * 
  * Class for standard X509 certificate extension. 
- * See rfc3280 or later for spec of this extension.      
+ * This extension have some basics defined in RFC 3739, but the majority of fields are used in EU purposes 
+ * and specified in EU standards.
+ * ETSI EN 319 412-5 (v2.1.1, 2016-02 or later)
+ * https://www.etsi.org/deliver/etsi_en/319400_319499/31941205/02.01.01_60/en_31941205v020101p.pdf
+ * ETSI TS 101 862 (v1.3.3, 2006-01 or later)
+ * https://www.etsi.org/deliver/etsi_ts/101800_101899/101862/01.03.03_60/ts_101862v010303p.pdf
+ * ETSI TS 119 495 (v1.1.2, 2018-07 or later)
+ * https://www.etsi.org/deliver/etsi_ts/119400_119499/119495/01.01.02_60/ts_119495v010102p.pdf
+ * 
+ * qcStatements  EXTENSION ::= {
+ *        SYNTAX             QCStatements
+ *        IDENTIFIED BY      id-pe-qcStatements }
+ * id-pe-qcStatements     OBJECT IDENTIFIER ::= { id-pe 3 }
+ *
+ *    QCStatements ::= SEQUENCE OF QCStatement
+ *    QCStatement ::= SEQUENCE {
+ *        statementId   QC-STATEMENT.&Id({SupportedStatements}),
+ *        statementInfo QC-STATEMENT.&Type
+ *        ({SupportedStatements}{@statementId}) OPTIONAL }
+ *
+ *    SupportedStatements QC-STATEMENT ::= { qcStatement-1,...}
  * 
  * @version $Id$
  */
