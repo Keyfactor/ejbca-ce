@@ -50,6 +50,8 @@ public class RestApiApplication extends Application {
         beanConfig.setSchemes(new String[]{"https"});
         beanConfig.setBasePath("/ejbca/ejbca-rest-api");
         beanConfig.setResourcePackage("org.ejbca.ui.web.rest.api");
+        beanConfig.setScannerId("restapi");
+        beanConfig.setConfigId("restapi");
         beanConfig.setScan(true);
     }
 
