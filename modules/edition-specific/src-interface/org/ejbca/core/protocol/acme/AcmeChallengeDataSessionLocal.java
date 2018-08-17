@@ -25,4 +25,11 @@ public interface AcmeChallengeDataSessionLocal extends AcmeChallengeDataSession{
      * @return the list of objects, or empty list if none found
      */
     List<AcmeChallengeData> findByAuthorizationId(final String authorizationId);
+
+    /**
+     * Removes an ACME challenge with the given ID. Fails silently if no such ACME Challenge exists.
+     *
+     * @param challengeId the ACME Challenge ID
+     */
+    void remove(final String challengeId);
 }
