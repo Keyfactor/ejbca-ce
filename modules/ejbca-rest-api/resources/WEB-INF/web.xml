@@ -29,10 +29,7 @@
 		<param-name>resteasy.scan</param-name>
 		<param-value>true</param-value>
 	</context-param>
-	<listener>
-		<listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
-	</listener>
-	
+
     <filter>
         <filter-name>ServiceControlFilter</filter-name>
         <filter-class>org.ejbca.util.ServiceControlFilter</filter-class>
@@ -64,7 +61,7 @@
 		<servlet-name>Resteasy</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
-	
+ 
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>restricted methods</web-resource-name>
