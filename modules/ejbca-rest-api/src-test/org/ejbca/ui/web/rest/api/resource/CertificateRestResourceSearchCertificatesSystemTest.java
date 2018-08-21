@@ -372,6 +372,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .body(MediaType.APPLICATION_JSON, objectMapper.writeValueAsString(searchCertificatesRestRequest))
                 .post();
         final String actualJsonString = actualResponse.getEntity(String.class);
+        // added tmp logging to see why test mis-behaves
+        log.error("actualJsonString:" + actualJsonString);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
         final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
