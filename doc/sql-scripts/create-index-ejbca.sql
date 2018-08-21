@@ -73,3 +73,6 @@ CREATE INDEX acmeauthorizationdata_idx1 ON AcmeAuthorizationData (accountId);
 
 -- index for searching for ACME authorizations by order id
 CREATE INDEX acmeauthorizationdata_idx2 ON AcmeAuthorizationData (orderId);
+
+-- index for searching for ACME challenges by authorization id
+CREATE INDEX acmechallengedata_idx1 ON AcmeChallengeData (authorizationId);
