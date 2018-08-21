@@ -225,18 +225,14 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     /** Initializes a new acme configuration with default values. */
     public void initialize(String alias) {
         alias += ".";
-        if (StringUtils.isNotEmpty(alias)) {
-            setEndEntityProfileId(DEFAULT_END_ENTITY_PROFILE_ID);
-            setRequireExternalAccountBinding(DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING);
-            setPreAuthorizationAllowed(DEFAULT_PRE_AUTHORIZATION_ALLOWED);
-            setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL, DEFAULT_REQUIRE_NEW_APPROVAL);
-            setWildcardCertificateIssuanceAllowed(DEFAULT__WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
-            setWebSiteUrl(DEFAULT_WEBSITE_URL);
-            setDnsResolver(DNS_RESOLVER_DEFAULT);
-            setDnssecTrustAnchor(IANA_ROOT_ANCHOR_DEFAULT);
-            setDnsPort(DNS_SERVER_PORT_DEFAULT);
-        }
+        setEndEntityProfileId(DEFAULT_END_ENTITY_PROFILE_ID);
+        setRequireExternalAccountBinding(DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING);
+        setPreAuthorizationAllowed(DEFAULT_PRE_AUTHORIZATION_ALLOWED);
+        setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL, DEFAULT_REQUIRE_NEW_APPROVAL);
+        setWildcardCertificateIssuanceAllowed(DEFAULT__WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
+        setWebSiteUrl(DEFAULT_WEBSITE_URL);
+        setDnsResolver(DNS_RESOLVER_DEFAULT);
+        setDnssecTrustAnchor(IANA_ROOT_ANCHOR_DEFAULT);
+        setDnsPort(DNS_SERVER_PORT_DEFAULT);
     }
-
-
 }
