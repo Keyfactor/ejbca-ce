@@ -471,7 +471,7 @@
 		<war-replacement-in-module
                 replacement-tag="!--@swagger-ui.war@-->"
                 replacement-file="${eardd.src}/META-INF/application.xml"
-                replacement-enabled="${mod.swagger-ui.exists}"
+                replacement-enabled="${swagger-ui.exists}"
                 replacement-web-uri="swagger-ui.war"
                 replacement-context-root="/ejbca/swagger-ui"
 		        />
@@ -572,9 +572,14 @@
                 <include name="unidfnr-ejb.jar" />
                 <include name="ra-gui.war" />
                 <include name="ejbca-rest-api.war"/>
-            	<include name="swagger-ui.war"/>
-				<include name="acme.war" />
+                <include name="swagger-ui.war" />
+            	<include name="acme.war" />
             </fileset>
+        	
+        	<fileset dir="${ejbca.home}/lib/swagger">
+        		<include name="swagger-ui.war" />
+    		</fileset>
+        	
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
                 <include name="ejbca-common-web.jar" />
