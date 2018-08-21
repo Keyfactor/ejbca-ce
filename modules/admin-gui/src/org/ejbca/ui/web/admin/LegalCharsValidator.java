@@ -35,11 +35,14 @@ public class LegalCharsValidator implements Validator {
 
 	@Override
 	public void validate(FacesContext facesContext, UIComponent uIComponent, Object object) throws ValidatorException {
-		final String textFieldValue = (String)object;
-		if (log.isDebugEnabled()) {
-			log.debug("Validating component " + uIComponent.getClientId(facesContext) + " with value \"" + textFieldValue + "\"");
-		}
-		
+        String textFieldValue = null;
+        if (object instanceof String) {
+            textFieldValue = (String) object;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Validating component " + uIComponent.getClientId(facesContext) + " with value \"" + textFieldValue + "\"");
+        }
+
         Set<String> invalidCharacters = StringTools.hasSqlStripChars(textFieldValue);
         if (!invalidCharacters.isEmpty()) {
             StringBuilder sb = new StringBuilder("");
@@ -49,5 +52,5 @@ public class LegalCharsValidator implements Validator {
             final String msg = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDCHARS") + sb.substring(2);
             throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
         }
-	}
+    }
 }
