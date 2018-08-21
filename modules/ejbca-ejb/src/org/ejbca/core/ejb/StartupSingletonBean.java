@@ -233,6 +233,7 @@ public class StartupSingletonBean {
             checkClassLoaderIsEJBCA(testcert.getClass());
         } catch (CertificateException e1) {
             log.error("Can not parse certificate, this should never happen: ", e1);
+            throw new IllegalStateException(e1.getMessage());
         }
 
         /* 
