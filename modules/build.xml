@@ -131,7 +131,6 @@
 		<antcall target="webtestclean"/>
 		<antcall target="estclean"/>
 		<antcall target="ejbca-rest-api-clean"/>
-		<antcall target="swagger-ui-clean"/>
 		<antcall target="clover.clean"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
@@ -231,10 +230,6 @@
 
     <target name="ejbca-rest-api-clean" if="${mod.ejbca-rest-api.exists}">
         <ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-    </target>
-
-    <target name="swagger-ui-clean" if="${mod.swagger-ui.exists}">
-        <ant antfile="${mod.swagger-ui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
         	
 	<target name="ejbca-entity" depends="ejbca-common" description="Build EJBCA JPA entity library">
@@ -480,13 +475,6 @@
 	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" description="Build EJBCA rest api">
 		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
-
-    <target name="swagger-ui" if="${mod.swagger-ui.exists}" description="Build EJBCA swagger-ui">
-        <ant antfile="${mod.swagger-ui.path}/build.xml" target="build" inheritall="false">
-        	<property name="runoncesetup.hasrun" value="true"/>
-    		<property name="external-deps-satfisfied" value="isset"/>
-        </ant>
-    </target>
         	
 	<target name="admin-gui" depends="ejbca-common-web" description="Build the EJBCA Admin GUI WAR">
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
@@ -559,7 +547,7 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients,
-					systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-api, swagger-ui">
+					systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-api">
 	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
@@ -643,13 +631,6 @@
 				<property name="runoncesetup.hasrun" value="true"/>
 				<property name="external-deps-satfisfied" value="isset"/>
 		</ant>
-	</target>
-	
-	<target name="swagger-ui-war" if="${mod.swagger-ui.exists}" description="Build the swagger-ui WAR">
-		<ant antfile="${mod.swagger-ui.path}/build.xml" target="build" inheritall="false">
-                <property name="runoncesetup.hasrun" value="true"/>
-                <property name="external-deps-satfisfied" value="isset"/>
-        </ant>
 	</target>
 	
 	<!-- Helper to execute the EJBCA EJB CLI -->
