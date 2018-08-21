@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
@@ -45,7 +44,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     private static final String IANA_ROOT_ANCHOR_DEFAULT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
-    private static final String DNS_SERVER_PORT_DEFAULT = "53";
+    private static final int DNS_SERVER_PORT_DEFAULT = 53;
 
 
     private static final int DEFAULT_END_ENTITY_PROFILE_ID = EndEntityConstants.NO_END_ENTITY_PROFILE;
@@ -214,12 +213,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_DNS_RESOLVER, String.valueOf(dnsResolver));
     }
     
-    public String getDnsPort() {
-        return (String) super.data.get(KEY_DNS_PORT);
+    public int getDnsPort() {
+        return (Integer) super.data.get(KEY_DNS_PORT);
     }
     
-    public void setDnsPort(final String dnsPort) {
-        super.data.put(KEY_DNS_PORT, String.valueOf(dnsPort));
+    public void setDnsPort(final int dnsPort) {
+        super.data.put(KEY_DNS_PORT, dnsPort);
     }
 
     /** Initializes a new acme configuration with default values. */
