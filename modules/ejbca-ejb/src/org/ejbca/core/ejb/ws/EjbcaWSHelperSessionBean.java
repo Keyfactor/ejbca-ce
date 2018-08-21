@@ -235,6 +235,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             String customStartTime = userdata.getStartTime();
             try {
                 if (customStartTime.length()>0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+                    customStartTime = customStartTime.replace("Z", "+00:00");
                     if (!customStartTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
                         // We use the old absolute time format, so we need to upgrade and log deprecation info
                         final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
