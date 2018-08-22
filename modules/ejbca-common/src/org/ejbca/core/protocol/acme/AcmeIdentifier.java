@@ -28,8 +28,4 @@ public interface AcmeIdentifier {
 
     void setValue(String value);
 
-    int hashCode();
-
-    boolean equals(Object obj);
-
 }
