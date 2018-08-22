@@ -440,6 +440,15 @@ CREATE TABLE AcmeNonceData (
     PRIMARY KEY (nonce)
 );
 
+CREATE TABLE AcmeAccountData (
+    accountId VARCHAR(250) BINARY NOT NULL,
+    currentKeyId VARCHAR(250) BINARY NOT NULL,
+    rawData LONGTEXT,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (accountId)
+);
+
 CREATE TABLE AcmeChallengeData (
     challengeId VARCHAR(250) BINARY NOT NULL,
     authorizationId VARCHAR(250) BINARY NOT NULL,
