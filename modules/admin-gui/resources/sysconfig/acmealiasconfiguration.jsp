@@ -82,6 +82,8 @@ org.cesecore.authorization.control.StandardRules
                     <h:outputLabel for="versionApproval" value="#{web.text.ACME_TERMS_APPROVAL}" />
                     <h:selectBooleanCheckbox id="versionApproval" value="#{acmeConfigMBean.currentAlias.tersmOfServiceApproval}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
 
+                    <h:outputLabel for="useDnsSec" value="#{web.text.ACME_USE_DNSSEC_VALIDATION}" />
+                    <h:selectBooleanCheckbox id="useDnsSec" value="#{acmeConfigMBean.currentAlias.useDnsSecValidation}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
                     
                     <h:outputLabel for="dnsResolver" value="#{web.text.ACME_DNS_RESOLVER}" />
                     <h:panelGroup id="dnsResolver" >
@@ -101,7 +103,7 @@ org.cesecore.authorization.control.StandardRules
                     
                     <h:outputLabel for="dnssecTrustAnchor" value="#{web.text.ACME_DNSSEC_TRUST_ANCHOR}" />
                     <h:panelGroup id="dnssecTrustAnchor" >
-                        <h:inputTextarea  value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}"  rendered="#{acmeConfigMBean.currentAliasEditMode}"
+                        <h:inputTextarea  value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}"  rendered="#{acmeConfigMBean.currentAliasEditMode}" disabled="#{!acmeConfigMBean.currentAlias.useDnsSecValidation}"
                         	cols="45" rows="3" >
                             <f:validator validatorId="legalCharsValidator"/>
                         </h:inputTextarea>
