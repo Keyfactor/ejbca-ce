@@ -60,9 +60,6 @@ org.cesecore.authorization.control.StandardRules
                     <h:outputLabel for="preautorisation" value="#{web.text.ACME_PREAUTHORIZATION_ALLOWED}" />
                     <h:selectBooleanCheckbox id="preautorisation" value="#{acmeConfigMBean.currentAlias.preAuthorizationAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
 
-                    <h:outputLabel for="accbinding" value="#{web.text.ACME_REQUIRE_EXTERNAL_ACCOUNT_BINDING}" />
-                    <h:selectBooleanCheckbox id="accbinding" value="#{acmeConfigMBean.currentAlias.requireExternalAccountBinding}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
-
                     <h:outputLabel for="wildcard" value="#{web.text.ACME_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED}" />
                     <h:selectBooleanCheckbox id="wildcard" value="#{acmeConfigMBean.currentAlias.wildcardCertificateIssuanceAllowed}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
 
