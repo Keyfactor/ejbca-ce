@@ -228,9 +228,10 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             acmeConfig.setDnsResolver(currentAlias.getDnsResolver());
             acmeConfig.setDnsPort(currentAlias.getDnsPort());
             acmeConfig.setDnssecTrustAnchor(currentAlias.getDnssecTrustAnchor());
+            acmeConfig.setUseDnsSecValidation(currentAlias.isUseDnsSecValidation());
             String termsOfServiceUrl = acmeConfig.getTermsOfServiceUrl();
             if (StringUtils.isNotEmpty(currentAlias.getTermsOfServiceUrl()) && (StringUtils.isEmpty(termsOfServiceUrl) || !termsOfServiceUrl.equals(currentAlias.getTermsOfServiceUrl()))) {
-                acmeConfig.setTermsOfServiceUrl(currentAlias.getTermsOfServiceUrl(), currentAlias.tersmOfServiceApproval);
+                acmeConfig.setTermsOfServiceUrl(currentAlias.getTermsOfServiceUrl(), currentAlias.termsOfServiceApproval);
             }
             globalAcmeConfigurationConfig.updateAcmeConfiguration(acmeConfig);
             try {
@@ -299,7 +300,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         private int dnsPort;
         private String dnssecTrustAnchor;
         private String termsOfServiceUrl;
-        private Boolean tersmOfServiceApproval;
+        private boolean termsOfServiceApproval;
+        private boolean useDnsSecValidation;
 
         public AcmeAliasGuiInfo(GlobalAcmeConfiguration globalAcmeConfigurationConfig, String alias) {
             if (alias != null) {
@@ -315,6 +317,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
                     this.dnsPort = acmeConfiguration.getDnsPort();
                     this.dnssecTrustAnchor = acmeConfiguration.getDnssecTrustAnchor();
                     this.termsOfServiceUrl = String.valueOf(acmeConfiguration.getTermsOfServiceUrl());
+                    this.useDnsSecValidation = acmeConfiguration.isUseDnsSecValidation();
                 }
             }
         }
@@ -399,13 +402,22 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             this.termsOfServiceUrl = termsOfServiceUrl;
         }
 
-        public Boolean getTersmOfServiceApproval() {
-            return tersmOfServiceApproval;
+        public boolean getTersmOfServiceApproval() {
+            return termsOfServiceApproval;
         }
 
-        public void setTersmOfServiceApproval(Boolean tersmOfServiceApproval) {
-            this.tersmOfServiceApproval = tersmOfServiceApproval;
+        public void setTersmOfServiceApproval(final boolean tersmOfServiceApproval) {
+            this.termsOfServiceApproval = tersmOfServiceApproval;
         }
+        
+        public boolean isUseDnsSecValidation() {
+            return useDnsSecValidation;
+        }
+        
+        public void setUseDnsSecValidation (final boolean useDnsSecValidation) {
+            this.useDnsSecValidation = useDnsSecValidation;
+        }
+        
     }
     public class AcmeGlobalGuiInfo {
         private String defaultAcmeConfiguration;
