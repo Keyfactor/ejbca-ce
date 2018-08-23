@@ -1205,122 +1205,124 @@ public interface RaMasterApi {
 
     /**
      * Get AcmeAccount by accountId.
-     *
+     * @param accountId account id
      * @return the sought AcmeAccount or null if not found
      */
     AcmeAccount getAcmeAccountById(String accountId);
 
     /**
      * Get AcmeAccount by publicKeyStorageId.
-     *
+     * @param publicKeyStorageId related public key storage id
      * @return the sought AcmeAccount or null if not found
      */
     AcmeAccount getAcmeAccountByPublicKeyStorageId(final String publicKeyStorageId);
 
     /**
      * Create or update the AcmeAccount.
-     *
+     * @param acmeAccount account to persist
      * @return the persisted version of the AcmeAccount.
      */
    String persistAcmeAccount(final AcmeAccount acmeAccount);
    
    /**
     * Get AcmeOrder by orderId.
-    *
+    * @param orderId order id
     * @return the sought AcmeOrder or null if not found
     */
    AcmeOrder getAcmeOrderById(String orderId);
 
    /**
     * Get AcmeOrder by accountId.
-    *
+    * @param accountId a related account id
     * @return the collection of sought AcmeOrders or null if not found
     */
    Set<AcmeOrder> getAcmeOrdersByAccountId(final String accountId);
    
    /**
     * Create or update the AcmeOrder.
-    *
+    * @param acmeOrder an order to persist
     * @return id of the persisted AcmeOrder.
     */
   String persistAcmeOrder(final AcmeOrder acmeOrder);
 
   /**
    * Create or update the AcmeOrders.
-   *
+   * @param acmeOrders a list of orders to persist
    * @return list of ids of the persisted AcmeOrders.
    */
  List<String> persistAcmeOrders(final List<AcmeOrder> acmeOrders);
  
   /**
    * remove the AcmeOrder.
-   *
+   * @param orderId order Id to be removed
    */
   void removeAcmeOrder(String orderId);
 
   /**
    * remove the provided list of AcmeOrders.
-   *
+   * @param orderIds  order ids to be removed
    */
   void removeAcmeOrders(List<String> orderIds);
-  
+
     /**
      * Get AcmeAuthorization by authorizationId.
-     *
+     * @param authorizationId  authorization Id
      * @return the sought AcmeAuthorization or null if not found
      */
   AcmeAuthorization getAcmeAuthorizationById (final String authorizationId);
 
-  /**
+    /**
      * Get AcmeAuthorizations by orderId.
-     *
+     * @param orderId a related order Id
      * @return the list of sought AcmeAuthorizations or null if not found
      */
   List<AcmeAuthorization> getAcmeAuthorizationsByOrderId (final String orderId);
 
-  /**
+    /**
      * Get AcmeAuthorizations by accountId.
-     *
+     * @param accountId a related account id
      * @return the list of sought AcmeAuthorizations or null if not found
      */
   List<AcmeAuthorization> getAcmeAuthorizationsByAccountId (final String accountId);
 
     /**
      * Create or update the AcmeAuthorization.
-     *
+     * @param acmeAuthorization an authorization to persist
      * @return id of the persisted AcmeAuthorization.
      */
     String persistAcmeAuthorization(final AcmeAuthorization acmeAuthorization);
 
     /**
      * Create or update the AcmeAuthorizations.
+     * @param acmeAuthorizations a list of authorizations to persist
      */
     void persistAcmeAuthorizationList(final List<AcmeAuthorization> acmeAuthorizations);
 
 
     /**
      * Get AcmeChallenge by challengeId.
-     *
+     * @param challengeId a challenge id
      * @return the sought AcmeChallenge or null if not found
      */
     AcmeChallenge getAcmeChallengeById (final String challengeId);
 
     /**
      * Get AcmeChallenges by authorizationId.
-     *
+     * @param authorizationId an id of related authorization
      * @return the sought AcmeChallenge list or null if not found
      */
     List<AcmeChallenge> getAcmeChallengesByAuthorizationId(String authorizationId);
 
     /**
      * Create or update the AcmeChallenge.
+     * @param acmeChallenge a challenge to persist
      * @return id of the persisted AcmeChallenge.
      */
     String persistAcmeChallenge(final AcmeChallenge acmeChallenge);
 
     /**
      * Create or update the AcmeChallenges.
-     *
+     * @param acmeChallenges challenges list to persit
      */
     void persistAcmeChallengeList(final List<AcmeChallenge> acmeChallenges);
 }
