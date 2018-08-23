@@ -48,6 +48,7 @@
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
     	<ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit" />
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" />
+        <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" />
     	<antcall target="optionaltestct" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
@@ -108,6 +109,7 @@
 					<include name="modules/ejbca-webtest/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
+                    <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -184,6 +186,9 @@
     	</condition>
     	<condition property="module" value="modules/ejbca-rest-api">
             <matches string="${test-fullname}" pattern="^modules/ejbca-rest-api/.*$"/>
+        </condition>
+        <condition property="module" value="modules/admin-gui">
+            <matches string="${test-fullname}" pattern="^modules/admin-gui/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" />
@@ -296,6 +301,11 @@
 
     <target name="test:unit:acme" description="run all JUnit tests for ACME." depends="deleteDirectories">
             <ant antfile="build.xml" dir="modules/acme" target="test" />
+            <antcall target="createreport"/>
+    </target>
+
+    <target name="test:unit:admingui" description="run all JUnit tests for Admin GUI." depends="deleteDirectories">
+            <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" />
             <antcall target="createreport"/>
     </target>
 
