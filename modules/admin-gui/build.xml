@@ -8,6 +8,8 @@
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
+    <property name="build-test.dir" location="${this.dir}/build-test"/>
+    <property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
@@ -40,6 +42,13 @@
 		<path location="${mod.statedump-common.lib}"/>
 		<path location="${mod.acme-common.jar}"/>
 	</path>
+	
+    <path id="test.classpath">
+        <path refid="compile.classpath"/>
+        <path location="${build-test.dir}" />
+        <path location="${build.dir}/WEB-INF/classes" />
+        <path refid="lib.junit.classpath"/>
+    </path>
 	
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
@@ -75,5 +84,43 @@
     		includes="languagefile.zh.properties" 
     	/>
     </target>
+
+    <target name="compile-tests" depends="with.clover, build">
+	     <mkdir dir="${build-test.dir}" />
+	     <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+	         encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
+	     <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
+	</target>
+
+	<target name="test:unit" depends="compile-tests">
+	     <junit printsummary="yes" haltonfailure="no" >
+	         <classpath>
+	             <path refid="test.classpath"/>
+	             <pathelement path="${clover.jar}"/>
+	         </classpath>
+	         <formatter type="xml" />
+	         <batchtest fork="yes" todir="${reports.dir}">
+	             <fileset dir="${build-test.dir}">
+	                 <include name="**/*Test.class" />
+	             </fileset>
+	         </batchtest>
+	     </junit>
+	</target>
+
+    <target name="runone" depends="compile-tests">
+	    <fail message="'test.runone' is not set. Example -Dtest.runone=UnidFnrTest" unless="test.runone" />
+	    <junit printsummary="yes" haltonfailure="no" >
+	        <classpath>
+	            <path refid="test.classpath"/>
+	            <pathelement path="${clover.jar}"/>
+	        </classpath>
+	        <formatter type="xml" />
+	        <batchtest fork="yes" todir="${reports.dir}">
+	            <fileset dir="${build-test.dir}">
+	                <include name="**/${test.runone}.class" />
+	            </fileset>
+	        </batchtest>
+	    </junit>
+	</target>
 
 </project>
