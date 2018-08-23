@@ -41,6 +41,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_DNS_RESOLVER = "dnsResolver";
     private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
     private static final String KEY_DNS_PORT = "dnsPort";
+    private static final String KEY_USE_DNSSEC_VALIDATION = "useDnssecValidation";
 
     private static final String IANA_ROOT_ANCHOR_DEFAULT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
@@ -54,6 +55,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final boolean DEFAULT__WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = false;
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
     private static final String DEFAULT_WEBSITE_URL = "https://www.example.com/";
+    private static final boolean DEFAULT_USE_DNSSEC_VALIDATION = true;
 
 
     public AcmeConfiguration() {}
@@ -220,6 +222,14 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setDnsPort(final int dnsPort) {
         super.data.put(KEY_DNS_PORT, dnsPort);
     }
+    
+    public boolean isUseDnsSecValidation() {
+        return Boolean.valueOf((String) super.data.get(KEY_USE_DNSSEC_VALIDATION));
+    }
+    
+    public void setUseDnsSecValidation(final boolean useDnsSecValidation) {
+        super.data.put(KEY_USE_DNSSEC_VALIDATION, String.valueOf(useDnsSecValidation));
+    }
 
     /** Initializes a new acme configuration with default values. */
     public void initialize(String alias) {
@@ -233,5 +243,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setDnsResolver(DNS_RESOLVER_DEFAULT);
         setDnssecTrustAnchor(IANA_ROOT_ANCHOR_DEFAULT);
         setDnsPort(DNS_SERVER_PORT_DEFAULT);
+        setUseDnsSecValidation(DEFAULT_USE_DNSSEC_VALIDATION);
     }
 }
