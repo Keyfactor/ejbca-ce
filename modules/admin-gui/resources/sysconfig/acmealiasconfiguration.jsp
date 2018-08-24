@@ -80,7 +80,7 @@ org.cesecore.authorization.control.StandardRules
                     </h:panelGroup>
 
                     <h:outputLabel for="versionApproval" value="#{web.text.ACME_TERMS_APPROVAL}" />
-                    <h:selectBooleanCheckbox id="versionApproval" value="#{acmeConfigMBean.currentAlias.tersmOfServiceApproval}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
+                    <h:selectBooleanCheckbox id="versionApproval" value="#{acmeConfigMBean.currentAlias.termsOfServiceApproval}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
 
                     <h:outputLabel for="useDnsSec" value="#{web.text.ACME_USE_DNSSEC_VALIDATION}" />
                     <h:selectBooleanCheckbox id="useDnsSec" value="#{acmeConfigMBean.currentAlias.useDnsSecValidation}" disabled="#{!acmeConfigMBean.currentAliasEditMode}" />
