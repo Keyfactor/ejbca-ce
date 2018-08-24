@@ -2310,7 +2310,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             adminUser.setStatus(EndEntityConstants.STATUS_NEW);
             adminUser.setPassword("foo123");
             log.info("Changing user: "+adminUser.getUsername());
-            endEntityManagementSession.changeUser(intAdmin, adminUser, true);
+            endEntityManagementSession.changeUser(intAdmin, adminUser, false);
             signSession.createCertificate(intAdmin, testUsername, "foo123",   new PublicKeyWrapper(key.getPublic()), KeyUsage.cRLSign, new Date(), certNotAfterDate);
 
             genCerts = certificateStoreSession.findCertificatesBySubject("CN="+testUsername);
