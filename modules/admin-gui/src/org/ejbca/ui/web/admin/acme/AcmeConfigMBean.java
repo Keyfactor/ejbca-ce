@@ -402,12 +402,12 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             this.termsOfServiceUrl = termsOfServiceUrl;
         }
 
-        public boolean getTersmOfServiceApproval() {
+        public boolean getTermsOfServiceApproval() {
             return termsOfServiceApproval;
         }
 
-        public void setTersmOfServiceApproval(final boolean tersmOfServiceApproval) {
-            this.termsOfServiceApproval = tersmOfServiceApproval;
+        public void setTermsOfServiceApproval(final boolean termsOfServiceApproval) {
+            this.termsOfServiceApproval = termsOfServiceApproval;
         }
         
         public boolean isUseDnsSecValidation() {
