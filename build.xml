@@ -186,7 +186,34 @@
 		</sequential>
 	</macrodef>
 
-    <target name="build-one-plugin">
+    <target name="condition.pluginIsJarBased">
+		<property file="${ejbca.plugin.property.file}"/>
+        <condition property="pluginIsJarBased">
+            <not>
+				<isset property="plugin.ejbca.ant.file"/>
+			</not>
+        </condition>
+    </target>
+
+    <target name="build-one-plugin" depends="condition.pluginIsJarBased, include-plugin-from-jar, build-one-plugin-from-source" />
+
+  <target name="include-plugin-from-jar" if="pluginIsJarBased">
+	<property file="${ejbca.plugin.property.file}"/>
+	<fail message="File '${ejbca.plugin.property.file}' lacks a property setting for 'plugin.ejbca.lib.dir'!">
+            <condition>
+                <not>
+                    <isset property="plugin.ejbca.lib.dir"/>
+                </not>
+            </condition>
+        </fail>
+    <copy todir="${ejbca.plugin.gen.path}/lib">
+    	<fileset dir="${plugin.ejbca.lib.dir}">
+        	<include name="*.jar" />
+     	</fileset>
+     </copy>
+  </target>
+
+  <target name="build-one-plugin-from-source" unless="pluginIsJarBased">
         <echo message="Processing plugin file: '${ejbca.plugin.property.file}'"/>
         <property file="${ejbca.plugin.property.file}"/>
         <fail message="File '${ejbca.plugin.property.file}' lacks a property setting for 'plugin.ejbca.ant.file'!">

@@ -1,18 +1,24 @@
 #                     plugin.properties
 # 
-# In the EJBCA sub-directory "conf/plugins" you may place any number of files
-# ending with ".properties".   Each of these files will be processed by the
-# standard EJBCA build ANT script and the result will be merged in the
-# "ejbca.ear" file.  
+# There are two methods of creating plugins for EJBCA, and they are listed below:
+
+# 1. Including external JARs on the classpath 
+
+# In the EJBCA sub-directory "conf/plugins" you may place any number of files ending with ".properties". The lib referenced in each file will be 
+# included in the EJBCA EAR.
+
+plugin.ejbca.lib.dir=/home/demo/myplugin/dist/
+
+# 2. Including external source directories
+
+# In the EJBCA sub-directory "conf/plugins" you may place any number of files ending with ".properties". Each of these files will be processed by the
+# standard EJBCA build ANT script and the result will be merged in the "ejbca.ear" file.  
 #
-# The purpose of this is to enable simple extensions of EJBCA which
-# typically would be RA web applications that hooks into the EJBCA "bean"
-# and utility libraries as well as in the AppServer.  The plugin mechanism
-# also makes it easy to extend the EJBCA database schema without bothering
+# The purpose of this is to enable simple extensions of EJBCA which typically would be RA web applications that hooks into the EJBCA "bean"
+# and utility libraries as well as in the AppServer.  The plugin mechanism also makes it easy to extend the EJBCA database schema without bothering 
 # about JDBC drivers, login IDs etc.
 #
-# To get this to work there is a "contract" between the plugin and EJBCA
-# which must be honored by the plugin.
+# To get this to work there is a "contract" between the plugin and EJBCA which must be honored by the plugin.
 # 
 ##############################################################################################
 #
@@ -51,7 +57,7 @@
 # A plugin must through its property file in "conf/plugins" provide the following data:
 
 # Mandatory: Path to the ANT build file
-plugin.ejbca.ant.file /home/demo/myplugin/build.xml
+#plugin.ejbca.ant.file /home/demo/myplugin/build.xml
 
 # Optional: ANT build "target"
 plugin.ejbca.ant.target every-feature-you-can-imagine
