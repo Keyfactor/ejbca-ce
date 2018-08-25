@@ -193,6 +193,7 @@ public class HSMKeyTool extends ClientToolBox {
         } else {
             protectionParameter = null;
         }
+        final boolean force = CliTools.getAndRemoveSwitch("--force", argsList);
         final String[] args = CliTools.getAsArgs(argsList);
         if ( args[1].toLowerCase().trim().contains(GENERATE_BATCH_SWITCH) ) {
             if ( args.length < 4 ) {
@@ -242,7 +243,7 @@ public class HSMKeyTool extends ClientToolBox {
                 store.generateKeyPair(args[3], keyEntryName);
                 System.out.println("Created certificate with entry "+keyEntryName+'.');
             } else {
-                if(args.length > 5 && args[args.length-1].toLowerCase().trim().equals("--force")){
+                if (force) {
                     System.err.println("Warning: Overwriting existing key with key entry name "+keyEntryName+"!");
                     store.generateKeyPair(args[3], keyEntryName);
                     System.out.println("Created certificate with entry "+keyEntryName+'.');
