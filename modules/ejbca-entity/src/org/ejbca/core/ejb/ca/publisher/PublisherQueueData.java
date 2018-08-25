@@ -42,7 +42,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
  * Entity Bean representing publisher failure data. Data is stored here when
  * publishing to a publisher fails. Using this data publishing can be tried
  * again. This data bean should not duplicate data completely, but holds this:
- * 
+ *
  * - Information needed for scheduling of republishing, such as publish dates,
  * retry counter and last failure message. - Information which is volatile on
  * other places in the database, and we need to publish this data as it was at
@@ -54,7 +54,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
  * it changed since we failed to publish. This is so there should be no chance
  * that a revocation is overwritten with a good status if the publish events
  * would happen out of order.
- * 
+ *
  * @version $Id$
  */
 @Entity
@@ -161,7 +161,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
     /**
      * Method that returns the PublisherQueueVolatileData data and updates it if
      * necessary.
-     * 
+     *
      * @return VolatileData is optional in publisher queue data
      */
     @Transient
@@ -191,7 +191,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
     /**
      * Method that saves the PublisherQueueData data to database.
-     * 
+     *
      * @param qd
      *            is optional in publisher queue data
      */
@@ -203,7 +203,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
             a.putAll((HashMap<Object, Object>) qd.saveData());
 
             // typical size of XML is something like 250-400 chars
-            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(400); 
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(400);
             java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
             encoder.writeObject(a);
             encoder.close();
@@ -263,14 +263,14 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
     //
 
     //
-    // Search functions. 
+    // Search functions.
     //
 
     /** @return the found entity instance or null if the entity does not exist */
     public static PublisherQueueData findByPk(EntityManager entityManager, String pk) {
     	return entityManager.find(PublisherQueueData.class, pk);
     }
-    
+
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static List<PublisherQueueData> findDataByFingerprint(EntityManager entityManager, String fingerprint) {
@@ -279,9 +279,9 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
     	return query.getResultList();
     }
 
-    /** 
+    /**
      * @param maxRows If set > 0, limits the number of rows fetched.
-     * 
+     *
      * @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus, int maxRows) {
@@ -309,12 +309,12 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 	    if (lowerBounds.length == 0) {
 	        throw new IllegalArgumentException("lowerBounds and upperBounds are mandatory parameters");
 	    }
-	    
+
 	    final StringBuilder sql = new StringBuilder();
 	    long now = System.currentTimeMillis();
-	    
+
         sql.append("select c from (");
-        
+
         for(int i = 0; i < lowerBounds.length; i++) {
             sql.append("SELECT " + i + " as ordering, COUNT(*) as c FROM PublisherQueueData where publisherId=");
             sql.append(publisherId);
@@ -332,15 +332,15 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
                 sql.append(" UNION ALL ");
             }
         }
-        sql.append(" order by ordering) tmp");
-        
+        sql.append(") tmp ORDER BY tmp.ordering");
+
     	if (log.isDebugEnabled()) {
-    		log.debug("findCountOfPendingEntriesForPublisher executing SQL: "+sql.toString());    			
+    		log.debug("findCountOfPendingEntriesForPublisher executing SQL: "+sql.toString());
 		}
     	final Query query = entityManager.createNativeQuery(sql.toString());
     	List<?> resultList = query.getResultList();
         if (log.isDebugEnabled()) {
-            log.debug("findCountOfPendingEntriesForPublisher result: "+resultList.toString());              
+            log.debug("findCountOfPendingEntriesForPublisher result: "+resultList.toString());
         }
     	List<Integer> returnList;
     	// Derby returns Integers, MySQL returns BigIntegers, Oracle returns BigDecimal
