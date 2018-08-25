@@ -184,19 +184,19 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		}
 		
 		if (serno != null && issuer != null) {
-		    final String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
+		    final String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 		    LOG.info(iMsg);
 		    try {
-		        endEntityManagementSession.revokeCert(admin, serno.getValue(), issuer.toString(), reason);
+		        endEntityManagementSession.revokeCert(admin, serno.getValue(), CertTools.stringToBCDNString(issuer.toString()), reason);
 		        status = ResponseStatus.SUCCESS;
 		    } catch (AuthorizationDeniedException e) {
 		        failInfo = FailInfo.NOT_AUTHORIZED;
-		        final String errMsg = INTRES.getLocalizedMessage("cmp.errornotauthrevoke", issuer.toString(), serno.getValue().toString(16));
+		        final String errMsg = INTRES.getLocalizedMessage("cmp.errornotauthrevoke", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 		        failText = errMsg; 
 		        LOG.info(failText);
 		    } catch (NoSuchEndEntityException e) {
 		        failInfo = FailInfo.BAD_CERTIFICATE_ID;
-		        final String errMsg = INTRES.getLocalizedMessage("cmp.errorcertnofound", issuer.toString(), serno.getValue().toString(16));
+		        final String errMsg = INTRES.getLocalizedMessage("cmp.errorcertnofound", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 		        failText = errMsg; 
                 // This is already info logged in endEntityManagementSession.revokeCert
                 // LOG.info(failText);
