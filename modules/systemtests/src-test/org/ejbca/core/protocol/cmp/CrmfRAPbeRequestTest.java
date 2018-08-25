@@ -114,8 +114,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     /**
      * userDN of user used in this test, this contains special, escaped, characters to test that this works with CMP RA operations
      */
-    private static final X500Name userDN = new X500Name("C=SE,O=PrimeKey'foo'&bar\\,ha\\<ff\\\"aa,CN=cmptest");
-    private static final String issuerDN = "CN=TestCA";
+    private static final X500Name userDN = new X500Name("C=SE,O=PrimeKey'foo'&bar\\,ha\\<ff\\\"aa,organizationIdentifier=VATAT-U12345678,CN=cmptest");
+    private static final String issuerDN = "CN=TestCA,O=PrimeKey,OU=FoooUåäö,organizationIdentifier=VATAT-U87654321";
     private final KeyPair keys;
     private final int caid;
     private final X509Certificate cacert;
