@@ -35,6 +35,7 @@
 		<path refid="lib.utils.classpath"/>
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.swagger.classpath"/>
 	</path>
 
 	<path id="compile.classpath">
