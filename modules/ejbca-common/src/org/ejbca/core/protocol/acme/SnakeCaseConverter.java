@@ -7,7 +7,7 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.config;
+package org.ejbca.core.protocol.acme;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Iterator;
