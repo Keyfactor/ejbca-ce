@@ -23,6 +23,7 @@
 		<path refid="lib.batik.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.mail.classpath"/>
+		<path refid="lib.swagger.classpath"/>
         <path location="${mod.ejbca-ejb-interface.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
