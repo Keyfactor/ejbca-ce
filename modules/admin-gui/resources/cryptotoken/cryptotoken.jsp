@@ -227,7 +227,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:selectOneMenu value="#{cryptoTokenMBean.newKeyPairSpec}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
 			<f:selectItems value="#{cryptoTokenMBean.availableKeySpecs}"/>
 		</h:selectOneMenu>
-	    <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_GENNEW}" action="#{cryptoTokenMBean.generateNewKeyPair}" rendered="#{cryptoTokenMBean.allowedToModify}"/>
+	    <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_GENNEW}" action="#{cryptoTokenMBean.generateNewKeyPair}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}"/>
 	</h:panelGrid>
 	</h:form>
 	</div> <!-- Container -->
