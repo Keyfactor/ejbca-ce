@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
@@ -50,6 +51,17 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.util.CollectionStore;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
@@ -100,6 +112,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
@@ -1296,6 +1309,36 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final Collection<Integer> publishers = certProfile.getPublisherList();
         if (!publishers.isEmpty()) {
             publisherSession.storeCertificate(authenticationToken, publishers, certificateWrapper, endEntity.getPassword(), endEntity.getCertificateDN(), endEntity.getExtendedInformation());
+        }
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public byte[] signPayload(final AuthenticationToken authenticationToken, byte[] data, final String signingCaName)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException {
+        CA ca = caSession.getCA(authenticationToken, signingCaName);
+        if(ca == null) {
+            throw new CADoesntExistsException("CA by name " + signingCaName + " does not exist.");
+        }
+        CAToken catoken = ca.getCAToken();
+        CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+        PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        final X509Certificate signerCert = (X509Certificate) ca.getCACertificate();
+        final String provider = cryptoToken.getSignProviderName();
+        CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedDataGenerator.DIGEST_SHA256,
+                privateKey.getAlgorithm());
+        try {
+        ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(privateKey);
+        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder()
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME);
+        JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+        gen.addSignerInfoGenerator(builder.build(contentSigner, signerCert));
+        gen.addCertificates(new CollectionStore<>(CertTools.convertToX509CertificateHolder(Arrays.asList(signerCert))));
+        CMSSignedData sigData = gen.generate(new CMSProcessableByteArray(data), true);
+        return sigData.getEncoded();
+        } catch(CMSException | CertificateEncodingException | IOException | OperatorCreationException e) {
+            throw new SignRequestSignatureException("Given payload could not be signed.", e);
         }
     }
 }
