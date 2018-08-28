@@ -778,6 +778,12 @@ public final class StringTools {
         return new String(dec);
     }
 
+    /** Method to handle different versions of password encryption transparently
+     * 
+     * @param in The encrypted or clear text password to try to decrypt
+     * @param sDebug A message to put in the debug log indicating where the password came from, for example 'autoactivation pin', do NOT put the password itself here
+     * @return The decrypted password, or same as input if it was not encrypted
+     */
     public static String passwordDecryption(final String in, final String sDebug) {
         try {
             final String tmp = pbeDecryptStringWithSha256Aes192(in, ConfigurationHolder.getString("password.encryption.key").toCharArray());
