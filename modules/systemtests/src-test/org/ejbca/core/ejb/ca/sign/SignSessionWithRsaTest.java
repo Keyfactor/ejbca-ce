@@ -26,6 +26,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
@@ -54,8 +55,15 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoVerifierBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -1684,6 +1692,23 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             fail("Verify failed: " + e.getMessage());
         }
         log.trace("<test24TestBCPKCS10DSAWithRSACA()");
+    }
+    
+    /**
+     * This test attempts to sign a payload (as a byte array) using the CA cert 
+     */
+    @Test
+    public void testSignPayload() throws CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException, CertificateException, CMSException, OperatorCreationException {
+        byte[] payload = new byte[]{1, 2, 3, 4};
+        X509Certificate cacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
+        //Have the data signed using the CA's signing keys
+        CMSSignedData signedData = new CMSSignedData(signSession.signPayload(internalAdmin, payload, getTestCAName()));
+        //Construct a signer in order to verify the change
+        SignerInformation signer = (SignerInformation) signedData.getSignerInfos().getSigners().iterator().next();
+        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
+        JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build()).setProvider(BouncyCastleProvider.PROVIDER_NAME); 
+        assertTrue("Payload signature couldnt be verified.", signer.verify(jcaSignerInfoVerifierBuilder.build(cacert.getPublicKey())));
+        
     }
     
     @Override
