@@ -138,6 +138,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private boolean referenced = false;
         private String keyPlaceholders;
         private boolean allowExplicitParameters = false;
+        private boolean canGenerateKey= true;
+        private String canGenerateKeyMsg = null;
         
         private CurrentCryptoTokenGuiInfo() {}
         
@@ -179,6 +181,19 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public void setAllowExplicitParameters(boolean allowExplicitParameters) {
             this.allowExplicitParameters = allowExplicitParameters;
+        }
+        public boolean isCanGenerateKey() {
+            return canGenerateKey;
+        }
+
+        public void setCanGenerateKey(boolean canGenerateKey) {
+            this.canGenerateKey = canGenerateKey;
+        }
+        public void setCanGenerateKeyMsg(String msg) {
+            this.canGenerateKeyMsg = msg;
+        }
+        public String getCanGenerateKeyMsg() {
+            return canGenerateKeyMsg;
         }
 
         public String getP11LibraryAlias() { return CryptoTokenMBean.this.getP11LibraryAlias(p11Library); }
@@ -676,6 +691,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                         currentCryptoToken.setP11Library(cryptoTokenInfo.getP11Library());
                         currentCryptoToken.setP11Slot(cryptoTokenInfo.getP11Slot());
                         currentCryptoToken.setP11SlotLabelType(cryptoTokenInfo.getP11SlotLabelType());
+                        // Extra capabilities not stored in the crypto token, but defined for this type of P11 crypto token
+                        WebConfiguration.P11LibraryInfo libinfo = WebConfiguration.getAvailableP11LibraryToAliasMap().get(currentCryptoToken.getP11Library());
+                        currentCryptoToken.setCanGenerateKey(libinfo.isCanGenerateKey());
+                        currentCryptoToken.setCanGenerateKeyMsg(libinfo.getCanGenerateKeyMsg());
                     }
                     currentCryptoToken.setActive(cryptoTokenInfo.isActive());
                     currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(Integer.valueOf(cryptoTokenId)));
