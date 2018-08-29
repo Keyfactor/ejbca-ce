@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.util.SlotList;
 
@@ -203,12 +204,18 @@ public class WebConfiguration {
     public static final class P11LibraryInfo {
         private final String alias;
         private final SlotList slotList;
-        public P11LibraryInfo(String alias, SlotList slotList) {
+        private final boolean canGenerateKey;
+        private final String canGenerateKeyMsg;
+        public P11LibraryInfo(String alias, SlotList slotList, boolean canGenerateKey, String cangenerateKeyMsg) {
             this.alias = alias;
             this.slotList = slotList;
+            this.canGenerateKey = canGenerateKey;
+            this.canGenerateKeyMsg = cangenerateKeyMsg;
         }
         public String getAlias() { return alias; }
         public SlotList getSlotList() { return slotList; }
+        public boolean isCanGenerateKey() { return canGenerateKey; }
+        public String getCanGenerateKeyMsg() { return canGenerateKeyMsg;}
     }
 
     private static Map<String,P11LibraryInfo> availableP11LibraryToAliasMap = null;
@@ -227,10 +234,16 @@ public class WebConfiguration {
                         if (displayName == null || displayName.length()==0) {
                             displayName = fileName;
                         }
-                        if (log.isDebugEnabled()) {
-                            log.debug("Adding PKCS#11 library " + fileName + " with display name " + displayName);
+                        boolean canGenerateKey = true;
+                        String canGenerateKeyStr = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".canGenerateKey");
+                        if (StringUtils.equalsIgnoreCase("false", canGenerateKeyStr)) {
+                            canGenerateKey = false; // make really sure it's true by default
                         }
-                        ret.put(fileName, new P11LibraryInfo(displayName, slotList));
+                        String canGenerateKeyMsg = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".canGenerateKeyMsg");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Adding PKCS#11 library " + fileName + " with display name " + displayName+", canGenerateKey="+canGenerateKey+", canGenerateKeyMsg="+canGenerateKeyMsg);
+                        }
+                        ret.put(fileName, new P11LibraryInfo(displayName, slotList, canGenerateKey, canGenerateKeyMsg));
                     } else {
                         if (log.isDebugEnabled()) {
                             log.debug("PKCS#11 library " + fileName + " was not detected in file system and will not be available.");
