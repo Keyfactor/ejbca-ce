@@ -7,7 +7,7 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.acme;
+package org.ejbca.core.protocol.rest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Iterator;
