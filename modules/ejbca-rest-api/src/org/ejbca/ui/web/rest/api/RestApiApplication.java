@@ -15,7 +15,7 @@ import javax.ws.rs.core.Application;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.SwaggerDefinition;
-import org.ejbca.core.protocol.acme.SnakeCaseConverter;
+import org.ejbca.core.protocol.rest.SnakeCaseConverter;
 
 import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.config.BeanConfig;
