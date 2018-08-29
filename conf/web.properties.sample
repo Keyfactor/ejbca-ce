@@ -287,6 +287,11 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # To change the default slot (e.g. if you have disabled access to slot 0)
 #cryptotoken.p11.defaultslot=1
 #cryptotoken.p11.defaultslot=i1
+# If you would like to restrict the capabilities, you can use the following property:
+# (for a capability that is disabled you have the chance to specify a message that may be displayed in the GUI)
+# canGenerateKey can be used to disable key generation in the Web UI, if this does not work properly (typically due to limited p11 support)
+#cryptotoken.p11.lib.114.canGenerateKey=false
+#cryptotoken.p11.lib.114.canGenerateKeyMsg=ClientToolBox must be used to generate keys on AWS CloudHSM
 
 # Available PKCS#11 CryptoToken attribute files and their display names
 # Use if the default PKCS#11 attributes are not good for the PKCS#11 module and if needs specific attributes 
