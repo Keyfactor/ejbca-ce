@@ -7,7 +7,7 @@
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.rest;
+package org.ejbca.util.swagger;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Iterator;
