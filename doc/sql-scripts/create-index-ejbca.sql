@@ -68,6 +68,9 @@ CREATE INDEX acmeaccountdata_idx1 ON AcmeAccountData (currentKeyId);
 -- index for searching for ACME orders by account id
 CREATE INDEX acmeorderdata_idx1 ON AcmeOrderData (accountId);
 
+-- index for searching for ACME orders by fingerprint and status
+CREATE INDEX acmeorderdata_idx2 ON AcmeOrderData (fingerprint, status);
+
 -- index for searching for ACME authorizations by account id
 CREATE INDEX acmeauthorizationdata_idx1 ON AcmeAuthorizationData (accountId);
 
