@@ -40,5 +40,10 @@ public interface AcmeOrderDataSessionLocal extends AcmeOrderDataSession {
      * @return the sought object, or null if not found
      */
     Set<AcmeOrderData> findByAccountId(final String accountId);
-    
+
+    /**
+     * @param fingerprint the fingerprint of an AcmeOrderData row
+     * @return the sought objects, or null if not found
+     */
+    Set<AcmeOrderData> findFinalizedAcmeOrdersByFingerprint(final String fingerprint);
 }
