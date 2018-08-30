@@ -55,7 +55,17 @@ public class AcmeOrderDataSessionBean implements AcmeOrderDataSessionRemote, Acm
     }
     
     @Override
+    public Set<AcmeOrder> getFinalizedAcmeOrdersByFingerprint(String fingerprint) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
+    @Override
     public Set<AcmeOrderData> findByAccountId(String accountId) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
+    @Override
+    public Set<AcmeOrderData> findFinalizedAcmeOrdersByFingerprint(final String fingerprint) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
     
