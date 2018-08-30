@@ -455,6 +455,8 @@ CREATE TABLE AcmeAccountData (
 CREATE TABLE AcmeOrderData (
     orderId VARCHAR(250) BINARY NOT NULL,
     accountId VARCHAR(250) BINARY NOT NULL,
+    fingerprint VARCHAR(250),
+    status VARCHAR(250) NOT NULL,
     rawData LONGTEXT,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,

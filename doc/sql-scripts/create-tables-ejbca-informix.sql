@@ -451,6 +451,8 @@ CREATE TABLE AcmeAccountData (
 CREATE TABLE AcmeOrderData (
     orderId VARCHAR(255,0) NOT NULL,
     accountId VARCHAR(255,0) NOT NULL,
+    fingerprint VARCHAR(255,0),
+    status VARCHAR(255,0) NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,

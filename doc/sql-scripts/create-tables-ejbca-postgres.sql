@@ -447,6 +447,8 @@ CREATE TABLE AcmeAccountData (
 CREATE TABLE AcmeOrderData (
     orderId TEXT BINARY NOT NULL,
     accountId TEXT BINARY NOT NULL,
+    fingerprint TEXT BINARY,
+    status TEXT BINARY NOT NULL,
     rawData TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
