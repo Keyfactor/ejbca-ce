@@ -1232,11 +1232,18 @@ public interface RaMasterApi {
    AcmeOrder getAcmeOrderById(String orderId);
 
    /**
-    * Get AcmeOrder by accountId.
+    * Get AcmeOrders by accountId.
     * @param accountId a related account id
     * @return the collection of sought AcmeOrders or null if not found
     */
    Set<AcmeOrder> getAcmeOrdersByAccountId(final String accountId);
+   
+   /**
+    * Get AcmeOrders by fingerprint field.
+    * @param fingerprint a related acmeorder's fingerprint field
+    * @return the collection of sought AcmeOrders or empty Set if not found
+    */
+   Set<AcmeOrder> getFinalizedAcmeOrdersByFingerprint(final String fingerprint);
    
    /**
     * Create or update the AcmeOrder.

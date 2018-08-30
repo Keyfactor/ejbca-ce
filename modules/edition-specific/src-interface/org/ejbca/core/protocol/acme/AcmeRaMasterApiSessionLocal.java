@@ -60,7 +60,10 @@ public interface AcmeRaMasterApiSessionLocal {
 
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getAcmeOrdersByAccountId(String) */
     Set<AcmeOrder> getAcmeOrdersByAccountId(String accountId);
-
+    
+    /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#getFinalizedAcmeOrdersByFingerprint(String) */
+    Set<AcmeOrder> getFinalizedAcmeOrdersByFingerprint(String fingerprint);
+    
     /** @see org.ejbca.ui.web.protocol.acme.storage.AcmeOrderDataSessionBean#persist(AcmeOrder) */
     String persistAcmeOrderData(AcmeOrder acmeOrder);
 
@@ -112,6 +115,9 @@ public interface AcmeRaMasterApiSessionLocal {
     /** @see org.ejbca.core.model.era.RaMasterApi#getAuthorizedCAInfos(AuthenticationToken) */
     IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken);
 
+    /** @see org.ejbca.core.model.era.RaMasterApi#searchUser(AuthenticationToken, String) */
+    EndEntityInformation searchUser(AuthenticationToken authenticationToken, String username);
+    
     /** @see org.ejbca.core.model.era.RaMasterApi#addUser(AuthenticationToken, EndEntityInformation, boolean) */
     void addUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean clearpwd)
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException;

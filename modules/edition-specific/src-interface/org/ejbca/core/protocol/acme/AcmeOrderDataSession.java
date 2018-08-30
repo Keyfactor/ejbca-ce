@@ -35,6 +35,13 @@ public interface AcmeOrderDataSession {
     Set<AcmeOrder> getAcmeOrdersByAccountId(final String accountId);
     
     /**
+     *  
+     * @param fingerprint the fingerprint filed of the order entry
+     * @return the sought orders, or null if none exists
+     */
+    Set<AcmeOrder> getFinalizedAcmeOrdersByFingerprint(final String fingerprint);
+    
+    /**
      * Create or update the AcmeOrder.
      *
      * @return the persisted version of the AcmeOrder.

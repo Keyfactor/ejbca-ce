@@ -86,6 +86,11 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
     }
     
     @Override
+    public Set<AcmeOrder> getFinalizedAcmeOrdersByFingerprint(final String fingerprint) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
+    @Override
     public String persistAcmeOrderData(final AcmeOrder acmeOrder) {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
@@ -170,6 +175,11 @@ public class AcmeRaMasterApiSessionBean implements AcmeRaMasterApiSessionLocal {
         throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
     }
 
+    @Override
+    public EndEntityInformation searchUser(final AuthenticationToken authenticationToken, final String username) {
+        throw new UnsupportedOperationException("ACME calls are only supported in EJBCA Enterprise");
+    }
+    
     @Override
     public void addUser(final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation, boolean clearpwd)
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {

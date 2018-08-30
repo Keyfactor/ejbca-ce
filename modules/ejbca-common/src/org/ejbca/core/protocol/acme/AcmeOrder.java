@@ -28,6 +28,14 @@ public interface AcmeOrder {
     String getOrderId();
 
     String getAccountId();
+    
+    String getFingerprint();
+    
+    void setFingerprint(String fingerprint);
+    
+    String getStatus();
+    
+    void setStatus(String status);
 
     String getFinalize();
 

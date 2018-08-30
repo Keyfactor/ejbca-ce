@@ -2559,6 +2559,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public Set<AcmeOrder> getAcmeOrdersByAccountId(String accountId) {
         return acmeOrderDataSession.getAcmeOrdersByAccountId(accountId);
     }
+
+    @Override
+    public Set<AcmeOrder> getFinalizedAcmeOrdersByFingerprint(String fingerprint) {
+        return acmeOrderDataSession.getFinalizedAcmeOrdersByFingerprint(fingerprint);
+    }
     
     @Override
     public String persistAcmeOrder(final AcmeOrder acmeOrder) {

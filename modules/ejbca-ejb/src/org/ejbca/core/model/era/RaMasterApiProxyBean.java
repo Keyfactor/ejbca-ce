@@ -2825,6 +2825,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
     
     @Override
+    public Set<AcmeOrder> getFinalizedAcmeOrdersByFingerprint(final String fingerprint) {
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
+                try {
+                    return raMasterApi.getFinalizedAcmeOrdersByFingerprint(fingerprint);
+                }  catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }    
+    
+    @Override
     public String persistAcmeOrder(final AcmeOrder acmeOrder) {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 5) {
