@@ -452,7 +452,7 @@ public interface SignSession {
      * @param authenticationToken an authentication token representing the current admin 
      * @param data a byte array of the data to be signed
      * @param signingCaName the name of the CA 
-     * @return a signed payload as a byte array
+     * @return an encoded CMSSignedData of the original payload
      * @throws AuthorizationDeniedException if the authentication token was not authorized to the given CA
      * @throws CryptoTokenOfflineException if the crypto token was offline 
      * @throws CADoesntExistsException if a CA by the given name doesn't exist.
