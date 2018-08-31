@@ -1314,30 +1314,35 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public byte[] signPayload(final AuthenticationToken authenticationToken, byte[] data, final String signingCaName)
+    public byte[] signPayload(final AuthenticationToken authenticationToken, final byte[] data, final String signingCaName)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException {
         CA ca = caSession.getCA(authenticationToken, signingCaName);
-        if(ca == null) {
+        if (ca == null) {
             throw new CADoesntExistsException("CA by name " + signingCaName + " does not exist.");
         }
         CAToken catoken = ca.getCAToken();
         CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
         PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        final X509Certificate signerCert = (X509Certificate) ca.getCACertificate();
+        final X509Certificate signerCert;
+        try {
+            signerCert = (X509Certificate) ca.getCACertificate();
+        } catch (ClassCastException e) {
+            throw new IllegalStateException("Not possible to sign a payload using a CV CA", e);
+        }
         final String provider = cryptoToken.getSignProviderName();
         CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedDataGenerator.DIGEST_SHA256,
+        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(ca.getCAToken().getSignatureAlgorithm(),
                 privateKey.getAlgorithm());
         try {
-        ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(privateKey);
-        JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder()
-                .setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
-        gen.addSignerInfoGenerator(builder.build(contentSigner, signerCert));
-        gen.addCertificates(new CollectionStore<>(CertTools.convertToX509CertificateHolder(Arrays.asList(signerCert))));
-        CMSSignedData sigData = gen.generate(new CMSProcessableByteArray(data), true);
-        return sigData.getEncoded();
-        } catch(CMSException | CertificateEncodingException | IOException | OperatorCreationException e) {
+            ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(privateKey);
+            JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder()
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
+            gen.addSignerInfoGenerator(builder.build(contentSigner, signerCert));
+            gen.addCertificates(new CollectionStore<>(CertTools.convertToX509CertificateHolder(Arrays.asList(signerCert))));
+            CMSSignedData sigData = gen.generate(new CMSProcessableByteArray(data), true);
+            return sigData.getEncoded();
+        } catch (CMSException | CertificateEncodingException | IOException | OperatorCreationException e) {
             throw new SignRequestSignatureException("Given payload could not be signed.", e);
         }
     }
