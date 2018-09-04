@@ -42,7 +42,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
     private static final String KEY_DNS_PORT = "dnsPort";
     private static final String KEY_USE_DNSSEC_VALIDATION = "useDnssecValidation";
-
+    private static final String KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL = "termsOfServiceRequireNewApproval";
     private static final String IANA_ROOT_ANCHOR_DEFAULT = ". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5";
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
@@ -121,37 +121,15 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE, urlTemplate);
     }
 
-    /** @return the current Terms Of Services version. */
-    public int getTermsOfServiceVersion() {
-        // This value is stored for each account at the time of approval.
-        // Changing the TermsOfServiceUrl should also provide the option to increase this counter (and hence force clients to agree to the new terms).
-        final Integer termsOfServiceVersion = (Integer) super.data.get(KEY_TERMS_OF_SERVICE_VERSION);
-        return termsOfServiceVersion==null ? 0 : termsOfServiceVersion.intValue();
-    }
-    private void setTermsOfServiceVersion(final int termsOfServiceVersion) {
-        super.data.put(KEY_TERMS_OF_SERVICE_VERSION, Integer.valueOf(termsOfServiceVersion));
-    }
-
     /** @return an URL of where the current Terms Of Services can be located. */
     public String getTermsOfServiceUrl() {
         return (String) super.data.get(KEY_TERMS_OF_SERVICE_URL);
     }
-    private void setTermsOfServiceUrl(final String termsOfServiceUrl) {
+    
+    public void setTermsOfServiceUrl(final String termsOfServiceUrl) {
         super.data.put(KEY_TERMS_OF_SERVICE_URL, termsOfServiceUrl);
     }
-
-    /**
-     * Set a new URL to where the Terms Of Services optionally requiring the clients to approve it to continue to use the service.
-     *
-     * If multiple AcmeConfigurations share the same URL it will be sufficient for the client to agree to the one with the highest version.
-     */
-    public void setTermsOfServiceUrl(final String termsOfServiceUrl, final boolean requireNewApproval) {
-        setTermsOfServiceUrl(termsOfServiceUrl);
-        if (requireNewApproval) {
-            setTermsOfServiceVersion(getTermsOfServiceVersion()+1);
-        }
-    }
-
+    
     /** @return the web site URL presented in the directory meta data */
     public String getWebSiteUrl() {
         return (String) super.data.get(KEY_WEB_SITE_URL);
@@ -223,6 +201,15 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         super.data.put(KEY_DNS_PORT, dnsPort);
     }
     
+    public boolean isTermsOfServiceRequireNewApproval() {
+        return Boolean.valueOf((String) super.data.get(KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL));
+    }
+    
+    public void setTermsOfServiceRequireNewApproval(boolean termsOfServiceRequireNewApproval) {
+        super.data.put(KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL, String.valueOf(termsOfServiceRequireNewApproval));
+    }
+    
+    
     public boolean isUseDnsSecValidation() {
         return Boolean.valueOf((String) super.data.get(KEY_USE_DNSSEC_VALIDATION));
     }
@@ -237,7 +224,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setEndEntityProfileId(DEFAULT_END_ENTITY_PROFILE_ID);
         setRequireExternalAccountBinding(DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING);
         setPreAuthorizationAllowed(DEFAULT_PRE_AUTHORIZATION_ALLOWED);
-        setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL, DEFAULT_REQUIRE_NEW_APPROVAL);
+        setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL);
+        setTermsOfServiceRequireNewApproval(DEFAULT_REQUIRE_NEW_APPROVAL);
         setWildcardCertificateIssuanceAllowed(DEFAULT__WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
         setWebSiteUrl(DEFAULT_WEBSITE_URL);
         setDnsResolver(DNS_RESOLVER_DEFAULT);
