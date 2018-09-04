@@ -218,7 +218,6 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     /** Invoked when admin saves the ACME alias configurations */
     public void saveCurrentAlias() {
         if (currentAlias != null) {
-            String alias = currentAlias.getAlias();
             AcmeConfiguration acmeConfig = globalAcmeConfigurationConfig.getAcmeConfiguration(currentAliasStr);
             acmeConfig.setEndEntityProfileId(Integer.valueOf(currentAlias.endEntityProfileId));
             acmeConfig.setPreAuthorizationAllowed(currentAlias.isPreAuthorizationAllowed());
@@ -229,9 +228,10 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             acmeConfig.setDnsPort(currentAlias.getDnsPort());
             acmeConfig.setDnssecTrustAnchor(currentAlias.getDnssecTrustAnchor());
             acmeConfig.setUseDnsSecValidation(currentAlias.isUseDnsSecValidation());
-            String termsOfServiceUrl = acmeConfig.getTermsOfServiceUrl();
-            if (StringUtils.isNotEmpty(currentAlias.getTermsOfServiceUrl()) && (StringUtils.isEmpty(termsOfServiceUrl) || !termsOfServiceUrl.equals(currentAlias.getTermsOfServiceUrl()))) {
-                acmeConfig.setTermsOfServiceUrl(currentAlias.getTermsOfServiceUrl(), currentAlias.termsOfServiceApproval);
+            acmeConfig.setTermsOfServiceRequireNewApproval(currentAlias.getTermsOfServiceApproval());
+            
+            if (StringUtils.isNotEmpty(currentAlias.getTermsOfServiceUrl())) {
+                acmeConfig.setTermsOfServiceUrl(currentAlias.getTermsOfServiceUrl());
             }
             globalAcmeConfigurationConfig.updateAcmeConfiguration(acmeConfig);
             try {
@@ -318,6 +318,7 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
                     this.dnssecTrustAnchor = acmeConfiguration.getDnssecTrustAnchor();
                     this.termsOfServiceUrl = String.valueOf(acmeConfiguration.getTermsOfServiceUrl());
                     this.useDnsSecValidation = acmeConfiguration.isUseDnsSecValidation();
+                    this.termsOfServiceApproval = acmeConfiguration.isTermsOfServiceRequireNewApproval();
                 }
             }
         }
