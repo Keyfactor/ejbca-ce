@@ -53,9 +53,9 @@ public interface AcmeAccount extends Serializable, IUpgradeableData {
     void setExternalAccountBinding(String externalAccountBinding);
 
     /** @return the version of Terms Of Service that the account holder has agreed to */
-    int getTermsOfServiceAgreedVersion();
+    String getTermsOfServiceAgreedVersion();
 
-    void setTermsOfServiceAgreedVersion(String configurationId, int termsOfServiceAgreedVersion);
+    void setTermsOfServiceAgreedVersion(String termsOfServiceAgreedVersion);
 
     String getConfigurationId();
 
