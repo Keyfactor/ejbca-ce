@@ -24,7 +24,7 @@ public enum AcmeProblem {
     PROBLEM_INVALID_CONTACT("invalidContact", "The contact URI for an account was invalid"),
     PROBLEM_MALFORMED("malformed", "The request message was malformed"),
     PROBLEM_RATE_LIMITED("rateLimited", "The request exceeds a rate limit"),
-    PROBLEM_REJECTED_INDENTIFIER("rejectedIdentifier", "The server will not issue for the identifier"),
+    PROBLEM_REJECTED_INDENTIFIER("rejectedIdentifier", "The server will not issue certificate for the identifier"),
     PROBLEM_SERVER_INTERNAL("serverInternal", "The server experienced an internal error"),
     PROBLEM_UNAUTHORIZED("unauthorized", "The client lacks sufficient authorization"),
     PROBLEM_UNSUPPORTED_INDENTIFIER("unsupportedIdentifier", "Identifier is not supported, but may be in future"),
