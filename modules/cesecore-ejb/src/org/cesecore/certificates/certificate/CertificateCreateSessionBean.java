@@ -476,7 +476,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                             cafingerprint, CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId,
                             endEntityInformation.getEndEntityProfileId(), null, updateTime, false, certProfile.getStoreSubjectAlternativeName());
                     result = new CertificateDataWrapper(cert, throwAwayCertData, null);
-                    break; // We have our cert and we don't need to store it.. Move on..
+                    // Always Store full certificate for OCSP signing certificates.
+                    boolean isOcspSigner = certProfile.getExtendedKeyUsageOids().contains("1.3.6.1.5.5.7.3.9");
+                    if (!isOcspSigner) {
+                        break; // We have our cert and we don't need to store it.. Move on..
+                    }
+                    log.debug("Storing certificate even though storage is disabled since OCSP signer EKU is used.");
                 }
                 try {
                     // Remember for CVC serialNo can be alphanumeric, so we can't just try to decode that using normal Java means (BigInteger.valueOf)...
