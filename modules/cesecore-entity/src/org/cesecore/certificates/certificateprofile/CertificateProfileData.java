@@ -26,15 +26,17 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.legacy.Eca7277CertificateProfileData;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.QueryResultWrapper;
 
 /**
  * Representation of a certificate profile (template).
- * 
+ *
  * @version $Id$
  */
 @Entity
@@ -149,9 +151,9 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
      * We have an internal method for this read operation with a side-effect. This is because getCertificateProfile() is a read-only method, so the
      * possible side-effect of upgrade will not happen, and therefore this internal method can be called from another non-read-only method,
      * upgradeProfile().
-     * 
+     *
      * @return CertificateProfile
-     * 
+     *
      *         TODO: Verify read-only? apply read-only?
      */
     private CertificateProfile readAndUpgradeProfileInternal() {
@@ -233,7 +235,11 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     @PostLoad
     @Override
     protected void verifyData() {
-        super.verifyData();
+        try {
+            super.verifyData();
+        } catch (final DatabaseProtectionException possibleTamper) {
+            eca7277FixDbProtectStringAndVerifyAgain(possibleTamper);
+        }
     }
 
     @Override
@@ -245,4 +251,18 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     // End Database integrity protection methods
     //
 
+    /**
+     * Fix for ECA-7277 where the signature was computed over a faulty protect string.
+     * See {@link org.cesecore.legacy.Eca7277CertificateProfileData} for an explanation.
+     * @param possibleTamper an exception raised due to a possible database tamper
+     * @throws DatabaseProtectionException if the exception was not caused by ECA-7277
+     */
+    @Deprecated
+    private void eca7277FixDbProtectStringAndVerifyAgain(final DatabaseProtectionException possibleTamper) throws DatabaseProtectionException {
+        try {
+            impl.verifyData(new Eca7277CertificateProfileData(this));
+        } catch (DatabaseProtectionException e) {
+            throw possibleTamper;
+        }
+    }
 }

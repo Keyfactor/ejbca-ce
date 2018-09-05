@@ -22,14 +22,13 @@ import java.util.Map;
  *
  */
 public enum ApprovalRequestType {
-    ADDEDITENDENTITY(1, "APPROVEADDEDITENDENTITY", "Add or Edit End Entity"), 
-    KEYRECOVER(2, "APPROVEKEYRECOVER", "Key Recovery"), 
-    REVOCATION(3, "APPROVEREVOCATION", "Revocation"), 
-    ACTIVATECA(4, "APPROVEACTIVATECA", "CA Activation");
+    ADDEDITENDENTITY(1, "APPROVEADDEDITENDENTITY"),
+    KEYRECOVER(2, "APPROVEKEYRECOVER"),
+    REVOCATION(3, "APPROVEREVOCATION"),
+    ACTIVATECA(4, "APPROVEACTIVATECA");
 
     private final  int integerValue;
     private final String languageString;
-    private final String readableString;
     private static final Map<Integer, ApprovalRequestType> reverseLookupMap = new HashMap<>();
 
     static {
@@ -38,10 +37,9 @@ public enum ApprovalRequestType {
         }
     }
 
-    private ApprovalRequestType(int integerValue, String languageString, String readableString) {
+    private ApprovalRequestType(int integerValue, String languageString) {
         this.integerValue = integerValue;
         this.languageString = languageString;
-        this.readableString = readableString;
     }
 
     public int getIntegerValue() {
@@ -54,10 +52,5 @@ public enum ApprovalRequestType {
 
     public static ApprovalRequestType getFromIntegerValue(int integerValue) {
         return reverseLookupMap.get(integerValue);
-    }
-
-    @Override
-    public String toString() {
-        return readableString;
     }
 }
