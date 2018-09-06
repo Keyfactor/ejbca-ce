@@ -52,11 +52,6 @@
     	<managed-bean-class>org.ejbca.ui.web.admin.services.EditServiceManagedBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
-    <managed-bean>
-    	<managed-bean-name>cAActivationMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.cainterface.CAActivationMBean</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
   <managed-bean>
     	<managed-bean-name>cryptoTokenMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.cryptotoken.CryptoTokenMBean</managed-bean-class>
@@ -205,15 +200,13 @@
   		<to-view-id>/approval/approveaction.jsp</to-view-id>
   	</navigation-case>
   </navigation-rule>
-  
   <navigation-rule>
-    <from-view-id>/ca/caactivation.jsp</from-view-id>
+    <from-view-id>/ca/caactivation.xhtml</from-view-id>
     <navigation-case>
       <from-outcome>apply</from-outcome>
-      <to-view-id>/ca/caactivation.jsp</to-view-id>
+      <to-view-id>/ca/caactivation.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
-  	
   <navigation-rule>
     <from-view-id>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</from-view-id>
     <navigation-case>
