@@ -11,6 +11,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.security.cert.CertificateParsingException;
 import java.util.Calendar;
 import java.util.List;
 
@@ -189,9 +190,9 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         try {
             byte[] uploadedFileBytes = upload.getBytes();
             return KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
-        } catch (final IOException e) {
+        } catch (final CertificateParsingException e) {
             log.info("Could not parse the public key file.", e);
-            systemConfigurationHelper.addErrorMessage("CTLOGTAB_BADKEYFILE", upload.getName(), e.getLocalizedMessage());
+            systemConfigurationHelper.addErrorMessage("CTLOGTAB_BADKEYFILE", upload.getName());
             return null;
         } catch (final Exception e) {
             log.info("Failed to add CT Log.", e);
