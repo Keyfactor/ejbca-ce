@@ -152,13 +152,17 @@ public abstract class ProtectedData {
         impl.protectData(this);
     }
 
-    /** Overridden by extending class to be able to use @PostLoad, overriding class calls super.verifyData().
-     * This method verifies integrity protection for the specific entity in the database.
-     *
-     * @throws DatabaseProtectionException (RuntimeException) on verify error.
+    /**
+     * Overridden by extending class to be able to use @PostLoad, overriding class calls super.verifyData().
+     * This method verifies integrity protection for the specific entity in the database. If the data verification
+     * failed, it invokes {@link #onDataVerificationError(DatabaseProtectionException)}.
      */
     protected void verifyData() {
-        impl.verifyData(this);
+        try {
+            impl.verifyData(this);
+        } catch (final DatabaseProtectionException e) {
+            onDataVerificationError(e);
+        }
     }
 
     /** Method that calculates integrity protection of an entity, but does not store it anywhere. Used primarily to make test protection
@@ -167,5 +171,17 @@ public abstract class ProtectedData {
      */
     public String calculateProtection() {
         return impl.calculateProtection(this);
+    }
+
+    /**
+     * Throws DatabaseProtectionException if erroronverifyfail is enabled in
+     * databaseprotection.properties, or log a "row protection failed" message on WARN level.
+     * @throws the exception given as parameter if erroronverifyfail is enabled
+     */
+    protected void onDataVerificationError(final DatabaseProtectionException e) {
+        if (ProtectedDataConfiguration.errorOnVerifyFail()) {
+            throw e;
+        }
+        log.warn(e);
     }
 }
