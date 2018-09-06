@@ -28,7 +28,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileData;
  * like CertificateProfileData, but replaces any faulty substrings found in the protect string returned by
  * getProtectString() before returning it to the caller.
  *
- * This class and all references to it can be safely removed when we drop support for EJBCA 6.14.
+ * This class, the regression test and all references to these can be safely removed when we drop support for
+ * EJBCA 6.14.
  *
  * @version $Id$
  */
