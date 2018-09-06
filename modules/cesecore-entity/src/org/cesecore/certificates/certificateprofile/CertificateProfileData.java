@@ -235,14 +235,33 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     @PostLoad
     @Override
     protected void verifyData() {
+        super.verifyData();
+    }
+
+    /**
+     * Due to an issue with db protection between EJBCA 6.12 and 6.14.1 we need special handling to verify protection
+     * created between those versions. If the initial data verification failed, we should to "patch" the protect string
+     * and verify again. If this fails we behave as usual, i.e. throw the original exception if erroronverify is set,
+     * or if not set just log a warning.
+     *
+     * This code can be removed once we are sure that all installations have performed post-upgrade on EJBCA version
+     * 7.x or later.
+     *
+     * @param possibleTamper an exception raised due to a possible database tamper
+     * @throws DatabaseProtectionException possibleTamper is thrown if the exception was not caused by ECA-7277, i.e
+     * the signature did not verify over the "patched" protect string either.
+     */
+    @Transient
+    @Override
+    @Deprecated
+    protected void onDataVerificationError(final DatabaseProtectionException possibleTamper) {
         try {
-            super.verifyData();
-        } catch (final DatabaseProtectionException possibleTamper) {
-            // Due to an issue with db protection between EJBCA 6.12 and 6.14.1 we need
-            // special handling to verify protection created between those versions. This
-            // code can be removed once we are sure that all installations have performed
-            // post-upgrade on EJBCA version 7.x or later.
-            eca7277FixDbProtectStringAndVerifyAgain(possibleTamper);
+            // Try to verify again with a mocked CertificateProfileData object returning a "patched"
+            // protect string
+            impl.verifyData(new Eca7277CertificateProfileData(this));
+        } catch (final DatabaseProtectionException e) {
+            // Ignore the new exception and fall back to the default behaviour
+            super.onDataVerificationError(possibleTamper);
         }
     }
 
@@ -254,19 +273,4 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     //
     // End Database integrity protection methods
     //
-
-    /**
-     * Fix for ECA-7277 where the signature was computed over a faulty protect string.
-     * See {@link org.cesecore.legacy.Eca7277CertificateProfileData} for an explanation.
-     * @param possibleTamper an exception raised due to a possible database tamper
-     * @throws DatabaseProtectionException possibleTamper is thrown if the exception was not caused by ECA-7277, to make sure database protection fails
-     */
-    @Deprecated
-    private void eca7277FixDbProtectStringAndVerifyAgain(final DatabaseProtectionException possibleTamper) throws DatabaseProtectionException {
-        try {
-            impl.verifyData(new Eca7277CertificateProfileData(this));
-        } catch (DatabaseProtectionException e) {
-            throw possibleTamper;
-        }
-    }
 }
