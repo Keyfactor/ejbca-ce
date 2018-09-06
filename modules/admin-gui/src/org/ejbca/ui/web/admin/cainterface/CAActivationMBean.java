@@ -21,11 +21,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -45,6 +49,8 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  *
  * @version $Id$
  */
+@ManagedBean
+@SessionScoped
 public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 	private static final Logger log = Logger.getLogger(CAActivationMBean.class);
@@ -298,7 +304,10 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_ACTIVATECA);
     }
     
-    
+    /** @return true if admin is authorized to {@link StandardRules#CAVIEW} */
+    public boolean isAuthorizedToViewPage() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CAVIEW.resource());
+    }
     
 	public void setAuthenticationCode(String authenticationcode) { this.authenticationcode = authenticationcode; }
 	public String getAuthenticationCode() { return ""; }
