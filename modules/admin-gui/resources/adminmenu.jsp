@@ -33,7 +33,7 @@ org.ejbca.util.HTMLTools
        final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/cafunctions.jsp";
        final String CA_ACTIVATION_LINK		=  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/caactivation.jsf";   
        final String CA_CERTIFICATEPROFILELINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
-                               + "/editcertificateprofiles/editcertificateprofiles.jsf";  
+                               + "/editcertificateprofiles/editcertificateprofiles.xhtml";  
        final String RA_EDITUSERDATASOURCESLINK =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/edituserdatasources/edituserdatasources.jsp";
        final String RA_EDITPROFILESLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/editendentityprofiles/editendentityprofiles.jsp";
        final String RA_ADDENDENTITYLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/addendentity.jsp";
