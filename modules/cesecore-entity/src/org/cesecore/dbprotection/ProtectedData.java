@@ -174,14 +174,14 @@ public abstract class ProtectedData {
     }
 
     /**
-     * Throws DatabaseProtectionException if erroronverifyfail is enabled in
-     * databaseprotection.properties, or log a "row protection failed" message on WARN level.
+     * Throws DatabaseProtectionException if erroronverifyfail is enabled in databaseprotection.properties
+     * and logs a "row protection failed" message on ERROR level.
      * @throws the exception given as parameter if erroronverifyfail is enabled
      */
     protected void onDataVerificationError(final DatabaseProtectionException e) {
+        log.error(e);
         if (ProtectedDataConfiguration.errorOnVerifyFail()) {
             throw e;
         }
-        log.warn(e);
     }
 }
