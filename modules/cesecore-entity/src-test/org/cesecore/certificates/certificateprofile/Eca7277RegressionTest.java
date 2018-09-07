@@ -19,17 +19,40 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 
 import org.apache.commons.codec.binary.Base64;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.config.ConfigurationHolder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Regression tests for ECA-7277. See {@link org.cesecore.legacy.Eca7277CertificateProfileData} for an explanation.
+ * Regression tests for ECA-7277. See {@link org.cesecore.legacy.Eca7277CertificateProfileData} for an explanation why this
+ * test is needed.
+ *
+ * The test contains a canned certificate profile and signature from EJBCA 6.11 and EJBCA 6.14. The canned certificate
+ * profile was extracted from EJBCA by applying the following code to e.g. CertificateProfileData.verifyData:
+ * <pre>
+ * ByteArrayOutputStream bos = new ByteArrayOutputStream();
+ * ObjectOutputStream oos;
+ * oos = new ObjectOutputStream(bos);
+ * oos.writeObject(this.getCertificateProfile());
+ *
+ * log.error("foo! " + this.getCertificateProfileName() + ": " + Base64.encodeBase64String(bos.toByteArray()));
+ * </pre>
+ *
+ * EJBCA will run verifyData on startup and print the base64 data, it's up for grabs in server.log
+ * <pre>
+ * cat /opt/wildfly/standalone/log/server.log | grep -C 10 "foo!"
+ * </pre>
+ * The signature is available directly in the database and can be printed to the screen using the following query (mysql)
+ * <pre>
+ * USE ejbca;
+ * SELECT certificateProfileName,id,rowProtection FROM CertificateProfileData;
+ * </pre>
+ *
+ * This code can be removed once we are sure that all installations have performed post-upgrade on EJBCA version 7.x or later.
  *
  * @version $Id$
  */
+@Deprecated
 public class Eca7277RegressionTest {
 
     private boolean isDatabaseProtectionImplementationAvailable() {
@@ -81,6 +104,12 @@ public class Eca7277RegressionTest {
         ConfigurationHolder.updateConfiguration("databaseprotection.sigalg.0", "SHA256WithRSA");
     }
 
+    /**
+     * Test that a certificate profile created and signed in EJBCA 6.14 verifies. A certificate profile created
+     * in EJBCA 6.12-6.14 would not verify on the first attempt since the signature was computed over some data
+     * which was refactored by mistake in EJBCA 6.12. The aim of this test is to check that we can recover, "patch"
+     * the protect string and verify again without crashing.
+     */
     @Test
     public void certificateProfileCreatedInEjbca614Verifies() throws Exception {
         assumeTrue(isDatabaseProtectionImplementationAvailable());
@@ -155,8 +184,96 @@ public class Eca7277RegressionTest {
         final CertificateProfileData cannedData = new CertificateProfileData(918650336, "Acme TLS Server Certificate", cannedCertificateProfile);
         cannedData.setRowProtection("1:2:123:1ac180859e18ea7d48acecedf6ec06079f98ef63ded4c77748fed727cbac50491ed"
                 + "6aec24644faf588565dac76d8a9cd359c3b273e151e789b3e9f04adc2785e61061051f424ccc24ab57181dd70894f"
-                + "4437f9c0580a610e6bc5c9a22655bbe9cfa914625dcb2a084c946d4c32b9ca3b70ab7eab13959b4bd8d6b2d021a8f" + "15e");
-        cannedData.setRowVersion(3);
+                + "4437f9c0580a610e6bc5c9a22655bbe9cfa914625dcb2a084c946d4c32b9ca3b70ab7eab13959b4bd8d6b2d021a8f15e");
+
+        cannedData.verifyData();
+    }
+
+    /**
+     * Test that a certificate profile created and signed in EJBCA 6.11 still verifies. The verification should
+     * succeed on the first attempt since the signature was computed in the old "correct" way in <=EJBCA 6.11.
+     */
+    @Test
+    public void certificateProfileCreatedInEjbca611Verifies() throws Exception {
+        assumeTrue(isDatabaseProtectionImplementationAvailable());
+
+        final ByteArrayInputStream bis = new ByteArrayInputStream(
+                Base64.decodeBase64("rO0ABXNyAD9vcmcuY2VzZWNvcmUuY2VydGlmaWNhdGVzLmNlcnRpZmljYXRlcHJvZmlsZS5DZXJ0aWZp"
+                        + "Y2F0ZVByb2ZpbGWQAv2yYUWtSgIAAHhyACxvcmcuY2VzZWNvcmUuaW50ZXJuYWwuVXBncmFkZWFibGVEYXRhSGFzaE"
+                        + "1hcOd8vFMpTFJHAgACWgAIdXBncmFkZWRMAARkYXRhdAAZTGphdmEvdXRpbC9MaW5rZWRIYXNoTWFwO3hwAHNyACJv"
+                        + "cmcuY2VzZWNvcmUudXRpbC5CYXNlNjRHZXRIYXNoTWFwBxVvc8BHrukCAAB4cgAXamF2YS51dGlsLkxpbmtlZEhhc2"
+                        + "hNYXA0wE5cEGzA+wIAAVoAC2FjY2Vzc09yZGVyeHIAEWphdmEudXRpbC5IYXNoTWFwBQfawcMWYNEDAAJGAApsb2Fk"
+                        + "RmFjdG9ySQAJdGhyZXNob2xkeHA/QAAAAAAAwHcIAAABAAAAAG90AAd2ZXJzaW9uc3IAD2phdmEubGFuZy5GbG9hdN"
+                        + "rtyaLbPPDsAgABRgAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHBCOAAAdAAEdHlwZXNyABFq"
+                        + "YXZhLmxhbmcuSW50ZWdlchLioKT3gYc4AgABSQAFdmFsdWV4cQB+AAoAAAABdAALY2VydHZlcnNpb250AAZYNTA5dj"
+                        + "N0AA9lbmNvZGVkdmFsaWRpdHl0AAIyeXQAHHVzZWNlcnRpZmljYXRldmFsaWRpdHlvZmZzZXRzcgARamF2YS5sYW5n"
+                        + "LkJvb2xlYW7NIHKA1Zz67gIAAVoABXZhbHVleHAAdAAZY2VydGlmaWNhdGV2YWxpZGl0eW9mZnNldHQABC0xMG10AC"
+                        + "N1c2VleHBpcmF0aW9ucmVzdHJpY3Rpb25mb3J3ZWVrZGF5c3EAfgAVdAAmZXhwaXJhdGlvbnJlc3RyaWN0aW9uZm9y"
+                        + "d2Vla2RheXNiZWZvcmVzcQB+ABQBdAAdZXhwaXJhdGlvbnJlc3RyaWN0aW9ud2Vla2RheXNzcgATamF2YS51dGlsLk"
+                        + "FycmF5TGlzdHiB0h2Zx2GdAwABSQAEc2l6ZXhwAAAAB3cEAAAAB3EAfgAacQB+ABpzcQB+ABQAcQB+AB5xAH4AHnEA"
+                        + "fgAacQB+ABp4dAAVYWxsb3d2YWxpZGl0eW92ZXJyaWRlcQB+ABV0ABZhbGxvd2V4dGVuc2lvbm92ZXJyaWRlcQB+AB"
+                        + "V0AA9hbGxvd2Rub3ZlcnJpZGVxAH4AFXQAFGFsbG93ZG5vdmVycmlkZWJ5ZWVpcQB+ABV0ABhhbGxvd2JhY2tkYXRl"
+                        + "ZHJldm9rYXRpb25xAH4AFXQAFXVzZWNlcnRpZmljYXRlc3RvcmFnZXNxAH4AFAF0ABRzdG9yZWNlcnRpZmljYXRlZG"
+                        + "F0YXEAfgAldAATc3RvcmVzdWJqZWN0YWx0bmFtZXEAfgAldAASdXNlYmFzaWNjb25zdHJhbnRzcQB+ACV0ABhiYXNp"
+                        + "Y2NvbnN0cmFpbnRzY3JpdGljYWxxAH4AJXQAF3VzZXN1YmplY3RrZXlpZGVudGlmaWVycQB+ACV0ABxzdWJqZWN0a2"
+                        + "V5aWRlbnRpZmllcmNyaXRpY2FscQB+AB50ABl1c2VhdXRob3JpdHlrZXlpZGVudGlmaWVycQB+ACV0AB5hdXRob3Jp"
+                        + "dHlrZXlpZGVudGlmaWVyY3JpdGljYWxxAH4AHnQAGXVzZXN1YmplY3RhbHRlcm5hdGl2ZW5hbWVxAH4AJXQAHnN1Ym"
+                        + "plY3RhbHRlcm5hdGl2ZW5hbWVjcml0aWNhbHEAfgAVdAAYdXNlaXNzdWVyYWx0ZXJuYXRpdmVuYW1lcQB+ACV0AB1p"
+                        + "c3N1ZXJhbHRlcm5hdGl2ZW5hbWVjcml0aWNhbHEAfgAVdAAXdXNlY3JsZGlzdHJpYnV0aW9ucG9pbnRxAH4AFXQAHn"
+                        + "VzZWRlZmF1bHRjcmxkaXN0cmlidXRpb25wb2ludHEAfgAedAAcY3JsZGlzdHJpYnV0aW9ucG9pbnRjcml0aWNhbHEA"
+                        + "fgAedAAXY3JsZGlzdHJpYnV0aW9ucG9pbnR1cml0AAB0ABx1c2VjcmxkaXN0cmlidXRpb25wb2ludG9uY3JscQB+AB"
+                        + "50AA51c2VmcmVzaGVzdGNybHEAfgAVdAAXdXNlY2FkZWZpbmVkZnJlc2hlc3RjcmxxAH4AHnQADmZyZXNoZXN0Y3Js"
+                        + "dXJpcQB+ADZ0AAljcmxpc3N1ZXJxAH4ANnQAFnVzZWNlcnRpZmljYXRlcG9saWNpZXNxAH4AFXQAG2NlcnRpZmljYX"
+                        + "RlcG9saWNpZXNjcml0aWNhbHEAfgAedAATY2VydGlmaWNhdGVwb2xpY2llc3NxAH4AHAAAAAB3BAAAAAB4dAAWYXZh"
+                        + "aWxhYmxla2V5YWxnb3JpdGhtc3NxAH4AHAAAAAN3BAAAAAN0AANEU0F0AAVFQ0RTQXQAA1JTQXh0ABFhdmFpbGFibG"
+                        + "VlY2N1cnZlc3NxAH4AHAAAAAF3BAAAAAF0AAxBTllfRUNfQ1VSVkV4dAATYXZhaWxhYmxlYml0bGVuZ3Roc3NxAH4A"
+                        + "HAAAAA93BAAAAA9zcQB+AA0AAAAAc3EAfgANAAAAwHNxAH4ADQAAAOBzcQB+AA0AAADvc3EAfgANAAABAHNxAH4ADQ"
+                        + "AAAYBzcQB+AA0AAAIAc3EAfgANAAACCXNxAH4ADQAABABzcQB+AA0AAAYAc3EAfgANAAAIAHNxAH4ADQAADABzcQB+"
+                        + "AA0AABAAc3EAfgANAAAYAHNxAH4ADQAAIAB4dAAZbWluaW11bWF2YWlsYWJsZWJpdGxlbmd0aHEAfgBKdAAZbWF4aW"
+                        + "11bWF2YWlsYWJsZWJpdGxlbmd0aHNxAH4ADQAAIAB0ABJzaWduYXR1cmVhbGdvcml0aG1wdAALdXNla2V5dXNhZ2Vx"
+                        + "AH4AJXQACGtleXVzYWdlc3EAfgAcAAAACXcEAAAACXEAfgAlcQB+ACVxAH4AJXEAfgAVcQB+ABVxAH4AFXEAfgAVcQ"
+                        + "B+ABVxAH4AFXh0ABVhbGxvd2tleXVzYWdlb3ZlcnJpZGVxAH4AFXQAEGtleXVzYWdlY3JpdGljYWxxAH4AJXQAE3Vz"
+                        + "ZWV4dGVuZGVka2V5dXNhZ2VxAH4AJXQAEGV4dGVuZGVka2V5dXNhZ2VzcQB+ABwAAAACdwQAAAACdAARMS4zLjYuMS"
+                        + "41LjUuNy4zLjJ0ABExLjMuNi4xLjUuNS43LjMuNHh0ABhleHRlbmRlZGtleXVzYWdlY3JpdGljYWxxAH4AFXQAE3Vz"
+                        + "ZWRvY3VtZW50dHlwZWxpc3RxAH4AFXQAGGRvY3VtZW50dHlwZWxpc3Rjcml0aWNhbHEAfgAedAAQZG9jdW1lbnR0eX"
+                        + "BlbGlzdHNxAH4AHAAAAAB3BAAAAAB4dAAMYXZhaWxhYmxlY2Fzc3EAfgAcAAAAAXcEAAAAAXNxAH4ADWJ9doJ4dAAO"
+                        + "dXNlZHB1Ymxpc2hlcnNzcQB+ABwAAAAAdwQAAAAAeHQADnVzZW9jc3Bub2NoZWNrcQB+ABV0AA51c2VsZGFwZG5vcm"
+                        + "RlcnEAfgAldAAQdXNlY3VzdG9tZG5vcmRlcnEAfgAVdAAUdXNlbWljcm9zb2Z0dGVtcGxhdGVxAH4AFXQAEW1pY3Jv"
+                        + "c29mdHRlbXBsYXRldAAAdAANdXNlY2FyZG51bWJlcnEAfgAVdAAMdXNlY25wb3N0Zml4cQB+ABV0AAljbnBvc3RmaX"
+                        + "hxAH4AdnQAEnVzZXN1YmplY3RkbnN1YnNldHEAfgAVdAAPc3ViamVjdGRuc3Vic2V0c3EAfgAcAAAAAHcEAAAAAHh0"
+                        + "ABd1c2VzdWJqZWN0YWx0bmFtZXN1YnNldHEAfgAVdAAUc3ViamVjdGFsdG5hbWVzdWJzZXRzcQB+ABwAAAAAdwQAAA"
+                        + "AAeHQAF3VzZXBhdGhsZW5ndGhjb25zdHJhaW50cQB+AB50ABRwYXRobGVuZ3RoY29uc3RyYWludHNxAH4ADQAAAAB0"
+                        + "AA51c2VxY3N0YXRlbWVudHEAfgAVdAARdXNlcGtpeHFjc3ludGF4djJxAH4AHnQAFnVzZXFjc3RhdGVtZW50Y3JpdG"
+                        + "ljYWxxAH4AHnQAFHVzZXFjc3RhdGVtZW50cmFuYW1lcQB+AHZ0AA91c2VxY3NlbWF0aWNzaWRxAH4AdnQAFXVzZXFj"
+                        + "ZXRzaXFjY29tcGxpYW5jZXEAfgAedAAYdXNlcWNldHNpc2lnbmF0dXJlZGV2aWNlcQB+AB50ABN1c2VxY2V0c2l2YW"
+                        + "x1ZWxpbWl0cQB+AB50ABBxY2V0c2l2YWx1ZWxpbWl0cQB+AIJ0ABNxY2V0c2l2YWx1ZWxpbWl0ZXhwcQB+AIJ0ABhx"
+                        + "Y2V0c2l2YWx1ZWxpbWl0Y3VycmVuY3lxAH4AdnQAGHVzZXFjZXRzaXJldGVudGlvbnBlcmlvZHEAfgAedAAVcWNldH"
+                        + "NpcmV0ZW50aW9ucGVyaW9kcQB+AIJ0ABF1c2VxY2N1c3RvbXN0cmluZ3EAfgAedAARcWNjdXN0b21zdHJpbmdvaWRx"
+                        + "AH4AdnQAEnFjY3VzdG9tc3RyaW5ndGV4dHEAfgB2dAAJcWNldHNpcGRzcHQACnFjZXRzaXR5cGVwdAAhdXNlY2VydG"
+                        + "lmaWNhdGV0cmFuc3BhcmVuY3lpbmNlcnRzcQB+ABV0ACB1c2VjZXJ0aWZpY2F0ZXRyYW5zcGFyZW5jeWlub2NzcHEA"
+                        + "fgAVdAAldXNlY2VydGlmaWNhdGV0cmFuc3BhcmVuY3lpbnB1Ymxpc2hlcnEAfgAVdAAXdXNlc3ViamVjdGRpcmF0dH"
+                        + "JpYnV0ZXNxAH4AFXQAEnVzZW5hbWVjb25zdHJhaW50c3EAfgAVdAAddXNlYXV0aG9yaXR5aW5mb3JtYXRpb25hY2Nl"
+                        + "c3NxAH4AFXQACWNhaXNzdWVyc3NxAH4AHAAAAAB3BAAAAAB4dAASdXNlZGVmYXVsdGNhaXNzdWVycQB+AB50ABx1c2"
+                        + "VkZWZhdWx0b2NzcHNlcnZpY2Vsb2NhdG9ycQB+AB50ABVvY3Nwc2VydmljZWxvY2F0b3J1cmlxAH4AdnQAD2N2Y2Fj"
+                        + "Y2Vzc3JpZ2h0c3NxAH4ADQAAAAN0ABl1c2VkY2VydGlmaWNhdGVleHRlbnNpb25zc3EAfgAcAAAAAHcEAAAAAHh0AA"
+                        + "lhcHByb3ZhbHNzcQB+AAU/QAAAAAAADHcIAAAAEAAAAAR+cgAwb3JnLmNlc2Vjb3JlLmNlcnRpZmljYXRlcy5jYS5B"
+                        + "cHByb3ZhbFJlcXVlc3RUeXBlAAAAAAAAAAASAAB4cgAOamF2YS5sYW5nLkVudW0AAAAAAAAAABIAAHhwdAAKS0VZUk"
+                        + "VDT1ZFUnNxAH4ADV6Q2dR+cQB+AKZ0ABBBRERFRElURU5ERU5USVRZc3EAfgANXpDZ1H5xAH4ApnQACkFDVElWQVRF"
+                        + "Q0FzcQB+AA1ekNnUfnEAfgCmdAAKUkVWT0NBVElPTnNxAH4ADV6Q2dR4AHQAHnVzZXByaXZrZXl1c2FnZXBlcmlvZG"
+                        + "5vdGJlZm9yZXEAfgAVdAAVdXNlcHJpdmtleXVzYWdlcGVyaW9kcQB+ABV0AB11c2Vwcml2a2V5dXNhZ2VwZXJpb2Ru"
+                        + "b3RhZnRlcnEAfgAVdAAdcHJpdmtleXVzYWdlcGVyaW9kc3RhcnRvZmZzZXRzcgAOamF2YS5sYW5nLkxvbmc7i+SQzI"
+                        + "8j3wIAAUoABXZhbHVleHEAfgAKAAAAAAAAAAB0ABhwcml2a2V5dXNhZ2VwZXJpb2RsZW5ndGhzcQB+ALgAAAAAA8Jn"
+                        + "AHQAJHVzZXNpbmdsZWFjdGl2ZWNlcnRpZmljYXRlY29uc3RyYWludHEAfgAVdAAYb3ZlcnJpZGFibGVleHRlbnNpb2"
+                        + "5vaWRzc3IAF2phdmEudXRpbC5MaW5rZWRIYXNoU2V02GzXWpXdKh4CAAB4cgARamF2YS51dGlsLkhhc2hTZXS6RIWV"
+                        + "lri3NAMAAHhwdwwAAAABP0AAAAAAAAB4dAAbbm9ub3ZlcnJpZGFibGVleHRlbnNpb25vaWRzc3EAfgC+dwwAAAABP0"
+                        + "AAAAAAAAB4dAAUdXNlY3VzdG9tZG5vcmRlcmxkYXBxAH4AFXgA"));
+        final ObjectInputStream ois = new ObjectInputStream(bis);
+        final CertificateProfile cannedCertificateProfile = (CertificateProfile) ois.readObject();
+        final CertificateProfileData cannedData = new CertificateProfileData(1146818275, "cp", cannedCertificateProfile);
+        cannedData.setRowProtection(
+                "1:2:123:8246a06bade82bb93a6c814790a105b7f43c96e376c6f2cad22543b24326a5cdd616b6fd08897f7d3294d1bb6ba7"
+                + "e61c457904fb7cd87a4f2514e64faa71838bc7c23b53b1c630a854989877f5f2c02f49c44185accf512c1fd1ae5fb0f945"
+                + "c1eb482fc3247b616f438dfd510945c0982fffbdf98c50c01c3dca2ad965554405");
 
         cannedData.verifyData();
     }
