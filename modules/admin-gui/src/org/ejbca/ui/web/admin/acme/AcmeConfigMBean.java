@@ -31,6 +31,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.AcmeConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -215,8 +216,9 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
         flushCache();
     }
 
-    /** Invoked when admin saves the ACME alias configurations */
-    public void saveCurrentAlias() {
+    /** Invoked when admin saves the ACME alias configurations 
+     * @throws EjbcaException */
+    public void saveCurrentAlias() throws EjbcaException {
         if (currentAlias != null) {
             AcmeConfiguration acmeConfig = globalAcmeConfigurationConfig.getAcmeConfiguration(currentAliasStr);
             acmeConfig.setEndEntityProfileId(Integer.valueOf(currentAlias.endEntityProfileId));
@@ -229,10 +231,12 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
             acmeConfig.setDnssecTrustAnchor(currentAlias.getDnssecTrustAnchor());
             acmeConfig.setUseDnsSecValidation(currentAlias.isUseDnsSecValidation());
             acmeConfig.setTermsOfServiceRequireNewApproval(currentAlias.getTermsOfServiceApproval());
+            acmeConfig.setTermsOfServiceUrl(currentAlias.getTermsOfServiceUrl());
             
-            if (StringUtils.isNotEmpty(currentAlias.getTermsOfServiceUrl())) {
-                acmeConfig.setTermsOfServiceUrl(currentAlias.getTermsOfServiceUrl());
+            if(StringUtils.isEmpty(acmeConfig.getTermsOfServiceUrl())) {
+                throw new EjbcaException("Please enter Terms of Service URL");
             }
+            
             globalAcmeConfigurationConfig.updateAcmeConfiguration(acmeConfig);
             try {
                 globalConfigSession.saveConfiguration(authenticationToken, globalAcmeConfigurationConfig);
