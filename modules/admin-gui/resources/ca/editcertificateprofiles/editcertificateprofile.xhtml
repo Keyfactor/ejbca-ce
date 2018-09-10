@@ -1291,8 +1291,8 @@
 					&nbsp;
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:commandButton value="#{web.text.SAVE}" action="#{certProfileBean.save}" rendered="#{certProfilesBean.authorizedToEdit and not certProfilesBean.viewOnly}"/>
-					<h:commandButton value="#{web.text.CANCEL}" action="#{certProfileBean.cancel}" immediate="true"/>
+					<h:commandButton id="saveProfileButton" value="#{web.text.SAVE}" action="#{certProfileBean.save}" rendered="#{certProfilesBean.authorizedToEdit and not certProfilesBean.viewOnly}"/>
+					<h:commandButton id="cancelEditButton" value="#{web.text.CANCEL}" action="#{certProfileBean.cancel}" immediate="true"/>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>
