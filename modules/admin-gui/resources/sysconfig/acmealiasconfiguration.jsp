@@ -71,9 +71,10 @@ org.cesecore.authorization.control.StandardRules
                         <h:outputText value="#{acmeConfigMBean.currentAlias.urlTemplate}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
 
-                    <h:outputLabel for="termsUrl" value="#{web.text.ACME_TERMS_URL}" />
+                    <h:outputLabel for="termsUrl" value="#{web.text.ACME_TERMS_URL}"/>
                     <h:panelGroup id="termsUrl" >
-                        <h:inputText  value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" size="45" rendered="#{acmeConfigMBean.currentAliasEditMode}">
+                        <h:inputText id="termsOfServiceUrl" value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" size="45" 
+                        rendered="#{acmeConfigMBean.currentAliasEditMode}" required="true" requiredMessage="#{web.text.ACME_TERMS_URL_REQUIRED}">
                             <f:validator validatorId="urlValidator"/>
                         </h:inputText>
                         <h:outputText value="#{acmeConfigMBean.currentAlias.termsOfServiceUrl}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
