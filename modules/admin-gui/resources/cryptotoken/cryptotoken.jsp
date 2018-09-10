@@ -51,7 +51,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 	<h:panelGrid columns="2">
 		<h:panelGroup>
 			<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'default'}" value="adminweb/cryptotoken/cryptotokens.jsf"><h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK}"/></h:outputLink>
-			<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'caactivation'}" value="adminweb/ca/caactivation.jsf"><h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK_ACT}"/></h:outputLink>
+			<h:outputLink rendered="#{cryptoTokenMBean.paramRef eq 'caactivation'}" value="adminweb/ca/caactivation.xhtml"><h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK_ACT}"/></h:outputLink>
 		</h:panelGroup>
 		<h:commandButton action="#{cryptoTokenMBean.toggleCurrentCryptoTokenEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{(!cryptoTokenMBean.currentCryptoTokenEditMode) && cryptoTokenMBean.allowedToModify}"/>
 		<h:panelGroup id="placeholder1" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode || !cryptoTokenMBean.allowedToModify}"/>
