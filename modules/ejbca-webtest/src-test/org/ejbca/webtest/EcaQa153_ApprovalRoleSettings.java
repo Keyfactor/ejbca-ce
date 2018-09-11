@@ -81,10 +81,9 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
         webDriver.get(getAdminWebUrl());
         WebElement adminRolesLink = webDriver.findElement(By.xpath("//a[contains(@href,'ejbca/adminweb/administratorprivileges/roles.xhtml')]"));
         adminRolesLink.click();
-        
-        webDriver.findElement(By.id("roles:list:j_idt134")).click();
-        webDriver.findElement(By.xpath("//input[@name='modal:j_idt150']")).sendKeys(roleName);
-        webDriver.findElement(By.id("modal:j_idt154")).click();
+        webDriver.findElement(By.id("roles:list:addRoleButton")).click();;
+        webDriver.findElement(By.id("modal:roleNameInputField")).sendKeys(roleName);
+        webDriver.findElement(By.id("modal:confirmAddRoleButton")).click();
         
         WebElement infoMessage = webDriver.findElement(By.xpath("//li[@class='infoMessage']"));
         assertEquals("Unexpected info message while adding role","Role added." , infoMessage.getText());
@@ -95,7 +94,7 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
         
         Select roleTemplate = new Select(webDriver.findElement(By.id("accessRulesForm:selectrole")));
         roleTemplate.selectByValue("SUPERADMINISTRATOR");
-        webDriver.findElement(By.id("accessRulesForm:j_idt156")).click();
+        webDriver.findElement(By.xpath("//input[@value='Save']")).click();
     }
     
     @Test
@@ -143,7 +142,7 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
         selectCa.selectByVisibleText(getCaName());
         WebElement matchValue = webDriver.findElement(By.id("rolemembers:list:tokenMatchValue"));
         matchValue.sendKeys("SuperAdmin");
-        webDriver.findElement(By.id("rolemembers:list:j_idt148")).click();
+        webDriver.findElement(By.xpath("//input[@value='Add']")).click();
         
         WebElement table = webDriver.findElement(By.id("rolemembers:list"));
         List<WebElement> tableRows = table.findElements(By.xpath("../table/tbody/tr"));

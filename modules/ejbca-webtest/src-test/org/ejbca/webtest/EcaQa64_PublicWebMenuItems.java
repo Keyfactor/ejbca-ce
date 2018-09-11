@@ -75,10 +75,12 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
 
     }
 
+    // TODO Documentation has to be built
+    @Ignore
     @Test
     public void testDocumentationLink() {
         webDriver.get(getPublicWebUrl()); // We are already here from previous test but try not to make test depend on each other
-        WebElement docsLink = webDriver.findElement(By.xpath("//a[@href='doc/concepts.html']"));
+        WebElement docsLink = webDriver.findElement(By.xpath("//a[@href='doc/index.html']"));
         assertEquals("Unexpected name of documentation link", docsLink.getText(), "Documentation");
         docsLink.click();
         // Documentation link is opened in another tab

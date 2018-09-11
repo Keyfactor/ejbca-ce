@@ -141,11 +141,16 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         Select dropDownProfileType =  new Select(webDriverSuperAdmin.findElement(By.id("approvalProfilesForm:selectOneMenuApprovalType")));
         dropDownProfileType.selectByValue("PARTITIONED_APPROVAL");
         List<WebElement> stepAdmins = webDriverSuperAdmin.findElements(By.xpath("//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
-        for (WebElement box : stepAdmins) {
-            Select selectAdmin = new Select(box);
-            selectAdmin.deselectAll();
-            selectAdmin.selectByVisibleText(getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
-            selectAdmin.selectByVisibleText(getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
+        try {
+            for (WebElement box : stepAdmins) {
+                Select selectAdmin = new Select(box);
+                selectAdmin.deselectAll();
+                selectAdmin.selectByVisibleText(getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
+                selectAdmin.selectByVisibleText(getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
+            }
+        } catch (NoSuchElementException e) {
+            fail("Failed to setup prerequieites.\n" + e.getMessage() + "\n Make sure RA Admin roles has names corresponding to "
+                    + "what is set in conf/profiles.proerties");
         }
         WebElement saveButton =  webDriverSuperAdmin.findElement(By.xpath("//td[@class='editColumn2']/span/input[contains(@name,'approvalProfilesForm:j_id') and //input[@value='Save']]"));
         saveButton.sendKeys(Keys.RETURN);

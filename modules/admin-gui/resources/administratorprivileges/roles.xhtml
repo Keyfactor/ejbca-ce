@@ -75,7 +75,7 @@
                         </div>
                         <f:facet name="footer">
                             <h:panelGroup styleClass="alignright fullwidth" layout="block">
-                                <h:commandButton value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleStart}">
+                                <h:commandButton id="addRoleButton" value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleStart}">
                                     <f:ajax execute="@this" render=":modalBlockContainer"/>
                                 </h:commandButton>
                             </h:panelGroup>
@@ -116,7 +116,7 @@
                             </h:commandButton>
                         </h:panelGroup>
                         <h:outputLabel value="#{web.text.ROLES_LABEL_ROLENAME}"/>
-                        <h:inputText value="#{rolesBean.editRoleName}" title="#{web.text.ROLES_ROLENAME_PLACEHOLDER}">
+                        <h:inputText id="roleNameInputField" value="#{rolesBean.editRoleName}" title="#{web.text.ROLES_ROLENAME_PLACEHOLDER}">
                             <f:validator validatorId="legalCharsValidator"/>
                         </h:inputText>
                         <h:panelGroup/>
@@ -125,7 +125,7 @@
                         <h:commandButton value="#{web.text.CANCEL}" action="#{rolesBean.actionAddRoleReset}" immediate="true">
                             <f:ajax execute="@this" render=":modalBlockContainer"/>
                         </h:commandButton>
-                        <h:commandButton value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleConfirm}">
+                        <h:commandButton id="confirmAddRoleButton" value="#{web.text.ADD}" action="#{rolesBean.actionAddRoleConfirm}">
                             <f:ajax execute="@form" render="@all"/>
                         </h:commandButton>
                     </h:panelGroup>
