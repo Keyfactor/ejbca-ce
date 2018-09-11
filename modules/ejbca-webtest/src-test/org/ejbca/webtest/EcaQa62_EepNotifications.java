@@ -34,6 +34,7 @@ import org.ejbca.helper.WebTestHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
@@ -85,6 +86,8 @@ public class EcaQa62_EepNotifications extends WebTestBase {
         } catch (NoSuchElementException e) {}
     }
 
+    // TODO Documentation has to be built before this case works
+    @Ignore
     @Test
     public void b_checkDocumentation() {
         openDocumentation("//strong[text()='Send Notification']/following-sibling::a", "E-mail Notifications");
@@ -115,6 +118,8 @@ public class EcaQa62_EepNotifications extends WebTestBase {
         }
     }
 
+    // TODO Documentation has to be built before this case works
+    @Ignore
     @Test
     public void d_checkDocumentation() {
         openDocumentation("//td[contains(text(), 'Notification Subject')]/a", "Dynamic Substitution Variables");
