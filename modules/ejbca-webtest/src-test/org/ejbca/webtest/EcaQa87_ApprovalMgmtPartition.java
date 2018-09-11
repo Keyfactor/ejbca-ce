@@ -98,9 +98,9 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
     
     // Requires browser to be at page ejbca/adminweb/administratorprivileges/roles.xhtml 
     private void addRoleSuperAdmin(String roleName) throws AuthorizationDeniedException {
-        webDriver.findElement(By.id("roles:list:j_idt134")).click();
-        webDriver.findElement(By.xpath("//input[@name='modal:j_idt150']")).sendKeys(roleName);
-        webDriver.findElement(By.id("modal:j_idt154")).click();
+        webDriver.findElement(By.id("roles:list:addRoleButton")).click();
+        webDriver.findElement(By.id("modal:roleNameInputField")).sendKeys(roleName);
+        webDriver.findElement(By.id("modal:confirmAddRoleButton")).click();
         
         WebElement infoMessage = webDriver.findElement(By.xpath("//li[@class='infoMessage']"));
         assertEquals("Unexpected info message while adding role","Role added." , infoMessage.getText());
@@ -111,7 +111,7 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         
         Select roleTemplate = new Select(webDriver.findElement(By.id("accessRulesForm:selectrole")));
         roleTemplate.selectByValue("SUPERADMINISTRATOR");
-        webDriver.findElement(By.id("accessRulesForm:j_idt156")).click();
+        webDriver.findElement(By.xpath("//input[@value='Save']")).click();
         
         infoMessage = webDriver.findElement(By.xpath("//li[@class='infoMessage']"));
         assertEquals("Unexpected info message while adding role","Role updated successfully." , infoMessage.getText());
@@ -363,7 +363,7 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
     @Test
     public void testI_createCp() {
         webDriver.get(getAdminWebUrl());
-        WebElement cpLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ca/editcertificateprofiles/editcertificateprofiles.jsf')]"));
+        WebElement cpLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ca/editcertificateprofiles/editcertificateprofiles.xhtml')]"));
         cpLink.click();
 
         WebElement cpNameInput = webDriver.findElement(By.xpath("//input[@title='Identifier, string formated']"));
