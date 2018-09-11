@@ -44,10 +44,10 @@ public final class CertificateProfileHelper {
      */
     public static void goTo(WebDriver webDriver, String adminWebUrl) {
         webDriver.get(adminWebUrl);
-        webDriver.findElement(By.xpath("//li/a[contains(@href,'editcertificateprofiles.jsf')]")).click();
+        webDriver.findElement(By.xpath("//li/a[contains(@href,'editcertificateprofiles.xhtml')]")).click();
         assertEquals("Clicking 'Certificate Profiles' link did not redirect to expected page",
                 WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
-                "/ejbca/adminweb/ca/editcertificateprofiles/editcertificateprofiles.jsf");
+                "/ejbca/adminweb/ca/editcertificateprofiles/editcertificateprofiles.xhtml");
     }
 
     /**
@@ -165,14 +165,15 @@ public final class CertificateProfileHelper {
      * Clicks the Save button when editing a Certificate Profile.
      * 
      * @param webDriver the WebDriver to use
-     * @param assertSuccess true if an assertion should be made that the save was successful
+     * @param assertSuccess true if an assertion should be made that the "Certificate Profile Saved" message appeared.
      */
     public static void save(WebDriver webDriver, boolean assertSuccess) {
         webDriver.findElement(By.xpath("//input[@value='Save' and @type='submit']")).click();
         if (assertSuccess) {
             // Assert that the save was successful
             try {
-                webDriver.findElement(By.xpath("//tr/td[contains(text(), '" + certificateProfileSaveMessage + "')]"));
+                assertEquals("Expected profile save message was not displayed", certificateProfileSaveMessage, 
+                        webDriver.findElement(By.xpath("//li[@class='infoMessage']")).getText());
             } catch (NoSuchElementException e) {
                 fail("The Certificate Profile was not successfully saved");
             }
