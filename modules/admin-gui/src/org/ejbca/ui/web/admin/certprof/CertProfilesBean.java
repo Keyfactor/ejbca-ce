@@ -28,9 +28,11 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -45,6 +47,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -104,6 +107,13 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private ListDataModel<CertificateProfileItem> certificateProfileItems = null;
 
 
+    // Authentication check and audit log page access request
+    @PostConstruct
+    public void initialize() throws Exception {
+        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CERTIFICATEPROFILEVIEW.resource());
+    }
+    
     public Integer getSelectedCertProfileId() {
         return selectedCertProfileId;
     }
