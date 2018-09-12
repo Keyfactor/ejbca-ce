@@ -39,6 +39,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -54,7 +55,6 @@ public class EcaQa74_CpBackend extends WebTestBase {
 
     private static WebDriver webDriver;
     private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-
     private static final String cpName = "ECAQA-74-CertificateProfile";
 
     @BeforeClass
@@ -161,8 +161,8 @@ public class EcaQa74_CpBackend extends WebTestBase {
 
         // Check that new fields appeared
         try {
-            assertEquals("'Use CA defined CRL Distribution Point' was not disabled by default", "Off",
-                    webDriver.findElement(By.id("cpf:cbusedefaultcrldistributionpoint")).getAttribute("value"));
+            assertEquals("'Use CA defined CRL Distribution Point' was not disabled by default", false,
+                    webDriver.findElement(By.id("cpf:cbusedefaultcrldistributionpoint")).isSelected());
             assertEquals("'CRL Distribution Point URI' had unexpected default value",
                     getPublicWebUrl() + "publicweb/webdist/certdist?cmd=crl&issuer=CN=TestCA,O=AnaTom,C=SE",
                     webDriver.findElement(By.id("cpf:textfieldcrldisturi")).getAttribute("value"));
@@ -174,9 +174,11 @@ public class EcaQa74_CpBackend extends WebTestBase {
     }
 
     @Test
-    public void e_crlDistributionPointsOptions() {
+    public void e_crlDistributionPointsOptions() throws InterruptedException {
         // Enable 'Use CA defined CRL Distribution Point' and check that fields become disabled
         webDriver.findElement(By.id("cpf:cbusedefaultcrldistributionpoint")).click();
+        // Very nasty but webdriverWait doesn't cut it here...
+        Thread.sleep(1500);
         assertFalse("'CRL Distribution Point URI' did not become disabled",
                 webDriver.findElement(By.id("cpf:textfieldcrldisturi")).isEnabled());
         assertFalse("'CRL Distribution Point URI' did not become disabled",
@@ -185,8 +187,8 @@ public class EcaQa74_CpBackend extends WebTestBase {
         // Enable 'Freshest CRL' and check that new fields appeared
         webDriver.findElement(By.id("cpf:cbusefreshestcrl")).click();
         try {
-            assertEquals("'Use CA Defined Freshest CRL' was not disabled by default", "Off",
-                    webDriver.findElement(By.id("cpf:cbusecadefinedfreshestcrl")).getAttribute("value"));
+            assertEquals("'Use CA Defined Freshest CRL' was not disabled by default", false,
+                    webDriver.findElement(By.id("cpf:cbusecadefinedfreshestcrl")).isSelected());
             assertEquals("'Freshest CRL URI' had unexpected default value",
                     getPublicWebUrl() + "publicweb/webdist/certdist?cmd=deltacrl&issuer=CN=TestCA,O=AnaTom,C=SE",
                     webDriver.findElement(By.id("cpf:textfieldfreshestcrluri")).getAttribute("value"));
@@ -200,10 +202,10 @@ public class EcaQa74_CpBackend extends WebTestBase {
         try {
             assertFalse("'Freshest CRL URI' did not become disabled",
                     webDriver.findElement(By.id("cpf:textfieldfreshestcrluri")).isEnabled());
-            assertEquals("'Authority Information Access' was not enabled by default", "On",
-                    webDriver.findElement(By.id("cpf:checkuseauthorityinformationaccess")).getAttribute("value"));
-            assertEquals("'Use CA defined OCSP locator' was not disabled by default", "Off",
-                    webDriver.findElement(By.id("cpf:checkusedefaultocspservicelocator")).getAttribute("value"));
+            assertEquals("'Authority Information Access' was not enabled by default", true,
+                    webDriver.findElement(By.id("cpf:checkuseauthorityinformationaccess")).isSelected());
+            assertEquals("'Use CA defined OCSP locator' was not disabled by default", false,
+                    webDriver.findElement(By.id("cpf:checkusedefaultocspservicelocator")).isSelected());
             assertEquals("'OCSP Service Locator URI' was not empty by default", "",
                     webDriver.findElement(By.id("cpf:textfieldocspservicelocatoruri")).getAttribute("value"));
             assertEquals("'CA issuer URI' was not empty by default", "",
@@ -219,6 +221,7 @@ public class EcaQa74_CpBackend extends WebTestBase {
         WebElement startOffset = null;
         WebElement periodLength = null;
         try {
+            getWebDriverWait().until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("cpf:textfieldprivkeyusageperiodstartoffset"))));
             startOffset = webDriver.findElement(By.id("cpf:textfieldprivkeyusageperiodstartoffset"));
             assertTrue("'Start offset' did not become enabled", startOffset.isEnabled());
             assertEquals("'Start offset' had unexpected default value", "0d", startOffset.getAttribute("value"));
@@ -231,6 +234,7 @@ public class EcaQa74_CpBackend extends WebTestBase {
         startOffset.sendKeys("1d");
         webDriver.findElement(By.id("cpf:cbuseprivkeyusageperiodnotafter")).click();
         try {
+            getWebDriverWait().until(ExpectedConditions.elementToBeClickable(webDriver.findElement(By.id("cpf:textfieldprivkeyusageperiodlength"))));
             periodLength = webDriver.findElement(By.id("cpf:textfieldprivkeyusageperiodlength"));
             assertTrue("'Period length' did not become enabled", periodLength.isEnabled());
             assertEquals("'Period length' had unexpected default value", "2y", periodLength.getAttribute("value"));
@@ -314,25 +318,31 @@ public class EcaQa74_CpBackend extends WebTestBase {
     }
 
     @Test
-    public void h_qcStatementsEdit() {
+    public void h_qcStatementsEdit() throws InterruptedException {
         // Click boxes and fill text fields 
         webDriver.findElement(By.id("cpf:checkpkixqcsyntaxv2")).click();
+        Thread.sleep(2000);
         webDriver.findElement(By.id("cpf:textfieldqcsemanticsid")).sendKeys("text");
         webDriver.findElement(By.id("cpf:textfieldqcstatementraname")).sendKeys("text");
         webDriver.findElement(By.id("cpf:checkqcetsiqcompliance")).click();
         webDriver.findElement(By.id("cpf:checkqcetsisignaturedevice")).click();
         webDriver.findElement(By.id("cpf:checkqcetsivaluelimit")).click();
+        Thread.sleep(2000);
         webDriver.findElement(By.id("cpf:textfieldqcetsivaluelimitcur")).clear();
         webDriver.findElement(By.id("cpf:textfieldqcetsivaluelimitcur")).sendKeys("text");
         webDriver.findElement(By.id("cpf:textfieldqcetsivaluelimit")).clear();
         webDriver.findElement(By.id("cpf:textfieldqcetsivaluelimit")).sendKeys("text");
         webDriver.findElement(By.id("cpf:textfieldqcetsivaluelimitexp")).clear();
         webDriver.findElement(By.id("cpf:textfieldqcetsivaluelimitexp")).sendKeys("text");
-        webDriver.findElement(By.id("cpf:checkqcetsiretentionperiod")).click();
-
-        // Check that two errors appear
-        assertEquals("Expected 2 error messages", 2,
-                webDriver.findElements(By.xpath("//td[contains(text(), 'Only decimal numbers are allowed in ETSI Value Limit Amount and Exponent fields.')]")).size());
+//        webDriver.findElement(By.id("cpf:checkqcetsiretentionperiod")).click();
+          // Check that two errors appear 
+          // TODO No longer immediately validated after JSP -> JSF leap (though on save)
+//        WebElement messages = webDriver.findElement(By.id("messages"));
+//        List<WebElement> errorMessages = messages.findElements(By.xpath(".//li"));
+//        for (WebElement message : errorMessages) {
+//            assertEquals("Only decimal numbers are allowed in ETSI Value Limit Amount and Exponent fields.", message.getText());
+//        }
+//        assertEquals("Expected 2 error messages", 2, errorMessages.size()); 
 
         // Clear invalid fields and keep doing clicky stuff
         webDriver.findElement(By.id("cpf:textfieldqcetsivaluelimitcur")).clear();
@@ -340,6 +350,7 @@ public class EcaQa74_CpBackend extends WebTestBase {
         webDriver.findElement(By.id("cpf:textfieldqcetsivaluelimitexp")).clear();
         webDriver.findElement(By.id("cpf:checkqcetsiretentionperiod")).click();
         webDriver.findElement(By.id("cpf:checkqccustomstring")).click();
+        Thread.sleep(2000);
         webDriver.findElement(By.id("cpf:textfieldqccustomstringtext")).sendKeys("text");
         CertificateProfileHelper.save(webDriver, true);
     }
