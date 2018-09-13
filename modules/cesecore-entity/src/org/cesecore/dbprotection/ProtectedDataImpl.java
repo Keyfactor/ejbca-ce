@@ -30,4 +30,11 @@ public interface ProtectedDataImpl {
 	
     String calculateProtection(final ProtectedData obj);
 
+    /**
+     * Throws DatabaseProtectionException if erroronverifyfail is enabled in databaseprotection.properties
+     * and logs a "row protection failed" message on ERROR level.
+     * @throws the exception given as parameter if erroronverifyfail is enabled
+     */
+    void onDataVerificationError(final DatabaseProtectionException e);
+
 }
