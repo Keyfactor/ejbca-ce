@@ -259,6 +259,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private String oid;
         private String displayName;
         private boolean critical;
+        private boolean required;
         private String encoding;
 
         public CustomCertExtensionInfo(CertificateExtension extension) {
@@ -266,6 +267,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             this.oid = extension.getOID();
             this.displayName = getEjbcaWebBean().getText(extension.getDisplayName());
             this.critical = extension.isCriticalFlag();
+            this.required = extension.isRequiredFlag();
             Properties props = extension.getProperties();
             this.encoding = props.getProperty("encoding", "");
         }
@@ -276,6 +278,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public String getDisplayName() { return this.displayName; }
         public void setDisplayName(String displayName) { this.displayName=displayName; }
         public boolean isCritical() { return this.critical; }
+        public boolean isRequired() { return this.required; }
         public String getEncoding() { return this.encoding; }
     }
 
@@ -1530,7 +1533,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         try {
-            cceConfig.addCustomCertExtension(newID, newOID, getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, new Properties());
+            cceConfig.addCustomCertExtension(newID, newOID, getNewDisplayName(), DEFAULT_EXTENSION_CLASSPATH, false, true, new Properties());
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
         } catch(Exception e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
