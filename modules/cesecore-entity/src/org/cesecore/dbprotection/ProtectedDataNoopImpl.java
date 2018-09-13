@@ -39,4 +39,9 @@ public class ProtectedDataNoopImpl implements ProtectedDataImpl {
         return null;
     }
 
+    @Override
+    public void onDataVerificationError(DatabaseProtectionException e) {
+        // Do nothing
+    }
+
 }
