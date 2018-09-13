@@ -34,10 +34,10 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * CLI command to consolidate the referenced PKCS#11 Crypto Tokens.
- * 
+ *
  * The command will look for other CAs that reference the same HSM slot and use the specified CA's CryptoToken id for
  * all the CAs.
- * 
+ *
  * @version $Id$
  */
 public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
@@ -45,10 +45,12 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
     private static final Logger log = Logger.getLogger(CaMergeCryptoTokenCommand.class);
     private static final String CA_NAME_KEY = "--caname";
     private static final String EXECUTE_KEY = "--execute";
+    private static final String DELETE_KEY = "--delete";
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "The name of the CA."));
         registerParameter(Parameter.createFlag(EXECUTE_KEY, "Make the change instead of displaying what would change."));
+        registerParameter(Parameter.createFlag(DELETE_KEY, "Delete vacant crypto tokens after merging."));
     }
 
 
@@ -63,6 +65,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
         CryptoProviderTools.installBCProvider(); // need this for CVC certificate
         final String caName = parameters.get(CA_NAME_KEY);
         final boolean force = parameters.containsKey(EXECUTE_KEY);
+        final boolean delete = parameters.containsKey(DELETE_KEY);
         try {
             final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -121,6 +124,9 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
                     final CAToken currentCaToken = currentCaInfo.getCAToken();
                     currentCaToken.setCryptoTokenId(cryptoTokenId);
                     caSession.editCA(getAuthenticationToken(), currentCaInfo);
+                    if (delete) {
+                        cryptoTokenManagementSession.deleteCryptoToken(getAuthenticationToken(), currentCryptoTokenId);
+                    }
                     log.info(" Merged.");
                 }
                 log.info("");
@@ -131,7 +137,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             } else {
                 log.info("Will modify referenced CryptoToken for " + mergeCount + " CAs if '" + EXECUTE_KEY + "' option is used.");
             }
-            log.trace("<execute()");          
+            log.trace("<execute()");
         } catch (AuthorizationDeniedException e) {
             log.error("CLI User was not authorized to modify CA " + caName);
             log.trace("<execute()");
@@ -140,7 +146,7 @@ public class CaMergeCryptoTokenCommand extends BaseCaAdminCommand {
             log.error("No such CA with by name " + caName);
             log.error(getCaList());
             return CommandResult.FUNCTIONAL_FAILURE;
-        } 
+        }
         log.trace("<execute()");
         return CommandResult.SUCCESS;
     }
