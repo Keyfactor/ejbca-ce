@@ -911,7 +911,7 @@ public class X509CATest {
         props1.put("encoding", "DERIA5STRING");
         props1.put("dynamin", "false");
         props1.put("value", "Hello World");
-        cceConfig.addCustomCertExtension(1, "2.16.840.1.113730.1.13", "NetscapeComment", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props1);
+        cceConfig.addCustomCertExtension(1, "2.16.840.1.113730.1.13", "NetscapeComment", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props1);
 
         // one RAW with proper DER encoding
         Properties props2 = new Properties();
@@ -919,7 +919,7 @@ public class X509CATest {
         props2.put("encoding", "RAW");
         props2.put("dynamin", "false");
         props2.put("value", "301a300c060a2b060104018237140202300a06082b06010505070302");
-        cceConfig.addCustomCertExtension(2, "1.2.3.4", "RawProper", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props2);
+        cceConfig.addCustomCertExtension(2, "1.2.3.4", "RawProper", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props2);
 
         // one RAW with no DER encoding (actually invalid according to RFC5280)
         Properties props3 = new Properties();
@@ -927,7 +927,7 @@ public class X509CATest {
         props3.put("encoding", "RAW");
         props3.put("dynamin", "false");
         props3.put("value", "aabbccddeeff00");
-        cceConfig.addCustomCertExtension(3, "1.2.3.5", "RawNoDer", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props3);
+        cceConfig.addCustomCertExtension(3, "1.2.3.5", "RawNoDer", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props3);
 
         assertEquals(cceConfig.getCustomCertificateExtension(1).getOID(), "2.16.840.1.113730.1.13");
         assertEquals(cceConfig.getCustomCertificateExtension(2).getOID(), "1.2.3.4");
