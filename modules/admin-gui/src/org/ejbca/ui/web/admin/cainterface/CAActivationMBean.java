@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -56,6 +59,12 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private static final Logger log = Logger.getLogger(CAActivationMBean.class);
 
 	private static final long serialVersionUID = -2660384552215596717L;
+	
+	@PostConstruct
+    private void postConstruct() throws Exception {
+        final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+    }
 	
 	/** GUI representation of a CA for the activation view */
 	public class CaActivationGuiInfo {
