@@ -60,6 +60,11 @@ public interface CustomCertificateExtension {
     boolean isCriticalFlag();
     
     /**
+     * @return flag indicating if the extension should be marked as required or not.
+     */
+    boolean isRequiredFlag();
+    
+    /**
      * The propertes configured for this extension. The properties are stripped
      * of the beginning "idX.property.". So searching for the property
      * "id1.property.value" only the key "value" should be used in the returned property.

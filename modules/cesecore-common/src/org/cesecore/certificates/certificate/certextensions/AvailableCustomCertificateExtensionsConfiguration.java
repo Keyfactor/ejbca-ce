@@ -74,11 +74,12 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         data.put(ce.getId(), ce);
     }
     
-    public void addCustomCertExtension(int id, String oid, String displayName, String classPath, boolean critical, Properties properties) throws CertificateExtentionConfigurationException {
+    public void addCustomCertExtension(int id, String oid, String displayName, String classPath, boolean critical, 
+            final boolean required, Properties properties) throws CertificateExtentionConfigurationException {
         try {
             Class<?> implClass = Class.forName(classPath);
             CertificateExtension certificateExtension = (CertificateExtension) implClass.newInstance();
-            certificateExtension.init(id, oid.trim(), displayName, critical, properties);
+            certificateExtension.init(id, oid.trim(), displayName, critical, required, properties);
             data.put(id, certificateExtension);
         } catch (ClassNotFoundException e) {
             throw new CertificateExtentionConfigurationException("Cannot add custom certificate extension. " + e.getLocalizedMessage());
@@ -186,6 +187,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         String PROPERTY_USED         = ".used";
         String PROPERTY_TRANSLATABLE = ".translatable";
         String PROPERTY_CRITICAL     = ".critical";
+        String PROPERTY_REQUIRED     = ".required";
         
         try{
             String oid = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_OID);
@@ -195,6 +197,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             boolean used = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_USED).trim().equalsIgnoreCase("TRUE");
             boolean translatable = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_TRANSLATABLE).trim().equalsIgnoreCase("TRUE");
             boolean critical = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_CRITICAL).trim().equalsIgnoreCase("TRUE");
+            boolean required = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_REQUIRED).trim().equalsIgnoreCase("TRUE");
             log.debug(id + ", " + used + ", " +oid + ", " +critical+ ", " +translatable +  ", " + displayName);   
             if(used){
                 if(oid != null && classPath != null && displayName != null){
@@ -204,7 +207,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
                     if(translatable) {
                         extensionProperties.put("translatable", true);
                     }
-                    certificateExtension.init(id, oid.trim(), displayName, critical, extensionProperties);
+                    certificateExtension.init(id, oid.trim(), displayName, critical, required, extensionProperties);
                     return certificateExtension;
 
                 }else{

@@ -82,6 +82,11 @@ org.cesecore.authorization.control.StandardRules
 				<h:selectBooleanCheckbox id="currentCECritical" value="#{customCertExtensionMBean.currentExtensionGUIInfo.critical}"
 					disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}"/>
 			</h:panelGroup>
+			<h:outputLabel for="currentCERequired" value="#{web.text.REQUIRED}"/>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="currentCERequired" value="#{customCertExtensionMBean.currentExtensionGUIInfo.required}"
+					disabled="#{!customCertExtensionMBean.allowedToEditCustomCertificateExtension}"/>
+			</h:panelGroup>
 		</h:panelGrid>
 		<h2><h:outputText value="#{web.text.PROPERTIES}" /></h2>
 		<h:dataTable value="#{customCertExtensionMBean.currentExtensionPropertiesList}" var="prop" styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">

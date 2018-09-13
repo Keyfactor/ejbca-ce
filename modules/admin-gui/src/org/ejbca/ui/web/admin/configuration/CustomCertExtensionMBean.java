@@ -57,6 +57,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         private String oid;
         private String displayName;
         private boolean critical;
+        private boolean required;
         private Map<String, CustomExtensionPropertyGUIInfo> extensionProperties;
         private CustomCertificateExtension extension;
 
@@ -65,7 +66,8 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
             this.id = extension.getId();
             this.oid = extension.getOID();
             this.displayName = getEjbcaWebBean().getText(extension.getDisplayName());
-            this.critical = extension.isCriticalFlag();      
+            this.critical = extension.isCriticalFlag();
+            this.required = extension.isRequiredFlag();
             setExtension(extension);
         }
         
@@ -80,6 +82,9 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         
         public boolean isCritical() { return this.critical; }
         public void setCritical(boolean critical) { this.critical=critical; }
+        
+        public boolean isRequired() { return this.required; }
+        public void setRequired(final boolean required) { this.required=required; }
         
         public void setProperty(final String key, String value) throws InvalidCustomExtensionPropertyException {
             CustomExtensionPropertyGUIInfo property  = extensionProperties.get(key);
@@ -290,7 +295,8 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         
         AvailableCustomCertificateExtensionsConfiguration cceConfig = getAvailableExtensionsConfig();
         try {
-            cceConfig.addCustomCertExtension(currentExtensionGUIInfo.getId(), currentExtensionGUIInfo.getOid(), currentExtensionGUIInfo.getDisplayName(), currentExtensionGUIInfo.getClassPath(), currentExtensionGUIInfo.isCritical(), properties);
+            cceConfig.addCustomCertExtension(currentExtensionGUIInfo.getId(), currentExtensionGUIInfo.getOid(), currentExtensionGUIInfo.getDisplayName(), 
+                    currentExtensionGUIInfo.getClassPath(), currentExtensionGUIInfo.isCritical(), currentExtensionGUIInfo.isRequired(), properties);
             getEjbcaWebBean().saveAvailableCustomCertExtensionsConfiguration(cceConfig);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Extension was saved successfully.", null));
         } catch(Exception e) {
