@@ -179,9 +179,6 @@ public abstract class ProtectedData {
      * @throws the exception given as parameter if erroronverifyfail is enabled
      */
     protected void onDataVerificationError(final DatabaseProtectionException e) {
-        log.error(e);
-        if (ProtectedDataConfiguration.errorOnVerifyFail()) {
-            throw e;
-        }
+        impl.onDataVerificationError(e);
     }
 }
