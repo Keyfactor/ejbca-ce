@@ -748,6 +748,12 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</h:column>
 			
 			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.REQUIRED}"/></f:facet>
+				<h:outputText value="#{web.text.NO}" rendered="#{!extension.required}"/>
+				<h:outputText value="#{web.text.YES}" rendered="#{extension.required}"/>
+			</h:column>
+			
+			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.ENCODING}"/></f:facet>
 				<h:outputText value="#{extension.encoding}"/>
 			</h:column>

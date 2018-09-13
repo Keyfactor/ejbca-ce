@@ -42,6 +42,7 @@ public abstract class CertificateExtension implements Serializable {
 	private String oID;
 	private String displayName;
 	private boolean criticalFlag;
+	private boolean requiredFlag;
 	private Properties properties;
 	
 	/**
@@ -98,6 +99,21 @@ public abstract class CertificateExtension implements Serializable {
 	public void setCriticalFlag(boolean criticalFlag) {
 		this.criticalFlag = criticalFlag;
 	}
+	
+	/**
+     * @return flag indicating if the extension should be marked as required or not.
+     */
+    public boolean isRequiredFlag() {
+        return requiredFlag;
+    }
+
+    /**
+     * @param flag indicating if the extension should be marked as required or not.
+     */
+    public void setRequiredFlag(final boolean requiredFlag) {
+        this.requiredFlag = requiredFlag;
+    }
+	
 
 	/**
 	 * The properties configured for this extension. The properties are stripped
@@ -115,14 +131,16 @@ public abstract class CertificateExtension implements Serializable {
 	 * 
 	 * @param id, the uniqueID of the extension
 	 * @param oID, the OID 
-	 * @param criticalFlag if the extension should be marked as critical or not. 
+	 * @param criticalFlag if the extension should be marked as critical or not.
+	 * @param requiredFlag if the extension should be marked as required or not. 
 	 * @param config the complete configuration property file.
 	 */
-	public void init(int id, String oID, String displayName, boolean criticalFlag, Properties extensionProperties){
+	public void init(int id, String oID, String displayName, boolean criticalFlag, final boolean requiredFlag, Properties extensionProperties){
 		this.id = id;
 		this.oID = oID.trim();
 		this.displayName = displayName;
 		this.criticalFlag = criticalFlag;
+		this.requiredFlag = requiredFlag;
 		this.properties = extensionProperties;
 	}
 	
