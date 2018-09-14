@@ -313,11 +313,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_ACTIVATECA);
     }
     
-    /** @return true if admin is authorized to {@link StandardRules#CAVIEW} */
-    public boolean isAuthorizedToViewPage() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CAVIEW.resource());
-    }
-    
-	public void setAuthenticationCode(String authenticationcode) { this.authenticationcode = authenticationcode; }
+    public void setAuthenticationCode(String authenticationcode) { this.authenticationcode = authenticationcode; }
 	public String getAuthenticationCode() { return ""; }
 }
