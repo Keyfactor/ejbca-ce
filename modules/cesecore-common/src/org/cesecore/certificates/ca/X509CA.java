@@ -1212,6 +1212,9 @@ public class X509CA extends CA implements Serializable {
                     final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
+                    } else if (certExt.isRequiredFlag()) {
+                        throw new CertificateCreateException(ErrorCode.REQUIRED_CUSTOM_CERTIFICATE_EXTENSION_MISSING,
+                                "Required custom certificate extension with oid " + certExt.getOID() + " is missing!");
                     }
                 } else {
                     if (log.isDebugEnabled()) {
