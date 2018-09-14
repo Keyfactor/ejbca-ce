@@ -333,12 +333,12 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	        props.put("critical", "false");
 	        props.put("dynamic", "true");
 	        props.put("encoding", "RAW");
-	        cceConfig.addCustomCertExtension(1, sOID_one, "SingleExtension", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props);
+	        cceConfig.addCustomCertExtension(1, sOID_one, "SingleExtension", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props);
 	        props = new Properties();
 	        props.put("dynamic", "true");
 	        props.put("nvalues", Integer.toString(nrOfValues));
 	        props.put("encoding", "DEROCTETSTRING");
-	        cceConfig.addCustomCertExtension(2, sOID_several, "MultipleExtension", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, props);
+	        cceConfig.addCustomCertExtension(2, sOID_several, "MultipleExtension", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props);
 	}
 	
 	@Override
