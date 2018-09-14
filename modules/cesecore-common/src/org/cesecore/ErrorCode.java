@@ -90,6 +90,7 @@ public class ErrorCode implements Serializable {
     private static final String _BAD_REQUEST_SIGNATURE = "BAD_REQUEST_SIGNATURE"; // Failure to verify request signature.
     private static final String _CA_NAME_CHANGE_RENEWAL_ERROR = "CA_NAME_CHANGE_RENEWAL_ERROR"; // CA Name Change Renewal could not be completed
     private static final String _USER_DOESNT_FULFILL_END_ENTITY_PROFILE = "USER_DOESNT_FULFILL_END_ENTITY_PROFILE"; // User could not be added cause it doesn't fulfill end entity profile
+    private static final String _REQUIRED_CUSTOM_CERTIFICATE_EXTENSION_MISSING = "REQUIRED_CUSTOM_CERTIFICATE_EXTENSION_MISSING";
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -197,6 +198,7 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode BAD_REQUEST_SIGNATURE = new ErrorCode(_BAD_REQUEST_SIGNATURE);
     public static final ErrorCode CA_NAME_CHANGE_RENEWAL_ERROR = new ErrorCode(_CA_NAME_CHANGE_RENEWAL_ERROR);
     public static final ErrorCode USER_DOESNT_FULFILL_END_ENTITY_PROFILE = new ErrorCode(_USER_DOESNT_FULFILL_END_ENTITY_PROFILE);
+    public static final ErrorCode REQUIRED_CUSTOM_CERTIFICATE_EXTENSION_MISSING = new ErrorCode(_REQUIRED_CUSTOM_CERTIFICATE_EXTENSION_MISSING);
 
     /** Get the internal error code. */
     public String getInternalErrorCode() {
