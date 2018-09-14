@@ -190,7 +190,8 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         }
 
         if (values == null || values.length == 0) {
-            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
+            log.error("Incorrect values for the user data!");
+            return null;
         }
 
         if (encoding.equalsIgnoreCase(ENCODING_RAW)) {
