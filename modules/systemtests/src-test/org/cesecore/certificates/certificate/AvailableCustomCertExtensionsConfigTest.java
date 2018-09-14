@@ -69,18 +69,18 @@ public class AvailableCustomCertExtensionsConfigTest {
         props.put("translatable", "FALSE");
         props.put("encoding", "DERPRINTABLESTRING");
         props.put("value", "Test 123");
-        cceConfig.addCustomCertExtension(1, "1.2.3.4", "TESTEXTENSION", BasicCertificateExtension.class.getName(), true, props);
+        cceConfig.addCustomCertExtension(1, "1.2.3.4", "TESTEXTENSION", BasicCertificateExtension.class.getName(), true, true, props);
         
         props = new Properties();
         props.put("translatable", "FALSE");
         props.put("encoding", "DERPRINTABLESTRING");
         props.put("value", "Test 123");
-        cceConfig.addCustomCertExtension(2, "2.2.3.4", "TESTEXTENSION2", BasicCertificateExtension.class.getName(), true, props);
+        cceConfig.addCustomCertExtension(2, "2.2.3.4", "TESTEXTENSION2", BasicCertificateExtension.class.getName(), true, true, props);
 
         props = new Properties();
         props.put("translatable", "TRUE");
         props.put("value", "Test 321");
-        cceConfig.addCustomCertExtension(3, "3.2.3.4", "TESTEXTENSION3", DummyCertificateExtension.class.getName(), false, props);
+        cceConfig.addCustomCertExtension(3, "3.2.3.4", "TESTEXTENSION3", DummyCertificateExtension.class.getName(), false, true, props);
         
         CustomCertificateExtension ext = cceConfig.getCustomCertificateExtension(1);
         assertNotNull(ext);
@@ -135,7 +135,7 @@ public class AvailableCustomCertExtensionsConfigTest {
         for(int i=0; i<150; i++) {
             oid = "1.3.15." + i + ".33.12";  // random string that looks like an oid
             displayName = "Readable name of CustomCertExtension with oid " + oid;
-            cceConfig.addCustomCertExtension(i, oid, displayName, BasicCertificateExtension.class.getName(), false, props);
+            cceConfig.addCustomCertExtension(i, oid, displayName, BasicCertificateExtension.class.getName(), false, true, props);
         }
                 
         globalConfigSession.saveConfiguration(alwaysAllowToken, cceConfig);
