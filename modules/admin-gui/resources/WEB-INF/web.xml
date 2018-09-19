@@ -220,7 +220,7 @@
 
    <servlet-mapping>
       <servlet-name>CryptoTokenDownloadServlet</servlet-name>
-      <url-pattern>/cryptoTokenDownloads</url-pattern>
+      <url-pattern>/cryptotoken/cryptoTokenDownloads</url-pattern>
    </servlet-mapping>
    <servlet-mapping>
    	  <servlet-name>ProfilesExportServlet</servlet-name>
