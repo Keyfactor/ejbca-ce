@@ -273,7 +273,7 @@ public interface IEjbcaWS {
 	/**
 	 *  Generates a certificate for a user.
 	 *
-	 *  Works the same as pkcs10Request.
+	 *  Works the same as {@link #pkcs10Request(String, String, String, String, String)}
 	 *  
 	 *  <p>If the CA does not exist, the user could not be found or authorization was denied on the local system, 
 	 *     then the request will be forwarded to upstream peer systems (if any).</p>
