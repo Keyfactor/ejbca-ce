@@ -194,7 +194,8 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     }
     
     public int getDnsPort() {
-        return (Integer) super.data.get(KEY_DNS_PORT);
+        final Integer dnsPort = (Integer) super.data.get(KEY_DNS_PORT);
+        return dnsPort != null ? (int) dnsPort : DNS_SERVER_PORT_DEFAULT;
     }
     
     public void setDnsPort(final int dnsPort) {
