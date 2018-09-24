@@ -215,6 +215,101 @@ org.ejbca.ui.web.ParameterException
 
   static final int    CERTREQGENMODE      = 0;
   static final int    CERTGENMODE         = 1;
+
+  // Method broken out to not reach 64k limit
+  static final boolean saveOrCreate(final CAInterfaceBean cabean, final Map<String,String> requestMap,
+          final boolean buttonCreateCa, final boolean buttonMakeRequest, final byte[] fileBuffer)
+                  throws CAExistsException, CryptoTokenAuthenticationFailedException, ParameterException, EJBException, Exception {
+      final String caname = requestMap.get(HIDDEN_CANAME);
+      final String signatureAlgorithmParam = requestMap.get(HIDDEN_CASIGNALGO);
+      final int catype = Integer.parseInt(requestMap.get(HIDDEN_CATYPE));
+      final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
+      final String keySequenceFormatParam = requestMap.get(SELECT_KEY_SEQUENCE_FORMAT);
+      final String keySequence = requestMap.get(TEXTFIELD_KEYSEQUENCE);
+      final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
+      final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
+      final String defaultCertificateProfileIdString = requestMap.get(SELECT_DEFAULTCERTPROFILE);
+      final boolean useNoConflictCertificateData = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEAPPENDONLYTABLE));
+      final String signedByString = requestMap.get(SELECT_SIGNEDBY);
+      final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
+      String validityString = requestMap.get(TEXTFIELD_VALIDITY);
+      
+      Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
+      for(ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+          String approvalProfile = requestMap.get(SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue());
+          if(approvalProfile != null && !approvalProfile.equals("-1")) {
+              approvals.put(approvalRequestType, Integer.valueOf(approvalProfile));
+          }
+      }
+      
+      final boolean finishUser = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FINISHUSER));
+      final boolean isDoEnforceUniquePublicKeys = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS));
+      final boolean isDoEnforceUniqueDistinguishedName = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEDN));
+      final boolean isDoEnforceUniqueSubjectDNSerialnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER));
+      final boolean useCertReqHistory = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTREQHISTORY));
+      final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
+      final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
+      final boolean acceptRevocationsNonExistingEntry = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY));
+      final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
+      final String policyid = requestMap.get(TEXTFIELD_POLICYID);
+      final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
+      final boolean authoritykeyidentifiercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL));
+      // CRL periods and publishers is specific for X509 CAs
+      final long crlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLPERIOD), "1"+SimpleTime.TYPE_DAYS).getLong();
+      final long crlIssueInterval = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
+      final long crlOverlapTime = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "10"+SimpleTime.TYPE_MINUTES).getLong();
+      final long deltacrlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();              
+      final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
+      final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEVALIDATORS);
+      final boolean usecrlnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLNUMBER));
+      final boolean crlnumbercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLNUMBERCRITICAL));
+      final boolean keepexpiredoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_KEEPEXPIREDONCRL));
+      final String defaultcrldistpoint = requestMap.get(TEXTFIELD_DEFAULTCRLDISTPOINT);
+      final String defaultcrlissuer = requestMap.get(TEXTFIELD_DEFAULTCRLISSUER);
+      final String defaultocsplocator  = requestMap.get(TEXTFIELD_DEFAULTOCSPLOCATOR);
+      final String authorityInformationAccess = requestMap.get(TEXTFIELD_AUTHORITYINFORMATIONACCESS);
+      final String certificateAiaDefaultCaIssuerUri = requestMap.get(TEXTFIELD_CERTIFICATEAIADEFAULTCAISSUERURI);
+      final String nameConstraintsPermitted = requestMap.get(TEXTFIELD_NAMECONSTRAINTSPERMITTED);
+      final String nameConstraintsExcluded = requestMap.get(TEXTFIELD_NAMECONSTRAINTSEXCLUDED);
+      final String caDefinedFreshestCrl = requestMap.get(TEXTFIELD_CADEFINEDFRESHESTCRL);
+      final boolean useutf8policytext = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUTF8POLICYTEXT));
+      final boolean useprintablestringsubjectdn = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEPRINTABLESTRINGSUBJECTDN));
+      final boolean useldapdnorder = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USELDAPDNORDER));
+      final boolean usecrldistpointoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL));
+      final boolean crldistpointoncrlcritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL));
+      final boolean includeInHealthCheck = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_INCLUDEINHEALTHCHECK));
+      final boolean serviceOcspActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEOCSPSERVICE));
+      final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
+      final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
+      final String cryptoTokenIdString = requestMap.get(HIDDEN_CACRYPTOTOKEN); //requestMap.get(SELECT_CRYPTOTOKEN);
+      final String keyAliasCertSignKey = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY);
+      final String keyAliasCrlSignKey = keyAliasCertSignKey;//requestMap.get(SELECT_CRYPTOTOKEN_CRLSIGNKEY);
+      final String keyAliasDefaultKey = requestMap.get(SELECT_CRYPTOTOKEN_DEFAULTKEY);
+      final String keyAliasHardTokenEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_HARDTOKENENCRYPTKEY);
+      final String keyAliasKeyEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYENCRYPTKEY);
+      final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
+      final boolean illegaldnoraltname = cabean.actionCreateCaMakeRequest(caname, signatureAlgorithmParam,
+          signkeyspec, keySequenceFormatParam, keySequence,
+          catype, subjectdn, certificateProfileIdString, defaultCertificateProfileIdString, 
+          useNoConflictCertificateData, signedByString, description, validityString,
+          approvals, finishUser, isDoEnforceUniquePublicKeys,
+          isDoEnforceUniqueDistinguishedName,
+          isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry,
+          subjectaltname, policyid, useauthoritykeyidentifier, authoritykeyidentifiercritical,
+          crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, availablePublisherValues, availableKeyValidatorValues,
+          usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator,
+          authorityInformationAccess, 
+          certificateAiaDefaultCaIssuerUri,
+          nameConstraintsPermitted, nameConstraintsExcluded,
+          caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
+          usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
+          serviceCmsActive, sharedCmpRaSecret, keepexpiredoncrl, buttonCreateCa, buttonMakeRequest,
+          cryptoTokenIdString, keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey,
+          keyAliasHardTokenEncryptKey, keyAliasKeyEncryptKey, keyAliasKeyTestKey,
+          fileBuffer);
+      return illegaldnoraltname;
+  }
+  
 %><%       
   // Initialize environment
   String includefile = "choosecapage.jspf"; 
@@ -340,92 +435,11 @@ org.ejbca.ui.web.ParameterException
                 // Create and save CA                          
                 caname = requestMap.get(HIDDEN_CANAME);
                 signatureAlgorithmParam = requestMap.get(HIDDEN_CASIGNALGO);
-                final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
-                final String keySequenceFormatParam = requestMap.get(SELECT_KEY_SEQUENCE_FORMAT);
-                final String keySequence = requestMap.get(TEXTFIELD_KEYSEQUENCE);
                 catype = Integer.parseInt(requestMap.get(HIDDEN_CATYPE));
                 final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
-                final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
-                final String defaultCertificateProfileIdString = requestMap.get(SELECT_DEFAULTCERTPROFILE);
-                final boolean useNoConflictCertificateData = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEAPPENDONLYTABLE));
-                final String signedByString = requestMap.get(SELECT_SIGNEDBY);
-                final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
-                String validityString = requestMap.get(TEXTFIELD_VALIDITY);
-                
-                Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
-                for(ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
-                    String approvalProfile = requestMap.get(SELECT_APPROVALPROFILE + "_" + approvalRequestType.getIntegerValue());
-                    if(approvalProfile != null && !approvalProfile.equals("-1")) {
-                        approvals.put(approvalRequestType, Integer.valueOf(approvalProfile));
-                    }
-                }
-                
-                final boolean finishUser = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FINISHUSER));
-                final boolean isDoEnforceUniquePublicKeys = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS));
-                final boolean isDoEnforceUniqueDistinguishedName = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEDN));
-                final boolean isDoEnforceUniqueSubjectDNSerialnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER));
-                final boolean useCertReqHistory = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTREQHISTORY));
-                final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
-                final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
-                final boolean acceptRevocationsNonExistingEntry = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACCEPTREVOCATIONSNONEXISTINGENTRY));
-                final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
-                final String policyid = requestMap.get(TEXTFIELD_POLICYID);
-                final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
-                final boolean authoritykeyidentifiercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL));
-                // CRL periods and publishers is specific for X509 CAs
-                final long crlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLPERIOD), "1"+SimpleTime.TYPE_DAYS).getLong();
-                final long crlIssueInterval = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLISSUEINTERVAL), "0"+SimpleTime.TYPE_MINUTES).getLong();
-                final long crlOverlapTime = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "10"+SimpleTime.TYPE_MINUTES).getLong();
-                final long deltacrlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();              
-                final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
-                final String availableKeyValidatorValues = requestMap.get(SELECT_AVAILABLEVALIDATORS);
-                final boolean usecrlnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLNUMBER));
-                final boolean crlnumbercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLNUMBERCRITICAL));
-                final boolean keepexpiredoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_KEEPEXPIREDONCRL));
-                final String defaultcrldistpoint = requestMap.get(TEXTFIELD_DEFAULTCRLDISTPOINT);
-                final String defaultcrlissuer = requestMap.get(TEXTFIELD_DEFAULTCRLISSUER);
-                final String defaultocsplocator  = requestMap.get(TEXTFIELD_DEFAULTOCSPLOCATOR);
-                final String authorityInformationAccess = requestMap.get(TEXTFIELD_AUTHORITYINFORMATIONACCESS);
-                final String certificateAiaDefaultCaIssuerUri = requestMap.get(TEXTFIELD_CERTIFICATEAIADEFAULTCAISSUERURI);
-                final String nameConstraintsPermitted = requestMap.get(TEXTFIELD_NAMECONSTRAINTSPERMITTED);
-                final String nameConstraintsExcluded = requestMap.get(TEXTFIELD_NAMECONSTRAINTSEXCLUDED);
-                final String caDefinedFreshestCrl = requestMap.get(TEXTFIELD_CADEFINEDFRESHESTCRL);
-                final boolean useutf8policytext = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUTF8POLICYTEXT));
-                final boolean useprintablestringsubjectdn = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEPRINTABLESTRINGSUBJECTDN));
-                final boolean useldapdnorder = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USELDAPDNORDER));
-                final boolean usecrldistpointoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL));
-                final boolean crldistpointoncrlcritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL));
-                final boolean includeInHealthCheck = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_INCLUDEINHEALTHCHECK));
-                final boolean serviceOcspActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEOCSPSERVICE));
-                final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
-                final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
-                final String cryptoTokenIdString = requestMap.get(HIDDEN_CACRYPTOTOKEN); //requestMap.get(SELECT_CRYPTOTOKEN);
-                final String keyAliasCertSignKey = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY);
-                final String keyAliasCrlSignKey = keyAliasCertSignKey;//requestMap.get(SELECT_CRYPTOTOKEN_CRLSIGNKEY);
-                final String keyAliasDefaultKey = requestMap.get(SELECT_CRYPTOTOKEN_DEFAULTKEY);
-                final String keyAliasHardTokenEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_HARDTOKENENCRYPTKEY);
-                final String keyAliasKeyEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYENCRYPTKEY);
-                final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
+                final long crlperiod = SimpleTime.getInstance(requestMap.get(TEXTFIELD_CRLPERIOD), "0"+SimpleTime.TYPE_MINUTES).getLong();
                 try {
-                    illegaldnoraltname = cabean.actionCreateCaMakeRequest(caname, signatureAlgorithmParam,
-                     signkeyspec, keySequenceFormatParam, keySequence,
-               		 catype, subjectdn, certificateProfileIdString, defaultCertificateProfileIdString, 
-               		 useNoConflictCertificateData, signedByString, description, validityString,
-               		 approvals, finishUser, isDoEnforceUniquePublicKeys,
-               		 isDoEnforceUniqueDistinguishedName,
-               		 isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry,
-               		 subjectaltname, policyid, useauthoritykeyidentifier, authoritykeyidentifiercritical,
-               		 crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, availablePublisherValues, availableKeyValidatorValues,
-               		 usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator,
-               		 authorityInformationAccess, 
-               		 certificateAiaDefaultCaIssuerUri,
-               		 nameConstraintsPermitted, nameConstraintsExcluded,
-               		 caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
-               		 usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
-               		 serviceCmsActive, sharedCmpRaSecret, keepexpiredoncrl, buttonCreateCa, buttonMakeRequest,
-               		 cryptoTokenIdString, keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey,
-               		 keyAliasHardTokenEncryptKey, keyAliasKeyEncryptKey, keyAliasKeyTestKey,
-               		 fileBuffer);
+                    illegaldnoraltname = saveOrCreate(cabean, requestMap, buttonCreateCa, buttonMakeRequest, fileBuffer);
                 } catch (CAExistsException caee) {
                     caexists = true;
                     Throwable t = caee.getCause();
@@ -827,7 +841,7 @@ org.ejbca.ui.web.ParameterException
    <%@ include file="choosecapage.jspf" %> 
 <%}  
   if( includefile.equals("recievefile.jspf")){ %>
-   <jsp:include page="recievefile.jspf" /> 
+   <%@ include file="recievefile.jspf" %> 
 <%} 
   if( includefile.equals("displayresult.jspf")){ %>
    <%@ include file="displayresult.jspf" %> 
