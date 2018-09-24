@@ -82,9 +82,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private static final String CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX = "CRYPTOTOKEN_LABEL_TYPE_";
     
     @PostConstruct
-    private void postConstruct() throws Exception {
+    private void postConstruct() {
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+        try {
+            getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+        } catch (Exception e) {
+            log.error("Error trying to initialize the EJBCA Web bean!", e);
+        }
     }
     
     /** GUI table representation of a CryptoToken that can be interacted with. */
