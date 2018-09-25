@@ -112,7 +112,7 @@
 
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=FooTest" unless="test.runone" />
-		<junit printsummary="yes" haltonfailure="no" >
+		<junit printsummary="yes" haltonfailure="no" dir="${cesecore-common.dir}">
 			<classpath>
 				<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>

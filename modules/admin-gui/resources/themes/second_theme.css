@@ -1289,6 +1289,20 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 }
 .alignmiddle { vertical-align: middle; }
 
+.warning-message {
+    display: table;
+    padding-top: 0.2em;
+    color: black;
+}
+
+.fullwidth-dynui-table .editColumn2 table { width: 100%; }
+.fullwidth-dynui-table textarea,
+.fullwidth-dynui-table input[type=text] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 /* CSS2 compatible expandable text */
 .expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
 .expandOnClick:after { content: "..."; }

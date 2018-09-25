@@ -144,6 +144,10 @@
         <validator-class>org.ejbca.ui.web.admin.LegalCharsValidator</validator-class>
   </validator>
   <validator>
+        <validator-id>multiLineFreeTextValidator</validator-id>
+        <validator-class>org.ejbca.ui.web.admin.MultiLineFreeTextValidator</validator-class>
+  </validator>
+  <validator>
         <validator-id>urlValidator</validator-id>
         <validator-class>org.ejbca.ui.web.admin.UrlValidator</validator-class>
   </validator>
