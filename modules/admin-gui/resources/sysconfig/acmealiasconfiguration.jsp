@@ -105,10 +105,10 @@ org.cesecore.authorization.control.StandardRules
                     <h:outputLabel for="dnssecTrustAnchor" value="#{web.text.ACME_DNSSEC_TRUST_ANCHOR}" />
                     <h:panelGroup id="dnssecTrustAnchor" >
                         <h:inputTextarea  value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}"  rendered="#{acmeConfigMBean.currentAliasEditMode}" disabled="#{!acmeConfigMBean.currentAlias.useDnsSecValidation}"
-                        	cols="45" rows="3" >
-                            <f:validator validatorId="legalCharsValidator"/>
+                        	cols="85" rows="3" >
+                            <f:validator validatorId="multiLineFreeTextValidator"/>
                         </h:inputTextarea>
-                        <h:outputText value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
+                        <pre><h:outputText value="#{acmeConfigMBean.currentAlias.dnssecTrustAnchor}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/></pre>
                     </h:panelGroup>
 
                     <h:panelGroup/>
