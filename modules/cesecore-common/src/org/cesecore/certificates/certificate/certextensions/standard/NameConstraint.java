@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -289,7 +288,18 @@ public class NameConstraint extends StandardCertificateExtension {
      * Formats an encoded list of name constraints into a human-readable list, with one entry per line.
      * @return a newline-separated string of encoded name constraints
      */
-    public static String formatNameConstraintsList(List<String> nameConstraints) {
-        return nameConstraints != null ? StringUtils.join(nameConstraints.toArray(), '\n') : "";
+    public static String formatNameConstraintsList(final List<String> encodedList) {
+        final StringBuilder sb = new StringBuilder();
+        if (encodedList != null) {
+            boolean first = true;
+            for (String encodedName : encodedList) {
+                if (!first) {
+                    sb.append('\n');
+                }
+                first = false;
+                sb.append(formatNameConstraintEntry(encodedName)); // notice the call to formatNameConstraintEntry, so this is different from StringUtils.join
+            }
+        }
+        return sb.toString();
     }
 }
