@@ -34,6 +34,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +53,8 @@ public class WebdistHttpTest {
 
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-
+    private PublishingCrlSessionRemote crlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
+    
     @Before
     public void setUp() throws Exception {
         httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
@@ -60,6 +62,8 @@ public class WebdistHttpTest {
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         testx509ca = CaTestUtils.createTestX509CA("CN=TestCA", null, false, keyusage);
         caSession.addCA(admin, testx509ca);
+        // Create a CRL so we can try to download it
+        crlSession.forceCRL(admin, testx509ca.getCAId());
     }
 
     @After
@@ -121,4 +125,31 @@ public class WebdistHttpTest {
         assertEquals("attachment; filename=\"TestCA-chain.jks\"", header.getValue());
         log.trace("<testPublicWebChainDownload");
     }
+
+    @Test
+    public void testPublicWebCrlDownload() throws Exception {
+        log.trace(">testPublicWebCrlDownload");
+        String httpReqPathPem = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=crl&format=PEM&issuer=" + testx509ca.getSubjectDN();        
+        String httpReqPathDer = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=" + testx509ca.getSubjectDN();        
+
+        HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPathPem);
+        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
+        assertNotNull("No response body was sent", resp.getEntity());
+        String ctype = resp.getEntity().getContentType().getValue();
+        assertTrue("Wrong content type: " + ctype, StringUtils.startsWith(ctype, "application/octet-stream"));
+        Header header = resp.getFirstHeader("Content-disposition");
+        assertNotNull("Missing Content-disposition header.", header);
+        assertEquals("filename=\"TestCA.crl\"", header.getValue());
+
+        resp = WebTestUtils.sendGetRequest(httpReqPathDer);
+        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
+        assertNotNull("No response body was sent", resp.getEntity());
+        ctype = resp.getEntity().getContentType().getValue();
+        assertTrue("Wrong content type: " + ctype, StringUtils.startsWith(ctype, "application/pkix-crl"));
+        header = resp.getFirstHeader("Content-disposition");
+        assertNotNull("Missing Content-disposition header.", header);
+        assertEquals("attachment; filename=\"TestCA.crl\"", header.getValue());
+        log.trace("<testPublicWebCrlDownload");
+    }
+
 }
