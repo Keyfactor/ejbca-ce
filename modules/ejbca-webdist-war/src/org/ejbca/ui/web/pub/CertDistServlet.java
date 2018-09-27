@@ -216,7 +216,7 @@ public class CertDistServlet extends HttpServlet {
                 if ((moz == null) || !moz.equalsIgnoreCase("y")) {
                     res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");
                 }
-                res.setContentType("application/x-x509-crl");
+                res.setContentType("application/pkix-crl");
                 if (StringUtils.equals(format, "PEM")) {
                     RequestHelper.sendNewB64File(Base64.encode(crl, true), res, filename, RequestHelper.BEGIN_CRL_WITH_NL, RequestHelper.END_CRL_WITH_NL);
                 } else {
