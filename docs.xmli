@@ -114,7 +114,7 @@
 	    <delete dir="${docs.dest}" />
 	    <mkdir dir="${docs.dest}"/>
 	    
-		<fail message="Could not contact Confluence Server.">
+		<fail message="Could not contact Confluence Server at http://${confluence.url}:${confluence.port}">
 			<condition>
 	       		<isfalse value="${connected.to.confluence}"/>
 	       	</condition>
