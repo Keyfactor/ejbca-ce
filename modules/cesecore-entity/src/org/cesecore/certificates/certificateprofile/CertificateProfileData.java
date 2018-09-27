@@ -206,13 +206,13 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     @Transient
     @Override
     protected String getProtectString(final int version) {
-    	final ProtectionStringBuilder build = new ProtectionStringBuilder(2200); // an almost empty profile gives ~2100 chars of protect string
+    	final ProtectionStringBuilder build = new ProtectionStringBuilder(4000); // a normal certificate profile is almost 4000 bytes chars of protect string
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getId()).append(getCertificateProfileName()).append(getData());
         if (log.isDebugEnabled()) {
             // Some profiling
-            if (build.length() > 2200) {
+            if (build.length() > 4000) {
                 log.debug("CertificateProfileData.getProtectString gives size: " + build.length());
             }
         }
