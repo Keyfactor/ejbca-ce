@@ -509,7 +509,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         return ctx.getSocketFactory();
     }
     /** Return a HttpsURLConnection for a GET, using client certificate authentication to the url. The url should be EJBCA client protected https port, i.e. 8443
-     * @param url the URL to connect to, i.e. https://localhost:8443/ejbca/adminweb/index.jsp
+     * @param url the URL to connect to, i.e. https://localhost:8443/ejbca/adminweb/index.xhtml
      */
     protected HttpURLConnection getHttpsURLConnection(String url) throws IOException, UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException {
         final HttpsURLConnection con;
