@@ -16,7 +16,6 @@ import java.security.cert.CertificateExpiredException;
 import java.util.List;
 
 import org.cesecore.CesecoreException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -657,7 +656,6 @@ public interface IEjbcaWS {
 	 * @throws AlreadyRevokedException if the user already was revoked.
 	 * @throws EjbcaException any EjbcaException.
 	 * @see RevokeStatus
-	 * @see RaMasterApi#revokeUser(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser)
 	 */
 	void revokeUser(String username, int reason,
 			boolean deleteUser) throws CADoesntExistsException, AuthorizationDeniedException,
@@ -1081,12 +1079,9 @@ public interface IEjbcaWS {
 	 *
 	 * <p>If the local system is not a CA, then the request will be forwarded to upstream peer systems (if any).</p>
      * 
-	 * Authored by Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
-	 *
 	 * @return array of NameAndId of available CAs, if no CAs are found will an empty array be returned of size 0, never null.
 	 * @throws EjbcaException if an error occured
 	 * @throws AuthorizationDeniedException
-	 * @see "ICAAdminSessionLocal#getAvailableCAs()"
 	 */
 	NameAndId[] getAvailableCAs()
 			throws EjbcaException, AuthorizationDeniedException;
@@ -1099,12 +1094,9 @@ public interface IEjbcaWS {
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;
 	 * </pre>
 	 *
-	 * Authored by Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
-
 	 * @return array of NameAndId of available end entity profiles, if no profiles are found will an empty array be returned of size 0, never null.
 	 * @throws EjbcaException if an error occured
 	 * @throws AuthorizationDeniedException
-	 * @see "IRaAdminSessionLocal#getAuthorizedEndEntityProfileIds()"
 	 */
 	NameAndId[] getAuthorizedEndEntityProfiles()
 			throws EjbcaException, AuthorizationDeniedException;
@@ -1116,8 +1108,6 @@ public interface IEjbcaWS {
 	 * - /administrator
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;
 	 * </pre>
-	 *
-	 * Authored by Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
 	 *
 	 * @param entityProfileId id of an end entity profile where we want to find which certificate profiles are available
 	 * @return array of NameAndId of available certificate profiles, if no profiles are found will an empty array be returned of size 0, never null.
@@ -1140,8 +1130,6 @@ public interface IEjbcaWS {
 	 * <p>If the end entity profile does not exist or authorization was denied on the local system, 
      *     then the request will be forwarded to upstream peer systems (if any).</p>
      * 
-	 * Authorws by Sebastien Levesque, Linagora. Javadoced by Tomas Gustavsson
-	 *
 	 * @param entityProfileId id of an end entity profile where we want to find which CAs are available
 	 * @return array of NameAndId of available CAs in the specified end entity profile, if no CAs are found will an empty array be returned of size 0, never null.
 	 * @throws EjbcaException if an error occured
