@@ -26,7 +26,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper;
 
 /**
- *  * JSF Managed Bean or the index page in the Admin GUI.
+ *  JSF Managed Bean or the index page in the Admin GUI.
  *
  * @version $Id: AdminIndexMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
  */
@@ -78,9 +78,5 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
 
     public CAInterfaceBean getCaBean(){
         return caBean;
-    }
-
-    public String getUsersCommonName() {
-        return "Kotik";
     }
 }
