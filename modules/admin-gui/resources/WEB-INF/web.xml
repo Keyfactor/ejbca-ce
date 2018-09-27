@@ -265,7 +265,7 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>index.xhtml</welcome-file>
     </welcome-file-list>
 
 	<!-- Prevents comments (like this one) from being interpreted and mistakenly rendered in .xhtml files -->

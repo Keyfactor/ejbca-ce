@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/ xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:h="http://java.sun.com/jsf/html">
+
+<ui:remove>
+	<!--
+	/*************************************************************************
+	*                                                                       *
+	*  EJBCA: The OpenSource Certificate Authority                          *
+	*                                                                       *
+	*  This software is free software; you can redistribute it and/or       *
+	*  modify it under the terms of the GNU Lesser General Public           *
+	*  License as published by the Free Software Foundation; either         *
+	*  version 2.1 of the License, or any later version.                    *
+	*                                                                       *
+	*  See terms of license at gnu.org.                                     *
+	*                                                                       *
+	*************************************************************************/
+
+	$Id: publisherqueuestatuses.xhtml 29889 2018-09-20 09:00:55Z aminkh $
+	-->
+</ui:remove>
+<h:body>
+	<ui:composition>
+		<div class="status" id="publishqueuestatus"  >
+			<h4><h:outputText value="#{web.text.PUBLISHERQUEUESTATUS}"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Admin_GUI_Overview.html#Publisher%20Queue%20Status')}" escape="false"/></h4>
+			<h:panelGroup rendered="#{ejbcawebbean.getAdminPreference().getFrontpageCaStatus()}">
+				<h:dataTable value="#{ejbcawebbean.getAuthorizedPublisherNames().keySet()}" var="publisherName"
+							 styleClass="grid">
+					<h:column>
+						<f:facet name="header"><h:outputText value="#{web.text.PUBLISHER}"/></f:facet>
+						<h:outputText value="#{publisherName}"/>
+					</h:column>
+					<h:column>
+						<f:facet name="header"><h:outputText title="#{web.text.QUEUELENGTH}" value="#{web.text.QUEUELENGTH_ABBR}"/></f:facet>
+						<h:outputText value="#{publisherName}"/>
+					</h:column>
+				</h:dataTable>
+				<h:outputText value="#{web.text.NOPUBLISHERS}" rendered="#{ empty ejbcawebbean.getAuthorizedPublisherNames()}"/>
+			</h:panelGroup>
+			<h:panelGroup rendered="#{!ejbcawebbean.getAdminPreference().getFrontpageCaStatus()}">
+				<h:outputText value="#{web.text.CANBEENABLED}"/>
+			</h:panelGroup>
+		</div>
+	</ui:composition>
+</h:body>
+</html>
