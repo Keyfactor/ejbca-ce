@@ -120,7 +120,7 @@ public class HttpMethodsTest {
         // Check for X-FRAME-OPTIONS headers
         // We will not be able to actually read this url, because we use port 8080, and adminweb requires client authentication,
         // But EJBCA will still return a "blank" page with the correct http header.
-        HttpURLConnection con = getHttpURLConnection(httpBaseUrl+"/ejbca/adminweb/index.jsp");
+        HttpURLConnection con = getHttpURLConnection(httpBaseUrl+"/ejbca/adminweb/index.xhtml");
         String xframe = con.getHeaderField("X-FRAME-OPTIONS");
         String csp = con.getHeaderField("content-security-policy");
         String xcsp = con.getHeaderField("x-content-security-policy");

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
@@ -38,6 +39,11 @@ public class EjbcaJSFHelper {
     	}
     }
     
+    /** Returns the EJBCA version */
+    public String getEjbcaVersion(){
+    	return GlobalConfiguration.EJBCA_VERSION;
+    }
+
     /** Returns the EJBCA title */
     public String getEjbcaTitle(){
     	return getEjbcaWebBean().getGlobalConfiguration().getEjbcaTitle();
