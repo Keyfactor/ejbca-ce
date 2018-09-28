@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @version $Id: AcmeOrderDataSession.java 25797 2017-05-04 15:52:00Z tarmor $
+ * @version $Id$
  */
 public interface AcmeOrderDataSession {
 
