@@ -28,7 +28,7 @@ import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionRemote;
  * Class that receives a Acme message and passes it on to the correct message handler.
  * Not available in Community Edition
  *
- * @version $Id: AcmeAuthorizationDataSessionBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAuthorizationDataSessionRemote")
