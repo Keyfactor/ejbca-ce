@@ -31,7 +31,7 @@ import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 
 /**
- * @version $Id: AcmeAuthorizationData.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 @Entity
 @Table(name = "AcmeAuthorizationData")

@@ -35,7 +35,7 @@ import org.cesecore.util.Base64PutHashMap;
 
 /**
  *
- * @version $Id: AcmeOrderData.java 25919 2017-05-30 17:09:24Z tarmor $
+ * @version $Id$
  */
 
 @Entity

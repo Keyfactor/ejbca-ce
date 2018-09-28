@@ -15,7 +15,7 @@ package org.ejbca.core.protocol.acme;
 import java.util.List;
 
 /**
- * @version $Id: AcmeChallengeDataSession.java 25797 2017-05-04 15:52:00Z jeklund $
+ * @version $Id$
  */
 public interface AcmeChallengeDataSession {
 

@@ -25,7 +25,7 @@ import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionProxyRemote;
 
 /**
- * @version $Id: AcmeOrderDataSessionProxyBean.java 29630 2018-08-14 08:55:21Z tarmor $
+ * @version $Id$
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeOrderDataSessionProxyRemote")

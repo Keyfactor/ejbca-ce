@@ -23,7 +23,7 @@ import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionProxyRemote;
 
 /**
- * @version $Id: AcmeAuthorizationDataSessionProxyBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAuthorizationDataSessionProxyRemote")

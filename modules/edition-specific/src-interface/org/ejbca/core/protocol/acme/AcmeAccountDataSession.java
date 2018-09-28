@@ -13,7 +13,7 @@
 package org.ejbca.core.protocol.acme;
 
 /**
- * @version $Id: AcmeAccountDataSession.java 25797 2017-05-04 15:52:00Z jeklund $
+ * @version $Id$
  */
 public interface AcmeAccountDataSession {
 

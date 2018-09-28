@@ -23,7 +23,7 @@ import org.ejbca.core.protocol.acme.AcmeChallengeDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeChallengeDataSessionProxyRemote;
 
 /**
- * @version $Id: AcmeChallengeDataSessionProxyBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeChallengeDataSessionProxyRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

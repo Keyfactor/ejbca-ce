@@ -22,7 +22,7 @@ import org.ejbca.acme.AcmeOrderData;
 /**
  * Local interface for AcmeOrderDataSession
  * 
- * @version $Id: AcmeOrderDataSessionLocal.java 29587 2018-08-07 15:25:52Z tarmor $
+ * @version $Id$
  *
  */
 
