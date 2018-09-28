@@ -33,7 +33,7 @@ import org.cesecore.util.Base64PutHashMap;
 
 /**
  *
- * @version $Id: AcmeAccountData.java 25919 2017-05-30 17:09:24Z jeklund $
+ * @version $Id$
  */
 @Entity
 @Table(name = "AcmeAccountData")

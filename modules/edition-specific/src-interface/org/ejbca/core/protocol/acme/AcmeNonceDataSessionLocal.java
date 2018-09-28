@@ -17,7 +17,7 @@ import javax.ejb.EJBTransactionRolledbackException;
 /**
  * Database implementation of ACME replay nonce storage.
  *
- * @version $Id: AcmeNonceDataSessionBean.java 29072 2018-05-30 09:42:10Z bastianf $
+ * @version $Id$
  */
 public interface AcmeNonceDataSessionLocal {
 

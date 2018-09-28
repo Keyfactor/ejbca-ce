@@ -15,7 +15,7 @@ package org.ejbca.core.protocol.acme;
 import java.util.List;
 
 /**
- * @version $Id: AcmeAuthorizationDataSession.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 public interface AcmeAuthorizationDataSession {
     static final String ACME_MODULE = "acme";
