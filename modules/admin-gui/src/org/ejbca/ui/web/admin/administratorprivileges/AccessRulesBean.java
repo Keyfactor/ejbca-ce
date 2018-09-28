@@ -119,7 +119,9 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
     }
 
     /** Advanced mode access rule representation */
-    public static class AccessRuleItem implements Comparable<AccessRuleItem> {
+    public static class AccessRuleItem implements Comparable<AccessRuleItem>, Serializable {
+        private static final long serialVersionUID = 1L;
+
         private final String category;
         private final String resource;
         private final String resourceName;
