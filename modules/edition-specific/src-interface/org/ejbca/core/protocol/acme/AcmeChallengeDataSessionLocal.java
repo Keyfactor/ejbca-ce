@@ -19,7 +19,7 @@ import javax.ejb.Local;
 import org.ejbca.acme.AcmeChallengeData;
 
 /**
- * @version $Id: AcmeChallengeDataSessionLocal.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 @Local
 public interface AcmeChallengeDataSessionLocal extends AcmeChallengeDataSession{

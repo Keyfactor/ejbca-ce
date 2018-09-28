@@ -21,7 +21,7 @@ import org.ejbca.acme.AcmeAuthorizationData;
 /**
  * Local interface for AcmeAuthorizationDataSessionLocal
  *
- * @version $Id: AcmeAuthorizationDataSessionLocal.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 @Local
 public interface AcmeAuthorizationDataSessionLocal extends AcmeAuthorizationDataSession {

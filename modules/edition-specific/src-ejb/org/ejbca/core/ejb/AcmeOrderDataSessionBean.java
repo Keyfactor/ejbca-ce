@@ -30,7 +30,7 @@ import org.ejbca.core.protocol.acme.AcmeOrderDataSessionRemote;
  * Class that receives a Acme message and passes it on to the correct message handler.
  * Not available in Community Edition
  *
- * @version $Id: AcmeOrderDataSessionBean.java 27609 2017-12-20 15:55:45Z tarmor $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeOrderDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

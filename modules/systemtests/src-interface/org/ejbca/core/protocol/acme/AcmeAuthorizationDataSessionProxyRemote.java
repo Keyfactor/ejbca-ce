@@ -17,7 +17,7 @@ import javax.ejb.Remote;
 /**
  *  Test proxy for AcmeAccountDataSession
  *
- * @version $Id: AcmeAuthorizationDataSessionProxyRemote.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 @Remote
 public interface AcmeAuthorizationDataSessionProxyRemote {

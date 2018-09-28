@@ -42,7 +42,7 @@ import javax.ejb.Local;
  * ---------------------32 byte message------------------------------|----------32 byte HMAC--------------
  * --------8 byte timestamp-|-8 byte counter-|-16 byte nodeId--------|------------------------------------
  *
- * @version $Id: AcmeNonceSingletonBean.java 29587 2018-08-07 15:25:52Z mikekushner $
+ * @version $Id$
  */
 
 @Local
