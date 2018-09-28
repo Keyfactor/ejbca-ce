@@ -1,0 +1,27 @@
+pipeline {
+	agent {
+		label "docker"
+	}
+    stages {
+		stage('cleanup') {
+            steps {
+                sh "docker container rm mariadb -f || true"
+            }
+        }
+        stage('network') {
+            steps {
+                sh "docker network create --driver bridge my_isolated_bridge_network || true"
+            }
+        }
+		stage('database') {
+            steps {
+				sh "docker run --name mariadb -e MYSQL_ROOT_PASSWORD=foo123 -e MYSQL_DATABASE=ejbca -e MYSQL_USER=ejbca -e MYSQL_PASSWORD=ejbca -p 3301:3306 --net=my_isolated_bridge_network -d mariadb:10.2.17"
+            }
+        }
+        stage('backend') {
+            steps {
+                sh "docker container ps --all"
+            }
+        }
+    }
+}
