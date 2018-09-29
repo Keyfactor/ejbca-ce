@@ -34,7 +34,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * List certificates that will expire within the given number of days.
+ * List certificates that will expire, but is not yet expired, within the given number of days.
  *
  * @version $Id$
  */
@@ -46,7 +46,7 @@ public class CaListExpiredCommand extends EjbcaCommandBase {
 
     {
         registerParameter(new Parameter(DAYS_KEY, "Days", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Expire time in days"));
+                "Expire time in days, i.e. days until certificates will expire"));
     }
 
     @Override
@@ -72,7 +72,7 @@ public class CaListExpiredCommand extends EjbcaCommandBase {
         Date findDate = new Date();
         long millis = (days * 24 * 60 * 60 * 1000);
         findDate.setTime(findDate.getTime() + millis);
-        getLogger().info("Looking for certificates that expire before " + findDate + ".");
+        getLogger().info("Looking for certificates that expire before '" + findDate + "', but that are not expired now ("+new Date()+").");
 
         for (Certificate cert : getExpiredCerts(findDate)) {
             Date retDate;
@@ -108,7 +108,7 @@ public class CaListExpiredCommand extends EjbcaCommandBase {
 
     @Override
     public String getCommandDescription() {
-        return "List certificates that will expire within the given number of days";
+        return "List certificates that will expire within the given number of days, excluding certificates that are already expired.";
     }
 
     @Override
