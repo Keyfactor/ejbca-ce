@@ -176,8 +176,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
             final CAInfo cainfo = caSession.getCAInfoInternal(-1, caname, true);
             if (cainfo == null) {
-                String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
-                log.error(errMsg);
+                String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "GetNextCACert", caname);
+                log.info(errMsg);
                 throw new CADoesntExistsException(errMsg);
             } else {
                 if (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null) {
