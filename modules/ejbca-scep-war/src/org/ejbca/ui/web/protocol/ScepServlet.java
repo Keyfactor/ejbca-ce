@@ -248,8 +248,8 @@ public class ScepServlet extends HttpServlet {
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
         			log.info(iMsg);
                 } else {
-            		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
-                    log.error(errMsg);
+            		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "GetCACert", message);
+                    log.info(errMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "No CA certificates found.");
                 }
             } else if (operation.equals("GetCACertChain")) {
@@ -265,8 +265,8 @@ public class ScepServlet extends HttpServlet {
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACertChain", remoteAddr);
         			log.info(iMsg);
                 } else {
-            		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "pkcs7");
-                    log.error(errMsg);
+            		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "GetCACertChain", message);
+                    log.info(errMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND,"No CA certificates found.");
                 }
             } else if (operation.equals("GetNextCACert")) {
@@ -304,7 +304,7 @@ public class ScepServlet extends HttpServlet {
             }
         } catch (CADoesntExistsException cae) {
     		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
-            log.info(errMsg);
+            log.info(errMsg+": "+cae.getMessage());
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_NOT_FOUND, cae.getMessage());
         } catch (DecoderException de) {
