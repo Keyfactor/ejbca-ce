@@ -107,9 +107,9 @@ public interface CertificateStoreSession {
     List<Certificate> findCertificatesBySubject(String subjectDN);
 
     /**
-     * Finds certificates  expiring within a specified time and that have
-     * status "active" or "notifiedaboutexpiration".
-     * @param expireTime The time by which the certificates will be expired
+     * Finds certificates expiring within a specified time, but that have expireTime>=now, and that have
+     * status "active" or "notifiedaboutexpiration". 
+     * @param expireTime The time by which the certificates will expire
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
      * @return Collection of maximum 500 certificates, never null
@@ -117,7 +117,7 @@ public interface CertificateStoreSession {
     Collection<CertificateWrapper> findCertificatesByExpireTimeWithLimit(Date expireTime);
     
     /**
-     * Finds certificates  expiring within a specified time and that have
+     * Finds certificates expiring within a specified time, but that have expireTime>=now, and that have
      * status "active" or "notifiedaboutexpiration".
      * @param expireTime The time by which the certificates will be expired
      * @param maxNumberOfResults The maximum number of certificates to be returned
@@ -128,14 +128,14 @@ public interface CertificateStoreSession {
     List<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime, int maxNumberOfResults);
 
     /**
-     * Finds count of certificates  expiring within a specified time and that have
+     * Finds count of certificates expiring within a specified time, but that have expireTime>=now, and that have
      * status "active" or "notifiedaboutexpiration".
      * @param expirationDate The time by which the certificates will be expired
      * @return return count of query results. */
     int findNumberOfExpiringCertificates(Date expirationDate);
 
     /**
-     * Finds certificates  expiring within a specified time and that have
+     * Finds certificates expiring within a specified time, but that have expireTime>=now, and that have
      * status "active" or "notifiedaboutexpiration".
      * @param expirationDate The time by which the certificates will be expired
      * @param maxNumberOfResults The maximum number of certificates to be returned
@@ -145,7 +145,7 @@ public interface CertificateStoreSession {
     List<Certificate> findExpiringCertificates(Date expirationDate, int maxNumberOfResults, int offset);
 
     /**
-     * Finds certificates  expiring within a specified time, issued by a specified issuer and have
+     * Finds certificates expiring within a specified time, but that have expireTime>=now, issued by a specified issuer and have
      * status "active" or "notifiedaboutexpiration".
      * @param expireTime The time by which the certificates will be expired
      * @param issuerDN The SubjectDN of the CA that issued the certificates that will expire within the given time
@@ -157,7 +157,7 @@ public interface CertificateStoreSession {
     List<Certificate> findCertificatesByExpireTimeAndIssuerWithLimit(Date expireTime, String issuerDN, int maxNumberOfResults);
     
    /** 
-    * Finds certificates  expiring within a specified time, of a specified type and have
+    * Finds certificates expiring within a specified time, but that have expireTime>=now, of a specified type and have
     * status "active" or "notifiedaboutexpiration".
     * @param expireTime The time by which the certificates will be expired
     * @param certificateType The type of the certificates that will expire within the given time
@@ -170,9 +170,10 @@ public interface CertificateStoreSession {
     List<Certificate> findCertificatesByExpireTimeAndTypeWithLimit(Date expireTime, int certificateType, int maxNumberOfResults);
 
     /**
-     * Finds usernames of users having certificate(s) expiring within a
-     * specified time and that has status "active" or "notifiedaboutexpiration".
+     * Finds usernames of users having certificate(s) expiring within a specified time, but that have expireTime>=now, and have 
+     * status "active" or "notifiedaboutexpiration".
      * 
+     * @param expireTime The time by which the certificates will be expired
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_ACTIVE
      * @see org.cesecore.certificates.certificate.CertificateConstants#CERT_NOTIFIEDABOUTEXPIRATION
      * @return a Collection of usernames or an empty list if not found, never null
