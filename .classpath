@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="modules/acme/src"/>
 	<classpathentry kind="src" path="modules/acme/src-common"/>
 	<classpathentry kind="src" path="modules/acme/src-test"/>
+  <classpathentry kind="src" path="modules/acme/src-common-test"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
 	<classpathentry kind="src" path="modules/admin-gui/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-p11/src"/>
