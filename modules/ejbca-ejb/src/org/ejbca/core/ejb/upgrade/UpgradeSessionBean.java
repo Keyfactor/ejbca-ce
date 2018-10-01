@@ -1404,14 +1404,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
         
         for (CertificateExtension customCertificateExtension : availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions()) {
-            if (!customCertificateExtension.isRequiredFlag()) {
                 customCertificateExtension.setRequiredFlag(true);
                 try {
                     globalConfigurationSession.saveConfiguration(authenticationToken, availableCustomCertExtensionsConfig);
                 } catch (AuthorizationDeniedException e) {
                     log.error("Authorization error while saving the updated configuration!", e);
                 }
-            }
         }
     }
 
