@@ -26,9 +26,8 @@ pipeline {
                 sh "docker container ps --all"
                 
                 dir ('ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT') {
-                    sh "ls -la"
                     sh "docker build -t buildwithant ."
-                    
+                    sh "docker run -v /home/jenkins/workspace/EJBCA/EE_AL35_OpenJDK8_UNIT:/app buildwithant"
                 }
 
             }
