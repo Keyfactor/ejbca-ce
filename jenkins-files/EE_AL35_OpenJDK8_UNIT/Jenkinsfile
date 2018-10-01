@@ -7,6 +7,7 @@ pipeline {
             steps {
                 sh "docker container rm mariadb -f || true"
                 sh "docker container rm EE_AL35_OpenJDK8_UNIT -f || true"
+                sh "rm -rf ear"
             }
         }
         stage('run unit tests') {
