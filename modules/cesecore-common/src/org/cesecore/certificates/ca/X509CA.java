@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -1195,16 +1196,25 @@ public class X509CA extends CA implements Serializable {
             } catch (IOException e) {/*IOException with DERNull.INSTANCE will never happen*/}
         }
 
-        //
 
         // Fifth, check for custom Certificate Extensions that should be added.
         // Custom certificate extensions is defined in AdminGUI -> SystemConfiguration -> Custom Certificate Extensions
         final List<Integer> usedCertExt = certProfile.getUsedCertificateExtensions();
+        final List<Integer> wildcardExt = new ArrayList<>();
         final Iterator<Integer> certExtIter = usedCertExt.iterator();
+        Set<String> requestOids = new HashSet<>(); 
+        if (subject.getExtendedInformation() != null) {
+            requestOids = subject.getExtendedInformation().getExtensionDataOids();
+        }
         while (certExtIter.hasNext()) {
             final int id = certExtIter.next();
             final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(id);
             if (certExt != null) {
+                if (certExt.getOID().startsWith("*")) {
+                    // Match wildcards later
+                    wildcardExt.add(id);
+                    continue;   
+                }
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
@@ -1212,9 +1222,7 @@ public class X509CA extends CA implements Serializable {
                     final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
-                    } else if (certExt.isRequiredFlag()) {
-                        throw new CertificateCreateException(ErrorCode.REQUIRED_CUSTOM_CERTIFICATE_EXTENSION_MISSING,
-                                "Required custom certificate extension with oid " + certExt.getOID() + " is missing!");
+                        requestOids.remove(certExt.getOID());
                     }
                 } else {
                     if (log.isDebugEnabled()) {
@@ -1223,7 +1231,44 @@ public class X509CA extends CA implements Serializable {
                 }
             }
         }
-
+        // Match remaining extensions (wild cards)
+        final Iterator<Integer> certExtWildcardIter = wildcardExt.iterator();
+        while (certExtWildcardIter.hasNext()) {
+            final int id = certExtWildcardIter.next();
+            final int remainingOidsToMatch = requestOids.size();
+            final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(id);
+            if (certExt != null) {
+                for (final String oid : requestOids) {
+                    // Match requested OID with wildcard in CCE configuration 
+                    if (oid.endsWith(certExt.getOID().substring(1, certExt.getOID().length()))) {
+                        if (overridenexts.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
+                            final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val, oid);
+                            if (value != null) {
+                                extgen.addExtension(new ASN1ObjectIdentifier(oid), certExt.isCriticalFlag(), value);
+                                requestOids.remove(oid);
+                                // Each wildcard CCE configuration may only be matched once.
+                                break;
+                            }
+                        } else {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Extension with oid " + oid + " has been overridden, custom extension will not be added.");
+                            }
+                        }
+                    }
+                }
+                if ((remainingOidsToMatch == requestOids.size()) && certExt.isRequiredFlag()) {
+                    // Required wildcard extension didn't match any OIDs in the request
+                    throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(certExt.getId()), certExt.getOID()) + 
+                            "\nNo requested OID matched wildcard");
+                }
+            }
+        }
+        if (!requestOids.isEmpty()) {
+            // All requested OIDs must match a CCE configuration
+            throw new CertificateCreateException(ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR,
+                    "Request contained custom certificate extensions which couldn't match any configuration");
+        }
+        
         // Finally add extensions to certificate generator
         final Extensions exts = extgen.generate();
         ASN1ObjectIdentifier[] oids = exts.getExtensionOIDs();

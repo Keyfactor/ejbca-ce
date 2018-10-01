@@ -15,7 +15,6 @@ package org.cesecore.certificates.certificate.certextensions;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,6 +124,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
      * as the extension value. 
      **/
     private static String ENCODING_RAW = "RAW";
+    private static String ENCODING_DERNULL = "DERNULL";
 
     // Defined Properties
     private static String PROPERTY_VALUE = "value";
@@ -182,16 +182,25 @@ public class BasicCertificateExtension extends CertificateExtension implements C
     @Override
     public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
             PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
+        String[] values = getValues(userData, null);
+        return handleValues(values);
+    }
+    
+    @Override
+    public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
+            PublicKey caPublicKey, CertificateValidity val, String oid) throws CertificateExtensionException {
+        String[] values = getValues(userData, oid);
+        return handleValues(values);
+    }
+
+    private byte[] handleValues(String[] values) throws CertificateExtensionException {
         final byte[] result;
         String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));
-        String[] values = getValues(userData);
-        if (log.isDebugEnabled()) {
-            log.debug("Got extension values: " + Arrays.toString(values));
-        }
-
-        if (values == null || values.length == 0) {
-            log.error("Incorrect values for the user data!");
-            return null;
+        if (values == null || values.length == 0 || (values[0] == null && !encoding.equalsIgnoreCase(ENCODING_DERNULL))) {
+            if (!isRequiredFlag()) {
+                return null;
+            }
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
 
         if (encoding.equalsIgnoreCase(ENCODING_RAW)) {
@@ -227,13 +236,12 @@ public class BasicCertificateExtension extends CertificateExtension implements C
      * @param userData The userdata to get the ExtendedInformation from
      * @return The value(s) for the extension (usually 1) or null if no value found
      */
-    private String[] getValues(EndEntityInformation userData) {
+    private String[] getValues(EndEntityInformation userData, final String oid) {
         String[] result = null;
 
         boolean dynamic = Boolean.parseBoolean(StringUtils.trim(getProperties().getProperty(PROPERTY_DYNAMIC, Boolean.FALSE.toString())));
 
         String strnvalues = getProperties().getProperty(PROPERTY_NVALUES);
-
         int nvalues;
 
         if ( strnvalues == null || strnvalues.trim().equals("") ) {
@@ -248,9 +256,17 @@ public class BasicCertificateExtension extends CertificateExtension implements C
                 result = null;
             } else {
                 if (nvalues < 1 ) {
-                    String value = userData.getExtendedInformation().getExtensionData(getOID());
-                    if (value == null || value.trim().isEmpty()) {
-                        value = userData.getExtendedInformation().getExtensionData(getOID() + "." + PROPERTY_VALUE);
+                    String value = null;
+                    if (oid != null) {
+                        value = userData.getExtendedInformation().getExtensionData(oid);
+                        if (value == null || value.trim().isEmpty()) {
+                            value = userData.getExtendedInformation().getExtensionData(oid + "." + PROPERTY_VALUE);
+                        }
+                    } else {
+                        value = userData.getExtendedInformation().getExtensionData(getOID());
+                        if (value == null || value.trim().isEmpty()) {
+                            value = userData.getExtendedInformation().getExtensionData(getOID() + "." + PROPERTY_VALUE);
+                        }
                     }
                     if (value == null) {
                         result = null;
@@ -259,7 +275,12 @@ public class BasicCertificateExtension extends CertificateExtension implements C
                     }
                 } else {
                     for (int i = 1; i <= nvalues; i++) {
-                        String value = userData.getExtendedInformation().getExtensionData(getOID() + "." + PROPERTY_VALUE + Integer.toString(i));
+                        String value = null;
+                        if (oid != null) {
+                            value = userData.getExtendedInformation().getExtensionData(oid + "." + PROPERTY_VALUE + Integer.toString(i));
+                        } else {
+                            value = userData.getExtendedInformation().getExtensionData(getOID() + "." + PROPERTY_VALUE + Integer.toString(i));
+                        }
                         if (value != null) {
                             if (result == null) {
                                 result = new String[nvalues];
@@ -298,7 +319,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
                     Integer.valueOf(getId())));
         }
 
-        if (!Encoding.ENCODING_DERNULL.equals(encodingType) && (value == null || value.trim().equals(""))) {
+        if (!Encoding.ENCODING_DERNULL.equals(encodingType) && ((value == null || value.trim().equals("")) && isRequiredFlag())) {
             throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
 
@@ -483,4 +504,6 @@ public class BasicCertificateExtension extends CertificateExtension implements C
     public Map<String, String[]> getAvailableProperties() {
         return propertiesMap;
     }
+
+
 }

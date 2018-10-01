@@ -19,8 +19,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -31,6 +33,7 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 
@@ -395,6 +398,23 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     	return retval;
     }
 
+    /**
+     * @return Set containing all extension OIDs
+     */
+    public Set<String> getExtensionDataOids() {
+        final Set<String> oids = new HashSet<>();
+        for (Object o : data.keySet()) {
+            if (o instanceof String) {
+                String key = (String) o;
+                if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
+                    String oidString = key.substring(ExtendedInformation.EXTENSIONDATA.length());
+                    oids.add(CertTools.getOidFromString(oidString));
+                }
+            }
+        }
+        return oids;
+    }
+    
     /**
      *
      * @param customly

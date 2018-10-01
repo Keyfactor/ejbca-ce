@@ -90,5 +90,9 @@ public class DummyCertificateExtension extends CertificateExtension implements C
         return result;
     }
 
-
+    @Override
+    public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
+            PublicKey caPublicKey, CertificateValidity val, String oid) throws CertificateExtensionException {
+        throw new UnsupportedOperationException("Use the other getValueEncoded implementation.");
+    }
 }

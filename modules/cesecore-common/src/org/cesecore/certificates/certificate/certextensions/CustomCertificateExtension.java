@@ -95,4 +95,28 @@ public interface CustomCertificateExtension {
      */
     byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
             PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException;
+    
+    /**
+     * Method that should return the byte[] value used in the extension. 
+     * 
+     * The default implementation of this method first calls the getValue() 
+     * method and then encodes the result as an byte array. 
+     * CertificateExtension implementors has the choice of overriding this 
+     * method if they want to include byte[] data in the certificate that
+     * is not necessarily an ASN.1 structure otherwise the getValue method 
+     * can be implemented as before.
+     * 
+     * @param userData the userdata of the issued certificate.
+     * @param ca the CA data with access to all the keys etc
+     * @param certProfile the certificate profile
+     * @param userPublicKey public key of the user, or null if not available
+     * @param caPublicKey public key of the CA, or null if not available
+     * @param val validity of certificate where the extension will be added
+     * @param oid OID used to fetch extension data value from the request, in case of dynamic extension.
+     * @return a byte[] or null, if this extension should not be used, which was determined from the values somehow.
+     * @throws CertificateExtensionException if there was an error constructing the certificate extension.
+     *
+     */
+    byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
+            PublicKey caPublicKey, CertificateValidity val, String oid) throws CertificateExtensionException;
 }

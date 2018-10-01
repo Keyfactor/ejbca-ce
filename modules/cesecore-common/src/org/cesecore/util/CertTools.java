@@ -67,6 +67,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.CharUtils;
@@ -3897,6 +3898,23 @@ public abstract class CertTools {
         return getX509FieldOrder(DnComponents.getDnObjects(ldaporder));
     }
 
+    /**
+     * EJBCA accepts extension OIDs on different formats, e.g. "1.2.3.4" and "1.2.3.4.value".
+     * Method returns the OID only given any OID string
+     * @param oidString to parse
+     * @return String containing OID only
+     */
+    public static String getOidFromString(final String oidString) {
+        String retval = oidString;
+        final Pattern pattern = Pattern.compile("\\p{L}");
+        final Matcher matcher = pattern.matcher(oidString);
+        if (matcher.find()) {
+            int endIndex = matcher.start();
+            retval = oidString.substring(0, endIndex-1);
+        }
+        return retval;
+    }
+    
     /**
      * Obtain a X500Name reordered, if some fields from original X500Name doesn't appear in "ordering" parameter, they will be added at end in the
      * original order.
