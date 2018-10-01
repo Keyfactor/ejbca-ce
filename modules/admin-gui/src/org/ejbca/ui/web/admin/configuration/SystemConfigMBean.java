@@ -1199,10 +1199,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private boolean isOidNumericalOnly(String oid) {
         String[] oidParts = oid.split("\\.");
-        for(int i=0; i<oidParts.length ; i++) {
+        for(int i=0; i < oidParts.length ; i++) {
+            if (i == 0 && oidParts[i].equals("*")) {
+                // Allow first character as wild card
+                continue;
+            }
             try {
                 Integer.parseInt(oidParts[i]);
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return false;
             }
         }
