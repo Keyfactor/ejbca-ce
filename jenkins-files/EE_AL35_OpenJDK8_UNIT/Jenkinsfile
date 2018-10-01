@@ -9,24 +9,13 @@ pipeline {
                 sh "docker container rm EE_AL35_OpenJDK8_UNIT -f || true"
             }
         }
-        stage('network') {
-            steps {
-                sh "docker network create --driver bridge my_isolated_bridge_network || true"
-            }
-        }
-		stage('database') {
-            steps {
-				sh "docker run --name mariadb -e MYSQL_ROOT_PASSWORD=foo123 -e MYSQL_DATABASE=ejbca -e MYSQL_USER=ejbca -e MYSQL_PASSWORD=ejbca -p 3301:3306 --net=my_isolated_bridge_network -d mariadb:10.2.17"
-            }
-        }
-        stage('backend') {
+        stage('run unit tests') {
             steps {
                 sh "mkdir ear"
                 dir ('ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT') {
-                    sh "docker build -t buildwithant ."
-                    sh "docker run --name EE_AL35_OpenJDK8_UNIT -v /home/jenkins/workspace/EJBCA/EE_AL35_OpenJDK8_UNIT:/app buildwithant"
+                    sh "docker build -t EE_AL35_OpenJDK8_UNIT ."
+                    sh "docker run --name EE_AL35_OpenJDK8_UNIT -v /home/jenkins/workspace/EJBCA/EE_AL35_OpenJDK8_UNIT:/app EE_AL35_OpenJDK8_UNIT"
                 }
-
             }
         }
     }
