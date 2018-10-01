@@ -1265,6 +1265,7 @@ public class CAsTest extends CaTestCase {
             CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
             if (caInfo != null) {
                 caSession.removeCA(admin, caInfo.getCAId());
+                internalCertStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
             }
         }
         try {
@@ -1284,6 +1285,9 @@ public class CAsTest extends CaTestCase {
             assertEquals("Wrong certificate profile.", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, caInfo.getCertificateProfileId());
             assertEquals("Wrong status.", CAConstants.CA_EXTERNAL, caInfo.getStatus());
             assertEquals("Wrong 'signed by'.", CAInfo.SELFSIGNED, caInfo.getSignedBy());
+            // Verify that the certificate is also imported into CertificateData
+            List<Certificate> certsdata = certificateStoreSession.findCertificatesBySubject(CertTools.getSubjectDN(oldCaCertificate));
+            assertEquals("There should only be one certificate in CertificateData after importing a CA", 1, certsdata.size());
             final int caId = caInfo.getCAId();
             try {
                 caAdminSession.importCACertificate(admin, TEST_NAME, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
@@ -1315,6 +1319,8 @@ public class CAsTest extends CaTestCase {
             assertEquals("Wrong certificate profile.", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, newCaInfo.getCertificateProfileId());
             assertEquals("Wrong status.", CAConstants.CA_EXTERNAL, newCaInfo.getStatus());
             assertEquals("Wrong 'signed by'.", CAInfo.SELFSIGNED, newCaInfo.getSignedBy());
+            certsdata = certificateStoreSession.findCertificatesBySubject(CertTools.getSubjectDN(oldCaCertificate));
+            assertEquals("There should two certificates in CertificateData after updating a CA certificate with a new one", 2, certsdata.size());
             try {
                 caAdminSession.updateCACertificate(admin, caId, EJBTools.wrapCertCollection(Arrays.asList(new Certificate[] {oldCaCertificate})));
                 fail("Should not be allowed to update existing CA with an older CA certificate.");
@@ -1332,6 +1338,7 @@ public class CAsTest extends CaTestCase {
             CAInfo caInfo = caSession.getCAInfo(admin, TEST_NAME);
             if (caInfo != null) {
                 caSession.removeCA(admin, caInfo.getCAId());
+                internalCertStoreSession.removeCertificatesBySubject(caInfo.getSubjectDN());
             }
         }
     }

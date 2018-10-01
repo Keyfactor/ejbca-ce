@@ -376,6 +376,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         if (ca != null) {
             cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, ca.getCAId());
+            internalCertificateStoreSession.removeCertificatesBySubject(ca.getSubjectDN());
         }
         log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caName);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
