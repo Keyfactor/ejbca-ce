@@ -198,7 +198,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
             boolean translatable = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_TRANSLATABLE).trim().equalsIgnoreCase("TRUE");
             boolean critical = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_CRITICAL).trim().equalsIgnoreCase("TRUE");
             boolean required = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_REQUIRED).trim().equalsIgnoreCase("TRUE");
-            log.debug(id + ", " + used + ", " +oid + ", " +critical+ ", " +translatable +  ", " + displayName);   
+            log.debug(id + ", " + used + ", " +oid + ", " +critical+ ", " +required+ ", " +translatable +  ", " + displayName);   
             if(used){
                 if(oid != null && classPath != null && displayName != null){
                     Class<?> implClass = Class.forName(classPath);
