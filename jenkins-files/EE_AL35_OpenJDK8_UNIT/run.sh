@@ -2,4 +2,4 @@
 
 cp /opt/conf/* /app/ejbca/conf/
 
-ant clean build
+ant clean build test:runsa
