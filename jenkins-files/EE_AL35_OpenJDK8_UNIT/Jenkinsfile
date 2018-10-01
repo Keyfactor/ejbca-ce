@@ -6,6 +6,7 @@ pipeline {
 		stage('cleanup') {
             steps {
                 sh "docker container rm mariadb -f || true"
+                sh "docker container rm EE_AL35_OpenJDK8_UNIT -f || true"
             }
         }
         stage('network') {
@@ -20,14 +21,10 @@ pipeline {
         }
         stage('backend') {
             steps {
-				sh "cd ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT"
-				sh "ls -la"
-				
-                sh "docker container ps --all"
-                
+                sh "mkdir ear"
                 dir ('ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT') {
                     sh "docker build -t buildwithant ."
-                    sh "docker run -v /home/jenkins/workspace/EJBCA/EE_AL35_OpenJDK8_UNIT:/app buildwithant"
+                    sh "docker run --name EE_AL35_OpenJDK8_UNIT -v /home/jenkins/workspace/EJBCA/EE_AL35_OpenJDK8_UNIT:/app buildwithant"
                 }
 
             }
