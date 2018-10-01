@@ -70,6 +70,8 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
@@ -526,6 +528,14 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
             setLastUpgradedToVersion("6.14.0");
+        }
+        if (isLesserThan(oldVersion, "6.15.0")) {
+            try {
+                upgradeSession.migrateDatabase6150();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+            setLastUpgradedToVersion("6.15.0");
         }
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
@@ -1379,6 +1389,31 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
     
     
+    /**
+     * Upgrade to EJBCA 6.15.0 
+     * 
+     * All the CCE will get a new required flag with the default value set to true.
+     *  
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void migrateDatabase6150() throws UpgradeFailedException {
+        log.debug("migrateDatabase6150: Adding new field (required) for custom certificate extensions.");
+        
+        AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
+                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+        
+        for (CertificateExtension customCertificateExtension : availableCustomCertExtensionsConfig.getAllAvailableCustomCertificateExtensions()) {
+            if (!customCertificateExtension.isRequiredFlag()) {
+                customCertificateExtension.setRequiredFlag(true);
+                try {
+                    globalConfigurationSession.saveConfiguration(authenticationToken, availableCustomCertExtensionsConfig);
+                } catch (AuthorizationDeniedException e) {
+                    log.error("Authorization error while saving the updated configuration!", e);
+                }
+            }
+        }
+    }
 
     /**
      * From EJBCA 6.12.0, all extensions defined in ocsp.properties are selected for each key binding instead. Since this

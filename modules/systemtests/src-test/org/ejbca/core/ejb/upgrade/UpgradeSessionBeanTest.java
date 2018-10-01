@@ -52,6 +52,8 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
@@ -980,6 +982,49 @@ public class UpgradeSessionBeanTest {
             deleteRole(null, roleNameSuperAdmin);
             deleteRole(null, roleNameLowAccess);
         }     
+    }
+    
+    /**
+     * Tests upgrade to 6.15.0. Any custom certificate extension defined in the previous version should get a required flag set to true.
+     * 
+     * @throws AuthorizationDeniedException
+     */
+    @Test
+    public void testUpgradeCustomCertificateExtension6150() throws AuthorizationDeniedException {
+        GlobalUpgradeConfiguration globalUpgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        
+        CertificateExtension certificateExtensionOne = new BasicCertificateExtension();
+        certificateExtensionOne.setCriticalFlag(true);
+        certificateExtensionOne.setDisplayName("Custom Certificate Extension One");
+        certificateExtensionOne.setOID("10.1.1.2");
+
+        CertificateExtension certificateExtensionTwo = new BasicCertificateExtension();
+        certificateExtensionTwo.setCriticalFlag(false);
+        certificateExtensionTwo.setDisplayName("Custom Certificate Extension Two");
+        certificateExtensionTwo.setOID("10.1.1.3");
+        
+        AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession
+                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+        
+        availableCustomCertExtensionsConfig.addCustomCertExtension(certificateExtensionOne);
+        availableCustomCertExtensionsConfig.addCustomCertExtension(certificateExtensionTwo);
+        
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, availableCustomCertExtensionsConfig);
+
+        // Perform upgrade 6.14.0 --> 6.15.0
+        globalUpgradeConfiguration.setUpgradedFromVersion("6.14.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, globalUpgradeConfiguration);
+        upgradeSession.upgrade(null, "6.14.0", false);
+        
+        AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfigAfterUpgrade = (AvailableCustomCertificateExtensionsConfiguration) globalConfigSession
+                .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+
+        for (CertificateExtension customCertificateExtension : availableCustomCertExtensionsConfigAfterUpgrade.getAllAvailableCustomCertificateExtensions()) {
+            assertTrue("Required flag must be set to true after upgrade!", customCertificateExtension.isRequiredFlag());
+            if (customCertificateExtension.getOID().equals("10.1.1.3")) {
+                assertFalse("Critical flag for CCE with oid " + customCertificateExtension.getOID() + " must be false!", customCertificateExtension.isCriticalFlag());
+            }
+        }
     }
     
     @Test
