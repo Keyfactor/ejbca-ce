@@ -41,6 +41,7 @@ WORKDIR /app/ejbca
 
 # add run script to /opt folder for later (container runtime) use
 ADD run.sh /opt/
+RUN chmod +x /opt/run.sh
 
 # run the run.sh script on container runtime
 CMD ["/opt/run.sh"]
