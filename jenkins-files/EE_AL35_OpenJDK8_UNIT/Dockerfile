@@ -30,11 +30,17 @@ ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 # set path for result .ear file
 ENV APPSRV_HOME=/app/ear
 
-# TODO ejbca conf needs to be copied?
+
+# copy ejbca conf to /opt in the container for runtime-usage (NB: ejbca source is currently in shared folder, so conf in this proof-of-concept remains there)
+ADD conf /opt/conf
+
 
 # Set the working directory to /app
 WORKDIR /app/ejbca
 
-# Run ant build
-#CMD ["ant", "clean", "build", "test:runsa"]
-CMD ["ant", "clean", "build"]
+
+# add run script to /opt folder for later (container runtime) use
+ADD run.sh /opt/
+
+# run the run.sh script on container runtime
+CMD ["/opt/run.sh"]
