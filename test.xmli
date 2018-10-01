@@ -36,6 +36,7 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/acme" target="test:unit" />
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" />
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test" />        	       	       
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test" />  
@@ -66,7 +67,9 @@
     <condition property="vapublisher.exists"><available file="modules/va/publisher" /></condition>
     <target name="optionaltestvapublisher" if="${vapublisher.exists}"><ant antfile="build.xml" dir="modules/va" target="test" /></target>
     <condition property="acme.exists"><available file="modules/acme"/></condition>
-    <target name="optionaltestacme" if="${acme.exists}"><ant antfile="build.xml" dir="modules/acme" target="test"/></target>
+    <target name="optionaltestacme" if="${acme.exists}">
+        <ant antfile="build.xml" dir="modules/acme" target="test:system"/>
+    </target>
     <condition property="est.exists"><available file="modules/est"/></condition>
     <target name="optionaltestest" if="${est.exists}"><ant antfile="build.xml" dir="modules/est" target="test"/></target>
     <condition property="cmpproxy.exists"><available file="modules/cmpProxy" /></condition>
@@ -104,6 +107,7 @@
 					<include name="modules/cmpProxy/src-test/**/${test.runone}.java" />
 					<include name="modules/va/publisher/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
+					<include name="modules/acme/src-common-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
 					<include name="modules/unidfnr/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-webtest/src-test/**/${test.runone}.java" />
@@ -300,13 +304,18 @@
     </target>
 
     <target name="test:unit:acme" description="run all JUnit tests for ACME." depends="deleteDirectories">
-            <ant antfile="build.xml" dir="modules/acme" target="test" />
-            <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/acme" target="test:unit" />
+        <antcall target="createreport"/>
+    </target>
+
+    <target name="test:system:acme" description="run all System tests for ACME." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/acme" target="test:system" />
+        <antcall target="createreport"/>
     </target>
 
     <target name="test:unit:admingui" description="run all JUnit tests for Admin GUI." depends="deleteDirectories">
-            <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" />
-            <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" />
+        <antcall target="createreport"/>
     </target>
 
     <target name="createreport">
