@@ -20,7 +20,15 @@ pipeline {
         }
         stage('backend') {
             steps {
+				sh "cd ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT"
+				sh "ls -la"
+				
                 sh "docker container ps --all"
+                
+                dir 'ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT' {
+                    sh "ls -la"
+                }
+
             }
         }
     }
