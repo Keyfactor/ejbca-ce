@@ -1829,6 +1829,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Update CA in database
         editCA(authenticationToken, caInfo);
+        // Update the CA certificate in the local database
+        publishCACertificate(authenticationToken, certificates, null, ca.getSubjectDN());
     }
 
     @Override
