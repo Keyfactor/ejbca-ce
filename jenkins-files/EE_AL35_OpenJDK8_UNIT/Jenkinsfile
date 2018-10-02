@@ -20,4 +20,13 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            junit "ejbca/**/reports/**/TEST-*.xml"
+        }
+        success {
+            archieve "ear/ejbca.ear"
+        }
+
+    }
 }
