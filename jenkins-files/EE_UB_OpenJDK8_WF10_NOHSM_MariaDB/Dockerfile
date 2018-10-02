@@ -36,7 +36,7 @@ USER jboss
 
 # copy ejbca conf to /opt in the container for runtime-usage (NB: ejbca source is currently in shared folder, so conf in this proof-of-concept remains there)
 ADD conf /opt/conf
-RUN chown +r /opt/conf
+RUN chown +R /opt/conf
 RUN ls -la /opt/conf
 
 #ADD datasource_and_remoting.cli /opt/datasource_and_remoting.cli
