@@ -48,5 +48,6 @@ WORKDIR /app/ejbca
 
 
 ADD run.sh /opt/
+RUN chmod +x /opt/run.sh
 
 CMD ["/opt/run.sh"]
