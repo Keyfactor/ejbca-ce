@@ -966,6 +966,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 }
             }
             this.boundCertificateInternalCaId = Integer.valueOf(certificateInternalCaId).toString();
+        } else if (internalKeyBindingInfo.getCertificateId() == null) {
+            // clear bound certificate ID that may be cached from a previous view
+            boundCertificateId = null;
         }
     }
 
