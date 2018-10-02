@@ -35,7 +35,7 @@ RUN chmod +x /opt/run.sh
 RUN chmod 666 /app/ejbca/conf
 RUN chmod 666 /app/ejbca/conf/
 
-USER jboss
+#USER jboss
 
 # copy ejbca conf to /opt in the container for runtime-usage (NB: ejbca source is currently in shared folder, so conf in this proof-of-concept remains there)
 ADD conf /opt/conf
