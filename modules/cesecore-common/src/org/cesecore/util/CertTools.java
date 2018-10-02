@@ -3917,6 +3917,18 @@ public abstract class CertTools {
     }
     
     /**
+     * Returns the regex match pattern given an OID wildcard.
+     * @param oidWildcard wildcard. E.g. 1.2.*.3
+     * @return regex match pattern
+     */
+    public static String getOidWildcardPattern(final String oidWildcard) {
+        // First escape all '.' which are interpreted as regex wildcards themselves.
+        // Secondly, generate the pattern where '*' is the wildcard character
+        final String wildcardMatchPattern = oidWildcard.replaceAll("\\.", "\\\\.").replaceAll("\\*", "([0-9.]*)");
+        return wildcardMatchPattern;
+    }
+    
+    /**
      * Obtain a X500Name reordered, if some fields from original X500Name doesn't appear in "ordering" parameter, they will be added at end in the
      * original order.
      * 
