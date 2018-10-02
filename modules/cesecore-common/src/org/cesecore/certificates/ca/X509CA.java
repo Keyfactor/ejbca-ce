@@ -1238,7 +1238,7 @@ public class X509CA extends CA implements Serializable {
             final int remainingOidsToMatch = requestOids.size();
             final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(id);
             if (certExt != null) {
-                final String wildcardMatchPattern = certExt.getOID().replaceAll("\\*", "(.*)");
+                final String wildcardMatchPattern = certExt.getOID().replaceAll("\\*", "([0-9.]*)");
                 for (final String oid : requestOids) {
                     // Match requested OID with wildcard in CCE configuration 
                     if (oid.matches(wildcardMatchPattern)) {
