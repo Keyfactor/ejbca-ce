@@ -32,6 +32,9 @@ ENV ANT_OPTS="-Xms256M -Xmx512M"
 ADD run.sh /opt/
 RUN chmod +x /opt/run.sh
 
+RUN chmod 666 /app/ejbca/conf
+RUN chmod 666 /app/ejbca/conf/
+
 USER jboss
 
 # copy ejbca conf to /opt in the container for runtime-usage (NB: ejbca source is currently in shared folder, so conf in this proof-of-concept remains there)
