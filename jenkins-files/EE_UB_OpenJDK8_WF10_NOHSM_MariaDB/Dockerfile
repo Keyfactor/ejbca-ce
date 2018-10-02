@@ -23,6 +23,15 @@ RUN cd $HOME \
 #Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 
+#Setting environment variables
+ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"
+
+#Setting Ant Params
+ENV ANT_OPTS="-Xms256M -Xmx512M"
+
+ADD run.sh /opt/
+RUN chmod +x /opt/run.sh
+
 USER jboss
 
 
@@ -37,17 +46,8 @@ ADD standalone2.xml /opt/standalone2.xml
 # add mariadb driver to deploy folder
 ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
 
-#Setting environment variables
-ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"
-
-#Setting Ant Params
-ENV ANT_OPTS="-Xms256M -Xmx512M"
-
 # Set the working directory to /app
 WORKDIR /app/ejbca
 
-
-ADD run.sh /opt/
-RUN chmod +x /opt/run.sh
 
 CMD ["/opt/run.sh"]
