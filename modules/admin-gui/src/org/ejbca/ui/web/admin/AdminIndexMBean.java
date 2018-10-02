@@ -22,6 +22,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.control.StandardRules;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper;
 
@@ -42,6 +44,7 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
     @PostConstruct
     private void postConstruct() throws Exception {
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
         caBean = (CAInterfaceBean) req.getSession().getAttribute("caBean");
         if ( caBean == null ){
             try {
