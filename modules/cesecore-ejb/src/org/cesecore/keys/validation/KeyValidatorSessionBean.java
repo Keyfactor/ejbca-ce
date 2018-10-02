@@ -433,7 +433,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                                 validator.getIssuer(), messages);
                         log.info(EventTypes.VALIDATOR_VALIDATION_FAILED + ";" + EventStatus.FAILURE + ";" + ModuleTypes.VALIDATOR + ";" + ServiceTypes.CORE + ";msg=" + message);
                         final int index = validator.getFailedAction();
-                        performValidationFailedActions(index, message, message);
+                        performValidationFailedActions(index, message);
                     } else {
                         // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
                         final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName,
