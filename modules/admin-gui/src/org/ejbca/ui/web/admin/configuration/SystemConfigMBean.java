@@ -1200,8 +1200,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private boolean isOidNumericalOnly(String oid) {
         String[] oidParts = oid.split("\\.");
         for(int i=0; i < oidParts.length ; i++) {
-            if (i == 0 && oidParts[i].equals("*")) {
-                // Allow first character as wild card
+            if (oidParts[i].equals("*")) {
+                // Allow wildcard characters
                 continue;
             }
             try {

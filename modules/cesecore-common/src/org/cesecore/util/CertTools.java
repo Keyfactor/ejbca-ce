@@ -3906,7 +3906,8 @@ public abstract class CertTools {
      */
     public static String getOidFromString(final String oidString) {
         String retval = oidString;
-        final Pattern pattern = Pattern.compile("\\p{L}");
+        // Matches anything but numerical and dots
+        final Pattern pattern = Pattern.compile("[^0-9.]");
         final Matcher matcher = pattern.matcher(oidString);
         if (matcher.find()) {
             int endIndex = matcher.start();
