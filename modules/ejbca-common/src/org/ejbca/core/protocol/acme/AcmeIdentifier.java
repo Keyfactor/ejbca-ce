@@ -28,4 +28,9 @@ public interface AcmeIdentifier {
 
     void setValue(String value);
 
+    enum AcmeIdentifierTypes {
+        DNS;
+
+        public String getJsonValue() { return this.name().toLowerCase(); }
+    }
 }
