@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.acme;
 
 import java.util.LinkedHashMap;
+import static org.ejbca.core.protocol.acme.AcmeIdentifier.AcmeIdentifierTypes;
 
 /**
  * An ACME Challenge is a proof a client needs to provide in order to be authorized to get a certificate for an identifier.
@@ -62,4 +63,20 @@ public interface AcmeChallenge {
     
     LinkedHashMap<Object, Object> getRawData();
 
+    enum AcmeChallengeType {
+
+        DNS_HTTP_01(AcmeIdentifierTypes.DNS, "http-01"),
+        DNS_DNS_01(AcmeIdentifierTypes.DNS, "dns-01");
+
+        private final AcmeIdentifierTypes acmeIdentifierType;
+        private final String challengeType;
+
+        AcmeChallengeType(final AcmeIdentifierTypes acmeIdentifierType, final String challengeType) {
+            this.acmeIdentifierType = acmeIdentifierType;
+            this.challengeType = challengeType;
+        }
+
+        public AcmeIdentifierTypes getAcmeIdentifierType() { return acmeIdentifierType; }
+        public String getChallengeType() { return challengeType; }
+    }
 }
