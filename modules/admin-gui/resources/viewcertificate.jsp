@@ -154,7 +154,7 @@
          if(username != null) {
            rabean.loadCertificates(username);
          } else {
-           rabean.loadCertificates(new BigInteger(certificateserno,16), certificatedata.getIssuerDNUnEscaped());
+           rabean.loadCertificates(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped());
          }
        }
        notauthorized = false;
@@ -189,7 +189,7 @@
 				if(username != null) {
 					rabean.loadCertificates(username);
 				} else {
-					rabean.loadCertificates(new BigInteger(certificateserno,16), certificatedata.getIssuerDNUnEscaped());
+					rabean.loadCertificates(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped());
 				}
 			}
 			notauthorized = false;
@@ -220,7 +220,7 @@
          if(username != null) {
            rabean.loadCertificates(username);
          } else {
-           rabean.loadCertificates(new BigInteger(certificateserno,16), certificatedata.getIssuerDNUnEscaped());
+           rabean.loadCertificates(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped());
          }
        }
        notauthorized = false;
@@ -242,7 +242,7 @@
          if(username != null) {
            rabean.loadCertificates(username);
          } else {
-           rabean.loadCertificates(new BigInteger(certificateserno,16), certificatedata.getIssuerDNUnEscaped());
+           rabean.loadCertificates(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped());
          }
        }
        notauthorized = false;
