@@ -3,7 +3,7 @@
 cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
 whoami
-chown jenkins /app/ejbca/conf
+chown jboss /app/ejbca/conf
 ls -la /app/ejbca/conf/
 ls -la /opt/conf/
 
