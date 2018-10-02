@@ -33,7 +33,6 @@ pipeline {
     post {
         always {
             junit "ejbca/**/reports/**/TEST-*.xml"
-            archieve "ear/ejbca.ear"
         }
     }
 }
