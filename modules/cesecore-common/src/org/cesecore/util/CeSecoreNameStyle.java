@@ -26,7 +26,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 
 /** Class that determines string representations of DNs. Overrides the default BCStyle in order to:
- * - Be consistent for all future for backwards compatibility (serialnumber)
+ * - Be consistent for all future for backwards compatibility (serialnumber is SN in EJBCA, not SERIALNUMBER)
  * - Be able to add fields that does not (yet) exist in BC (like CABForum Jurisdiction* in BC 1.54)
  *
  * @version $Id$
@@ -253,8 +253,7 @@ public class CeSecoreNameStyle extends BCStyle {
     }
 
     @Override
-    public ASN1ObjectIdentifier attrNameToOID(String attrName)
-    {
+    public ASN1ObjectIdentifier attrNameToOID(String attrName) {
         return IETFUtils.decodeAttrName(attrName, DefaultLookUp);
     }
 
