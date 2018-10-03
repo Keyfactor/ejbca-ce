@@ -5,6 +5,7 @@ pipeline {
     stages {
 		stage('cleanup') {
             steps {
+                sh "docker system prune -f -a --volumes"
                 sh "docker container rm mariadb -f || true"
                 sh "docker container rm ee_ub_openjdk8_wf10_nohsm_mariadb -f || true"
                 sh "rm -rf ear"
