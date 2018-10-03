@@ -5,7 +5,6 @@ pipeline {
     stages {
 		stage('cleanup') {
             steps {
-                sh "docker container rm mariadb -f || true"
                 sh "docker container rm ee_al35_openjdk8_unit -f || true"
                 sh "rm -rf ear"
             }
