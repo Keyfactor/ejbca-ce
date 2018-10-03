@@ -37,7 +37,7 @@
 					</h:column>
 					<h:column>
 						<f:facet name="header"><h:outputText title="#{web.text.QUEUELENGTH}" value="#{web.text.QUEUELENGTH_ABBR}"/></f:facet>
-						<h:outputText value="#{publisherName}"/>
+						<h:outputText value="#{editPublisherJSPHelper.getPublisherQueueLength(publisherName)}"/>
 					</h:column>
 				</h:dataTable>
 				<h:outputText value="#{web.text.NOPUBLISHERS}" rendered="#{ empty ejbcawebbean.getAuthorizedPublisherNames()}"/>
