@@ -16,7 +16,7 @@ import java.io.Serializable;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +33,7 @@ import org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper;
  * @version $Id$
  */
 @ManagedBean
-@SessionScoped
+@ViewScoped
 public class AdminIndexMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AdminIndexMBean.class);
