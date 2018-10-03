@@ -138,7 +138,7 @@ public final class CryptoProviderTools {
         // 2007-05-25
         // Finally we must configure SERIALNUMBER behavior in BC >=1.36 to be the same
         // as the behavior in BC 1.35, it changed from SN to SERIALNUMBER in BC 1.36
-        // We must be backwards compatible
+        // We must be backwards compatible, i.e. serialNumber is SN in EJBCA
         X509Name.DefaultSymbols.put(X509Name.SN, "SN");
         // We hard specify the system security provider in a few cases (see SYSTEM_SECURITY_PROVIDER). 
         // If the SUN provider does not exist, we will always use BC.
