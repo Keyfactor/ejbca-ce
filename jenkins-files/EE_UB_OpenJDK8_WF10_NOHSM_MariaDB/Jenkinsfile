@@ -5,7 +5,6 @@ pipeline {
     stages {
 		stage('cleanup') {
             steps {
-                sh "docker system prune -f -a --volumes"
                 sh "docker container rm mariadb -f || true"
                 sh "docker container rm ee_ub_openjdk8_wf10_nohsm_mariadb -f || true"
                 sh "rm -rf ear"
@@ -27,6 +26,7 @@ pipeline {
                 dir ('ejbca/jenkins-files/EE_UB_OpenJDK8_WF10_NOHSM_MariaDB') {
                     sh "docker build -t ee_ub_openjdk8_wf10_nohsm_mariadb ."
                     sh "docker run --name ee_ub_openjdk8_wf10_nohsm_mariadb --net=my_isolated_bridge_network -v /home/jenkins/workspace/EJBCA/EE_UB_OpenJDK8_WF10_NOHSM_MariaDB:/app ee_ub_openjdk8_wf10_nohsm_mariadb"
+                    sh "ls -la ejbca/reports"
                 }
             }
         }
