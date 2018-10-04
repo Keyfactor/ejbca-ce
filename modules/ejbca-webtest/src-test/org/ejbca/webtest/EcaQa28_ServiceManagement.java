@@ -17,9 +17,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.WebTestBase;
-import org.ejbca.helper.AuditLogHelper;
-import org.ejbca.utils.WebTestUtils;
+import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.AuditLogHelper;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -63,7 +63,7 @@ public class EcaQa28_ServiceManagement extends WebTestBase {
         webDriver.get(getAdminWebUrl());
         webDriver.findElement(By.xpath("//li/a[contains(@href,'listservices.jsf')]")).click();
         assertEquals("Clicking 'Services' link did not redirect to expected page",
-                WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
+                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
                 "/ejbca/adminweb/services/listservices.jsf");
     }
     

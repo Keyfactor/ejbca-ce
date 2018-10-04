@@ -29,7 +29,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.WebTestBase;
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
