@@ -14,6 +14,7 @@ pipeline {
             steps {
                 script{        
                     LOCAL_BUILD_PATH = "$env.WORKSPACE"
+                    COMMN = 'docker run --name ee_al35_openjdk8_unit -v \"${LOCAL_BUILD_PATH}\":/app ee_al35_openjdk8_unit'
                 }
             }
         }
@@ -23,7 +24,7 @@ pipeline {
                 dir ('ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT') {
                     echo LOCAL_BUILD_PATH
                     sh "docker build -t ee_al35_openjdk8_unit ."
-                    COMMN = 'docker run --name ee_al35_openjdk8_unit -v \"${LOCAL_BUILD_PATH}\":/app ee_al35_openjdk8_unit'
+                    
                     echo COMMN
                     sh COMMN
                 }
