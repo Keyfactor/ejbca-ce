@@ -42,7 +42,4 @@ sleep 10
 wait_for_deployment
 
 echo '=================== starting system tests ================================='
-#ant test:runsys
-
-# tmp testing post results part of jenkins pipeline
-ant test:runone -Dtest.runone=AcmeConfigurationAndValidationSystemTest
+ant test:runsys
