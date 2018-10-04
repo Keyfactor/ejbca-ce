@@ -13,8 +13,8 @@
 
 package org.ejbca.webtest;
 
-import org.ejbca.WebTestBase;
-import org.ejbca.utils.WebTestUtils;
+import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.junit.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -90,7 +90,7 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
                 webDriver.switchTo().window(tab);
             }
         }
-        assertEquals("Link didn't redirect to documentation page", "/ejbca/doc/concepts.html", WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()));
+        assertEquals("Link didn't redirect to documentation page", "/ejbca/doc/concepts.html", WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()));
 
 
     }
@@ -101,6 +101,6 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
         WebElement adminLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/')]"));
         assertEquals("Unexpected name of Admin web link", adminLink.getText(), "Administration");
         adminLink.click();
-        assertEquals("Link didn't redirect to administration page", "/ejbca/adminweb/", WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()));
+        assertEquals("Link didn't redirect to administration page", "/ejbca/adminweb/", WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()));
     }
 }

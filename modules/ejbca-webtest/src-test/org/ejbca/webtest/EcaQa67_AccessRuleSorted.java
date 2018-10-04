@@ -27,9 +27,9 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.WebTestBase;
-import org.ejbca.helper.AdminRolesHelper;
-import org.ejbca.utils.ConfigurationConstants;
+import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.AdminRolesHelper;
+import org.ejbca.test.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;

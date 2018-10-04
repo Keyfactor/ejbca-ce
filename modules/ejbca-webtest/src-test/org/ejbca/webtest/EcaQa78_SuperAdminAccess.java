@@ -17,8 +17,8 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
-import org.ejbca.WebTestBase;
-import org.ejbca.utils.ConfigurationConstants;
+import org.ejbca.webtest.WebTestBase;
+import org.ejbca.test.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
