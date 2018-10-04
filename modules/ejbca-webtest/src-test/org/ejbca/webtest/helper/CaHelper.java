@@ -11,12 +11,12 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.helper;
+package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.ejbca.utils.WebTestUtils;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -27,7 +27,7 @@ import org.openqa.selenium.support.ui.Select;
  * 
  * Certificate Authorities helper class for EJBCA Web Tests.
  * 
- * @version $Id$
+ * @version $Id: CaHelper.java 28916 2018-05-11 09:22:51Z oskareriksson $
  *
  */
 public final class CaHelper {
@@ -46,7 +46,7 @@ public final class CaHelper {
         webDriver.get(adminWebUrl);
         webDriver.findElement(By.xpath("//li/a[contains(@href,'editcas.jsp')]")).click();
         assertEquals("Clicking 'Certificate Authorities' link did not redirect to expected page",
-                WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
+                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
                 "/ejbca/adminweb/ca/editcas/editcas.jsp");
     }
     
