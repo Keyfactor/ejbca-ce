@@ -3,7 +3,9 @@ pipeline {
 		label "docker"
 	}
 	parameters {
-	    string(baseDir:"`pwd`")
+	    string(
+	       name:'baseDir',
+	       defaultValue:"`pwd`")
 	}
 
     stages {
@@ -16,10 +18,10 @@ pipeline {
         stage('run unit tests') {
             steps {
                 sh "mkdir ear"
-                sh 'echo "${baseDir}"'
+                sh 'echo "${params.baseDir}"'
                 dir ('ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT') {
                     sh "docker build -t ee_al35_openjdk8_unit ."
-                    sh 'docker run --name ee_al35_openjdk8_unit -v "${baseDir}":/app ee_al35_openjdk8_unit'
+                    sh 'docker run --name ee_al35_openjdk8_unit -v ${params.baseDir}:/app ee_al35_openjdk8_unit'
                 }
             }
         }
