@@ -2496,6 +2496,29 @@ public class CertToolsTest {
         assertEquals("abc>def", CertTools.unescapeFieldValue("abc\\>def"));
         assertEquals("\\>\"abc ", CertTools.unescapeFieldValue("\\\\\\>\\\"abc\\ "));
     }
+
+    @Test
+    public void testGetOidFromString() {
+        assertEquals("1.2.3.4", CertTools.getOidFromString("1.2.3.4.value"));
+        assertEquals("1.2.3.4", CertTools.getOidFromString("1.2.3.4.value2"));
+        assertEquals("1.12.123.1234", CertTools.getOidFromString("1.12.123.1234.value3"));
+        assertEquals("1.2.3.4", CertTools.getOidFromString("1.2.3.4.foobar"));
+    }
+    
+    @Test
+    public void testGetOidWildcardPattern() {
+        // Base cases
+        assertTrue("1.2.3.4".matches(CertTools.getOidWildcardPattern("1.2.3.4")));
+        assertTrue("1.2.3.4".matches(CertTools.getOidWildcardPattern("*.2.3.4")));
+        assertTrue("1.23.3.4".matches(CertTools.getOidWildcardPattern("1.*.3.4")));
+        assertTrue("1.2.3.4".matches(CertTools.getOidWildcardPattern("1.2.3.*")));
+        // Multiple wild cards
+        assertTrue("1.2.3.4".matches(CertTools.getOidWildcardPattern("*.2.3.*")));
+        // Only allow numeric wild card matches
+        assertFalse("1.a.3.4".matches(CertTools.getOidWildcardPattern("1.*.3.4")));
+        // Verify that dots aren't interpreted as regex wild cards
+        assertFalse("1.2.3.4".matches(CertTools.getOidWildcardPattern("1.2a3.4")));
+    }
     
     private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
         try {
