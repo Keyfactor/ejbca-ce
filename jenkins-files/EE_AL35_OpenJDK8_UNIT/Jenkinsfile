@@ -2,7 +2,11 @@ pipeline {
 	agent {
 		label "docker"
 	}
-
+	
+    environment {
+        LOCAL_BUILD_PATH=env.WORKSPACE+'/build/'
+    }
+    
     stages {
 		stage('cleanup') {
             steps {
