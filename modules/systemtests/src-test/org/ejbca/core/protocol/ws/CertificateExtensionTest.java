@@ -306,6 +306,50 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         getCertificateWithExtension(false);
     }
 
+    @Test
+    public void requestMultipleWildcardExtensionsMatchOneConfiguration() throws Exception {
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
+        Properties props = new Properties();
+        props.put("critical", "false");
+        props.put("dynamic", "true");
+        props.put("encoding", "RAW");
+        // Create required wild card extension
+        cceConfig.addCustomCertExtension(1, sOID_wildcard, "WildcardExtensions", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props);
+        globalConfigurationSession.saveConfiguration(intAdmin, cceConfig);
+        addProfiles(1);
+        // Request multiple extensions with OIDs matching one single wild card
+        final List<ExtendedInformationWS> extensionRequestList = new LinkedList<>();
+        final byte[] value[] = getRandomValues(1);
+        extensionRequestList.add(new ExtendedInformationWS("1.2.6.4", new String(Hex.encode((new DEROctetString(value[0])).getEncoded()))));
+        extensionRequestList.add(new ExtendedInformationWS("1.2.7.4", new String(Hex.encode((new DEROctetString(value[0])).getEncoded()))));
+        extensionRequestList.add(new ExtendedInformationWS("1.2.8.4", new String(Hex.encode((new DEROctetString(value[0])).getEncoded()))));
+        addUserWithExtensions(extensionRequestList);
+        // Expect certificate issuance to fail (wild card may only be matched once)
+        X509Certificate cert = getCertificateWithExtension(false);
+    }
+    
+    @Test
+    public void requestRequiredWildcardExtensionMatchNone() throws Exception {
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
+        Properties props = new Properties();
+        props.put("critical", "false");
+        props.put("dynamic", "true");
+        props.put("encoding", "RAW");
+        // Create required wild card extension
+        cceConfig.addCustomCertExtension(1, sOID_wildcard, "WildcardExtensions", "org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension", false, true, props);
+        globalConfigurationSession.saveConfiguration(intAdmin, cceConfig);
+        addProfiles(1);
+        // Request multiple extensions with OIDs not matching the required wild card
+        final List<ExtendedInformationWS> extensionRequestList = new LinkedList<>();
+        final byte[] value[] = getRandomValues(1);
+        extensionRequestList.add(new ExtendedInformationWS("1.2.6.5", new String(Hex.encode((new DEROctetString(value[0])).getEncoded()))));
+        extensionRequestList.add(new ExtendedInformationWS("1.2.7.5", new String(Hex.encode((new DEROctetString(value[0])).getEncoded()))));
+        extensionRequestList.add(new ExtendedInformationWS("1.2.8.5", new String(Hex.encode((new DEROctetString(value[0])).getEncoded()))));
+        addUserWithExtensions(extensionRequestList);
+        // Expect certificate issuance to fail
+        getCertificateWithExtension(false);
+    }
+    
     private void addProfiles(int numberOfCertificateExtensions) throws Exception {
         final int certProfId; 
         final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
