@@ -2,11 +2,6 @@ pipeline {
 	agent {
 		label "docker"
 	}
-	parameters {
-	    string(
-	       name:'baseDir',
-	       defaultValue:"/hello")
-	}
 
     stages {
 		stage('cleanup') {
@@ -18,7 +13,7 @@ pipeline {
         stage('run unit tests') {
             steps {
                 sh "mkdir ear"
-                sh 'echo ${params.baseDir}'
+                sh 'echo "${env.LOCAL_BUILD_PATH}"'
 
             }
         }
