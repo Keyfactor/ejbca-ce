@@ -2,10 +2,6 @@ pipeline {
 	agent {
 		label "docker"
 	}
-	
-    environment {
-        LOCAL_BUILD_PATH=env.WORKSPACE+'/build/'
-    }
     
     stages {
 		stage('cleanup') {
@@ -17,7 +13,7 @@ pipeline {
         stage('run unit tests') {
             steps {
                 sh "mkdir ear"
-                sh 'echo "${env.LOCAL_BUILD_PATH}"'
+                sh 'echo "${env.env.WORKSPACE}"'
 
             }
         }
