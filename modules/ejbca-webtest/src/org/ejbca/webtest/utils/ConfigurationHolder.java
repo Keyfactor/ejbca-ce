@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.utils;
+package org.ejbca.test.utils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,7 +22,7 @@ import java.util.Properties;
 /**
  * This class holds the user configuration for the EJBCA Webtest module.
  * The configuration is loaded from property files located in modules/ejbca-webtest/conf.
- * @version $Id$
+ * @version $Id: ConfigurationHolder.java 28846 2018-05-04 11:32:25Z oskareriksson $
  */
 public class ConfigurationHolder {
     private ClassLoader configCl = ConfigurationHolder.class.getClassLoader();

@@ -11,12 +11,12 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.helper;
+package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.ejbca.utils.WebTestUtils;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -25,7 +25,7 @@ import org.openqa.selenium.WebDriver;
  * 
  * Crypto Token helper class for EJBCA Web Tests.
  * 
- * @version $Id$
+ * @version $Id: CryptoTokenHelper.java 28852 2018-05-04 14:35:13Z oskareriksson $
  *
  */
 public final class CryptoTokenHelper {
@@ -44,7 +44,7 @@ public final class CryptoTokenHelper {
         webDriver.get(adminWebUrl);
         webDriver.findElement(By.xpath("//li/a[contains(@href, 'cryptotokens.jsf')]")).click();
         assertEquals("Clicking 'Crypto Tokens' link did not redirect to expected page",
-                WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
+                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
                 "/ejbca/adminweb/cryptotoken/cryptotokens.jsf");
     }
 

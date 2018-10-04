@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.helper;
+package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.cesecore.util.ValidityDate;
-import org.ejbca.utils.WebTestUtils;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -34,7 +34,7 @@ import org.openqa.selenium.support.ui.Select;
  * Always reset filterTime before using the methods in this class, which makes sure
  * there only exists entries in the Audit Log for the test step currently executing.
  * 
- * @version $Id$
+ * @version $Id: AuditLogHelper.java 28911 2018-05-11 06:48:28Z oskareriksson $
  */
 public final class AuditLogHelper {
 
@@ -68,7 +68,7 @@ public final class AuditLogHelper {
         webDriver.get(adminWebUrl);
         webDriver.findElement(By.xpath("//li/a[contains(@href, 'audit/search.jsf')]")).click();
         assertEquals("Clicking 'View Log' link did not redirect to expected page",
-                WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
+                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
                 "/ejbca/adminweb/audit/search.jsf");
 
         // Set conditions

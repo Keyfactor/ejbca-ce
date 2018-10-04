@@ -11,12 +11,12 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.utils;
+package org.ejbca.test.utils;
 
 
 /**
  * Configuration constants for EJBCA web tests
- * @version $Id$
+ * @version $Id: ConfigurationConstants.java 28846 2018-05-04 11:32:25Z oskareriksson $
  */
 public final class ConfigurationConstants {
 

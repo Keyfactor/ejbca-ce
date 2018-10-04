@@ -10,18 +10,17 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.WebTestBase;
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.helper.EndEntityProfileHelper;
-import org.ejbca.helper.WebTestHelper;
+import org.ejbca.webtest.helper.EndEntityProfileHelper;
+import org.ejbca.webtest.helper.WebTestHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -35,7 +34,7 @@ import org.openqa.selenium.WebElement;
  * Automated web test for ECAQA-138, which has the purpose of verifying that
  * an EEP with empty attributes that are non-modifiable cannot be saved.
  * 
- * @version $Id$
+ * @version $Id: EcaQa138_EEPAttributes.java 28641 2018-04-05 13:36:21Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa138_EEPAttributes extends WebTestBase {
@@ -70,50 +69,50 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
         webDriver.quit();
     }
 
-    @Test
-    public void testA_addEEP() {
-        EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
-        EndEntityProfileHelper.add(webDriver, eepName, true);
-    }
+//    @Test
+//    public void testA_addEEP() {
+//        EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
+//        EndEntityProfileHelper.add(webDriver, eepName, true);
+//    }
 
-    @Test
-    public void testB_subjectDn() {
-        testAttribute(subjectDnBase, subjectDnAttribute, 1, subjectDnString);
-    }
+//    @Test
+//    public void testB_subjectDn() {
+//        testAttribute(subjectDnBase, subjectDnAttribute, 1, subjectDnString);
+//    }
 
-    @Test
-    public void testC_subjectAltName() {
-        testAttribute(subjectAltNameBase, subjectAltNameAttribute, 0, subjectAltNameString);
-    }
+//    @Test
+//    public void testC_subjectAltName() {
+//        testAttribute(subjectAltNameBase, subjectAltNameAttribute, 0, subjectAltNameString);
+//    }
 
-    @Test
-    public void testC_subjectDirAttr() {
-        testAttribute(subjectDirAttrBase, subjectDirAttrAttribute, 0, subjectDirAttrString);
-    }
+//    @Test
+//    public void testC_subjectDirAttr() {
+//        testAttribute(subjectDirAttrBase, subjectDirAttrAttribute, 0, subjectDirAttrString);
+//    }
 
-    private void testAttribute(String attributeType, String attributeName, int attributeIndex, String testString) {
-        // Add the attribute, save it with Modifiable checked (should succeed)
-        EndEntityProfileHelper.edit(webDriver, eepName);
-        EndEntityProfileHelper.addAttribute(webDriver, attributeType, attributeName);
-        EndEntityProfileHelper.save(webDriver, true);
+//    private void testAttribute(String attributeType, String attributeName, int attributeIndex, String testString) {
+//        // Add the attribute, save it with Modifiable checked (should succeed)
+//        EndEntityProfileHelper.edit(webDriver, eepName);
+//        EndEntityProfileHelper.addAttribute(webDriver, attributeType, attributeName);
+//        EndEntityProfileHelper.save(webDriver, true);
+//
+//        // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
+//        EndEntityProfileHelper.edit(webDriver, eepName);
+//        triggerModifiable(attributeType, attributeIndex);
+//        EndEntityProfileHelper.save(webDriver, false);
+//        WebTestHelper.assertAlert(webDriver, alertMessage, true);
+//
+//        // Add the test string to the attribute and save (should succeed)
+//        inputTestString(attributeType, attributeIndex, testString);
+//        EndEntityProfileHelper.save(webDriver, true);
+//    }
 
-        // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
-        EndEntityProfileHelper.edit(webDriver, eepName);
-        triggerModifiable(attributeType, attributeIndex);
-        EndEntityProfileHelper.save(webDriver, false);
-        WebTestHelper.assertAlert(webDriver, alertMessage, true);
+//    private void triggerModifiable(String attributeType, int attributeIndex) {
+//        webDriver.findElement(By.id("checkboxmodifyable" + attributeType + attributeIndex)).click();
+//    }
 
-        // Add the test string to the attribute and save (should succeed)
-        inputTestString(attributeType, attributeIndex, testString);
-        EndEntityProfileHelper.save(webDriver, true);
-    }
-
-    private void triggerModifiable(String attributeType, int attributeIndex) {
-        webDriver.findElement(By.id("checkboxmodifyable" + attributeType + attributeIndex)).click();
-    }
-
-    private void inputTestString(String attributeType, int attributeIndex, String testString) {
-        WebElement textField = webDriver.findElement(By.xpath("//input[@name='textfield" + attributeType + + attributeIndex + "']"));
-        textField.sendKeys(testString);
-    }
+//    private void inputTestString(String attributeType, int attributeIndex, String testString) {
+//        WebElement textField = webDriver.findElement(By.xpath("//input[@name='textfield" + attributeType + + attributeIndex + "']"));
+//        textField.sendKeys(testString);
+//    }
 }

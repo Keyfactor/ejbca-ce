@@ -13,7 +13,7 @@
 
 package org.ejbca.webtest;
 
-import org.ejbca.WebTestBase;
+import org.ejbca.webtest.WebTestBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

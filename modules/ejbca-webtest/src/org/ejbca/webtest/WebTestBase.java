@@ -10,14 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-package org.ejbca;
+package org.ejbca.webtest;
 
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.utils.ConfigurationConstants;
-import org.ejbca.utils.ConfigurationHolder;
+import org.ejbca.test.utils.ConfigurationConstants;
+import org.ejbca.test.utils.ConfigurationHolder;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
@@ -26,8 +25,9 @@ import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
- * Base class to be used by all automated Selenium tests. Should be extended for each test case
- * @version $Id$
+ * Base class to be used by all automated Selenium tests. Should be extended for each test case.
+ *
+ * @version $Id: WebTestBase.java 28846 2018-05-04 11:32:25Z andrey_s_helmes $
  */
 public abstract class WebTestBase {
 
@@ -40,6 +40,8 @@ public abstract class WebTestBase {
 
     private static WebDriver webDriver;
     private static WebDriverWait webDriverWait;
+
+    //protected static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
 
     /**
      * Sets up firefox driver and firefox profile if certificate is required
@@ -121,7 +123,7 @@ public abstract class WebTestBase {
     }
 
     public String getAdminWebUrl() {
-        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/adminweb/";
+        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/adminweb";
     }
 
     public String getRaWebUrl() {

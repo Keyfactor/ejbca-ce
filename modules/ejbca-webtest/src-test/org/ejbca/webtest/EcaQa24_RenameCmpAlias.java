@@ -15,7 +15,7 @@ package org.ejbca.webtest;
 
 import static org.junit.Assert.fail;
 
-import org.ejbca.WebTestBase;
+import org.ejbca.webtest.WebTestBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
