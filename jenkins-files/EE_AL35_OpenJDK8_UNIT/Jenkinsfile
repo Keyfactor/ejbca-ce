@@ -16,7 +16,7 @@ pipeline {
                 dir ('ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT') {
                     sh "docker build -t ee_al35_openjdk8_unit ."
                     sh "echo '$baseDir'"
-                    sh "docker run --name ee_al35_openjdk8_unit -v \"${baseDir}\":/app ee_al35_openjdk8_unit"
+                    sh "docker run --name ee_al35_openjdk8_unit -v $baseDir:/app ee_al35_openjdk8_unit"
                 }
             }
         }
