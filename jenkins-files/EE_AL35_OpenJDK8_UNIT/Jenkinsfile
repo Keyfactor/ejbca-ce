@@ -10,10 +10,17 @@ pipeline {
                 sh "rm -rf ear"
             }
         }
+        stage('variables') {
+            steps {
+                script{        
+                    LOCAL_BUILD_PATH = "$env.WORKSPACE"
+                }
+            }
+        }
         stage('run unit tests') {
             steps {
                 sh "mkdir ear"
-                sh 'echo "${env.env.WORKSPACE}"'
+                echo LOCAL_BUILD_PATH
 
             }
         }
