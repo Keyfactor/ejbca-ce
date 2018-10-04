@@ -32,9 +32,6 @@ pipeline {
     }
     post {
         always {
-            sh "ls -la"
-            sh "ls -la ejbca"
-            sh "ls -la ejbca/reports"
             junit "ejbca/**/reports/**/TEST-*.xml"
         }
     }
