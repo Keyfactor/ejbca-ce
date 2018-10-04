@@ -10,8 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-package org.ejbca.helper;
+package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -19,15 +18,17 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
+// TODO Replace this with BaseTestHelper
 /**
  * Helper class containing miscellaneous operations for EJBCA Web Tests.
  * 
- * @version $Id$
+ * @version $Id: WebTestHelper.java 28852 2018-05-04 14:35:13Z oskareriksson $
  */
 public final class WebTestHelper {
 
@@ -65,6 +66,7 @@ public final class WebTestHelper {
         assertTrue("Expected an alert but there was none", alertExists);
     }
 
+    // TODO Replace with BaseTestHelper.selectOptionsByName()
     /**
      * Selects options by name in a Select element.
      * 
@@ -85,4 +87,5 @@ public final class WebTestHelper {
             assertTrue("The option " + option + " was not found", isSelected);
         }
     }
+
 }

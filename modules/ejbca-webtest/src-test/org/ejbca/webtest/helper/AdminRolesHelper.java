@@ -11,12 +11,12 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.helper;
+package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.ejbca.utils.WebTestUtils;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -24,7 +24,7 @@ import org.openqa.selenium.WebElement;
 
 /**
  * Helper class for handling 'Administrator Roles' page in automated web tests
- * @version $Id$
+ * @version $Id: AdminRolesHelper.java 29443 2018-07-03 12:46:36Z henriks $
  *
  */
 public final class AdminRolesHelper {
@@ -42,7 +42,7 @@ public final class AdminRolesHelper {
         webDriver.get(adminWebUrl);
         webDriver.findElement(By.xpath("//li/a[contains(@href,'roles.xhtml')]")).click();
         assertEquals("Clicking 'Administrator Roles' link did not redirect to expected page",
-                WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
+                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
                 "/ejbca/adminweb/administratorprivileges/roles.xhtml");
     }
     
