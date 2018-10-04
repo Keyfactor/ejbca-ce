@@ -11,14 +11,14 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.helper;
+package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.Map;
 
-import org.ejbca.utils.WebTestUtils;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -29,7 +29,7 @@ import org.openqa.selenium.support.ui.Select;
  * 
  * Add End Entity helper class for EJBCA Web Tests.
  * 
- * @version $Id$
+ * @version $Id: AddEndEntityHelper.java 28852 2018-05-04 14:35:13Z oskareriksson $
  *
  */
 public final class AddEndEntityHelper {
@@ -48,7 +48,7 @@ public final class AddEndEntityHelper {
         webDriver.get(adminWebUrl);
         webDriver.findElement(By.xpath("//li/a[contains(@href, 'addendentity.jsp')]")).click();
         assertEquals("Clicking 'Add End Entity' link did not redirect to expected page",
-                WebTestUtils.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
+                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
                 "/ejbca/adminweb/ra/addendentity.jsp");
     }
 
