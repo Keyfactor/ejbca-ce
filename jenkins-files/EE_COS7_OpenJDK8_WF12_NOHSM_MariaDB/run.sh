@@ -6,7 +6,7 @@ cp /opt/conf/* /app/ejbca/conf/
 
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
-ant clean deployear
+ant -q clean deployear
 
 echo '=================== Waiting for deploy ================================='
 
@@ -27,10 +27,10 @@ wait_for_deployment() {
 wait_for_deployment
 echo '=================== ant deployear done and successfully deployed! ================================='
 
-ant runinstall
+ant -q runinstall
 echo '=================== ant runinstall done! ================================='
 
-ant deploy-keystore
+ant -q deploy-keystore
 echo '=================== ant deploy-keystore done! ================================='
 
 cp /opt/standalone2.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
