@@ -47,8 +47,8 @@ ADD standalone2.xml /opt/standalone2.xml
 # add mariadb driver to deploy folder
 ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
 
-# Set the working directory to /app
-WORKDIR /app/ejbca
+# workdir is overwritten by jenkins pipeline
+#WORKDIR /app/ejbca
 
-
-CMD ["/opt/run.sh"]
+# run script is run by jenkins pipeline
+#CMD ["/opt/run.sh"]
