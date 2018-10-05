@@ -20,13 +20,15 @@ pipeline {
             }
         }
         stage('deploy and run system tests') {
-            // Execute this stage's steps inside a running Docker container build according to the following
-            dockerfile {
-                label 'docker'
-                dir 'ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_MariaDB_ALTERNATIVE'
-                filename 'Dockerfile'
-                additionalBuildArgs  '--disable-content-trust=false --pull -m 2GB'
-                args '--group-add root --net=my_isolated_bridge_network'
+            agent {
+                // Execute this stage's steps inside a running Docker container build according to the following
+                dockerfile {
+                    label 'docker'
+                    dir 'ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_MariaDB_ALTERNATIVE'
+                    filename 'Dockerfile'
+                    additionalBuildArgs  '--disable-content-trust=false --pull -m 2GB'
+                    args '--group-add root --net=my_isolated_bridge_network'
+                }
             }
             steps {
                 sh "mkdir ear"
