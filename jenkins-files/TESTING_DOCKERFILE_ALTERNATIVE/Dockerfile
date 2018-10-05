@@ -26,11 +26,3 @@ ENV ANT_OPTS="-Xms256M -Xmx512M"
 
 #Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
-
-# set path for result .ear file
-ENV APPSRV_HOME=/tmp
-
-
-# copy ejbca conf to /opt in the container for runtime-usage (NB: ejbca source is currently in shared folder, so conf in this proof-of-concept remains there)
-ADD conf /opt/conf
-
