@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
@@ -31,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.AccessRulesHelper;
@@ -51,6 +53,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfilesFactory;
 import org.ejbca.core.model.approval.profile.ApprovalStep;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -121,6 +124,14 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     @ManagedProperty(value = "#{approvalProfilesMBean}")
     private ApprovalProfilesMBean approvalProfilesMBean;
 
+    // Authentication check and audit log page access request
+    @PostConstruct
+    public void initialize() throws Exception {
+        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.APPROVALPROFILEVIEW.resource());
+        RequestHelper.setDefaultCharacterEncoding(request);
+    }
+    
     private int currentApprovalProfileId = -1;
     private ApprovalProfile currentApprovalProfile = null;
 
