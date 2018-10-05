@@ -23,7 +23,7 @@ pipeline {
                 sh "mkdir ear"
                 dir ('ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT') {
                     sh "docker build -t ee_al35_openjdk8_unit ."
-                    sh DOCKER_RUN_COMMAND
+                    sh 'docker run --name ee_al35_openjdk8_unit -v ' + "$env.WORKSPACE" + ':/app ee_al35_openjdk8_unit'
                 }
             }
         }
