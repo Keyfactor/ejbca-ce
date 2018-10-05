@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate.certextensions;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -411,6 +412,38 @@ public class BasicCertificateExtensionTest {
 		}catch(CertificateExtensionException e){
 			// NOPMD
 		}
+		
+		// Test with dynamic values
+        props = new Properties();
+        props.put("encoding", "DEROBJECT");
+        props.put("dynamic", "true");
+        baseExt = new BasicCertificateExtension();
+        baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, true, props);
+        // Test with a proper value in ExtendedInformation Extension Data, should result in a nice value
+        EndEntityInformation userData = new EndEntityInformation();
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.setExtensionData("1.2.3", str);
+        userData.setExtendedInformation(ei);
+        value = getObject(baseExt.getValueEncoded(userData, null, null, null, null, null));
+        assertTrue(value.getClass().toString(),value instanceof DLSet);
+        set1 = (DLSet)value;
+        assertEquals(3, set1.size());
+        // Test with an empty value in ExtendedInformation Extension Data, should throw, since the extension is required by default
+        userData = new EndEntityInformation();
+        ei = new ExtendedInformation();
+        ei.setExtensionData("1.2.3", "");
+        userData.setExtendedInformation(ei);
+        try {
+            baseExt.getValueEncoded(userData, null, null, null, null, null);
+        } catch (CertificateExtensionException e) {
+        	// NOPMD: expected to throw
+        }
+        
+        // Test with an empty value in ExtendedInformation Extension Data, should result in no value, but not throwing either, 
+        // when required is set to false
+        baseExt.init(1, "1.2.3", "BasicCertificateExtension", false, false, props);
+        assertNull(baseExt.getValueEncoded(userData, null, null, null, null, null));
+		
 	}
         
 	/**
@@ -429,13 +462,13 @@ public class BasicCertificateExtensionTest {
 		EndEntityInformation userData = new EndEntityInformation();
 		userData.setExtendedInformation(new ExtendedInformation());
 		
-		// Fail without value specified
-		try {
-			baseExt.getValueEncoded(userData, null, null, null, null, null);
-			fail("Should have failed as no value was specified in EI.");
-		} catch (CertificateExtensionException ex) {
-			assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
-		}
+        // Fail without value specified
+        try {
+            baseExt.getValueEncoded(userData, null, null, null, null, null);
+            fail("Should have failed as no value was specified in EI.");
+        } catch (CertificateExtensionException ex) {
+            assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
+        }
 		
 		// Success with value specified
 		userData.getExtendedInformation().setExtensionData("1.2.3", "The value 123");
@@ -691,13 +724,13 @@ public class BasicCertificateExtensionTest {
 		EndEntityInformation userData = new EndEntityInformation();
 		userData.setExtendedInformation(new ExtendedInformation());
 		
-		// Without value in userdata it should fail
-		try {
-		    baseExt.getValueEncoded(userData, null, null, null, null, null);
-		    fail("Should have fail as no dynamic value specified");
-		} catch (CertificateExtensionException ex) {
-		    assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
-		}
+        // Without value in userdata it should fail
+        try {
+            baseExt.getValueEncoded(userData, null, null, null, null, null);
+            fail("Should have fail as no dynamic value specified");
+        } catch (CertificateExtensionException ex) {
+            assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
+        }
 		
 		// With value in userdata, that value is used
 		userData.getExtendedInformation().setExtensionData("1.2.3", "eeff0000");
