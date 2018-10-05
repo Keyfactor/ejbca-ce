@@ -30,7 +30,7 @@ org.ejbca.util.HTMLTools
 
        final String CRYPTOTOKENS_LINK        =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotokens.jsf";
 
-       final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/cafunctions.jsp";
+       final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/cafunctions.xhtml";
        final String CA_ACTIVATION_LINK		=  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/caactivation.xhtml";   
        final String CA_CERTIFICATEPROFILELINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
                                + "/editcertificateprofiles/editcertificateprofiles.xhtml";  
