@@ -126,7 +126,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         // Create Approval Profile
 
         webDriverSuperAdmin.get(getAdminWebUrl());
-        WebElement approvalProfilesLink = webDriverSuperAdmin.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/approval/editapprovalprofiles.jsf')]"));
+        WebElement approvalProfilesLink = webDriverSuperAdmin.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/approval/editapprovalprofiles.xhtml')]"));
         approvalProfilesLink.click();
         // Dynamically rendered items require some special handling...
         WebElement inputName = webDriverSuperAdmin.findElement(By.xpath("//input[contains(@name,'editapprovalprofiles:j_id') and //input[@type='text']]"));
