@@ -33,12 +33,13 @@ pipeline {
                 dir ('ejbca') {
                     sh "/opt/run.sh"
                 }
+                junit "ejbca/**/reports/**/TEST-*.xml"
             }
         }
     }
     post {
         always {
-            junit "ejbca/**/reports/**/TEST-*.xml"
+            cleanWs()
         }
     }
 }
