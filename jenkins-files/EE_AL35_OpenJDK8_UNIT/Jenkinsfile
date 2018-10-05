@@ -20,8 +20,10 @@ pipeline {
             }
         }
         stage('cleanup') {
-            echo "Remove finished Docker volume..."
-            sh "docker container rm ee_al35_openjdk8_unit"
+            steps {
+                echo "Remove finished Docker volume..."
+                sh "docker container rm ee_al35_openjdk8_unit"
+            }
         }
     }
     post {
