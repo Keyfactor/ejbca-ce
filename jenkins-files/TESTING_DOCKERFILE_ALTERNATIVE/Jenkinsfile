@@ -7,7 +7,6 @@ pipeline {
 		stage('verify workspace is clean') {
             steps {
                 sh "docker container rm testing_dockerfile_altenative -f || true"
-                sh "rm -rf ear"
             }
         }
         stage('run unit tests') {
@@ -23,10 +22,7 @@ pipeline {
             }
             steps {
                 dir ('ejbca') {
-                    sh "mkdir ear"
                     sh "cp /opt/conf/* conf/"
-                    sh "ls -la"
-                    sh "ls -la conf/"
                     sh "ant clean build test:runsa"
                 }
             }
