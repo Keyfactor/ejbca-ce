@@ -16,28 +16,21 @@ pipeline {
                     label 'docker'
                     dir 'ejbca/jenkins-files/TESTING_DOCKERFILE_ALTERNATIVE'
                     filename 'Dockerfile'
-                    additionalBuildArgs  '--disable-content-trust=false --pull -t testing_dockerfile_altenative -m 2GB'
-                    args '--group-add root --net=my_isolated_bridge_network'
+                    additionalBuildArgs  '--disable-content-trust=false --pull'
+                    args '--group-add root'
                 }
             }
             steps {
                 dir ('ejbca') {
-                    sh "cp /opt/conf/* conf/"
-                    sh "ant clean build test:runsa"
+                    sh "ant -q -Dappserver.home=/tmp -Dappserver.type=jboss -Dejbca.productionmode=false clean build test:runsa"
                 }
-            }
-        }
-        stage('cleanup') {
-            steps {
-                echo "Remove finished Docker volume..."
-                sh "docker container rm testing_dockerfile_altenative"
+                junit "ejbca/**/reports/**/TEST-*.xml"
             }
         }
     }
     post {
         always {
-            junit "ejbca/**/reports/**/TEST-*.xml"
-            
+            cleanWs()
         }
     }
 }
