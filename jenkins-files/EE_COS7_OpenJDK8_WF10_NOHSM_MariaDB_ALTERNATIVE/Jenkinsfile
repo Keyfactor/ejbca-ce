@@ -1,0 +1,44 @@
+pipeline {
+	agent {
+		label "docker"
+	}
+    stages {
+		stage('cleanup') {
+            steps {
+                sh "docker container rm mariadb_3 -f || true"
+                sh "rm -rf ear || true"
+            }
+        }
+        stage('network') {
+            steps {
+                sh "docker network create --driver bridge my_isolated_bridge_network || true"
+            }
+        }
+		stage('database') {
+            steps {
+                sh "docker run --name mariadb_3 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=foo123 -e MYSQL_DATABASE=ejbca -e MYSQL_USER=ejbca -e MYSQL_PASSWORD=ejbca --net=my_isolated_bridge_network -d mariadb:10.2.17"
+            }
+        }
+        stage('deploy and run system tests') {
+            // Execute this stage's steps inside a running Docker container build according to the following
+            dockerfile {
+                label 'docker'
+                dir 'ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_MariaDB_ALTERNATIVE'
+                filename 'Dockerfile'
+                additionalBuildArgs  '--disable-content-trust=false --pull -m 2GB'
+                args '--group-add root --net=my_isolated_bridge_network'
+            }
+            steps {
+                sh "mkdir ear"
+                dir ('ejbca') {
+                    sh "/opt/run.sh"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            junit "ejbca/**/reports/**/TEST-*.xml"
+        }
+    }
+}
