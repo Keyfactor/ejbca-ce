@@ -15,7 +15,7 @@ pipeline {
                 // Execute this stage's steps inside a running Docker container build according to the following
                 dockerfile {
                     label 'docker'
-                    dir 'jenkins-files/TESTING_DOCKERFILE_ALTERNATIVE'
+                    dir 'ejbca/jenkins-files/TESTING_DOCKERFILE_ALTERNATIVE'
                     filename 'Dockerfile'
                     additionalBuildArgs  '--disable-content-trust=false --pull -t testing_dockerfile_altenative -m 2GB'
                     args '--group-add root --net=my_isolated_bridge_network'
@@ -41,7 +41,7 @@ pipeline {
     post {
         always {
             junit "ejbca/**/reports/**/TEST-*.xml"
-            cleanWs()
+            
         }
     }
 }
