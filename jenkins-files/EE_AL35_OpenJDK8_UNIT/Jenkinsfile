@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script{        
                     LOCAL_BUILD_PATH = "$env.WORKSPACE"
-                    DOCKER_RUN_COMMAND = 'docker run --name ee_al35_openjdk8_unit -v ' + LOCAL_BUILD_PATH + ':/app ee_al35_openjdk8_unit'
+                    DOCKER_RUN_COMMAND = 'docker run --name ee_al35_openjdk8_unit -v ' + "$env.WORKSPACE" + ':/app ee_al35_openjdk8_unit'
                 }
             }
         }
