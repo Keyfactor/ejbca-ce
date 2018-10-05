@@ -259,8 +259,8 @@
     </navigation-case>
   </navigation-rule>
   
-    <navigation-rule>
-    <from-view-id>/approval/editapprovalprofiles.jsp</from-view-id>
+   <navigation-rule>
+    <from-view-id>/approval/editapprovalprofiles.xhtml</from-view-id>
     <navigation-case>
       <from-outcome>edit</from-outcome>
       <to-view-id>/approval/editapprovalprofile.jsp</to-view-id>
@@ -274,7 +274,7 @@
     <from-view-id>/approval/editapprovalprofile.jsp</from-view-id>
     <navigation-case>
       <from-outcome>done</from-outcome>
-      <to-view-id>/approval/editapprovalprofiles.jsp</to-view-id>
+      <to-view-id>/approval/editapprovalprofiles.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
   

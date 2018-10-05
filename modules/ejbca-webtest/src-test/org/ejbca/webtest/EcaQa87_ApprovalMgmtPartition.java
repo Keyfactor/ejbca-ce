@@ -131,7 +131,7 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
     @Test
     public void testB_addApprovalProfile() {
         webDriver.get(getAdminWebUrl());
-        WebElement approvalProfilesLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/approval/editapprovalprofiles.jsf')]"));
+        WebElement approvalProfilesLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/approval/editapprovalprofiles.xhtml')]"));
         approvalProfilesLink.click();
         // Dynamically rendered items require some special handling...
         WebElement inputName = webDriver.findElement(By.xpath("//input[contains(@name,'editapprovalprofiles:j_id') and //input[@type='text']]"));

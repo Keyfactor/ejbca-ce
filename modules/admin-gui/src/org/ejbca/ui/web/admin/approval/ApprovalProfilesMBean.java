@@ -21,10 +21,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -39,6 +42,7 @@ import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -67,6 +71,13 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     @EJB
     private ApprovalProfileSessionLocal approvalProfileSession;
 
+    // Authentication check and audit log page access request
+    @PostConstruct
+    public void initialize() throws Exception {
+        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.APPROVALPROFILEVIEW.resource());
+    }
+    
     private boolean renameInProgress = false;
     private boolean deleteInProgress = false;
     private boolean addFromTemplateInProgress = false;
