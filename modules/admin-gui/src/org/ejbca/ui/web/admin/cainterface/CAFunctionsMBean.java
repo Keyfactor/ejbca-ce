@@ -263,7 +263,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void showJksDownloadForm(CAGuiInfo caGuiInfo, int index) {
-        caGuiInfos.stream().forEach(ca-> ca.hideJksDownloadForm());
+        for (CAGuiInfo info : caGuiInfos) {
+            info.hideJksDownloadForm();
+        }
         caGuiInfo.showJksDownloadForm(index);
     }
 
