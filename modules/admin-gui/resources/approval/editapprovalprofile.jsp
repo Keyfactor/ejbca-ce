@@ -71,7 +71,7 @@
             <h:panelGroup>
                 &nbsp;
             </h:panelGroup>
-            <h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.adminWebPath}/approval/editapprovalprofiles.jsf">
+            <h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.adminWebPath}/approval/editapprovalprofiles.xhtml">
                 <h:outputText value="#{web.text.BACKTOAPPROVALPROFILES}"/>
             </h:outputLink>
             
