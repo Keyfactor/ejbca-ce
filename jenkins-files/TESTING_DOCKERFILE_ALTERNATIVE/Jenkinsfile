@@ -1,0 +1,47 @@
+pipeline {
+	agent {
+		label "docker"
+	}
+    
+    stages {
+		stage('verify workspace is clean') {
+            steps {
+                sh "docker container rm testing_dockerfile_altenative -f || true"
+                sh "rm -rf ear"
+            }
+        }
+        stage('run unit tests') {
+            agent {
+                // Execute this stage's steps inside a running Docker container build according to the following
+                dockerfile {
+                    label 'docker'
+                    dir 'jenkins-files/TESTING_DOCKERFILE_ALTERNATIVE'
+                    filename 'Dockerfile'
+                    additionalBuildArgs  '--disable-content-trust=false --pull -t testing_dockerfile_altenative -m 2GB'
+                    args '--group-add root --net=my_isolated_bridge_network'
+                }
+            }
+            steps {
+                sh "mkdir ear"
+                dir ('ejbca') {
+                    sh "cp /opt/conf/* conf/"
+                    sh "ls -la"
+                    sh "ls -la conf/"
+                    sh "ant clean build test:runsa"
+                }
+            }
+        }
+        stage('cleanup') {
+            steps {
+                echo "Remove finished Docker volume..."
+                sh "docker container rm testing_dockerfile_altenative"
+            }
+        }
+    }
+    post {
+        always {
+            junit "ejbca/**/reports/**/TEST-*.xml"
+            cleanWs()
+        }
+    }
+}
