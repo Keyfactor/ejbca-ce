@@ -2,7 +2,7 @@
 
 cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
-cp /opt/conf/* /app/ejbca/conf/
+cp /opt/conf/* conf/
 
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
