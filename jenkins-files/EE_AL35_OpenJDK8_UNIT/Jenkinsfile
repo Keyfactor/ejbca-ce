@@ -10,14 +10,6 @@ pipeline {
                 sh "rm -rf ear"
             }
         }
-        stage('variables') {
-            steps {
-                script{        
-                    LOCAL_BUILD_PATH = "$env.WORKSPACE"
-                    DOCKER_RUN_COMMAND = 'docker run --name ee_al35_openjdk8_unit -v ' + "$env.WORKSPACE" + ':/app ee_al35_openjdk8_unit'
-                }
-            }
-        }
         stage('run unit tests') {
             steps {
                 sh "mkdir ear"
