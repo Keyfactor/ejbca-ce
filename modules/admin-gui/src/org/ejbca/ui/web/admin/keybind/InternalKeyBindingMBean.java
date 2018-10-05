@@ -776,6 +776,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         internalKeyBindingPropertyList = null;
         trustedCertificates = null;
         inEditMode = false;
+        ocspExtensions = null;
     }
 
     /** @return the current InternalKeyBindingId as a String */
@@ -1353,6 +1354,15 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 currentInternalKeyBindingId = String.valueOf(internalKeyBindingSession.createInternalKeyBinding(authenticationToken,
                         selectedInternalKeyBindingType, getCurrentName(), InternalKeyBindingStatus.DISABLED, null, currentCryptoToken.intValue(),
                         currentKeyPairAlias, currentSignatureAlgorithm, dataMap, (List<InternalKeyBindingTrustEntry>) trustedCertificates.getWrappedData()));
+                if (isOcspKeyBinding()) {
+                    List<String> exts = (List<String>) ocspExtensions.getWrappedData();
+                    if (exts != null && !exts.isEmpty()) {
+                        // If we have some OCSP extensions, these are not created above, so we have to merge again
+                        final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, Integer.parseInt(currentInternalKeyBindingId));
+                        internalKeyBinding.setOcspExtensions(exts);
+                        currentInternalKeyBindingId = String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding));
+                    }
+                }
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(getCurrentName() + " created with ID " + currentInternalKeyBindingId));
                 inEditMode = false;
