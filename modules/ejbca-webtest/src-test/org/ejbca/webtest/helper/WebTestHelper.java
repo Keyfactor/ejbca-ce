@@ -24,7 +24,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
-// TODO Replace this with BaseTestHelper
+// TODO Replace this with BaseHelper
 /**
  * Helper class containing miscellaneous operations for EJBCA Web Tests.
  * 
@@ -66,7 +66,7 @@ public final class WebTestHelper {
         assertTrue("Expected an alert but there was none", alertExists);
     }
 
-    // TODO Replace with BaseTestHelper.selectOptionsByName()
+    // TODO Replace with BaseHelper.selectOptionsByName()
     /**
      * Selects options by name in a Select element.
      * 

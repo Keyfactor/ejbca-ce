@@ -13,11 +13,8 @@
 package org.ejbca.webtest.scenario;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -33,52 +30,56 @@ import org.openqa.selenium.WebDriver;
 
 import java.util.Collections;
 
-// TODO Check doc
+// TODO Current scenario depends on the success of previous steps, thus, may limit/complicate the discovery of other problems by blocking data prerequisites for next steps. Improve isolation of test data and flows?
 /**
  * This test verifies that restrictions in the certificate profile is applied for
- * enrollments through the RA web, using On Server- and CSR enrollments.
+ * enrollments through the RA web, using On Server and CSR enrollments.
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-125">ECAQA-125</a>
  * 
- * @version $Id: EcaQa125_RaCpRestrictions.java 28772 2018-04-26 08:42:36Z andrey_s_helmes $
+ * @version $Id: EcaQa125_RaCpRestrictions.java 30035 2018-10-05 08:35:05Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa125_RaCpRestrictions extends WebTestBase {
 
+    // EJBs
+    private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     // Helpers
     private static CertificateProfileHelper certificateProfileHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
     private static RaWebHelper raWebHelper;
-    // EJBs
-    private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    //
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
-
-    private static final String cpName = "RestrictCP";
-    private static final String eepName = "RestrictEEP";
-    private static final String[] csr = {
-            "-----BEGIN CERTIFICATE REQUEST-----",
-            "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w",
-            "ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDwyIsyw3HB+8yxOF9BOfjG",
-            "zLoQIX7sLg1lXk1miLyU6wYmuLnZfZrr4pjZLyEr2iP92IE97DeK/8y2827qctPM",
-            "y4axmczlRTrEZKI/bVXnLOrQNw1dE+OVHiVoRFa5i4TS/qfhNA/Gy/eKpzxm8LT7",
-            "+folAu92HwbQ5H8fWQ/l+ysjTheLMyUDaK83+NvYAL9Gfl29EN/TTrRzLKWoXrlB",
-            "Ed7PT2oCBgrvF7pHsrry2O3yuuO2hoF5RQTo9BdBaGvzxGdweYTvdoLWfZm1zGI+",
-            "CW0lprBdjagCC4XAcWi5OFcxjrRA9WA6Cu1q4Hn+eJEdCNHVvqss2rz6LOWjAQAr",
-            "AgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEA1JlwrFN4ihTZWICnWFb/kzcmvjcs",
-            "0xeerNZQAEk2FJgj+mKVNrqCRWr2iaPpAeggH8wFoZIh7OvhmIZNmxScw4K5HhI9",
-            "SZD+Z1Dgkj8+bLAQaxvw8sxXLdizcMNvbaXbzwbAN9OUkXPavBlik/b2JLafcEMM",
-            "8IywJOtJMWemfmLgR7KAqDj5520wmXgAK6oAbbMqWUip1vz9oIisv53n2HFq2jzq",
-            "a5d2WKBq5pJY19ztQ17HwlGTI8it4rlKYn8p2fDuqxLXiBsX8906E/cFRN5evhWt",
-            "zdJ6yvdw3HQsoVAVi0GDHTs2E8zWFoYyP0byzKSSvkvQR363LQ0bik4cuQ==",
-            "-----END CERTIFICATE REQUEST-----"
-    };
+    // Test Data
+    public static class TestData {
+        static final String CERTIFICATE_PROFILE_NAME = "RestrictCP";
+        static final String CERTIFICATE_PROFILE_KEY_ALGORITHM = "RSA";
+        static final String CERTIFICATE_PROFILE_KEY_BIT_LENGTH = "1024 bits";
+        static final String END_ENTITY_PROFILE_NAME = "RestrictEEP";
+        static final String[] CERTIFICATE_REQUEST_PEM = {
+                "-----BEGIN CERTIFICATE REQUEST-----",
+                "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w",
+                "ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDwyIsyw3HB+8yxOF9BOfjG",
+                "zLoQIX7sLg1lXk1miLyU6wYmuLnZfZrr4pjZLyEr2iP92IE97DeK/8y2827qctPM",
+                "y4axmczlRTrEZKI/bVXnLOrQNw1dE+OVHiVoRFa5i4TS/qfhNA/Gy/eKpzxm8LT7",
+                "+folAu92HwbQ5H8fWQ/l+ysjTheLMyUDaK83+NvYAL9Gfl29EN/TTrRzLKWoXrlB",
+                "Ed7PT2oCBgrvF7pHsrry2O3yuuO2hoF5RQTo9BdBaGvzxGdweYTvdoLWfZm1zGI+",
+                "CW0lprBdjagCC4XAcWi5OFcxjrRA9WA6Cu1q4Hn+eJEdCNHVvqss2rz6LOWjAQAr",
+                "AgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEA1JlwrFN4ihTZWICnWFb/kzcmvjcs",
+                "0xeerNZQAEk2FJgj+mKVNrqCRWr2iaPpAeggH8wFoZIh7OvhmIZNmxScw4K5HhI9",
+                "SZD+Z1Dgkj8+bLAQaxvw8sxXLdizcMNvbaXbzwbAN9OUkXPavBlik/b2JLafcEMM",
+                "8IywJOtJMWemfmLgR7KAqDj5520wmXgAK6oAbbMqWUip1vz9oIisv53n2HFq2jzq",
+                "a5d2WKBq5pJY19ztQ17HwlGTI8it4rlKYn8p2fDuqxLXiBsX8906E/cFRN5evhWt",
+                "zdJ6yvdw3HQsoVAVi0GDHTs2E8zWFoYyP0byzKSSvkvQR363LQ0bik4cuQ==",
+                "-----END CERTIFICATE REQUEST-----"
+        };
+    }
 
     @BeforeClass
     public static void init() {
+        // super
         setUp(true, null);
-        WebDriver webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
+        // Init helpers
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
         endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
         raWebHelper = new RaWebHelper(webDriver);
@@ -86,39 +87,49 @@ public class EcaQa125_RaCpRestrictions extends WebTestBase {
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        certificateProfileSession.removeCertificateProfile(admin, cpName);
-        endEntityProfileSession.removeEndEntityProfile(admin, eepName);
+        // Remove generated artifacts
+        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, TestData.CERTIFICATE_PROFILE_NAME);
+        endEntityProfileSession.removeEndEntityProfile(ADMIN_TOKEN, TestData.END_ENTITY_PROFILE_NAME);
+        // super
         tearDown();
     }
 
     @Test
-    public void testA_RestrictCP_CertificateProfile() {
+    public void stepA_RestrictCP_CertificateProfile() {
         // Add Certificate Profile
         certificateProfileHelper.openPage(getAdminWebUrl());
-        certificateProfileHelper.addCertificateProfile(cpName);
+        certificateProfileHelper.addCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
         // Set 'Available Key Algorithms' and 'Available Bit Lengths'
-        certificateProfileHelper.openEditCertificateProfilePage(cpName);
-        certificateProfileHelper.editCertificateProfile(Collections.singletonList("RSA"), Collections.singletonList("1024 bits"));
+        certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.editCertificateProfile(
+                Collections.singletonList(TestData.CERTIFICATE_PROFILE_KEY_ALGORITHM),
+                Collections.singletonList(TestData.CERTIFICATE_PROFILE_KEY_BIT_LENGTH)
+        );
         certificateProfileHelper.saveCertificateProfile();
     }
 
     @Test
-    public void testB_RestrictEEP_EndEntityProfile() {
+    public void stepB_RestrictEEP_EndEntityProfile() {
         // Add End Entity Profile
         endEntityProfileHelper.openPage(getAdminWebUrl());
-        endEntityProfileHelper.addEndEntityProfile(eepName);
+        endEntityProfileHelper.addEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
         // Set Certificate Profile in EEP
-        endEntityProfileHelper.openEditEndEntityProfilePage(eepName);
-        endEntityProfileHelper.editEndEntityProfile(cpName, Collections.singletonList(cpName), getCaName(), Collections.singletonList(getCaName()));
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.editEndEntityProfile(
+                TestData.CERTIFICATE_PROFILE_NAME,
+                Collections.singletonList(TestData.CERTIFICATE_PROFILE_NAME),
+                getCaName(),
+                Collections.singletonList(getCaName())
+        );
         endEntityProfileHelper.saveEndEntityProfile();
     }
 
     @Test
-    public void testC_onServer() {
+    public void stepC_KeyPairOnServer() {
         // Go to RA Web -> Make New Request
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
-        raWebHelper.selectCertificateType(eepName);
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
         raWebHelper.selectKeyPairGenerationOnServer();
         // Make sure 'Provide request info' only contains 'CN, Common Name'
         raWebHelper.assertCorrectProvideRequestInfoBlock();
@@ -127,18 +138,24 @@ public class EcaQa125_RaCpRestrictions extends WebTestBase {
         // Click 'Show details' to display Certificate Profile and Key Algorithm
         raWebHelper.clickShowDetailsButton();
         // Assure that the correct values for Certificate Profile and Key Algorithm are selected and that their selections are disabled
-        raWebHelper.assertCertificateProfileSelection(cpName + " (default)", false);
-        raWebHelper.assertKeyAlgorithmSelection("RSA 1024 bits", false);
+        raWebHelper.assertCertificateProfileSelection(
+                TestData.CERTIFICATE_PROFILE_NAME + " (default)",
+                false
+        );
+        raWebHelper.assertKeyAlgorithmSelection(
+                TestData.CERTIFICATE_PROFILE_KEY_ALGORITHM + " " + TestData.CERTIFICATE_PROFILE_KEY_BIT_LENGTH,
+                false
+        );
     }
 
     @Test
-    public void testD_csr() {
+    public void stepD_KeyPairViaCSR() {
         // Go to RA Web -> Make New Request
         raWebHelper.openPage(getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
-        raWebHelper.selectCertificateType(eepName);
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.END_ENTITY_PROFILE_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
-        raWebHelper.fillClearCsrText(StringUtils.join(csr, "\n"));
+        raWebHelper.fillClearCsrText(StringUtils.join(TestData.CERTIFICATE_REQUEST_PEM, "\n"));
         raWebHelper.clickUploadCsrButton();
         // Make sure that there is an error message
         raWebHelper.assertCsrUploadError();

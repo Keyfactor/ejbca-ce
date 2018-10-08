@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest;
 
 import static org.junit.Assert.*;
@@ -29,7 +28,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.webtest.WebTestBase;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,7 +44,6 @@ import org.openqa.selenium.support.ui.Select;
 /**
  * 
  * @version $Id$
- *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {

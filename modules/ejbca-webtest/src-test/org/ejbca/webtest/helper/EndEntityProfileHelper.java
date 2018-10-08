@@ -30,7 +30,7 @@ import org.openqa.selenium.support.ui.Select;
  * 
  * @version $Id: EndEntityProfileHelper.java 28908 2018-05-10 07:51:54Z andrey_s_helmes $
  */
-public class EndEntityProfileHelper extends BaseTestHelper {
+public class EndEntityProfileHelper extends BaseHelper {
 
     /**
      * Contains constants and references of the 'End Entity Profiles' page.

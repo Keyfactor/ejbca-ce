@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -20,7 +19,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.webtest.WebTestBase;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -75,7 +73,6 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
         webDriver.quit();
     }
 
-    
     @Test
     public void testA_createRole() throws AuthorizationDeniedException {
         webDriver.get(getAdminWebUrl());

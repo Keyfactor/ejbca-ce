@@ -15,8 +15,6 @@ package org.ejbca.webtest.helper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.List;
 
@@ -30,7 +28,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @version $Id: RaWebHelper.java 28908 2018-05-10 07:51:54Z andrey_s_helmes $
  */
-public class RaWebHelper extends BaseTestHelper {
+public class RaWebHelper extends BaseHelper {
 
     public RaWebHelper(final WebDriver webDriver) {
         super(webDriver);
@@ -64,16 +62,13 @@ public class RaWebHelper extends BaseTestHelper {
      */
     public void openPage(final String webUrl) {
         openPageByUrlAndAssert(webUrl, Page.PAGE_URI);
-        // A bug in EJBCA requires a wait here, otherwise it results in an XML Parsing Error
-        final WebDriverWait wait = new WebDriverWait(webDriver, 3);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(Page.BUTTON_MAKE_NEW_REQUEST));
     }
 
     public void makeNewCertificateRequest() {
         clickLink(Page.BUTTON_MAKE_NEW_REQUEST);
     }
 
-    public void selectCertificateType(final String endEntityProfileName) {
+    public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) {
         selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, endEntityProfileName);
     }
 

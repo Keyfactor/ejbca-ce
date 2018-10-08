@@ -12,13 +12,8 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.util.Arrays;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
@@ -28,122 +23,147 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
+import java.util.Arrays;
+import java.util.Collections;
+
+// TODO Current scenario depends on the success of previous steps, thus, may limit/complicate the discovery of other problems by blocking data prerequisites for next steps. Improve isolation of test data and flows?
 /**
  * Test to verify that Certificate Profile management operations work as expected.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-12">ECAQA-12</a>
  * 
- * @version $Id: EcaQa12_CPManagement.java 28911 2018-05-11 06:48:28Z oskareriksson $
+ * @version $Id: EcaQa12_CPManagement.java 30035 2018-10-05 08:35:05Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa12_CPManagement extends WebTestBase {
 
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
-
-    private static WebDriver webDriver;
+    // EJBs
     private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-
-    private static final String cpName = "TestCertificateProfile";
-    private static final String cpRename = "TestCertificateProfileNew";
-    private static final String cpClone = "ClonedTestCertificateProfile";
+    // Helpers
+    private static AuditLogHelper auditLogHelper;
+    private static CertificateProfileHelper certificateProfileHelper;
+    // Test Data
+    public static class TestData {
+        static final String CERTIFICATE_PROFILE_NAME = "TestCertificateProfile";
+        static final String CERTIFICATE_PROFILE_NAME_RENAME = "TestCertificateProfileNew";
+        static final String CERTIFICATE_PROFILE_NAME_CLONE = "ClonedTestCertificateProfile";
+    }
 
     @BeforeClass
     public static void init() {
+        // super
         setUp(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
+        // Init helpers
+        certificateProfileHelper = new CertificateProfileHelper(webDriver);
+        auditLogHelper = new AuditLogHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        certificateProfileSession.removeCertificateProfile(admin, cpName);
-        certificateProfileSession.removeCertificateProfile(admin, cpRename);
+        // Remove generated artifacts
+        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, TestData.CERTIFICATE_PROFILE_NAME_RENAME);
+        // super
         tearDown();
     }
 
-//    @Test
-//    public void testA_addCP() {
-//        AuditLogHelper.resetFilterTime();
-//
-//        // Add Certificate Profile
-//        CertificateProfileHelper.goTo(webDriver, getAdminWebUrl());
-//        CertificateProfileHelper.add(webDriver, cpName, true);
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Create", "Success", null,
-//                Arrays.asList("New certificate profile " + cpName + " added successfully."));
-//    }
+    @Test
+    public void stepA_add_CertificateProfile() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        // Add Certificate Profile
+        certificateProfileHelper.openPage(getAdminWebUrl());
+        certificateProfileHelper.addCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME);
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText(
+                "Certificate Profile Create",
+                "Success",
+                null,
+                Collections.singletonList("New certificate profile " + TestData.CERTIFICATE_PROFILE_NAME + " added successfully.")
+        );
+    }
 
-//    @Test
-//    public void testB_editCP() {
-//        AuditLogHelper.resetFilterTime();
-//
-//        // Edit certificate Profile
-//        CertificateProfileHelper.goTo(webDriver, getAdminWebUrl());
-//        CertificateProfileHelper.edit(webDriver, cpName);
-//
-//        // Set validity and save
-//        WebElement validity = webDriver.findElement(By.id("cpf:textfieldvalidity"));
-//        validity.clear();
-//        validity.sendKeys("720d");
-//        CertificateProfileHelper.save(webDriver, true);
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.reload(webDriver);
-//        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Edit", "Success", null,
-//                Arrays.asList("msg=Edited certificateprofile " + cpName + ".", "changed:encodedvalidity=1y 11mo 25d"));
-//    }
+    @Test
+    public void stepB_edit_CertificateProfile() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        // Edit certificate Profile
+        certificateProfileHelper.openPage(getAdminWebUrl());
+        certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
+        // Set validity
+        certificateProfileHelper.editCertificateProfile("720d");
+        // Save
+        certificateProfileHelper.saveCertificateProfile();
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText(
+                "Certificate Profile Edit",
+                "Success",
+                null,
+                Arrays.asList(
+                        "msg=Edited certificateprofile " + TestData.CERTIFICATE_PROFILE_NAME + ".",
+                        "changed:encodedvalidity=1y 11mo 25d"
+                )
+        );
+    }
 
-//    @Test
-//    public void testC_renameCP() {
-//        AuditLogHelper.resetFilterTime();
-//
-//        // Rename the Certificate Profile and assert success
-//        CertificateProfileHelper.goTo(webDriver, getAdminWebUrl());
-//        CertificateProfileHelper.rename(webDriver, cpName, cpRename);
-//        CertificateProfileHelper.assertExists(webDriver, cpRename);
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.reload(webDriver);
-//        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Rename", "Success", null,
-//                Arrays.asList("Renamed certificateprofile " + cpName + " to " + cpRename + "."));
-//    }
+    @Test
+    public void stepC_rename_CertificateProfile() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        // Rename the Certificate Profile and assert success
+        certificateProfileHelper.openPage(getAdminWebUrl());
+        certificateProfileHelper.renameCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME, TestData.CERTIFICATE_PROFILE_NAME_RENAME);
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText(
+                "Certificate Profile Rename",
+                "Success",
+                null,
+                Collections.singletonList("Renamed certificateprofile " + TestData.CERTIFICATE_PROFILE_NAME + " to " + TestData.CERTIFICATE_PROFILE_NAME_RENAME + ".")
+        );
+    }
 
-//    @Test
-//    public void testD_cloneCP() {
-//        AuditLogHelper.resetFilterTime();
-//
-//        // Rename the Certificate Profile and assert success
-//        CertificateProfileHelper.goTo(webDriver, getAdminWebUrl());
-//        CertificateProfileHelper.clone(webDriver, cpRename, cpClone);
-//        CertificateProfileHelper.assertExists(webDriver, cpClone);
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.reload(webDriver);
-//        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Create", "Success", null,
-//                Arrays.asList("New certificateprofile " + cpClone +  " added using profile " + cpRename + " as template."));
-//    }
+    @Test
+    public void stepD_clone_CertificateProfile() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        // Clone the Certificate Profile and assert success
+        certificateProfileHelper.openPage(getAdminWebUrl());
+        certificateProfileHelper.cloneCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME_RENAME, TestData.CERTIFICATE_PROFILE_NAME_CLONE);
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText(
+                "Certificate Profile Create",
+                "Success",
+                null,
+                Collections.singletonList("New certificateprofile " + TestData.CERTIFICATE_PROFILE_NAME_CLONE +  " added using profile " + TestData.CERTIFICATE_PROFILE_NAME_RENAME + " as template.")
+        );
+    }
 
-//    @Test
-//    public void testE_deleteCP() {
-//        AuditLogHelper.resetFilterTime();
-//
-//        // Delete the Certificate Profile and cancel
-//        CertificateProfileHelper.goTo(webDriver, getAdminWebUrl());
-//        CertificateProfileHelper.delete(webDriver, cpClone, false);
-//
-//        // Delete the Certificate Profile and confirm
-//        CertificateProfileHelper.delete(webDriver, cpClone, true);
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.reload(webDriver);
-//        AuditLogHelper.assertEntry(webDriver, "Certificate Profile Remove", "Success", null,
-//                Arrays.asList("Removed profile " + cpClone + "."));
-//    }
+    @Test
+    public void stepE_delete_CertificateProfile() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        // Delete the Certificate Profile and cancel
+        certificateProfileHelper.openPage(getAdminWebUrl());
+        certificateProfileHelper.deleteCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME_CLONE);
+        certificateProfileHelper.confirmCertificateProfileDeletion(false, TestData.CERTIFICATE_PROFILE_NAME_CLONE);
+        // Delete the Certificate Profile and confirm
+        certificateProfileHelper.deleteCertificateProfile(TestData.CERTIFICATE_PROFILE_NAME_CLONE);
+        certificateProfileHelper.confirmCertificateProfileDeletion(true, TestData.CERTIFICATE_PROFILE_NAME_CLONE);
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText(
+                "Certificate Profile Remove",
+                "Success",
+                null,
+                Collections.singletonList("Removed profile " + TestData.CERTIFICATE_PROFILE_NAME_CLONE + ".")
+        );
+    }
+
 }
