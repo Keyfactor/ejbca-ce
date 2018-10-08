@@ -220,7 +220,7 @@ public class RaEndEntityBean implements Serializable {
         if (changed) {
             // Edit the End Entity if changes were made
             try {
-                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+                boolean result = raMasterApiProxyBean.editUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 if (result) {
                     raLocaleBean.addMessageError("editendentity_success");
                 } else {
