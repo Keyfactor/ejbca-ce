@@ -15,6 +15,9 @@ package org.ejbca.webtest;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.test.utils.ConfigurationConstants;
 import org.ejbca.test.utils.ConfigurationHolder;
 import org.openqa.selenium.WebDriver;
@@ -41,7 +44,7 @@ public abstract class WebTestBase {
     private static WebDriver webDriver;
     private static WebDriverWait webDriverWait;
 
-    //protected static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
+    protected static final AuthenticationToken ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
 
     /**
      * Sets up firefox driver and firefox profile if certificate is required
