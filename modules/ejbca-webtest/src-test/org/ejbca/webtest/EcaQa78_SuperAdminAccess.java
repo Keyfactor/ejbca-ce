@@ -10,14 +10,12 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest;
 
 import static org.junit.Assert.*;
 
 import java.util.List;
 
-import org.ejbca.webtest.WebTestBase;
 import org.ejbca.test.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,7 +33,6 @@ import org.openqa.selenium.support.ui.Select;
  * or a new Firefox profile can be created with the name 'superadmin'.
  * 
  * @version $Id$
- * 
  */
 public class EcaQa78_SuperAdminAccess extends WebTestBase {
     
