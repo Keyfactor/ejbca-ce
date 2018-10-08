@@ -334,7 +334,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>4<td>=<td>6.14.0
      * <tr><th>4<td>=<td>6.15.0
      */
-    private static final int RA_MASTER_API_VERSION = 5; // 6.15.0
+    private static final int RA_MASTER_API_VERSION = 6; // v5 = 6.15.0, v6 = 7.0.0
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -2031,7 +2031,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+    public boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean clearPwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
@@ -2039,7 +2039,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // If called from the wrong instance, return to proxybean and try next implementation
             return false;
         } else {
-            endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, false);
+            endEntityManagementSession.changeUser(authenticationToken, endEntityInformation, clearPwd);
             return true;
         }
     }
@@ -2048,7 +2048,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public boolean editUserWs(AuthenticationToken authenticationToken, UserDataVOWS userDataVOWS)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, EjbcaException {
-        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS));
+        return editUser(authenticationToken, ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS), userDataVOWS.isClearPwd());
     }
 
     @Override

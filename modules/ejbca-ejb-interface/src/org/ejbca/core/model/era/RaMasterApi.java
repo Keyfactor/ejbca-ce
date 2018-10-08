@@ -700,6 +700,7 @@ public interface RaMasterApi {
      *
      * @param authenticationToken the administrator performing the action
      * @param endEntityInformation an EndEntityInformation object with the new information
+     * @param clearpwd true if the password will be stored in clear form in the  db, otherwise it is hashed.
      * @throws AuthorizationDeniedException administrator not authorized to edit user
      * @throws EndEntityProfileValidationException data doesn't fulfill EEP requirements
      * @throws ApprovalException if an approval already is waiting for specified action
@@ -711,7 +712,7 @@ public interface RaMasterApi {
      * @throws CustomFieldException if the EE was not validated by a locally defined field validator
      * @since RA Master API version 2 (EJBCA 6.11.0)
      */
-    boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
+    boolean editUser(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean clearPwd)
             throws AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException, CADoesntExistsException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException;
