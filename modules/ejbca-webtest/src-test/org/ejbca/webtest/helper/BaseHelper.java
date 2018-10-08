@@ -19,32 +19,47 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import org.ejbca.webtest.util.WebTestUtil;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 // TODO JavaDoc
 /**
  * A base helper class for page operations of a web test.
  *
- * @version $Id: BaseTestHelper.java 28852 2018-05-04 14:35:13Z andrey_s_helmes $
+ * @version $Id: BaseHelper.java 30035 2018-10-05 08:35:05Z andrey_s_helmes $
  *
  */
-public class BaseTestHelper {
+public class BaseHelper {
 
-    private static final Logger log = Logger.getLogger(BaseTestHelper.class);
+    private static final Logger log = Logger.getLogger(BaseHelper.class);
+
     protected static WebDriver webDriver;
 
+    public static final int DEFAULT_WAIT_TIMEOUT_SECONDS = 3;
+
     protected List<WebElement> findElements(final By groupId) {
+        // Wait
+        waitForElementBecomeVisibleByLocator(groupId);
         return webDriver.findElements(groupId);
     }
 
     protected WebElement findElement(final By elementId) {
+        // Wait
+        waitForElementBecomeVisibleByLocator(elementId);
+        return findElementWithoutWait(elementId);
+    }
+
+    protected WebElement findElementWithoutWait(final By elementId) {
         try {
             return webDriver.findElement(elementId);
         }
@@ -56,6 +71,8 @@ public class BaseTestHelper {
 
     protected WebElement findElement(final WebElement rootElement, final By childElementId) {
         assertNotNull("Root element cannot be null.", rootElement);
+        // Wait
+        waitForElementBecomeVisible(rootElement);
         try {
             return rootElement.findElement(childElementId);
         }
@@ -65,7 +82,7 @@ public class BaseTestHelper {
         return null;
     }
 
-    public BaseTestHelper(final WebDriver webDriver) {
+    public BaseHelper(final WebDriver webDriver) {
         this.webDriver = webDriver;
     }
 
@@ -75,9 +92,17 @@ public class BaseTestHelper {
         linkWebElement.click();
     }
 
+    protected void clickLinkIfExists(final By linkId) {
+        final WebElement linkWebElement = findElement(linkId);
+        if(linkWebElement != null) {
+            linkWebElement.click();
+        }
+    }
+
     protected void fillInput(final By inputId, final String inputString) {
         final WebElement inputWebElement = findElement(inputId);
         assertNotNull("Page input was not found", inputWebElement);
+        inputWebElement.clear();
         inputWebElement.sendKeys(inputString);
     }
 
@@ -145,6 +170,100 @@ public class BaseTestHelper {
         assertSelectionOfAllOptions(new Select(selectedWebElement), selectionOptions);
     }
 
+    protected boolean isInputElement(final By elementId) {
+        return isInputElement(findElement(elementId));
+    }
+
+    protected boolean isInputElement(final WebElement webElement) {
+        if(webElement != null && webElement.getTagName().equalsIgnoreCase("input")) {
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean isSelectElement(final By elementId) {
+        return isSelectElement(findElement(elementId));
+    }
+
+    protected boolean isSelectElement(final WebElement webElement) {
+        if(webElement != null && webElement.getTagName().equalsIgnoreCase("select")) {
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean isTdElement(final By elementId) {
+        return isTdElement(findElement(elementId));
+    }
+
+    protected boolean isTdElement(final WebElement webElement) {
+        if(webElement != null && webElement.getTagName().equalsIgnoreCase("td")) {
+            return true;
+        }
+        return false;
+    }
+
+    protected void assertElementExists(final By elementId, final String failureMessage) {
+        if(findElement(elementId) == null) {
+            fail(failureMessage);
+        }
+    }
+
+    protected void assertElementDoesNotExist(final By elementId, final String failureMessage) {
+        if(findElementWithoutWait(elementId) != null) {
+            fail(failureMessage);
+        }
+    }
+
+    protected String getElementValue(final By elementId) {
+        return getElementValue(findElement(elementId));
+    }
+
+    protected String getElementValue(final WebElement webElement) {
+        if(webElement != null) {
+            return webElement.getAttribute("value");
+        }
+        return null;
+    }
+
+    protected boolean isSelectedElement(final By elementId) {
+        return isSelectedElement(findElement(elementId));
+    }
+
+    protected boolean isSelectedElement(final WebElement webElement) {
+        if(webElement != null) {
+            return webElement.isSelected();
+        }
+        return false;
+    }
+
+    protected boolean isEnabledElement(final By elementId) {
+        return isEnabledElement(findElement(elementId));
+    }
+
+    protected boolean isEnabledElement(final WebElement webElement) {
+        if(webElement != null) {
+            return webElement.isEnabled();
+        }
+        return false;
+    }
+
+    protected List<String> getSelectSelectedValues(final By selectId) {
+        return getSelectSelectedValues(findElement(selectId));
+    }
+
+    protected List<String> getSelectSelectedValues(final WebElement webElement) {
+        if(webElement != null) {
+            final List<String> selectedNames = new ArrayList<String>();
+            final Select select = new Select(webElement);
+            for (final WebElement selected : select.getAllSelectedOptions()) {
+                selectedNames.add(selected.getText());
+            }
+            return selectedNames;
+        }
+        return null;
+    }
+
     private void selectOptions(final Select selectObject, final List<String> options, boolean useDeselectAll) {
         if(useDeselectAll) {
             selectObject.deselectAll();
@@ -167,4 +286,19 @@ public class BaseTestHelper {
             assertTrue("The option " + option + " was not found", isSelected);
         }
     }
+
+    // Add a delay-timeout for DOM object search to make sure the document is fully loaded and we don't get a stale exception
+    private void waitForElementBecomeVisibleByLocator(final By objectBy) {
+        // A bug in EJBCA requires a wait here, otherwise it results in an XML Parsing Error
+        final WebDriverWait wait = new WebDriverWait(webDriver, DEFAULT_WAIT_TIMEOUT_SECONDS);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(objectBy));
+    }
+
+    // Add a delay-timeout for DOM object search to make sure the document is fully loaded and we don't get a stale exception
+    private void waitForElementBecomeVisible(final WebElement webElement) {
+        // A bug in EJBCA requires a wait here, otherwise it results in an XML Parsing Error
+        final WebDriverWait wait = new WebDriverWait(webDriver, DEFAULT_WAIT_TIMEOUT_SECONDS);
+        wait.until(ExpectedConditions.visibilityOf(webElement));
+    }
+
 }

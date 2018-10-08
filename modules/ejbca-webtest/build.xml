@@ -18,11 +18,11 @@
 	<path id="compile.classpath">
 		<path refid="lib.commons-lang.classpath"/>
 		<fileset dir="${lib.webtest}" includes="**/*.jar"/>
+		<path refid="systemtests.classpath.nojee"/>
 	</path>
 	
 	<path id="test.classpath">
 		<path refid="compile.classpath"/>
-		<path refid="systemtests.classpath.nojee"/>
 		<path refid="common.classpath"/>
 		<path location="${build.dir}/classes"/>
 		<path location="${build-test.dir}"/>
@@ -67,7 +67,7 @@
         	encoding="UTF-8" classpathref="test.classpath"/>
  <!--   	<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/> -->
     </target>
-	
+
 	<target name="test" depends="compile-tests" description="Run all tests for this module">
 		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
 			<classpath>
