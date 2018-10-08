@@ -10,10 +10,8 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest;
 
-import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.util.WebTestUtil;
 import org.junit.*;
 import org.openqa.selenium.By;
