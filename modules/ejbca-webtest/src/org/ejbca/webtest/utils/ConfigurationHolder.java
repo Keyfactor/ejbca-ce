@@ -10,8 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-package org.ejbca.test.utils;
+package org.ejbca.webtest.utils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
