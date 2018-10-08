@@ -27,7 +27,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.helper.AdminRolesHelper;
-import org.ejbca.test.utils.ConfigurationConstants;
+import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;

@@ -34,7 +34,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.test.utils.ConfigurationConstants;
+import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
