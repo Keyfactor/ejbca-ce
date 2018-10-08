@@ -280,6 +280,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     * PDS URLs are now handled in QCETSIPDS */
     @Deprecated
     protected static final String QCETSIPDSLANG = "qcetsipdslang";
+    protected static final String USEQCPSD2 = "useqcpsd2";
     protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
@@ -2101,6 +2102,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // Remove old data from EJBCA < 6.6.1
         data.remove(QCETSIPDSURL);
         data.remove(QCETSIPDSLANG);
+    }
+
+    /** 
+     * @return true if the PSD2 QC statement should be inclued, or false (default) if it should not
+     */
+    public boolean getUseQCPSD2() {
+        Boolean ret = ((Boolean) data.get(USEQCPSD2));
+        if (ret == null) {
+            return false; // default value
+        }
+        return ret.booleanValue();
+    }
+
+    public void setUseQCPSD2(boolean useqcpsd2) {
+        data.put(USEQCPSD2, Boolean.valueOf(useqcpsd2));
     }
 
     public boolean getUseQCCustomString() {

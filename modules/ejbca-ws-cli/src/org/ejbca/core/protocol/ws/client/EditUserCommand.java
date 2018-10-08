@@ -57,7 +57,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 	private static final int ARG_ENDTIME            = 15;
 
 	private static final int NR_OF_MANDATORY_ARGS = ARG_CERTIFICATEPROFILE+1;
-	private static final int MAX_NR_OF_ARGS = ARG_ENDTIME+1;
+	private static final int MAX_NR_OF_ARGS = ARG_ENDTIME+4;
 
     public EditUserCommand(String[] args) {
         super(args);
@@ -74,6 +74,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
         final UserDataVOWS userdata = new UserDataVOWS();
         final String[] myArgs = ParseUserData.getDataFromArgs(this.args, userdata, getPrintStream());
     	if(myArgs.length < NR_OF_MANDATORY_ARGS || myArgs.length > MAX_NR_OF_ARGS){
+    	    getPrintStream().println("Number of arguments ("+myArgs.length+") is less than "+NR_OF_MANDATORY_ARGS+", or more than "+MAX_NR_OF_ARGS+".");
         	usage();
         	System.exit(-1); // NOPMD, this is not a JEE app
         }
@@ -132,6 +133,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             getPrintStream().println("Type: "+type.getHexValue());
             getPrintStream().println("Token: "+userdata.getTokenType());
             getPrintStream().println("Status: "+userdata.getStatus());
+            getPrintStream().println("Clear pwd: "+userdata.isClearPwd());
             getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
             getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
 

@@ -109,6 +109,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final Object NAMECONSTRAINTS_PERMITTED = "nameconstraints_permitted";
     private static final Object NAMECONSTRAINTS_EXCLUDED = "nameconstraints_excluded";
 
+    private static final String QCETSIPSD2ROLESOFPSP = "qcetsipsd2rolesofpsp";
+    private static final String QCETSIPSD2NCANAME = "qcetsipsd2ncaname";
+    private static final String QCETSIPSD2NCAID = "qcetsipsd2ncaid";
+
     /** Keystore specifications used for enrolling end entity user with key-pair generated on a server side (KickAssRA).*/
     private static String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
     private static String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
@@ -341,6 +345,76 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         }
     }
 
+    /**
+     * Returns the PSD2 Role Of PSP (TS 119 495) used in this profile, or null if none are present.
+     */
+    public List<PSD2RoleOfPSPStatement> getQCEtsiPSD2RolesOfPSP() {
+        String value = (String) data.get(QCETSIPSD2ROLESOFPSP);
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        List<PSD2RoleOfPSPStatement> result = null;
+        // It's stored as oid;name (oid1;name1;oid2;nam2...)
+        String[] values = value.split(";");
+        if (values.length >= 2) {
+            result = new ArrayList<>();
+            int i = 0;
+            while (i < values.length && i < 20) { // make a limit of 20 to avoid resource exhaustion
+                String oid = values[i++];
+                if (i < values.length) {
+                    String name = values[i++];
+                    PSD2RoleOfPSPStatement role = new PSD2RoleOfPSPStatement(oid, name);
+                    result.add(role);
+                }
+            }
+        }
+        return result;        
+    }
+
+    /**
+     * Sets the PKI Disclosure Statements (EN 319 412-05).
+     * Both null and empty lists are interpreted as "none".
+     */
+    public void setQCEtsiPSD2RolesOfPSP(final List<PSD2RoleOfPSPStatement> rolesOfPsp) {
+        if (rolesOfPsp == null || rolesOfPsp.isEmpty()) { // never store an empty list
+            data.remove(QCETSIPSD2ROLESOFPSP);
+        } else {
+            // PSD2RoleOfPSPStatement.toString outputs oid;name
+            data.put(QCETSIPSD2ROLESOFPSP, StringUtils.join(rolesOfPsp, ';'));
+            log.error("RolesOfPsp set: "+data.get(QCETSIPSD2ROLESOFPSP));
+        }
+    }
+
+    /** @return String with NCA Name (TS 119 495) or null */
+    public String getQCEtsiPSD2NCAName() {
+        return (String) data.get(QCETSIPSD2NCANAME);
+    }
+
+    /** Sets NCA Name (TS 119 495)
+     * @param qcpsd2ncaname NCA Name (TS 119 495) max 256 chars */
+    public void setQCEtsiPSD2NcaName(String qcpsd2ncaname) {
+        if (qcpsd2ncaname == null) {
+            data.remove(QCETSIPSD2NCANAME);
+        } else {
+            data.put(QCETSIPSD2NCANAME, qcpsd2ncaname);
+        }
+    }
+
+    /** @return String with NCA Id (TS 119 495) or null */
+    public String getQCEtsiPSD2NCAId() {
+        return (String) data.get(QCETSIPSD2NCAID);
+    }
+
+    /** Sets NCA Id (TS 119 495)
+     * @param qcpsd2ncaid NCA Id (TS 119 495) max 256 chars */
+    public void setQCEtsiPSD2NcaId(String qcpsd2ncaid) {
+        if (qcpsd2ncaid == null) {
+            data.remove(QCETSIPSD2NCAID);
+        } else {
+            data.put(QCETSIPSD2NCAID, qcpsd2ncaid);
+        }
+    }
+
     /** @return the subject DN exactly as requested (via WS ) */
     public String getRawSubjectDn() {
         final String value = (String) data.get(RAWSUBJECTDN);
@@ -520,6 +594,14 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
 					}
     			}
         	}
+            // In 7.0.0 we added PSD2 Qualified Certificate statements, 
+        	// No actual code upgrade needed as empty/null is handled, so we kept the same version number (4)
+            if (getVersion() < 4) {
+                // QCETSIPSD2ROLESOFPSP
+                // QCETSIPSD2NCANAME
+                // QCETSIPSD2NCAID
+            }
+
             data.put(VERSION,  Float.valueOf(LATEST_VERSION));
         }
     }

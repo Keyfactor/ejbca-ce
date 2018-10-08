@@ -30,6 +30,10 @@ import org.ejbca.util.cert.OID;
  */
 class ParseUserData {
 	static final String certificateSerialNumber="CERTIFICATESERIALNUMBER";
+	static final String qcEtsiPSD2RolesOfPsp = "QCETSIPSD2ROLESOFPSP";
+    static final String qcEtsiPSD2Ncaname = "QCETSIPSD2NCANAME";
+    static final String qcEtsiPSD2Ncaid = "QCETSIPSD2NCAID";
+	
 	private static final String hexPrefix = "0x";
 
 	/**
@@ -63,6 +67,12 @@ class ParseUserData {
 				}
 				userData.setCertificateSerialNumber(nr);
 				continue;
+			} else if ( key.equalsIgnoreCase(qcEtsiPSD2RolesOfPsp) ) {
+                lei.add(new ExtendedInformationWS(key.toLowerCase(), value));
+            } else if ( key.equalsIgnoreCase(qcEtsiPSD2Ncaname) ) {
+                lei.add(new ExtendedInformationWS(key.toLowerCase(), value));
+            } else if ( key.equalsIgnoreCase(qcEtsiPSD2Ncaid) ) {
+                lei.add(new ExtendedInformationWS(key.toLowerCase(), value));
 			}
 			if ( OID.isStartingWithValidOID(key) ) {
 				lei.add(new ExtendedInformationWS(key, value));
@@ -83,5 +93,10 @@ class ParseUserData {
 		ps.println("Certificate serial number and certificate extension may be added as extra parameters. These parameters may be inserted at any position since they are removed before the other parameters (above) are parsed.");
 		ps.println("For certificate serial number the parameter looks like this '"+certificateSerialNumber+"=<serial number>'. Start the number with '"+hexPrefix+"' to indicated that it is hexadecimal. Example: "+certificateSerialNumber+"=8642378462375036 "+certificateSerialNumber+"=0x5a53875acdaf24");
 		ps.println("For certificate extension the parameter look like this '<oid>[.<type>]=value'. The key '1.2.3.4' is same as '1.2.3.4.value'. Example: 1.2.840.113634.100.6.1.1=00aa00bb 1.2.3.4.value1=1234 1.2.3.4.value2=abcdef");
+        ps.println("For ETSI PSD2 QC Statement the parameters (all required) look like this 'QCETSIPSD2ROLESOFPSP=oid;name',  QCETSIPSD2NCANAME='NCA Name', QCETSIPSD2NCAID='NCA ID'");
+        // For example
+        // QCETSIPSD2ROLESOFPSP=0.4.0.19495.1.1;PSP_AS
+        // QCETSIPSD2NCANAME=PrimeKey Solutions AB, Solna Access, Plan A8, Sundbybergsvägen 1, SE-17173 Solna
+        // QCETSIPSD2NCAID=SE-PK
 	}
 }

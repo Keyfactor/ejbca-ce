@@ -900,6 +900,12 @@
 					</h:column>
 				</h:dataTable>
 		
+                <h:outputLabel for="checkqcetsipsd2group" value="#{web.text.EXT_ETSI_QCS_PSD2}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
+                <h:panelGroup id="checkqcetsipsd2group" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
+                    <h:selectBooleanCheckbox id="checkqcetsipsd2" value="#{certProfileBean.certificateProfile.useQCPSD2}" disabled="#{certProfilesBean.viewOnly}"/>
+                    <h:outputLabel for="checkqcetsipsd2" value="#{web.text.USE}"/>
+                </h:panelGroup>
+		
 				<h:outputLabel for="checkqccustomstringgroup" value="#{web.text.EXT_PKIX_QCS_CUSTOMSTRING}" rendered="#{certProfileBean.certificateProfile.useQCStatement}" styleClass="subItem"/>
 				<h:panelGroup id="checkqccustomstringgroup" rendered="#{certProfileBean.certificateProfile.useQCStatement}">
 					<h:selectBooleanCheckbox id="checkqccustomstring" styleClass="checkBoxOverlay" value="#{certProfileBean.certificateProfile.useQCCustomString}" rendered="#{!web.legacyInternetExplorer}"
