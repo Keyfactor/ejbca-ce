@@ -54,7 +54,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 @ViewScoped
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(AdminIndexMBean.class);
+    private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
 
 
     private GlobalConfiguration globalConfiguration;
