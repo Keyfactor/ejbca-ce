@@ -93,7 +93,7 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
 //
 //        // Go to 'CA Structure & CRLs'
 //        webDriver.get(getAdminWebUrl());
-//        webDriver.findElement(By.xpath("//li/a[contains(@href, 'cafunctions.jsp')]")).click();
+//        webDriver.findElement(By.xpath("//li/a[contains(@href, 'cafunctions.xhtml')]")).click();
 //
 //        // Verify that the 'Get CRL' link works
 //        String crlUrl = webDriver.findElement(By.xpath("//a[text()='Get CRL' and contains(@href, '" + caName + "')]")).getAttribute("href");
@@ -106,7 +106,7 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
 //
 //        // Go to 'CA Structure & CRLs'
 //        webDriver.get(getAdminWebUrl());
-//        webDriver.findElement(By.xpath("//li/a[contains(@href, 'cafunctions.jsp')]")).click();
+//        webDriver.findElement(By.xpath("//li/a[contains(@href, 'cafunctions.xhtml')]")).click();
 //
 //        // Take note of the CRL number
 //        String crlText = StringUtils.substringBetween(webDriver.findElement(By.xpath("//div[@class='container']")).getText(), caName, " Get CRL");
