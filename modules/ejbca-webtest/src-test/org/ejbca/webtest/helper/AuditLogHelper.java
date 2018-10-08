@@ -10,10 +10,10 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -21,174 +21,189 @@ import java.util.Date;
 import java.util.List;
 
 import org.cesecore.util.ValidityDate;
-import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 
+// TODO JavaDoc
 /**
  * Audit Log helper class for EJBCA Web Tests.
  * 
  * Always reset filterTime before using the methods in this class, which makes sure
  * there only exists entries in the Audit Log for the test step currently executing.
  * 
- * @version $Id: AuditLogHelper.java 28911 2018-05-11 06:48:28Z oskareriksson $
+ * @version $Id: AuditLogHelper.java 30035 2018-10-05 08:35:05Z andrey_s_helmes $
  */
-public final class AuditLogHelper {
+public class AuditLogHelper extends BaseHelper {
+
+    /**
+     * Contains constants and references of the 'Certificate Profiles' page.
+     */
+    public static class Page {
+        // General
+        static final String PAGE_URI = "/ejbca/adminweb/audit/search.jsf";
+        static final By PAGE_LINK = By.id("supervisionAuditsearch");
+        // Audit Log View
+        static final By BUTTON_CLEAR_ALL_CONDITIONS = By.xpath("//input[contains(@value, 'Clear all conditions') and @type='submit']");
+        static final By BUTTON_ADD_COLUMN = By.xpath("//input[contains(@value, 'Add...') and @type='submit']");
+        static final By SELECT_FILTER_COLUMN = By.xpath("//select[contains(@id, 'conditionColumn')]");
+        static final By BUTTON_APPLY_FILTERING_CONDITION = By.xpath("//input[contains(@src, 'success') and @type='image']");
+        static final By INPUT_DISPLAY_START_POSITION = By.id("search2:startIndex2");
+        static final By INPUT_NR_OF_RESULTS_PER_PAGE = By.id("search2:maxResults");
+        static final By BUTTON_RELOAD_VIEW = By.xpath("//input[@class='commandLink reload']");
+
+        /**
+         * Child elements for Event Log Row.
+         */
+        public static class EVENT_LOG_ROW {
+            static final By TEXT_OUTCOME = By.xpath("td[3]");
+            static final By TEXT_CA = By.xpath("td[6]");
+            static final By CONTAINER_DETAILS = By.xpath("(td[10]|td[10]/a/span)");
+        }
+
+        // Dynamic references
+        static By getSelectFilterConditionByColumnName(final String columnName) {
+            return By.xpath("//td[text()='" + columnName + "']/following-sibling::td[1]/select");
+        }
+
+        static By getFilterValueElementByColumnName(final String columnName) {
+            return By.xpath("//td[text()='" + columnName + "']/following-sibling::td[2]/*");
+        }
+
+        static By getEventLogRowByEventText(final String eventText) {
+            return By.xpath("//tr[td[2]/text()='" + eventText + "']");
+        }
+    }
 
     // Used to filter the Audit Log, only Audit Log entries after this time will be displayed
-    private static String filterTime;
-    static { resetFilterTime(); }
+    private String defaultTimestampForFiltering;
 
-    private AuditLogHelper() {
-        throw new AssertionError("Cannot instantiate class");
+    public AuditLogHelper(final WebDriver webDriver) {
+        super(webDriver);
     }
 
     /**
      * Resets the time to filter the Audit Log with. Only entries after the
      * last call of this method will be displayed in the Audit Log.
      */
-    public static void resetFilterTime() {
-        filterTime = ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER);
+    public void initFilterTime() {
+        defaultTimestampForFiltering = ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER);
     }
 
     /**
-     * Opens the 'Audit Log' page, sets the conditions:
-     * - [Event] [Not equals] [Access Control]
-     * - [Time] [Greater than] [filterTime]
-     * and then reloads the Audit Log.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param adminWebUrl the URL of the AdminWeb
+     * Opens the 'Certificate Profiles' page and asserts the correctness of URI path.
+     *
+     * @param webUrl the URL of the AdminWeb.
      */
-    public static void goTo(WebDriver webDriver, String adminWebUrl) {
-        // Open the Audit Log page
-        webDriver.get(adminWebUrl);
-        webDriver.findElement(By.xpath("//li/a[contains(@href, 'audit/search.jsf')]")).click();
-        assertEquals("Clicking 'View Log' link did not redirect to expected page",
-                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
-                "/ejbca/adminweb/audit/search.jsf");
+    public void openPage(final String webUrl) {
+        openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);
+        //
+        configureFilteredView();
+    }
 
+    public void configureFilteredView() {
         // Set conditions
-        clearConditions(webDriver);
-        addCondition(webDriver, "Event", "Not equals", "Access Control");
-        addCondition(webDriver, "Time", "Greater than", filterTime);
-
+        clearConditions();
+        setViewFilteringCondition("Event", "Not equals", "Access Control");
+        setViewFilteringCondition("Time", "Greater than", defaultTimestampForFiltering);
         // Set 'Displaying results' and 'Entries per page' to standard values
-        setDisplayingResults(webDriver, 1);
-        setEntriesPerPage(webDriver, 40);
-        reload(webDriver);
+        setViewPaginationProperties(1, 40);
+        // Apply filters and pagination
+        reloadView();
     }
 
-    /**
-     * Asserts that a specific entry exists in the Audit Log.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param event the event to assert, e.g. "Certificate Profile Edit"
-     * @param outcome the expected outcome, e.g. "Success" (or null to skip check)
-     * @param ca the expected Certificate Authority, e.g. "ManagementCA" (or null to skip check)
-     * @param details a list of strings which all should exist in the 'Details' field (order doesn't matter),
-     *                e.g. ["Edited certificateprofile", "added:usecustomdnorderldap=false"] (or null to skip check)
-     */
-    public static void assertEntry(WebDriver webDriver, String event, String outcome, String ca, List<String> details) {
-        try {
-            // Find the row which has the event parameter as its 'Event' value
-            WebElement row = webDriver.findElement(By.xpath("//tr[td[2]/text()='" + event + "']"));
-            if (outcome != null) {
-                // Assert expected value of 'Outcome' field
-                assertEquals("Unexpected outcome for event " + event,
-                        outcome, row.findElement(By.xpath("td[3]")).getText());
-            }
-            if (ca != null) {
-                // Assert expected value of 'Certificate Authority' field
-                assertEquals("Unexpected CA for event " + event,
-                        ca, row.findElement(By.xpath("td[6]")).getText());
-            }
-            if (details != null) {
-                // Extract value of 'Details' field, it is either a td element with text as its value
-                // or a nested span element with text as its 'title' attribute
-                WebElement detailsElement = row.findElement(By.xpath("(td[10]|td[10]/a/span)"));
-                String detailsValue = "";
-                if (detailsElement.getTagName().equals("td")) {
-                    // Get value if it's a td element
-                    detailsValue = detailsElement.getText();
-                } else {
-                    // Get attribute 'title' if it's a span element
-                    detailsValue = detailsElement.getAttribute("title");
-                }
-                // Assert that all detail substrings exists in 'Details' field
-                for (String detail : details) {
-                    assertTrue("An expected detail didn't exist in the 'Details' field: " + detail,
-                            detailsValue.contains(detail));
-                }
-            }
-        } catch (NoSuchElementException e) {
-            fail("The event " + event + " was not found in the Audit Log");
-        }
+    public void clearConditions() {
+        clickLinkIfExists(Page.BUTTON_CLEAR_ALL_CONDITIONS);
     }
 
     /**
      * Adds a condition for filtering the Audit Log.
-     * 
+     *
      * Different values for 'Column' either results in a drop-down or a
      * text field for 'Value', which the method handles automatically.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param column which Column to select
-     * @param condition which Condition to select
-     * @param value which Value to select (if drop-down) or input (if text field)
+     *
+     * @param columnName
+     * @param columnCondition
+     * @param columnValue
      */
-    public static void addCondition(WebDriver webDriver, String column, String condition, String value) {
+    public void setViewFilteringCondition(final String columnName, final String columnCondition, final String columnValue) {
         // Set 'Column'
-        Select columnSelect = new Select(webDriver.findElement(By.xpath("//select[contains(@id, 'conditionColumn')]")));
-        columnSelect.selectByVisibleText(column);
-        webDriver.findElement(By.xpath("//input[contains(@value, 'Add...') and @type='submit']")).click();
-
+        selectOptionByName(Page.SELECT_FILTER_COLUMN, columnName);
+        clickLink(Page.BUTTON_ADD_COLUMN);
         // Set 'Condition'
-        Select conditionSelect = new Select(webDriver.findElement(By.xpath("//td[text()='" + column + "']/following-sibling::td[1]/select")));
-        conditionSelect.selectByVisibleText(condition);
-
+        selectOptionByName(Page.getSelectFilterConditionByColumnName(columnName), columnCondition);
         // Set 'Value'
-        WebElement valueElement = webDriver.findElement(By.xpath("//td[text()='" + column + "']/following-sibling::td[2]/*"));
-        if (valueElement.getTagName().equals("select")) {
-            // If drop-down, select the correct value
-            Select valueSelect = new Select(valueElement);
-            valueSelect.selectByVisibleText(value);
-        } else {
-            // If text field, input the correct value
-            valueElement.clear();
-            valueElement.sendKeys(value);
+        final By valueElementReference = Page.getFilterValueElementByColumnName(columnName);
+        // If text field, input the correct value
+        if(isInputElement(valueElementReference)) {
+            fillInput(valueElementReference, columnValue);
         }
-
+        // If drop-down, select the correct value
+        if(isSelectElement(valueElementReference)) {
+            selectOptionByName(valueElementReference, columnValue);
+        }
         // Apply the condition
-        webDriver.findElement(By.xpath("//input[contains(@src, 'success') and @type='image']")).click();
+        clickLink(Page.BUTTON_APPLY_FILTERING_CONDITION);
     }
 
     /**
      * Sets the 'Displaying results' field.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param displayingResults the number to be entered
+     * Sets the 'Entries per page' field.
      */
-    public static void setDisplayingResults(WebDriver webDriver, int displayingResults) {
-        WebElement input = webDriver.findElement(By.id("search2:startIndex2"));
-        input.clear();
-        input.sendKeys(Integer.toString(displayingResults));
+    public void setViewPaginationProperties(final int displayStartPositionNr, final int nrOfResultsPerPage) {
+        fillInput(Page.INPUT_DISPLAY_START_POSITION, "" + displayStartPositionNr);
+        fillInput(Page.INPUT_NR_OF_RESULTS_PER_PAGE, "" + nrOfResultsPerPage);
     }
 
-    /**
-     * Sets the 'Entries per page' field.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param entriesPerPage the number to be entered
-     */
-    public static void setEntriesPerPage(WebDriver webDriver, int entriesPerPage) {
-        WebElement input = webDriver.findElement(By.id("search2:maxResults"));
-        input.clear();
-        input.sendKeys(Integer.toString(entriesPerPage));
+    public void reloadView() {
+        clickLink(Page.BUTTON_RELOAD_VIEW);
     }
+
+    public void assertLogEntryByEventText(
+            final String eventText,
+            final String outcomeText,
+            final String certificateAuthorityText,
+            final List<String> detailsList
+    ) {
+
+        // Find the row which has the event parameter as its 'Event' value
+        final WebElement eventRowWebElement = findElement(Page.getEventLogRowByEventText(eventText));
+        assertNotNull("The event [" + eventText + "] was not found in the Audit Log", eventRowWebElement);
+        // Assert expected value of 'Outcome' field
+        if(outcomeText != null) {
+            final WebElement outcomeWebElement = findElement(eventRowWebElement, Page.EVENT_LOG_ROW.TEXT_OUTCOME);
+            assertNotNull("Outcome field was not found.", outcomeWebElement);
+            assertEquals("Unexpected outcome for event [" + eventText + "]", outcomeText, outcomeWebElement.getText());
+        }
+        // Assert expected value of 'Certificate Authority' field
+        if (certificateAuthorityText != null) {
+            final WebElement caWebElement = findElement(eventRowWebElement, Page.EVENT_LOG_ROW.TEXT_CA);
+            assertNotNull("CA field was not found.", caWebElement);
+            assertEquals("Unexpected CA for event [" + eventText + "]", certificateAuthorityText, caWebElement.getText());
+        }
+        // Extract value of 'Details' field, it is either a td element with text as its value
+        // or a nested span element with text as its 'title' attribute
+        if (detailsList != null && !detailsList.isEmpty()) {
+            final WebElement detailsContainerWebElement = findElement(eventRowWebElement, Page.EVENT_LOG_ROW.CONTAINER_DETAILS);
+            assertNotNull("Details field was not found.", detailsContainerWebElement);
+            String detailsValue = "";
+            if (isTdElement(detailsContainerWebElement)) {
+                // Get value if it's a td element
+                detailsValue = detailsContainerWebElement.getText();
+            } else {
+                // Get attribute 'title' if it's a span element
+                detailsValue = detailsContainerWebElement.getAttribute("title");
+            }
+            // Assert that all detail substrings exists in 'Details' field
+            for (final String detailText : detailsList) {
+                assertTrue("The expected detail [" + detailText + "] for event [" + eventText + "] doesn't exist.", detailsValue.contains(detailText));
+            }
+        }
+    }
+
+    //==================================================================================================================
+    // TODO Refactor remaining
+    //==================================================================================================================
 
     /**
      * Returns the number of entries currently displayed in the Audit Log.
@@ -199,26 +214,4 @@ public final class AuditLogHelper {
         return webDriver.findElements(By.xpath("//table[caption[text()='Search results']]/tbody/tr")).size();
     }
 
-    /**
-     * Clicks the 'Clear all conditions' button, or does nothing if conditions
-     * already cleared.
-     * 
-     * @param webDriver the WebDriver to use
-     */
-    public static void clearConditions(WebDriver webDriver) {
-        try {
-            webDriver.findElement(By.xpath("//input[contains(@value, 'Clear all conditions') and @type='submit']")).click();
-        } catch (NoSuchElementException e) {
-            // Do nothing if conditions already cleared
-        }
-    }
-
-    /**
-     * Clicks the 'Reload' button on the 'Audit Log' page.
-     * 
-     * @param webDriver the WebDriver to use
-     */
-    public static void reload(WebDriver webDriver) {
-        webDriver.findElement(By.xpath("//input[@class='commandLink reload']")).click();
-    }
 }

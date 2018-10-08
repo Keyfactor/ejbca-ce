@@ -10,10 +10,8 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest;
 
-import org.ejbca.webtest.WebTestBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,7 +26,6 @@ import static org.junit.Assert.*;
 /**
  * 
  * @version $Id$
- *
  */
 public class EcaQa81_PublicWebListUserCert extends WebTestBase {
 
