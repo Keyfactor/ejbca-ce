@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -41,6 +42,8 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.PKIDisclosureStatement;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.util.CertTools;
 
 /** QCStatement (rfc3739)
@@ -73,7 +76,13 @@ import org.cesecore.util.CertTools;
 public class QcStatement extends StandardCertificateExtension {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(QcStatement.class);
-	
+
+    public static final String id_etsi_psd2_qcStatement = "0.4.0.19495.2";
+    public static final String id_etsi_psd2_role_psp_as = "0.4.0.19495.1.1";
+    public static final String id_etsi_psd2_role_psp_pi = "0.4.0.19495.1.2";
+    public static final String id_etsi_psd2_role_psp_ai = "0.4.0.19495.1.3";
+    public static final String id_etsi_psd2_role_psp_ic = "0.4.0.19495.1.4";
+
     @Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(Extension.qCStatements.getId());
@@ -144,7 +153,7 @@ public class QcStatement extends StandardCertificateExtension {
             final ASN1EncodableVector vec = new ASN1EncodableVector();
             vec.add(new ASN1ObjectIdentifier(certProfile.getQCEtsiType()));
             ASN1Sequence seq = new DERSequence(vec);
-            qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.6"), seq); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcType in BC > 1.54
+            qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcType, seq);
             qcs.add(qc);
         }
         if (certProfile.getQCEtsiPds() != null) {
@@ -155,9 +164,68 @@ public class QcStatement extends StandardCertificateExtension {
                 location.add(new DERPrintableString(pds.getLanguage()));
                 locations.add(new DERSequence(location));
             }
-            qc = new QCStatement(new ASN1ObjectIdentifier("0.4.0.1862.1.5"), new DERSequence(locations)); // ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds in BC > 1.54
+            qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcPds, new DERSequence(locations));
             qcs.add(qc);
         }
+        
+        // PSD2 QC statement as specified in ETSI TS 119 495
+        // All fields for PSD2 are user specific, which is in contrast to the other fields in the QC statement that are issuer specific
+        if (certProfile.getUseQCPSD2()) {
+            if (subject == null) {
+                throw new CertificateExtensionException("A PDS2 QC Extension must contain RolesOfPSP, NCAName and NCAId, which are part of the EndEntityInformation");
+            }
+            final ExtendedInformation ei = subject.getExtendedInformation();
+            if (ei != null) {
+                final List<PSD2RoleOfPSPStatement> rolesofpsp = ei.getQCEtsiPSD2RolesOfPSP();
+                final String nCAName = ei.getQCEtsiPSD2NCAName();
+                final String nCAID = ei.getQCEtsiPSD2NCAId();
+                if (rolesofpsp == null || nCAName == null || nCAID == null) {
+                    throw new CertificateExtensionException("A PDS2 QC Extension must contain all of RolesOfPSP, NCAName and NCAId");
+                }
+                // PSD2QcType ::= SEQUENCE{
+                //    rolesOfPSP RolesOfPSP,
+                //    nCAName NCAName,
+                //    nCAId NCAId }
+                final ASN1EncodableVector psd2QcType = new ASN1EncodableVector();
+                // RolesOfPSP ::= SEQUENCE OF RoleOfPSP
+                // RoleOfPSP ::= SEQUENCE {
+                //   roleOfPspOid, RoleOfPspOid,
+                //   roleOfPspName RoleOfPspName }
+                final ASN1EncodableVector psd2RolesOfPsp = new ASN1EncodableVector();
+                for (PSD2RoleOfPSPStatement role : rolesofpsp) {
+                    if (role.getName().length() > 256) {
+                        throw new CertificateExtensionException("A PDS2 RoleOfPspName can max be 256 characters, see ETSI TS 119 495");
+                    }
+                    final ASN1EncodableVector psd2RoleOfPsp = new ASN1EncodableVector();
+                    // RoleOfPspOid ::= OBJECT IDENTIFIER
+                    psd2RoleOfPsp.add(new ASN1ObjectIdentifier(role.getOid()));
+                    // RoleOfPspName ::= utf8String (SIZE(256))
+                    psd2RoleOfPsp.add(new DERUTF8String(role.getName()));
+                    psd2RolesOfPsp.add(new DERSequence(psd2RoleOfPsp));
+                }
+                if (psd2RolesOfPsp.size() == 0) {
+                    throw new CertificateExtensionException("There must be at least one RoleOfPspName, see ETSI TS 119 495");
+                }
+                psd2QcType.add(new DERSequence(psd2RolesOfPsp));
+                // NCAName ::= utf8String (SIZE (256))
+                if (StringUtils.isEmpty(nCAName) || nCAName.length() > 256) {
+                    throw new CertificateExtensionException("A PDS2 NCAName can max be 256 characters, see ETSI TS 119 495");
+                }
+                psd2QcType.add(new DERUTF8String(nCAName));
+                // NCAId ::= utf8String (SIZE (256))
+                if (StringUtils.isEmpty(nCAID) || nCAID.length() > 256) {
+                    throw new CertificateExtensionException("A PDS2 NCAId can max be 256 characters, see ETSI TS 119 495");
+                }
+                psd2QcType.add(new DERUTF8String(nCAID));
+                // OID from TS 119 495
+                qc = new QCStatement(new ASN1ObjectIdentifier(id_etsi_psd2_qcStatement), new DERSequence(psd2QcType));
+                qcs.add(qc);
+            } else {
+                throw new CertificateExtensionException("A PDS2 QC Extension must be included, but no PSD2 subject information is available.");
+            }            
+        }
+        
+        
 		// Custom UTF8String QC-statement:
 		// qcStatement-YourCustom QC-STATEMENT ::= { SYNTAX YourCustomUTF8String
 		//   IDENTIFIED BY youroid }
