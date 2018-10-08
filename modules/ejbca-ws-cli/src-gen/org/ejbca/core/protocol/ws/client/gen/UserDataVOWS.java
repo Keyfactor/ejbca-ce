@@ -193,7 +193,7 @@ public class UserDataVOWS implements Serializable{
 
 	/**
 	 * Observe sending usedata to clients outside EJBCA will always return false
-	 * @return Returns the clearpwd.
+	 * @return Returns if clearpwd is to be used or not (for batch generation).
 	 */
 	public boolean isClearPwd() {
 		return clearPwd;
