@@ -117,12 +117,7 @@ public class ValidatorsBean extends BaseManagedBean {
      * @param name the name.
      */
     public void setValidatorName(String name) {
-        name = name.trim();
-        if (StringTools.checkFieldForLegalChars(name)) {
-            addErrorMessage("ONLYCHARACTERS");
-        } else {
-            this.validatorName = name;
-        }
+        this.validatorName = name.trim();
     }
 
     /**
@@ -266,13 +261,17 @@ public class ValidatorsBean extends BaseManagedBean {
     public void actionAdd() {
         final String name = getNewValidatorName();
         if (StringUtils.isNotBlank(name)) {
-            try {
-                keyValidatorSession.addKeyValidator(getAdmin(), new RsaKeyValidator(name));
-                actionCancel();
-            } catch (KeyValidatorExistsException e) {
-                addErrorMessage("VALIDATORALREADY", name);
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage(e.getMessage());
+            if (!StringTools.checkFieldForLegalChars(name)) {
+                addErrorMessage("ONLYCHARACTERS");
+            } else {
+                try {
+                    keyValidatorSession.addKeyValidator(getAdmin(), new RsaKeyValidator(name));
+                    actionCancel();
+                } catch (KeyValidatorExistsException e) {
+                    addErrorMessage("VALIDATORALREADY", name);
+                } catch (AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage(e.getMessage());
+                }
             }
         }
         validatorItems = null;
@@ -317,15 +316,20 @@ public class ValidatorsBean extends BaseManagedBean {
     public void actionAddFromTemplateConfirm() {
         final String name = getNewValidatorName();
         if (name.length() > 0) {
-            try {
-                keyValidatorSession.cloneKeyValidator(getAdmin(), getValidatorId(), name);
-                setValidatorName(StringUtils.EMPTY);
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage(e.getMessage());
-            } catch (KeyValidatorExistsException e) {
-                addErrorMessage("VALIDATORALREADY", name);
-            } catch (KeyValidatorDoesntExistsException e) {
-                // NOPMD: ignore do nothing
+            if (!StringTools.checkFieldForLegalChars(name)) {
+                addErrorMessage("ONLYCHARACTERS");
+                return;
+            } else {
+                try {
+                    keyValidatorSession.cloneKeyValidator(getAdmin(), getValidatorId(), name);
+                    setValidatorName(StringUtils.EMPTY);
+                } catch (AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage(e.getMessage());
+                } catch (KeyValidatorExistsException e) {
+                    addErrorMessage("VALIDATORALREADY", name);
+                } catch (KeyValidatorDoesntExistsException e) {
+                    // NOPMD: ignore do nothing
+                }
             }
         }
         actionCancel();
@@ -384,15 +388,21 @@ public class ValidatorsBean extends BaseManagedBean {
     public void actionRenameConfirm() {
         final String name = getNewValidatorName();
         if (name.length() > 0) {
-            try {
-                keyValidatorSession.renameKeyValidator(getAdmin(), getValidatorId(), name);
-                setValidatorName(StringUtils.EMPTY);
-            } catch (KeyValidatorDoesntExistsException e) {
-                addErrorMessage("VALIDATORDOESNOTEXIST", name);
-            } catch (KeyValidatorExistsException e) {
-                addErrorMessage("VALIDATORALREADY", name);
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage("Not authorized to rename key validator.");
+            if (!StringTools.checkFieldForLegalChars(name)) {
+                renameInProgress = true;
+                addErrorMessage("ONLYCHARACTERS");
+                return;
+            } else {
+                try {
+                    keyValidatorSession.renameKeyValidator(getAdmin(), getValidatorId(), name);
+                    setValidatorName(StringUtils.EMPTY);
+                } catch (KeyValidatorDoesntExistsException e) {
+                    addErrorMessage("VALIDATORDOESNOTEXIST", name);
+                } catch (KeyValidatorExistsException e) {
+                    addErrorMessage("VALIDATORALREADY", name);
+                } catch (AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage("Not authorized to rename key validator.");
+                }
             }
         }
         actionCancel();
