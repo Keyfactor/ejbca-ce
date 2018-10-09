@@ -164,7 +164,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     
     public void setApprovalProfileName(String approvalProfileName) {
         approvalProfileName = approvalProfileName.trim();
-        if (StringTools.checkFieldForLegalChars(approvalProfileName)) {
+        if (!StringTools.checkFieldForLegalChars(approvalProfileName)) {
             addErrorMessage("ONLYCHARACTERS");
         } else {
             this.approvalProfileName = approvalProfileName;
