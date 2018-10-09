@@ -1078,8 +1078,8 @@ public final class StringTools {
      * @return true if the string only contains legal characters.
      */
     public static boolean checkFieldForLegalChars(final String value) {
-        final String blackList = "/[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]/g";
-        return Pattern.matches(blackList, value);
+        final String whiteList = "[\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]+";
+        return Pattern.matches(whiteList, value);
     }
 
     /** @return false of if the string contains any characters that are neither a letter (unicode) or an asciiPrintable character */
