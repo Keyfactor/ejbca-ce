@@ -242,15 +242,19 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
         } else if (certProfileName.length() > 0) {
-            try {
-                final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-                certificateProfile.setAvailableCAs(getEjbcaWebBean().getAuthorizedCAIds());
-                getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), certProfileName, certificateProfile);
-                setCertProfileName("");
-            } catch (CertificateProfileExistsException e) {
-                addErrorMessage("CERTIFICATEPROFILEALREADY");
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage(e.getMessage());
+            if (!StringTools.checkFieldForLegalChars(certProfileName)) {
+                addErrorMessage("ONLYCHARACTERS");
+            } else {
+                try {
+                    final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+                    certificateProfile.setAvailableCAs(getEjbcaWebBean().getAuthorizedCAIds());
+                    getEjbcaWebBean().getEjb().getCertificateProfileSession().addCertificateProfile(getAdmin(), certProfileName, certificateProfile);
+                    setCertProfileName("");
+                } catch (CertificateProfileExistsException e) {
+                    addErrorMessage("CERTIFICATEPROFILEALREADY");
+                } catch (AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage(e.getMessage());
+                }
             }
         }
         certificateProfileItems = null;
@@ -272,6 +276,10 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
         } else if (certProfileName.length() > 0) {
+            if (!StringTools.checkFieldForLegalChars(certProfileName)) {
+                addErrorMessage("ONLYCHARACTERS");
+                return;
+            }
             try {
                 final List<Integer> authorizedCaIds;
                 if (isCertProfileFixed(getSelectedCertProfileId()) && !isAuthorizedTo(StandardRules.ROLE_ROOT.resource())) {
@@ -337,6 +345,10 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
         } else if (certProfileName.length() > 0) {
+            if (!StringTools.checkFieldForLegalChars(certProfileName)) {
+                addErrorMessage("ONLYCHARACTERS");
+                return;
+            }
             try {
                 getEjbcaWebBean().getEjb().getCertificateProfileSession()
                         .renameCertificateProfile(getAdmin(), getSelectedCertProfileName(), certProfileName);
@@ -440,12 +452,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     }
 
     public void setCertProfileName(String certProfileName) {
-        certProfileName = certProfileName.trim();
-        if (StringTools.checkFieldForLegalChars(certProfileName)) {
-            addErrorMessage("ONLYCHARACTERS");
-        } else {
-            this.certProfileName = certProfileName;
-        }
+        this.certProfileName = certProfileName.trim();
     }
 
     //----------------------------------------------
