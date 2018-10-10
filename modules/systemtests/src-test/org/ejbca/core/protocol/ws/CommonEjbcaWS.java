@@ -1249,7 +1249,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         final UserDataVOWS user1 = new UserDataVOWS();
         user1.setUsername(CA1_WSTESTUSER1);
         user1.setPassword(PASSWORD);
-        user1.setClearPwd(true);
+        user1.setClearPwd(false);
         user1.setSubjectDN(getDN(CA1_WSTESTUSER1));
         user1.setCaName(CA1);
         user1.setStatus(EndEntityConstants.STATUS_NEW);
@@ -1657,7 +1657,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         public X509Certificate getCertificate(String hardTokenSN) throws Exception {
             this.userdatas.get(0).setStatus(EndEntityConstants.STATUS_NEW);
             this.userdatas.get(0).setPassword(PASSWORD);
-            this.userdatas.get(0).setClearPwd(true);
+            this.userdatas.get(0).setClearPwd(false);
             CommonEjbcaWS.this.ejbcaraws.editUser(userdatas.get(0));
             final KeyStore ksenv;
             try {
