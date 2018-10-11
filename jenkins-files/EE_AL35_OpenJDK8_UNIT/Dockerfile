@@ -4,13 +4,16 @@ FROM alpine:3.5
 RUN mkdir -p /opt/ant/
 
 #Download And 1.9.8
-RUN wget https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz -P /opt/ant
+RUN wget http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz -P /opt/ant
 
 #Unpack Ant
 RUN tar -xvzf /opt/ant/apache-ant-1.9.8-bin.tar.gz -C /opt/ant/
 
 # Remove tar file
 RUN rm -f /opt/ant/apache-ant-1.9.8-bin.tar.gz
+
+#Drop Sonarqube lib
+RUN wget http://downloads.sonarsource.com/plugins/org/codehaus/sonar-plugins/sonar-ant-task/2.3/sonar-ant-task-2.3.jar -P /opt/ant/apache-ant-1.9.8/lib/
 
 #Install JDK 1.8
 RUN apk --update add openjdk8
@@ -26,6 +29,7 @@ ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 
 # set path for result .ear file
 ENV APPSRV_HOME=/app/ear
+
 
 # copy ejbca conf to /opt in the container for runtime-usage (NB: ejbca source is currently in shared folder, so conf in this proof-of-concept remains there)
 ADD conf /opt/conf
