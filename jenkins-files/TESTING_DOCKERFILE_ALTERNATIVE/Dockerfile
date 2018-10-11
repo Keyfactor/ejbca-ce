@@ -4,7 +4,7 @@ FROM alpine:3.5
 RUN mkdir -p /opt/ant/
 
 #Download And 1.9.8
-RUN wget https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz -P /opt/ant
+RUN wget http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz -P /opt/ant
 
 #Unpack Ant
 RUN tar -xvzf /opt/ant/apache-ant-1.9.8-bin.tar.gz -C /opt/ant/
