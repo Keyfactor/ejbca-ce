@@ -31,7 +31,7 @@ pipeline {
                 }
             }
             steps {
-                sh "mkdir ear"
+                sh "mkdir ear || true"
                 dir ('ejbca') {
                     sh "/opt/run.sh"
                 }
