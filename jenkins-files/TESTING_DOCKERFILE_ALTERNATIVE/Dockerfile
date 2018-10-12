@@ -26,3 +26,6 @@ ENV ANT_OPTS="-Xms256M -Xmx512M"
 
 #Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
+
+# copy ejbca conf to /opt in the container for runtime-usage
+ADD conf /opt/conf
