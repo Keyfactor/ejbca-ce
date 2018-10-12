@@ -477,6 +477,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollMakeNewRequestForm\:generateJks,
 #enrollMakeNewRequestForm\:generateP12,
 #enrollMakeNewRequestForm\:updateRequestPreview,
+#requestInfoForm\:addEndEntity,
 #requestInfoForm\:generateKeyStorePem,
 #requestInfoForm\:generateP12,
 #requestInfoForm\:generateJks,
@@ -558,6 +559,7 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #requestInfoForm\:confirmRequestButton {
   height: 40px; }
 
+#requestInfoForm\:addEndEntity,
 #requestInfoForm\:generateKeyStorePem,
 #requestInfoForm\:generateP12,
 #requestInfoForm\:generateJks {
@@ -1262,6 +1264,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
 
   .pure-form select,
   #keyPairForm\:uploadCsrButton,
+  #requestInfoForm\:addEndEntity,
   #requestInfoForm\:generateKeyStorePem,
   #requestInfoForm\:generateP12,
   #requestInfoForm\:generateJks {
@@ -1577,6 +1580,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     width: auto; }
 
   #requestInfoForm\:confirmRequestButton,
+  #requestInfoForm\:addEndEntity,
   #requestInfoForm\:generateKeyStorePem,
   #requestInfoForm\:generateP12,
   #requestInfoForm\:generateJks,
