@@ -47,6 +47,8 @@ public final class SecConst {
     public static final int TOKEN_SOFT = 100;
 
     public static final String[] TOKENTEXTS = {"TOKENSOFTUSERGENERATED","TOKENSOFTP12","TOKENSOFTJKS","TOKENSOFTPEM"};
+    
+    public static final String[] TOKEN_DISPLAY_TEXTS = {"User Generated","P12 File","JKS File","PEM File"};
 
     public static final int[]    TOKENIDS   = {SecConst.TOKEN_SOFT_BROWSERGEN,SecConst.TOKEN_SOFT_P12,SecConst.TOKEN_SOFT_JKS,SecConst.TOKEN_SOFT_PEM};
 
