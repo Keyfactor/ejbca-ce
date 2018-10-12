@@ -3,18 +3,20 @@ FROM alpine:3.5
 #Create Ant Dir
 RUN mkdir -p /opt/ant/
 
-#Download And 1.9.8
-RUN wget http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz -P /opt/ant
+#Download Ant 1.9.8
+ENV ANT_SHA1 ca31bd42c27f7e63cccb219ee59930fdc943ca82
+ENV ANT_HOME /opt/ant/apache-ant-1.9.8
 
-#Unpack Ant
-RUN tar -xvzf /opt/ant/apache-ant-1.9.8-bin.tar.gz -C /opt/ant/
+RUN apk --no-cache add curl 
 
-# Remove tar file
-RUN rm -f /opt/ant/apache-ant-1.9.8-bin.tar.gz
-
-#Drop Sonarqube lib
-RUN wget http://downloads.sonarsource.com/plugins/org/codehaus/sonar-plugins/sonar-ant-task/2.3/sonar-ant-task-2.3.jar -P /opt/ant/apache-ant-1.9.8/lib/
-
+RUN cd $HOME \
+    && curl -O http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz \
+    && sha1sum apache-ant-1.9.8-bin.tar.gz | grep $ANT_SHA1 \
+    && tar xf apache-ant-1.9.8-bin.tar.gz \
+    && mv $HOME/apache-ant-1.9.8 $ANT_HOME \
+    && rm apache-ant-1.9.8-bin.tar.gz \
+    && chmod -R g+rw ${ANT_HOME}
+    
 #Install JDK 1.8
 RUN apk --update add openjdk8
 
