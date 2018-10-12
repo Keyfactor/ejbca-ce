@@ -6,29 +6,31 @@ pipeline {
     stages {
 		stage('verify workspace is clean') {
             steps {
-                sh "docker container rm ee_al35_openjdk8_unit -f || true"
-                sh "rm -rf ear"
+                sh "docker container rm testing_dockerfile_altenative -f || true"
             }
         }
         stage('run unit tests') {
-            steps {
-                sh "mkdir ear"
-                dir ('ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT') {
-                    sh "docker build -t ee_al35_openjdk8_unit ."
-                    sh "docker run --name ee_al35_openjdk8_unit -v " + "$env.WORKSPACE" + ":/app ee_al35_openjdk8_unit"
+            agent {
+                // Execute this stage's steps inside a running Docker container build according to the following
+                dockerfile {
+                    label 'docker'
+                    dir 'ejbca/jenkins-files/TESTING_DOCKERFILE_ALTERNATIVE'
+                    filename 'Dockerfile'
+                    additionalBuildArgs  '--disable-content-trust=false --pull'
+                    args '--group-add root'
                 }
             }
-        }
-        stage('cleanup') {
             steps {
-                echo "Remove finished Docker volume..."
-                sh "docker container rm ee_al35_openjdk8_unit"
+                dir ('ejbca') {
+                    sh "cp /opt/conf/* conf/"
+                    sh "ant -q -Dappserver.home=/tmp -Dappserver.type=jboss -Dejbca.productionmode=false clean build test:runsa"
+                }
+                junit "ejbca/**/reports/**/TEST-*.xml"
             }
         }
     }
     post {
         always {
-            junit "ejbca/**/reports/**/TEST-*.xml"
             cleanWs()
         }
     }

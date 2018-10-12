@@ -27,21 +27,5 @@ ENV ANT_OPTS="-Xms256M -Xmx512M"
 #Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 
-# set path for result .ear file
-ENV APPSRV_HOME=/app/ear
-
-
-# copy ejbca conf to /opt in the container for runtime-usage (NB: ejbca source is currently in shared folder, so conf in this proof-of-concept remains there)
+# copy ejbca conf to /opt in the container for runtime-usage
 ADD conf /opt/conf
-
-
-# Set the working directory to /app
-WORKDIR /app/ejbca
-
-
-# add run script to /opt folder for later (container runtime) use
-ADD run.sh /opt/
-RUN chmod +x /opt/run.sh
-
-# run the run.sh script on container runtime
-CMD ["/opt/run.sh"]
