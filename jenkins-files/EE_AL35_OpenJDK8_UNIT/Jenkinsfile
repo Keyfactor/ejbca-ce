@@ -4,17 +4,12 @@ pipeline {
 	}
     
     stages {
-		stage('verify workspace is clean') {
-            steps {
-                sh "docker container rm testing_dockerfile_altenative -f || true"
-            }
-        }
         stage('run unit tests') {
             agent {
                 // Execute this stage's steps inside a running Docker container build according to the following
                 dockerfile {
                     label 'docker'
-                    dir 'ejbca/jenkins-files/TESTING_DOCKERFILE_ALTERNATIVE'
+                    dir 'ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT'
                     filename 'Dockerfile'
                     additionalBuildArgs  '--disable-content-trust=false --pull'
                     args '--group-add root'
