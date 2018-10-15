@@ -1,5 +1,11 @@
 #
-# This is a comment
+# Sample file specifying the order of DN components. 
+# Can be copied to dncomponents.properties to control order of you own private DN components.
+# Normal DN order is best controlled through "Custom Subject DN Order" in Certificate Profiles.
+#
+# WARNING: Changing this file may cause long term maintenance issues. 
+# Do not change this file unless you really know what you are doing, consult with the 
+# EJBCA team/PrimeKey before making any changes.
 #
 description=2.5.4.13
 jurisdictionLocality=1.3.6.1.4.1.311.60.2.1.1
