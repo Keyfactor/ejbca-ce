@@ -79,7 +79,8 @@
 			<ul>
 			<li>PKI Trust and Certificate service providers, WebTrust and ETSI (including eIDAS) compliant.</li>
 			<li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
-			<li>Secure communication with SSL/TLS servers and SSL/TLS clients. EJBCA is an excellent SSL PKI.</li>
+			<li>Secure communication with TLS servers and TLS clients. EJBCA is an excellent TLS PKI.</li>
+			<li>PKI Automation using integration protocols: CMP, EST, SCEP, ACME, REST, SOAP, ...</li>
 			<li>Native <a href="docs/Certificate_Autoenrollment.html">Windows Autoenrollment</a> using Autoenrollment Gateway.</li>
 			<li><a href="complementary.html#Token%20Management">Smart card and token management</a>.</li>
 			<li><a href="docs/Microsoft_Smart_Card_Logon.html">Smart card logon</a> to Windows and/or Linux.</li>
