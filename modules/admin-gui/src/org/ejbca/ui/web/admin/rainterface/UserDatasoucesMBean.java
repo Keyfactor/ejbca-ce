@@ -1,0 +1,229 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.ui.web.admin.rainterface;
+
+import java.beans.Beans;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.annotation.PostConstruct;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.util.StringTools;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
+import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
+import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
+import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+
+/**
+ * @version $Id: UserDataSouceMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ */
+//@ManagedBean
+//@ViewScoped
+public class UserDatasoucesMBean extends BaseManagedBean implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(UserDatasoucesMBean.class);
+
+    private RAInterfaceBean raBean;
+    private UserDataSourceSession userdatasourcesession = null;
+
+    private String selectedUserDataSource;
+    private String newUserDatasource = "";
+
+    /**
+     * Indicates a delete action in progress to render its view.
+     */
+    private boolean deleteInProgress = false;
+
+
+    @PostConstruct
+    private void postConstruct() throws Exception {
+        final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
+        raBean = getRaBean(req);
+        userdatasourcesession = raBean.getUserDataSourceSession();
+    }
+
+    private final RAInterfaceBean getRaBean(HttpServletRequest req) throws ServletException {
+        HttpSession session = req.getSession();
+        RAInterfaceBean rabean = (RAInterfaceBean) session.getAttribute("rabean");
+        if (rabean == null) {
+            try {
+                rabean = (RAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(),
+                        org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
+            } catch (ClassNotFoundException e) {
+                throw new ServletException(e);
+            } catch (Exception e) {
+                throw new ServletException("Unable to instantiate RAInterfaceBean", e);
+            }
+            try {
+                rabean.initialize(req, getEjbcaWebBean());
+            } catch (Exception e) {
+                throw new ServletException("Cannot initialize RAInterfaceBean", e);
+            }
+            session.setAttribute("rabean", rabean);
+        }
+        return rabean;
+    }
+
+    public List<SelectItem> getUserDatasourceSeletItemList() {
+        TreeMap<String, Integer> userdatasourcenames = getAuthorizedUserDataSourceNames();
+        final List<SelectItem> ret = new ArrayList<>();
+        for (Map.Entry<String, Integer> userDatasource : userdatasourcenames.entrySet()) {
+            ret.add(new SelectItem(userDatasource.getKey(), userDatasource.getKey()));
+        }
+        return ret;
+    }
+
+    private TreeMap<String, Integer> getAuthorizedUserDataSourceNames() {
+        TreeMap<String, Integer> retval = new TreeMap<>();
+
+        Collection<Integer> authorizedsources = userdatasourcesession.getAuthorizedUserDataSourceIds(getAdmin(), false);
+        for (Integer id : authorizedsources) {
+            retval.put(userdatasourcesession.getUserDataSourceName(getAdmin(), id), id);
+        }
+
+        return retval;
+    }
+
+    public void addDatasource() throws AuthorizationDeniedException {
+        if (newUserDatasource != null) {
+            if (!newUserDatasource.trim().equals("")) {
+                if (!StringTools.checkFieldForLegalChars(newUserDatasource)) {
+                    addErrorMessage("ONLYCHARACTERS");
+                } else {
+                    try {
+                        userdatasourcesession.addUserDataSource(getAdmin(), newUserDatasource.trim(), new CustomUserDataSourceContainer());
+                    } catch (UserDataSourceExistsException e) {
+                        addErrorMessage("USERDATASOURCEALREADY");
+                        newUserDatasource = null;
+                    }
+                }
+            }
+        }
+    }
+
+    public void renameDatasource() throws AuthorizationDeniedException {
+        if (selectedUserDataSource != null && newUserDatasource != null) {
+            selectedUserDataSource = selectedUserDataSource.trim();
+            newUserDatasource = newUserDatasource.trim();
+            if (StringUtils.isNotEmpty(newUserDatasource) && StringUtils.isNotEmpty(selectedUserDataSource)) {
+                if (!StringTools.checkFieldForLegalChars(newUserDatasource)) {
+                    addErrorMessage("ONLYCHARACTERS");
+                } else {
+                    try {
+                        userdatasourcesession.renameUserDataSource(getAdmin(), selectedUserDataSource, newUserDatasource);
+                        newUserDatasource = null;
+                    } catch (UserDataSourceExistsException e) {
+                        addErrorMessage("USERDATASOURCEALREADY");
+                    }
+                }
+            }
+        }
+    }
+
+    public void cloneDatasource() throws AuthorizationDeniedException {
+        if (selectedUserDataSource != null && newUserDatasource != null) {
+            selectedUserDataSource = selectedUserDataSource.trim();
+            newUserDatasource = newUserDatasource.trim();
+            if (StringUtils.isNotEmpty(newUserDatasource) && StringUtils.isNotEmpty(selectedUserDataSource)) {
+                if (!StringTools.checkFieldForLegalChars(newUserDatasource)) {
+                    addErrorMessage("ONLYCHARACTERS");
+                } else {
+                    try {
+                        userdatasourcesession.cloneUserDataSource(getAdmin(), selectedUserDataSource, newUserDatasource);
+                        newUserDatasource = null;
+                    } catch (UserDataSourceExistsException e) {
+                        addErrorMessage("USERDATASOURCEALREADY");
+                    }
+                }
+            }
+        }
+    }
+
+    public void deleteDatasource() throws AuthorizationDeniedException {
+        if (selectedUserDataSource != null) {
+            if (!selectedUserDataSource.trim().equals("")) {
+                boolean result = userdatasourcesession.removeUserDataSource(getAdmin(), selectedUserDataSource);
+                if (!result) {
+                    addErrorMessage("COULDNTDELETEUSERDATASOURCE");
+                }
+            }
+        }
+        actionCancel();
+    }
+
+    /**
+     * Delete action.
+     */
+    public void actionDelete() {
+        if (StringUtils.isNotEmpty(selectedUserDataSource)) {
+            deleteInProgress = true;
+        }
+    }
+
+    /**
+     * Cancel action.
+     */
+    public void actionCancel() {
+        deleteInProgress = false;
+        selectedUserDataSource = null;
+        newUserDatasource = null;
+    }
+
+    /**
+     * Edit action.
+     * @return the navigation outcome defined in faces-config.xml.
+     */
+    public String actionEdit() {
+        return "edit";
+    }
+
+    public String getSelectedUserDataSource() {
+        return selectedUserDataSource;
+    }
+
+    public void setSelectedUserDataSource(String selectedUserDataSource) {
+        this.selectedUserDataSource = selectedUserDataSource;
+    }
+
+    public String getNewUserDatasource() {
+        return newUserDatasource;
+    }
+
+    public void setNewUserDatasource(String newUserDatasource) {
+        this.newUserDatasource = newUserDatasource;
+    }
+
+    public boolean isDeleteInProgress() {
+        return deleteInProgress;
+    }
+}
+//kot
