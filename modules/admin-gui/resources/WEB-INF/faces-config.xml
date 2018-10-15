@@ -80,6 +80,20 @@
     	    <value>#{validatorsBean}</value>
     	</managed-property>
   </managed-bean>
+    <managed-bean>
+        <managed-bean-name>userDatasoucesMBean</managed-bean-name>
+        <managed-bean-class>org.ejbca.ui.web.admin.rainterface.UserDatasoucesMBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>editUserDatasoucesMBean</managed-bean-name>
+        <managed-bean-class>org.ejbca.ui.web.admin.rainterface.EditUserDatasoucesMBean</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+        <managed-property>
+            <property-name>userDatasoucesMBean</property-name>
+            <value>#{userDatasoucesMBean}</value>
+        </managed-property>
+    </managed-bean>
   <managed-bean>
     	<managed-bean-name>internalKeyBindingMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.keybind.InternalKeyBindingMBean</managed-bean-class>
@@ -277,7 +291,24 @@
       <to-view-id>/approval/editapprovalprofiles.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
-  
+
+    <navigation-rule>
+        <from-view-id>/ra/edituserdatasources/userdatasourcespage.xhtml</from-view-id>
+        <navigation-case>
+            <from-action>#{userDatasoucesMBean.actionEdit}</from-action>
+            <from-outcome>edit</from-outcome>
+            <to-view-id>/ra/edituserdatasources/edituserdatasource.xhtml</to-view-id>
+            <redirect include-view-params="true"></redirect>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/ra/edituserdatasources/edituserdatasource.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/ra/edituserdatasources/userdatasourcespage.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
   <navigation-rule>
     <from-view-id>/sysconfig/systemconfiguration.jsp</from-view-id>
     <navigation-case>
