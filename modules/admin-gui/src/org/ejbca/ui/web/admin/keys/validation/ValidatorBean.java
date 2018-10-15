@@ -243,7 +243,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     /**
      * Initializes the dynamic UI model grid panel.
      * @param pim the PIM.
-     * @param the HTML components ID prefix.
+     * @param prefix the HTML components ID prefix.
      * @throws DynamicUiModelException if the PSM could not be created.
      */
     private void initGrid(final DynamicUiModel pim, final String prefix) throws DynamicUiModelException {
