@@ -51,7 +51,7 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
     @EJB
     private UserDataSourceSessionLocal userdatasourcesession;
 
-    public class DatasourceGui{
+    public class DatasourceGui {
         private String name;
         private int type;
         private String description;
@@ -187,10 +187,10 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
         this.userDatasoucesMBean = userDatasoucesMBean;
     }
 
-    private  int getUserDataSourceType(BaseUserDataSource userdatasourcedata){
+    private int getUserDataSourceType(BaseUserDataSource userdatasourcedata) {
         int retval = CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER;
 
-        if(userdatasourcedata instanceof CustomUserDataSourceContainer) {
+        if (userdatasourcedata instanceof CustomUserDataSourceContainer) {
             retval = CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER;
         }
 
@@ -240,45 +240,45 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
     }
 
 
-    public TreeMap<String, Integer> getModifyableFieldTexts(){
-        if(modifyableFieldTexts ==null){
+    public TreeMap<String, Integer> getModifyableFieldTexts() {
+        if (modifyableFieldTexts == null) {
             modifyableFieldTexts = new TreeMap<>();
 
             String subjectdntext = getEjbcaWebBean().getText("CERT_SUBJECTDN");
             String subjectaltnametext = getEjbcaWebBean().getText("EXT_ABBR_SUBJECTALTNAME");
             String subjectdirattrtext = getEjbcaWebBean().getText("EXT_ABBR_SUBJECTDIRATTRS");
 
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_UID"),Integer.valueOf(DNFieldExtractor.UID));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_COMMONNAME"),Integer.valueOf(DNFieldExtractor.CN));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_SERIALNUMBER"), Integer.valueOf(DNFieldExtractor.SN));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_GIVENNAME"),Integer.valueOf(DNFieldExtractor.GIVENNAME));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_INITIALS"), Integer.valueOf(DNFieldExtractor.INITIALS));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_SURNAME"), Integer.valueOf(DNFieldExtractor.SURNAME));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_TITLE"), Integer.valueOf(DNFieldExtractor.T));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_ORGANIZATIONALUNIT"), Integer.valueOf(DNFieldExtractor.OU));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_ORGANIZATION"), Integer.valueOf(DNFieldExtractor.O));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_LOCALITY"), Integer.valueOf(DNFieldExtractor.L));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_STATEORPROVINCE"), Integer.valueOf(DNFieldExtractor.ST));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_DOMAINCOMPONENT"), Integer.valueOf(DNFieldExtractor.DC));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_COUNTRY"), Integer.valueOf(DNFieldExtractor.C));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_UNSTRUCTUREDADDRESS"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDADDRESS));
-            modifyableFieldTexts.put(subjectdntext + " : " +  getEjbcaWebBean().getText("DN_PKIX_UNSTRUCTUREDNAME"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDNAME));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_UID"), Integer.valueOf(DNFieldExtractor.UID));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_COMMONNAME"), Integer.valueOf(DNFieldExtractor.CN));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_SERIALNUMBER"), Integer.valueOf(DNFieldExtractor.SN));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_GIVENNAME"), Integer.valueOf(DNFieldExtractor.GIVENNAME));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_INITIALS"), Integer.valueOf(DNFieldExtractor.INITIALS));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_SURNAME"), Integer.valueOf(DNFieldExtractor.SURNAME));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_TITLE"), Integer.valueOf(DNFieldExtractor.T));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_ORGANIZATIONALUNIT"), Integer.valueOf(DNFieldExtractor.OU));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_ORGANIZATION"), Integer.valueOf(DNFieldExtractor.O));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_LOCALITY"), Integer.valueOf(DNFieldExtractor.L));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_STATEORPROVINCE"), Integer.valueOf(DNFieldExtractor.ST));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_DOMAINCOMPONENT"), Integer.valueOf(DNFieldExtractor.DC));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_COUNTRY"), Integer.valueOf(DNFieldExtractor.C));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_UNSTRUCTUREDADDRESS"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDADDRESS));
+            modifyableFieldTexts.put(subjectdntext + " : " + getEjbcaWebBean().getText("DN_PKIX_UNSTRUCTUREDNAME"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDNAME));
 
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_PKIX_DNSNAME"), Integer.valueOf(DNFieldExtractor.DNSNAME));
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_PKIX_IPADDRESS"), Integer.valueOf(DNFieldExtractor.IPADDRESS));
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_PKIX_DIRECTORYNAME"), Integer.valueOf(DNFieldExtractor.DIRECTORYNAME));
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_PKIX_UNIFORMRESOURCEID"), Integer.valueOf(DNFieldExtractor.URI));
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_MS_UPN"), Integer.valueOf(DNFieldExtractor.UPN));
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_MS_GUID"), Integer.valueOf(DNFieldExtractor.GUID));
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_KERBEROS_KPN"), Integer.valueOf(DNFieldExtractor.KRB5PRINCIPAL));
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_PKIX_PERMANENTIDENTIFIER"), Integer.valueOf(DNFieldExtractor.PERMANTIDENTIFIER));
-            modifyableFieldTexts.put(subjectaltnametext + " : " +  getEjbcaWebBean().getText("ALT_PKIX_SUBJECTIDENTIFICATIONMETHOD"), Integer.valueOf(DNFieldExtractor.SUBJECTIDENTIFICATIONMETHOD));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_DNSNAME"), Integer.valueOf(DNFieldExtractor.DNSNAME));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_IPADDRESS"), Integer.valueOf(DNFieldExtractor.IPADDRESS));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_DIRECTORYNAME"), Integer.valueOf(DNFieldExtractor.DIRECTORYNAME));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_UNIFORMRESOURCEID"), Integer.valueOf(DNFieldExtractor.URI));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_MS_UPN"), Integer.valueOf(DNFieldExtractor.UPN));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_MS_GUID"), Integer.valueOf(DNFieldExtractor.GUID));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_KERBEROS_KPN"), Integer.valueOf(DNFieldExtractor.KRB5PRINCIPAL));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_PERMANENTIDENTIFIER"), Integer.valueOf(DNFieldExtractor.PERMANTIDENTIFIER));
+            modifyableFieldTexts.put(subjectaltnametext + " : " + getEjbcaWebBean().getText("ALT_PKIX_SUBJECTIDENTIFICATIONMETHOD"), Integer.valueOf(DNFieldExtractor.SUBJECTIDENTIFICATIONMETHOD));
 
-            modifyableFieldTexts.put(subjectdirattrtext + " : " +  getEjbcaWebBean().getText("SDA_DATEOFBIRTH"), Integer.valueOf(DNFieldExtractor.DATEOFBIRTH));
-            modifyableFieldTexts.put(subjectdirattrtext + " : " +  getEjbcaWebBean().getText("SDA_PLACEOFBIRTH"),Integer.valueOf( DNFieldExtractor.PLACEOFBIRTH));
-            modifyableFieldTexts.put(subjectdirattrtext + " : " +  getEjbcaWebBean().getText("SDA_GENDER"),Integer.valueOf( DNFieldExtractor.GENDER));
-            modifyableFieldTexts.put(subjectdirattrtext + " : " +  getEjbcaWebBean().getText("SDA_COUNTRYOFCITIZENSHIP"),Integer.valueOf( DNFieldExtractor.COUNTRYOFCITIZENSHIP));
-            modifyableFieldTexts.put(subjectdirattrtext + " : " +  getEjbcaWebBean().getText("SDA_COUNTRYOFRESIDENCE"),Integer.valueOf( DNFieldExtractor.COUNTRYOFRESIDENCE));
+            modifyableFieldTexts.put(subjectdirattrtext + " : " + getEjbcaWebBean().getText("SDA_DATEOFBIRTH"), Integer.valueOf(DNFieldExtractor.DATEOFBIRTH));
+            modifyableFieldTexts.put(subjectdirattrtext + " : " + getEjbcaWebBean().getText("SDA_PLACEOFBIRTH"), Integer.valueOf(DNFieldExtractor.PLACEOFBIRTH));
+            modifyableFieldTexts.put(subjectdirattrtext + " : " + getEjbcaWebBean().getText("SDA_GENDER"), Integer.valueOf(DNFieldExtractor.GENDER));
+            modifyableFieldTexts.put(subjectdirattrtext + " : " + getEjbcaWebBean().getText("SDA_COUNTRYOFCITIZENSHIP"), Integer.valueOf(DNFieldExtractor.COUNTRYOFCITIZENSHIP));
+            modifyableFieldTexts.put(subjectdirattrtext + " : " + getEjbcaWebBean().getText("SDA_COUNTRYOFRESIDENCE"), Integer.valueOf(DNFieldExtractor.COUNTRYOFRESIDENCE));
 
 
             modifyableFieldTexts.put(getEjbcaWebBean().getText("USERNAME"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_USERNAME));
