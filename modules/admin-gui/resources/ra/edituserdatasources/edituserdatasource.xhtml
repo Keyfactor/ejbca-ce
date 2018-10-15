@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:component="http://java.sun.com/jsf/composite/component"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+    <!--
+    /*************************************************************************
+    *                                                                       *
+    *  EJBCA: The OpenSource Certificate Authority                          *
+    *                                                                       *
+    *  This software is free software; you can redistribute it and/or       *
+    *  modify it under the terms of the GNU Lesser General Public           *
+    *  License as published by the Free Software Foundation; either         *
+    *  version 2.1 of the License, or any later version.                    *
+    *                                                                       *
+    *  See terms of license at gnu.org.                                     *
+    *                                                                       *
+    *************************************************************************/
+
+    $Id: userdatasourcespage.xhtml 29889 2018-09-20 09:00:55Z jekaterina $
+    -->
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:define name="content">
+        <div align="center">
+            <h2><h:outputText value="#{web.text.EDITUSERDATASOURCE}"/>
+            </h2>
+            <h3><h:outputText value="#{web.text.USERDATASOURCE}"/> : <h:outputText
+                    value="#{editUserDatasoucesMBean.datasource.name}"/></h3>
+        </div>
+        <h:form id="edituserdatasource" enctype="multipart/form-data">
+            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                <h:panelGroup>&nbsp;</h:panelGroup>
+                <h:outputLink value="userdatasourcespage.xhtml">
+                    <h:outputText value="#{web.text.BACKTOUSERDATASOURCES}"/>
+                </h:outputLink>
+                <h:outputLabel for="userDatasourceName" value="#{web.text.NAME}"/>
+                <h:outputText id="userDatasourceName" value="#{editUserDatasoucesMBean.datasource.name}"/>
+                <h:outputLabel for="userdatasourceType" value="#{web.text.USERDATASOURCETYPE}"/>
+                <h:selectOneMenu id="userdatasourceType" name="selectuserdatasourcetype" value="#{editUserDatasoucesMBean.datasource.type}">
+                    <f:selectItems value="#{editUserDatasoucesMBean.userDatasourceTypeItemList}"/>
+                </h:selectOneMenu>
+            </h:panelGrid>
+            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
+                         rendered="#{editUserDatasoucesMBean.datasource.isCustomUserDatasource()}">
+                <h:panelGroup>
+                    <h:outputLabel for="custom_userdatasource_settings" value="#{web.text.CUSTOMUSERDATASOURCESETTINGS}"
+                                   style="font-weight: bold;"/>
+                </h:panelGroup>
+                <h:panelGroup id="custom_userdatasource_settings"></h:panelGroup>
+                <h:outputLabel for="textfieldcustomclasspath" value="#{web.text.CLASSPATH}"/>
+                <h:inputText id="textfieldcustomclasspath" size="45" maxlength="255" name="textfieldcustomclasspath"
+                             value="#{editUserDatasoucesMBean.datasource.classPath}" required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.CLASSPATH}"/>
+                <h:outputLabel for="textareacustomproperties" value="#{web.text.PROPERTIESOFCUSTOM}"/>
+                <h:inputTextarea id="textareacustomproperties" value="#{editUserDatasoucesMBean.datasource.description}" name="textareacustomproperties"
+                                 cols="45" rows="8" required="false"/>
+            </h:panelGrid>
+            <h:panelGrid columns="2" styleClass="edit-top, edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                <h:panelGroup>
+                    <h:outputLabel for="general_settings" value="#{web.text.GENERALSETTINGS}"
+                                   style="font-weight: bold;"/>
+                </h:panelGroup>
+                <h:panelGroup id="general_settings"></h:panelGroup>
+                <h:outputLabel for="selectmodifyablefields" value="#{web.text.MODIFYABLEFIELDS}"/>
+                <h:selectManyListbox styleClass="select-list" id="selectmodifyablefields" name="selectmodifyablefields"
+                                     value="#{editUserDatasoucesMBean.datasource.modifiableFields}" size="10">
+                    <f:selectItems value="#{editUserDatasoucesMBean.modifyableFieldSeletItemList}"/>
+                </h:selectManyListbox>
+
+                <h:outputLabel for="selectapplicablecas" value="#{web.text.APPLICABLECAS}"/>
+                <h:selectManyListbox styleClass="select-list" id="selectapplicablecas" name="selectapplicablecas"
+                                     value="#{editUserDatasoucesMBean.datasource.applicableCAs}" size="10">
+                    <f:selectItems value="#{editUserDatasoucesMBean.applicableCAsSeletItemList}"/>
+                </h:selectManyListbox>
+
+                <h:outputLabel for="description" value="#{web.text.DESCRIPTION}"/>
+                <h:inputTextarea id="description" value="#{editUserDatasoucesMBean.datasource.description}" name="textareadescription"
+                                 cols="45" rows="3" required="false"/>
+                <h:panelGroup>&nbsp;</h:panelGroup>
+                <h:panelGroup>
+
+                    <h:commandButton value="#{web.text.SAVEANDTESTCONNECTION}" action="#{editUserDatasoucesMBean.saveAndTest}" name="buttontestconnection" />&nbsp;
+                    <h:commandButton value="#{web.text.SAVE}" action="#{editUserDatasoucesMBean.save}" name="buttonsave" />&nbsp;
+                    <h:commandButton value="#{web.text.CANCEL}" action="#{editUserDatasoucesMBean.cancel}" immediate="true" name="buttoncancel"/>
+                </h:panelGroup>
+            </h:panelGrid>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>
