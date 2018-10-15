@@ -1374,11 +1374,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final List<SelectItem> ret = new ArrayList<>();
         ret.add(new SelectItem(0, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
         for (final Integer id : getAvilableTokenTypes()) {
-            ret.add(new SelectItem(id, SecConst.TOKEN_DISPLAY_TEXTS[id -1]));
+            ret.add(new SelectItem(id, raLocaleBean.getMessage("tokentype_" + id)));
         }
         return ret;
     }
-    
+
     private List<Integer> getAvilableTokenTypes() {
         List<Integer> ret = new ArrayList<>();
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
