@@ -21,8 +21,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletException;
@@ -33,14 +31,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * @version $Id: UserDataSouceMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
@@ -200,6 +195,7 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
 
     /**
      * Edit action.
+     *
      * @return the navigation outcome defined in faces-config.xml.
      */
     public String actionEdit() {
