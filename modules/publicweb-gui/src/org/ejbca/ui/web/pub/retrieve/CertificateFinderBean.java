@@ -154,7 +154,6 @@ public class CertificateFinderBean {
 	 *        userCertificate fields of result are set to null.
 	 */
 	public void lookupRevokedInfo(String issuerDN, String serialNumber, RevokedCertInfo result) {
-		serialNumber = ("0000000000000000" + serialNumber).substring(serialNumber.length());	// Pad with zeroes up to 16 chars
 		if (log.isTraceEnabled()) {
 			log.trace(">lookupRevokedInfo(" + issuerDN + ", " + serialNumber + ", " + result + ")");
 		}
