@@ -147,21 +147,20 @@
                                     <h:inputText  disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'String'}" 
                                         value="#{property.value}" style="width: 100%" >
                                     	<f:converter converterId="stringConverter"/>
-                                    	<!-- TODO Validation -->
-                                        <!-- <f:validator validatorId="#{property.validatorType}"/>  -->
+                                        <f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/> 
                                     </h:inputText>
                                     <h:inputTextarea disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
                                         value="#{property.value.value}" style="width: 100%" >
                                         <f:converter converterId="stringConverter"/>
-                                        <!-- <f:validator validatorId="#{property.validatorType}"/>	 -->
+                                        <f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/>
                                     </h:inputTextarea>
                                     <h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" size="6">
                                     	<f:converter converterId="javax.faces.Long"/>
-                                       	<!-- <f:validator validatorId="#{property.validatorType}"/>  -->
+                                       	<f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/>
                                     </h:inputText>
                                     <h:inputText disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" size="6" >
                                        	<f:converter converterId="javax.faces.Integer"/>
-                                       	<!-- <f:validator validatorId="#{property.validatorType}"/>  -->
+                                       	<f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/>
                                     </h:inputText>
                                     <h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
                                 </h:panelGroup>
@@ -188,8 +187,8 @@
                                         columnClasses="column-checkbox1, column-checkbox2" style="width: 100%;">
                                         <h:column>
                                             <!-- Selecting default values hasn't been implemented, so radio buttons are rendered disabled -->
-                                            <!-- <input type="radio" name="<h:outputText value='#{property.name}'/>" disabled /> -->
-                                            <!-- <h:outputText value="#{radioButton.value}" converter="radioButtonLabelConverter"/>       -->                            
+                                            <input type="radio" name="#{property.name}" disabled="true" />
+                                            <h:outputText value="#{radioButton.value}" converter="radioButtonLabelConverter"/>                           
                                         </h:column>
                                         <h:column>                                      
                                             <h:commandButton value="#{web.text.APPROVAL_PROFILE_FIELD_REMOVE_ROW}" disabled="#{approvalProfilesMBean.viewOnly}"
