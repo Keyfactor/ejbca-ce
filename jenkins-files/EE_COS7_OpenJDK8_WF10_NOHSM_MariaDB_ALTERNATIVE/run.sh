@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "hello 123"
+
 cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
 cp /opt/conf/* conf/
