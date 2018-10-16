@@ -42,7 +42,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.AdminIndexMBean;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -113,6 +112,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
+            Collections.reverse(certificatechain);
             this.certificatechain = certificatechain;
             this.crlinfo = crlinfo;
             this.deltacrlinfo = deltacrlinfo;
@@ -239,11 +239,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return CertTools.getUnescapedRdnValue(CertTools.getSubjectDN(certificate));
     }
 
-    public String getCertificatePopupLink(int caid) throws UnsupportedEncodingException {
+    public String getCertificatePopupLink(int caid) {
         StringBuilder link = new StringBuilder();
         link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getAdminWebPath()).append("viewcertificate.jsp?caid=").append(caid);
         return link.toString();
     }
+
     public String openCertificateInfoPopup(int caid){
         StringBuilder link = new StringBuilder();
         link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/viewcainfo.jsp?caid=").append(caid);
