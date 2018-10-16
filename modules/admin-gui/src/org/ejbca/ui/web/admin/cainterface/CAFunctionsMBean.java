@@ -274,6 +274,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         clearMessages();
         byte[] bytes = uploadFile.getBytes();
         String responseMessage = caBean.importCRL(crlImportCaName, bytes);
+        refreshCaGuiInfos();
         if(responseMessage.startsWith("Error")) {
             errorMessage = responseMessage;
         } else {
@@ -282,9 +283,13 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     }
 
-    public void createNewCrl(int caid) throws CAOfflineException, CryptoTokenOfflineException {
-        getCaBean().createCRL(caid);
-        refreshCaGuiInfos();
+    public void createNewCrl(int caid) throws CAOfflineException {
+        try {
+            getCaBean().createCRL(caid);
+            refreshCaGuiInfos();
+        } catch (CryptoTokenOfflineException e) {
+            addErrorMessage("CATOKENISOFFLINE");
+        }
     }
     public void createNewDeltaCrl(int caid) throws CAOfflineException, CryptoTokenOfflineException {
         getCaBean().createDeltaCRL(caid);
