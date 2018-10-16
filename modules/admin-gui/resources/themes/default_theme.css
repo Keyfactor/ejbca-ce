@@ -540,7 +540,8 @@ table.edit tr td {
 	text-align: right;
 }
 .editColumn2-Approval-steps {
-	width: 45%
+	width: 45%;
+	text-align: left;
 }
 .editColumnSystem2 {
 	width: 65%;
