@@ -10,7 +10,6 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.IOException;
 import java.security.cert.CertificateParsingException;
 import java.util.Calendar;
 import java.util.List;
