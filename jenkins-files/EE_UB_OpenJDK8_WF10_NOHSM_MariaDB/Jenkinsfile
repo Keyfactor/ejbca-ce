@@ -34,7 +34,9 @@ pipeline {
         always {
             junit "ejbca/**/reports/**/TEST-*.xml"
             sh "docker stop --time=1 ee_ub_openjdk8_wf10_nohsm_mariadb"
-            sh "rm -f ee_ub_openjdk8_wf10_nohsm_mariadb"
+            sh "docker rm -f ee_ub_openjdk8_wf10_nohsm_mariadb"
+            sh "docker stop --time=1 mariadb"
+            sh "docker rm -f mariadb"
             cleanWs()
         }
     }
