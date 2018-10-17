@@ -1,0 +1,16 @@
+pipeline {
+	agent {
+		label "docker"
+	}
+    
+    stages {
+        stage('prune') {
+            steps {
+                // remove all non-running packages and images and containers
+                // after pruning, all images need to be built from scratch, docker 'cache' will be empty.
+                // meant to be run once per night
+                sh "docker system prune -f -a --volumes"
+            }
+        }
+    }
+}
