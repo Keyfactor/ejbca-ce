@@ -33,6 +33,7 @@ echo '=================== ant runinstall done! =================================
 ant deploy-keystore
 echo '=================== ant deploy-keystore done! ================================='
 
+# load the final version of Wildfly conf and restart wildfly
 cp /opt/standalone2.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
