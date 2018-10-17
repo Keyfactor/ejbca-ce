@@ -6,7 +6,7 @@ pipeline {
 		stage('verify that space is clean') {
             steps {
                 sh "docker container rm mariadb_1 -f || true"
-                sh "docker container rm ee_ub_openjdk8_wf10_nohsm_mariadb -f || true"
+                sh "docker container rm ee_cos7_openjdk8_wf10_nohsm_mariadb -f || true"
                 sh "rm -rf ear"
             }
         }
@@ -23,9 +23,9 @@ pipeline {
         stage('deploy and run system tests') {
             steps {
                 sh "mkdir ear || true"
-                dir ('ejbca/jenkins-files/EE_UB_OpenJDK8_WF10_NOHSM_MariaDB') {
-                    sh "docker build -t ee_ub_openjdk8_wf10_nohsm_mariadb -m 2GB ."
-                    sh "docker run --name ee_ub_openjdk8_wf10_nohsm_mariadb --net=my_isolated_bridge_network -v " + "$env.WORKSPACE" + ":/app ee_ub_openjdk8_wf10_nohsm_mariadb"
+                dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_MariaDB') {
+                    sh "docker build -t ee_cos7_openjdk8_wf10_nohsm_mariadb -m 2GB ."
+                    sh "docker run --name ee_cos7_openjdk8_wf10_nohsm_mariadb --net=my_isolated_bridge_network -v " + "$env.WORKSPACE" + ":/app ee_cos7_openjdk8_wf10_nohsm_mariadb"
                 }
             }
         }
@@ -33,8 +33,8 @@ pipeline {
     post {
         always {
             junit "ejbca/**/reports/**/TEST-*.xml"
-            sh "docker stop --time=1 ee_ub_openjdk8_wf10_nohsm_mariadb"
-            sh "docker rm -f ee_ub_openjdk8_wf10_nohsm_mariadb"
+            sh "docker stop --time=1 ee_cos7_openjdk8_wf10_nohsm_mariadb"
+            sh "docker rm -f ee_cos7_openjdk8_wf10_nohsm_mariadb"
             sh "docker stop --time=1 mariadb_1"
             sh "docker rm -f mariadb_1"
             cleanWs()
