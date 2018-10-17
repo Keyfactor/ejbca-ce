@@ -33,6 +33,9 @@ pipeline {
             steps {
                 sh "rm -rf ear"
                 sh "mkdir ear || true"
+                dir ('ejbca') {
+                    sh "/opt/run.sh"
+                }
                 junit "ejbca/**/reports/**/TEST-*.xml"
             }
         }

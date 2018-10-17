@@ -5,19 +5,18 @@ USER root
 #Create Ant Dir
 RUN mkdir -p /opt/ant/
 
-#Setting Ant Home
+#Download Ant 1.9.8
 ENV ANT_HOME /opt/ant/apache-ant-1.9.8
-ENV ANT_SHA1 8163a983cb7b541a8a948c2e7ec910f65ea2abf9
+ENV ANT_SHA1 ca31bd42c27f7e63cccb219ee59930fdc943ca82
 
 RUN cd $HOME \
 	&& curl -O http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz \
+	&& sha1sum apache-ant-1.9.8-bin.tar.gz | grep $ANT_SHA1 \
     && tar xf apache-ant-1.9.8-bin.tar.gz \
     && mv $HOME/apache-ant-1.9.8 $ANT_HOME \
     && rm apache-ant-1.9.8-bin.tar.gz \
     && chown -R jboss:0 ${ANT_HOME} \
     && chmod -R g+rw ${ANT_HOME}
-
-#TODO: add checksum check to the previous command
 
 
 #Updating Path
