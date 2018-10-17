@@ -42,7 +42,8 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
+            // cleanup temporarily commented out to quicken my testing cycle. put back in later!
+            //cleanWs()
         }
     }
 }
