@@ -3,7 +3,7 @@ pipeline {
 		label "docker"
 	}
     stages {
-		stage('cleanup') {
+		stage('verify that space is clean') {
             steps {
                 sh "docker container rm mariadb -f || true"
                 sh "docker container rm ee_ub_openjdk8_wf10_nohsm_mariadb -f || true"
@@ -33,9 +33,9 @@ pipeline {
     post {
         always {
             junit "ejbca/**/reports/**/TEST-*.xml"
-            // sh docker stop --time=1 ee_ub_openjdk8_wf10_nohsm_mariadb
-            // sh rm -f ee_ub_openjdk8_wf10_nohsm_mariadb
-            //cleanWs()
+            sh "docker stop --time=1 ee_ub_openjdk8_wf10_nohsm_mariadb"
+            sh "rm -f ee_ub_openjdk8_wf10_nohsm_mariadb"
+            cleanWs()
         }
     }
 }
