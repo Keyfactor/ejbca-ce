@@ -45,7 +45,8 @@ ADD standalone2.xml /opt/standalone2.xml
 ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
 
 # Set the working directory to /app
-WORKDIR /app/ejbca
+# commed out for testing failure/timeout script
+#WORKDIR /app/ejbca
 
 
 CMD ["/opt/run.sh"]
