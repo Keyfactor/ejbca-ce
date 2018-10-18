@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletException;
@@ -30,8 +31,9 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
@@ -46,8 +48,8 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(UserDatasoucesMBean.class);
 
-    private RAInterfaceBean raBean;
-    private UserDataSourceSession userdatasourcesession = null;
+    @EJB
+    private UserDataSourceSessionLocal userdatasourcesession = null;
 
     private String selectedUserDataSource;
     private String newUserDatasource = "";
@@ -62,9 +64,7 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
     private void postConstruct() throws Exception {
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
-        raBean = getRaBean(req);
-        userdatasourcesession = raBean.getUserDataSourceSession();
-    }
+}
 
     private final RAInterfaceBean getRaBean(HttpServletRequest req) throws ServletException {
         HttpSession session = req.getSession();
@@ -199,7 +199,15 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
      * @return the navigation outcome defined in faces-config.xml.
      */
     public String actionEdit() {
-        return "edit";
+        if(StringUtils.isNotEmpty(selectedUserDataSource)) {
+            return "edit";
+        } else
+            addErrorMessage("USERDATASOURCESELECT");
+            return "";
+    }
+
+    public boolean isAuthorizedToEdit() {
+        return isAuthorizedTo(StandardRules.CERTIFICATEPROFILEEDIT.resource());
     }
 
     public String getSelectedUserDataSource() {
@@ -222,4 +230,3 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
         return deleteInProgress;
     }
 }
-//kot
