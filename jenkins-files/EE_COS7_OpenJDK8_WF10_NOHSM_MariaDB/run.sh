@@ -21,7 +21,7 @@ wait_for_deployment() {
 			break
 		fi
 		if [ -e "/opt/jboss/wildfly/standalone/deployments/ejbca.ear.failed" ] ; then
-            echo "EJBCA deploy failed." 
+            echo "EJBCA deploy failed."
             exit 1;
         fi
 		echo 'waiting...'
