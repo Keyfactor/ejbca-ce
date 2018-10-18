@@ -40,6 +40,10 @@ public class PublisherConst {
 	@Deprecated
     public static final int TYPE_VAPUBLISHER = 5;
 
+    /** Multi publisher */
+    public static final int TYPE_MULTIGROUPPUBLISHER = 6;
+
+
 	/**The entry has been published successfully*/
 	public static final int STATUS_SUCCESS = 10; // If the entry has been published successfully
 	

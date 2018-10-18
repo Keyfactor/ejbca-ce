@@ -38,6 +38,7 @@ import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
+import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
@@ -279,6 +280,9 @@ public class EditPublisherJSPHelper {
                                     break;
                                 case PublisherConst.TYPE_VAPUBLISHER:
                                     publisherdata = null;
+                                    break;
+                                case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
+                                    publisherdata = new MultiGroupPublisher();
                                     break;
                                 default:
                                     break;
@@ -549,7 +553,12 @@ public class EditPublisherJSPHelper {
                                     adpublisher.setUserAccountControl(Integer.parseInt(value));
                                 }
                             }
-                            
+
+                            if (publisherdata instanceof MultiGroupPublisher) {
+                                // TODO
+                                throw new UnsupportedOperationException("not implemented");
+                            }
+
                             if(request.getParameter(BUTTON_SAVE) != null){
                                 handler.changePublisher(publisher,publisherdata);
                                 includefile=PAGE_PUBLISHERS;
@@ -596,6 +605,9 @@ public class EditPublisherJSPHelper {
                         case PublisherConst.TYPE_ADPUBLISHER :
                             publisherdata =  new ActiveDirectoryPublisher();
                             break;
+                        case PublisherConst.TYPE_MULTIGROUPPUBLISHER :
+                            publisherdata =  new MultiGroupPublisher();
+                            break;
                         }
                     } else {
                         publisherdata = new CustomPublisherContainer();
@@ -615,11 +627,11 @@ public class EditPublisherJSPHelper {
     
     private static final int[] AVAILABLEPUBLISHER_TYPES = new int[] {
         PublisherConst.TYPE_LDAPPUBLISHER, PublisherConst.TYPE_LDAPSEARCHPUBLISHER, PublisherConst.TYPE_ADPUBLISHER,
-        PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER
+        PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER, PublisherConst.TYPE_MULTIGROUPPUBLISHER
     };
     private static final String[] AVAILABLEPUBLISHER_TYPETEXTS = new String[] {
         "LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER",
-         "CUSTOMPUBLISHER"
+        "CUSTOMPUBLISHER", "MULTIGROUPPUBLISHER"
     };
     
     public String getPublisherName() {
@@ -719,6 +731,9 @@ public class EditPublisherJSPHelper {
         }
         if(publisherdata instanceof ActiveDirectoryPublisher) {
             retval = PublisherConst.TYPE_ADPUBLISHER;
+        }
+        if (publisherdata instanceof MultiGroupPublisher) {
+            retval = PublisherConst.TYPE_MULTIGROUPPUBLISHER;
         }
         return retval;
     }

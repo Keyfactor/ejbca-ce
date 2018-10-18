@@ -62,6 +62,7 @@ import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
+import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
@@ -761,6 +762,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             } catch (ClassNotFoundException e) {
                 return null;
             }
+        case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
+            return new MultiGroupPublisher();
         case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
             return new CustomPublisherContainer();
         default:
