@@ -12,12 +12,12 @@ echo '=================== Waiting for deploy ================================='
 
 
 wait_for_deployment() {
-    DEPLOY_SUCCESSFUL = 0
+    DEPLOY_SUCCESSFUL="0"
 	# Wait for up to 180 seconds for app to start up
 	for i in {1..90} ; do
 		if [ -e "/opt/jboss/wildfly/standalone/deployments/ejbca.ear.deployed" ] ; then
 			echo "EJBCA successfully started."
-			DEPLOY_SUCCESSFUL = 1;
+			DEPLOY_SUCCESSFUL="1";
 			break
 		fi
 		if [ -e "/opt/jboss/wildfly/standalone/deployments/ejbca.ear.failed" ] ; then
