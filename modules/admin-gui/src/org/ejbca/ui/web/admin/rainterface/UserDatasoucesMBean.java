@@ -64,29 +64,8 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
     private void postConstruct() throws Exception {
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
-}
-
-    private final RAInterfaceBean getRaBean(HttpServletRequest req) throws ServletException {
-        HttpSession session = req.getSession();
-        RAInterfaceBean rabean = (RAInterfaceBean) session.getAttribute("rabean");
-        if (rabean == null) {
-            try {
-                rabean = (RAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(),
-                        org.ejbca.ui.web.admin.rainterface.RAInterfaceBean.class.getName());
-            } catch (ClassNotFoundException e) {
-                throw new ServletException(e);
-            } catch (Exception e) {
-                throw new ServletException("Unable to instantiate RAInterfaceBean", e);
-            }
-            try {
-                rabean.initialize(req, getEjbcaWebBean());
-            } catch (Exception e) {
-                throw new ServletException("Cannot initialize RAInterfaceBean", e);
-            }
-            session.setAttribute("rabean", rabean);
-        }
-        return rabean;
     }
+
 
     public List<SelectItem> getUserDatasourceSeletItemList() {
         TreeMap<String, Integer> userdatasourcenames = getAuthorizedUserDataSourceNames();
@@ -199,11 +178,11 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
      * @return the navigation outcome defined in faces-config.xml.
      */
     public String actionEdit() {
-        if(StringUtils.isNotEmpty(selectedUserDataSource)) {
+        if (StringUtils.isNotEmpty(selectedUserDataSource)) {
             return "edit";
         } else
             addErrorMessage("USERDATASOURCESELECT");
-            return "";
+        return "";
     }
 
     public boolean isAuthorizedToEdit() {
