@@ -15,10 +15,13 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.TreeSet;
 
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -848,5 +851,52 @@ public class EditPublisherJSPHelper {
            }
        }
        return "";
+    }
+
+    List<TreeSet<Integer>> convertMultiPublishersStringToData(final Map<String, Integer> publisherNameToIdMap, final String textareaData) throws PublisherDoesntExistsException, PublisherExistsException {
+        TreeSet<Integer> selectedPublishers = new TreeSet();
+        List<String> listOfPublisherNames = Arrays.asList(textareaData.split("\n"));
+        ArrayList<TreeSet<Integer>> data = new ArrayList<>();
+        TreeSet<Integer> tree = new TreeSet<>();
+        for (String publisherName : listOfPublisherNames) {
+            publisherName = publisherName.trim();
+            if (StringUtils.isNotEmpty(publisherName)) {
+                if (!tree.isEmpty()) {
+                    data.add(tree);
+                    tree = new TreeSet<>();
+                }
+            } else {
+                Integer publisherId = publisherNameToIdMap.get(publisherName);
+                if (publisherId != null) {
+                    if (!selectedPublishers.contains(publisherId)) {
+                        tree.add(publisherId);
+                        selectedPublishers.add(publisherId);
+                    } else {
+                        throw new PublisherExistsException("Publisher selected at least twice " + publisherName);
+                    }
+                } else {
+                    throw new PublisherDoesntExistsException("Could not find publisher *" + publisherName + "*");
+                }
+            }
+        }
+        if (!tree.isEmpty()) {
+            data.add(tree);
+        }
+        return data;
+    }
+
+    String convertMultiPublishersDataToString(final Map<Integer,String> publisherIdToNameMap, final List<TreeSet<Integer>> data){
+        StringBuffer result = new StringBuffer();
+        String prefix = "";
+        for (TreeSet<Integer> tree : data) {
+            for (Integer publisherId : tree) {
+                result.append(prefix);
+                result.append(publisherIdToNameMap.get(publisherId));
+                prefix = "\n";
+            }
+            result.append("\n");
+        }
+        result.setLength(Math.max(result.length() - 1, 0));
+        return result.toString();
     }
 }
