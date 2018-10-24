@@ -24,6 +24,44 @@ function checkAll(checkboxlist,size) {
   }
 }
 
+/**
+ * Used in importca.xhtml and importcacert.xhtml
+ * 
+ * @param message the message to be printed in case no file is selected to import
+ * @returns false if no file selected for import, true otherwise
+ */
+function checkFileRecieve(message) {
+	if (document.getElementById('recievefile:filerecievefile').value == '') {
+		alert(message);
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Used in managecas.xhtml
+ * 
+ * @param message the message to be shown to user before confirming the delete operation
+ * @returns false in case message is null or empty, otherwise returns a delete confirmation dialogue to user.
+ */
+function confirmcadeletion(message) {
+    if (!message || 0 === message.length) {
+        return false;
+    }
+    return confirm(message);
+}
+
+/**
+ * Used in editcapage.xhtml
+ * @param link The link to the certificate to be shown
+ * 
+ */
+function viewcacert(link){
+    win_popup = window.open(link, 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
+}
+
+
 function uncheckAll(checkboxlist,size) {
   for (var i = 0; i < size; i++) {
   box = eval(checkboxlist + i ); 
