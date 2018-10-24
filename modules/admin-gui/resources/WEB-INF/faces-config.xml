@@ -416,4 +416,9 @@
   		<to-view-id>/peerconnector/peerconnectors.jsp</to-view-id>
   	</navigation-case>
   </navigation-rule>
+  
+  <factory>
+  		<exception-handler-factory>org.ejbca.ui.web.admin.CaExceptionHandlerFactory</exception-handler-factory>
+  </factory>
+  
 </faces-config>
