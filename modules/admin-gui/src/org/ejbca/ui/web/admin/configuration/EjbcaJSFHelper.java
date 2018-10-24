@@ -112,6 +112,24 @@ public class EjbcaJSFHelper {
          return ejbcawebbean;
      }
 
+     public EjbcaWebBean getEjbcaErrorWebBean(){
+         FacesContext ctx = FacesContext.getCurrentInstance();                  
+         HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
+         synchronized (session) {
+             ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) session.getAttribute("ejbcawebbean");
+             if (ejbcawebbean == null){
+                 ejbcawebbean = new org.ejbca.ui.web.admin.configuration.EjbcaWebBean();
+                 try {
+                     ejbcawebbean.initialize_errorpage((HttpServletRequest) ctx.getExternalContext().getRequest());
+                     session.setAttribute("ejbcawebbean", ejbcawebbean);
+                 } catch (Exception e) {
+                     log.error(e);
+                 }
+             }
+         }
+         return ejbcawebbean;
+     }
+     
      public AuthenticationToken getAdmin() {
     	 return getEjbcaWebBean().getAdminObject();
      }

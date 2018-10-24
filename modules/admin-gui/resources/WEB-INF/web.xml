@@ -256,6 +256,19 @@
       <url-pattern>/logout</url-pattern>
    </servlet-mapping>
 
+    <error-page>
+    	<error-code>403</error-code>
+        <location>/error.xhtml</location>
+    </error-page>
+    <error-page>
+    	<error-code>404</error-code>
+        <location>/error.xhtml</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error.xhtml</location>
+    </error-page>
+
     <session-config>
         <session-timeout>30</session-timeout>
         <cookie-config>

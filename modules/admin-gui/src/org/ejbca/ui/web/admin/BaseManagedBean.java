@@ -51,6 +51,11 @@ public abstract class BaseManagedBean implements Serializable {
 		return EjbcaJSFHelper.getBean().getEjbcaWebBean();
 	}
 
+	/** @return returns EjbcaWebBean initialized in "error-mode". Should only be used for error pages */
+	protected EjbcaWebBean getEjbcaErrorWebBean() {
+	    return EjbcaJSFHelper.getBean().getEjbcaErrorWebBean();
+	}
+	
 	/** @return true if the current admin is authorized to the resources or false otherwise */
     protected boolean isAuthorizedTo(final String...resources) {
         return getEjbcaWebBean().getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), resources);
