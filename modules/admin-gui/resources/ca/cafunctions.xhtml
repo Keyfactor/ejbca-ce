@@ -28,7 +28,9 @@
 	$Id: cafunctions.xhtml 29889 2018-09-20 09:00:55Z jekaterina $
 	-->
 </ui:remove>
-
+<f:metadata>
+	<f:event type="preRenderView" listener="#{cAFunctionsMBean.initialize}"/>
+</f:metadata>
 <ui:composition template="/WEB-INF/include/template.xhtml">
 	<ui:define name="content">
 		<h1><h:outputText value="#{web.text.CASTRUCTUREANDCRL}"/></h1>

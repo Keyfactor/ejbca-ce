@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,10 +22,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -65,31 +64,33 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private String message;
     private String errorMessage;
 
-    @PostConstruct
-    private void postConstruct() throws Exception {
-        final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        globalConfiguration = getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-
-        caBean = (CAInterfaceBean) req.getSession().getAttribute("caBean");
-        if ( caBean == null ){
-            try {
-                caBean = (CAInterfaceBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
-            } catch (ClassNotFoundException exc) {
-                throw new ServletException(exc.getMessage());
-            }catch (Exception exc) {
-                throw new ServletException (" Cannot create bean of class "+CAInterfaceBean.class.getName(), exc);
+    public void initialize(ComponentSystemEvent event) throws Exception {
+        // Invoke on initial request only
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            globalConfiguration = getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+    
+            caBean = (CAInterfaceBean) req.getSession().getAttribute("caBean");
+            if ( caBean == null ){
+                try {
+                    caBean = (CAInterfaceBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
+                } catch (ClassNotFoundException exc) {
+                    throw new ServletException(exc.getMessage());
+                }catch (Exception exc) {
+                    throw new ServletException (" Cannot create bean of class "+CAInterfaceBean.class.getName(), exc);
+                }
+                req.getSession().setAttribute("cabean", caBean);
             }
-            req.getSession().setAttribute("cabean", caBean);
+            try{
+                caBean.initialize(getEjbcaWebBean());
+            } catch(Exception e){
+                throw new java.io.IOException("Error initializing AdminIndexMBean");
+            }
+            TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
+            extCaNameList = new ArrayList<String>(externalCANames.keySet());
         }
-        try{
-            caBean.initialize(getEjbcaWebBean());
-        } catch(Exception e){
-            throw new java.io.IOException("Error initializing AdminIndexMBean");
-        }
-        TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
-        extCaNameList = new ArrayList<String>(externalCANames.keySet());
     }
-
+    
     public void clearMessages(){
         message = null;
         errorMessage = null;

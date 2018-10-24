@@ -22,7 +22,9 @@
 	$Id$
 	-->
 </ui:remove>
-
+<f:metadata>
+	<f:event type="preRenderView" listener="#{adminIndexMBean.initialize}"/>
+</f:metadata>
 <h:body>
 	<ui:composition>
 		<div class="status" id="crlstatus" >
