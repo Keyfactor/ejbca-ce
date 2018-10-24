@@ -757,6 +757,12 @@ table.results table.actions tbody tr:active {
     margin-top: 1em;
 }
 
+.section-label-span {
+    margin-bottom: 1em;
+    margin-top: 1em;
+    display: inline-block;
+}
+
 .checkbox {
 	margin-right:10px;
 }
@@ -1226,6 +1232,8 @@ body.popup {
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
 .commandButton { font-size: 9pt; vertical-align: bottom; margin-left: .5em; margin-right: .5em; }
 
+.commandLinkAudit { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-top: 1em; margin-right: 1em; margin-bottom: 0.5em; }
+
 .commandLink.reload { color: #4B842E; }
 .commandLink.remove { color: #A21C15; }
 
@@ -1324,5 +1332,10 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 .expandOnClick:focus { width: 100%; display: inline; overflow: auto; color:#000000; white-space: pre-wrap; cursor: pointer; }
 .expandOnClick:focus:after { content: ""; }
 
+
+/* Line break stack traces */
+.preformatted {
+    white-space: pre-wrap;
+}
 /*--------------------------------------------------------------------------*/
 /* EOF */
