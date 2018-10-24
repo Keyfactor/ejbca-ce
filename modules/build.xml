@@ -252,7 +252,7 @@
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
-	<target name="cesecore-p11" description="Build the Sun P11 extension">
+	<target name="cesecore-p11" description="Build the Sun P11 extension" if="build.cesecore.p11.jar">
 			<ant antfile="${mod.cesecore-p11.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
