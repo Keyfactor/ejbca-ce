@@ -60,6 +60,9 @@ public interface PublisherSession {
     /** @return mapping of publisher id (Integer) to publisher name (String). */
     HashMap<Integer,String> getPublisherIdToNameMap();
 
+    /** @return mapping of publisher name (String) to publisher id (Integer). */
+    HashMap<String, Integer> getPublisherNameToIdMap();
+
     /**
      * Adds a publisher to the database. Used for importing and exporting
      * profiles from xml-files.
