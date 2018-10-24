@@ -44,8 +44,8 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EditUserDatasoucesMBean.class);
 
-    public DatasourceGui datasourceGui = null;
-    public UserDatasoucesMBean userDatasoucesMBean;
+    private DatasourceGui datasourceGui = null;
+    private UserDatasoucesMBean userDatasoucesMBean;
     private TreeMap<String, Integer> modifyableFieldTexts = null;
 
     @EJB
