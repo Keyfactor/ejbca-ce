@@ -73,6 +73,7 @@
 	<path id="common.classpath">
 		<path location="${mod.cesecore-common.lib}"/>
 		<path location="${mod.ejbca-common.lib}"/>
+        <path refid="lib.bouncycastle.classpath"/>
 	</path>
 
 	<path id="interfaces.classpath">
