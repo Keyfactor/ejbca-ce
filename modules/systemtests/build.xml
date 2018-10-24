@@ -268,7 +268,7 @@
 			<istrue value="${remoteDebug}"/>
 		</condition>
 		<!-- set a default -->
-		<junit printsummary="yes" haltonfailure="no" showoutput="yes" filtertrace="no" >
+		<junit printsummary="yes" haltonfailure="no" filtertrace="no" >
 			<classpath>
 				<path location="${build.test.dir}" />
 				<path refid="${runone-internal.classpath}" />
@@ -469,7 +469,7 @@
 	</target>
 
 	<target name="runws" description="Run Web Services system tests">
-		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
+		<property name="runone-internal.classpath" value="systemtests.classpath"/>
 		<!-- no jee classes for ws tests -->
 		<antcall target="runone-internal" inheritrefs="true">
 			<param name="test.runone" value="protocol/ws/*Test"/>
