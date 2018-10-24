@@ -40,8 +40,8 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * @version $Id: HardTokenIssuerMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
  */
-@ManagedBean
-@ViewScoped
+//@ManagedBean
+//@ViewScoped
 public class HardTokenIssuerMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -184,6 +184,19 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
     public void actionCancel() {
         deleteInProgress = false;
         selectedHardTokenIssuer = null;
+    }
+
+    /**
+     * Edit action.
+     *
+     * @return the navigation outcome defined in faces-config.xml.
+     */
+    public String actionEdit() {
+        if (StringUtils.isNotEmpty(selectedHardTokenIssuer)) {
+            return "edit";
+        } else
+            addErrorMessage("HARDTOKENISSUERSELECT");
+        return "";
     }
 
     public boolean isDeleteInProgress() {
