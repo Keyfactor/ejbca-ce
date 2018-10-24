@@ -16,6 +16,7 @@
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">
+		<path refid="lib.jee.classpath"/>
 		<path refid="lib.ejbca-common.classpath"/>
 		<pathelement location="${mod.ejbca-ws.lib}" /> 
 		<path refid="lib.cert-cvc.classpath"/>
