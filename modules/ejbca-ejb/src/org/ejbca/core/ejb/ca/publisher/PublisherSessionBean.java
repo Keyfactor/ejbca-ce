@@ -561,6 +561,20 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
+    @Override
+    public HashMap<String, Integer> getPublisherNameToIdMap() {
+        final HashMap<String, Integer> returnval = new HashMap<String, Integer>();
+        final boolean enabled = ((GlobalConfiguration)  globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
+        BasePublisher publisher;
+        for (PublisherData publisherData : PublisherData.findAll(entityManager)) {
+            publisher = getPublisher(publisherData);
+            if (enabled || !GeneralPurposeCustomPublisher.class.getName().equals(publisher.getRawData().get(CustomPublisherContainer.CLASSPATH))) {
+                returnval.put(publisherData.getName(), publisherData.getId());
+            }
+        }
+        return returnval;
+    }
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public BasePublisher getPublisher(String name) {
