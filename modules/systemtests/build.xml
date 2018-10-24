@@ -64,9 +64,9 @@
 	</path>
 
 	<path id="systemtests.classpath">
-		<path refid="systemtests.classpath.nojee"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
+        <path refid="systemtests.classpath.nojee"/>
 		<pathelement path="${clover.jar}"/>
 	</path>
 
@@ -268,7 +268,7 @@
 			<istrue value="${remoteDebug}"/>
 		</condition>
 		<!-- set a default -->
-		<junit printsummary="yes" haltonfailure="no" >
+		<junit printsummary="yes" haltonfailure="no" showoutput="yes" filtertrace="no" >
 			<classpath>
 				<path location="${build.test.dir}" />
 				<path refid="${runone-internal.classpath}" />
