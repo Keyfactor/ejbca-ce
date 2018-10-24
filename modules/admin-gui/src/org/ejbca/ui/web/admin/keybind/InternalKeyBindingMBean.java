@@ -42,6 +42,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -86,6 +87,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -103,6 +105,15 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     @EJB(description = "Used to reload ocsp signing cache when user disables the internal ocsp key binding.")
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 
+    // Authentication check and audit log page access request
+    public void initialize(ComponentSystemEvent event) throws Exception {
+        // Invoke on initial request only
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, InternalKeyBindingRules.VIEW.resource());
+        }
+    }
+    
     public class GuiInfo {
         public static final String TEXTKEY_PREFIX = "INTERNALKEYBINDING_STATUS_";
         private final int internalKeyBindingId;
