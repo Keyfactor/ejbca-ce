@@ -59,8 +59,8 @@
 	</path>
 
 	<path id="test.classpath">
+        <path refid="lib.jee-client.classpath"/>
 		<path refid="compile-test.classpath"/>
-		<path refid="lib.jee-client.classpath"/>
 		<path location="${build-test.dir}"/>
 		<pathelement path="${clover.jar}"/>
 	</path>
