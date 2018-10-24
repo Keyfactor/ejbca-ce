@@ -180,8 +180,9 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
     public String actionEdit() {
         if (StringUtils.isNotEmpty(selectedUserDataSource)) {
             return "edit";
-        } else
+        } else {
             addErrorMessage("USERDATASOURCESELECT");
+        }
         return "";
     }
 
