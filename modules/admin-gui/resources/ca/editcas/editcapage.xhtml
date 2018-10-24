@@ -1,0 +1,1078 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/ xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:csrf="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld">
+
+<ui:remove>
+	<!--
+	/*************************************************************************
+	*                                                                       *
+	*  EJBCA: The OpenSource Certificate Authority                          *
+	*                                                                       *
+	*  This software is free software; you can redistribute it and/or       *
+	*  modify it under the terms of the GNU Lesser General Public           *
+	*  License as published by the Free Software Foundation; either         *
+	*  version 2.1 of the License, or any later version.                    *
+	*                                                                       *
+	*  See terms of license at gnu.org.                                     *
+	*                                                                       *
+	*************************************************************************/
+
+	$Id$
+	-->
+</ui:remove>
+
+<f:metadata>
+    <f:event type="preRenderView" listener="#{editCAsMBean.initAccess}"/>
+</f:metadata>
+
+<h:body>
+
+	<c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
+	<c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
+
+	<ui:param name="row" value="0" />
+	<ui:composition template="/WEB-INF/include/template.xhtml">
+		<ui:define name="content">
+			<h2>
+				<h:outputText value="#{editCAsMBean.editCAPageTitle}" />
+			</h2>
+			<h3>
+				<h:outputText value="#{web.text.CANAME}" />
+				<h:outputText value="#{editCAsMBean.editCaName}" rendered="#{editCAsMBean.editCA}"/>
+				<h:outputText value="#{editCAsMBean.createCaNameTitle}" rendered="#{not editCAsMBean.editCA}"/>
+			</h3>
+			
+			<h:form id="editcapage" enctype="multipart/form-data" >
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+					columnClasses="editColumn1,editColumn2">		
+					<h:panelGroup>
+						&nbsp;
+					</h:panelGroup>
+					
+					<h:outputLink value="managecas.xhtml">
+						<h:outputText value="#{web.text.BACKTOCAS}" />
+					</h:outputLink>
+					
+					<h:panelGroup>
+						<h:outputLabel for="getcaid" value="#{web.text.CAID}" rendered="#{editCAsMBean.editCA}"/>
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:outputText id="getcaid" value="#{editCAsMBean.currentCaId}" rendered="#{editCAsMBean.editCA}"/>
+					</h:panelGroup>
+
+					<h:panelGroup>
+						<h:outputLabel for="getcatype" value="#{web.text.CATYPE}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Authority_Overview.html#CA_Types')}" escape="false"/>
+					</h:panelGroup>
+
+					<h:panelGroup id="changecatype" rendered="#{not editCAsMBean.editCA}">
+						<h:commandButton styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeX509?'selected':'notSelected'}"
+							action="#{editCAsMBean.setCaTypeX509()}" value="#{editCAsMBean.caTypeX509?'✓':' '}#{web.text.X509}">
+						<f:ajax render="@form"/>	
+						</h:commandButton>	
+						<h:commandButton styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeCVC?'selected':''}"
+							action="#{editCAsMBean.setCaTypeCVC()}" value="#{editCAsMBean.caTypeCVC?'✓':' '}#{web.text.CVCCA}">
+						<f:ajax render="@form"/>
+						</h:commandButton>
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{editCAsMBean.editCA}">
+						<h:outputText id="getcatype" value="#{editCAsMBean.currentCaType}" />
+					</h:panelGroup>
+
+					<h:panelGroup>
+						<h:outputLabel for="getsigningalgorithm"
+							value="#{web.text.SIGNINGALGORITHM}" style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputText id="getsigningalgorithm"
+							value="#{editCAsMBean.currentCaSigningAlgorithm}" rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and not editCAsMBean.caExternal}" />
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal}">
+						<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}" value="#{editCAsMBean.signingAlgorithm}">
+						 	<f:selectItems value="#{editCAsMBean.availableSigningAlgList}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+
+					<h:panelGroup>
+						<h:outputLabel for="getcryptotoken"
+							value="#{web.text.CRYPTOTOKEN}" style="font-weight: bold;" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Managing_Crypto_Tokens.html')}" escape="false"/>
+					</h:panelGroup>
+					
+ 					<h:panelGroup rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal}">
+ 						<h:outputText value="#{web.text.CRYPTOTOKEN_NOSUITABLE}" rendered="#{not editCAsMBean.cryptoTokenSuitable}" />
+						<h:selectOneMenu name="selectcryptotoken" rendered="#{editCAsMBean.cryptoTokenSuitable}" value="#{editCAsMBean.selectedCryptoToken}">
+							<f:selectItems value="#{editCAsMBean.availableCryptoTokenList}"/>
+							<f:ajax event="change" render="editcapage" immediate="true"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputLink value="#{editCAsMBean.currentCaCryptoTokenLink}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" >
+							<h:outputText id="getcryptotoken" value="#{editCAsMBean.currentCaCryptoTokenName}" />
+						</h:outputLink>
+					</h:panelGroup>
+					
+					<!-- Edit CA -->
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputLabel for="defaultKey" value="defaultKey" />
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputText id="defaultKey"
+							value="#{editCAsMBean.currentCaCryptoTokenDefaultKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputLabel for="certSignKey"
+							value="certSignKey" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputText id="certSignKey"
+							value="#{editCAsMBean.currentCaCryptoTokenCertSignKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputLabel for="crlSignKey"
+							value="crlSignKey" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputText id="crlSignKey"
+							value="#{editCAsMBean.currentCaCryptoTokenCrlSignKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputLabel for="keyEncryptKey"
+							value="keyEncryptKey" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputText id="keyEncryptKey"
+							value="#{editCAsMBean.currentCaCryptoTokenKeyEncryptKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputLabel for="hardTokenEncrypt"
+							value="hardTokenEncrypt" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputText id="hardTokenEncrypt"
+							value="#{editCAsMBean.currentCaCryptoTokenHardTokenEncrypt}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputLabel for="testKey"
+							value="testKey" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal}">
+						<h:outputText id="testKey"
+							value="#{editCAsMBean.currentCaCryptoTokenTestKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+					</h:panelGroup>
+					
+
+					<!-- Create CA -->
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}">
+						<h:outputText value="defaultKey" />
+					</h:panelGroup>
+						
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}" >	
+						<h:selectOneMenu name="selectdefaultkey" value="#{editCAsMBean.selectedCryptoTokenDefaultKey}">
+							<f:selectItems value="#{editCAsMBean.cryptotokenDefaultKeyList}"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+						
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}">
+						<h:outputText value="certSignKey" />
+					</h:panelGroup>
+						
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}" >	
+						<h:selectOneMenu name="selectdefaultkey" value="#{editCAsMBean.selectedCryptoTokenCertSignKey}">
+							<f:selectItems value="#{editCAsMBean.cryptotokenCertSignKeyList}"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}">
+						<h:outputText value="crlSignKey" />
+					</h:panelGroup>
+						
+ 					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}" >	
+<!-- 						<h:selectOneMenu name="selectdefaultkey" value="#{editCAsMBean.selectedCryptoTokenDefaultKey}">
+							<f:selectItems value="#{editCAsMBean.cryptotokenDefaultKeyList}"/>
+						</h:selectOneMenu>
+ -->				</h:panelGroup> 
+					
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}">
+						<h:outputText value="keyEncryptKey" />
+					</h:panelGroup>
+						
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}" >	
+						<h:selectOneMenu name="selectdefaultkey" value="#{editCAsMBean.selectedKeyEncryptKey}">
+							<f:selectItems value="#{editCAsMBean.cryptotokenkeyEncryptKeyList}"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}">
+						<h:outputText value="hardTokenEncrypt" />
+					</h:panelGroup>
+						
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}" >	
+						<h:selectOneMenu name="selectdefaultkey" value="#{editCAsMBean.selectHardTokenEncrypt}">
+							<f:selectItems value="#{editCAsMBean.cryptotokenHardTokenEncryptList}"/>
+						</h:selectOneMenu>
+					</h:panelGroup>		
+					
+					
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}">
+						<h:outputText value="testKey" />
+					</h:panelGroup>
+						
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}" >	
+						<h:selectOneMenu name="selectkeytestkey" value="#{editCAsMBean.selectTestKey}">
+							<f:selectItems value="#{editCAsMBean.cryptotokenTestKeyList}"/>
+						</h:selectOneMenu>
+					</h:panelGroup>		
+					
+
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}">
+						<h:outputLabel for="selectsize" value="#{web.text.EXTSERVICESKEYSPEC}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Extended_Services_Key_Specification')}" escape="false"/>
+					</h:panelGroup>
+						
+					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys}" >	
+						<h:selectOneMenu name="selectsize" value="#{editCAsMBean.signKeySpec}">
+							<f:selectItems value="#{editCAsMBean.exTServicesKeySpecList}"/>
+						</h:selectOneMenu>
+					</h:panelGroup>
+								
+					
+					<h:panelGroup rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent}">
+						<h:outputLabel for="keysequenceformat"
+							value="#{web.text.KEYSEQUENCEFORMAT}"  />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Key_Sequence_Format')}" escape="false"/>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent}">
+					<h:selectOneMenu id="keysequenceformat" value="#{editCAsMBean.keySequenceFormat}"  disabled="#{not editCAsMBean.hasEditRight}">
+						<f:selectItem itemValue="#{editCAsMBean.keySequenceFormatNumeric()}" itemLabel="#{web.text.NUMERIC}"/>
+						<f:selectItem itemValue="#{editCAsMBean.keySequenceFormatAlphaNumeric()}" itemLabel="#{web.text.ALPHANUMERIC}"/>
+						<f:selectItem itemValue="#{editCAsMBean.keySequenceFormatCountryCodePlusNumeric()}" itemLabel="#{web.text.COUNTRYCODEPLUSNUMERIC}"/>
+						<f:selectItem itemValue="#{editCAsMBean.keySequenceFormatCountryCodePlusAlphaNumeric()}" itemLabel="#{web.text.COUNTRYCODEPLUSALPHANUMERIC}"/>
+					</h:selectOneMenu>
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent}">
+					<h:outputLabel for="keysequence"
+							value="#{web.text.KEYSEQUENCE}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Key_Sequence')}" escape="false"/>
+					</h:panelGroup>
+					<h:panelGroup rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent}">
+						<h:inputText id="keysequence" size="6" maxlength="10" value="#{editCAsMBean.keySequenceValue}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					</h:panelGroup>
+
+					<h:panelGroup>
+						<h:outputLabel for="description"
+							value="#{web.text.DESCRIPTION}" />
+					</h:panelGroup>
+					
+					<h:panelGroup>
+						<h:outputText id="description"
+							value="#{editCAsMBean.descriptionExternal}" rendered="#{editCAsMBean.caExternal}" />
+						<h:inputTextarea name="#{web.text.TEXTFIELD_DESCRIPTION}" cols="45" rows="2" value="#{editCAsMBean.description}" disabled="#{not editCAsMBean.hasEditRight}"/> 
+					</h:panelGroup>
+					
+				</h:panelGrid>
+				
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+		
+					<!-- Directives -->
+			
+					<h:outputLabel for="header_directives" value="#{web.text.DIRECTIVES}" style="font-weight: bold;" rendered="#{not editCAsMBean.caExternal}"/>
+					<h:panelGroup id="header_directives" rendered="#{not editCAsMBean.caExternal}"/>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:outputLabel for="isdoenforceuniquepublickeys"
+							value="#{web.text.DOENFORCEUNIQUEPUBLICKEYS}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Enforce_unique_public_keys')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:selectBooleanCheckbox id="isdoenforceuniquepublickeys"
+							value="#{editCAsMBean.doEnforceUniquePublickeys}" disabled="#{not editCAsMBean.hasEditRight}" />
+						<h:outputLabel for="isdoenforceuniquepublickeys" value="#{web.text.ENFORCE}" /> 
+					</h:panelGroup>
+				
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:outputLabel for="isdoenforceuniquedn"
+							value="#{web.text.DOENFORCEUNIQUEDN}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Enforce_unique_DN')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:selectBooleanCheckbox id="isdoenforceuniquedn"
+							value="#{editCAsMBean.doEnforceUniqueDistinguishedName}" disabled="#{not editCAsMBean.hasEditRight}" />
+						<h:outputLabel for="isdoenforceuniquedn" value="#{web.text.ENFORCE}" /> 
+					</h:panelGroup>				
+
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:outputLabel for="doenforceuniquesubjectdnerialnumber"
+							value="#{web.text.DOENFORCEUNIQUESUBJECTDNSERIALNUMBER}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Enforce_Unique_Subject_DN_SerialNumber')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:selectBooleanCheckbox id="doenforceuniquesubjectdnerialnumber"
+							value="#{editCAsMBean.doEnforceUniqueSubjectDNSerialnumber}" disabled="#{not editCAsMBean.hasEditRight}" />
+						<h:outputLabel for="doenforceuniquesubjectdnerialnumber" value="#{web.text.ENFORCE}" /> 
+					</h:panelGroup>	
+
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:outputLabel for="checkboxusecertreqhistory"
+							value="#{web.text.USECERTREQHISTORY}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Use_Certificate_Request_History')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:selectBooleanCheckbox id="checkboxusecertreqhistory"
+							value="#{editCAsMBean.useCertReqHistory}" disabled="#{not editCAsMBean.hasEditRight}" />
+						<h:outputLabel for="checkboxusecertreqhistory" value="#{web.text.USE}" /> 
+					</h:panelGroup>	
+
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:outputLabel for="checkboxuseuserstorage"
+							value="#{web.text.USEUSERSTORAGE}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Use_User_Storage')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}"> 
+						<h:selectBooleanCheckbox id="checkboxuseuserstorage"
+							value="#{editCAsMBean.useUserStorage}" disabled="#{not editCAsMBean.hasEditRight}" />
+						<h:outputLabel for="checkboxuseuserstorage" value="#{web.text.USE}" /> 
+					</h:panelGroup>	
+
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:outputLabel for="checkboxusecertificatestorage"
+							value="#{web.text.USECERTIFICATESTORAGE}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Use_User_Storage')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+						<h:selectBooleanCheckbox id="checkboxusecertificatestorage"
+							value="#{editCAsMBean.useCertificateStorage}" disabled="#{not editCAsMBean.hasEditRight}" />
+						<h:outputLabel for="checkboxusecertificatestorage" value="#{editCAsMBean.checkboxUseCertificateStorageText}" /> 
+					</h:panelGroup>	
+
+				</h:panelGrid>
+
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+		
+				<!-- CA certificate data -->  
+				
+				<h:outputLabel for="header_ca_certificate_data" value="#{web.text.CACERTIFICATEDATA}" style="font-weight: bold;" />
+				<h:panelGroup id="header_ca_certificate_data" />				
+
+				<h:panelGroup>
+					<h:outputLabel for="textfieldsubjectdn"
+						value="#{web.text.CERT_SUBJECTDN}" style="font-weight: bold;"/>
+				</h:panelGroup>				
+				<h:panelGroup>
+					<h:outputText class="dn"
+						value="#{editCAsMBean.caSubjectDN}" rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"/>
+					<h:inputText name="textfieldsubjectdn" size="45" maxlength="225"
+						value="#{editCAsMBean.caSubjectDN}" title="#{web.text.FORMAT_DN}" rendered = "#{editCAsMBean.editCA and editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:inputText name="textfieldsubjectdn" size="45" maxlength="225"
+						value="#{editCAsMBean.caSubjectDN}" title="#{web.text.FORMAT_DN}" rendered = "#{not editCAsMBean.editCA}" disabled="#{not editCAsMBean.hasEditRight}"/>						
+				</h:panelGroup>
+
+				<h:panelGroup rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
+					<h:outputLabel for="cert_issuerdn"
+						value="#{web.text.CERT_ISSUERDN}" />
+				</h:panelGroup>				
+				<h:panelGroup rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
+					<h:outputText id="cert_issuerdn"
+						value="#{editCAsMBean.caIssuerDN}" />
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputLabel for="cert_signedby"
+						value="#{web.text.SIGNEDBY}"/>
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
+					<h:outputText id="cert_signedby" value="#{editCAsMBean.signedBy}" />
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{editCAsMBean.editCA and editCAsMBean.caUninitialized}">
+					<h:selectOneMenu value="#{editCAsMBean.signedBy}" disabled="#{not editCAsMBean.hasEditRight}">
+						<f:selectItems value="#{editCAsMBean.signedByListUninitialized}"/>
+					</h:selectOneMenu>
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{not editCAsMBean.editCA}">
+					<h:selectOneMenu value="#{editCAsMBean.signedBy}" disabled="#{not editCAsMBean.hasEditRight}">
+						<f:selectItems value="#{editCAsMBean.signedByCreateCAList}"/> 
+					</h:selectOneMenu>
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputLabel for="selectcertificateprofile"
+						value="#{web.text.CERTIFICATEPROFILE}"/>
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText name="selectcertificateprofile" value="#{editCAsMBean.certificateProfileEditCAUninitialized}" rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"/>
+					<h:selectOneMenu name="selectcertificateprofile" value="#{editCAsMBean.currentCertProfile}" rendered="#{editCAsMBean.editCA and editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}">
+						<f:selectItems value="#{editCAsMBean.certificateProfiles}"/>
+					</h:selectOneMenu>
+					<h:selectOneMenu name="selectcertificateprofile" value="#{editCAsMBean.currentCertProfile}" rendered="#{not editCAsMBean.editCA}" disabled="#{not editCAsMBean.hasEditRight}">
+						<f:selectItems value="#{editCAsMBean.certificateProfiles}"/>
+					</h:selectOneMenu>
+					
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:outputLabel for="selectcertificateprofile"
+						value="#{web.text.CERT_VALIDITY}" style="font-weight: bold;" />
+					<h:outputLabel for="selectcertificateprofile"
+						value="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.ORENDDATE}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#validity')}" escape="false"/>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:outputText 
+						value="#{editCAsMBean.certValidityOutputText}" rendered = "#{editCAsMBean.caExternal or editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.signByExternal}"/>
+					<h:inputText name="textfieldsubjectdn" size="25" maxlength="225"
+						value="#{editCAsMBean.caEncodedValidity}" title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}" rendered = "#{not editCAsMBean.caExternal and not editCAsMBean.editCA or editCAsMBean.caUninitialized or not editCAsMBean.signByExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+						<br />
+					<h:outputText 
+						class="help" value="#{web.text.CERT_VALIDITY_CA_HELP}" rendered = "#{editCAsMBean.editCA}" />
+					<h:outputText 
+						class="help" value="#{editCAsMBean.certificateValidityHelp}" rendered = "#{not editCAsMBean.editCA}" />						 							
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
+					<h:outputLabel for="textfieldsubjectaltname"
+						value="#{web.text.EXT_PKIX_SUBJECTALTNAME}"/>
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
+					<h:outputText id="textfieldsubjectaltname"
+						value="#{editCAsMBean.caSubjectAltName}" rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.caTypeX509}"/>
+					<h:inputText name="textfieldsubjectaltname" size="45" maxlength="255"
+						value="#{editCAsMBean.caSubjectAltNameTextField}" title="#{web.text.FORMAT_GENERALNAMES}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}"/>						
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
+					<h:outputLabel for="textfieldpolicyid"
+						value="#{web.text.EXT_PKIX_CP_POLICYID}" style="font-weight: bold;"/>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
+					<h:outputText id="textfieldpolicyid"
+						value="#{editCAsMBean.certificatePolicyId}" rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"/>
+					<h:inputText name="textfieldsubjectaltname" size="45" maxlength="255"
+						value="#{editCAsMBean.textFieldPolicyId}" title="#{web.text.FORMAT_OID}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<br />
+					<h:outputText 
+						class="help" value="#{web.text.EXT_PKIX_CP_POLICYID_HELP}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" /> 							
+				</h:panelGroup>
+
+
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:outputLabel for="checkboxuseutf8policytext"
+						value="#{web.text.EXT_PKIX_CP_UTF8NOTICETEXT}" />
+				</h:panelGroup>
+					
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:selectBooleanCheckbox id="checkboxuseutf8policytext"
+						value="#{editCAsMBean.useUtf8Policy}" disabled="#{not editCAsMBean.hasEditRight}" />
+					<h:outputLabel for="checkboxuseutf8policytext" value="#{web.text.USE}" /> 
+				</h:panelGroup>	
+
+
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:outputLabel for="checkboxuseprintablestringsubjectdn"
+						value="#{web.text.CERT_SUBJECTDN_PRINTABLESTR}" />
+				</h:panelGroup>
+					
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:selectBooleanCheckbox id="checkboxuseprintablestringsubjectdn"
+						value="#{editCAsMBean.usePrintableStringSubjectDN}" disabled="#{not editCAsMBean.hasEditRight}" />
+					<h:outputLabel for="checkboxuseprintablestringsubjectdn" value="#{web.text.USE}" /> 
+				</h:panelGroup>	
+
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:outputLabel for="checkboxuseldapdnorder"
+						value="#{web.text.CERT_SUBJECTDN_LDAPORDER}" style="font-weight: bold;"/>
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Use_LDAP_DN_Order')}" escape="false"/>
+				</h:panelGroup>
+					
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:selectBooleanCheckbox id="checkboxuseldapdnorder"
+						value="#{editCAsMBean.useLdapDNOrder}" disabled="#{not editCAsMBean.hasEditRight}" />
+					<h:outputLabel for="checkboxuseldapdnorder" value="#{web.text.USE}" /> 
+				</h:panelGroup>	
+
+
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:outputLabel for="textfieldnameconstraintspermitted"
+						value="#{web.text.EXT_PKIX_NC_PERMITTED}"/>
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Name_Constraints')}" escape="false"/>
+				</h:panelGroup>
+					
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:inputTextarea id="textfieldnameconstraintspermitted" rows="4" cols="38"
+						value="#{editCAsMBean.nameConstraintsPermittedString}" disabled="#{not editCAsMBean.hasEditRight}" />
+					<br />
+					<h:outputText 
+						class="help" value="#{web.text.EXT_PKIX_NC_PERMITTED_HELP1}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" />
+					<h:outputText 
+						class="help" value="#{web.text.EXT_PKIX_NC_PERMITTED_HELP2}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" /> 						 	
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:outputLabel for="textfieldnameconstraintspermitted"
+						value="#{web.text.EXT_PKIX_NC_EXCLUDED}"/>
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Name_Constraints')}" escape="false"/>
+
+				</h:panelGroup>
+					
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:inputTextarea id="textfieldnameconstraintsexcluded" rows="4" cols="38"
+						value="#{editCAsMBean.nameConstraintsExcludedString}" disabled="#{not editCAsMBean.hasEditRight}" />
+					<br />	
+					<h:outputText 
+						class="help" value="#{web.text.EXT_PKIX_NC_EXCLUDED_HELP}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" /> 
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.editCA and not editCAsMBean.waitingResponse and not editCAsMBean.caUninitialized and editCAsMBean.caTypeX509}">
+					<h:outputLabel for="checkboxuseldapdnorder"
+						value="#{web.text.CACERTIFICATE}" style="font-weight: bold;"/>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.editCA and not editCAsMBean.waitingForResponse and not editCAsMBean.caUninitialized and editCAsMBean.caTypeX509}">
+					<h:commandButton type="button" onclick="viewcacert('#{editCAsMBean.caCertLink()}')" title="#{web.text.VIEW_CACERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}" value="#{web.text.VIEW_CERTIFICATE}" disabled="#{not editCAsMBean.editCA or editCAsMBean.waitingForResponse}"/>
+				</h:panelGroup>
+				</h:panelGrid>
+
+
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.caTypeX509}">
+		
+				<!-- CRL Specific Data -->  
+				
+					<h:outputLabel for="header_crl_specific_data" value="#{web.text.CRLSPECIFICDATA}" style="font-weight: bold;" />
+					<h:panelGroup id="header_crl_specific_data" />				
+				
+				<h:panelGroup rendered = "#{editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+					<h:outputText name="textfieldexternalcdp"
+						value="#{web.text.CRL_CA_CRLDP_EXTERNAL}" rendered = "#{editCAsMBean.caExternal and editCAsMBean.caTypeX509}"/>
+				</h:panelGroup>
+				<h:panelGroup rendered = "#{editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
+				
+					<h:inputText name="textfieldexternalcdp" size="45" maxlength="255"
+						value="#{editCAsMBean.crlCaCRLDPExternal}" rendered = "#{editCAsMBean.caExternal and editCAsMBean.caTypeX509}" disabled="#{not editCAsMBean.hasEditRight}"/>						
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.CRL_EXT_AUTHORITYKEYID}" rendered = "#{not editCAsMBean.caExternal}"/>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="checkboxauthoritykeyidentifier" 
+						value="#{editCAsMBean.checkboxAuthorityKeyIdentifier}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:outputLabel for="checkboxauthoritykeyidentifier" value="#{web.text.USE}"/>
+					&nbsp;
+					<h:selectBooleanCheckbox id="checkboxauthoritykeyidentifiercritical" 
+						value="#{editCAsMBean.checkboxAuthorityKeyIdentifierCritical}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>	
+					<h:outputLabel for="checkboxauthoritykeyidentifiercritical" value="#{web.text.EXT_CRITICAL}"/>
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.CRL_EXT_CRLNUMBER}" rendered = "#{not editCAsMBean.caExternal}"/>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="checkboxusecrlnumber" 
+						value="#{editCAsMBean.checkboxUseCrlNumber}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:outputLabel for="checkboxusecrlnumber" value="#{web.text.USE}"/>
+					&nbsp;
+					<h:selectBooleanCheckbox id="checkboxcrlnumbercritical" 
+						value="#{editCAsMBean.checkboxCrlNumberCritical}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>	
+					<h:outputLabel for="checkboxcrlnumbercritical" value="#{web.text.EXT_CRITICAL}"/>
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.CRL_EXT_ISSUINGDISTPOINT}" rendered = "#{not editCAsMBean.caExternal}"/>
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Issuing_Distribution_Point_on_CRLs')}" escape="false"/>
+						
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl" 
+						value="#{editCAsMBean.checkboxUseCrlDistributiOnPointOnCrl}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:outputLabel for="checkboxusecrldistributionpointoncrl" value="#{web.text.USE}"/>
+					&nbsp;
+					<h:selectBooleanCheckbox id="checkboxcrldistributionpointoncrlcritical" 
+						value="#{editCAsMBean.checkboxCrlDistributionPointOnCrlCritical}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>	
+					<h:outputLabel for="checkboxcrldistributionpointoncrlcritical" value="#{web.text.EXT_CRITICAL}"/>
+				</h:panelGroup>
+				
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.CRL_EXT_CAISSUERS_URI}" rendered = "#{not editCAsMBean.caExternal}"/>
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_CA_Issuer_URI')}" escape="false"/>
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.authorityInformationAccess}" rendered = "#{editCAsMBean.caExternal}"/>
+					<h:inputText size="40" maxlength="256" name="textfieldauthorityinformationaccess"
+						value="#{editCAsMBean.authorityInformationAccess}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"/>
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.KEEPEXPIREDONCRL}" rendered = "#{not editCAsMBean.caExternal}"/>
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Keep_Expired_Certificates_on_CRL')}" escape="false"/>
+						
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:selectBooleanCheckbox id="checkboxkeepexpiredoncrl" 
+						value="#{editCAsMBean.checkboxKeepExpiredOnCrl}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:outputLabel for="checkboxkeepexpiredoncrl" value="#{web.text.USE}"/>
+				</h:panelGroup>				
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.CRL_CA_CRLPERIOD}" rendered = "#{not editCAsMBean.caExternal}" style="font-weight: bold;"/>
+					<h:outputText 
+						value="#{web.text.FORMAT_TIME_YMDHMIN}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_Period')}" escape="false"/>
+						
+				</h:panelGroup>		
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.crlCaCrlPeriod}" rendered = "#{editCAsMBean.caExternal}" />
+					<h:inputText size="20" maxlength="255" name="textfieldcrlperiod" id="textfieldcrlperiod"
+						value="#{editCAsMBean.crlCaCrlPeriod}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"/>
+						&nbsp; 
+					<h:outputText 
+						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}"  />
+				</h:panelGroup>	
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.CRL_CA_ISSUEINTERVAL}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText 
+						value="#{web.text.FORMAT_TIME_YMDHMIN}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_Period')}" escape="false"/>
+						
+				</h:panelGroup>		
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.crlCaIssueInterval}" rendered = "#{editCAsMBean.caExternal}" />
+					<h:inputText size="20" maxlength="255" name="textfieldcrlissueinterval" 
+						value="#{editCAsMBean.crlCaIssueInterval}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"/>
+						&nbsp; 
+					<h:outputText 
+						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}"  />
+				</h:panelGroup>	
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.CRL_CA_OVERLAPTIME}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText 
+						value="#{web.text.FORMAT_TIME_YMDHMIN}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_Period')}" escape="false"/>
+						
+				</h:panelGroup>		
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.crlCaOverlapTime}" rendered = "#{editCAsMBean.caExternal}" />
+					<h:inputText size="20" maxlength="255" name="textfieldcrloverlaptime" 
+						value="#{editCAsMBean.crlCaOverlapTime}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"/>
+						&nbsp; 
+					<h:outputText 
+						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}"  />
+				</h:panelGroup>	
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.CRL_CA_DELTACRLPERIOD}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText 
+						value="#{web.text.FORMAT_TIME_YMDHMIN}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_Period')}" escape="false"/>
+				</h:panelGroup>	
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.crlCaOverlapTime}" rendered = "#{editCAsMBean.caExternal}" />
+					<h:inputText size="20" maxlength="255" name="textfielddeltacrlperiod" id="textfielddeltacrlperiod"
+						value="#{editCAsMBean.crlCaDeltaCrlPeriod}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"/>
+						&nbsp;
+					<br />	 
+					<h:outputText 
+						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}"  />
+						<h:outputLabel value="#{web.text.CRL_CA_DELTACRLPERIOD_HELP}" class="help"/>
+				</h:panelGroup>	
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.PUBLISHERS}" rendered = "#{not editCAsMBean.caExternal}" />
+				</h:panelGroup>	
+
+				<h:selectManyListbox styleClass="select-list" size="5" name="selectavailablecrlpublishers" disabled="#{not editCAsMBean.hasEditRight}" value="#{editCAsMBean.usedCrlPublishers}">
+						<f:selectItems value="#{editCAsMBean.availableCrlPublishers}"/>
+				</h:selectManyListbox>
+				
+				
+				</h:panelGrid>
+
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.caTypeX509}">
+		
+				<!-- Default CA defined validation data -->  
+				
+				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA}" style="font-weight: bold;" />
+				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA_HELP}"  />
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.EXT_PKIX_CDP_DEFAULTURI}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#CRL_Distribution_Points')}" escape="false"/>
+				</h:panelGroup>	
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.defaultCRLDistPoint}" rendered = "#{editCAsMBean.caExternal}" />
+					<h:inputText size="40" maxlength="4096" id="textfielddefaultcrldistpoint" title="#{web.text.FORMAT_URI}"
+						value="#{editCAsMBean.defaultCRLDistPoint}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:commandButton type="button" action="#{editCAsMBean.genDefaultCrlDistPoint}" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" immediate="true" />
+					</h:commandButton>
+					<br /> 
+					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" class="help"/>
+						
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.EXT_PKIX_CDP_DEFAULTCRLISSUER}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#CRL_Issuer')}" escape="false"/>
+				</h:panelGroup>	
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.defaultCRLIssuer}" rendered = "#{editCAsMBean.caExternal}" />
+					<h:inputText size="40" maxlength="255" id="textfielddefaultcrlissuer" title="#{web.text.FORMAT_DN}"
+						value="#{editCAsMBean.defaultCRLIssuer}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:commandButton type="button" action="#{editCAsMBean.genDefaultCrlIssuer}" value="#{web.text.GENERATE}" disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfielddefaultcrlissuer" immediate="true" />
+					</h:commandButton>
+					<br /> 
+					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" class="help"/>
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.EXT_PKIX_FCRL_DEFAULTURI}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Freshest_CRL')}" escape="false"/>
+				</h:panelGroup>	
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.caDefinedFreshestCRL}" rendered = "#{editCAsMBean.caExternal}" />
+					<h:inputText size="40" maxlength="255" id="textfieldcadefinedfreshestcrl" title="#{web.text.FORMAT_URI}"
+						value="#{editCAsMBean.caDefinedFreshestCRL}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:commandButton type="button" action="#{editCAsMBean.genCaDefinedFreshestCrl}" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" immediate="true" />
+					</h:commandButton>
+					<br /> 
+					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" class="help"/>
+				</h:panelGroup>
+				
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.EXT_PKIX_AIA_OCSP_DEFAULTURI}" rendered = "#{not editCAsMBean.caExternal}" style="font-weight: bold;"/>
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Default_CA_Defined_Validation_Data')}" escape="false"/>
+				</h:panelGroup>	
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.defaultOCSPServiceLocator}" rendered = "#{editCAsMBean.caExternal}"  />
+					<h:inputText size="40" maxlength="255" name="textfielddefaultocsplocator" title="#{web.text.FORMAT_URI}"
+						value="#{editCAsMBean.defaultOCSPServiceLocator}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:commandButton name="checkbexgeneratedefaultocsplocator" onclick="gendefaultocsplocator()" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}"/>
+						
+				</h:panelGroup>				
+			
+				<h:panelGroup>
+					<h:outputText 
+						value="#{web.text.EXT_PKIX_AIA_CAISSUERS_DEFAULTURI}" rendered = "#{not editCAsMBean.caExternal}" />
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Default_CA_Defined_Validation_Data')}" escape="false"/>
+				</h:panelGroup>	
+				<h:panelGroup>
+					<h:outputText 
+						value="#{editCAsMBean.certificateAiaDefaultCaIssuerUri}" rendered = "#{editCAsMBean.caExternal}"  />
+					<h:inputText size="40" maxlength="255" name="textfieldusercertificateaiadefaultcaissueruri" title="#{web.text.FORMAT_URI}"
+						value="#{editCAsMBean.certificateAiaDefaultCaIssuerUri}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+				</h:panelGroup>				
+				
+				</h:panelGrid>
+				
+			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+				<!-- Approval Settings -->
+				<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}" style="font-weight: bold;"/>
+				<h:panelGroup id="approvals"/>		
+			</h:panelGrid>
+			<h:dataTable value="#{editCAsMBean.approvalRequestItems}" var="requestItem" cellspacing="1" cellpadding="3"
+				border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" style="padding-right: 4px;">
+				<h:column>	
+					<h:outputText value="#{requestItem.getDisplayText()}"/>
+				</h:column>
+				<h:column>	
+				<h:selectOneMenu id="approvalProfile" value="#{requestItem.approvalProfileId}" converter="javax.faces.Integer"
+					disabled="#{not editCAsMBean.hasEditRight}">
+					<f:selectItems value="#{editCAsMBean.availableApprovalProfiles}"/>
+				</h:selectOneMenu>
+				</h:column>
+			</h:dataTable>	
+
+
+			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+				<!-- Other Data -->
+				<h:outputLabel for="otherdata" value="#{web.text.OTHERDATA}" style="font-weight: bold;"/>
+				<h:panelGroup id="otherdata"/>		
+			
+			<h:panelGroup>
+				<h:outputLabel for="selectavailablevalidators" value="#{web.text.VALIDATORS}" />
+			</h:panelGroup>	
+			<h:panelGroup>
+				<h:selectManyListbox styleClass="select-list" size="5" name="selectavailablevalidators" disabled="#{not editCAsMBean.hasEditRight}" value="#{editCAsMBean.usedValidators}">
+						<f:selectItems value="#{editCAsMBean.availableValidators}"/>
+				</h:selectManyListbox>
+			</h:panelGroup>
+
+			<h:panelGroup rendered="#{editCAsMBean.renderCmsInfo}">
+				<h:outputLabel for="checkboxactivatecmsservice" value="#{web.text.CMSSERVICE}" />
+			</h:panelGroup>	
+
+			<h:panelGroup>
+				<h:selectBooleanCheckbox name="checkboxactivatecmsservice" id="checkboxactivatecmsservice"
+					value="#{editCAsMBean.cmsButtonStatus}" rendered="#{editCAsMBean.renderCmsInfo}" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.cmsButtonDisabled}"/>
+				<h:outputLabel for="checkboxactivatecmsservice" value="#{web.text.ACTIVATE}" />
+				<h:commandButton name="checkboxrenewcmscertificate" value="#{web.text.REVOKERENEWCMSCERT}" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.waitingForResponse}" rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"/> 
+				<h:commandButton type="button" title="#{web.text.VIEW_CMSCERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}" value="#{web.text.VIEW_CMSCERTIFICATE}" onclick="viewcmscert(#{editCAsMBean.cmsCertLink()})" rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"/> 
+			</h:panelGroup>
+
+			<h:panelGroup>
+				<h:outputLabel for="checkboxactivatecmsservice" value="#{web.text.FINISHUSER}" />
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Finish_User')}" escape="false"/>
+				
+			</h:panelGroup>	
+
+			<h:panelGroup>
+					<h:selectBooleanCheckbox name="checkboxfinishuser" id="checkboxfinishuser"
+						value="#{editCAsMBean.finishUser}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:outputLabel for="checkboxfinishuser" value="#{web.text.USE}" />
+			</h:panelGroup>
+			
+			
+			<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
+				<h:outputLabel for="checkboxactivatecmsservice" value="#{web.text.SHAREDCMPRASECRET}" />
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CMP_RA_Authentication_Secret')}" escape="false"/>
+				
+			</h:panelGroup>	
+
+			<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
+				<h:inputSecret autocomplete="off" name="textfieldsharedcmprasecret" size="20" maxlength="64" value="#{editCAsMBean.cmpRaAuthSecretValue}" disabled="#{not editCAsMBean.hasEditRight}" />
+			</h:panelGroup>
+
+			<h:panelGroup>
+				<h:outputLabel for="checkboxincludeinhealthcheck" value="#{web.text.INCLUDEINHEALTHCHECK}" />
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Monitoring_and_Healthcheck.html')}" escape="false"/>
+				
+			</h:panelGroup>	
+
+			<h:panelGroup>
+				<h:selectBooleanCheckbox name="checkboxincludeinhealthcheck" id="checkboxincludeinhealthcheck"
+					value="#{editCAsMBean.includeInHealthCheck}" disabled="#{not editCAsMBean.hasEditRight}"/>
+				<h:outputLabel for="checkboxincludeinhealthcheck" value="#{web.text.ACTIVATE}" />
+			</h:panelGroup>
+
+			<!-- Form buttons -->
+			<h:panelGroup></h:panelGroup>
+			<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+
+				<h:commandButton name="buttonsave" onclick='return checkallfields()' value="#{web.text.SAVE}" rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.hasEditRight}"/> 
+
+				<h:commandButton name="buttonsave" onclick='return checkallfields()' value="#{web.text.SAVE}" rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight and editCAsMBean.cryptoTokenIdParamNotNull}"/> 
+				<h:commandButton name="buttoninitialize" onclick='return checkallfields()' value="#{web.text.SAVE_AND_INITIALIZE}" rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight and editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}"/> 
+
+				<h:outputText value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_INITIALIZE}" style="font-weight: bold;" rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}" />
+				<h:commandButton name="buttonsave" onclick='return checkallfields()' value="#{web.text.SAVE}" rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}"/>
+			
+				<h:outputText value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_SAVE}" style="font-weight: bold;" rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight and not editCAsMBean.cryptoTokenIdParamNotNull and not editCAsMBean.caUninitialized}" />
+			 
+				<h:commandButton name="buttoncreate" onclick='return checkallfields()' value="#{web.text.CREATE}" action="#{editCAsMBean.createCa}" rendered="#{not editCAsMBean.editCA or editCAsMBean.caUninitialized or not editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"/>
+        	    &nbsp;&nbsp;&nbsp;
+				<h:commandButton name="buttoncancel" onclick='return checkallfields()' value="#{web.text.CANCEL}" action="#{editCAsMBean.cancel}" immediate="true"/>
+
+			</h:panelGroup>
+
+			<h:panelGroup rendered="#{editCAsMBean.caExternal}">
+
+				<h:commandButton name="buttonsaveexternalca" value="#{web.text.SAVE}" rendered="#{editCAsMBean.renderSaveExternalCa}"/>
+				&nbsp;&nbsp;&nbsp;
+				<h:commandButton name="buttoncancel" value="#{web.text.CANCEL}" rendered="#{editCAsMBean.renderSaveExternalCa}" action="#{editCAsMBean.cancel}" immediate="true"/>
+				<h:commandButton name="buttoncancel" value="#{web.text.BACK}" rendered="#{not editCAsMBean.renderSaveExternalCa}"/>
+			
+			</h:panelGroup>
+			
+
+			</h:panelGrid>
+
+			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
+				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.renderCaLifeCycle}">
+				<!-- CA Life Cycle -->
+				<h:outputLabel for="califecycle" value="#{web.text.CALIFECYCLE}" style="font-weight: bold;" />
+				<h:panelGroup id="califecycle" rendered="#{editCAsMBean.renderCaLifeCycle}"/>	
+			
+			<h:panelGroup></h:panelGroup>
+			
+			<h:panelGroup rendered="#{editCAsMBean.renderCaLifeCycle}">
+				<h:selectOneMenu name="selectrevokereasons" value="#{editCAsMBean.caRevokeReason}" >
+					<f:selectItems value="#{editCAsMBean.revokeReasonList}"/>
+				</h:selectOneMenu>
+				<h:commandButton name="buttonrevokeca" value="#{web.text.REVOKE}" onclick='return confirmrevocation()'/> 
+			</h:panelGroup>
+
+			<h:panelGroup>
+				<h:outputLabel value="#{web.text.RENEWCA}" />
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Renewing_a_SubCA_Signed_by_an_External_CA.html')}" escape="false"/>			
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:outputLabel for="selectcertsignkeyrenew" value="#{web.text.RENEWCA_NEXTCAKEY}" />
+				<h:selectOneMenu name="selectcertsignkeyrenew" value="#{editCAsMBean.certSignKeyReNewValue}" disabled="#{not editCAsMBean.hasEditRight}">
+					<f:selectItems value="#{editCAsMBean.certSignKeyReNewList}"/>
+				</h:selectOneMenu>
+				<h:outputLabel value="#{web.text.RENEWCA_USECANAMECHANGE}" rendered="#{editCAsMBean.renderUseCaNameChange}"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CA_Name_Change')}" escape="false" rendered="#{editCAsMBean.renderUseCaNameChange}"/>						
+				<h:selectBooleanCheckbox name="checkboxcanamechange" id="idcheckboxcanamechange"
+					value="#{editCAsMBean.includeInHealthCheck}" onchange="toggleCANameChange()" disabled="#{not editCAsMBean.hasEditRight}" rendered="#{editCAsMBean.renderUseCaNameChange}"/>
+				<h:outputText value="#{web.text.RENEWCA_NEW_SUBJECT_DN_ICAO}" rendered="#{editCAsMBean.renderUseCaNameChange}"/>
+				<h:inputText size="45" maxlength="255" id="idnewsubjectdn" name="textfieldnewsubjectdn" title="#{web.text.FORMAT_DN}"
+						value="#{editCAsMBean.certificateAiaDefaultCaIssuerUri}" rendered="#{editCAsMBean.renderUseCaNameChange}" disabled="true"/>
+				<h:outputText value="#{web.text.RENEWCA_LINKCERTIFICATE}"/>
+				<h:selectBooleanCheckbox name="checkboxcreatelinkcertificate" 
+					value="true" disabled="true" rendered="#{editCAsMBean.caTypeCVC}"/>
+				<h:selectBooleanCheckbox name="checkboxcreatelinkcertificate" 
+					value="true" disabled="#{not editCAsMBean.hasEditRight}" />	
+				<h:commandButton name="buttonrenewca" value="#{web.text.RENEWCA}" onclick='return confirmrenewal()' disabled="#{not editCAsMBean.hasEditRight}"/> 
+				<h:outputText value="#{web.text.RENEWCA_FROMLASTRENEWAL}"/>
+				<h:link value="#{editCAsMBean.binaryCaIdLink}" outcome = "DER" rendered="#{editCAsMBean.renderCaIdLink}"/>
+				<h:link value="#{editCAsMBean.caIdLink}" outcome = "PEM" rendered="#{editCAsMBean.renderCaIdLink}"/>
+				<h:outputText value="#{web.text.RENEWCA_NOTAVAILABLE}" rendered="#{not editCAsMBean.renderCaIdLink}" />
+				<br />
+				<h:outputText value="#{web.text.CAROLLOVER}" rendered="#{editCAsMBean.editCA and editCAsMBean.rollOverDate}" />
+				<h:outputText value="#{web.text.CAROLLOVERNOTAFTER}" rendered="#{editCAsMBean.editCA and editCAsMBean.rollOverDate}" />
+				<h:outputText value="#{editCAsMBean.caRollOverNotAfter}" rendered="#{editCAsMBean.editCA and editCAsMBean.rollOverDate}" />
+				<br />
+				<h:outputText value="#{web.text.CAROLLOVERNOTBEFORE}" rendered="#{editCAsMBean.editCA and editCAsMBean.rollOverDate}" />
+				<h:outputText value="#{editCAsMBean.caRollOverNotBefore}" rendered="#{editCAsMBean.editCA and editCAsMBean.rollOverDate}" />
+				<h:commandButton name="buttonrollover" value="#{web.text.CAROLLOVERBUTTON}" onclick="#{editCAsMBean.confirmRolloverDate}" rendered="#{editCAsMBean.editCA and editCAsMBean.rollOverDate}"/> 
+			</h:panelGroup>			
+			
+			<h:panelGroup/>
+				<h:commandButton name="buttonpublishca" value="#{web.text.REPUBLISHCA}" rendered="#{editCAsMBean.renderRepublishCA}"/> 
+			<h:panelGroup>
+			
+			</h:panelGroup>
+				
+			</h:panelGrid>
+
+			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
+				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{not editCAsMBean.caExternal and editCAsMBean.hasEditRight}">
+				<!-- Externally signed CA creation/renewal -->
+				<h:outputLabel for="externallysignedcacreaterenew" value="#{web.text.EXTERNALLYSIGNED_CA_CREATERENEW}" style="font-weight: bold;" />
+				<h:panelGroup id="externallysignedcacreaterenew" />	
+				
+			<h:panelGroup/>
+			
+			<h:panelGroup>
+				<h:outputText value="#{web.text.EXTERNALLYSIGNED_STEP1}" rendered="#{editCAsMBean.editCA}" style="font-weight: bold;" />
+				<h:outputText value="#{web.text.EXTERNALLYSIGNED_NEXTKEY}" rendered="#{editCAsMBean.editCA}"  />
+				<h:selectOneMenu name="selectcertsignkeyrenew" value="#{editCAsMBean.extrCertSignKeyReNewValue}" rendered="#{editCAsMBean.editCA}">
+					<f:selectItems value="#{editCAsMBean.certSignKeyReNewList}"/>
+				</h:selectOneMenu> <br />			
+				<h:outputLabel for="filerecievefilemakerequest" value="#{web.text.EXTERNALLYSIGNED_CACHAIN}" />
+				<t:inputFileUpload name="filerecievefilemakerequest" />
+				<br />
+				<h:outputLabel value="#{web.text.EXTERNALLYSIGNED_CACHAIN_HELP}" class="help"/>
+				
+				<br />
+				<h:commandButton name="buttonmakerequest" value="#{web.text.MAKEREQUEST}" onclick="return checkallfields()" /> 
+				<br /><br /><br />
+				<h:outputText value="#{web.text.EXTERNALLYSIGNED_STEP2}" rendered="#{editCAsMBean.editCA}" style="font-weight: bold;" />
+				<h:outputText value="#{web.text.EXTERNALLYSIGNED_CAKEY}" rendered="#{editCAsMBean.editCA}"  />				
+				<h:selectOneMenu name="selectcertsignkeyreceivereq" value="#{editCAsMBean.certSignKeyRecieveReqValue}" rendered="#{editCAsMBean.editCA}">
+					<f:selectItems value="#{editCAsMBean.certSignKeyRecieveReqList}"/>
+				</h:selectOneMenu> <br />				
+				<h:outputText value="#{web.text.EXTERNALLYSIGNED_CACERT}" rendered="#{editCAsMBean.editCA}"/>
+				<h:outputLabel value="#{web.text.EXTERNALLYSIGNED_CACERT_HELP}" class="help" rendered="#{editCAsMBean.editCA}"/>
+				<t:inputFileUpload name="filerecievefilerecieverequest" rendered="#{editCAsMBean.editCA}"/>
+				<br />
+				<h:outputLabel value="#{web.text.EXTERNALLYSIGNED_FUTUREROLLOVER_HELP}" class="help" rendered="#{editCAsMBean.editCA and editCAsMBean.renderFutureRollOver}"/>
+				<h:selectBooleanCheckbox name="checkboxfuturerollover" id="checkboxfuturerollover"
+					value="#{editCAsMBean.checkBoxFutureRollOver}" disabled="#{not editCAsMBean.hasEditRight}" rendered="#{editCAsMBean.editCA and editCAsMBean.renderFutureRollOver}"/>					
+				<h:outputLabel for="checkboxfuturerollover" value="#{web.text.EXTERNALLYSIGNED_FUTUREROLLOVER}" rendered="#{editCAsMBean.editCA and editCAsMBean.renderFutureRollOver}"/>
+				
+				<h:commandButton name="buttonreceiverequest" value="#{web.text.RECIEVEREQUEST}" onclick="return checkallfields()" rendered="#{editCAsMBean.editCA}"/> 
+							
+			</h:panelGroup>	
+
+			</h:panelGrid>
+
+			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
+				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.editCA and editCAsMBean.caExternal and editCAsMBean.hasEditRight}">
+				<!-- Import CA Renewal -->
+				<h:outputLabel for="importcarenewal" value="#{web.text.IMPORTED_CA_RENEWAL}" style="font-weight: bold;" />
+				<h:panelGroup id="importcarenewal" />	
+
+				<h:panelGroup>
+					<h:outputText value="#{web.text.IMPORTED_CA_RENEWAL_NEWCERT}" />
+					<h:outputLabel value="#{web.text.IMPORTED_CA_RENEWAL_NEWCERT_HELP}" class="help"/>
+					<t:inputFileUpload name="filerecievefileimportrenewal" />
+					<h:commandButton name="buttonreceiveimportrenewal" value="#{web.text.RECEIVE_IMPORT_RENEWAL}" /> 
+				</h:panelGroup>
+
+			</h:panelGrid>
+				
+			</h:form> 
+			<!-- End of CA form -->
+			
+			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
+				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.editCA and not editCAsMBean.caExternal and editCAsMBean.hasEditRight}">
+				<!-- Export CA Header -->
+				<h:outputLabel for="exportcaheader" value="#{web.text.EXPORTCA_HEADER}" style="font-weight: bold;" />
+				<h:panelGroup id="exportcaheader" />
+
+				<h:panelGroup>
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputText value="#{web.text.EXPORTCA_AUTHCODE}" rendered="#{editCAsMBean.renderExportCA}" />
+					<!-- TODO: complete this form -->
+					<h:outputText value="#{web.text.EXPORTCA_NA}"  rendered="#{editCAsMBean.renderExportCA}"/>				
+				</h:panelGroup>
+
+			</h:panelGrid>
+
+		</ui:define>
+
+	</ui:composition>
+</h:body>
+</html>
