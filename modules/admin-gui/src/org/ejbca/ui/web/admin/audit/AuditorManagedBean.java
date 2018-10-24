@@ -29,8 +29,10 @@ import java.util.Set;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -49,6 +51,7 @@ import org.cesecore.audit.impl.AuditExporterXml;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
@@ -57,9 +60,11 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
@@ -72,7 +77,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * 
  * @version $Id$
  */
-public class AuditorManagedBean implements Serializable {
+public class AuditorManagedBean extends BaseManagedBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(AuditorManagedBean.class);
@@ -114,8 +119,17 @@ public class AuditorManagedBean implements Serializable {
 	private List<AuditSearchCondition> conditions = new ArrayList<>();
 	private boolean automaticReload = true;
 	
+    // Authentication check and audit log page access request
+    public void initialize(ComponentSystemEvent event) throws Exception {
+        // Invoke on initial request only
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AuditLogRules.VIEW.resource());
+        }
+    }
+	
 	public AuditorManagedBean() {
-		final EjbcaWebBean ejbcaWebBean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
+		final EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
 		columnNameMap.put(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ejbcaWebBean.getText("ADMINISTRATOR"));
 		columnNameMap.put(AuditLogEntry.FIELD_CUSTOM_ID, ejbcaWebBean.getText("CUSTOM_ID"));
 		columnNameMap.put(AuditLogEntry.FIELD_EVENTSTATUS, ejbcaWebBean.getText("EVENTSTATUS"));
@@ -378,7 +392,7 @@ public class AuditorManagedBean implements Serializable {
 		    if (log.isDebugEnabled()) {
 		        log.debug(e.getMessage(), e);
 		    }
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Invalid search conditions: " + e.getMessage()));
+            addErrorMessage("Invalid search conditions: " + e.getMessage());
 		}
 		renderNext = results!=null && !results.isEmpty() && results.size()==maxResults;
 	}
@@ -615,7 +629,7 @@ public class AuditorManagedBean implements Serializable {
 	public void downloadResultsCms() {
         try {
             if (cmsSigningCa == null) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Invalid or no CMS signing CA."));
+                addErrorMessage("AUDIT_INVALIDCMS");
             } else {
                 final CmsCAServiceRequest request = new CmsCAServiceRequest(exportToByteArray(), CmsCAServiceRequest.MODE_SIGN);
                 final CAAdminSession caAdminSession = new EjbLocalHelper().getCaAdminSession();
@@ -625,12 +639,12 @@ public class AuditorManagedBean implements Serializable {
                     downloadResults(resp.getCmsDocument(), "application/octet-stream", "export-"+results.get(0).getTimeStamp()+".p7m");
                 } catch (IOException e) {
                     log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
+                    addErrorMessage(e.getMessage());
                 }
             }
         } catch (Exception e) {
             log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
+            addErrorMessage(e.getMessage());
         }
 	}
 
@@ -640,7 +654,7 @@ public class AuditorManagedBean implements Serializable {
             downloadResults(exportToByteArray(), "application/octet-stream", "export-"+results.get(0).getTimeStamp()+".xml"); // "application/force-download" is an alternative here..
         } catch (IOException e) {
             log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
+            addErrorMessage(e.getMessage());
         }
     }
     
