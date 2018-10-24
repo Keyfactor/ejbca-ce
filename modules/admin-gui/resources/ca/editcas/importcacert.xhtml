@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/ xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:csrf="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld">
+
+<ui:remove>
+	<!--
+	/*************************************************************************
+	*                                                                       *
+	*  EJBCA: The OpenSource Certificate Authority                          *
+	*                                                                       *
+	*  This software is free software; you can redistribute it and/or       *
+	*  modify it under the terms of the GNU Lesser General Public           *
+	*  License as published by the Free Software Foundation; either         *
+	*  version 2.1 of the License, or any later version.                    *
+	*                                                                       *
+	*  See terms of license at gnu.org.                                     *
+	*                                                                       *
+	*************************************************************************/
+
+	$Id:$
+	-->
+</ui:remove>
+<h:body>
+	<c:set var="csrf_tokenname">
+		<csrf:tokenname />
+	</c:set>
+	<c:set var="csrf_tokenvalue">
+		<csrf:tokenvalue />
+	</c:set>
+	<c:set var="row" value="0" />
+	<ui:composition template="/WEB-INF/include/template.xhtml">
+		<ui:define name="content">
+			<h2>
+				<h:outputText value="#{web.text.IMPORTCA_CERTIFICATE}" />
+			</h2>
+
+			<h:form id="recievefile"
+				method="post" enctype='multipart/form-data'>
+				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+					columnClasses="editColumn1,editColumn2">
+					<h:panelGroup>
+						&nbsp;
+					</h:panelGroup>
+					<h:outputLink value="managecas.xhtml">
+						<h:outputText value="#{web.text.BACKTOCAS}" />
+					</h:outputLink>
+
+					<h:panelGroup>
+						<h:outputLabel for="textfieldimportcaname"
+							value="#{web.text.IMPORTCA_CANAME}" style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:inputText id="textfieldimportcaname"
+							title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255">
+						</h:inputText>
+					</h:panelGroup>
+
+					<h:panelGroup>
+						<h:outputLabel for="filerecievefile"
+							value="#{web.text.IMPORTCA_CERTIFICATEFILE}"
+							style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:inputHidden id="action"
+							value="importcacert" />
+						<t:inputFileUpload id="filerecievefile" />
+					</h:panelGroup>
+
+					<h:panelGroup>
+						&nbsp;
+					</h:panelGroup>
+
+					<h:panelGroup>
+						<h:commandButton type="submit"
+							id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');"
+							value="#{web.text.IMPORTCA_CERTIFICATE}" />
+						<h:commandButton id="buttoncancel"
+							value="#{web.text.CANCEL}" action="managecas" immediate="true"/>
+					</h:panelGroup>
+
+				</h:panelGrid>
+			</h:form>
+		</ui:define>
+	</ui:composition>
+</h:body>
+</html>
+
