@@ -536,4 +536,18 @@ public class StringToolsTest {
         assertTrue(StringTools.isLesserThan("6.0", "6.0.1"));
         assertTrue(StringTools.isLesserThan("6.13.0.14", "6.14.0"));
     }
+
+    @Test
+    public void testCheckFieldForLegalCharsPositive(){
+        assertTrue(StringTools.checkFieldForLegalChars("abcde"));
+        assertTrue(StringTools.checkFieldForLegalChars("abcde'"));
+    }
+    @Test
+    public void testCheckFieldForLegalCharsNegative(){
+        assertFalse(StringTools.checkFieldForLegalChars("abcde%"));
+        assertFalse(StringTools.checkFieldForLegalChars("abcde>"));
+        assertFalse(StringTools.checkFieldForLegalChars("abcde$"));
+        assertFalse(StringTools.checkFieldForLegalChars("abcde#"));
+        assertFalse(StringTools.checkFieldForLegalChars("abcde\""));
+    }
 }

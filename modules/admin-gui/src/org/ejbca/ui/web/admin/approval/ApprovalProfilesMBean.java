@@ -161,14 +161,10 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     public String getApprovalProfileName() {
         return approvalProfileName;
     }
-    
+
     public void setApprovalProfileName(String approvalProfileName) {
         approvalProfileName = approvalProfileName.trim();
-        if (!StringTools.checkFieldForLegalChars(approvalProfileName)) {
-            addErrorMessage("ONLYCHARACTERS");
-        } else {
-            this.approvalProfileName = approvalProfileName;
-        }
+        this.approvalProfileName = approvalProfileName;
     }
     
     public String actionView() {
@@ -295,17 +291,21 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     public void actionRenameConfirm() {
         final String approvalProfileName = getApprovalProfileName();
         if (StringUtils.isNotEmpty(approvalProfileName)) {
-            try {
-                approvalProfileSession.renameApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
-                        approvalProfileName);
-                setApprovalProfileName("");
-            } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException e) {
-                addErrorMessage(e.getLocalizedMessage());
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage("Not authorized to rename certificate profile.");
+            if (!StringTools.checkFieldForLegalChars(approvalProfileName)) {
+                addErrorMessage("ONLYCHARACTERS");
+            } else {
+                try {
+                    approvalProfileSession.renameApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
+                            approvalProfileName);
+                    setApprovalProfileName("");
+                } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException e) {
+                    addErrorMessage(e.getLocalizedMessage());
+                } catch (AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage("Not authorized to rename certificate profile.");
+                }
+                actionCancel();
             }
         }
-        actionCancel();
     }
     
     public void actionAddFromTemplate() {
@@ -318,42 +318,50 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     public void actionAddFromTemplateConfirm() {
         final String approvalProfileName = getApprovalProfileName();
         if (StringUtils.isNotEmpty(approvalProfileName)) {
-            try {
-                approvalProfileSession.cloneApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
-                        approvalProfileName);
-                setApprovalProfileName("");
-            } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException | AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage(e.getLocalizedMessage());
+            if (!StringTools.checkFieldForLegalChars(approvalProfileName)) {
+                addErrorMessage("ONLYCHARACTERS");
+            } else {
+                try {
+                    approvalProfileSession.cloneApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
+                            approvalProfileName);
+                    setApprovalProfileName("");
+                } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException | AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage(e.getLocalizedMessage());
+                }
+
+                actionCancel();
             }
-            
         }
-        actionCancel();
     }
     
     /** @return true if there exists an approval profile with the selected id */
     private boolean selectedProfileExists() {
         return getEjbcaWebBean().getEjb().getApprovalProfileSession().getApprovalProfile(selectedApprovalProfileId) != null;
     }
-    
+
     public void actionAdd() {
-        
+
         final String approvalProfileName = getApprovalProfileName();
         if (StringUtils.isNotEmpty(approvalProfileName)) {
-           try {
-                if(!approvalProfileSession.findByApprovalProfileName(approvalProfileName).isEmpty()) {
-                    //Handle this below
-                    throw new ApprovalProfileExistsException("Approval profile of name " + approvalProfileName + " already exists");
+            if (!StringTools.checkFieldForLegalChars(approvalProfileName)) {
+                addErrorMessage("ONLYCHARACTERS");
+            } else {
+                try {
+                    if (!approvalProfileSession.findByApprovalProfileName(approvalProfileName).isEmpty()) {
+                        //Handle this below
+                        throw new ApprovalProfileExistsException("Approval profile of name " + approvalProfileName + " already exists");
+                    }
+                    final ApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
+                    approvalProfileSession.addApprovalProfile(getAdmin(), approvalProfile);
+                    setApprovalProfileName("");
+                } catch (ApprovalProfileExistsException e) {
+                    addErrorMessage("APPROVAL_PROFILE_ALREADY_EXISTS");
+                } catch (AuthorizationDeniedException e) {
+                    addNonTranslatedErrorMessage("Not authorized to add approval profile.");
                 }
-                final ApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
-                approvalProfileSession.addApprovalProfile(getAdmin(), approvalProfile);
-                setApprovalProfileName("");
-            } catch (ApprovalProfileExistsException e) {
-                addErrorMessage("APPROVAL_PROFILE_ALREADY_EXISTS");
-            } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage("Not authorized to add approval profile.");
             }
+            approvalProfilesList = null;
         }
-        approvalProfilesList = null;
     }
     
 }
