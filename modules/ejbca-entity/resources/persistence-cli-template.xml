@@ -66,6 +66,7 @@
         <class>org.ejbca.acme.AcmeAccountData</class>
         <class>org.ejbca.acme.AcmeAuthorizationData</class>
         <class>org.ejbca.acme.AcmeChallengeData</class>
+        <class>org.ejbca.acme.AcmeOrderData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
@@ -119,6 +120,7 @@
         <class>org.ejbca.acme.AcmeAccountData</class>  
         <class>org.ejbca.acme.AcmeAuthorizationData</class>
         <class>org.ejbca.acme.AcmeChallengeData</class>
+        <class>org.ejbca.acme.AcmeOrderData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
