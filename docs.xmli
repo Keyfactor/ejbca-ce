@@ -94,7 +94,10 @@
     </condition>
     
     <condition property="connected.to.confluence" value="true" else="false">
-    	<isreachable url="http://${confluence.url}" timeout="2"/>	
+        <and>
+            <istrue value="${doc.update}"/>          
+    	    <isreachable url="http://${confluence.url}" timeout="2"/>
+    	</and>	
     </condition>
 
     <condition property="mod.rest-api.exists">
