@@ -62,6 +62,8 @@
         <attributes>
             <id name="orderId"><column name="orderId" column-definition="VARCHAR(250) BINARY"/></id>
             <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY" nullable="true"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="LONGTEXT"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>

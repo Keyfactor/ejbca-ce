@@ -56,6 +56,17 @@
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
+    <entity class="org.ejbca.acme.AcmeOrderData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="orderId"><column name="orderId" column-definition="VARCHAR(255,0)"/></id>
+            <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(255,0)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
     <entity class="org.ejbca.acme.AcmeChallengeData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="challengeId"><column name="challengeId" column-definition="VARCHAR(255,0)"/></id>
