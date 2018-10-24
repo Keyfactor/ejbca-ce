@@ -224,7 +224,14 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
             reset();
             return "done";
         } catch (UserDataSourceConnectionException pce) {
-            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB") + " : " + pce.getMessage());
+            String errorMessage = getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB");
+            log.info(errorMessage, pce);
+            addNonTranslatedErrorMessage(errorMessage + " : " + pce.getMessage());
+            return StringUtils.EMPTY;
+        } catch (RuntimeException e){
+            String errorMessage = getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB");
+            log.info(errorMessage, e);
+            addNonTranslatedErrorMessage(errorMessage + " : " + e.getMessage());
             return StringUtils.EMPTY;
         }
     }
