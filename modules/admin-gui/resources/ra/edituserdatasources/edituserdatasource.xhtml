@@ -40,9 +40,9 @@
             <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>&nbsp;</h:panelGroup>
-                <h:outputLink value="userdatasourcespage.xhtml">
-                    <h:outputText value="#{web.text.BACKTOUSERDATASOURCES}"/>
-                </h:outputLink>
+                    <h:outputLink value="userdatasourcespage.xhtml" style="float: right;">
+                        <h:outputText value="#{web.text.BACKTOUSERDATASOURCES}"/>
+                    </h:outputLink>
                 <h:outputLabel for="userDatasourceName" value="#{web.text.NAME}"/>
                 <h:outputText id="userDatasourceName" value="#{editUserDatasoucesMBean.datasource.name}"/>
                 <h:outputLabel for="userdatasourceType" value="#{web.text.USERDATASOURCETYPE}"/>
@@ -62,10 +62,10 @@
                 <h:inputText id="textfieldcustomclasspath" size="45" maxlength="255" name="textfieldcustomclasspath"
                              value="#{editUserDatasoucesMBean.datasource.classPath}" required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.CLASSPATH}"/>
                 <h:outputLabel for="textareacustomproperties" value="#{web.text.PROPERTIESOFCUSTOM}"/>
-                <h:inputTextarea id="textareacustomproperties" value="#{editUserDatasoucesMBean.datasource.description}" name="textareacustomproperties"
+                <h:inputTextarea id="textareacustomproperties" value="#{editUserDatasoucesMBean.datasource.propertyData}" name="textareacustomproperties"
                                  cols="45" rows="8" required="false"/>
             </h:panelGrid>
-            <h:panelGrid columns="2" styleClass="edit-top, edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%"
+            <h:panelGrid columns="2" styleClass="edit-top edit-bottom" cellspacing="3" cellpadding="3" border="0" width="100%"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     <h:outputLabel for="general_settings" value="#{web.text.GENERALSETTINGS}"
