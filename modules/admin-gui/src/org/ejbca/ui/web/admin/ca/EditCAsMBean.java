@@ -230,20 +230,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return Integer.parseInt(this.selectedCryptoToken);
     }
     
-    public List<String> getListOfCas() {
-        final List<String> caList = new ArrayList<String>();
-        for (final String nameofca : canames.keySet()) {
-            int caId = canames.get(nameofca).intValue();
-            int caStatus = caBean.getCAStatusNoAuth(caId);
-
-            String nameandstatus = nameofca + ", (" + getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus)) + ")";
-            if (caBean.isAuthorizedToCa(caId)) {
-                caList.add(nameandstatus);
-            }
-        }
-        return caList;
-    }
-    
     public String getCurrentCertProfile() {
         return currentCertProfile;
     }
@@ -335,7 +321,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setCaType(final int catype) {
-        log.info("Hi Amin the type is set to " + catype);
         this.catype = catype;
     }
     
@@ -348,7 +333,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public int getCurrentCaId() {
-        Integer caId = canames.get(getTrimmedName(this.editCaName));
+        Integer caId = canames.get(EditCaUtil.getTrimmedName(this.editCaName));
         if (caId != null) {
             this.currentCaId = caId.intValue();
         }
@@ -360,9 +345,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCurrentCaType() {
-        
-        log.info("Hi amin the edit ca name is " + editCaName);
-        Integer caId = canames.get(getTrimmedName(this.editCaName));
+        Integer caId = canames.get(EditCaUtil.getTrimmedName(this.editCaName));
         if (caId != null) {
             try {
                 int caType = cadatahandler.getCAInfo(caId).getCAInfo().getCAType();
@@ -595,7 +578,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getEditCaName() {
-        return cainfo != null ? cainfo.getName() : StringUtils.EMPTY;
+        return " : " + EditCaUtil.getTrimmedName(this.editCaName); 
     }
     
     public String getCreateCaNameTitle() {
@@ -808,7 +791,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         List<SelectItem> resultList = new ArrayList<>();
         for(Entry<String, String> entry : caBean.getAvailableCaCertificateProfiles())
         {
-            resultList.add(new SelectItem(entry.getKey(), (String) getTrimmedName(entry.getValue()), ""));
+            resultList.add(new SelectItem(entry.getKey(), (String) EditCaUtil.getTrimmedName(entry.getValue()), ""));
         }
         return resultList;
     }
@@ -1853,7 +1836,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
 
     
-    public String createCa() throws Exception {
+    public String createCa() {
         
         final long crlIssueInterval = SimpleTime.getInstance(crlCaIssueInterval, "0"+SimpleTime.TYPE_MINUTES).getLong();
         final long crlPeriod = SimpleTime.getInstance(crlCaCrlPeriod, "1"+SimpleTime.TYPE_DAYS).getLong();
@@ -1884,34 +1867,33 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         log.info("Hi Amin available keyvalidator value is " + availableKeyValidatorValues);
         
         boolean illegaldnoraltname = false;
-            illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam,
-                    signKeySpec, keySequenceFormat, keySequenceValue,
-                    catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, // TODO: this must be default certificate profile
-                    useNoConflictCertificateData, signedBy, description, caEncodedValidity,  
-                    getApprovals(), finishUser, doEnforceUniquePublickeys,
-                    doEnforceUniqueDistinguishedName,
-                    doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry,
-                    caSubjectAltName, policyId, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
-                    crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, availablePublisherValues, availableKeyValidatorValues,
-                    useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator,
-                    authorityInformationAccess, 
-                    certificateAiaDefaultCaIssuerUri,
-                    nameConstraintsPermitted, nameConstraintsExcluded,
-                    caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder,
-                    useCrlDistributiOnPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, false,
-                    serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, true, false,
-                    selectedCryptoToken, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey,
-                    hardTokenEncryptKey, selectedKeyEncryptKey, testKey,
-                    fileBuffer);
+            try {
+                illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam,
+                        signKeySpec, keySequenceFormat, keySequenceValue,
+                        catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, // TODO: this must be default certificate profile
+                        useNoConflictCertificateData, signedBy, description, caEncodedValidity,  
+                        getApprovals(), finishUser, doEnforceUniquePublickeys,
+                        doEnforceUniqueDistinguishedName,
+                        doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry,
+                        caSubjectAltName, policyId, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
+                        crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, availablePublisherValues, availableKeyValidatorValues,
+                        useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator,
+                        authorityInformationAccess, 
+                        certificateAiaDefaultCaIssuerUri,
+                        nameConstraintsPermitted, nameConstraintsExcluded,
+                        caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder,
+                        useCrlDistributiOnPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, false,
+                        serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, true, false,
+                        selectedCryptoToken, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey,
+                        hardTokenEncryptKey, selectedKeyEncryptKey, testKey,
+                        fileBuffer);
+            } catch (Exception e) {
+                addErrorMessage(e.getMessage());
+                log.error("Error happened during ca creation! ", e);
+            }
         
         return illegaldnoraltname ? "error" : "managecas";    
     }
     
-    private Object getTrimmedName(final String name) {
-        if (name != null && !name.isEmpty()) {
-            return name.replaceAll("\\([^()]*\\)", StringUtils.EMPTY).replaceAll(", ", StringUtils.EMPTY);
-        } else {
-            return StringUtils.EMPTY;
-        }
-    }
+
 }

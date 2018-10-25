@@ -51,9 +51,22 @@ function confirmcadeletion(message) {
     return confirm(message);
 }
 
+function checkcreatecafield(thetextfield, alerttext) {
+	field = eval(thetextfield);
+	var text = new String(field.value);
+	if (!text || 0 === text.length || text === "") {
+		alert("Please give a ca name first!")
+		return false
+	}
+	return checkfieldforlegalchars(thetextfield, alerttext);
+}
+
+
 /**
  * Used in editcapage.xhtml
- * @param link The link to the certificate to be shown
+ * 
+ * @param link
+ *            The link to the certificate to be shown
  * 
  */
 function viewcacert(link){

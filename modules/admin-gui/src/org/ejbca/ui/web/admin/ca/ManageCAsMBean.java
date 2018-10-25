@@ -3,8 +3,8 @@ package org.ejbca.ui.web.admin.ca;
 import java.beans.Beans;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
@@ -33,10 +33,13 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     
     private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;
-    private String editCaName;
+    private int selectedCaId;
     private String createCaName;
     private boolean isEditCA;
     CADataHandler cadatahandler;
+    Map<Integer, String> caidtonamemap;
+
+
     
     public String getCreateCaName() {
         return createCaName;
@@ -69,20 +72,21 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         caBean.initialize(getEjbcaWebBean());
         cadatahandler = caBean.getCADataHandler();
+        caidtonamemap = caBean.getCAIdToNameMap();
     }
     
-    public List<String> getListOfCas() {
-        final List<String> caList = new ArrayList<String>();
+    public Map<Integer, String> getListOfCas() {
+        final Map<Integer, String> caMap = new LinkedHashMap<>();
         for (final String nameofca : canames.keySet()) {
             int caId = canames.get(nameofca).intValue();
             int caStatus = caBean.getCAStatusNoAuth(caId);
 
             String nameandstatus = nameofca + ", (" + getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus)) + ")";
             if (caBean.isAuthorizedToCa(caId)) {
-                caList.add(nameandstatus);
+                caMap.put(caId, nameandstatus);
             }
         }
-        return caList;
+        return caMap;
     }
     
     public String getEditCAButtonValue() {
@@ -99,14 +103,13 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         return onlyView;
     }
     
-
-    public String getEditCaName() {
-        return this.editCaName;
+    public int getSelectedCaId() {
+        return selectedCaId;
     }
 
-    public void setEditCaName(final String editCaName) {
-        this.editCaName = editCaName;
-    }
+    public void setSelectedCaId(final int selectedCaId) {
+        this.selectedCaId = selectedCaId;
+    }    
     
     public boolean isCanRemoveResource() {
         return getEjbcaWebBean().isAuthorizedNoLogSilent(StandardRules.CAREMOVE.resource());
@@ -142,16 +145,8 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getConfirmMessage() {
-        if (editCaName != null && !editCaName.isEmpty()) {
-            return getEjbcaWebBean().getText("AREYOUSURETODELETECA", true, getTrimmedName(this.editCaName));
-        } else {
-            return StringUtils.EMPTY;
-        }
-    }
-    
-    private Object getTrimmedName(final String name) {
-        if (name != null && !name.isEmpty()) {
-            return name.replaceAll("\\([^()]*\\)", StringUtils.EMPTY).replaceAll(", ", StringUtils.EMPTY);
+        if (selectedCaId != 0) {
+            return getEjbcaWebBean().getText("AREYOUSURETODELETECA", true, caidtonamemap.get(selectedCaId));
         } else {
             return StringUtils.EMPTY;
         }
@@ -159,18 +154,24 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String updateIsEditCA(final boolean isEditCA) {
         if (!isEditCA && (createCaName == null || createCaName.isEmpty())) {
-            return StringUtils.EMPTY;
+            return EditCaUtil.MANAGE_CA_NAV;
         }
-        if (isEditCA && (editCaName == null || editCaName.isEmpty())) {
-            return StringUtils.EMPTY;
+        
+        if (!isEditCA && canames.containsKey(createCaName)) {
+            addErrorMessage("Ca " + createCaName + " already exists!");
+            return EditCaUtil.MANAGE_CA_NAV;
+        }
+        
+        if (isEditCA && (selectedCaId == 0)) {
+            return EditCaUtil.MANAGE_CA_NAV;
         }
         
         this.setEditCA(isEditCA);
         // Here we set what is needed in EditCAsMBean
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editCaName", this.editCaName);
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("createCaName", this.createCaName);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editCaName", caidtonamemap.get(selectedCaId));
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("createCaName", EditCaUtil.getTrimmedName(this.createCaName));
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("isEditCA", this.isEditCA);        
-        return "editcapage";
+        return EditCaUtil.EDIT_CA_NAV;
     }
 
     public boolean isEditCA() {
@@ -182,37 +183,34 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String deleteCA() {
-        
-        if (cadatahandler == null) {
-            log.info("amin ca datahandler is null!!!");
-        }
-        
-        if (canames == null) {
-            log.info("amin canames is null!!!");
-        }
-        
-        
-        log.info("Amin edit ca name is " + editCaName);
-        
         try {
-            cadatahandler.removeCA(canames.get(getTrimmedName(editCaName)));
+            cadatahandler.removeCA(selectedCaId);
         } catch (AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
             log.error("Error while calling remove ca function!", e);
         }
-        return "managecas";
+        return EditCaUtil.MANAGE_CA_NAV;
     }
     
-    public String renameCA() throws CADoesntExistsException, AuthorizationDeniedException {
-        if (canames.containsValue(createCaName)) {
-            log.error("ca already exists!");
-            return StringUtils.EMPTY;
-        } else if (editCaName == null || editCaName.isEmpty()) {
-            log.error("Select a CA first!");
-            return StringUtils.EMPTY;
+    public String renameCA() {
+        if (canames.containsKey(createCaName)) {
+            log.error("Ca already exists!");
+            addErrorMessage("Ca " + createCaName + " already exists!");
+            return EditCaUtil.MANAGE_CA_NAV;
+        } else if (selectedCaId == 0) {
+            log.error("Select a CA to rename first!");
+            addErrorMessage("Select a CA to rename first!");
+            return EditCaUtil.MANAGE_CA_NAV;
         }
         
-        cadatahandler.renameCA(canames.get(getTrimmedName(editCaName)), createCaName);
-        return "managecas";
+        try {
+            cadatahandler.renameCA(selectedCaId, createCaName);
+        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+            log.error("Error happened while renaming ca! ", e);
+            addErrorMessage(e.getMessage());
+        } 
+        return EditCaUtil.MANAGE_CA_NAV;
     }
-    
+
+
 }
