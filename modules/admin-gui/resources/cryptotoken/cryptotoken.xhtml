@@ -35,9 +35,6 @@
 				value="#{web.text.CRYPTOTOKEN} : #{cryptoTokenMBean.currentCryptoToken.name}"
 				rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}" />
 		</h1>
-		<div class="message">
-			<h:messages layout="table" errorClass="alert" infoClass="info" />
-		</div>
 		<h:form id="currentCryptoTokenForm">
 			<h:panelGrid columns="2">
 				<h:panelGroup>
