@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="modules/acme/src"/>
 	<classpathentry kind="src" path="modules/acme/src-common"/>
 	<classpathentry kind="src" path="modules/acme/src-test"/>
-  <classpathentry kind="src" path="modules/acme/src-common-test"/>
+    <classpathentry kind="src" path="modules/acme/src-common-test"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
 	<classpathentry kind="src" path="modules/admin-gui/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-p11/src"/>
@@ -84,6 +84,8 @@
 	<classpathentry kind="src" path="modules/peerconnector/src-rar"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-test"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-war"/>
+	<classpathentry kind="src" path="modules/plugins-ee/src"/>
+	<classpathentry kind="src" path="modules/plugins-ee/src-test"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
 	<classpathentry kind="src" path="modules/ra-gui/src"/>
 	<classpathentry kind="src" path="modules/statedump/src-cli"/>
