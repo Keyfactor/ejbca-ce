@@ -74,15 +74,14 @@ org.cesecore.authorization.control.StandardRules
                             <h:outputText value="#{alias.alias}" title="#{alias.alias}"/>
                         </h:outputLink>
                     </h:column>
-
                     <h:column>
                         <f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
                         <h:commandLink action="#{acmeConfigMBean.renameAlias}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"
-                                       onclick="return getInputToField('aliases:newAlias','#{web.text.ACME_ENTERNEWALIAS}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
+                         			   onclick="return inputIntoField('aliases:currentAliasStr','aliases:newAlias', '#{alias.alias}','#{web.text.ACME_ENTERNEWALIAS}');"
                                        styleClass="commandLink" title="#{web.text.SCEP_RENAME_ALIAS}">
                             <h:outputText value="#{web.text.RENAME}"/>
                         </h:commandLink>
-                        <h:commandLink action="#{acmeConfigMBean.deleteAlias}" onclick="return confirm('#{web.text.AREYOUSURE}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
+                        <h:commandLink action="#{acmeConfigMBean.deleteAlias}" onclick="return inputIntoFieldConfirm('#{web.text.AREYOUSURE}','aliases:currentAliasStr','#{alias.alias}');"
                                        styleClass="commandLink" title="#{web.text.SCEP_DELETE_ALIAS}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
                             <h:outputText value="#{web.text.DELETE}"/>
                         </h:commandLink>
@@ -91,7 +90,7 @@ org.cesecore.authorization.control.StandardRules
                 </h:dataTable>
                 <br/>
                 <h:commandLink action="#{acmeConfigMBean.addAlias}" styleClass="commandLink" title="#{web.text.SCEP_ADD_ALIAS}"
-                               onclick="return getInputToField('aliases:newAlias','#{web.text.ACME_ENTERNEWALIAS}', '#{web.text.ONLYCHARACTERS}');"
+                			   onclick="return inputIntoField('aliases:currentAliasStr','aliases:newAlias','','#{web.text.ACME_ENTERNEWALIAS}');"
                                rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
                     <h:outputText value="#{web.text.ADD}"/>
                 </h:commandLink>

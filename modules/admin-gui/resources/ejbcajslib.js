@@ -354,27 +354,25 @@ function trim(s) {
   return s;
 }
 
-// Prompt user for input, validate it for illegal chars and write it to a field
-function getInputToField(fieldname, infotext, infovalidchars) {
+function inputIntoField(oldaliasfield, aliasfield, oldalias, infotext) {
 	var input = prompt(infotext,"");
-	if ( input != null && "" != input) {
-		document.getElementById(fieldname).value = input;
-		if (checkfieldforlegalchars(document.getElementById(fieldname), infovalidchars)) {
-			return true;
-		}
-		document.getElementById(fieldname).value = '';
+	if (input != null && "" != input) {
+		document.getElementById(oldaliasfield).value = oldalias;
+		document.getElementById(aliasfield).value = input;
+		return true;
 	}
+	document.getElementById(oldaliasfield).value = '';
+	document.getElementById(aliasfield).value = '';
 	return false;
 }
 
-// Validate and write the 'input' to a field
-function getInsertIntoField(fieldname, input, infovalidchars) {
-	if ( input != null && "" != input) {
-		document.getElementById(fieldname).value = input;
-		if (checkfieldforlegalchars(document.getElementById(fieldname), infovalidchars)) {
-			return true;
-		}
+function inputIntoFieldConfirm(confirmmessage, field, input) {
+	var confirmed = confirm(confirmmessage);
+	if (confirmed && input != null && "" != input) {
+		document.getElementById(field).value = input;
+		return true;
 	}
+	document.getElementById(field).value = '';
 	return false;
 }
 
