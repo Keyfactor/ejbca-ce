@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -64,6 +66,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private boolean clientCertificateRenewal;
         private boolean allowClientCertificateRenewaWithOldKey;
 
+        
         private ScepAliasGuiInfo(ScepConfiguration scepConfig, String alias) {
             if (alias != null) {
                 this.alias = alias;
@@ -235,6 +238,15 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private final CertificateProfileSessionLocal certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final EndEntityProfileSessionLocal endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
     private final EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession = getEjbcaWebBean().getEnterpriseEjb();
+    
+    // Authentication check and audit log page access request
+    public void initialize(ComponentSystemEvent event) throws Exception {
+        // Invoke on initial request only
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+        }
+    }
     
     public ScepConfigMBean() {
         super();
