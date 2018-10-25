@@ -25,14 +25,14 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * JSF validator that check that fields do no contain any ASCII control characters.
- * Newlines are allowed, though. 
+ * Newlines and tabs are allowed, though. 
  *
  * @version $Id$
  */
 public class MultiLineFreeTextValidator implements Validator {
     private static final Logger log = Logger.getLogger(MultiLineFreeTextValidator.class);
 
-    private static final String CONTROL_CHARS = "\u0000-\u0009\u000B\u000C\u000E-\u001F"; // all characters from 0x00-0x1F except 0A (line feed) and 0D (carriage return)
+    private static final String CONTROL_CHARS = "\u0000-\u0008\u000B\u000C\u000E-\u001F"; // all characters from 0x00-0x1F except 09 (tab), 0A (line feed) and 0D (carriage return)
 
     @Override
     public void validate(final FacesContext facesContext, final UIComponent uIComponent, final Object object) throws ValidatorException {
