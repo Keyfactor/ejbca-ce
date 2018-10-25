@@ -12,107 +12,135 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
-import org.ejbca.webtest.helper.WebTestHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
+// TODO Current scenario depends on the success of previous steps, thus, may limit/complicate the discovery of other problems by blocking data prerequisites for next steps. Improve isolation of test data and flows?
 /**
  * Automated web test for ECAQA-138, which has the purpose of verifying that
  * an EEP with empty attributes that are non-modifiable cannot be saved.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-138">ECAQA-138</a>
  * 
- * @version $Id: EcaQa138_EEPAttributes.java 28641 2018-04-05 13:36:21Z andrey_s_helmes $
+ * @version $Id: EcaQa138_EEPAttributes.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa138_EEPAttributes extends WebTestBase {
 
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
-    private static final String eepName = "ECAQA138";
-
-    private static WebDriver webDriver;
-    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-
-    // Strings for test
-    private static final String alertMessage = "An empty attribute cannot be non-modifiable.";
-    private static final String subjectDnBase = "subjectdn";
-    private static final String subjectDnAttribute = "O, Organization";
-    private static final String subjectDnString = "TestOrg";
-    private static final String subjectAltNameBase = "subjectaltname";
-    private static final String subjectAltNameAttribute = "MS UPN, User Principal Name";
-    private static final String subjectAltNameString = "testdomain.com";
-    private static final String subjectDirAttrBase = "subjectdirattr";
-    private static final String subjectDirAttrAttribute = "Place of birth";
-    private static final String subjectDirAttrString = "Stockholm";
+    // Helpers
+    private static EndEntityProfileHelper endEntityProfileHelper;
+    // Test Data
+    private static class TestData {
+        static final String END_ENTITY_PROFILE_NAME = "ECAQA-138-EndEntityProfile";
+        static final String ALERT_MESSAGE_EMPTY_NONMODIFIABLE_ATTRIBUTE = "An empty attribute cannot be non-modifiable.";
+        //
+        static final String SUBJECT_DN_ATTRIBUTE = "subjectdn";
+        static final int SUBJECT_DN_ATTRIBUTE_INDEX = 1;
+        static final String SUBJECT_DN_ATTRIBUTE_NAME = "O, Organization";
+        static final String SUBJECT_DN_ATTRIBUTE_VALUE = "TestOrg";
+        //
+        static final String SUBJECT_ALT_NAME_ATTRIBUTE = "subjectaltname";
+        static final int SUBJECT_ALT_NAME_ATTRIBUTE_INDEX = 0;
+        static final String SUBJECT_ALT_NAME_ATTRIBUTE_NAME = "MS UPN, User Principal Name";
+        static final String SUBJECT_ALT_NAME_ATTRIBUTE_VALUE = "testdomain.com";
+        //
+        static final String SUBJECT_DIR_ATTRIBUTE = "subjectdirattr";
+        static final int SUBJECT_DIR_ATTRIBUTE_INDEX = 0;
+        static final String SUBJECT_DIR_ATTRIBUTE_NAME = "Place of birth";
+        static final String SUBJECT_DIR_ATTRIBUTE_VALUE = "Stockholm";
+    }
 
     @BeforeClass
     public static void init() {
-        setUp(true, null);
-        webDriver = getWebDriver();
+        // super
+        beforeClass(true, null);
+        final WebDriver webDriver = getWebDriver();
+        // Init helpers
+        endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        endEntityProfileSession.removeEndEntityProfile(admin, eepName);
-        webDriver.quit();
+        // Remove generated artifacts
+        removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
+        // super
+        afterClass();
     }
 
-//    @Test
-//    public void testA_addEEP() {
-//        EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
-//        EndEntityProfileHelper.add(webDriver, eepName, true);
-//    }
+    @Test
+    public void stepA_addEEP() {
+        endEntityProfileHelper.openPage(getAdminWebUrl());
+        endEntityProfileHelper.addEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME);
+    }
 
-//    @Test
-//    public void testB_subjectDn() {
-//        testAttribute(subjectDnBase, subjectDnAttribute, 1, subjectDnString);
-//    }
+    @Test
+    public void stepB_subjectDn() {
+        endEntityProfileHelper.openPage(getAdminWebUrl());
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.addSubjectAttribute(TestData.SUBJECT_DN_ATTRIBUTE, TestData.SUBJECT_DN_ATTRIBUTE_NAME);
+        endEntityProfileHelper.saveEndEntityProfile();
+        // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.assertSubjectAttributeExists(TestData.SUBJECT_DN_ATTRIBUTE_NAME);
+        endEntityProfileHelper.triggerSubjectAttributesAttributeModifiable(TestData.SUBJECT_DN_ATTRIBUTE, TestData.SUBJECT_DN_ATTRIBUTE_INDEX);
+        endEntityProfileHelper.saveEndEntityProfile(false);
+        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableAlert(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_ATTRIBUTE, true);
+        // Add the test string to the attribute and save (should succeed)
+        endEntityProfileHelper.fillSubjectAttributesAttributeValue(
+                TestData.SUBJECT_DN_ATTRIBUTE,
+                TestData.SUBJECT_DN_ATTRIBUTE_INDEX,
+                TestData.SUBJECT_DN_ATTRIBUTE_VALUE
+        );
+        endEntityProfileHelper.saveEndEntityProfile();
+    }
 
-//    @Test
-//    public void testC_subjectAltName() {
-//        testAttribute(subjectAltNameBase, subjectAltNameAttribute, 0, subjectAltNameString);
-//    }
+    @Test
+    public void stepC_subjectAltName() {
+        endEntityProfileHelper.openPage(getAdminWebUrl());
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.addSubjectAttribute(TestData.SUBJECT_ALT_NAME_ATTRIBUTE, TestData.SUBJECT_ALT_NAME_ATTRIBUTE_NAME);
+        endEntityProfileHelper.saveEndEntityProfile();
+        // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.assertSubjectAttributeExists(TestData.SUBJECT_ALT_NAME_ATTRIBUTE_NAME);
+        endEntityProfileHelper.triggerSubjectAttributesAttributeModifiable(TestData.SUBJECT_ALT_NAME_ATTRIBUTE, TestData.SUBJECT_ALT_NAME_ATTRIBUTE_INDEX);
+        endEntityProfileHelper.saveEndEntityProfile(false);
+        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableAlert(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_ATTRIBUTE, true);
+        // Add the test string to the attribute and save (should succeed)
+        endEntityProfileHelper.fillSubjectAttributesAttributeValue(
+                TestData.SUBJECT_ALT_NAME_ATTRIBUTE,
+                TestData.SUBJECT_ALT_NAME_ATTRIBUTE_INDEX,
+                TestData.SUBJECT_ALT_NAME_ATTRIBUTE_VALUE
+        );
+        endEntityProfileHelper.saveEndEntityProfile();
+    }
 
-//    @Test
-//    public void testC_subjectDirAttr() {
-//        testAttribute(subjectDirAttrBase, subjectDirAttrAttribute, 0, subjectDirAttrString);
-//    }
+    @Test
+    public void stepD_subjectDir() {
+        endEntityProfileHelper.openPage(getAdminWebUrl());
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.addSubjectAttribute(TestData.SUBJECT_DIR_ATTRIBUTE, TestData.SUBJECT_DIR_ATTRIBUTE_NAME);
+        endEntityProfileHelper.saveEndEntityProfile();
+        // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.END_ENTITY_PROFILE_NAME);
+        endEntityProfileHelper.assertSubjectAttributeExists(TestData.SUBJECT_DIR_ATTRIBUTE_NAME);
+        endEntityProfileHelper.triggerSubjectAttributesAttributeModifiable(TestData.SUBJECT_DIR_ATTRIBUTE, TestData.SUBJECT_DIR_ATTRIBUTE_INDEX);
+        endEntityProfileHelper.saveEndEntityProfile(false);
+        endEntityProfileHelper.assertSubjectAttributesAttributeModifiableAlert(TestData.ALERT_MESSAGE_EMPTY_NONMODIFIABLE_ATTRIBUTE, true);
+        // Add the test string to the attribute and save (should succeed)
+        endEntityProfileHelper.fillSubjectAttributesAttributeValue(
+                TestData.SUBJECT_DIR_ATTRIBUTE,
+                TestData.SUBJECT_DIR_ATTRIBUTE_INDEX,
+                TestData.SUBJECT_DIR_ATTRIBUTE_VALUE
+        );
+        endEntityProfileHelper.saveEndEntityProfile();
+    }
 
-//    private void testAttribute(String attributeType, String attributeName, int attributeIndex, String testString) {
-//        // Add the attribute, save it with Modifiable checked (should succeed)
-//        EndEntityProfileHelper.edit(webDriver, eepName);
-//        EndEntityProfileHelper.addAttribute(webDriver, attributeType, attributeName);
-//        EndEntityProfileHelper.save(webDriver, true);
-//
-//        // Uncheck Modifiable and save (should fail, not allowed to save empty non-modifiable attributes)
-//        EndEntityProfileHelper.edit(webDriver, eepName);
-//        triggerModifiable(attributeType, attributeIndex);
-//        EndEntityProfileHelper.save(webDriver, false);
-//        WebTestHelper.assertAlert(webDriver, alertMessage, true);
-//
-//        // Add the test string to the attribute and save (should succeed)
-//        inputTestString(attributeType, attributeIndex, testString);
-//        EndEntityProfileHelper.save(webDriver, true);
-//    }
-
-//    private void triggerModifiable(String attributeType, int attributeIndex) {
-//        webDriver.findElement(By.id("checkboxmodifyable" + attributeType + attributeIndex)).click();
-//    }
-
-//    private void inputTestString(String attributeType, int attributeIndex, String testString) {
-//        WebElement textField = webDriver.findElement(By.xpath("//input[@name='textfield" + attributeType + + attributeIndex + "']"));
-//        textField.sendKeys(testString);
-//    }
 }

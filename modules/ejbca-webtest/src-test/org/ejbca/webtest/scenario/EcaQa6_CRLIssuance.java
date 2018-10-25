@@ -15,16 +15,8 @@ package org.ejbca.webtest.scenario;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
-
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.CaHelper;
@@ -37,94 +29,129 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 
+import java.util.Arrays;
+
 /**
  * This test aims is to create CRLs and download CRLs and check if these operations are successful.
  * A new CA should always issue an (empty) CRL. This is done when the CA is created.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-6">ECAQA-6</a>
  * 
- * @version $Id: EcaQa6_CRLIssuance.java 30018 2018-10-04 15:31:01Z andrey_s_helmes $
+ * @version $Id: EcaQa6_CRLIssuance.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa6_CRLIssuance extends WebTestBase {
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
 
     private static WebDriver webDriver;
-    private static CaSessionRemote caSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private static CryptoTokenManagementSessionRemote cryptoTokenManagementSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-
-    private static final String caName = "TestCA";
+    // Helpers
+    private static CaHelper caHelper;
+    private static AuditLogHelper auditLogHelper;
+    // Test Data
+    private static class TestData {
+        private static final String CA_NAME = "ECAQA-6-TestCA";
+    }
 
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        // super
+        beforeClass(true, null);
         webDriver = getWebDriver();
+        // Init helpers
+        caHelper = new CaHelper(webDriver);
+        auditLogHelper = new AuditLogHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        int caId = caSessionRemote.getCAInfo(admin, caName).getCAId();
-        int ctId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
-        caSessionRemote.removeCA(admin, caId);
-        cryptoTokenManagementSessionRemote.deleteCryptoToken(admin, ctId);
-        webDriver.quit();
+        // Remove generated artifacts
+        removeCaAndCryptoToken(TestData.CA_NAME);
+        // super
+        afterClass();
     }
 
-//    @Test
-//    public void testA_addCA() {
-//        AuditLogHelper.resetFilterTime();
-//
-//        // Add CA
-//        CaHelper.goTo(webDriver, getAdminWebUrl());
-//        CaHelper.add(webDriver, caName);
-//        CaHelper.setValidity(webDriver, "1y");
-//        CaHelper.save(webDriver);
-//        CaHelper.assertExists(webDriver, caName);
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.assertEntry(webDriver, "CRL Store", "Success", null,
-//                Arrays.asList("Stored CRL with CRLNumber=", ", fingerprint=", ", issuerDN 'CN=" + caName + "'."));
-//        AuditLogHelper.assertEntry(webDriver, "CRL Create", "Success", null,
-//                Arrays.asList("Created CRL with number ", " for CA '" + caName + "' with DN 'CN=" + caName + "'."));
-//    }
+    @Test
+    public void stepA_addCA() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        // Add CA
+        caHelper.openPage(getAdminWebUrl());
+        CaHelper.add(webDriver, TestData.CA_NAME);
+        CaHelper.setValidity(webDriver, "1y");
+        CaHelper.save(webDriver);
+        CaHelper.assertExists(webDriver, TestData.CA_NAME);
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText(
+                "CRL Store",
+                "Success",
+                TestData.CA_NAME,
+                Arrays.asList(
+                        "Stored CRL with CRLNumber=",
+                        ", fingerprint=",
+                        ", issuerDN 'CN=" + TestData.CA_NAME + "'."
+                )
+        );
+        auditLogHelper.assertLogEntryByEventText(
+                "CRL Create",
+                "Success",
+                TestData.CA_NAME,
+                Arrays.asList(
+                        "Created CRL with number ",
+                        " for CA '" + TestData.CA_NAME + "' with DN 'CN=" + TestData.CA_NAME + "'."
+                )
+        );
+    }
 
-//    @Test
-//    public void testB_crl() {
-//        AuditLogHelper.resetFilterTime();
-//
-//        // Go to 'CA Structure & CRLs'
-//        webDriver.get(getAdminWebUrl());
-//        webDriver.findElement(By.xpath("//li/a[contains(@href, 'cafunctions.xhtml')]")).click();
-//
-//        // Verify that the 'Get CRL' link works
-//        String crlUrl = webDriver.findElement(By.xpath("//a[text()='Get CRL' and contains(@href, '" + caName + "')]")).getAttribute("href");
-//        webDriver.get("view-source:" + crlUrl);
-//        try {
-//            webDriver.findElement(By.xpath("//pre[contains(text(), '" + caName + "')]"));
-//        } catch (NoSuchElementException e) {
-//            fail("The CRL didn't contain the CA's name.");
-//        }
-//
-//        // Go to 'CA Structure & CRLs'
-//        webDriver.get(getAdminWebUrl());
-//        webDriver.findElement(By.xpath("//li/a[contains(@href, 'cafunctions.xhtml')]")).click();
-//
-//        // Take note of the CRL number
-//        String crlText = StringUtils.substringBetween(webDriver.findElement(By.xpath("//div[@class='container']")).getText(), caName, " Get CRL");
-//        int crlNumber = Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
-//
-//        // Click 'Create CRL' button
-//        webDriver.findElement(By.xpath(
-//                "//i[a[text() = 'Get CRL' and contains(@href, '" + caName + "')]]/following-sibling::form/input[contains(@name, 'buttoncreatecrl')]")).click();
-//
-//        // Make sure that the CRL number has been incremented
-//        crlText = StringUtils.substringBetween(webDriver.findElement(By.xpath("//div[@class='container']")).getText(), caName, " Get CRL");
-//        assertEquals("The CRL number was not incremented.", crlNumber + 1, Integer.parseInt(StringUtils.substringAfter(crlText, "number ")));
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.assertEntry(webDriver, "CRL Store", "Success", null,
-//                Arrays.asList("Stored CRL with CRLNumber=", ", fingerprint=", ", issuerDN 'CN=" + caName + "'."));
-//        AuditLogHelper.assertEntry(webDriver, "CRL Create", "Success", null,
-//                Arrays.asList("Created CRL with number ", " for CA '" + caName + "' with DN 'CN=" + caName + "'."));
-//    }
+    @Test
+    public void testB_crl() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        // Go to 'CA Structure & CRLs'
+        webDriver.get(getAdminWebUrl());
+        webDriver.findElement(By.id("caCafunctions")).click();
+        // Verify that the 'Get CRL' link works
+        String crlUrl = webDriver.findElement(By.xpath("//a[text()='Get CRL' and contains(@href, '" + TestData.CA_NAME + "')]")).getAttribute("href");
+        webDriver.get("view-source:" + crlUrl);
+        try {
+            webDriver.findElement(By.xpath("//pre[contains(text(), '" + TestData.CA_NAME + "')]"));
+        } catch (NoSuchElementException e) {
+            fail("The CRL didn't contain the CA's name.");
+        }
+        // Go to 'CA Structure & CRLs'
+        webDriver.get(getAdminWebUrl());
+        webDriver.findElement(By.id("caCafunctions")).click();
+        // Take note of the CRL number
+        String crlText = StringUtils.substringBetween(webDriver.findElement(By.xpath("//div[@class='container']")).getText(), TestData.CA_NAME, " Get CRL");
+        System.out.println("crlText");
+        System.out.println(crlText);
+        int crlNumber = Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
+        // Click 'Create CRL' button
+        webDriver.findElement(
+                By.xpath("//a[text() = 'Get CRL' and contains(@href, 'CN=" + TestData.CA_NAME + "')]/following-sibling::form/input[contains(@value, 'Create CRL')]")
+        ).click();
+        // Make sure that the CRL number has been incremented
+        crlText = StringUtils.substringBetween(webDriver.findElement(By.xpath("//div[@class='container']")).getText(), TestData.CA_NAME, " Get CRL");
+        assertEquals("The CRL number was not incremented.", crlNumber + 1, Integer.parseInt(StringUtils.substringAfter(crlText, "number ")));
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText(
+                "CRL Store",
+                "Success",
+                TestData.CA_NAME,
+                Arrays.asList(
+                        "Stored CRL with CRLNumber=",
+                        ", fingerprint=",
+                        ", issuerDN 'CN=" + TestData.CA_NAME + "'."
+                )
+        );
+        auditLogHelper.assertLogEntryByEventText(
+                "CRL Create",
+                "Success",
+                TestData.CA_NAME,
+                Arrays.asList(
+                        "Created CRL with number ",
+                        " for CA '" + TestData.CA_NAME + "' with DN 'CN=" + TestData.CA_NAME + "'."
+                )
+        );
+    }
 }

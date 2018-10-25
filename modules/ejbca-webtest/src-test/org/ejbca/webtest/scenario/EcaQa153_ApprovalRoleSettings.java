@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -20,6 +20,7 @@ import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
+import org.ejbca.webtest.WebTestBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -39,8 +40,7 @@ import java.util.Map.Entry;
 
 /**
  * 
- * @version $Id$
- *
+ * @version $Id: EcaQa153_ApprovalRoleSettings.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
@@ -52,11 +52,10 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
     private static WebDriver webDriver;
     private static RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private static ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-    
-    
+
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        beforeClass(true, null);
         webDriver = getWebDriver();
     }
     

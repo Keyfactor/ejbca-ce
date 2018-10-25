@@ -16,8 +16,6 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
@@ -34,13 +32,11 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-74">ECAQA-74</a>
  * 
- * @version $Id: EcaQa74_CpBackend.java 30035 2018-10-05 08:35:05Z andrey_s_helmes $
+ * @version $Id: EcaQa74_CpBackend.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa74_CpBackend extends WebTestBase {
 
-    // EJBs
-    private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     // Helpers
     private static AuditLogHelper auditLogHelper;
     private static CertificateProfileHelper certificateProfileHelper;
@@ -52,7 +48,7 @@ public class EcaQa74_CpBackend extends WebTestBase {
 
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        beforeClass(true, null);
         final WebDriver webDriver = getWebDriver();
         // Init helpers
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
@@ -62,9 +58,9 @@ public class EcaQa74_CpBackend extends WebTestBase {
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
-        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, TestData.CERTIFICATE_PROFILE_NAME);
+        removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
         // super
-        tearDown();
+        afterClass();
     }
 
     @Test
@@ -298,9 +294,9 @@ public class EcaQa74_CpBackend extends WebTestBase {
         certificateProfileHelper.assertQcStatementsExtensionEtsiTransactionValueLimitExponentHasValue("0");
         certificateProfileHelper.assertQcStatementsExtensionEtsiRetentionPeriodAddIsSelected(false);
         certificateProfileHelper.assertQcStatementsExtensionEtsiRetentionPeriodValueHasValue("0");
-        certificateProfileHelper.assertQcStatementsExtensionEtsiTypeHasSelectedValue("Unused");
+        certificateProfileHelper.assertQcStatementsExtensionEtsiTypeHasSelectedName("Unused");
         certificateProfileHelper.assertQcStatementsExtensionEtsiPdsUrlLanguageHasValue("");
-        certificateProfileHelper.assertQcStatementsExtensionEtsiPdsUrlLanguageHasSelectedValue("English");
+        certificateProfileHelper.assertQcStatementsExtensionEtsiPdsUrlLanguageHasSelectedName("English");
         certificateProfileHelper.assertQcStatementsExtensionEtsiPdsUrlLanguageDeleteIsEnabled(false);
         certificateProfileHelper.assertQcStatementsExtensionEtsiPdsUrlLanguageAddAnotherIsEnabled(true);
         certificateProfileHelper.assertQcStatementsExtensionCustomQcStatementsStringAddIsSelected(false);

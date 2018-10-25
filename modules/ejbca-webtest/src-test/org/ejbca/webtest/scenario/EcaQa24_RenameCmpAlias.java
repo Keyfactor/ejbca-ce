@@ -10,10 +10,11 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.fail;
 
+import org.ejbca.webtest.WebTestBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -27,7 +28,7 @@ import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa24_RenameCmpAlias.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa24_RenameCmpAlias extends WebTestBase {
@@ -39,7 +40,7 @@ public class EcaQa24_RenameCmpAlias extends WebTestBase {
     
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        beforeClass(true, null);
         webDriver = getWebDriver();
     }
     

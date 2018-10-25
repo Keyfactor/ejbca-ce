@@ -13,8 +13,6 @@
 package org.ejbca.webtest.scenario;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
@@ -34,27 +32,25 @@ import java.util.Collections;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-12">ECAQA-12</a>
  * 
- * @version $Id: EcaQa12_CPManagement.java 30035 2018-10-05 08:35:05Z andrey_s_helmes $
+ * @version $Id: EcaQa12_CPManagement.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa12_CPManagement extends WebTestBase {
 
-    // EJBs
-    private static CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     // Helpers
     private static AuditLogHelper auditLogHelper;
     private static CertificateProfileHelper certificateProfileHelper;
     // Test Data
-    public static class TestData {
-        static final String CERTIFICATE_PROFILE_NAME = "TestCertificateProfile";
-        static final String CERTIFICATE_PROFILE_NAME_RENAME = "TestCertificateProfileNew";
-        static final String CERTIFICATE_PROFILE_NAME_CLONE = "ClonedTestCertificateProfile";
+    private static class TestData {
+        static final String CERTIFICATE_PROFILE_NAME = "ECAQA-12-CertificateProfile";
+        static final String CERTIFICATE_PROFILE_NAME_RENAME = "ECAQA-12-CertificateProfile-Renamed";
+        static final String CERTIFICATE_PROFILE_NAME_CLONE = "ECAQA-12-CertificateProfile-Cloned";
     }
 
     @BeforeClass
     public static void init() {
         // super
-        setUp(true, null);
+        beforeClass(true, null);
         final WebDriver webDriver = getWebDriver();
         // Init helpers
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
@@ -64,10 +60,10 @@ public class EcaQa12_CPManagement extends WebTestBase {
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
-        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, TestData.CERTIFICATE_PROFILE_NAME);
-        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, TestData.CERTIFICATE_PROFILE_NAME_RENAME);
+        removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
+        removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME_RENAME);
         // super
-        tearDown();
+        afterClass();
     }
 
     @Test

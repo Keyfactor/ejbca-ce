@@ -17,7 +17,17 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.ejbca.webtest.utils.ConfigurationHolder;
 import org.openqa.selenium.WebDriver;
@@ -30,7 +40,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
  *
- * @version $Id: WebTestBase.java 28846 2018-05-04 11:32:25Z andrey_s_helmes $
+ * @version $Id: WebTestBase.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 public abstract class WebTestBase {
 
@@ -44,14 +54,20 @@ public abstract class WebTestBase {
     private static WebDriver webDriver;
     private static WebDriverWait webDriverWait;
 
+    /**
+     * Authentication token to use.
+     */
     protected static final AuthenticationToken ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
 
     /**
-     * Sets up firefox driver and firefox profile if certificate is required
+     * Sets up firefox driver and firefox profile if certificate is required.
+     * <br/>
+     * Corresponds to @BeforeClass annotation in a Test scenario.
+     *
      * @param requireCert if certificate is required
      * @param profile browser profile to use. Defined in ConfigurationConstants, null will use default profile.
      */
-    public static void setUp(boolean requireCert, String profile) {
+    public static void beforeClass(final boolean requireCert, final String profile) {
         // Init properties
         setGlobalConstants();
         // Init gecko driver
@@ -80,7 +96,12 @@ public abstract class WebTestBase {
         webDriverWait = new WebDriverWait(webDriver, 5, 50);
     }
 
-    public static void tearDown() {
+    /**
+     * Closes the firefox driver.
+     * <br/>
+     * Corresponds to @AfterClass annotation in a Test scenario.
+     */
+    public static void afterClass() {
         // Destroy web driver & close all windows
         webDriver.quit();
     }
@@ -143,5 +164,83 @@ public abstract class WebTestBase {
 
     public static WebDriverWait getWebDriverWait() {
         return webDriverWait;
+    }
+
+    /**
+     * Removes the CA and CryptoToken using EJB instances.
+     *
+     * @param caName CA name.
+     *
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeCaAndCryptoToken(final String caName) throws AuthorizationDeniedException {
+        removeCaByName(caName);
+        removeCryptoTokenByCaName(caName);
+    }
+
+    /**
+     * Removes the CA EJB instance.
+     *
+     * @param caName CA name.
+     *
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeCaByName(final String caName) throws AuthorizationDeniedException {
+        final CaSessionRemote caSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        final CAInfo caInfo = caSessionRemote.getCAInfo(ADMIN_TOKEN, caName);
+        if(caInfo != null) {
+            caSessionRemote.removeCA(ADMIN_TOKEN, caInfo.getCAId());
+        }
+    }
+
+    /**
+     * Removes the CryptoToken associated with CA using EJB instance.
+     *
+     * @param caName CA name.
+     *
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeCryptoTokenByCaName(final String caName) throws AuthorizationDeniedException {
+        final CryptoTokenManagementSessionRemote cryptoTokenManagementSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        int cryptoTokenId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
+        cryptoTokenManagementSessionRemote.deleteCryptoToken(ADMIN_TOKEN, cryptoTokenId);
+    }
+
+    /**
+     * Removes the CertificateProfile using EJB instance.
+     *
+     * @param certificateProfileName Certificate profile name.
+     *
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeCertificateProfileByName(final String certificateProfileName) throws AuthorizationDeniedException {
+        final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, certificateProfileName);
+    }
+
+    /**
+     * Removes the EndEntityProfile using EJB instance.
+     *
+     * @param endEntityProfileName End entity profile name.
+     *
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeEndEntityProfileByName(final String endEntityProfileName) throws AuthorizationDeniedException {
+        final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        endEntityProfileSession.removeEndEntityProfile(ADMIN_TOKEN, endEntityProfileName);
+    }
+
+    /**
+     * Removes the EndEntity using EJB instance.
+     *
+     * @param username username for deletion.
+     *
+     * @throws CouldNotRemoveEndEntityException in case of referencing objects.
+     * @throws NoSuchEndEntityException in case of non-existing end entity.
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeEndEntityByUsername(final String username) throws CouldNotRemoveEndEntityException, NoSuchEndEntityException, AuthorizationDeniedException {
+        final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        endEntityManagementSession.deleteUser(ADMIN_TOKEN, username);
     }
 }

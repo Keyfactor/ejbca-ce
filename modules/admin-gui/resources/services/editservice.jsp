@@ -41,7 +41,7 @@
 <h2><h:outputText value="#{web.text.VIEWSERVICE}" rendered="#{not editService.hasEditRights}" /></h2>
 
 
-<h3><%= ejbcawebbean.getText("SERVICE")+ " : " %><h:outputText value="#{editService.serviceName}" /></h3>
+<h3 id="serviceTitle"><%= ejbcawebbean.getText("SERVICE")+ ": " %><h:outputText value="#{editService.serviceName}" /></h3>
 
 <h:form id="selectWorker" style="margin-bottom: 3px;">
 <h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
