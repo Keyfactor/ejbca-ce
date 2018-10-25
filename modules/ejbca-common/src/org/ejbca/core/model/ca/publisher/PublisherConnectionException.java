@@ -41,4 +41,13 @@ public class PublisherConnectionException extends EjbcaException {
     public PublisherConnectionException(String msg) {
         super(msg);
     }
+
+    /**
+     * Constructs an instance of <code>PublisherConnectionException</code> with the specified detail message and cause.
+     * @param msg the detail message.
+     * @param cause Exception that caused the PublisherConnectionException.
+     */
+    public PublisherConnectionException(final String msg, final Throwable cause) {
+        super(msg, cause);
+    }
 }

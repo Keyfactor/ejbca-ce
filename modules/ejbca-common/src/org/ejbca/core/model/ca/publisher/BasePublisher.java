@@ -196,6 +196,20 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
         throw new UnsupportedOperationException("This publisher has not implemented this method, and it has been called in error.");
     }
 
+    /**
+     * Variation of the storeCertificate method which gets the full information needed to call either of the other storeCertificate methods.
+     * This is needed for MultiGroupPublisher for example, which can call publishers of either type.
+     *
+     * @see #storeCertificate(AuthenticationToken, Certificate, String, String, String, String, int, int, long, int, String, int, long, ExtendedInformation)
+     * @see #storeCertificate(AuthenticationToken, CertificateData, Base64CertData)
+     * @return true if storage was successful.
+     * @throws PublisherException if a communication or other error occurs.
+     */
+    @SuppressWarnings("unused")
+    public boolean storeCertificate(final AuthenticationToken authenticationToken, final CertificateData certificateData, final Base64CertData base64CertData, final String password, final String userDN, final ExtendedInformation extendedinformation) throws PublisherException {
+        return storeCertificate(authenticationToken, certificateData, base64CertData);
+    }
+
     @Override
     public boolean isFullEntityPublishingSupported() {
         return false;
