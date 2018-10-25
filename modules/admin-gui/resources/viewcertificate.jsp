@@ -720,7 +720,7 @@ function confirmrepublish(){
             	  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
             	  break;
               case 1: // 1 = send user to the peer overview page
-                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.jsf";
+                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
                   break;
               case 2: // 2 = send user to the IKB AKB page
                   returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.jsf?type=OcspKeyBinding";
