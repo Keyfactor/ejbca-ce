@@ -97,7 +97,7 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
     	<antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
         		<path refid="lib.clover.classpath"/>
@@ -114,7 +114,7 @@ modules/{module name}/resources   Holds the module's meta-data and templates
     </target>
 
 	<target name="runone" depends="compile-tests">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=NameOfTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
         		<path refid="test.classpath"/>

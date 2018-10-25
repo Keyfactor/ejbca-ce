@@ -246,7 +246,7 @@
 
 	<!-- If using antcall you must use inheritrefs="true" in order for not having to call clover-setup every time -->
 	<target name="runone-internal" depends="build, assert-appserverrunning-ocsp">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=LoggingStressTest" unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=LoggingStressTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
 		<property name="test.runoneexclude" value=""/>
 		<property name="httpCmpProxyURL" value=""/>
 		<fail message="'test.runoneexclude' is not set. Example -Dtest.runoneclude=none" unless="test.runoneexclude" />
@@ -268,7 +268,7 @@
 			<istrue value="${remoteDebug}"/>
 		</condition>
 		<!-- set a default -->
-		<junit printsummary="yes" haltonfailure="no" filtertrace="no" >
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" filtertrace="no">
 			<classpath>
 				<path location="${build.test.dir}" />
 				<path refid="${runone-internal.classpath}" />
@@ -311,7 +311,7 @@
 			<isset property="mysql.lib"/>
 		</condition>
     	<echo message="pkcs11-exclude=${p11exclude}"/>
-		<junit printsummary="yes" haltonfailure="no">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path location="${build.test.dir}" />
 				<path refid="systemtests.classpath" />
@@ -400,7 +400,7 @@
 
 	<target name="runweb" depends="build, assert-appserverrunning" description="Run web-realted system tests">
 		<antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path location="${build.test.dir}" />
 				<path refid="systemtests.classpath" />
@@ -430,7 +430,7 @@
 			<socket server="127.0.0.1" port="5587"/>
 		</waitfor>
 		<fail if="cmptcplistener.notrunning" message="This test requires a running CMP TCP listener"/>
-		<junit printsummary="yes" haltonfailure="no">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
 			<sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
 			<sysproperty key="tcpCmpProxyPort" value="${tcpCmpProxyPort}"/>
@@ -497,7 +497,7 @@
 		<exec command="${appserver.home}/bin/verifier" failifexecutionfails="false">
 			<arg line="-p -d ${reports.dir} ${ejbca.home}/dist/ejbca.ear"/>
 		</exec>
-		<junit printsummary="yes" haltonfailure="no">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path location="${build.test.dir}" />
 				<path refid="systemtests.classpath" />
