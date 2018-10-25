@@ -582,11 +582,14 @@
 			<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
-	<target name="va-publisher" description="Builds only the VA Publisher of the VA module" depends="ejbca-common-web, ejbca-common">
-		<ant antfile="${mod.va.path}/build.xml" target="va-publisher.jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common">
+		<ant antfile="${mod.plugins.path}/build.xml" target="build" inheritall="false">
+			<property name="runoncesetup.hasrun" value="true"/>
+			<property name="external-deps-satfisfied" value="isset"/>
+		</ant>
 	</target>
 	
-	<target name="statedump" depends="ejbca-ejb-cli, va-publisher, peerconnector">
+	<target name="statedump" depends="ejbca-ejb-cli, plugins-ee, peerconnector">
 		<echo  message="${mod.statedump.path}/build.xml" />
 		<fail message="StateDump tool is not distributed with this version of EJBCA" unless="${mod.statedump.exists}"/>
 		<ant antfile="${mod.statedump.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -596,13 +599,13 @@
         <ant antfile="${mod.statedump.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 	
-	<target name="configdump" depends="ejbca-ejb-cli, va-publisher, peerconnector, caa">
+	<target name="configdump" depends="ejbca-ejb-cli, plugins-ee, peerconnector, caa">
 		<echo  message="${mod.configdump.path}/build.xml" />
 		<fail message="ConfigDump tool is not distributed with this version of EJBCA" unless="${mod.configdump.exists}"/>
 		<ant antfile="${mod.configdump.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
-    <target name="configdump-ejb" depends="ejbca-ejb-cli, va-publisher, peerconnector, caa" if="${mod.configdump.exists}">
+    <target name="configdump-ejb" depends="ejbca-ejb-cli, plugins-ee, peerconnector, caa" if="${mod.configdump.exists}">
         <ant antfile="${mod.configdump.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
     

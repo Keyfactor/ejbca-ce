@@ -11,7 +11,7 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
     	<antcall target="optionalteststatedump" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector" inheritrefs="true"/>
-    	<antcall target="optionaltestvapublisher" inheritrefs="true"/>
+    	<antcall target="optionaltestplugins" inheritrefs="true"/>
     	<antcall target="optionaltestacme" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:system" />
     	<antcall target="createreport"/>
