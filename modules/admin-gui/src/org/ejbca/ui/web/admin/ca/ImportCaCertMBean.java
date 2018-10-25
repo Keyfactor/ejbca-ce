@@ -73,6 +73,6 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
             addErrorMessage(e.getMessage());
             log.error("Error happened while importing ca cert!", e);
         }
-        return "managecas";
+        return EditCaUtil.MANAGE_CA_NAV;
     }
 }

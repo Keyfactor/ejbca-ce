@@ -49,9 +49,9 @@
 				<tr>
 					<td width="40%">
 					<h:selectOneListbox
-							value="#{manageCAsMBean.editCaName}" style="width: 50em" size="15"
+							value="#{manageCAsMBean.selectedCaId}" style="width: 50em" size="15"
 							class="select-list">
-							<f:selectItems value="#{manageCAsMBean.listOfCas}" />
+							<f:selectItems value="#{manageCAsMBean.listOfCas.entrySet()}" var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
 						    <f:ajax render="@form"/>
 					</h:selectOneListbox>
 					</td>
@@ -120,14 +120,15 @@
 							id="textfieldcaname" size="40" maxlength="255"
 							title="#{web.text.FORMAT_ID_STR}"
 							value="#{manageCAsMBean.createCaName}"
-							rendered="#{manageCAsMBean.canAddOrEditResource}" 
+							rendered="#{manageCAsMBean.canAddOrEditResource}"
 							/> 
 							<!-- Add action initiate create page here -->
 						<h:commandButton id="buttoncreateca"
 							value="#{web.text.CREATE}..."
 							rendered="#{manageCAsMBean.canAddResource}" 
-							onclick="return checkfieldforlegalchars(document.getElementById('managecas:textfieldcaname'), '#{web.text.ONLYCHARACTERS}');"
+							onclick="return checkcreatecafield(document.getElementById('managecas:textfieldcaname'), '#{web.text.ONLYCHARACTERS}');"
 							action="#{manageCAsMBean.updateIsEditCA(false)}"
+							
 							/> &nbsp;&nbsp;&nbsp; 
 						<h:commandButton id="buttonrenameca"
 							value="#{web.text.RENAME_SELECTED}"
