@@ -383,7 +383,7 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         }
     }
     
-    // Requires browser to be at /ejbca/adminweb/approval/editapprovalprofile.jsf using 'Partitioned Approvals'
+    // Requires browser to be at /ejbca/adminweb/approval/editapprovalprofile.xhtml using 'Partitioned Approvals'
     private void verifyPartitions(List<WebElement> partitions) {
         for (WebElement partition : partitions) {
             partition.findElement(By.xpath(".//input[@value='Add notification']"));
@@ -418,7 +418,7 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         }
     }
     
- // Requires browser to be at /ejbca/adminweb/approval/editapprovalprofile.jsf using 'Partitioned Approvals'
+ // Requires browser to be at /ejbca/adminweb/approval/editapprovalprofile.xhtml using 'Partitioned Approvals'
     private void verifySteps(List<WebElement> steps) {
         for (WebElement step : steps) {
             //Verify present elements
