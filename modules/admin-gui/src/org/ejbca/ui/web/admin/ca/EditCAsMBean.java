@@ -25,7 +25,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -168,6 +167,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String caCryptoTokenKeyEncryptKey;
     private String caCryptoTokenTestKey;
     private String signKeySpec;
+    private String importCaName;
+
+
 
     private byte[] fileBuffer;
     final Map<String, String> requestMap = new HashMap<String, String>();
@@ -241,7 +243,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         return caList;
     }
-
+    
     public String getCurrentCertProfile() {
         return currentCertProfile;
     }
@@ -1848,6 +1850,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String caCertLink() {
         return viewCertLink + "?caid=" + currentCaId;
     }
+    
+
     
     public String createCa() throws Exception {
         
