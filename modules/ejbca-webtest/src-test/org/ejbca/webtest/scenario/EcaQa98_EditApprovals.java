@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -20,13 +20,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -34,6 +29,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -63,12 +59,10 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * Certificate for 'profile.firefox.superadmin' should be member of the SuperAdministrator role or any other role with root access.
  * Access rule setup for the raadmin and raadminalt is NOT required (it will be setup by the test).
  *
- * @version $Id$
+ * @version $Id: EcaQa98_EditApprovals.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa98_EditApprovals extends WebTestBase {
-
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
 
     private static WebDriver webDriverSuperAdmin;
     private static WebDriverWait webDriverSuperAdminWait;
@@ -86,38 +80,34 @@ public class EcaQa98_EditApprovals extends WebTestBase {
     private static RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private static ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private static ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-    private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @BeforeClass
     public static void init() {
-        setUp(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
+        beforeClass(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
         webDriverSuperAdmin = getWebDriver();
         webDriverSuperAdminWait = getWebDriverWait();
-        setUp(true, ConfigurationConstants.PROFILE_FIREFOX_RAADMIN);
+        beforeClass(true, ConfigurationConstants.PROFILE_FIREFOX_RAADMIN);
         webDriverAdmin1 = getWebDriver();
         webDriverAdmin1Wait = getWebDriverWait();
-        setUp(true, ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT);
+        beforeClass(true, ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT);
         webDriverAdmin2 = getWebDriver();
         webDriverAdmin2Wait = getWebDriverWait();
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        CAInfo caInfo = caSession.getCAInfo(admin, caName);
-        caSession.removeCA(admin, caInfo.getCAId());
+        removeCaByName(caName);
         Map<Integer, String> approvalIdNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
         for (Entry<Integer, String> approvalProfile : approvalIdNameMap.entrySet()) {
             if (approvalProfile.getValue().equals(approvalProfileName)) {
-                approvalProfileSession.removeApprovalProfile(admin, approvalProfile.getKey());
+                approvalProfileSession.removeApprovalProfile(ADMIN_TOKEN, approvalProfile.getKey());
             }
         }
-        approvalSession.removeApprovalRequest(admin, requestId);
+        approvalSession.removeApprovalRequest(ADMIN_TOKEN, requestId);
         webDriverAdmin1.quit();
         webDriverAdmin2.quit();
         webDriverSuperAdmin.quit();
     }
-
-
 
     @Test
     public void testA_setupPrerequisites() throws AuthorizationDeniedException, RoleExistsException {
@@ -163,14 +153,14 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         selectApprovalProfile.selectByVisibleText(approvalProfileName);
         webDriverSuperAdmin.findElement(By.xpath("//input[@name='buttoncreate']")).click();
 
-        Role raAdmin1 = roleSession.getRole(admin, getNamespace(), getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
-        Role raAdmin2 = roleSession.getRole(admin, getNamespace(), getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
+        Role raAdmin1 = roleSession.getRole(ADMIN_TOKEN, getNamespace(), getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
+        Role raAdmin2 = roleSession.getRole(ADMIN_TOKEN, getNamespace(), getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
         raAdmin1.getAccessRules().put(StandardRules.CAACCESS.resource(), true);
         raAdmin2.getAccessRules().put(StandardRules.CAACCESS.resource(), true);
         raAdmin1.getAccessRules().put(AccessRulesConstants.ENDENTITYPROFILEPREFIX, true);
         raAdmin2.getAccessRules().put(AccessRulesConstants.ENDENTITYPROFILEPREFIX, true);
-        roleSession.persistRole(admin, raAdmin1);
-        roleSession.persistRole(admin, raAdmin2);
+        roleSession.persistRole(ADMIN_TOKEN, raAdmin1);
+        roleSession.persistRole(ADMIN_TOKEN, raAdmin2);
     }
 
     @Test

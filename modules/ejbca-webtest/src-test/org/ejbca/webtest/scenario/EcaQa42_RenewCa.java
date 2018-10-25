@@ -13,26 +13,17 @@
 package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.CaHelper;
-import org.ejbca.webtest.helper.WebTestHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.Select;
 
@@ -41,88 +32,83 @@ import org.openqa.selenium.support.ui.Select;
  * using the same keys or both the CA keys and the certificate can be renewed.
  * In this test case both scenarios are tested.
  * 
- * @version $Id: EcaQa42_RenewCa.java 30018 2018-10-04 15:31:01Z andrey_s_helmes $
+ * @version $Id: EcaQa42_RenewCa.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa42_RenewCa extends WebTestBase {
 
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
-
     private static WebDriver webDriver;
-    private static CaSessionRemote caSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private static CryptoTokenManagementSessionRemote cryptoTokenManagementSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-
-    private static final String caName = "CA ECAQA42";
+    // Helpers
+    private static CaHelper caHelper;
+    private static AuditLogHelper auditLogHelper;
+    // Test Data
+    private static class TestData {
+        static final String CA_NAME = "ECAQA-42-TestCA";
+        static final String TEXT_CA_RENEWAL_ALERT_MESSAGE = "Are you sure you want to renew this CA?";
+        static final String TEXT_CA_RENEWAL_SUCCESS_MESSAGE = "CA Renewed Successfully";
+    }
 
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        // super
+        beforeClass(true, null);
         webDriver = getWebDriver();
+        // Init helpers
+        caHelper = new CaHelper(webDriver);
+        auditLogHelper = new AuditLogHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        int caId = caSessionRemote.getCAInfo(admin, caName).getCAId();
-        int ctId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
-        caSessionRemote.removeCA(admin, caId);
-        cryptoTokenManagementSessionRemote.deleteCryptoToken(admin, ctId);
-        webDriver.quit();
+        // Remove generated artifacts
+        removeCaAndCryptoToken(TestData.CA_NAME);
+        // super
+        afterClass();
     }
 
-//    @Test
-//    public void a_addCa() {
-//        CaHelper.goTo(webDriver, getAdminWebUrl());
-//        CaHelper.add(webDriver, caName);
-//        CaHelper.setValidity(webDriver, "1y");
-//        CaHelper.save(webDriver);
-//        CaHelper.assertExists(webDriver, caName);
-//    }
+    @Test
+    public void stepA_addCa() {
+        caHelper.openPage(getAdminWebUrl());
+        CaHelper.add(webDriver, TestData.CA_NAME);
+        CaHelper.setValidity(webDriver, "1y");
+        CaHelper.save(webDriver);
+        CaHelper.assertExists(webDriver, TestData.CA_NAME);
+    }
 
-//    @Test
-//    public void b_renewWithOldKeys() {
-//        AuditLogHelper.resetFilterTime();
-//        CaHelper.edit(webDriver, caName);
-//        assertEquals("", "signKey", new Select(webDriver.findElement(By.xpath("//select[@name='selectcertsignkeyrenew']"))).getFirstSelectedOption().getText());
-//        renewCa();
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.assertEntry(webDriver, "CA Renewal", "Success", caName, null);
-//    }
+    @Test
+    public void stepB_renewWithOldKeys() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        caHelper.openPage(getAdminWebUrl());
+        CaHelper.edit(webDriver, TestData.CA_NAME);
+        assertEquals("", "signKey", new Select(webDriver.findElement(By.xpath("//select[@name='selectcertsignkeyrenew']"))).getFirstSelectedOption().getText());
+        caHelper.renewCaAndAssert(TestData.TEXT_CA_RENEWAL_ALERT_MESSAGE, true, TestData.TEXT_CA_RENEWAL_SUCCESS_MESSAGE, TestData.CA_NAME);
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText("CA Renewal", "Success", TestData.CA_NAME, null);
+    }
 
-//    @Test
-//    public void c_renewWithNewKeys() {
-//        AuditLogHelper.resetFilterTime();
-//        CaHelper.goTo(webDriver, getAdminWebUrl());
-//        CaHelper.edit(webDriver, caName);
-//        new Select(webDriver.findElement(By.xpath("//select[@name='selectcertsignkeyrenew']"))).selectByVisibleText("– Generate new key using KeySequence –");
-//        renewCa();
-//    }
+    @Test
+    public void stepC_renewWithNewKeys() {
+        // Update default timestamp
+        auditLogHelper.initFilterTime();
+        caHelper.openPage(getAdminWebUrl());
+        CaHelper.edit(webDriver, TestData.CA_NAME);
+        new Select(webDriver.findElement(By.xpath("//select[@name='selectcertsignkeyrenew']"))).selectByVisibleText("– Generate new key using KeySequence –");
+        caHelper.renewCaAndAssert(TestData.TEXT_CA_RENEWAL_ALERT_MESSAGE, true, TestData.TEXT_CA_RENEWAL_SUCCESS_MESSAGE, TestData.CA_NAME);
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText("CA Renewal", "Success", TestData.CA_NAME, null);
+        auditLogHelper.assertLogEntryByEventText("Crypto Token Key Pair Generate", "Success", null, null);
+    }
 
-//    @Test
-//    public void d_checkNewKeys() {
-//        CaHelper.edit(webDriver, caName);
-//        assertEquals("Unexpected value for certSignKey", "signKey00001", webDriver.findElement(By.xpath("//td[text()='certSignKey']//following-sibling::td")).getText());
-//        assertEquals("Unexpected value for crlSignKey", "signKey00001", webDriver.findElement(By.xpath("//td[text()='crlSignKey']//following-sibling::td")).getText());
-//        assertEquals("Unexpected value for Key sequence", "00001", webDriver.findElement(By.xpath("//input[@name='textfieldkeysequence']")).getAttribute("value"));
-//
-//        // Verify Audit Log
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.assertEntry(webDriver, "Crypto Token Key Pair Generate", "Success", null, null);
-//        AuditLogHelper.assertEntry(webDriver, "CA Renewal", "Success", caName, null);
-//    }
+    @Test
+    public void stepD_checkNewKeys() {
+        caHelper.openPage(getAdminWebUrl());
+        CaHelper.edit(webDriver, TestData.CA_NAME);
+        assertEquals("Unexpected value for certSignKey", "signKey00001", webDriver.findElement(By.xpath("//td[text()='certSignKey']//following-sibling::td")).getText());
+        assertEquals("Unexpected value for crlSignKey", "signKey00001", webDriver.findElement(By.xpath("//td[text()='crlSignKey']//following-sibling::td")).getText());
+        assertEquals("Unexpected value for Key sequence", "00001", webDriver.findElement(By.xpath("//input[@name='textfieldkeysequence']")).getAttribute("value"));
+    }
 
-//    /**
-//     * Clicks the 'Renew CA' button and checks that the renewal was successful
-//     */
-//    private void renewCa() {
-//        webDriver.findElement(By.xpath("//input[@name='buttonrenewca']")).click();
-//        WebTestHelper.assertAlert(webDriver, "Are you sure you want to renew this CA?", true);
-//        try {
-//            webDriver.findElement(By.xpath("//td[text()='CA Renewed Successfully']"));
-//        } catch (NoSuchElementException e) {
-//            fail("CA not renewed successfully");
-//        }
-//        CaHelper.assertExists(webDriver, caName);
-//    }
 }

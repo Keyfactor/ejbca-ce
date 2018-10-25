@@ -12,168 +12,135 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
-import org.ejbca.webtest.util.WebTestUtil;
+import org.ejbca.webtest.helper.ServicesHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
+// TODO Current scenario depends on the success of previous steps, thus, may limit/complicate the discovery of other problems by blocking data prerequisites for next steps. Improve isolation of test data and flows?
 /**
  * Tests Service Management according to the steps in ECAQA-28
- * @version $Id: EcaQa28_ServiceManagement.java 30018 2018-10-04 15:31:01Z andrey_s_helmes $
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-28">ECAQA-28</a>
+ *
+ * @version $Id: EcaQa28_ServiceManagement.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa28_ServiceManagement extends WebTestBase {
 
-    private static WebDriver webDriver;
-    private static final String serviceName = "TestService";
-    private static final String serviceRenamed = "FooService";
-    private static final String serviceCloned = "BarService";
+    // Helpers
+    private static ServicesHelper servicesHelper;
+    private static AuditLogHelper auditLogHelper;
+    // Test Data
+    private static class TestData {
+        private static final String SERVICE_NAME = "ECAQA-28-Service";
+        private static final String SERVICE_NAME_RENAMED = "ECAQA-28-Service-Renamed";
+        private static final String SERVICE_NAME_CLONED = "ECAQA-28-Service-Cloned";
+    }
 
     @BeforeClass
     public static void init() {
-        setUp(true, null);
-        webDriver = getWebDriver();
+        beforeClass(true, null);
+        final WebDriver webDriver = getWebDriver();
+        // Init helpers
+        servicesHelper = new ServicesHelper(webDriver);
+        auditLogHelper = new AuditLogHelper(webDriver);
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
-        webDriver.quit();
+    public static void exit() {
+        // super
+        afterClass();
+    }
+
+    @Test
+    public void stepA_addServiceExpectAppendToList() {
+        auditLogHelper.initFilterTime();
+        servicesHelper.openPage(getAdminWebUrl());
+        servicesHelper.addService(TestData.SERVICE_NAME);
+        // Assert Service exists
+        servicesHelper.assertServiceNameExists(TestData.SERVICE_NAME);
+    }
+ 
+    @Test
+    public void stepB_editToCrlUpdaterExpectSaved() {
+        servicesHelper.openPage(getAdminWebUrl());
+        servicesHelper.openEditServicePage(TestData.SERVICE_NAME);
+        servicesHelper.editService("CRL Updater");
+        servicesHelper.assertWorkerHasSelectedName("CRL Updater");
+        servicesHelper.saveService();
+        // Assert Service exists
+        servicesHelper.assertServiceNameExists(TestData.SERVICE_NAME);
     }
     
-//    @Test
-//    public void testA_clickServiceLinkExpectPageLoad() {
-//        webDriver.get(getAdminWebUrl());
-//        webDriver.findElement(By.xpath("//li/a[contains(@href,'listservices.jsf')]")).click();
-//        assertEquals("Clicking 'Services' link did not redirect to expected page",
-//                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
-//                "/ejbca/adminweb/services/listservices.jsf");
-//    }
+    @Test
+    public void stepC_renameServiceExpectNewNameInList() {
+        servicesHelper.openPage(getAdminWebUrl());
+        servicesHelper.renameService(TestData.SERVICE_NAME, TestData.SERVICE_NAME_RENAMED);
+        // Assert Old Service does not exist, and new one exists
+        servicesHelper.assertServiceNameDoesNotExist(TestData.SERVICE_NAME);
+        servicesHelper.assertServiceNameExists(TestData.SERVICE_NAME_RENAMED);
+    }
     
-//    @Test
-//    public void testB_addServiceExpectAppendToList() {
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'newServiceName')]")).sendKeys(serviceName);
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'addButton')]")).click();
-//        assertIsServiceInList(serviceName, true);
-//    }
- 
-//    @Test
-//    public void testC_editToCrlUpdaterExpectSaved() {
-//        final Select serviceList = new Select(webDriver.findElement(By.xpath("//select[@class='select-list']")));
-//        serviceList.selectByValue(serviceName);
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'editButton')]")).click();
-//        final Select selectWorker = new Select(webDriver.findElement(By.xpath("//select[contains(@name, 'selectWorker')]")));
-//        selectWorker.selectByValue("CRLUPDATEWORKER");
-//        final Select selectWorkerUpdated = new Select(webDriver.findElement(By.xpath("//select[contains(@name, 'selectWorker')]")));
-//        assertEquals("CRL Updater was not selected", "CRL Updater", selectWorkerUpdated.getFirstSelectedOption().getText());
-//        webDriver.findElement(By.id("edit:saveButton")).click();
-//
-//        assertIsServiceInList(serviceName, true);
-//    }
+    @Test
+    public void stepD_cloneServiceExpectNewInList() {
+        servicesHelper.openPage(getAdminWebUrl());
+        servicesHelper.cloneService(TestData.SERVICE_NAME_RENAMED, TestData.SERVICE_NAME_CLONED);
+        // Assert both service exist
+        servicesHelper.assertServiceNameExists(TestData.SERVICE_NAME_RENAMED);
+        servicesHelper.assertServiceNameExists(TestData.SERVICE_NAME_CLONED);
+    }
     
-//    @Test
-//    public void testD_renameServiceExpectNewNameInList() {
-//        final Select serviceList = new Select(webDriver.findElement(By.xpath("//select[@class='select-list']")));
-//        serviceList.selectByValue(serviceName);
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'newServiceName')]")).sendKeys(serviceRenamed);
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'renameButton')]")).click();
-//        assertIsServiceInList(serviceRenamed, true);
-//    }
+    @Test
+    public void stepE_duplicateNameExpectFailure() {
+        servicesHelper.openPage(getAdminWebUrl());
+        servicesHelper.renameService(TestData.SERVICE_NAME_CLONED, TestData.SERVICE_NAME_RENAMED);
+        servicesHelper.assertHasAlert("Service name already exists");
+    }
     
-//    @Test
-//    public void testE_cloneServiceExpectNewInList() {
-//        final Select serviceList = new Select(webDriver.findElement(By.xpath("//select[@class='select-list']")));
-//        serviceList.selectByValue(serviceRenamed);
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'newServiceName')]")).sendKeys(serviceCloned);
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'cloneButton')]")).click();
-//        assertIsServiceInList(serviceCloned, true);
-//    }
+    @Test
+    public void stepF_deleteServicesExpectRemovedFromList() throws InterruptedException {
+        servicesHelper.openPage(getAdminWebUrl());
+        servicesHelper.deleteService(TestData.SERVICE_NAME_RENAMED);
+        servicesHelper.confirmServiceDeletion(null, true);
+        // TODO Review after JSP->JSF conversion
+        Thread.sleep(2000); // Not pretty but WebDriverWait didn't work here for some reason.
+        servicesHelper.assertServiceNameDoesNotExist(TestData.SERVICE_NAME_RENAMED);
+        servicesHelper.deleteService(TestData.SERVICE_NAME_CLONED);
+        servicesHelper.confirmServiceDeletion(null, true);
+        // TODO Review after JSP->JSF conversion
+        Thread.sleep(2000); // Not pretty but WebDriverWait didn't work here for some reason.
+        servicesHelper.assertServiceNameDoesNotExist(TestData.SERVICE_NAME_CLONED);
+    }
     
-//    @Test
-//    public void testF_duplicateNameExpectFailure() {
-//        final Select serviceList = new Select(webDriver.findElement(By.xpath("//select[@class='select-list']")));
-//        serviceList.selectByValue(serviceCloned);
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'newServiceName')]")).sendKeys(serviceRenamed);
-//        webDriver.findElement(By.xpath("//input[contains(@name, 'renameButton')]")).click();
-//        WebElement messageTable = webDriver.findElement(By.xpath("//table[@class='alert']"));
-//        assertEquals("No warning was given the service name already exists", "Service name already exists", messageTable.getText());
-//    }
-    
-//    @Test
-//    public void testG_deleteServicesExpectRemovedFromList() throws InterruptedException {
-//        deleteService(serviceRenamed);
-//        Thread.sleep(1000); // Not pretty but WebDriverWait didn't work here for some reason.
-//        deleteService(serviceCloned);
-//        assertIsServiceInList(serviceRenamed, false);
-//        assertIsServiceInList(serviceCloned, false);
-//    }
-    
-//    @Test
-//    public void testH_expectLogEvents() {
-//        AuditLogHelper.goTo(webDriver, getAdminWebUrl());
-//        AuditLogHelper.clearConditions(webDriver);
-//        AuditLogHelper.addCondition(webDriver, "Event", "Equals", "Service Add");
-//        AuditLogHelper.assertEntry(webDriver, "Service Add", "Success", null, null);
-//
-//        AuditLogHelper.clearConditions(webDriver);
-//        AuditLogHelper.addCondition(webDriver, "Event", "Equals", "Service Edit");
-//        AuditLogHelper.assertEntry(webDriver, "Service Edit", "Success", null, null);
-//
-//        AuditLogHelper.clearConditions(webDriver);
-//        AuditLogHelper.addCondition(webDriver, "Event", "Equals", "Service Remove");
-//        AuditLogHelper.assertEntry(webDriver, "Service Remove", "Success", null, null);
-//    }
-    
-//    private void deleteService(String serviceName) {
-//        WebDriverWait wait = new WebDriverWait(webDriver, 3);
-//        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//select[@class='select-list']")));
-//        try {
-//            final Select serviceList = new Select(webDriver.findElement(By.xpath("//select[@class='select-list']")));
-//            serviceList.selectByValue(serviceName);
-//        } catch (NoSuchElementException e) {
-//            fail("Failed to delete service: Could not find the service '" + serviceName + "' in the list of services");
-//        } finally {
-//            // Delete the alias
-//            webDriver.findElement(By.xpath("//input[contains(@name, 'deleteButton')]")).click();;
-//            Alert alert = webDriver.switchTo().alert();
-//            alert.accept();
-//        }
-//    }
-    
-//    /**
-//     * Checks whether a service exists in the list of services
-//     * @param serviceName name to check for
-//     * @param assertInList true if expected to be in list
-//     */
-//    private void assertIsServiceInList(String serviceName, boolean assertInList) {
-//        WebElement serviceList = webDriver.findElement(By.xpath("//select[contains(@name, 'listServices')]"));
-//        try {
-//            serviceList.findElement(By.xpath("//option[@value='" + serviceName + "']"));
-//        } catch (NoSuchElementException e) {
-//            if (assertInList) {
-//                fail(serviceName + " was not found in the List of Services");
-//            } else {
-//                return;
-//            }
-//        }
-//        if (!assertInList) {
-//            fail(serviceName + " was still in the list of services after deleting it");
-//        }
-//    }
+    @Test
+    public void testG_expectLogEvents() {
+        // Verify Audit Log
+        auditLogHelper.openPage(getAdminWebUrl());
+        auditLogHelper.assertLogEntryByEventText(
+                "Service Add",
+                "Success",
+                null,
+                null
+        );
+        auditLogHelper.assertLogEntryByEventText(
+                "Service Edit",
+                "Success",
+                null,
+                null
+        );
+        auditLogHelper.assertLogEntryByEventText(
+                "Service Remove",
+                "Success",
+                null,
+                null
+        );
+    }
+
 }

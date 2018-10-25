@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.assertEquals;
 
@@ -26,6 +26,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AdminRolesHelper;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
@@ -37,7 +38,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-
+/**
+ *
+ * @version $Id: EcaQa67_AccessRuleSorted.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa67_AccessRuleSorted extends WebTestBase {
     
@@ -49,7 +53,7 @@ public class EcaQa67_AccessRuleSorted extends WebTestBase {
  
     @BeforeClass
     public static void init() {
-        setUp(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
+        beforeClass(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
         webDriver = getWebDriver();
     }
     
