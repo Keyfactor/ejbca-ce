@@ -388,14 +388,14 @@
   </navigation-rule>
 
   <navigation-rule>
-  	<from-view-id>/peerconnector/peerconnectors.jsp</from-view-id>
+  	<from-view-id>/peerconnector/peerconnectors.xhtml</from-view-id>
   	<navigation-case>
   		<from-outcome>edit</from-outcome>
-  		<to-view-id>/peerconnector/peerconnector.jsp</to-view-id>
+  		<to-view-id>/peerconnector/peerconnector.xhtml</to-view-id>
   	</navigation-case>
   	<navigation-case>
   		<from-outcome>done</from-outcome>
-  		<to-view-id>/peerconnector/peerconnectors.jsp</to-view-id>
+  		<to-view-id>/peerconnector/peerconnectors.xhtml</to-view-id>
   	</navigation-case>
   	<navigation-case>
   		<from-outcome>manage</from-outcome>
@@ -403,17 +403,17 @@
   	</navigation-case>
   </navigation-rule>
   <navigation-rule>
-  	<from-view-id>/peerconnector/peerconnector.jsp</from-view-id>
+  	<from-view-id>/peerconnector/peerconnector.xhtml</from-view-id>
   	<navigation-case>
   		<from-outcome>done</from-outcome>
-  		<to-view-id>/peerconnector/peerconnectors.jsp</to-view-id>
+  		<to-view-id>/peerconnector/peerconnectors.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>
   <navigation-rule>
   	<from-view-id>/peerconnector/peermgmt.jsp</from-view-id>
   	<navigation-case>
   		<from-outcome>done</from-outcome>
-  		<to-view-id>/peerconnector/peerconnectors.jsp</to-view-id>
+  		<to-view-id>/peerconnector/peerconnectors.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>
   
