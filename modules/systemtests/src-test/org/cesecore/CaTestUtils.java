@@ -79,7 +79,7 @@ public abstract class CaTestUtils {
      * @param caName Name of new CA
      * @param cadn Subject DN of new CA
      */
-    public static CA createX509Ca(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn)
+    public static X509CA createX509Ca(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn)
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
             AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
             IllegalStateException, OperatorCreationException, CAExistsException {
@@ -88,13 +88,13 @@ public abstract class CaTestUtils {
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         final int cryptoTokenId = initCryptoTokenId(cryptoTokenManagementProxySession, authenticationToken, cryptoTokenName);
         final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
-        final CA x509Ca = createX509Ca(cryptoToken, caName, cadn);
+        final X509CA x509Ca = createX509Ca(cryptoToken, caName, cadn);
         caSession.addCA(authenticationToken, x509Ca);
         // Now our CA should be operational
         return x509Ca;
     }
 
-    private static CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn) throws CertificateException,
+    private static X509CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn) throws CertificateException,
             CryptoTokenOfflineException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
         CAToken catoken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // No extended services
