@@ -14,10 +14,7 @@ package org.ejbca.webtest.scenario;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.webtest.helper.CertificateProfileHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.RaWebHelper;
@@ -37,14 +34,11 @@ import java.util.Collections;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-125">ECAQA-125</a>
  * 
- * @version $Id: EcaQa125_RaCpRestrictions.java 30035 2018-10-05 08:35:05Z andrey_s_helmes $
+ * @version $Id: EcaQa125_RaCpRestrictions.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa125_RaCpRestrictions extends WebTestBase {
 
-    // EJBs
-    private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     // Helpers
     private static CertificateProfileHelper certificateProfileHelper;
     private static EndEntityProfileHelper endEntityProfileHelper;
@@ -77,7 +71,7 @@ public class EcaQa125_RaCpRestrictions extends WebTestBase {
     @BeforeClass
     public static void init() {
         // super
-        setUp(true, null);
+        beforeClass(true, null);
         final WebDriver webDriver = getWebDriver();
         // Init helpers
         certificateProfileHelper = new CertificateProfileHelper(webDriver);
@@ -88,10 +82,10 @@ public class EcaQa125_RaCpRestrictions extends WebTestBase {
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
-        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, TestData.CERTIFICATE_PROFILE_NAME);
-        endEntityProfileSession.removeEndEntityProfile(ADMIN_TOKEN, TestData.END_ENTITY_PROFILE_NAME);
+        removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
+        removeEndEntityProfileByName(TestData.END_ENTITY_PROFILE_NAME);
         // super
-        tearDown();
+        afterClass();
     }
 
     @Test

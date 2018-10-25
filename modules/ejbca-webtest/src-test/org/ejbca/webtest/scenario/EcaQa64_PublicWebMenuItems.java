@@ -10,8 +10,9 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.util.WebTestUtil;
 import org.junit.*;
 import org.openqa.selenium.By;
@@ -25,7 +26,7 @@ import java.util.List;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa64_PublicWebMenuItems.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  *
  */
 public class EcaQa64_PublicWebMenuItems extends WebTestBase {
@@ -34,7 +35,7 @@ public class EcaQa64_PublicWebMenuItems extends WebTestBase {
     
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        beforeClass(true, null);
         webDriver = getWebDriver();
     }
 
