@@ -84,6 +84,7 @@
     <property name="mod.publicweb-gui.path" location="${mod.path}/publicweb-gui" />
     <property name="mod.publicweb-gui.war" location="${mod.dist.path}/publicweb.war" />
     <property name="mod.va.path" location="${mod.path}/va" />
+    <property name="mod.plugins.path" location="${mod.path}/plugins-ee" />
     <property name="mod.status.war" location="${mod.dist.path}/status.war" />
     <property name="mod.certstore.war" location="${mod.dist.path}/certstore.war" />
     <property name="mod.cerstore.path" location="${mod.path}/certificatestore" />
@@ -155,7 +156,7 @@
 	<property name="mod.edition-specific-interface.lib" location="${mod.dist.path}/edition-specific-interface.jar"/>
 	<property name="mod.edition-specific-ejb.lib" location="${mod.dist.path}/edition-specific-ejb.jar"/>
 	<property name="mod.edition-specific-ee-ejb.path" location="${mod.path}/edition-specific-ee"/>
-	<property name="mod.va-publisher.lib"  location="${mod.dist.path}/va-publisher.jar"/>
+	<property name="mod.plugins-ee.lib"  location="${mod.dist.path}/plugins-ee.jar"/>
 	<property name="mod.systemtest-interface.lib" location="${mod.dist.path}/systemtests-interfaces.jar" />
 	<property name="mod.systemtest-common.lib" location="${mod.dist.path}/systemtests-common.jar" />
 	<property name="mod.systemtest-ejb.lib" location="${mod.dist.path}/systemtests-ejb.jar" />

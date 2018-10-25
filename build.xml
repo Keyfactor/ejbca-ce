@@ -632,7 +632,7 @@
                 <include name="peerconnector-interface.jar" />
                 <include name="peerconnector-common.jar" />
         		<include name="peerconnector-entity.jar" />
-        		<include name="va-publisher.jar" />
+        		<include name="plugins-ee.jar" />
         		<include name="caa.jar" />
 	            <include name="unidfnr-ejb.jar" />
 	            <include name="ejbca-ejb.jar" />

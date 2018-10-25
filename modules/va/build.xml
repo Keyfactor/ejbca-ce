@@ -6,13 +6,9 @@
 	<import file="../build-helpers.xml"/>
 	
 	<property name="build-status.dir" location="${this.dir}/build-status"/>
-	<property name="build-va-publisher.dir" location="${this.dir}/build-va-publisher"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.war.dir" location="${this.dir}/src-war"/>
-	<property name="src.va-publisher.dir" location="${this.dir}/publisher/src"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
-	<property name="publisher.src-test.dir" location="${this.dir}/publisher/src-test"/>
-
 
 	<path id="compile-common.classpath">
 		<path refid="lib.servlet.classpath"/>
@@ -54,30 +50,15 @@
 		<delete dir="${build-status.dir}" />
 		<delete dir="${build-test.dir}" />
     	<delete file="${mod.va.war}" />
-		<antcall target="vapublisherclean"/>
     </target>
-	
-    <condition property="vapublisher.exists">
-    	<available file="${src.va-publisher.dir}" />
-    </condition>
-	
-	 <target name="vapublisherclean" if="${vapublisher.exists}">
-		<delete dir="${build-va-publisher.dir}" />
-	 	<delete file="${mod.va-publisher.lib}" />
-	 </target>	
 	
 	<condition property="ocsp.enabled.if.defined"><istrue value="${ocsp.enabled}"/></condition>
 
-	<target name="ejbca-build" description="Build this module" depends="ejbca-status.war, va-publisher.jar"/>
+	<target name="ejbca-build" description="Build this module" depends="ejbca-status.war"/>
 	<target name="ejbca-status.war" depends="ejbca-status-compile" if="ocsp.enabled.if.defined">
 		<war destfile="${mod.status.war}" webxml="${resources.dir}/WEB-INF/web-status-ejbca.xml" basedir="${build-status.dir}"/>
 	</target>
 	
-	<target name="va-publisher.jar" depends="ejbca-vapublisher-compile" if="vapublisher.exists">
-		<buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher" file="${build-va-publisher.dir}" classpath="compile-ejbca.classpath"/>
-		<jar destfile="${mod.va-publisher.lib}" basedir="${build-va-publisher.dir}"/>
-	</target>
-
 	<condition property="use.ocsp.extensionclass">
 			<not>
 				<equals arg1="${ocsp.extensionclass}" arg2=""/>
@@ -95,8 +76,7 @@
 			<include name="META-INF/**/*"/>
 		</jar>
 	</target>
-		
-	
+			
 	<target name="ejbca-status-compile" depends="use-ocsp-extensionclass" if="ocsp.enabled.if.defined">
     	<mkdir dir="${build-status.dir}/WEB-INF/classes" />
         <javac destdir="${build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
@@ -108,62 +88,5 @@
         </javac>
 		<antcall target="extensions-build"/>
 	</target>
-	
-	<target name="ejbca-vapublisher-compile" if="vapublisher.exists">
-		<mkdir dir="${build-va-publisher.dir}" />
-		<javac srcdir="${src.va-publisher.dir}" destdir="${build-va-publisher.dir}" debug="on" includeantruntime="no" encoding="iso8859-1"
-					target="${java.target.version}" classpathref="compile-ejbca.classpath"/>
-	</target>
-	
-    <target name="tests-compile" depends="ejbca-vapublisher-compile" if="vapublisher.exists">
-    	<mkdir dir="${build-test.dir}" />
-		
-    	<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
-    	<copy todir="${build-test.dir}" failonerror="true">
-            <fileset dir="${ejbca.home}/src" includes="intresources/**"/>
-		    <fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
-		</copy>
-		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
-		<copy file="${systemtests.properties.file}" todir="${build-test.dir}" failonerror="false"/>
-    	<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
-    	<copy file="${jndi.properties.file}" tofile="${build-test.dir}/jndi.properties" failonerror="false"/>
-		<copy file="${jboss-ejb-client.properties}" todir="${build-test.dir}" failonerror="true"/>
-    	<javac srcdir="${publisher.src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
-    	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath">
-			<sourcepath location="${mod.systemtests.path}/src-test/"/>
-    	</javac>
-    </target>
-	
-	<target name="test" depends="tests-compile">
-	    <antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
-			<classpath>
-	        	<path refid="test.classpath"/>
-				<pathelement path="${clover.jar}"/>
-			</classpath>
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*Test.class" />
-			</batchtest>
-		</junit>
-		<antcall target="showtime"/>
-	</target>
 
-	<!-- =================================
-          Run a single test specified with -Dtest.runone=TestName
-         ================================= -->
-	<target name="runone" depends="tests-compile">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=TestName . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
-			<classpath>
-        		<path refid="test.classpath"/>
-				<path location="${build-test.dir}" />
-				<pathelement path="${clover.jar}"/>
-			</classpath>
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/${test.runone}.class"/>
-			</batchtest>
-		</junit>
-	</target>
 </project>
