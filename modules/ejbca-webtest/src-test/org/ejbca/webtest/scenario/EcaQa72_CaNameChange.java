@@ -10,19 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -36,32 +31,30 @@ import org.openqa.selenium.WebElement;
 
 /**
  * 
- * @version $Id$
- *
+ * @version $Id: EcaQa72_CaNameChange.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa72_CaNameChange extends WebTestBase {
 
-    private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
- 
-    private static final String caName = "ECAQA72CA";
     private static WebDriver webDriver;
-    
-    
+    // Helpers
+    private static CaHelper caHelper;
+    private static final String caName = "ECAQA72CA";
+
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        // super
+        beforeClass(true, null);
         webDriver = getWebDriver();
+        // Init helpers
+        caHelper = new CaHelper(webDriver);
     }
     
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        CAInfo caInfo = caSession.getCAInfo(admin, caName);
-        if (caInfo != null) {
-            caSession.removeCA(admin, caInfo.getCAId());
-        }
-        webDriver.quit();
+        removeCaByName(caName);
+        // super
+        afterClass();
     }
     
     private void editNameChangeGlobalConfig(boolean saveAsEnabled) {
@@ -75,7 +68,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     
     @Test
     public void testA_addCa() {
-        CaHelper.goTo(webDriver, getAdminWebUrl());
+        caHelper.openPage(getAdminWebUrl());
         CaHelper.add(webDriver, caName);
         // Set validity (required)
         CaHelper.setValidity(webDriver, "1y");
@@ -91,7 +84,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     
     @Test
     public void testC_editCaExpectNoNameChangeAvailable() {
-        CaHelper.goTo(webDriver, getAdminWebUrl());
+        caHelper.openPage(getAdminWebUrl());
         CaHelper.edit(webDriver, caName);
         try {
             webDriver.findElement(By.id("idcheckboxcanamechange"));
@@ -110,7 +103,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     
     @Test
     public void testE_editCaExpectNameChangeAvailable() {
-        CaHelper.goTo(webDriver, getAdminWebUrl());
+        caHelper.openPage(getAdminWebUrl());
         CaHelper.edit(webDriver, caName);
         try {
             webDriver.findElement(By.id("idcheckboxcanamechange"));

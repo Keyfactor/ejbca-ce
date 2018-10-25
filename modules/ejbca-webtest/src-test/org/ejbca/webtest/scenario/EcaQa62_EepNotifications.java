@@ -12,39 +12,21 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.webtest.helper.EndEntityProfileHelper;
-import org.ejbca.webtest.helper.WebTestHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * This test checks the behavior of EEP Notifications in the edit view.
  * 
- * @version $Id: EcaQa62_EepNotifications.java 29858 2018-09-11 07:44:14Z andrey_s_helmes $
+ * @version $Id: EcaQa62_EepNotifications.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa62_EepNotifications extends WebTestBase {
@@ -52,8 +34,6 @@ public class EcaQa62_EepNotifications extends WebTestBase {
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserDataTest"));
 
     private static WebDriver webDriver;
-    private static EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-
     private static final String eepName = "NotificationEEP-ECAQA-62";
     private static final String firstText = "first";
     private static final String secondText = "second";
@@ -61,16 +41,17 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        beforeClass(true, null);
         webDriver = getWebDriver();
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        endEntityProfileSession.removeEndEntityProfile(admin, eepName);
+        removeEndEntityProfileByName(eepName);
         webDriver.quit();
     }
 
+    // TODO Fix at ECA-7334 and ECA-7349
 //    @Test
 //    public void a_addEep() {
 //        EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
@@ -85,7 +66,8 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        } catch (NoSuchElementException e) {}
 //    }
 
-//    // TODO Documentation has to be built before this case works
+    // TODO Fix at ECA-7334 and ECA-7349
+    // TODO Documentation has to be built before this case works
 //    @Ignore
 //    @Test
 //    public void b_checkDocumentation() {
@@ -117,7 +99,8 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        }
 //    }
 
-//    // TODO Documentation has to be built before this case works
+    // TODO Fix at ECA-7334 and ECA-7349
+    // TODO Documentation has to be built before this case works
 //    @Ignore
 //    @Test
 //    public void d_checkDocumentation() {
@@ -125,6 +108,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        openDocumentation("//td[contains(text(), 'Notification Message')]/a", "Dynamic Substitution Variables");
 //    }
 
+    // TODO Fix at ECA-7334 and ECA-7349
 //    @Test
 //    public void e_addAnotherNotification() {
 //        webDriver.findElement(By.xpath("//input[@name='buttonaddanothernotification']")).click();
@@ -141,6 +125,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        assertEquals("'Add' button doesn't display 'Add'", "Add", webDriver.findElement(By.xpath("//input[@name='buttonaddnotification']")).getAttribute("value"));
 //    }
 
+    // TODO Fix at ECA-7334 and ECA-7349
 //    @Test
 //    public void f_addFirstNotification() {
 //        webDriver.findElement(By.xpath("//input[@name='buttonaddnotification']")).click();
@@ -161,6 +146,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        WebTestHelper.assertAlert(webDriver, "You must fill in a notification message if notification is to be used.", true);
 //    }
 
+    // TODO Fix at ECA-7334 and ECA-7349
 //    @Test
 //    public void g_addSecondAndThirdNotification() {
 //        // Fill fields with 'second' and then click 'Add Another'
@@ -172,6 +158,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        EndEntityProfileHelper.save(webDriver, true);
 //    }
 
+    // TODO Fix at ECA-7334 and ECA-7349
 //    @Test
 //    public void g_disabledFields() {
 //        EndEntityProfileHelper.edit(webDriver, eepName);
@@ -213,6 +200,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        }
 //    }
 
+    // TODO Fix at ECA-7334 and ECA-7349
 //    @Test
 //    public void h_deleteNotifications() {
 //        // Click 'Delete' for prototype 'third' and check that it's deleted and that the other prototypes are intact
@@ -256,6 +244,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        } catch (NoSuchElementException e) {}
 //    }
 
+    // TODO Fix at ECA-7334 and ECA-7349
 //    private void openDocumentation(String xpath, String title) {
 //        String mainWindow = webDriver.getWindowHandle();
 //        String editWindow = null;
@@ -283,6 +272,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        webDriver.switchTo().window(mainWindow);
 //    }
 
+    // TODO Fix at ECA-7334 and ECA-7349
 //    private void fillTopPrototype(String text) {
 //        WebElement senderField = webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender']"));
 //        WebElement recipientField = webDriver.findElement(By.xpath("//input[@name='textfieldnotificationrcpt']"));
