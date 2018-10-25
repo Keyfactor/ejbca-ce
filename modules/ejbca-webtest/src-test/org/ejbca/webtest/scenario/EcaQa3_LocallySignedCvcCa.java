@@ -10,15 +10,10 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
 import org.junit.AfterClass;
@@ -33,16 +28,14 @@ import org.openqa.selenium.support.ui.Select;
 /**
  * Creates a self signed CVC CA using a dedicated Crypto Token.
  * 
- * @version $Id$
+ * @version $Id: EcaQa3_LocallySignedCvcCa.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
 
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
-
     private static WebDriver webDriver;
-    private static CaSessionRemote caSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private static CryptoTokenManagementSessionRemote cryptoTokenManagementSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    // Helpers
+    private static CaHelper caHelper;
 
     private static final String rootName = "ECAQA3";
     private static final String subName = "subCA ECAQA3";
@@ -51,24 +44,25 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
 
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        // super
+        beforeClass(true, null);
         webDriver = getWebDriver();
+        // Init helpers
+        caHelper = new CaHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        int rootId = caSessionRemote.getCAInfo(admin, rootName).getCAId();
-        int subId = caSessionRemote.getCAInfo(admin, subName).getCAId();
-        int ctId = cryptoTokenManagementSessionRemote.getIdFromName(rootName);
-        caSessionRemote.removeCA(admin, rootId);
-        caSessionRemote.removeCA(admin, subId);
-        cryptoTokenManagementSessionRemote.deleteCryptoToken(admin, ctId);
-        webDriver.quit();
+        // Remove generated artifacts
+        removeCaAndCryptoToken(rootName);
+        removeCaByName(subName);
+        // super
+        afterClass();
     }
 
     @Test
     public void a_createRootCa() {
-        CaHelper.goTo(webDriver, getAdminWebUrl());
+        caHelper.openPage(getAdminWebUrl());
         CaHelper.add(webDriver, rootName);
 
         // Set CA Type, Subject DN and Validity
@@ -89,7 +83,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
 
     @Test
     public void c_createSubCa() {
-        CaHelper.goTo(webDriver, getAdminWebUrl());
+        caHelper.openPage(getAdminWebUrl());
         CaHelper.add(webDriver, subName);
 
         // Set CA Type, Crypto Token, Subject DN, Signed By, Validity and Certificate Profile
