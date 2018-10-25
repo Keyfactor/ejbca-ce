@@ -153,7 +153,7 @@
         <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
     	<mkdir dir="${build-test.dir}/META-INF"/>
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
-		<junit printsummary="yes" haltonfailure="no" fork="true" failureproperty="databaseschemarest.failed">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" fork="true" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
@@ -177,7 +177,7 @@
         <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
     	<mkdir dir="${build-test.dir}/META-INF"/>
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
-    	<junit printsummary="yes" haltonfailure="no" fork="false" failureproperty="databaseschemarest.failed">
+    	<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" fork="false" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
@@ -191,7 +191,7 @@
 	<target name="test" depends="compile-test" description="Run tests for this module">
     	<antcall target="showtime"/>
 		<echo message=" ** Running EJBCA entity tests **"/>
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
 			<classpath>
 	    		<path refid="test.classpath-nojdbc"/>
 				<pathelement path="${clover.jar}"/>
@@ -294,9 +294,9 @@
     </target>
 
 	<target name="runone" depends="compile-test">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
         <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
-		<junit printsummary="yes" haltonfailure="no" >
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath-nojdbc"/>
 				<pathelement path="${clover.jar}"/>

@@ -136,7 +136,7 @@
 	
 	<target name="test" depends="tests-compile">
 	    <antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
 			<classpath>
 	        	<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
@@ -153,8 +153,8 @@
           Run a single test specified with -Dtest.runone=TestName
          ================================= -->
 	<target name="runone" depends="tests-compile">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=TestName" unless="test.runone" />
-		<junit printsummary="yes" haltonfailure="no" >
+		<fail message="'test.runone' is not set. Example -Dtest.runone=TestName . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath"/>
 				<path location="${build-test.dir}" />

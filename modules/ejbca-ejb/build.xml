@@ -198,7 +198,7 @@
 	</target>
 
 	<target name="test-subprocess">
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
 			<classpath>
 				<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
@@ -217,7 +217,7 @@
 	                   else="-ea">
 	                    <istrue value="${remoteDebug}"/>
 	        </condition>
-	        <junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+	        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
 	            <classpath>
 	                <path refid="test.classpath"/>
 	                <path location="${build-test.dir}" />
@@ -233,8 +233,8 @@
 	    </target>
 	
 	<target name="runone" depends="compile-tests">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
-		<junit printsummary="yes" haltonfailure="no" >
+		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>

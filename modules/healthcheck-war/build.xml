@@ -60,7 +60,7 @@
 	</target>
 
 	<target name="test" depends="compile-tests">
-		<junit printsummary="yes" haltonfailure="no" >
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>

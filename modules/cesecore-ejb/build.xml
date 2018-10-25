@@ -69,7 +69,7 @@
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
 		<antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no" dir="${cesecore-ejb.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cesecore-ejb.dir}">
 			<classpath>
 				<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
@@ -84,8 +84,8 @@
 	</target>
 
 	<target name="runone" depends="compile-tests">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=FooTest" unless="test.runone" />
-		<junit printsummary="yes" haltonfailure="no" >
+		<fail message="'test.runone' is not set. Example -Dtest.runone=FooTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
