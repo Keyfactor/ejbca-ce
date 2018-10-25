@@ -1834,8 +1834,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return viewCertLink + "?caid=" + currentCaId;
     }
     
-
-    
     public String createCa() {
         
         final long crlIssueInterval = SimpleTime.getInstance(crlCaIssueInterval, "0"+SimpleTime.TYPE_MINUTES).getLong();
@@ -1852,19 +1850,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (getUsedCrlPublishers() != null && !getUsedCrlPublishers().isEmpty()) {
             availablePublisherValues = StringUtils.join(getUsedCrlPublishers().toArray(), ";");
         }
-        
-        log.info("Hi Amin we are in create ca page and the selected crypto token is " + selectedCryptoToken);
-        
-        
-        log.info("Hi Amin selected ca name is " + createCaName);
-        
-        log.info("Hi Amin subject dn is " + caSubjectDN);
-        
-        log.info("Hi Amin signed by is " + signedBy);
-        
-        log.info("Hi Amin available publishers values is " + availablePublisherValues);
-        
-        log.info("Hi Amin available keyvalidator value is " + availableKeyValidatorValues);
         
         boolean illegaldnoraltname = false;
             try {
@@ -1892,7 +1877,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 log.error("Error happened during ca creation! ", e);
             }
         
-        return illegaldnoraltname ? "error" : "managecas";    
+        return illegaldnoraltname ? "error" : EditCaUtil.MANAGE_CA_NAV;    
     }
     
 
