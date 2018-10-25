@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.*;
 
@@ -21,14 +21,12 @@ import java.util.Map.Entry;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
+import org.ejbca.webtest.WebTestBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -43,7 +41,7 @@ import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa87_ApprovalMgmtPartition.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
@@ -58,14 +56,10 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
     private static WebDriver webDriver;
     private static RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private static ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-    private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private static CertificateProfileSessionRemote cpSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    
-    
-    
+
     @BeforeClass
     public static void init() {
-        setUp(true, null);
+        beforeClass(true, null);
         webDriver = getWebDriver();
     }
     
@@ -79,11 +73,8 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
         if (role2 != null) {
             roleSession.deleteRoleIdempotent(admin, role2.getRoleId());
         }
-        CAInfo caInfo = caSession.getCAInfo(admin, caName);
-        if (caInfo != null) {
-            caSession.removeCA(admin, caInfo.getCAId());
-        }
-        cpSession.removeCertificateProfile(admin, cpName);
+        removeCaByName(caName);
+        removeCertificateProfileByName(cpName);
         Map<Integer, String> approvalIdNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
         for (Entry<Integer, String> approvalProfile : approvalIdNameMap.entrySet()) {
             if (approvalProfile.getValue().equals(approvalProfileName)) {

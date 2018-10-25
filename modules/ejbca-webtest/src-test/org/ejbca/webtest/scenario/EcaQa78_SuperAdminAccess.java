@@ -10,12 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,7 +33,7 @@ import org.openqa.selenium.support.ui.Select;
  * containing a superadmin certificate as first selection is required. The profile name can either be specified in /conf/profiles.properties
  * or a new Firefox profile can be created with the name 'superadmin'.
  * 
- * @version $Id$
+ * @version $Id: EcaQa78_SuperAdminAccess.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 public class EcaQa78_SuperAdminAccess extends WebTestBase {
     
@@ -40,7 +41,7 @@ public class EcaQa78_SuperAdminAccess extends WebTestBase {
     
     @BeforeClass
     public static void init() {
-        setUp(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
+        beforeClass(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
         webDriver = getWebDriver();
     }
     

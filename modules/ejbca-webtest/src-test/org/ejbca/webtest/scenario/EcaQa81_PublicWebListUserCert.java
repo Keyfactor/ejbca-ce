@@ -10,8 +10,9 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.webtest;
+package org.ejbca.webtest.scenario;
 
+import org.ejbca.webtest.WebTestBase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,7 +26,7 @@ import static org.junit.Assert.*;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: EcaQa81_PublicWebListUserCert.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 public class EcaQa81_PublicWebListUserCert extends WebTestBase {
 
@@ -36,7 +37,7 @@ public class EcaQa81_PublicWebListUserCert extends WebTestBase {
 
     @BeforeClass
     public static void init() {
-        setUp(false, null);
+        beforeClass(false, null);
         webDriver = getWebDriver();
     }
 
