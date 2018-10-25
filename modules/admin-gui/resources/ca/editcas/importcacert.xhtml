@@ -57,7 +57,7 @@
 							value="#{web.text.IMPORTCA_CANAME}" style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:inputText id="textfieldimportcaname"
+						<h:inputText id="textfieldimportcaname" value="#{importCaCertMBean.importCaCertName}"
 							title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255">
 						</h:inputText>
 					</h:panelGroup>
@@ -68,9 +68,7 @@
 							style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:inputHidden id="action"
-							value="importcacert" />
-						<t:inputFileUpload id="filerecievefile" />
+						<t:inputFileUpload id="filerecievefile" value="#{importCaCertMBean.uploadedFile}"/>
 					</h:panelGroup>
 
 					<h:panelGroup>
@@ -78,9 +76,9 @@
 					</h:panelGroup>
 
 					<h:panelGroup>
-						<h:commandButton type="submit"
+						<h:commandButton 
 							id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');"
-							value="#{web.text.IMPORTCA_CERTIFICATE}" />
+							value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{importCaCertMBean.importCaCertificate()}"/>
 						<h:commandButton id="buttoncancel"
 							value="#{web.text.CANCEL}" action="managecas" immediate="true"/>
 					</h:panelGroup>

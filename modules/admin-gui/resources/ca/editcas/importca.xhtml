@@ -53,7 +53,7 @@
 							value="#{web.text.IMPORTCA_CANAME}" style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:inputText id="textfieldimportcaname"
+						<h:inputText id="textfieldimportcaname" value="#{importCaMBean.importCaName}"
 							title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255">
 						</h:inputText>
 					</h:panelGroup>
@@ -64,8 +64,7 @@
 							style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:inputHidden name="#{web.text.ACTION}" value="importca" />
-						<t:inputFileUpload id="filerecievefile" />
+						<t:inputFileUpload id="filerecievefile" value="#{importCaMBean.uploadedFile}"/>
 					</h:panelGroup>
 					
 					<h:panelGroup>
@@ -73,7 +72,7 @@
 							value="#{web.text.IMPORTCA_KEYSTOREPASSWORD}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:inputSecret autocomplete="off" id="textfieldimportcapassword" size="20" maxlength="255" />
+						<h:inputSecret autocomplete="off" id="textfieldimportcapassword" size="20" maxlength="255" value="#{importCaMBean.importPassword}"/>
 					</h:panelGroup>
 
 					<h:panelGroup>
@@ -81,18 +80,17 @@
 							value="#{web.text.IMPORTCA_SIGNKEYALIAS}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:inputText id="textfieldimportcasignkeyalias" value="signKey" size="20" maxlength="255" title="#{web.text.FORMAT_ALIAS}" />
+						<h:inputText id="textfieldimportcasignkeyalias" size="20" maxlength="255" title="#{web.text.FORMAT_ALIAS}" value="#{importCaMBean.importSigAlias}"/>
 						&nbsp;
 						<span class="help">#{web.text.IMPORTCA_SIGNKEYALIAS_HELP}</span>
 					</h:panelGroup>
-
 
 					<h:panelGroup>
 						<h:outputLabel for="textfieldimportcaenckeyalias"
 							value="#{web.text.IMPORTCA_ENCKEYALIAS}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:inputText id="textfieldimportcaenckeyalias" value="encryptKey" size="20" maxlength="255" title="#{web.text.FORMAT_ALIAS}" />
+						<h:inputText id="textfieldimportcaenckeyalias" size="20" maxlength="255" title="#{web.text.FORMAT_ALIAS}" value="#{importCaMBean.importEncAlias}"/>
 						&nbsp;
 						<span class="help">#{web.text.IMPORTCA_ENCKEYALIAS_HELP}</span>
 					</h:panelGroup>
@@ -101,7 +99,7 @@
 						&nbsp;
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:commandButton type="submit" id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');" value="#{web.text.IMPORTCA_KEYSTORE}" />
+						<h:commandButton type="submit" id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');" value="#{web.text.IMPORTCA_KEYSTORE}" action="#{importCaMBean.importCaCertificate()}" />
 						&nbsp;&nbsp;&nbsp;
 						<h:commandButton id="buttoncancel" value="#{web.text.CANCEL}" action="managecas" immediate="true"/>
 					</h:panelGroup>
