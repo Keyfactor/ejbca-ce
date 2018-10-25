@@ -85,7 +85,7 @@
     </target>
 
     <target name="test:runone" description="run a single Test specified -Dtest.runone=classname" depends="deleteDirectories">
-    	<fail message="'test.runone' not set. Example -Dtest.runone=TestDnComponents " unless="test.runone" />
+    	<fail message="'test.runone' is not set. Example -Dtest.runone=TestDnComponents . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
     	<!-- Locate the right module where the test resides.. -->
         <pathconvert property="test-fullname" dirsep="/" pathsep=" " setonempty="false">
     	    <path>
