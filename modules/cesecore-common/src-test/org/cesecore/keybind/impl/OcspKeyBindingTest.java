@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keybind.impl;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -40,9 +41,11 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
+import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.ui.DynamicUiProperty;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -142,6 +145,26 @@ public class OcspKeyBindingTest {
         final ASN1Encodable usage = KeyPurposeId.getInstance(KeyPurposeId.id_kp_OCSPSigning);
         final ASN1Sequence seq = ASN1Sequence.getInstance(new DERSequence(usage));
         return new Extension(Extension.extendedKeyUsage, true, seq.getEncoded());
+    }
+    
+    @Test
+    public void testProperties() {
+        final OcspKeyBinding keybind = new OcspKeyBinding();
+        // Check defaults (please update if changed)
+        assertTrue("getIncludeSignCert", keybind.getIncludeSignCert());
+        assertFalse("getRequireTrustedSignature", keybind.getRequireTrustedSignature());
+        assertEquals("getResponderIdType", ResponderIdType.KEYHASH, keybind.getResponderIdType());
+        // Test getters and setters
+        keybind.setNonExistingGood(true);
+        keybind.setIncludeCertChain(false);
+        keybind.setIncludeSignCert(false);
+        keybind.setRequireTrustedSignature(true);
+        keybind.setResponderIdType(ResponderIdType.NAME);
+        assertTrue("setNonExistingGood", keybind.getNonExistingGood());
+        assertFalse("setIncludeSignCert", keybind.getIncludeSignCert());
+        assertFalse("setIncludeCertChain", keybind.getIncludeCertChain());
+        assertTrue("setRequireTrustedSignature", keybind.getRequireTrustedSignature());
+        assertEquals("setResponderIdType", ResponderIdType.NAME, keybind.getResponderIdType());
     }
 
 }
