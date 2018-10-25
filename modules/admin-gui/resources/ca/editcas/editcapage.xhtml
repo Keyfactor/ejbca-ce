@@ -284,7 +284,8 @@
 					<h:panelGroup>
 						<h:outputText id="description"
 							value="#{editCAsMBean.descriptionExternal}" rendered="#{editCAsMBean.caExternal}" />
-						<h:inputTextarea name="#{web.text.TEXTFIELD_DESCRIPTION}" cols="45" rows="2" value="#{editCAsMBean.description}" disabled="#{not editCAsMBean.hasEditRight}"/> 
+						<h:inputTextarea name="#{web.text.TEXTFIELD_DESCRIPTION}" cols="45" rows="2" value="#{editCAsMBean.description}" 
+										 disabled="#{not editCAsMBean.hasEditRight}" rendered="#{not editCAsMBean.caExternal}"/> 
 					</h:panelGroup>
 					
 				</h:panelGrid>
