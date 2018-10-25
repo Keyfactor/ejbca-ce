@@ -108,7 +108,7 @@
 				else="-ea">
 			<istrue value="${remoteDebug}"/>
 		</condition>
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}" fork="true" forkmode="once">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}" fork="true" forkmode="once">
 			<classpath>
 				<path refid="test.classpath"/>
 			</classpath>
@@ -128,7 +128,7 @@
 				else="-ea">
 			<istrue value="${remoteDebug}"/>
 		</condition>
-		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}" fork="true">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}" fork="true">
 			<classpath>
 				<path refid="test.classpath"/>
 			</classpath>
@@ -142,8 +142,8 @@
 	</target>
 
 	<target name="runone" depends="compile-tests">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=SomeTest" unless="test.runone" />
-		<junit printsummary="yes" haltonfailure="no" >
+		<fail message="'test.runone' is not set. Example -Dtest.runone=SomeTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
