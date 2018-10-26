@@ -1,0 +1,32 @@
+<%
+
+    List<String> availablePublishers = publisherhelper.getPublisherListAvailable();
+
+%>
+
+<tr id="Row<%=row++%2%>" class="section">
+    <td width="45%" valign="top" align="right">
+        <strong><%= ejbcawebbean.getText("METAPUBLISHERSETTINGS") %></strong>
+    </td>
+    <td width="55%" valign="top">
+        &nbsp;
+    </td>
+</tr>
+<tr id="Row<%=row++%2%>">
+    <td width="45%" valign="top" align="right">
+        <%= ejbcawebbean.getText("AVAILABLEPUBLISHERS") %>
+    </td>
+    <td width="55%" valign="top">
+        <% for(String publisherName : availablePublishers){ %>
+        <c:out value="<%= publisherName %>"/><br/>
+        <% } %>
+    </td>
+</tr>
+<tr id="Row<%=row++%2%>">
+    <td width="45%" valign="top" align="right">
+        <%= ejbcawebbean.getText("PUBLISHERGROUPS") %>
+    </td>
+    <td width="55%" valign="top">
+         <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_GROUPS%>" cols="45" rows="8" ><c:out value="<%= publisherhelper.getMultiPublishersDataAsString() %>"/></textarea>
+    </td>
+</tr>

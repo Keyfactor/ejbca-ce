@@ -16,8 +16,10 @@ package org.ejbca.ui.web.admin.cainterface;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -97,6 +99,7 @@ public class EditPublisherJSPHelper {
     public static final String TEXTFIELD_CUSTOMCLASSPATH = "textfieldcustomclasspath";
     public static final String TEXTAREA_CUSTOMPROPERTIES = "textareacustomproperties";
     public static final String TEXTAREA_PROPERTIES = "textareaproperties";
+    public static final String TEXTAREA_GROUPS                 = "textareagroups";
 
     public static final String TEXTFIELD_LDAPHOSTNAME          = "textfieldldaphostname";
     public static final String TEXTFIELD_LDAPPORT              = "textfieldldapport";
@@ -159,6 +162,7 @@ public class EditPublisherJSPHelper {
 
 
     private String publishername = null;
+    private Integer publisherId = null;
 
     /** Creates new LogInterfaceBean */
     public EditPublisherJSPHelper(){
@@ -202,6 +206,7 @@ public class EditPublisherJSPHelper {
                             includefile=PAGE_PUBLISHER;
                             this.publishername = publisher;
                             this.publisherdata = handler.getPublisher(publishername);
+                            this.publisherId = publisherdata.getPublisherId();
                         }
                         else{
                             publisher= null;
@@ -558,8 +563,11 @@ public class EditPublisherJSPHelper {
                             }
 
                             if (publisherdata instanceof MultiGroupPublisher) {
-                                // TODO
-                                throw new UnsupportedOperationException("not implemented");
+                                MultiGroupPublisher multiGroupPublisher = (MultiGroupPublisher) this.publisherdata;
+                                String groups = request.getParameter(TEXTAREA_GROUPS);
+                                HashMap<String, Integer> publisherNameToIdMap = ejbcawebbean.getEjb().getPublisherSession().getPublisherNameToIdMap();
+                                List<TreeSet<Integer>> multiPublisherGroups = convertMultiPublishersStringToData(publisherNameToIdMap, groups);
+                                multiGroupPublisher.setPublisherGroups(multiPublisherGroups);
                             }
 
                             if(request.getParameter(BUTTON_SAVE) != null){
@@ -639,6 +647,10 @@ public class EditPublisherJSPHelper {
     
     public String getPublisherName() {
         return publishername;
+    }
+
+    public int getPublisherId(){
+        return publisherId;
     }
     
     public String getPublisherName(String className) {
@@ -898,5 +910,24 @@ public class EditPublisherJSPHelper {
         }
         result.setLength(Math.max(result.length() - 1, 0));
         return result.toString();
+    }
+
+    public List<String> getPublisherListAvailable() {
+        final List<String> ret = new ArrayList<>();
+        final Collection<Integer> authorizedPublisherIds = ejbcawebbean.getEjb().getCaAdminSession().getAuthorizedPublisherIds(ejbcawebbean.getAdminObject());
+        authorizedPublisherIds.remove(this.publisherId);
+        final Map<Integer, String> publisherIdToNameMap = ejbcawebbean.getEjb().getPublisherSession().getPublisherIdToNameMap();
+        for (final Integer publisherId : authorizedPublisherIds) {
+            ret.add(publisherIdToNameMap.get(publisherId));
+        }
+        Collections.sort(ret);
+        return ret;
+    }
+
+    public String getMultiPublishersDataAsString(){
+        MultiGroupPublisher multiGroupPublisher = (MultiGroupPublisher) this.publisherdata;
+        final List<TreeSet<Integer>> publisherGroups = multiGroupPublisher.getPublisherGroups();
+        final Map<Integer, String> publisherIdToNameMap = ejbcawebbean.getEjb().getPublisherSession().getPublisherIdToNameMap();
+        return convertMultiPublishersDataToString(publisherIdToNameMap, publisherGroups);
     }
 }
