@@ -37,7 +37,7 @@
 	</h1>
 	<h:panelGroup>
 		<h:panelGrid columns="2" styleClass="margin-bottom">
-			<h:outputLink value="keybindings.jsf?type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}">
+			<h:outputLink value="keybindings.xhtml?type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}">
 				<h:outputText value="#{internalKeyBindingMBean.backLinkTranslatedText}"/>
 			</h:outputLink>
 			<h:form rendered="#{internalKeyBindingMBean.switchToEditAllowed or internalKeyBindingMBean.switchToViewAllowed}">
