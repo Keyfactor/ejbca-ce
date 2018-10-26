@@ -584,6 +584,18 @@ public interface CAAdminSession {
      * @return a Set of IDs of authorized publishers. 
      */
     Set<Integer> getAuthorizedPublisherIds(AuthenticationToken admin);
+
+    /**
+     * This method returns a set containing IDs of authorized publishers, except publishers of excluded types. This set will be the sum of the following:
+     *
+     * * Unassigned publishers
+     * * Publishers assigned to CAs that the admin has access to
+     * * Publishers assigned to Certificate Profiles that the admin has access to
+     * * Publishers assigned to Peers (if Enterprise mode) that the admin has access to
+     *
+     * @return a Set of IDs of authorized publishers.
+     */
+    Set<Integer> getAuthorizedPublisherIds(AuthenticationToken admin, List<Integer> excludedTypes);
     
     /**
      * Method used to create a new CA.
