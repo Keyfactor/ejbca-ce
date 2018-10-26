@@ -21,9 +21,8 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
@@ -61,7 +60,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests that the interaction between MultiGroupPublisher and the publisher queue works. 
+ * Tests that the interaction between MultiGroupPublisher and the publisher queue works.
+ *
  * @version $Id$
  */
 public class MultiGroupPublisherSystemTest {
@@ -173,28 +173,19 @@ public class MultiGroupPublisherSystemTest {
         publisherB1Id = publisherSession.addPublisher(alwaysAllowToken, CUSTOM_PUBLISHER1_NAME, publisherB1);
 
         log.debug("Creating Multi Group Publisher");
-        final List<TreeSet<Integer>> publisherGroups = new ArrayList<>();
-        final TreeSet<Integer> setA = new TreeSet<>();
-        setA.add(publisherA1Id);
-        setA.add(publisherA2Id);
-        publisherGroups.add(setA);
-        final TreeSet<Integer> setB = new TreeSet<>();
-        setB.add(publisherB1Id);
-        publisherGroups.add(setB);
-
-        final MultiGroupPublisher multiGroupPublisher = new MultiGroupPublisher();
-        multiGroupPublisher.setDescription("Test Multi Group Publisher");
-        multiGroupPublisher.setUseQueueForCertificates(false);
-        multiGroupPublisher.setUseQueueForCRLs(false);
-        multiGroupPublisher.setOnlyUseQueue(false);
-        multiGroupPublisher.setKeepPublishedInQueue(false);
-        multiGroupPublisher.setPublisherGroups(publisherGroups);
+        final MultiGroupPublisher multiGroupPublisher = MultiGroupPublisherBuilder
+                .builder()
+                .withAllFlagsToFalse()
+                .description("Test Multi Group Publisher")
+                .addPublisherGroup(Arrays.asList(publisherA1Id, publisherA2Id))
+                .addPublisherGroup(Collections.singleton(publisherB1Id))
+                .build();
         multiGroupPublisherId = publisherSession.addPublisher(alwaysAllowToken, MGP_PUBLISHER_NAME, multiGroupPublisher);
         log.debug("Created multi group publisher with ID " + multiGroupPublisherId);
 
         log.debug("Creating Certificate Profile");
         final CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certProf.setPublisherList(Arrays.asList(multiGroupPublisherId));
+        certProf.setPublisherList(Collections.singletonList(multiGroupPublisherId));
         certiciateProfileId = certificateProfileSession.addCertificateProfile(alwaysAllowToken, CERT_PROFILE_NAME, certProf);
 
         log.debug("Creating CA");
@@ -206,8 +197,8 @@ public class MultiGroupPublisherSystemTest {
         log.debug("Creating End Entity Profile");
         final EndEntityProfile eeProf = new EndEntityProfile();
         eeProf.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
-        eeProf.setAvailableCAs(Arrays.asList(ca.getCAId()));
-        eeProf.setAvailableCertificateProfileIds(Arrays.asList(certiciateProfileId));
+        eeProf.setAvailableCAs(Collections.singletonList(ca.getCAId()));
+        eeProf.setAvailableCertificateProfileIds(Collections.singletonList(certiciateProfileId));
         eeProf.addField(DnComponents.ORGANIZATION);
         endEntityProfileId = endEntityProfileSession.addEndEntityProfile(alwaysAllowToken, ENDENTITY_PROFILE_NAME, eeProf);
     }
