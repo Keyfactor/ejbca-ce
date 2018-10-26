@@ -622,7 +622,6 @@
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         		<include name="${in-test-mode-include}systemtests-common.jar"/>
         	    <include name="ct.jar" />
-        		<include name="certsafe.jar" />
         		<include name="edition-specific-interface.jar" />
         		<include name="edition-specific-ejb.jar" />
         		<include name="statedump-common.jar" />

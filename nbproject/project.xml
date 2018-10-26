@@ -39,12 +39,6 @@ auxiliary.show.customizer.message=<message>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>modules/certsafe/src</label>
-                    <type>java</type>
-                    <location>modules/certsafe/src</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
-                <source-folder>
                     <label>modules/cesecore-common/src</label>
                     <type>java</type>
                     <location>modules/cesecore-common/src</location>
@@ -518,11 +512,6 @@ auxiliary.show.customizer.message=<message>
             </ide-actions>
             <export>
                 <type>jar</type>
-                <location>modules/dist/certsafe.jar</location>
-                <build-target>build</build-target>
-            </export>
-            <export>
-                <type>jar</type>
                 <location>modules/dist/cesecore-common.jar</location>
                 <build-target>build</build-target>
             </export>
@@ -694,10 +683,6 @@ auxiliary.show.customizer.message=<message>
                     <source-folder style="packages">
                         <label>modules/batchenrollment-gui/src</label>
                         <location>modules/batchenrollment-gui/src</location>
-                    </source-folder>
-                    <source-folder style="packages">
-                        <label>modules/certsafe/src</label>
-                        <location>modules/certsafe/src</location>
                     </source-folder>
                     <source-folder style="packages">
                         <label>modules/cesecore-common/src</label>
@@ -1019,7 +1004,6 @@ auxiliary.show.customizer.message=<message>
                 <package-root>modules/admin-gui/src</package-root>
                 <package-root>modules/appserver-ext/src</package-root>
                 <package-root>modules/batchenrollment-gui/src</package-root>
-                <package-root>modules/certsafe/src</package-root>
                 <package-root>modules/cesecore-common/src</package-root>
                 <package-root>modules/cesecore-ejb-interface/src</package-root>
                 <package-root>modules/cesecore-ejb/src</package-root>
@@ -1077,7 +1061,6 @@ auxiliary.show.customizer.message=<message>
                 <package-root>src/samples/plugins/mywebapps/src</package-root>
                 <classpath mode="compile">lib/bcpkix-jdk15on-160.jar:lib/bcprov-jdk15on-160.jar:lib/cert-cvc-1.4.9.jar:lib/commons-beanutils-1.9.3.jar:lib/commons-cli-1.0.jar:lib/commons-codec-1.10.jar:lib/commons-collections-3.2.2.jar:lib/commons-configuration-1.6.jar:lib/commons-digester-2.1.jar:lib/commons-el-1.0.jar:lib/commons-fileupload-1.3.3.jar:lib/commons-io-2.5.jar:lib/commons-lang-2.6.jar:lib/commons-logging-1.2.jar:lib/ldap.jar:lib/log4j-1.2.17.jar:lib/batik/batik-anim.jar:lib/batik/batik-awt-util.jar:lib/batik/batik-bridge.jar:lib/batik/batik-codec.jar:lib/batik/batik-css.jar:lib/batik/batik-dom.jar:lib/batik/batik-ext.jar:lib/batik/batik-gvt.jar:lib/batik/batik-parser.jar:lib/batik/batik-script.jar:lib/batik/batik-svg-dom.jar:lib/batik/batik-svggen.jar:lib/batik/batik-transcoder.jar:lib/batik/batik-util.jar:lib/batik/batik-xml.jar:lib/batik/xerces.jar:lib/batik/xml-apis-ext.jar:lib/batik/xml-apis.jar:lib/ct/ctlog-jdk7-git20161207.jar:lib/guava-18.0.jar:lib/httpclient-4.5.3.jar:lib/httpcore-4.4.6.jar:lib/httpmime-4.5.3.jar:lib/json-simple-1.1.1.jar:lib/ct/protobuf-java-3.4.0.jar:lib/ext/easymock/cglib-nodep-2.2.jar:lib/ext/easymock/easymock-3.0.jar:lib/ext/easymock/objenesis-1.2.jar:lib/ext/commons-httpclient-3.1.jar:lib/ext/jdom-b9.jar:lib/ext/junit-4.11.jar:lib/ext/mailapi.jar:lib/ext/velocity-dep-1.4.jar:lib/hibernate/antlr-2.7.7.jar:lib/hibernate/dom4j-1.6.1.jar:lib/hibernate/hibernate-commons-annotations-4.0.1.Final.jar:lib/hibernate/hibernate-core-4.1.1.Final.jar:lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar:lib/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar:lib/hibernate/javassist-3.15.0-GA.jar:lib/hibernate/jboss-logging-3.1.0.GA.jar:lib/hibernate/jboss-transaction-api_1.1_spec-1.0.0.Final.jar:lib/jee/javaee-api-6.0-6.jar:lib/jee/myfaces-api-2.0.23.jar:lib/jee/myfaces-impl-2.0.23.jar:lib/myfaces/tomahawk-1.1.14.jar:lib/quickserver/QuickServer.jar:lib/quickserver/commons-pool.jar:lib/xstream/xmlpull-1.1.3.1.jar:lib/xstream/xpp3_min-1.1.4c.jar:lib/xstream/xstream-1.4.9.jar:modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar:modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar:modules/cesecore-common/dist/cesecore-common.jar:modules/cesecore-ejb-interface/dist/cesecore-ejb-interface.jar:/usr/share/java/ant/ant.jar</classpath>
                 <built-to>modules/dist/adminweb.war</built-to>
-                <built-to>modules/dist/certsafe.jar</built-to>
                 <built-to>modules/dist/cesecore-common.jar</built-to>
                 <built-to>modules/dist/cesecore-ejb-interface.jar</built-to>
                 <built-to>modules/dist/cesecore-ejb.jar</built-to>
@@ -1148,7 +1131,7 @@ auxiliary.show.customizer.message=<message>
                 <package-root>modules/va/publisher/src-test</package-root>
                 <package-root>modules/validationtool/test</package-root>
                 <unit-tests/>
-                <classpath mode="compile">lib/bcpkix-jdk15on-160.jar:lib/bcprov-jdk15on-160.jar:lib/cert-cvc-1.4.9.jar:lib/commons-beanutils-1.9.3.jar:lib/commons-cli-1.0.jar:lib/commons-codec-1.10.jar:lib/commons-collections-3.2.2.jar:lib/commons-configuration-1.6.jar:lib/commons-digester-2.1.jar:lib/commons-el-1.0.jar:lib/commons-fileupload-1.3.3.jar:lib/commons-io-2.5.jar:lib/commons-lang-2.5.jar:lib/commons-logging-1.2.jar:lib/ldap.jar:lib/log4j-1.2.17.jar:lib/batik/batik-anim.jar:lib/batik/batik-awt-util.jar:lib/batik/batik-bridge.jar:lib/batik/batik-codec.jar:lib/batik/batik-css.jar:lib/batik/batik-dom.jar:lib/batik/batik-ext.jar:lib/batik/batik-gvt.jar:lib/batik/batik-parser.jar:lib/batik/batik-script.jar:lib/batik/batik-svg-dom.jar:lib/batik/batik-svggen.jar:lib/batik/batik-transcoder.jar:lib/batik/batik-util.jar:lib/batik/batik-xml.jar:lib/batik/xerces.jar:lib/batik/xml-apis-ext.jar:lib/batik/xml-apis.jar:lib/ct/ctlog-0.1.4.jar:lib/ct/guava-18.0.jar:lib/httpclient-4.5.3.jar:lib/httpcore-4.4.6.jar:lib/httpmime-4.5.3.jar:lib/json-simple-1.1.1.jar:lib/ct/protobuf-java-3.1.0.jar:lib/ext/easymock/cglib-nodep-2.2.jar:lib/ext/easymock/easymock-3.0.jar:lib/ext/easymock/objenesis-1.2.jar:lib/ext/commons-httpclient-3.1.jar:lib/ext/jdom-b9.jar:lib/ext/junit-4.11.jar:lib/ext/mailapi.jar:lib/ext/velocity-dep-1.4.jar:lib/hibernate/antlr-2.7.7.jar:lib/hibernate/dom4j-1.6.1.jar:lib/hibernate/hibernate-commons-annotations-4.0.1.Final.jar:lib/hibernate/hibernate-core-4.1.1.Final.jar:lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar:lib/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar:lib/hibernate/javassist-3.15.0-GA.jar:lib/hibernate/jboss-logging-3.1.0.GA.jar:lib/hibernate/jboss-transaction-api_1.1_spec-1.0.0.Final.jar:lib/jee/javaee-api-6.0-6.jar:lib/jee/myfaces-api-2.0.23.jar:lib/jee/myfaces-impl-2.0.23.jar:lib/myfaces/tomahawk-1.1.14.jar:lib/quickserver/QuickServer.jar:lib/quickserver/commons-pool.jar:lib/xstream/xmlpull-1.1.3.1.jar:lib/xstream/xpp3_min-1.1.4c.jar:lib/xstream/xstream-1.4.9.jar:modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar:modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar:modules/dist/certsafe.jar:modules/dist/cesecore-common.jar:modules/dist/cesecore-ejb-interface.jar:modules/dist/cesecore-ejb.jar:modules/dist/cesecore-entity.jar:modules/dist/cli-util.jar:modules/dist/ct.jar:modules/dist/edition-specific-ejb.jar:modules/dist/edition-specific-interface.jar:modules/dist/ejbca-common-web.jar:modules/dist/ejbca-ejb.jar:modules/dist/ejbca-entity.jar:modules/dist/ejbca-extensions.jar:modules/dist/ejbca-interface.jar:modules/dist/ejbca-properties.jar:modules/dist/ejbca-ws-client.jar:modules/dist/ejbca-ws-ejb.jar:modules/dist/ejbca-ws.jar:modules/dist/log4jconfig.jar:modules/dist/peerconnector-cli.jar:modules/dist/peerconnector-common.jar:modules/dist/peerconnector-ejb.jar:modules/dist/peerconnector-interface.jar:modules/dist/peerconnector-publ.jar:modules/dist/peerconnector-ra.jar:modules/dist/peerconnector.rar:modules/dist/statedump-common.jar:modules/dist/statedump-ejb.jar:modules/dist/va-publisher.jar</classpath>
+                <classpath mode="compile">lib/bcpkix-jdk15on-160.jar:lib/bcprov-jdk15on-160.jar:lib/cert-cvc-1.4.9.jar:lib/commons-beanutils-1.9.3.jar:lib/commons-cli-1.0.jar:lib/commons-codec-1.10.jar:lib/commons-collections-3.2.2.jar:lib/commons-configuration-1.6.jar:lib/commons-digester-2.1.jar:lib/commons-el-1.0.jar:lib/commons-fileupload-1.3.3.jar:lib/commons-io-2.5.jar:lib/commons-lang-2.5.jar:lib/commons-logging-1.2.jar:lib/ldap.jar:lib/log4j-1.2.17.jar:lib/batik/batik-anim.jar:lib/batik/batik-awt-util.jar:lib/batik/batik-bridge.jar:lib/batik/batik-codec.jar:lib/batik/batik-css.jar:lib/batik/batik-dom.jar:lib/batik/batik-ext.jar:lib/batik/batik-gvt.jar:lib/batik/batik-parser.jar:lib/batik/batik-script.jar:lib/batik/batik-svg-dom.jar:lib/batik/batik-svggen.jar:lib/batik/batik-transcoder.jar:lib/batik/batik-util.jar:lib/batik/batik-xml.jar:lib/batik/xerces.jar:lib/batik/xml-apis-ext.jar:lib/batik/xml-apis.jar:lib/ct/ctlog-0.1.4.jar:lib/ct/guava-18.0.jar:lib/httpclient-4.5.3.jar:lib/httpcore-4.4.6.jar:lib/httpmime-4.5.3.jar:lib/json-simple-1.1.1.jar:lib/ct/protobuf-java-3.1.0.jar:lib/ext/easymock/cglib-nodep-2.2.jar:lib/ext/easymock/easymock-3.0.jar:lib/ext/easymock/objenesis-1.2.jar:lib/ext/commons-httpclient-3.1.jar:lib/ext/jdom-b9.jar:lib/ext/junit-4.11.jar:lib/ext/mailapi.jar:lib/ext/velocity-dep-1.4.jar:lib/hibernate/antlr-2.7.7.jar:lib/hibernate/dom4j-1.6.1.jar:lib/hibernate/hibernate-commons-annotations-4.0.1.Final.jar:lib/hibernate/hibernate-core-4.1.1.Final.jar:lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar:lib/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar:lib/hibernate/javassist-3.15.0-GA.jar:lib/hibernate/jboss-logging-3.1.0.GA.jar:lib/hibernate/jboss-transaction-api_1.1_spec-1.0.0.Final.jar:lib/jee/javaee-api-6.0-6.jar:lib/jee/myfaces-api-2.0.23.jar:lib/jee/myfaces-impl-2.0.23.jar:lib/myfaces/tomahawk-1.1.14.jar:lib/quickserver/QuickServer.jar:lib/quickserver/commons-pool.jar:lib/xstream/xmlpull-1.1.3.1.jar:lib/xstream/xpp3_min-1.1.4c.jar:lib/xstream/xstream-1.4.9.jar:modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar:modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar:modules/dist/cesecore-common.jar:modules/dist/cesecore-ejb-interface.jar:modules/dist/cesecore-ejb.jar:modules/dist/cesecore-entity.jar:modules/dist/cli-util.jar:modules/dist/ct.jar:modules/dist/edition-specific-ejb.jar:modules/dist/edition-specific-interface.jar:modules/dist/ejbca-common-web.jar:modules/dist/ejbca-ejb.jar:modules/dist/ejbca-entity.jar:modules/dist/ejbca-extensions.jar:modules/dist/ejbca-interface.jar:modules/dist/ejbca-properties.jar:modules/dist/ejbca-ws-client.jar:modules/dist/ejbca-ws-ejb.jar:modules/dist/ejbca-ws.jar:modules/dist/log4jconfig.jar:modules/dist/peerconnector-cli.jar:modules/dist/peerconnector-common.jar:modules/dist/peerconnector-ejb.jar:modules/dist/peerconnector-interface.jar:modules/dist/peerconnector-publ.jar:modules/dist/peerconnector-ra.jar:modules/dist/peerconnector.rar:modules/dist/statedump-common.jar:modules/dist/statedump-ejb.jar:modules/dist/va-publisher.jar</classpath>
                 <source-level>1.7</source-level>
             </compilation-unit>
         </java-data>

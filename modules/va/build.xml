@@ -88,5 +88,4 @@
         </javac>
 		<antcall target="extensions-build"/>
 	</target>
-
 </project>

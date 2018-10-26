@@ -150,8 +150,6 @@
 	<property name="mod.cli-util.path" location="${mod.path}/cli-util" />
 	<property name="mod.ct.path" location="${mod.path}/ct" />
 	<property name="mod.ct.lib" location="${mod.dist.path}/ct.jar" />
-	<property name="mod.certsafe.path" location="${mod.path}/certsafe"/>
-	<property name="mod.certsafe.lib" location="${mod.dist.path}/certsafe.jar"/>
 	<property name="mod.edition-specific-interface.path" location="${mod.path}/edition-specific"/>
 	<property name="mod.edition-specific-interface.lib" location="${mod.dist.path}/edition-specific-interface.jar"/>
 	<property name="mod.edition-specific-ejb.lib" location="${mod.dist.path}/edition-specific-ejb.jar"/>

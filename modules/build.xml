@@ -119,7 +119,6 @@
 		<antcall target="unidfnrclean"/>
 		<antcall target="cmpclientclean"/>
 		<antcall target="ctclean"/>
-		<antcall target="certsafeclean"/>
 		<antcall target="edition-specific-clean"/>
 		<antcall target="edition-specific-ee-clean"/>
 		<antcall target="externalraclean"/>
@@ -204,12 +203,6 @@
     <target name="estclean" if="${mod.est.exists}">
 		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>	
-	<condition property="mod.certsafe.exists">
-		<available file="${mod.certsafe.path}/build.xml" />
-	</condition>
-	<target name="certsafeclean" if="${mod.certsafe.exists}">
-	    <ant antfile="${mod.certsafe.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-	</target>
 	<condition property="mod.edition-specific-ee.exists">
 		<available file="${mod.edition-specific-ee-ejb.path}/build.xml" />
 	</condition>
@@ -547,7 +540,7 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients,
-					systemtests.build.libs, ct, certsafe, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-api">
+					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-api">
 	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
@@ -558,10 +551,6 @@
 	  <ant antfile="${mod.unidfnr.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
-	<target name="certsafe" depends="ejbca-ejb-interface" if="mod.certsafe.exists">
-		<ant antfile="${mod.certsafe.path}/build.xml" target="jar" inheritall="false"></ant>
-	</target>
-	
 	<target name="caa" if="mod.caa.exists" depends="ejbca-common-web, cesecore-common">
 		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
