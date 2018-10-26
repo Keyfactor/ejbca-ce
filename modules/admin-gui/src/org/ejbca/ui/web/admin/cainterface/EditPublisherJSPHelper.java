@@ -860,7 +860,7 @@ public class EditPublisherJSPHelper {
         TreeSet<Integer> tree = new TreeSet<>();
         for (String publisherName : listOfPublisherNames) {
             publisherName = publisherName.trim();
-            if (StringUtils.isNotEmpty(publisherName)) {
+            if (StringUtils.isEmpty(publisherName)) {
                 if (!tree.isEmpty()) {
                     data.add(tree);
                     tree = new TreeSet<>();
