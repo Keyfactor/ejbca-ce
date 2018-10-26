@@ -135,6 +135,11 @@ function checkallfields(){
        out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : ");%> <c:out value="<%= publisherhelper.getConnectionerrormessage() %>"/></h3>
      <%}
    } %>
+    <% if(publisherhelper.isPublisherEditFailed()) {
+        publisherhelper.setPublisherEditFailed(false);
+        out.write("<h3>" + publisherhelper.getPublisherEditMessage() +"</h3>");
+    }
+    %>
 </div>
   <table class="edit-top" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
