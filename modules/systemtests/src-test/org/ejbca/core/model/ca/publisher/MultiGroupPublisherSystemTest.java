@@ -13,12 +13,15 @@
 package org.ejbca.core.model.ca.publisher;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -36,6 +39,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -201,6 +205,7 @@ public class MultiGroupPublisherSystemTest {
 
         log.debug("Creating End Entity Profile");
         final EndEntityProfile eeProf = new EndEntityProfile();
+        eeProf.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         eeProf.setAvailableCAs(Arrays.asList(ca.getCAId()));
         eeProf.setAvailableCertificateProfileIds(Arrays.asList(certiciateProfileId));
         eeProf.addField(DnComponents.ORGANIZATION);
@@ -230,11 +235,14 @@ public class MultiGroupPublisherSystemTest {
             userdata.setCAId(CertTools.stringToBCDNString(CA_DN).hashCode());
             userdata.setTokenType(EndEntityConstants.TOKEN_USERGEN);
             userdata.setType(EndEntityTypes.ENDUSER.toEndEntityType());
-            endEntityManagementSession.addUser(alwaysAllowToken, userdata, false);
+            final ExtendedInformation extendedinformation = new ExtendedInformation();
+            extendedinformation.setMaxLoginAttempts(2);
+            userdata.setExtendedInformation(extendedinformation);
+            endEntityManagementSession.addUser(alwaysAllowToken, userdata, true);
             byte[] pubKeyBytes = KeyTools.getBytesFromPEM(USER_PUBLIC_KEY_PEM, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
             final PublicKey pubKey = KeyTools.getPublicKeyFromBytes(pubKeyBytes);
             final PublicKeyWrapper pubKeyWrapper = new PublicKeyWrapper(pubKey);
-            signSession.createCertificate(alwaysAllowToken, USER_NAME, "foo123", pubKeyWrapper);
+            final Certificate cert = signSession.createCertificate(alwaysAllowToken, USER_NAME, "foo123", pubKeyWrapper);
 
             // Check the publisher queue
             // - LDAP 1 and LDAP 2 make up a group, and a random one of them should receive a queue entry.
@@ -249,8 +257,15 @@ public class MultiGroupPublisherSystemTest {
             final Collection<PublisherQueueData> entriesB1 = publisherQueueProxySession.getPendingEntriesForPublisher(publisherB1Id);
             assertEquals("Custom Publisher should always", 1,  entriesB1.size());
 
-            // Check contents of queue data
-            // TODO
+            // Check contents of queue data for LDAP publisher
+            final String expectedFingerprint = CertTools.getFingerprintAsString(cert);
+            final PublisherQueueData entryA = (entriesA1.isEmpty() ? entriesA2.iterator().next() : entriesA1.iterator().next());
+            assertTrue("pulisherId is wrong", entryA.getPublisherId() == publisherA1Id || entryA.getPublisherId() == publisherA2Id);
+            checkQueueData(entryA, expectedFingerprint);
+            // Check contents of queue data for custom publisher
+            final PublisherQueueData entryB = entriesB1.iterator().next();
+            assertEquals("pulisherId is wrong", publisherB1Id, entryB.getPublisherId());
+            checkQueueData(entryB, expectedFingerprint);
         } finally {
             cleanupEndEntity();
             final Collection<PublisherQueueData> toClean = new ArrayList<>();
@@ -262,13 +277,27 @@ public class MultiGroupPublisherSystemTest {
             }
         }
     }
-
+    
     /**
-     * Tests that you can't remove a publisher that's referenced by a multi group publisher
+     * Does a check of all columns except pk (primary key) and publisherId
+     * @param entry Database row the check.
+     * @param expectedFingerprint Fingerprint to check for.
      */
-    @Test
-    public void disallowedRemoval() {
-        // TODO 
+    private void checkQueueData(final PublisherQueueData entry, final String expectedFingerprint) {
+        assertEquals("fingerprint is wrong",  expectedFingerprint, entry.getFingerprint());
+        assertEquals("publishStatus is wrong", PublisherConst.STATUS_PENDING, entry.getPublishStatus());
+        assertEquals("publishType is wrong", PublisherConst.PUBLISH_TYPE_CERT, entry.getPublishType());
+        assertEquals("tryCounter is wrong", 0, entry.getTryCounter());
+        assertTrue("timeCreated is suspiciously early", entry.getTimeCreated().after(new Date(System.currentTimeMillis() - 3*60*1000)));
+        assertTrue("timeCreated is in the future", entry.getTimeCreated().before(new Date(System.currentTimeMillis()+1)));
+        assertEquals("lastUpdate is wrong", new Date(0), entry.getLastUpdate());
+        final PublisherQueueVolatileInformation volatileData = entry.getVolatileData();        
+        assertNotNull("volatileData should not be null", volatileData);
+        assertEquals("wrong username in volatileData", USER_NAME, volatileData.getUsername());
+        assertEquals("wrong user DN in volatileData", USER_DN, volatileData.getUserDN());
+        assertEquals("wrong password in volatileData", "foo123", volatileData.getPassword());
+        final ExtendedInformation extendedinformation = volatileData.getExtendedInformation();
+        assertEquals("wrong extendedinformation.getMaxLoginAttempts() in volatileData", 2, extendedinformation.getMaxLoginAttempts());
     }
 
     private static void cleanup() throws AuthorizationDeniedException {
