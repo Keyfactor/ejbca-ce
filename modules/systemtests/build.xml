@@ -61,6 +61,7 @@
 		<pathelement location="${mod.systemtest-interface.lib}"/>
 		<pathelement location="${mod.systemtest-ejb.lib}"/>
 		<pathelement location="${mod.systemtests.path}/resources"/>
+		<path location="${mod.ejbca-common.path}/build-test"/>
 	</path>
 
 	<path id="systemtests.classpath">
@@ -182,6 +183,7 @@
 	</target>
 
 	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-common, ejbca-ws-cli, ejbca-db-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws, with.clover">
+		<ant dir="${mod.ejbca-common.path}" target="compile-tests" inheritall="false"/>
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="systemtests.classpath" target="${java.target.version}">
