@@ -76,7 +76,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     @Override
     public DynamicUiProperty<? extends Serializable> getProperty(final String name) {
         DynamicUiProperty<? extends Serializable> property = propertyTemplates.get(name);
-        property = property.clone();
+        property = new DynamicUiProperty<>(property);
         property.setValueGeneric(getData(name, property.getDefaultValue()));
         return property;
     }
