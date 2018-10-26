@@ -2105,7 +2105,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /** 
-     * @return true if the PSD2 QC statement should be inclued, or false (default) if it should not
+     * @return true if the PSD2 QC statement should be included, or false (default) if it should not
      */
     public boolean getUseQCPSD2() {
         Boolean ret = ((Boolean) data.get(USEQCPSD2));
