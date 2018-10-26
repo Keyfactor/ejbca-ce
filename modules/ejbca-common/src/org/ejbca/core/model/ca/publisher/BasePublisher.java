@@ -237,6 +237,10 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     public abstract void testConnection() throws PublisherConnectionException; // NOPMD: this is not a JUnit test
     
 
+    /**
+     * clone() is used to create new publishers in the user interface, with an existing publisher as a template.
+     * The publishers currently do not copy the name and id, which is a deviation from how clone() is supposed to work.
+     */
     @Override
     public abstract Object clone() throws CloneNotSupportedException;
 

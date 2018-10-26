@@ -14,6 +14,7 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
@@ -219,8 +220,16 @@ public class MultiGroupPublisher extends BasePublisher {
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        // TODO see LdapPublisher.clone()
-        throw new UnsupportedOperationException("Not implemented");
+        final MultiGroupPublisher clone = new MultiGroupPublisher();
+        final LinkedHashMap<Object, Object> clonedata = new LinkedHashMap<>();
+        clonedata.putAll(data);
+        final List<TreeSet<Integer>> publisherGroupsClone = new ArrayList<>();
+        for (final TreeSet<Integer> publisherGroup : getPublisherGroups()) {
+            publisherGroupsClone.add(new TreeSet<>(publisherGroup));
+        }
+        clonedata.put(PROPERTYKEY_PUBLISHERGROUPS, publisherGroupsClone);
+        clone.loadData(clonedata);
+        return clone;
     }
 
     @Override
