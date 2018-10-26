@@ -3137,8 +3137,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Set<Integer> getAuthorizedPublisherIds(final AuthenticationToken admin) {
+    public Set<Integer> getAuthorizedPublisherIds(AuthenticationToken admin, List<Integer> excludedTypes) {
+
         // Set to use to track all authorized publisher IDs
         final Set<Integer> result = new HashSet<Integer>();
         // Find all publishers, use this set to track unowned publishers
@@ -3154,6 +3154,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         allPublishers.remove(key);
                     }
                 }
+            }
+        }
+
+        //remove publishers of excluded types
+        for (Integer key : new HashSet<Integer>(allPublishers.keySet())) {
+            BasePublisher publisher = allPublishers.get(key);
+            if (excludedTypes.contains(publisher.getType())) {
+                allPublishers.remove(key);
             }
         }
 
@@ -3180,6 +3188,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         //Any remaining publishers must be unowned, so add them in as well.
         result.addAll(allPublishers.keySet());
         return result;
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Set<Integer> getAuthorizedPublisherIds(final AuthenticationToken admin) {
+        return getAuthorizedPublisherIds(admin, Collections.EMPTY_LIST);
     }
 
     @Override

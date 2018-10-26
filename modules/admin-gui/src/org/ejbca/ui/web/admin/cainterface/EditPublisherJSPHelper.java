@@ -914,7 +914,8 @@ public class EditPublisherJSPHelper {
 
     public List<String> getPublisherListAvailable() {
         final List<String> ret = new ArrayList<>();
-        final Collection<Integer> authorizedPublisherIds = ejbcawebbean.getEjb().getCaAdminSession().getAuthorizedPublisherIds(ejbcawebbean.getAdminObject());
+        final Collection<Integer> authorizedPublisherIds = ejbcawebbean.getEjb().getCaAdminSession().getAuthorizedPublisherIds(ejbcawebbean.getAdminObject(),
+                Arrays.asList(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
         authorizedPublisherIds.remove(this.publisherId);
         final Map<Integer, String> publisherIdToNameMap = ejbcawebbean.getEjb().getPublisherSession().getPublisherIdToNameMap();
         for (final Integer publisherId : authorizedPublisherIds) {
