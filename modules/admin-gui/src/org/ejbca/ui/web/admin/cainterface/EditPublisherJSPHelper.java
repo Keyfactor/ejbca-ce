@@ -155,6 +155,8 @@ public class EditPublisherJSPHelper {
     private boolean initialized=false;
     private boolean  publisherexists       = false;
     private boolean  publisherdeletefailed = false;
+    private boolean  publisherEditFailed = false;
+    private String   publisherEditMessage = "";
     private boolean  connectionmessage = false;
     private boolean  connectionsuccessful = false;
     private String   connectionerrormessage = "";
@@ -566,8 +568,14 @@ public class EditPublisherJSPHelper {
                                 MultiGroupPublisher multiGroupPublisher = (MultiGroupPublisher) this.publisherdata;
                                 String groups = request.getParameter(TEXTAREA_GROUPS);
                                 HashMap<String, Integer> publisherNameToIdMap = ejbcawebbean.getEjb().getPublisherSession().getPublisherNameToIdMap();
-                                List<TreeSet<Integer>> multiPublisherGroups = convertMultiPublishersStringToData(publisherNameToIdMap, groups);
-                                multiGroupPublisher.setPublisherGroups(multiPublisherGroups);
+                                try {
+                                    List<TreeSet<Integer>> multiPublisherGroups = convertMultiPublishersStringToData(publisherNameToIdMap, groups);
+                                    multiGroupPublisher.setPublisherGroups(multiPublisherGroups);
+                                } catch (PublisherDoesntExistsException | PublisherExistsException e){
+                                    publisherEditFailed = true;
+                                    publisherEditMessage = e.getMessage();
+                                    return PAGE_PUBLISHER;
+                                }
                             }
 
                             if(request.getParameter(BUTTON_SAVE) != null){
@@ -826,6 +834,23 @@ public class EditPublisherJSPHelper {
     public void setPublisherdeletefailed(boolean publisherdeletefailed) {
         this.publisherdeletefailed = publisherdeletefailed;
     }
+
+    public boolean isPublisherEditFailed() {
+        return publisherEditFailed;
+    }
+
+    public void setPublisherEditFailed(boolean publisherEditFailed) {
+        this.publisherEditFailed = publisherEditFailed;
+    }
+
+    public String getPublisherEditMessage() {
+        return publisherEditMessage;
+    }
+
+    public void setPublisherEditMessage(String publisherEditMessage) {
+        this.publisherEditMessage = publisherEditMessage;
+    }
+
     public boolean getConnectionmessage() {
         return connectionmessage;
     }
@@ -884,10 +909,10 @@ public class EditPublisherJSPHelper {
                         tree.add(publisherId);
                         selectedPublishers.add(publisherId);
                     } else {
-                        throw new PublisherExistsException("Publisher selected at least twice " + publisherName);
+                        throw new PublisherExistsException("Publisher selected at least twice: " + publisherName);
                     }
                 } else {
-                    throw new PublisherDoesntExistsException("Could not find publisher *" + publisherName + "*");
+                    throw new PublisherDoesntExistsException("Could not find publisher: \"" + publisherName + "\"");
                 }
             }
         }
