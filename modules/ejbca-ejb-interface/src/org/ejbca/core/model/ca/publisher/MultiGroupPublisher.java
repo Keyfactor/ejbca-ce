@@ -32,6 +32,7 @@ import org.ejbca.core.model.util.EjbLocalHelper;
  * Publishes to multiple groups of publishers. For each group it publishes to one random publisher.
  * <p>
  * Useful when you have a lot of publishers, and you want to manage them in a single place.
+ * </p>
  * @version $Id$
  */
 public class MultiGroupPublisher extends BasePublisher {
