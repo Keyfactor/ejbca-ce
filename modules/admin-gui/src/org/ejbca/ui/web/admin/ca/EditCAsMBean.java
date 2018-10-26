@@ -1399,7 +1399,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return this.waitingresponse;
     }
     
-    public boolean renderViewCmsCert() {
+    public boolean isRenderViewCmsCert() {
         return isEditCA && !isCaUninitialized && cmscert != null;
     }
     
@@ -1604,7 +1604,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return catype == CAInfo.CATYPE_X509 && !isWaitingForResponse();
     }
     
-    public boolean isRenderExportCA() {
+    public boolean isCaExportable() {
         try {
             return caBean.isCaExportable(cainfo);
         } catch (AuthorizationDeniedException e) {
@@ -1830,8 +1830,27 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
+    public boolean isRenderRenewCA() {
+        final int cryptoTokenId = catoken == null ? currentCryptoTokenId : catoken.getCryptoTokenId();
+        try {
+            return isEditCA && !isCaexternal && !waitingresponse && caBean.isCryptoTokenPresent(cryptoTokenId) && 
+                    caBean.isCryptoTokenActive(cryptoTokenId) && cainfo.getSignedBy()!=CAInfo.SIGNEDBYEXTERNALCA && !isCaRevoked;
+        } catch (AuthorizationDeniedException e) {
+            log.error("Error while accessing ca bean!", e);
+        }
+        return false;
+    }
+    
     public String caCertLink() {
         return viewCertLink + "?caid=" + currentCaId;
+    }
+    
+    public boolean isEditCaUninitializedHasEditRights() {
+        return isEditCA && isCaUninitialized && isHasEditRight();
+    }
+    
+    public boolean isEditCaNotUninitializedHasEditRights() {
+        return isEditCA && !isCaUninitialized && isHasEditRight();
     }
     
     public String createCa() {
