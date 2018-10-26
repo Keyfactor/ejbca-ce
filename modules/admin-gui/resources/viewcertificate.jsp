@@ -723,10 +723,10 @@ function confirmrepublish(){
                   returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
                   break;
               case 2: // 2 = send user to the IKB AKB page
-                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.jsf?type=OcspKeyBinding";
+                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=OcspKeyBinding";
                   break;
               case 3: // 3 = send user to the IKB OCSP page
-                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.jsf?type=AuthenticationKeyBinding";
+                  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=AuthenticationKeyBinding";
                   break;
               }
           } catch (NumberFormatException e) {
