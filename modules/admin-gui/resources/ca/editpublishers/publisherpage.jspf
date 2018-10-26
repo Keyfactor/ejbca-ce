@@ -202,7 +202,10 @@ function checkallfields(){
     <% }
        if(publisherhelper.getPublisherdata() instanceof CustomPublisherContainer){%>
          <%@ include file="custompublisherpage.jspf" %> 
-    <% } %>
+    <% }
+        if(publisherhelper.getPublisherdata() instanceof MultiGroupPublisher){%>
+            <%@ include file="multigrouppublisherpage.jspf" %>
+       <% } %>
    
     <%-- Publisher queue --%>
     
