@@ -14,40 +14,29 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevocationReasons;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
-import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
-import org.cesecore.util.StringTools;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
@@ -65,7 +54,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final Logger log = Logger.getLogger(CaImportCertDirCommand.class);
 
     public static final String DATE_FORMAT = "yyyy.MM.dd-HH:mm";
-    
+
     private static final String USERNAME_FILTER_KEY = "--filter";
     private static final String CA_NAME_KEY = "--caname";
     private static final String ACTIVE_KEY = "-a";
@@ -75,17 +64,13 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final String CERT_PROFILE_KEY = "--certprofile";
     private static final String REVOCATION_REASON = "--revocation-reason";
     private static final String REVOCATION_TIME = "--revocation-time";
+    private static final String THREAD_COUNT = "--threads";
 
     private static final String ACTIVE = "ACTIVE";
     private static final String REVOKED = "REVOKED";
 
     {
-        registerParameter(new Parameter(
-                USERNAME_FILTER_KEY,
-                "Filter",
-                MandatoryMode.MANDATORY,
-                StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(USERNAME_FILTER_KEY, "Filter", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "\"DN\" means use certificate's SubjectDN as username, \"CN\" means use certificate subject's common name as username and \"FILE\" means user the file's name as username"));
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Name of the issuing CA."));
@@ -104,14 +89,9 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(REVOCATION_TIME, DATE_FORMAT, MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Revocation time, if the certificates are to be imported as revoked. Will be set to the current time if this option is not set. Format is "
                         + DATE_FORMAT + ", i.e. 2015.05.04-10:15"));
-
+        registerParameter(new Parameter(THREAD_COUNT, "Thread count", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Number of threads used during the import. Default is 1 thread."));
     }
-
-    private static final int STATUS_OK = 0;
-    private static final int STATUS_REDUNDANT = 1;
-    private static final int STATUS_CAMISMATCH = 2;
-    private static final int STATUS_CONSTRAINTVIOLATION = 4;
-    private static final int STATUS_GENERALIMPORTERROR = 5;
 
     @Override
     public String getMainCommand() {
@@ -119,25 +99,35 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     }
 
     @Override
-    public CommandResult execute(ParameterContainer parameters) {
+    public CommandResult execute(final ParameterContainer parameters) {
         log.trace(">execute()");
 
         CryptoProviderTools.installBCProviderIfNotAvailable();
 
+        // Parse arguments into more coder friendly variable names and validate switches
+        final String usernameFilter = parameters.get(USERNAME_FILTER_KEY);
+        final String caName = parameters.get(CA_NAME_KEY);
+        final String active = parameters.get(ACTIVE_KEY);
+        final String certificateDir = parameters.get(DIRECTORY_KEY);
+        final String eeProfile = parameters.get(EE_PROFILE_KEY);
+        final String certificateProfile = parameters.get(CERT_PROFILE_KEY);
+        final String revocationReasonString = parameters.get(REVOCATION_REASON);
+        final String revocationTimeString = parameters.get(REVOCATION_TIME);
+        final int threadCount = parameters.get(THREAD_COUNT) == null ? 1 : Integer.valueOf(StringUtils.strip(parameters.get(THREAD_COUNT)));
+
+        if (threadCount > 1 && !usernameFilter.equalsIgnoreCase("FILE")) {
+            log.error("If more than one thread is being used, filename must be used as filter (use the argument --filter FILE).");
+            return CommandResult.CLI_FAILURE;
+        }
+
         // Specifies whether the import should resume in case of errors, or stop
         // on first one. Default is stop.
-        boolean resumeOnError = parameters.containsKey(RESUME_ON_ERROR_KEY);
+        final boolean resumeOnError = parameters.containsKey(RESUME_ON_ERROR_KEY);
+
+        // Thread pool for running multiple import operations simultaneously
+        final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
         try {
-            // Parse arguments into more coder friendly variable names and validate switches
-            final String usernameFilter = parameters.get(USERNAME_FILTER_KEY);
-            final String caName = parameters.get(CA_NAME_KEY);
-            final String active = parameters.get(ACTIVE_KEY);
-            final String certificateDir = parameters.get(DIRECTORY_KEY);
-            final String eeProfile = parameters.get(EE_PROFILE_KEY);
-            final String certificateProfile = parameters.get(CERT_PROFILE_KEY);
-            final String revocationReasonString = parameters.get(REVOCATION_REASON);
-            final String revocationTimeString = parameters.get(REVOCATION_TIME);
             final int status;
             RevocationReasons revocationReason = null;
             Date revocationTime = null;
@@ -159,7 +149,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                     }
                 } else {
                     revocationReason = RevocationReasons.UNSPECIFIED;
-                } 
+                }
                 if (revocationTimeString != null) {
                     try {
                         revocationTime = new SimpleDateFormat(DATE_FORMAT).parse(revocationTimeString);
@@ -180,6 +170,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                         + "is not a valid option. Currently only \"DN\", \"CN\" and \"FILE\" username-source are implemented");
                 return CommandResult.CLI_FAILURE;
             }
+
             // Fetch CA info
             final CAInfo caInfo = getCAInfo(getAuthenticationToken(), caName);
             final X509Certificate cacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
@@ -187,16 +178,11 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
             log.info("CA: " + issuer);
             // Fetch End Entity Profile info
             log.debug("Searching for End Entity Profile " + eeProfile);
-            final int endEntityProfileId;
-            try {
-                endEntityProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(eeProfile);
-            } catch (EndEntityProfileNotFoundException e) {
-                log.error("ERROR: End Entity Profile " + eeProfile + " does not exist.");
-                throw new Exception("End Entity Profile '" + eeProfile + "' does not exist.", e);
-            }
+            final int endEntityProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
+                    .getEndEntityProfileId(eeProfile);
             // Fetch Certificate Profile info
             log.debug("Searching for Certificate Profile " + certificateProfile);
-            int certificateProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(
+            final int certificateProfileId = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(
                     certificateProfile);
             if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 log.error("ERROR: Certificate Profile " + certificateProfile + " does not exist.");
@@ -212,214 +198,90 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
             if (files == null || files.length < 1) {
                 log.error("No files in directory '" + dir.getCanonicalPath() + "'. Nothing to do.");
                 return CommandResult.CLI_FAILURE;
-
             }
+
+            final Queue<Future<CertificateImporter.Result>> futures = new LinkedList<>();
+            final List<CertificateImporter.Result> results = new LinkedList<>();
             int redundant = 0;
             int caMismatch = 0;
             int readError = 0;
             int constraintViolation = 0;
             int generalImportError = 0;
             int importOk = 0;
+
+            final long startTime = System.currentTimeMillis();
+
+
             for (final File file : files) {
-
-                final String filename = file.getName();
-                final X509Certificate certificate;
-
-                // Read certificate from the file.
-                try {
-                    certificate = (X509Certificate) loadcert(file.getCanonicalPath());
-                } catch (Exception e) {
-                    log.error("ERROR: A problem was encountered while reading the certificate, file: " + filename);
-                    readError++;
-                    if (!resumeOnError) {
-                        throw e;
-                    } else {
-                        log.error(e.getMessage());
-                    }
-
-                    // We have to continue here since the rest of the code depends
-                    // on reading of certificate.
-                    continue;
-                }
-
-                // Generate the end entity username.
-
-                // Use the filename as username by default since it's something that's always present.
-                String username = filename;
-
-                // Use the DN if requested, but fall-back to filename if DN is empty.
-                if (usernameFilter.equalsIgnoreCase("DN")) {
-                    String dn = CertTools.getSubjectDN(certificate);
-                    if (dn == null || dn.length() == 0) {
-                        log.warn("WARN: Certificate with serial '" + CertTools.getSerialNumberAsString(certificate)
-                                + "' lacks DN, filename used instead, file: " + filename);
-                    } else {
-                        username = dn;
-                    }
-                    // Use CN if requested, but fallback to DN if it's empty, or if
-                    // DN is empty as well, fall back to filename.
-                } else if (usernameFilter.equalsIgnoreCase("CN")) {
-                    String dn = CertTools.getSubjectDN(certificate);
-                    String cn = CertTools.getPartFromDN(dn, "CN");
-
-                    if (cn == null || cn.length() == 0) {
-                        if (dn == null || dn.length() == 0) {
-                            log.warn("WARN: Certificate with serial '" + CertTools.getSerialNumberAsString(certificate)
-                                    + "' lacks both CN and DN, filename used instead, file: " + filename);
-                        } else {
-                            username = dn;
-                            log.warn("WARN: Certificate with serial '" + CertTools.getSerialNumberAsString(certificate)
-                                    + "' lacks CN, DN used instead, file: " + filename);
-                        }
-                    } else {
-                        username = cn;
-                    }
-                }
-
-                // Assume the worst-case scenario. We have to set this to
-                // something due to try/catch block.
-                int performImportStatus = STATUS_GENERALIMPORTERROR;
-
-                try {
-                    performImportStatus = performImport(certificate, status, endEntityProfileId, certificateProfileId, cacert, caInfo, filename,
-                            issuer, username, revocationReason, revocationTime);
-                } catch (EndEntityProfileValidationException e) {
-                    log.error("ERROR: End entity profile constraints were violated by the certificate, file: " + filename);
-                    performImportStatus = STATUS_CONSTRAINTVIOLATION;
-                    if (!resumeOnError) {
-                        throw e;
-                    } else {
-                        log.error(e.getMessage());
-                    }
-                } catch (Exception e) {
-                    log.error("ERROR: Unclassified general import error has occurred, file: " + filename);
-                    performImportStatus = STATUS_GENERALIMPORTERROR;
-                    if (!resumeOnError) {
-                        log.error(e);
-                        throw e;      
-                    } else {
-                        log.error(e.getMessage());
-                    }
-                }
-
-                switch (performImportStatus) {
-                case STATUS_REDUNDANT:
-                    redundant++;
-                    break;
-                case STATUS_CAMISMATCH:
-                    caMismatch++;
-                    break;
-                case STATUS_CONSTRAINTVIOLATION:
-                    constraintViolation++;
-                    break;
-                case STATUS_OK:
-                    importOk++;
-                    break;
-                default:
-                    generalImportError++;
-                    break;
+                futures.add(executorService.submit(new CertificateImporter()
+                        .setAuthenticationToken(getAuthenticationToken())
+                        .setCaCertificate(cacert)
+                        .setCaInfo(caInfo)
+                        .setCertificateProfileId(certificateProfileId)
+                        .setEndEntityProfileId(endEntityProfileId)
+                        .setFileToImport(file)
+                        .setIssuer(issuer)
+                        .setResumeOnError(resumeOnError)
+                        .setRevocationReason(revocationReason)
+                        .setRevocationTime(revocationTime)
+                        .setStatus(status)
+                        .setUsernameFilter(usernameFilter)));
+                // Process completed tasks
+                while (futures.peek() != null && futures.peek().isDone()) {
+                    results.add(futures.remove().get());
                 }
             }
+
+            for (final Future<CertificateImporter.Result> future : futures) {
+                results.add(future.get());
+            }
+
+            for (final CertificateImporter.Result result : results) {
+                if (result == CertificateImporter.Result.REDUNDANT) {
+                    redundant++;
+                } else if (result == CertificateImporter.Result.CA_MISMATCH) {
+                    caMismatch++;
+                } else if (result == CertificateImporter.Result.READ_ERROR) {
+                    readError++;
+                } else if (result == CertificateImporter.Result.CONSTRAINT_VIOLATION) {
+                    constraintViolation++;
+                } else if (result == CertificateImporter.Result.GENERAL_IMPORT_ERROR) {
+                    generalImportError++;
+                } else if (result == CertificateImporter.Result.IMPORT_OK) {
+                    importOk++;
+                }
+            }
+
+            final long stopTime = System.currentTimeMillis();
+            final double seconds = (stopTime - startTime) / 1000;
+
             // Print resulting statistics
             log.info("\nImport summary:");
-            log.info(importOk + " certificates were imported with success (STATUS_OK)");
+            log.info(importOk + " certificates were imported successfully.");
+            log.info("Time: " + seconds + " seconds (" + (files.length / seconds) + " tps)");
             if (redundant > 0) {
-                log.info(redundant + " certificates were already present in the database (STATUS_REDUNDANT)");
+                log.info(redundant + " certificates were already present in the database.");
             }
             if (caMismatch > 0) {
-                log.info(caMismatch + " certificates were not issued by the specified CA (STATUS_CAMISMATCH)");
+                log.info(caMismatch + " certificates were not issued by the specified CA.");
             }
             if (readError > 0) {
-                log.info(readError + " certificates could not be read (STATUS_READERROR)");
+                log.info(readError + " certificates could not be read.");
             }
             if (constraintViolation > 0) {
-                log.info(constraintViolation + " certificates violated the end entity constraints (STATUS_CONSTRAINTVIOLATION)");
+                log.info(constraintViolation + " certificates violated the end entity constraints.");
             }
             if (generalImportError > 0) {
-                log.info(generalImportError + " certificates were not imported due to other errors (STATUS_GENERALIMPORTERROR)");
+                log.info(generalImportError + " certificates were not imported due to other errors.");
             }
         } catch (Exception e) {
-            //FIXME: Hande this way better
             log.error("ERROR: " + e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
+        } finally {
+            executorService.shutdown();
+            log.trace("<execute()");
         }
-        log.trace("<execute()");
         return CommandResult.SUCCESS;
-    }
-
-    /**
-     * Imports a certificate to the database and creates a user if necessary.
-     * @return STATUS_OK, STATUS_REDUNDANT or STATUS_CAMISMATCH
-     */
-    private int performImport(X509Certificate certificate, int status, int endEntityProfileId, int certificateProfileId, X509Certificate cacert,
-            CAInfo caInfo, String filename, String issuer, String username, final RevocationReasons revocationReason, final Date revocationTime) throws Exception {
-        final String fingerprint = CertTools.getFingerprintAsString(certificate);
-        CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        if (certificateStoreSession.findCertificateByFingerprintRemote(fingerprint) != null) {
-            log.info("SKIP: Certificate with serial '" + CertTools.getSerialNumberAsString(certificate) + "' is already present, file: " + filename);
-            return STATUS_REDUNDANT;
-        }
-
-        // Strip the username of dangerous characters before using it.
-        username = StringTools.stripUsername(username);
-
-        final Date now = new Date();
-        // Certificate has expired, but we are obviously keeping it for archival purposes
-        if (CertTools.getNotAfter(certificate).compareTo(now) < 0) {
-            status = CertificateConstants.CERT_ARCHIVED;
-        }
-        if (!cacert.getSubjectX500Principal().equals(certificate.getIssuerX500Principal())) {
-            log.error("ERROR: The certificates issuer subject DN does not match with the specified CA's subject, file: " + filename);
-            return STATUS_CAMISMATCH;
-        }
-        try {
-            certificate.verify(cacert.getPublicKey());
-        } catch (GeneralSecurityException gse) {
-            log.error("ERROR: The certificate's signature does not validate against the specified CA, file: " + filename);
-            return STATUS_CAMISMATCH;
-        }
-        log.debug("Loading/updating user " + username);
-        // Check if username already exists.
-        EndEntityInformation userdata = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
-                getAuthenticationToken(), username);
-        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        if (userdata == null) {
-            // Add a "user" to map this certificate to
-            final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
-            final String email = CertTools.getEMailAddress(certificate);
-            userdata = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
-                    EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null,
-                    null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
-            userdata.setPassword("foo123");
-            endEntityManagementSession.addUser(getAuthenticationToken(), userdata, false);
-            log.info("User '" + username + "' has been added.");
-        }
-        // addUser always adds the user with STATUS_NEW (even if we specified otherwise)
-        // We always override the userdata with the info from the certificate even if the user existed.
-        userdata.setStatus(EndEntityConstants.STATUS_GENERATED);
-        endEntityManagementSession.changeUser(getAuthenticationToken(), userdata, false);
-        log.info("User '" + username + "' has been updated.");
-        // Finally import the certificate and revoke it if necessary
-        certificateStoreSession.storeCertificateRemote(getAuthenticationToken(), EJBTools.wrap(certificate),
-                username, CertTools.getFingerprintAsString(cacert), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, endEntityProfileId, null,
-                now.getTime());
-        if (status == CertificateConstants.CERT_REVOKED) {
-            endEntityManagementSession.revokeCert(getAuthenticationToken(), certificate.getSerialNumber(), revocationTime, issuer,
-                    revocationReason.getDatabaseValue(), false);
-        }
-        log.info("Certificate with serial '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");
-        return STATUS_OK;
-    }
-
-    /** Load a PEM encoded certificate from the specified file. 
-     * @throws IOException 
-     * @throws FileNotFoundException 
-     * @throws CertificateParsingException */
-    private Certificate loadcert(final String filename) throws FileNotFoundException, IOException, CertificateParsingException {
-        final byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(filename), "-----BEGIN CERTIFICATE-----",
-                "-----END CERTIFICATE-----");
-        return CertTools.getCertfromByteArray(bytes, Certificate.class);
-
     }
 
     @Override
@@ -450,10 +312,10 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                 }
             }
         }
-        
+
         return sb.toString();
     }
-    
+
     @Override
     protected Logger getLogger() {
         return log;
