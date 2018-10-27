@@ -44,7 +44,7 @@ function checkFileRecieve(message) {
  * @param message the message to be shown to user before confirming the delete operation
  * @returns false in case message is null or empty, otherwise returns a delete confirmation dialogue to user.
  */
-function confirmcadeletion(message) {
+function confirmcaaction(message) {
     if (!message || 0 === message.length) {
         return false;
     }
@@ -73,7 +73,6 @@ function viewcacert(link){
     win_popup = window.open(link, 'view_cert','height=750,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
-
 
 function uncheckAll(checkboxlist,size) {
   for (var i = 0; i < size; i++) {

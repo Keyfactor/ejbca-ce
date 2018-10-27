@@ -87,7 +87,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String caSubjectDN;
     private String currentCertProfile;
     private String defaultCertificateProfile;
-    private String caRevokeReason;
+    private int caRevokeReason;
     private String certSignKeyReNewValue;
     private String certExtrSignKeyReNewValue;
     private String certSignKeyRequestValue;
@@ -103,7 +103,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String testKey;
     private String description;
     private boolean useNoConflictCertificateData;
-    private boolean acceptRevocationsNonExistingEntry;
+    private boolean acceptRevocationsNonExistingEntry = true;
+
+
 
     private CAInfo cainfo = null;
     private CAToken catoken = null;
@@ -174,9 +176,19 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private byte[] fileBuffer;
     final Map<String, String> requestMap = new HashMap<String, String>();
 
-    private String viewCertLink; 
+    private String viewCertLink;
+    private boolean acceptRevocationsNonExistingEntries = false;
+    private String throwAwayDefaultProfile;
 
         
+    public boolean isAcceptRevocationsNonExistingEntries() {
+        return acceptRevocationsNonExistingEntries;
+    }
+
+    public void setAcceptRevocationsNonExistingEntries(final boolean acceptRevocationsNonExistingEntries) {
+        this.acceptRevocationsNonExistingEntries = acceptRevocationsNonExistingEntries;
+    }
+
     public void initAccess() throws Exception {
         // To check access 
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -218,11 +230,22 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         isEditCA = (Boolean) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("isEditCA");
         viewCertLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
         
+        
+        try {
+            cainfo = caBean.getCAInfo(getCurrentCaId()).getCAInfo();
+        } catch (AuthorizationDeniedException e) {
+            log.error("Error while trying to get the ca info!", e);
+        }
+
+
+        
         if (isEditCA) {
             initEditCaPage();
         } else {
             initCreateCaPage();
         }
+        
+
 
     }
 
@@ -251,12 +274,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (signatureAlgorithmParam == null || signatureAlgorithmParam.length() == 0) {
             signatureAlgorithmParam = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         }
+        useCertificateStorage = true; // new CA default to true
+        
+        if (cainfo != null && cainfo.isAcceptRevocationNonExistingEntry()) {
+            acceptRevocationsNonExistingEntries = true;
+        }
     }
     
     private void generateCryptoAlreadyInUseMap() {
         // Create already in use key map
-        
-        log.info("Amin gooooooooli we are in already in use map and current crypto token id is " + getCurrentCryptoTokenId());
         
         try {
             for (final String alias : caBean.getAvailableCryptoTokenMixedAliases(getCurrentCryptoTokenId(), signatureAlgorithmParam)) {
@@ -272,16 +298,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     private void initEditCaPage() {
-        try {
-            cainfo = caBean.getCAInfo(getCurrentCaId()).getCAInfo();
-        } catch (AuthorizationDeniedException e) {
-            log.error("Error while trying to get the ca info!", e);
-        }
 
-        if (cainfo == null) {
-            // Not yet initialized.
-            return;
-        }
         catoken = cainfo.getCAToken();
         keyValidatorMap = getEjbcaWebBean().getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap(cainfo.getCAType());
         if (signatureAlgorithmParam == null || signatureAlgorithmParam.isEmpty()) {
@@ -314,6 +331,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 }
             }
         }
+        
+        if (cainfo.isAcceptRevocationNonExistingEntry()) {
+            acceptRevocationsNonExistingEntries = true;
+        }
+        
+        useCertificateStorage = cainfo.isUseCertificateStorage();
+        
+        useNoConflictCertificateData = cainfo.isUseNoConflictCertificateData();
     }
     
     public int getCaType() {
@@ -687,13 +712,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isUseCertificateStorage() {
-        return (isEditCA && cainfo.isUseCertificateStorage()) || !isEditCA;
+        return this.useCertificateStorage; 
     }
     
     public void setUseCertificateStorage(final boolean useCertificateStorage) {
-        if (cainfo != null) {
-            cainfo.setUseCertificateStorage(useCertificateStorage);
-        }
+        this.useCertificateStorage = useCertificateStorage;
     }
     
     public String getCheckboxUseCertificateStorageText() {
@@ -1192,16 +1215,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
     
-    public List<String> getUsedCrlPublishers() {
+    public List<Integer> getUsedCrlPublishers() {
         Collection<?> usedpublishers = null;
-        final List<String> ret = new ArrayList<>();
-        if (isEditCA)
+        final List<Integer> ret = new ArrayList<>();
+        if (isEditCA) {
             usedpublishers = cainfo.getCRLPublishers();
+        }
         Set<Integer> publishersIds = publisheridtonamemap.keySet();
 
         for (final int id : publishersIds) {
             if (isEditCA && usedpublishers.contains(id)) {
-                ret.add(publisheridtonamemap.get(id));
+                ret.add(id);
             }
         }
         return ret;
@@ -1348,24 +1372,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem> getAvailableValidators() {
         final List<SelectItem> ret = new ArrayList<>();
-        if (isEditCA) {
-            Collection<?> usedKeyValidators = keyValidatorMap.values();
-            for (Integer validatorId : keyValidatorMap.keySet()) {
-                if (isEditCA && usedKeyValidators.contains(validatorId))
-                    ret.add(new SelectItem(validatorId, keyValidatorMap.get(validatorId), "", isHasEditRight() ? false : true));
-            }
+        for (int validatorId : keyValidatorMap.keySet()) {
+                ret.add(new SelectItem(validatorId, keyValidatorMap.get(validatorId), "", isHasEditRight() ? false : true));
         }
         return ret;
     }
 
-    public List<String> getUsedValidators() {
+    public List<Integer> getUsedValidators() {
         Collection<?> usedValidators = null;
-        final List<String> ret = new ArrayList<>();
-        if (isEditCA)
+        final List<Integer> ret = new ArrayList<>();
+        if (isEditCA) {
             usedValidators = cainfo.getValidators();
+        }
         for (final int id : keyValidatorMap.keySet()) {
             if (isEditCA && usedValidators.contains(id)) {
-                ret.add(keyValidatorMap.get(id));
+                ret.add(id);
             }
         }
         return ret;
@@ -1435,21 +1456,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isEditCA && revokable && isHasEditRight();
     }
     
-    public List<String> getRevokeReasonList() {
-        List<String> result = new ArrayList<>();
+    public List<SelectItem> getRevokeReasonList() {
+        List<SelectItem> result = new ArrayList<>();
         for (int i = 0; i < SecConst.reasontexts.length; i++) {
             if (i != 7) {
-                result.add(getEjbcaWebBean().getText(SecConst.reasontexts[i]));
+                result.add(new SelectItem(i, getEjbcaWebBean().getText(SecConst.reasontexts[i]), ""));
             }
         }
         return result;
     }
 
-    public String getCaRevokeReason() {
+    public int getCaRevokeReason() {
         return caRevokeReason;
     }
 
-    public void setCaRevokeReason(final String caRevokeReason) {
+    public void setCaRevokeReason(final int caRevokeReason) {
         this.caRevokeReason = caRevokeReason;
     }
     
@@ -1538,7 +1559,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     private boolean isCaRevoked() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -1853,51 +1873,153 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isEditCA && !isCaUninitialized && isHasEditRight();
     }
     
-    public String createCa() {
-        
-        final long crlIssueInterval = SimpleTime.getInstance(crlCaIssueInterval, "0"+SimpleTime.TYPE_MINUTES).getLong();
-        final long crlPeriod = SimpleTime.getInstance(crlCaCrlPeriod, "1"+SimpleTime.TYPE_DAYS).getLong();
-        final long crlOverlapTime = SimpleTime.getInstance(crlCaOverlapTime, "10"+SimpleTime.TYPE_MINUTES).getLong();
-        final long deltaCrlPeriod = SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0"+SimpleTime.TYPE_MINUTES).getLong();              
-        String availablePublisherValues = null;
-        String availableKeyValidatorValues = null;
-        
-        if (usedValidators != null && !usedValidators.isEmpty()) {
-             availableKeyValidatorValues = StringUtils.join(usedValidators.toArray(), ";");
-        }
-        
-        if (getUsedCrlPublishers() != null && !getUsedCrlPublishers().isEmpty()) {
-            availablePublisherValues = StringUtils.join(getUsedCrlPublishers().toArray(), ";");
-        }
-        
-        boolean illegaldnoraltname = false;
-            try {
-                illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam,
-                        signKeySpec, keySequenceFormat, keySequenceValue,
-                        catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, // TODO: this must be default certificate profile
-                        useNoConflictCertificateData, signedBy, description, caEncodedValidity,  
-                        getApprovals(), finishUser, doEnforceUniquePublickeys,
-                        doEnforceUniqueDistinguishedName,
-                        doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry,
-                        caSubjectAltName, policyId, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
-                        crlPeriod, crlIssueInterval, crlOverlapTime, deltaCrlPeriod, availablePublisherValues, availableKeyValidatorValues,
-                        useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator,
-                        authorityInformationAccess, 
-                        certificateAiaDefaultCaIssuerUri,
-                        nameConstraintsPermitted, nameConstraintsExcluded,
-                        caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder,
-                        useCrlDistributiOnPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, false,
-                        serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, true, false,
-                        selectedCryptoToken, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey,
-                        hardTokenEncryptKey, selectedKeyEncryptKey, testKey,
-                        fileBuffer);
-            } catch (Exception e) {
-                addErrorMessage(e.getMessage());
-                log.error("Error happened during ca creation! ", e);
-            }
-        
-        return illegaldnoraltname ? "error" : EditCaUtil.MANAGE_CA_NAV;    
+    public boolean isUseNoConflictCertificateData() {
+        return this.useNoConflictCertificateData;
     }
     
+    public void setUseNoConflictCertificateData(final boolean useNoConflictCertificateData) {
+        this.useNoConflictCertificateData = useNoConflictCertificateData;
+    }
+    
+    public boolean isCheckboxAcceptRevocationsNonExistingEntryDisabled() {
+        return (!isHasEditRight() || useCertificateStorage);
+    }
+    
+    public boolean isCertificateProfileForNonExistingDisabled(){
+        return (!isHasEditRight() || useCertificateStorage || !acceptRevocationsNonExistingEntries);
+    }
+    
+    public List<SelectItem> getThrowAwayDefaultProfileList() {
+        TreeMap<String, Integer> allp = getEjbcaWebBean().getAuthorizedEndEntityCertificateProfileNames();
+        Iterator<String> iter = allp.keySet().iterator();
+        List<SelectItem> resultList = new ArrayList<>();
+        while(iter.hasNext()){
+            String nextprofilename = (String) iter.next();
+            int certprofid = ((Integer) allp.get(nextprofilename)).intValue();
+            resultList.add(new SelectItem(certprofid, nextprofilename, "", isCertificateProfileForNonExistingDisabled() ? true : false));
+        }
+        return resultList;
+    }
+    
+    public void setThrowAwayDefaultProfile(final String throwAwayDefaultProfile) {
+        this.throwAwayDefaultProfile = throwAwayDefaultProfile;
+    }
+    
+    public String getThrowAwayDefaultProfile() {
+        return this.throwAwayDefaultProfile;
+    }
 
+    public String createCa() {
+        boolean illegaldnoraltname = false;
+        try {
+            illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam, signKeySpec, keySequenceFormat,
+                    keySequenceValue, catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, // TODO: this must be default certificate profile
+                    useNoConflictCertificateData, signedBy, description, caEncodedValidity, getApprovals(), finishUser, doEnforceUniquePublickeys,
+                    doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
+                    acceptRevocationsNonExistingEntry, caSubjectAltName, policyId, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
+                    getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), getAvailablePublisherValues(),
+                    getAvailableKeyValidatorValues(), useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator,
+                    authorityInformationAccess, certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded,
+                    caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl,
+                    crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, true,
+                    false, selectedCryptoToken, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey, hardTokenEncryptKey,
+                    selectedKeyEncryptKey, testKey, fileBuffer);
+        } catch (Exception e) {
+            addErrorMessage(e.getMessage());
+            log.error("Error happened during ca creation! ", e);
+        }
+
+        return illegaldnoraltname ? "error" : EditCaUtil.MANAGE_CA_NAV;
+    }
+    
+    public String saveCa() {
+        String subjectdn = null;
+        String signedByString = null;
+        CAInfo cainfo = null;
+        
+        try {
+            if (cadatahandler.getCAInfo(currentCaId).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
+                subjectdn = caSubjectDN;
+                signedByString = getSignedBy();
+            } else {
+                subjectdn = cadatahandler.getCAInfo(currentCaId).getCAInfo().getSubjectDN();
+                signedByString = String.valueOf(cadatahandler.getCAInfo(currentCaId).getCAInfo().getSignedBy());
+            }
+        } catch (AuthorizationDeniedException e) {
+            log.error("Error while accessing the ca data handler!", e);
+        } 
+        
+        int defaultCertprofileId = (defaultCertificateProfile == null ? 0 : Integer.parseInt(defaultCertificateProfile));
+        
+        try {
+            cainfo = caBean.createCaInfo(currentCaId, editCaName, subjectdn, catype,
+                    keySequenceFormat, keySequenceValue, signedByString, description, caEncodedValidity,
+                    getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), finishUser,
+                    doEnforceUniquePublickeys, doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber,
+                    useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry,
+                    defaultCertprofileId, useNoConflictCertificateData, getApprovals(),
+                    getAvailablePublisherValues(), getAvailableKeyValidatorValues(), useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber,
+                    crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator, 
+                    authorityInformationAccess,
+                    certificateAiaDefaultCaIssuerUri,
+                    nameConstraintsPermitted, nameConstraintsExcluded,
+                    caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl,
+                    crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl
+                    );
+        } catch (Exception e) {
+            log.error("Error while creating ca info!", e);
+            addErrorMessage(e.getMessage());
+        }
+
+        try {
+            cadatahandler.editCA(cainfo);
+        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+            log.error("Error while editing CA!", e);
+            addErrorMessage(e.getMessage());
+        }
+        
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+    
+    public String revokeCa() {
+        try {
+            cadatahandler.revokeCA(currentCaId, caRevokeReason);
+        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+            log.error("Error happened while revoking ca!", e);
+            addErrorMessage(e.getMessage());
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+
+    private long getCrlIssueInterval() {
+        return SimpleTime.getInstance(crlCaIssueInterval, "0" + SimpleTime.TYPE_MINUTES).getLong();
+    }
+    
+    private long getCrlPeriod() {
+        return SimpleTime.getInstance(crlCaCrlPeriod, "1" + SimpleTime.TYPE_DAYS).getLong();
+    }
+    
+    private long getcrlOverlapTime() {
+        return SimpleTime.getInstance(crlCaOverlapTime, "10" + SimpleTime.TYPE_MINUTES).getLong();
+    }
+    
+    private long getDeltaCrlPeriod() {
+        return SimpleTime.getInstance(crlCaDeltaCrlPeriod, "0" + SimpleTime.TYPE_MINUTES).getLong();
+    }
+    
+    private String getAvailablePublisherValues() {
+        String availablePublisherValues = null;
+        if (usedCrlPublishers != null && !usedCrlPublishers.isEmpty()) {
+            availablePublisherValues = StringUtils.join(this.usedCrlPublishers.toArray(), ";");
+        }
+        return availablePublisherValues;
+    }
+
+    private String getAvailableKeyValidatorValues() {
+        String availableKeyValidatorValues = null;
+        if (usedValidators != null && !usedValidators.isEmpty()) {
+            availableKeyValidatorValues = StringUtils.join(usedValidators.toArray(), ";");
+       }
+        return availableKeyValidatorValues;
+    }
 }
