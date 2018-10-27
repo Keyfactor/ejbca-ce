@@ -294,7 +294,7 @@
 					
 				</h:panelGrid>
 
-				<!-- ############################################################################# Directives ############################################################################################################## -->
+<!-- ==================================================================== Directives =================================================================================== -->
 				
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{not editCAsMBean.caExternal}"> 
 					<h:outputLabel for="header_directives" value="#{web.text.DIRECTIVES}" style="font-weight: bold;" />
@@ -417,9 +417,10 @@
 					
 
 				</h:panelGrid>
+<!-- ==================================================================== Directives =================================================================================== -->
 
+<!-- ==================================================================== CA certificate data ========================================================================== -->  
 
-				<!-- ######################################### CA certificate data ############################################################################################### -->  
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 				
 				<h:outputLabel for="header_ca_certificate_data" value="#{web.text.CACERTIFICATEDATA}" style="font-weight: bold;" />
@@ -485,17 +486,19 @@
 				</h:panelGroup>
 				
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-					<h:outputLabel for="selectcertificateprofile"
-						value="#{web.text.CERT_VALIDITY}" style="font-weight: bold;" />
-					<h:outputLabel for="selectcertificateprofile"
-						value="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.ORENDDATE}" />
+					<h:outputLabel value="#{web.text.CERT_VALIDITY}" style="font-weight: bold;" />
+					<h:outputLabel value="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.ORENDDATE}" />
 					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#validity')}" escape="false"/>
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText 
 						value="#{editCAsMBean.certValidityOutputText}" rendered = "#{editCAsMBean.caExternal or editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.signByExternal}"/>
-					<h:inputText name="textfieldsubjectdn" size="25" maxlength="225"
-						value="#{editCAsMBean.caEncodedValidity}" title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}" rendered = "#{not editCAsMBean.caExternal and not editCAsMBean.editCA or editCAsMBean.caUninitialized or not editCAsMBean.signByExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:inputText name="textfieldvalidity" id="textfieldvalidity" size="25" maxlength="225" 
+						value="#{editCAsMBean.caEncodedValidity}" title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}" 
+						rendered = "#{not editCAsMBean.caExternal and not editCAsMBean.editCA or editCAsMBean.caUninitialized or not editCAsMBean.signByExternal}" 
+						disabled="#{not editCAsMBean.hasEditRight}" label="Ca Validity" style="border:2px solid #FFC300">
+					<f:validateRequired />
+					</h:inputText>	
 						<br />
 					<h:outputText 
 						class="help" value="#{web.text.CERT_VALIDITY_CA_HELP}" rendered = "#{editCAsMBean.editCA}" />
@@ -608,12 +611,16 @@
 				</h:panelGrid>
 
 
-				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.caTypeX509}">
+
+<!-- ==================================================================== CA Certificate Data ========================================================================== -->  
 		
-				<!-- CRL Specific Data -->  
-				
-					<h:outputLabel for="header_crl_specific_data" value="#{web.text.CRLSPECIFICDATA}" style="font-weight: bold;" />
-					<h:panelGroup id="header_crl_specific_data" />				
+
+<!-- ==================================================================== CRL Specific Data ============================================================================ -->  
+
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.caTypeX509}">
+
+				<h:outputLabel for="header_crl_specific_data" value="#{web.text.CRLSPECIFICDATA}" style="font-weight: bold;" />
+				<h:panelGroup id="header_crl_specific_data" />				
 				
 				<h:panelGroup rendered="#{editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
 					<h:outputText name="textfieldexternalcdp"
@@ -784,10 +791,10 @@
 				
 				</h:panelGrid>
 
+<!-- ==================================================================== CRL Specific Data ============================================================================ -->  
+
+<!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->  
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.caExternal}">
-		
-				<!-- Default CA defined validation data -->  
-				
 				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA}" style="font-weight: bold;" />
 				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA_HELP}"  />
 
@@ -870,9 +877,12 @@
 				</h:panelGroup>				
 				
 				</h:panelGrid>
+
+<!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->  
+
+<!-- ==================================================================== Approval Settings  =========================================================================== -->  
 				
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{not editCAsMBean.caExternal}">
-				<!-- Approval Settings -->
 				<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}" style="font-weight: bold;"/>
 				<h:panelGroup id="approvals"/>		
 			</h:panelGrid>
@@ -889,9 +899,11 @@
 				</h:column>
 			</h:dataTable>	
 
+<!-- ==================================================================== Approval Settings  =========================================================================== -->  
+
+<!-- ==================================================================== Other Data =================================================================================== -->  
 
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{not editCAsMBean.caExternal}">
-				<!-- Other Data -->
 				<h:outputLabel for="otherdata" value="#{web.text.OTHERDATA}" style="font-weight: bold;"/>
 				<h:panelGroup id="otherdata"/>		
 			
@@ -955,9 +967,12 @@
 
 			</h:panelGrid>
 
+<!-- ==================================================================== Other Data =================================================================================== -->  
+
+<!-- ==================================================================== CA Life Cycle ================================================================================ -->  
+
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.renderCaLifeCycle}">
-				<!-- CA Life Cycle -->
 				<h:outputLabel for="califecycle" value="#{web.text.CALIFECYCLE}" style="font-weight: bold;" />
 				<h:panelGroup id="califecycle" rendered="#{editCAsMBean.renderCaLifeCycle}"/>	
 			
@@ -1041,9 +1056,11 @@
 			</h:panelGroup>
 			</h:panelGrid>
 
+<!-- ==================================================================== CA Life Cycle ================================================================================ -->  
+
+<!-- ==================================================================== Externally signed CA creation/renewal ======================================================== -->  
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{not editCAsMBean.caExternal and editCAsMBean.hasEditRight}">
-				<!-- Externally signed CA creation/renewal -->
 				<h:outputLabel for="externallysignedcacreaterenew" value="#{web.text.EXTERNALLYSIGNED_CA_CREATERENEW}" style="font-weight: bold;" />
 				<h:panelGroup id="externallysignedcacreaterenew" />	
 				
@@ -1113,9 +1130,12 @@
 
 			</h:panelGrid>
 
+<!-- ==================================================================== Externally signed CA creation/renewal ======================================================== -->  
+
+<!-- ==================================================================== Import CA Renewal ============================================================================ -->  
+
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.editCA and editCAsMBean.caExternal and editCAsMBean.hasEditRight}">
-				<!-- Import CA Renewal -->
 				<h:outputLabel for="importcarenewal" value="#{web.text.IMPORTED_CA_RENEWAL}" style="font-weight: bold;" />
 				<h:panelGroup id="importcarenewal" />
 				<h:panelGroup />	
@@ -1133,12 +1153,11 @@
 					<h:commandButton name="buttonreceiveimportrenewal" value="#{web.text.RECEIVE_IMPORT_RENEWAL}" /> 
 				</h:panelGroup>
 				</h:panelGrid>
-			
-
 			</h:panelGrid>
 			
-			
-			<!-- Form buttons -->
+<!-- ==================================================================== Import CA Renewal ============================================================================ -->  
+
+<!-- ==================================================================== Form buttons  ================================================================================ -->  
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" >		
 			<h:outputLabel for="importcarenewal" value="#{web.text.IMPORTED_CA_RENEWAL}" style="font-weight: bold;" />
@@ -1168,20 +1187,16 @@
 				<h:commandButton name="buttoncancel" value="#{web.text.BACK}" rendered="#{not editCAsMBean.renderSaveExternalCa}"/>
 			</h:panelGroup>
 			
-		</h:panelGrid>	
-				
-			</h:form> 
-			<!-- End of CA form -->
-			
+		</h:panelGrid>
+		</h:form> 
+<!-- ==================================================================== Form Buttons (End Of CA Form)  =============================================================== -->  
+
+<!-- ==================================================================== Export CA Header  ============================================================================ -->  
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.editCA and not editCAsMBean.caExternal and editCAsMBean.hasEditRight}">
-				<!-- Export CA Header -->
 				<h:outputLabel for="exportcaheader" value="#{web.text.EXPORTCA_HEADER}" style="font-weight: bold;" />
 				<h:panelGroup id="exportcaheader" />
-
-				<h:panelGroup>
-				</h:panelGroup>
-
+				<h:panelGroup />
 				<h:panelGroup rendered="#{editCAsMBean.caExportable}">
 					<h:outputText value="#{web.text.EXPORTCA_AUTHCODE}"  />
 					<h:inputSecret autocomplete="off" />
@@ -1191,13 +1206,10 @@
 				<h:panelGroup rendered="#{not editCAsMBean.caExportable}">	
 					<h:outputText value="#{web.text.EXPORTCA_NA}"  />				
 				</h:panelGroup>
-
 			</h:panelGrid>
-			
-			
+<!-- ==================================================================== Export CA Header  ============================================================================ -->  
 
 		</ui:define>
-
 	</ui:composition>
 </h:body>
 </html>
