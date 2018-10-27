@@ -97,6 +97,10 @@
 					</h:panelGroup>
 
 					<h:panelGroup rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal}">
+						<h:outputLabel 
+							value="#{web.text.SIGNINGALGORITHM}" style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal}">
 						<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}" value="#{editCAsMBean.signingAlgorithm}">
 						 	<f:selectItems value="#{editCAsMBean.availableSigningAlgList}" />
 						</h:selectOneMenu>
@@ -289,11 +293,10 @@
 					</h:panelGroup>
 					
 				</h:panelGrid>
+
+				<!-- ############################################################################# Directives ############################################################################################################## -->
 				
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{not editCAsMBean.caExternal}"> 
-		
-					<!-- Directives -->
-			
 					<h:outputLabel for="header_directives" value="#{web.text.DIRECTIVES}" style="font-weight: bold;" />
 					<h:panelGroup id="header_directives" />
 					
@@ -364,16 +367,60 @@
 					</h:panelGroup>
 					
 					<h:panelGroup>
-						<h:selectBooleanCheckbox id="checkboxusecertificatestorage"
-							value="#{editCAsMBean.useCertificateStorage}" disabled="#{not editCAsMBean.hasEditRight}" />
+						<h:selectBooleanCheckbox id="checkboxusecertificatestorage" 
+							value="#{editCAsMBean.useCertificateStorage}" disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render="@form" immediate="true" />
+						</h:selectBooleanCheckbox>	
 						<h:outputLabel for="checkboxusecertificatestorage" value="#{editCAsMBean.checkboxUseCertificateStorageText}" /> 
-					</h:panelGroup>	
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.useCertificateStorage}" >
+						<h:outputLabel 
+							value="#{web.text.ACCEPTREVOCATIONSNONEXISTINGENTRY}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Accept_Revocations_of_Non-Existing_Entries')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.useCertificateStorage}" >
+						<h:selectBooleanCheckbox id="checkboxacceptrevocationsnonexistingentry"
+							value="#{editCAsMBean.acceptRevocationsNonExistingEntries}" disabled="#{editCAsMBean.checkboxAcceptRevocationsNonExistingEntryDisabled}" >
+						<f:ajax render="selectdefaultcertificateprofile checkboxuseappendonlytable"/>
+						</h:selectBooleanCheckbox>
+						<h:outputLabel for="checkboxacceptrevocationsnonexistingentry" value="#{web.text.ACCEPT}" /> 
+					</h:panelGroup>
+					
+					
+					<h:panelGroup rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.useCertificateStorage}" >
+						<h:outputLabel 
+							value="#{web.text.CERTIFICATEPROFILEFORNONEXISTING}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Default_Certificate_Profile_for_Non-Existing_Entries')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.useCertificateStorage}" >
+						<h:selectOneMenu id="selectdefaultcertificateprofile"
+							value="#{editCAsMBean.throwAwayDefaultProfile}" disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}" >
+							<f:selectItems value="#{editCAsMBean.throwAwayDefaultProfileList}"/>
+						</h:selectOneMenu>	
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.useCertificateStorage}" >
+						<h:outputLabel 
+							value="#{web.text.USEAPPENDONLYTABLE}" />
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Use_Append-Only_Table')}" escape="false"/>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.useCertificateStorage}" >
+						<h:selectBooleanCheckbox id="checkboxuseappendonlytable"
+							value="#{editCAsMBean.useNoConflictCertificateData}" disabled="#{editCAsMBean.certificateProfileForNonExistingDisabled}" >
+						</h:selectBooleanCheckbox>
+						<h:outputLabel for="checkboxuseappendonlytable" value="#{web.text.USE}" /> 
+					</h:panelGroup>
+					
 
 				</h:panelGrid>
 
+
+				<!-- ######################################### CA certificate data ############################################################################################### -->  
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
-		
-				<!-- CA certificate data -->  
 				
 				<h:outputLabel for="header_ca_certificate_data" value="#{web.text.CACERTIFICATEDATA}" style="font-weight: bold;" />
 				<h:panelGroup id="header_ca_certificate_data" />				
@@ -908,10 +955,6 @@
 
 			</h:panelGrid>
 
-
-			
-
-
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.renderCaLifeCycle}">
 				<!-- CA Life Cycle -->
@@ -924,7 +967,8 @@
 				<h:selectOneMenu name="selectrevokereasons" value="#{editCAsMBean.caRevokeReason}" >
 					<f:selectItems value="#{editCAsMBean.revokeReasonList}"/>
 				</h:selectOneMenu>
-				<h:commandButton name="buttonrevokeca" value="#{web.text.REVOKE}" onclick='return confirmrevocation()'/> 
+        	    &nbsp;&nbsp;&nbsp;
+				<h:commandButton name="buttonrevokeca" value="#{web.text.REVOKE}" onclick="return confirmcaaction('#{web.text.AREYOUSUREREVOKECA}')" action="#{editCAsMBean.revokeCa()}"/> 
 			</h:panelGroup>
 
 			<h:panelGroup rendered="#{editCAsMBean.renderRenewCA}">
@@ -1095,17 +1139,15 @@
 			
 			
 			<!-- Form buttons -->
-			<h:panelGrid columns="2" cellspacing="3" cellpadding="3" border="0" width="100%" 
-				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">		
-			<h:panelGroup />	
-			<h:panelGroup id="formbuttons" />
+			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
+				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" >		
+			<h:outputLabel for="importcarenewal" value="#{web.text.IMPORTED_CA_RENEWAL}" style="font-weight: bold;" />
 
-			<h:panelGroup />
 			<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 
-				<h:commandButton name="buttonsave" onclick='return checkallfields()' value="#{web.text.SAVE}" rendered="#{editCAsMBean.editCaNotUninitializedHasEditRights}"/> 
+				<h:commandButton name="buttonsave" onclick='return checkallfields()' value="#{web.text.SAVE}" action="#{editCAsMBean.saveCa()}" rendered="#{editCAsMBean.editCaNotUninitializedHasEditRights}"/> 
 
-				<h:commandButton name="buttonsave" onclick='return checkallfields()' value="#{web.text.SAVE}" rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"/> 
+				<h:commandButton name="buttonsave" onclick='return checkallfields()'  value="#{web.text.SAVE}" rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"/> 
 				<h:commandButton name="buttoninitialize" onclick='return checkallfields()' value="#{web.text.SAVE_AND_INITIALIZE}" rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"/> 
 
 				<h:outputText value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_INITIALIZE}" style="font-weight: bold;" rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}" />
