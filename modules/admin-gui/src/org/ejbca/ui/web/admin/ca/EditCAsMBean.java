@@ -98,8 +98,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean doEnforceUniqueDistinguishedName;
     private boolean doEnforceUniqueSubjectDNSerialnumber;
     private boolean useCertReqHistory;
-    private boolean useUserStorage;
-    private boolean useCertificateStorage;
+    private boolean useUserStorage = true;
+    private boolean useCertificateStorage = true;
     private boolean isEditCA;
     private boolean isCaTypeX509;
     private String caSubjectDN;
@@ -111,7 +111,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String certSignKeyRequestValue;
     private boolean checkBoxFutureRollOver;
     private String createCaName;
-    private int signedByValue;
     private String signingAlgorithm;
     private String selectedCryptoToken = "0";
     private String cryptoTokenDefaultKey;
@@ -121,9 +120,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String testKey;
     private String description;
     private boolean useNoConflictCertificateData;
-    private boolean acceptRevocationsNonExistingEntry = true;
-
-
+    private boolean acceptRevocationsNonExistingEntry;
 
     private CAInfo cainfo = null;
     private CAToken catoken = null;
@@ -181,7 +178,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean finishUser;
     private String sharedCmpRaSecret;
     private boolean includeInHealthCheck;
-    private String signedBy;
+    private int signedBy;
     private String caEncodedValidity;
     private String caSubjectAltName;
     private String caCryptoTokenKeyEncryptKey;
@@ -192,20 +189,19 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
 
     private byte[] fileBuffer;
-    final Map<String, String> requestMap = new HashMap<String, String>();
+    private final Map<String, String> requestMap = new HashMap<String, String>();
 
     private String viewCertLink;
-    private boolean acceptRevocationsNonExistingEntries = false;
     private String throwAwayDefaultProfile;
 
-        
-    public boolean isAcceptRevocationsNonExistingEntries() {
-        return acceptRevocationsNonExistingEntries;
+
+    public boolean isAcceptRevocationsNonExistingEntry() {
+        return acceptRevocationsNonExistingEntry;
     }
 
-    public void setAcceptRevocationsNonExistingEntries(final boolean acceptRevocationsNonExistingEntries) {
-        this.acceptRevocationsNonExistingEntries = acceptRevocationsNonExistingEntries;
-    }
+    public void setAcceptRevocationsNonExistingEntry(final boolean acceptRevocationsNonExistingEntry) {
+        this.acceptRevocationsNonExistingEntry = acceptRevocationsNonExistingEntry;
+    }    
 
     public void initAccess() throws Exception {
         // To check access 
@@ -248,23 +244,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         isEditCA = (Boolean) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("isEditCA");
         viewCertLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
         
-        
         try {
             cainfo = caBean.getCAInfo(getCurrentCaId()).getCAInfo();
         } catch (AuthorizationDeniedException e) {
             log.error("Error while trying to get the ca info!", e);
         }
-
-
         
         if (isEditCA) {
             initEditCaPage();
         } else {
             initCreateCaPage();
         }
-        
-
-
     }
 
     public int getCurrentCryptoTokenId() {
@@ -292,31 +282,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (signatureAlgorithmParam == null || signatureAlgorithmParam.length() == 0) {
             signatureAlgorithmParam = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         }
-        useCertificateStorage = true; // new CA default to true
-        
-        if (cainfo != null && cainfo.isAcceptRevocationNonExistingEntry()) {
-            acceptRevocationsNonExistingEntries = true;
-        }
     }
     
     private void generateCryptoAlreadyInUseMap() {
         // Create already in use key map
-        
         try {
             for (final String alias : caBean.getAvailableCryptoTokenMixedAliases(getCurrentCryptoTokenId(), signatureAlgorithmParam)) {
                 final String alreadyInUse = caBean.isKeyInUse(caBean.getAuthorizedCAs(), alias, getCurrentCryptoTokenId()) ? " (Already in use)" : StringUtils.EMPTY;
-                log.info("Amin jan already in use is " + alreadyInUse);
-                log.info("Amin jan alias is " + alias);
                 aliasUsedMap.put(alias, alreadyInUse);
             }
         } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
             log.error("Error while accessing ca bean!", e);
         }
-        
     }
     
     private void initEditCaPage() {
-
         catoken = cainfo.getCAToken();
         keyValidatorMap = getEjbcaWebBean().getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap(cainfo.getCAType());
         if (signatureAlgorithmParam == null || signatureAlgorithmParam.isEmpty()) {
@@ -350,13 +330,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
         
-        if (cainfo.isAcceptRevocationNonExistingEntry()) {
-            acceptRevocationsNonExistingEntries = true;
-        }
-        
         useCertificateStorage = cainfo.isUseCertificateStorage();
-        
         useNoConflictCertificateData = cainfo.isUseNoConflictCertificateData();
+        doEnforceUniqueSubjectDNSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
+        
+        if (isCaUninitialized) {
+            signedBy = cainfo.getSignedBy(); // Initialize default signedBy in edit ca page
+            currentCertProfile = String.valueOf(cainfo.getCertificateProfileId());
+        }
+        useCertReqHistory = cainfo.isUseCertReqHistory();
+        useUserStorage = cainfo.isUseUserStorage();
     }
     
     public int getCaType() {
@@ -704,7 +687,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isDoEnforceUniqueSubjectDNSerialnumber() {
-        return (isEditCA && cainfo.isDoEnforceUniqueSubjectDNSerialnumber()) || !isEditCA;
+        return this.doEnforceUniqueSubjectDNSerialnumber;
     }
     
     public void setDoEnforceUniqueSubjectDNSerialnumber(final boolean doEnforceUniqueSubjectDNSerialnumber) {
@@ -712,17 +695,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isUseCertReqHistory() {
-        return (isEditCA && cainfo.isUseCertReqHistory()) || !isEditCA;
+        return this.useCertReqHistory;
     }
     
     public void setUseCertReqHistory(final boolean useCertReqHistory) {
-        if (cainfo != null) {
-            cainfo.setUseCertReqHistory(useCertReqHistory);
-        }
+        this.useCertReqHistory = useCertReqHistory;
     }
     
     public boolean isUseUserStorage() {
-        return (isEditCA && cainfo.isUseUserStorage()) || !isEditCA;
+        return this.useUserStorage;
     }
     
     public void setUseUserStorage(final boolean useUserStorage) {
@@ -752,9 +733,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String getCaIssuerDN() {
         String issuerDN = "unknown";
         try {
-            Collection cachain = cainfo.getCertificateChain();
+            Collection<Certificate> cachain = cainfo.getCertificateChain();
             if (cachain != null) {
-                Iterator iter = cachain.iterator();
+                Iterator<Certificate> iter = cachain.iterator();
                 Certificate cacert = (Certificate) iter.next();
                 issuerDN = CertTools.getIssuerDN(cacert);
             }
@@ -765,7 +746,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return issuerDN;
     }
     
-    public String getSignedBy() {
+    public String getSignedByEditCaNotUninitialized() {
         if (cainfo != null) {
             if (cainfo.getSignedBy() >= 0 && cainfo.getSignedBy() <= CAInfo.SPECIALCAIDBORDER) {
                 if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
@@ -778,15 +759,19 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return (String) caidtonamemap.get(Integer.valueOf(cainfo.getSignedBy()));
             }
         }
+        return StringUtils.EMPTY;
+    }
+    
+    public int getSignedBy() {
         return this.signedBy;
     }
     
-    public void setSignedBy(final String signedBy) {
+    public void setSignedBy(final int signedBy) {
         this.signedBy = signedBy;
     }
     
-    public List<String> getSignedByListUninitialized() {
-        List<String> signedByList = new ArrayList<>();
+    public List<SelectItem> getSignedByListUninitialized() {
+        List<SelectItem> signedByList = new ArrayList<>();
         for (final Object nameOfCa : casigners.keySet()) {
             int entryId = casigners.get(nameOfCa.toString());
             if (entryId == cainfo.getCAId()) {
@@ -794,7 +779,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
 
             if (cainfo.getSignedBy() == entryId) {
-                signedByList.add(nameOfCa.toString());
+                signedByList.add(new SelectItem(entryId, nameOfCa.toString(), ""));
             }
         }
         return signedByList;
@@ -810,14 +795,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             resultList.add(new SelectItem(casigners.get(nameOfCa.toString()), nameOfCa.toString()));
         }
         return resultList;
-    }
-    
-    public int getSignedByValue() {
-        return this.signedByValue;
-    }
-    
-    public void setSignedByValue(final int signedByValue) {
-        this.signedByValue = signedByValue;
     }
     
     public String getCertificateProfileEditCAUninitialized() { 
@@ -1904,7 +1881,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isCertificateProfileForNonExistingDisabled(){
-        return (!isHasEditRight() || useCertificateStorage || !acceptRevocationsNonExistingEntries);
+        return (!isHasEditRight() || useCertificateStorage || !acceptRevocationsNonExistingEntry);
     }
     
     public List<SelectItem> getThrowAwayDefaultProfileList() {
@@ -1926,13 +1903,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String getThrowAwayDefaultProfile() {
         return this.throwAwayDefaultProfile;
     }
+    
+    public boolean isRenderCVCAvailalble() {
+        return (catype == CAInfo.CATYPE_CVC) && (!caBean.isCVCAvailable() || caBean.isUniqueIssuerDNSerialNoIndexPresent());
+    }
+    
+    public boolean isCVCAvailable() {
+        return caBean.isCVCAvailable();
+    }
 
     public String createCa() {
         boolean illegaldnoraltname = false;
         try {
             illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam, signKeySpec, keySequenceFormat,
                     keySequenceValue, catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, // TODO: this must be default certificate profile
-                    useNoConflictCertificateData, signedBy, description, caEncodedValidity, getApprovals(), finishUser, doEnforceUniquePublickeys,
+                    useNoConflictCertificateData, getSignedByString(), description, caEncodedValidity, getApprovals(), finishUser, doEnforceUniquePublickeys,
                     doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
                     acceptRevocationsNonExistingEntry, caSubjectAltName, policyId, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
                     getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), getAvailablePublisherValues(),
@@ -1944,7 +1929,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     selectedKeyEncryptKey, testKey, fileBuffer);
         } catch (Exception e) {
             addErrorMessage(e.getMessage());
-            log.error("Error happened during ca creation! ", e);
         }
 
         return illegaldnoraltname ? "error" : EditCaUtil.MANAGE_CA_NAV;
@@ -1958,7 +1942,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             if (cadatahandler.getCAInfo(currentCaId).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
                 subjectdn = caSubjectDN;
-                signedByString = getSignedBy();
+                signedByString = getSignedByString();
             } else {
                 subjectdn = cadatahandler.getCAInfo(currentCaId).getCAInfo().getSubjectDN();
                 signedByString = String.valueOf(cadatahandler.getCAInfo(currentCaId).getCAInfo().getSignedBy());
@@ -1985,25 +1969,26 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl
                     );
         } catch (Exception e) {
-            log.error("Error while creating ca info!", e);
             addErrorMessage(e.getMessage());
         }
 
         try {
             cadatahandler.editCA(cainfo);
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            log.error("Error while editing CA!", e);
             addErrorMessage(e.getMessage());
         }
         
         return EditCaUtil.MANAGE_CA_NAV;
     }
     
+    private String getSignedByString() {
+        return String.valueOf(signedBy);
+    }
+
     public String revokeCa() {
         try {
             cadatahandler.revokeCA(currentCaId, caRevokeReason);
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            log.error("Error happened while revoking ca!", e);
             addErrorMessage(e.getMessage());
         }
         return EditCaUtil.MANAGE_CA_NAV;
