@@ -1326,6 +1326,14 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
     box-sizing: border-box;
 }
 
+.activated-entry {
+	background-color: #99b433;
+}
+
+.deactivated-entry {
+	background-color: #ee1111;
+}
+
 /* CSS2 compatible expandable text */
 .expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
 .expandOnClick:after { content: "..."; }
