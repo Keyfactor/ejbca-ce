@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cainterface;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +23,6 @@ import java.util.TreeSet;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Test for EditPublisherJSPHelper
@@ -48,13 +48,13 @@ public class EditPublisherJSPHelperTest {
     @Test(expected = PublisherDoesntExistsException.class)
     public void convertMultiPublishersStringToDataNotExistinPublisher() throws Exception {
         String input = "Apple\nOrange\n\nKiwi\nblablalba\nAvocado";
-        List<TreeSet<Integer>> result = helper.convertMultiPublishersStringToData(getNameToIdMap(), input);
+        helper.convertMultiPublishersStringToData(getNameToIdMap(), input);
     }
 
     @Test(expected = PublisherExistsException.class)
     public void convertMultiPublishersStringToDataDoublicatePublisher() throws Exception {
         String input = "Apple\nOrange\n\nKiwi\nApple\nAvocado";
-        List<TreeSet<Integer>> result = helper.convertMultiPublishersStringToData(getNameToIdMap(), input);
+        helper.convertMultiPublishersStringToData(getNameToIdMap(), input);
     }
     @Test
     public void convertMultiPublishersStringToDataNewLinesAndSpaces() throws Exception {

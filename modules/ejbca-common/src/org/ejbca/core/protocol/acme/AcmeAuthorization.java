@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.acme;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 
 /**
  * An ACME Authorization is the right to issue certificates for an identifier (e.g. a DNS Name).
