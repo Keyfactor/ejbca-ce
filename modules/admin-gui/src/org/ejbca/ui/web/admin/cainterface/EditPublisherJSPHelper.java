@@ -29,6 +29,7 @@ import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -58,6 +59,8 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * @version $Id$
  */
 public class EditPublisherJSPHelper {
+
+    private static final Logger log = Logger.getLogger(EditPublisherJSPHelper.class);
 
     public static final String ACTION                              = "action";
     public static final String ACTION_EDIT_PUBLISHERS              = "editpublishers";
@@ -925,13 +928,25 @@ public class EditPublisherJSPHelper {
     String convertMultiPublishersDataToString(final Map<Integer,String> publisherIdToNameMap, final List<TreeSet<Integer>> data){
         StringBuffer result = new StringBuffer();
         String prefix = "";
-        for (TreeSet<Integer> tree : data) {
-            for (Integer publisherId : tree) {
+        for (TreeSet<Integer> group : data) {
+            List<String> publisherNames = new ArrayList<>();
+            for (Integer publisherId : group) {
+                String name = publisherIdToNameMap.get(publisherId);
+                if (StringUtils.isNotEmpty(name)) {
+                    publisherNames.add(name);
+                } else if (log.isDebugEnabled()) {
+                    log.debug("No name found for publisher with id " + publisherId);
+                }
+            }
+            Collections.sort(publisherNames);
+            for (String publisherName : publisherNames) {
                 result.append(prefix);
-                result.append(publisherIdToNameMap.get(publisherId));
+                result.append(publisherName);
                 prefix = "\n";
             }
-            result.append("\n");
+            if (!publisherNames.isEmpty()) {
+                result.append("\n");
+            }
         }
         result.setLength(Math.max(result.length() - 1, 0));
         return result.toString();
