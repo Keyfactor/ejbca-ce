@@ -23,6 +23,7 @@ public final class EditCaUtil {
     
     public static final String MANAGE_CA_NAV = "managecas";
     public static final String EDIT_CA_NAV = "editcapage";
+
     
     public static Object getTrimmedName(final String name) {
         if (name != null && !name.isEmpty()) {
