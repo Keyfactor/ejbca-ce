@@ -6,7 +6,7 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:csrf="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld">
+>
 
 <ui:remove>
 	<!--
@@ -32,9 +32,6 @@
 </f:metadata>
 
 <h:body>
-
-	<c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
-	<c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
 
 	<ui:param name="row" value="0" />
 	<ui:composition template="/WEB-INF/include/template.xhtml">
@@ -109,7 +106,7 @@
 							value="#{web.text.SIGNINGALGORITHM}" style="font-weight: bold;" />
 					</h:panelGroup>
 					<h:panelGroup rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
-						<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}" value="#{editCAsMBean.signingAlgorithm}">
+						<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}" value="#{editCAsMBean.signatureAlgorithmParam}">
 						 	<f:selectItems value="#{editCAsMBean.availableSigningAlgList}" />
 						</h:selectOneMenu>
 					</h:panelGroup>
@@ -122,10 +119,29 @@
 					
  					<h:panelGroup rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
  						<h:outputText value="#{web.text.CRYPTOTOKEN_NOSUITABLE}" rendered="#{not editCAsMBean.cryptoTokenSuitable}" />
-						<h:selectOneMenu name="selectcryptotoken" rendered="#{editCAsMBean.cryptoTokenSuitable}" value="#{editCAsMBean.selectedCryptoToken}">
-							<f:selectItems value="#{editCAsMBean.availableCryptoTokenList}"/>
-							<f:ajax event="change" render="editcapage" immediate="true"/>
+						<h:selectOneMenu name="selectcryptotoken" rendered="#{editCAsMBean.cryptoTokenSuitable}" value="#{editCAsMBean.cryptoTokenIdParam}">
+							<f:selectItems value="#{editCAsMBean.availableCryptoTokenList}" />
+							<f:ajax event="change" render="editcapage"/>
 						</h:selectOneMenu>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.cryptoTokenNeedExistingOrGen}">
+						<h:outputLabel 
+							value="#{web.text.CRYPTOTOKEN_NEED_EXISTING_OR_GEN}" style="font-weight: bold;" />
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.cryptoTokenIdParamNull}">
+						<h:outputLabel 
+							value="You need to select a Crypto Token that exists, or generate keys if it exists, before you can initialize!" style="font-weight: bold;" />
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.failedCryptoTokenExist}">
+						<h:outputLabel 
+							value="Failed to access these CryptoTokens:" style="font-weight: bold;" />
+						<ui:repeat var="failedCrypto" value="editCAsMBean.failedCryptoTokenLinkMap()">
+							<h:outputLink value="#{failedCrypto.getKey()}" />
+							<h:outputText value="#{failedCrypto.getValue()}"/>
+						</ui:repeat>	
 					</h:panelGroup>
 					
 					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
@@ -216,17 +232,15 @@
 					</h:panelGroup>
 						
  					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}" >	
-<!-- 						<h:selectOneMenu name="selectdefaultkey" value="#{editCAsMBean.selectedCryptoTokenDefaultKey}">
-							<f:selectItems value="#{editCAsMBean.cryptotokenDefaultKeyList}"/>
-						</h:selectOneMenu>
- -->				</h:panelGroup> 
+ 						<h:outputText value="#{web.text.CRYPTOTOKEN_USECERTSIGN}" />
+					</h:panelGroup> 
 					
 					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 						<h:outputText value="keyEncryptKey" />
 					</h:panelGroup>
 						
 					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}" >	
-						<h:selectOneMenu name="selectdefaultkey" value="#{editCAsMBean.selectedKeyEncryptKey}">
+						<h:selectOneMenu value="#{editCAsMBean.selectedKeyEncryptKey}">
 							<f:selectItems value="#{editCAsMBean.cryptotokenkeyEncryptKeyList}"/>
 						</h:selectOneMenu>
 					</h:panelGroup>
@@ -236,7 +250,7 @@
 					</h:panelGroup>
 						
 					<h:panelGroup rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}" >	
-						<h:selectOneMenu name="selectdefaultkey" value="#{editCAsMBean.selectHardTokenEncrypt}">
+						<h:selectOneMenu value="#{editCAsMBean.selectHardTokenEncrypt}">
 							<f:selectItems value="#{editCAsMBean.cryptotokenHardTokenEncryptList}"/>
 						</h:selectOneMenu>
 					</h:panelGroup>		
@@ -295,7 +309,7 @@
 					
 					<h:panelGroup rendered="#{not editCAsMBean.renderCVCAvailalble}">
 						<h:outputText id="description"
-							value="#{editCAsMBean.descriptionExternal}" rendered="#{editCAsMBean.caExternal}" />
+							value="#{editCAsMBean.description}" rendered="#{editCAsMBean.caExternal}" />
 						<h:inputTextarea name="#{web.text.TEXTFIELD_DESCRIPTION}" cols="45" rows="2" value="#{editCAsMBean.description}" 
 										 disabled="#{not editCAsMBean.hasEditRight}" rendered="#{not editCAsMBean.caExternal}"/> 
 					</h:panelGroup>
@@ -328,7 +342,7 @@
 					
 					<h:panelGroup>
 						<h:selectBooleanCheckbox id="isdoenforceuniquedn"
-							value="#{editCAsMBean.doEnforceUniqueDistinguishedName}" disabled="#{not editCAsMBean.hasEditRight}" />
+							value="#{editCAsMBean.doEnforceUniqueDN}" disabled="#{not editCAsMBean.hasEditRight}" />
 						<h:outputLabel for="isdoenforceuniquedn" value="#{web.text.ENFORCE}" /> 
 					</h:panelGroup>				
 
@@ -463,7 +477,7 @@
 				</h:panelGroup>
 				
 				<h:panelGroup rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
-					<h:outputText id="cert_signedby" value="#{editCAsMBean.getSignedByEditCaNotUninitialized()}" />
+					<h:outputText id="cert_signedby" value="#{editCAsMBean.signedBy}" />
 				</h:panelGroup>
 				
 				<h:panelGroup rendered="#{editCAsMBean.editCA and editCAsMBean.caUninitialized}">
@@ -501,7 +515,7 @@
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:outputText 
-						value="#{editCAsMBean.certValidityOutputText}" rendered = "#{editCAsMBean.caExternal or editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.signByExternal}"/>
+						value="#{editCAsMBean.caEncodedValidity}" rendered = "#{editCAsMBean.caExternal or editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.signByExternal}"/>
 					<h:inputText name="textfieldvalidity" id="textfieldvalidity" size="25" maxlength="225" 
 						value="#{editCAsMBean.caEncodedValidity}" title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}" 
 						rendered = "#{not editCAsMBean.caExternal and not editCAsMBean.editCA or editCAsMBean.caUninitialized or not editCAsMBean.signByExternal}" 
@@ -523,7 +537,7 @@
 					<h:outputText id="textfieldsubjectaltname"
 						value="#{editCAsMBean.caSubjectAltName}" rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.caTypeX509}"/>
 					<h:inputText name="textfieldsubjectaltname" size="45" maxlength="255"
-						value="#{editCAsMBean.caSubjectAltNameTextField}" title="#{web.text.FORMAT_GENERALNAMES}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}"/>						
+						value="#{editCAsMBean.caSubjectAltName}" title="#{web.text.FORMAT_GENERALNAMES}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}"/>						
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
@@ -533,9 +547,9 @@
 
 				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
 					<h:outputText id="textfieldpolicyid"
-						value="#{editCAsMBean.certificatePolicyId}" rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"/>
+						value="#{editCAsMBean.policyId}" rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"/>
 					<h:inputText name="textfieldsubjectaltname" size="45" maxlength="255"
-						value="#{editCAsMBean.textFieldPolicyId}" title="#{web.text.FORMAT_OID}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.policyId}" title="#{web.text.FORMAT_OID}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}"/>
 					<br />
 					<h:outputText 
 						class="help" value="#{web.text.EXT_PKIX_CP_POLICYID_HELP}" rendered = "#{not editCAsMBean.editCA or editCAsMBean.caUninitialized}" /> 							
@@ -806,7 +820,7 @@
 <!-- ==================================================================== Default CA Defined Validation Data =========================================================== -->  
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
 				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA}" style="font-weight: bold;" />
-				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA_HELP}"  />
+				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA_HELP}" style="font-size: small;" />
 
 				<h:panelGroup>
 					<h:outputText 
@@ -818,8 +832,8 @@
 						value="#{editCAsMBean.defaultCRLDistPoint}" rendered = "#{editCAsMBean.caExternal}" />
 					<h:inputText size="40" maxlength="4096" id="textfielddefaultcrldistpoint" title="#{web.text.FORMAT_URI}"
 						value="#{editCAsMBean.defaultCRLDistPoint}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
-					<h:commandButton type="button" action="#{editCAsMBean.genDefaultCrlDistPoint}" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" immediate="true" />
+					<h:commandButton type="button" action="#{editCAsMBean.genDefaultCrlDistPoint()}" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" />
 					</h:commandButton>
 					<br /> 
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" class="help"/>
@@ -836,8 +850,8 @@
 						value="#{editCAsMBean.defaultCRLIssuer}" rendered = "#{editCAsMBean.caExternal}" />
 					<h:inputText size="40" maxlength="255" id="textfielddefaultcrlissuer" title="#{web.text.FORMAT_DN}"
 						value="#{editCAsMBean.defaultCRLIssuer}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
-					<h:commandButton type="button" action="#{editCAsMBean.genDefaultCrlIssuer}" value="#{web.text.GENERATE}" disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:textfielddefaultcrlissuer" immediate="true" />
+					<h:commandButton type="button" action="#{editCAsMBean.genDefaultCrlIssuer()}" value="#{web.text.GENERATE}" disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfielddefaultcrlissuer" />
 					</h:commandButton>
 					<br /> 
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" class="help"/>
@@ -853,8 +867,8 @@
 						value="#{editCAsMBean.caDefinedFreshestCRL}" rendered = "#{editCAsMBean.caExternal}" />
 					<h:inputText size="40" maxlength="255" id="textfieldcadefinedfreshestcrl" title="#{web.text.FORMAT_URI}"
 						value="#{editCAsMBean.caDefinedFreshestCRL}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
-					<h:commandButton type="button" action="#{editCAsMBean.genCaDefinedFreshestCrl}" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}">
-						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" immediate="true" />
+					<h:commandButton type="button" action="#{editCAsMBean.genCaDefinedFreshestCrl()}" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" />
 					</h:commandButton>
 					<br /> 
 					<h:outputLabel value="#{web.text.CRL_CA_DEFAULTVALUES_HELP}" class="help"/>
@@ -868,9 +882,11 @@
 				<h:panelGroup>
 					<h:outputText 
 						value="#{editCAsMBean.defaultOCSPServiceLocator}" rendered = "#{editCAsMBean.caExternal}"  />
-					<h:inputText size="40" maxlength="255" name="textfielddefaultocsplocator" title="#{web.text.FORMAT_URI}"
+					<h:inputText size="40" maxlength="255" id="textfielddefaultocsplocator" title="#{web.text.FORMAT_URI}"
 						value="#{editCAsMBean.defaultOCSPServiceLocator}" rendered = "#{not editCAsMBean.caExternal}" disabled="#{not editCAsMBean.hasEditRight}"/>
-					<h:commandButton name="checkbexgeneratedefaultocsplocator" onclick="gendefaultocsplocator()" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:commandButton type="button" name="checkbexgeneratedefaultocsplocator" action="#{editCAsMBean.genDefaultOcspLocator()}" value="#{web.text.GENERATE}"  disabled="#{not editCAsMBean.hasEditRight}">
+						<f:ajax render=":editcapage:textfielddefaultocsplocator" />
+					</h:commandButton>
 						
 				</h:panelGroup>				
 			
@@ -1170,7 +1186,7 @@
 <!-- ==================================================================== Form buttons  ================================================================================ -->  
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading" cellspacing="3" cellpadding="3" border="0" width="100%" 
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" rendered="#{not editCAsMBean.renderCVCAvailalble}">		
-			<h:outputLabel for="importcarenewal" value="#{web.text.IMPORTED_CA_RENEWAL}" style="font-weight: bold;" />
+			<h:outputLabel/>
 
 			<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 
@@ -1191,7 +1207,7 @@
 			</h:panelGroup>
 
 			<h:panelGroup rendered="#{editCAsMBean.caExternal}">
-				<h:commandButton name="buttonsaveexternalca" value="#{web.text.SAVE}" rendered="#{editCAsMBean.renderSaveExternalCa}"/>
+				<h:commandButton name="buttonsaveexternalca" value="#{web.text.SAVE}" rendered="#{editCAsMBean.renderSaveExternalCa}" action="#{editCAsMBean.saveExternalCA()}"/>
 				&nbsp;&nbsp;&nbsp;
 				<h:commandButton name="buttoncancel" value="#{web.text.CANCEL}" rendered="#{editCAsMBean.renderSaveExternalCa}" action="#{editCAsMBean.cancel}" immediate="true"/>
 				<h:commandButton name="buttoncancel" value="#{web.text.BACK}" rendered="#{not editCAsMBean.renderSaveExternalCa}"/>

@@ -38,7 +38,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 /**
  * 
- * JSF MBean backing the edit ca page pages.
+ * JSF MBean backing the manage ca page.
  *
  * @version $Id$
  * 
