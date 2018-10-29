@@ -130,6 +130,7 @@
 		<antcall target="webtestclean"/>
 		<antcall target="estclean"/>
 		<antcall target="ejbca-rest-api-clean"/>
+		<antcall target="plugins-ee-clean"/>
 		<antcall target="clover.clean"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
@@ -202,7 +203,7 @@
 	</target>
     <target name="estclean" if="${mod.est.exists}">
 		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-	</target>	
+	</target>		
 	<condition property="mod.edition-specific-ee.exists">
 		<available file="${mod.edition-specific-ee-ejb.path}/build.xml" />
 	</condition>
@@ -211,6 +212,13 @@
 	</target>
 	<target name="edition-specific-clean">
 		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
+	<condition property="mod.plugins-ee.exists">
+		<available file="${mod.plugins.path}/build.xml" />
+	</condition>
+    <target name="plugins-ee-clean" if="${mod.plugins-ee.exists}">
+		<ant antfile="${mod.plugins.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 		
     <target name="peerconnectorclean" if="${mod.peerconnector.exists}">
