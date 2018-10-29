@@ -79,13 +79,13 @@ import org.junit.Test;
 
 /**
  * Test of certificate extensions with values from WS.
- * 
+ *
  * @version $Id$
  */
 public class CertificateExtensionTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(CertificateExtensionTest.class);
-    private static final String WS_ADMIN_ROLENAME = "CertificateExtensionTest";	
+    private static final String WS_ADMIN_ROLENAME = "CertificateExtensionTest";
     private static final String TEST_CERTIFICATE_PROFILE = "certExtensionTestCertificateProfile";
     private static final String TEST_USER = "certExtension";
     private static final String TEST_END_ENTITY_PROFILE = "certExtensionTestEndEntityProfile";
@@ -117,6 +117,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         cleanUpAdmins(WS_ADMIN_ROLENAME);
     }
 
+    @Override
     @Before
     public void setUp() throws Exception {
         adminSetUpAdmin();
@@ -141,10 +142,10 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
     public void getCertSuccess() throws Exception {
         populateCustomCertExtensions();
         addProfiles(2);
-        
+
         final byte[] values[] = getRandomValues(nrOfValues);
         final byte[] value[] = getRandomValues(1);
-        
+
         final List<ExtendedInformationWS> lei = new LinkedList<ExtendedInformationWS>();
         for(int i=0; i < values.length; i++ ) {
             final ExtendedInformationWS ei = new ExtendedInformationWS();
@@ -159,9 +160,9 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
             lei.add(ei);
         }
         addUserWithExtensions(lei);
-        
+
         X509Certificate cert = getCertificateWithExtension(true);
-        
+
         checkExtension(value, cert.getExtensionValue(sOID_one), sOID_one);
         checkExtension(values, cert.getExtensionValue(sOID_several), sOID_several);
 
@@ -171,10 +172,10 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
     public void getCertFail() throws Exception {
         populateCustomCertExtensions();
         addProfiles(2);
-        
+
         final byte[] values[] = getRandomValues(nrOfValues);
         final byte[] value[] = new byte[1][0];
-        
+
         final List<ExtendedInformationWS> lei = new LinkedList<ExtendedInformationWS>();
         for(int i=0; i < values.length; i++) {
             final ExtendedInformationWS ei = new ExtendedInformationWS();
@@ -198,7 +199,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         if (certificateProfileSession.getCertificateProfileId(TEST_CERTIFICATE_PROFILE) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, TEST_CERTIFICATE_PROFILE);
         }
-        final int ctpid; 
+        final int ctpid;
         final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProfile.setUseCertificateTransparencyInCerts(true);
         certificateProfileSession.addCertificateProfile(intAdmin, TEST_CERTIFICATE_PROFILE, certProfile);
@@ -216,7 +217,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 
         final X509Certificate cert = getMyCertificate();
         assertNotNull(cert);
-        assertEquals("dNSName=top.secret.domain.se", CertTools.getSubjectAlternativeName(cert));  
+        assertEquals("dNSName=top.secret.domain.se", CertTools.getSubjectAlternativeName(cert));
 
         // Check that the number-of-redacted-lables-extension was added
         byte[] extValue = cert.getExtensionValue(CertTools.id_ct_redacted_domains);
@@ -226,7 +227,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         DEROctetString octs = ((DEROctetString) DEROctetString.fromByteArray(extValue));
         ASN1Sequence seq = (ASN1Sequence) DERSequence.fromByteArray(octs.getOctets());
         assertEquals(1, seq.size());
-        assertEquals("2", seq.getObjectAt(0).toString());    
+        assertEquals("2", seq.getObjectAt(0).toString());
     }
 
     @Test
@@ -245,7 +246,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         // Expected to succeed
         getCertificateWithExtension(true);
     }
-    
+
     @Test
     public void requestRequiredExtensionWithoutExtensionData() throws Exception {
         AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
@@ -262,8 +263,8 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         // Expected to fail
         getCertificateWithExtension(false);
     }
-    
-    
+
+
     @Test
     public void requestWildcardExtension() throws Exception {
         AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
@@ -285,7 +286,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         // Verify extension in certificate
         checkExtension(value, cert.getExtensionValue(sOID_one), sOID_one);
     }
-    
+
     @Test
     public void requestUnmatchableExtensions() throws Exception {
         AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
@@ -325,9 +326,9 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         extensionRequestList.add(new ExtendedInformationWS("1.2.8.4", new String(Hex.encode((new DEROctetString(value[0])).getEncoded()))));
         addUserWithExtensions(extensionRequestList);
         // Expect certificate issuance to fail (wild card may only be matched once)
-        X509Certificate cert = getCertificateWithExtension(false);
+        getCertificateWithExtension(false);
     }
-    
+
     @Test
     public void requestRequiredWildcardExtensionMatchNone() throws Exception {
         AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
@@ -349,9 +350,9 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         // Expect certificate issuance to fail
         getCertificateWithExtension(false);
     }
-    
+
     private void addProfiles(int numberOfCertificateExtensions) throws Exception {
-        final int certProfId; 
+        final int certProfId;
         final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         final List<Integer> usedCertificateExtensions = new LinkedList<Integer>();
         for (int i = 1; i <= numberOfCertificateExtensions; i++) {
@@ -377,10 +378,10 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         assertTrue("Certificate issuance was expected to fail but didn't.", isExpectedToWork);
         return cert;
     }
-    
+
     private void checkExtension(byte[] values[], byte extension[], String sOID) throws IOException {
         assertNotNull(extension);
-        final byte octets[]; 
+        final byte octets[];
         {
             final ASN1Primitive asn1o = ASN1Primitive.fromByteArray(extension);
             assertNotNull(asn1o);
@@ -392,7 +393,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
                 return;
             }
         }
-        final ASN1Sequence seq; 
+        final ASN1Sequence seq;
         {
             final ASN1Primitive asn1o = ASN1Primitive.fromByteArray(octets);
             log.info("The contents of the '"+sOID+"' can be decoded to a '"+asn1o.getClass().getCanonicalName()+ "' class.");
@@ -406,7 +407,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
             assertArrayEquals((new DEROctetString(values[i])).getEncoded(), ((ASN1OctetString)derO).getOctets());
         }
     }
-    
+
     private byte[][] getRandomValues( int nr) {
         final byte values[][] = new byte[nr][400];
         for (int i=0; i < nr; i++) {
@@ -414,9 +415,9 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         }
         return values;
     }
-    
-    private void addUserWithExtensions(final List<ExtendedInformationWS> extendedInformationWS) throws ApprovalException_Exception, 
-            AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception, 
+
+    private void addUserWithExtensions(final List<ExtendedInformationWS> extendedInformationWS) throws ApprovalException_Exception,
+            AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
             WaitingForApprovalException_Exception {
         final UserDataVOWS userData = new UserDataVOWS(TEST_USER, PASSWORD, true, "C=SE, CN=cert extension test",
             getAdminCAName(), null, "foo@anatom.se", EndEntityConstants.STATUS_NEW,
@@ -424,8 +425,8 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
         userData.setExtendedInformation(extendedInformationWS);
         ejbcaraws.editUser(userData);
     }
-    
-    private X509Certificate getMyCertificate() throws GeneralSecurityException, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, 
+
+    private X509Certificate getMyCertificate() throws GeneralSecurityException, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
             NotFoundException_Exception, CesecoreException_Exception, IOException, OperatorCreationException {
         final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(),
@@ -446,7 +447,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
     }
 
     private void populateCustomCertExtensions() throws CertificateExtentionConfigurationException, AuthorizationDeniedException {
-        AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration(); 
+        AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
         Properties props = new Properties();
         props.put("critical", "false");
         props.put("dynamic", "true");
