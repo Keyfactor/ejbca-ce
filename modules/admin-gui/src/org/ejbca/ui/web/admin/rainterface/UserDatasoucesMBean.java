@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -60,8 +61,8 @@ public class UserDatasoucesMBean extends BaseManagedBean implements Serializable
     private boolean deleteInProgress = false;
 
 
-    @PostConstruct
-    private void postConstruct() throws Exception {
+    public void initialize(ComponentSystemEvent event) throws Exception {
+        // Invoke on initial request only
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
     }
