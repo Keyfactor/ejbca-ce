@@ -779,7 +779,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 log.info(msg);
                 super.addNonTranslatedErrorMessage(msg);
             }
-            
+
             // GlobalConfiguration validates and modifies some fields when they are set, so these fields need to be updated.
             // Also, this ensures that the values shown are those actually stored in the database.
             flushCache(); // must be done last
@@ -916,45 +916,29 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     //               Protocol Configuration
     // --------------------------------------------
 
-    private AvailableProtocolsConfiguration protocolsConfiguration = null;
-    private ListDataModel<ProtocolGuiInfo> availableProtocolInfos = null;
-
     public AvailableProtocolsConfiguration getAvailableProtocolsConfiguration() {
-        if (protocolsConfiguration == null) {
-            protocolsConfiguration = (AvailableProtocolsConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
+        return (AvailableProtocolsConfiguration) getEjbcaWebBean().getEjb().getGlobalConfigurationSession()
                     .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        }
-        return protocolsConfiguration;
     }
 
-    public ListDataModel<ProtocolGuiInfo> getAvailableProtocols() {
-        if (availableProtocolInfos == null) {
-            availableProtocolInfos = new ListDataModel<>(getNewAvailableProtocolInfos());
-        }
-        return availableProtocolInfos;
-    }
-
-    public void toggleProtocolStatus() {
-        ProtocolGuiInfo protocolToToggle = availableProtocolInfos.getRowData();
+    public void toggleProtocolStatus(final ProtocolGuiInfo protocolToToggle) {
+        final AvailableProtocolsConfiguration availableProtocolsConfiguration = getAvailableProtocolsConfiguration();
         if (protocolToToggle.isEnabled()) {
-            protocolsConfiguration.setProtocolStatus(protocolToToggle.getProtocol(), false);
+            availableProtocolsConfiguration.setProtocolStatus(protocolToToggle.getProtocol(), false);
         } else {
-            protocolsConfiguration.setProtocolStatus(protocolToToggle.getProtocol(), true);
+            availableProtocolsConfiguration.setProtocolStatus(protocolToToggle.getProtocol(), true);
         }
         // Save config
         try {
-            getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), protocolsConfiguration);
+            getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), availableProtocolsConfiguration);
         } catch (AuthorizationDeniedException e) {
             String msg = "Cannot save System Configuration. " + e.getLocalizedMessage();
             log.info("Administrator '" + getAdmin() + "' " + msg);
             super.addNonTranslatedErrorMessage(msg);
         }
-        // Reload view
-        availableProtocolInfos = null;
-        getAvailableProtocols();
     }
 
-    private ArrayList<ProtocolGuiInfo> getNewAvailableProtocolInfos() {
+    public ArrayList<ProtocolGuiInfo> getNewAvailableProtocolInfos() {
         ArrayList<ProtocolGuiInfo> protocolInfos = new ArrayList<>();
         LinkedHashMap<String, Boolean> allPC = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         for (Entry<String, Boolean> entry : allPC.entrySet()) {
@@ -982,7 +966,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean isRestAvailable() {
         return getEjbcaWebBean().isRestConfigurationPresent();
     }
-    
+
     public class ProtocolGuiInfo {
         private String protocol;
         private String url;
@@ -1234,7 +1218,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return globalCustomCssConfiguration;
     }
-    
+
     public void actionImportRaStyle() {
         // Basic checks
         if (raCssFile == null && raLogoFile == null) {
@@ -1298,7 +1282,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return false;
     }
-    
+
     private void importLogoFromImageFile() throws IOException {
         String contentType = raLogoFile.getContentType();
         if (!contentType.equals("image/jpeg") && !contentType.equals("image/png")) {
