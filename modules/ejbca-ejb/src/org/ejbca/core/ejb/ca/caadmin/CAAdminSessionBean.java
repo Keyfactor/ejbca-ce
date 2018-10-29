@@ -3137,6 +3137,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Set<Integer> getAuthorizedPublisherIds(AuthenticationToken admin, List<Integer> excludedTypes) {
 
         // Set to use to track all authorized publisher IDs
