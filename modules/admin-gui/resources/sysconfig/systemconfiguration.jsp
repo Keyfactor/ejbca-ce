@@ -510,8 +510,9 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</br>
 		</h:panelGroup>
 	
-		<h:dataTable value="#{systemConfigMBean.availableProtocols}" var="protocolinfos"
-					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+		<t:dataTable value="#{systemConfigMBean.availableProtocols}" var="protocolinfos"
+					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto; padding: 2em"
+					rowStyleClass="#{protocolinfos.enabled and protocolinfos.available ? 'activated-entry' : 'deactivated-entry'}">
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_PROTOCOL_TITLE}"/></f:facet>
 				<h:outputText value="#{protocolinfos.protocol}"/>
@@ -531,7 +532,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 				<h:commandButton action="#{systemConfigMBean.toggleProtocolStatus}" value="#{protocolinfos.enabled ? web.text.PC_ACTION_DISABLE : web.text.PC_ACTION_ENABLE}" 
 					 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" disabled="#{!protocolinfos.available}"/>
 			</h:column>
-		</h:dataTable>
+		</t:dataTable>
 	</h:form>
 	
 	<%-- Extended Key Usages --%>
