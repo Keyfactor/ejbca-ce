@@ -85,12 +85,34 @@ public class EditPublisherJSPHelperTest {
         assertEquals("Should return multi publishers string", expected, result);
     }
 
+    @Test
+    public void convertMultiPublishersDataToStringNameMissing() throws Exception {
+        ArrayList<TreeSet<Integer>> data = new ArrayList<>();
+        TreeSet<Integer> tree = new TreeSet<>();
+        tree.add(1);
+        tree.add(5);
+        data.add(tree);
+
+        tree = new TreeSet<>();
+        tree.add(8);
+        data.add(tree);
+
+        tree = new TreeSet<>();
+        tree.add(4);
+        tree.add(3);
+        data.add(tree);
+
+        String result = helper.convertMultiPublishersDataToString(getIdToNameMap(), data);
+        String expected = "Apple\nPomelo\n\nKiwi\nOrange";
+        assertEquals("Should return multi publishers string", expected, result);
+    }
+
     private Map<Integer, String> getIdToNameMap() {
         Map<Integer, String> publisherNameToIdMap = new HashMap<>();
         publisherNameToIdMap.put(1, "Apple");
         publisherNameToIdMap.put(2, "Banan");
-        publisherNameToIdMap.put(3, "Kiwi");
-        publisherNameToIdMap.put(4, "Orange");
+        publisherNameToIdMap.put(3, "Orange");
+        publisherNameToIdMap.put(4, "Kiwi");
         publisherNameToIdMap.put(5, "Pomelo");
         publisherNameToIdMap.put(6, "Grape");
         publisherNameToIdMap.put(7, "Avocado");
