@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.rainterface;
 
-import java.beans.Beans;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,17 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.StringTools;
@@ -47,7 +42,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 //@ViewScoped
 public class UserDatasoucesMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(UserDatasoucesMBean.class);
+    //private static final Logger log = Logger.getLogger(UserDatasoucesMBean.class);
 
     @EJB
     private UserDataSourceSessionLocal userdatasourcesession = null;

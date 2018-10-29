@@ -30,7 +30,6 @@ import javax.faces.model.SelectItem;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
@@ -52,7 +51,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 @ViewScoped
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
+    //private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
 
 
     private GlobalConfiguration globalConfiguration;
@@ -69,7 +68,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         if (!FacesContext.getCurrentInstance().isPostback()) {
             final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             globalConfiguration = getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-    
+
             caBean = (CAInterfaceBean) req.getSession().getAttribute("caBean");
             if ( caBean == null ){
                 try {
@@ -90,7 +89,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             extCaNameList = new ArrayList<String>(externalCANames.keySet());
         }
     }
-    
+
     public void clearMessages(){
         message = null;
         errorMessage = null;
@@ -217,12 +216,13 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
         List<String> caNameList = new ArrayList<String>(canames.keySet());
         Collections.sort(caNameList, new Comparator<String>() {
+            @Override
             public int compare(String o1, String o2) {
                 return o1.compareToIgnoreCase(o2);
             }
         });
         for (String caname : caNameList) {
-            int caid = ((Integer) canames.get(caname)).intValue();
+            int caid = canames.get(caname).intValue();
             CAInfo cainfo = getCaBean().getCAInfoFastNoAuth(caid);
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?

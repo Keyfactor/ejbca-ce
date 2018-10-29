@@ -19,9 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
@@ -81,11 +78,11 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
     }
 
     public List<SelectItem> getHardTokenIssuereSeletItemList() {
-        Map adminidtonamemap = tokenbean.getRoleIdToNameMap();
+        final Map<Integer, String> adminIdToNameMap = tokenbean.getRoleIdToNameMap();
         TreeMap<String, HardTokenIssuerInformation> hardTokenIssuers = getEjbcaWebBean().getHardTokenIssuers();
         final List<SelectItem> ret = new ArrayList<>();
         for (Map.Entry<String, HardTokenIssuerInformation> hardTokenIssuer : hardTokenIssuers.entrySet()) {
-            String label= hardTokenIssuer.getKey() + ", "+ adminidtonamemap.get(hardTokenIssuer.getValue().getRoleDataId());
+            String label = hardTokenIssuer.getKey() + ", " + adminIdToNameMap.get(hardTokenIssuer.getValue().getRoleDataId());
             ret.add(new SelectItem(hardTokenIssuer.getKey(), label));
         }
         return ret;
@@ -195,8 +192,9 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
     public String actionEdit() {
         if (StringUtils.isNotEmpty(selectedHardTokenIssuer)) {
             return "edit";
-        } else
+        } else {
             addErrorMessage("HARDTOKENISSUERSELECT");
+        }
         return "";
     }
 

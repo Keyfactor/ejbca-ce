@@ -58,7 +58,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * @version $Id$
  */
 public class EditPublisherJSPHelper {
-	
+
     public static final String ACTION                              = "action";
     public static final String ACTION_EDIT_PUBLISHERS              = "editpublishers";
     public static final String ACTION_EDIT_PUBLISHER               = "editpublisher";
@@ -119,7 +119,7 @@ public class EditPublisherJSPHelper {
     public static final String TEXTFIELD_LDAPSTORETIMEOUT      = "textfieldldapstoretimeout";
     public static final String TEXTFIELD_VA_DATASOURCE         = "textfieldvadatasource";
     public static final String PASSWORD_LDAPLOGINPASSWORD      = "textfieldldaploginpassword";
-    public static final String PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER = "placeholder";    
+    public static final String PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER = "placeholder";
     public static final String PASSWORD_LDAPCONFIRMLOGINPWD    = "textfieldldaploginconfirmpwd";
     public static final String RADIO_LDAPCONNECTIONSECURITY    = "radioldapconnectionsecurity";
     public static final String CHECKBOX_LDAPCREATENONEXISTING  = "checkboxldapcreatenonexisting";
@@ -138,7 +138,7 @@ public class EditPublisherJSPHelper {
     public static final String CHECKBOX_VA_STORECERT           = "textfieldvastorecert";
     public static final String CHECKBOX_VA_STORECRL            = "textfieldvastorecrl";
     public static final String CHECKBOX_VA_ONLY_PUBLISH_REVOKED = "checkboxonlypublishrevoked";
-    
+
     public static final String SELECT_LDAPUSEFIELDINLDAPDN     = "selectldapusefieldsinldapdn";
 
     public static final String CHECKBOX_ADUSEPASSWORD          = "checkboxadusepassword";
@@ -150,7 +150,7 @@ public class EditPublisherJSPHelper {
     public static final String PAGE_PUBLISHERS                 = "publisherspage.jspf";
 
     private EjbcaWebBean ejbcawebbean;
-    
+
     private CAInterfaceBean cabean;
     private boolean initialized=false;
     private boolean  publisherexists       = false;
@@ -296,7 +296,7 @@ public class EditPublisherJSPHelper {
                                     break;
                                 default:
                                     break;
-                                }                     
+                                }
                             }
                             // Save changes.
 
@@ -454,7 +454,7 @@ public class EditPublisherJSPHelper {
                                 value = request.getParameter(CHECKBOX_LDAPMODIFYEXISTING);
                                 if(value != null) {
                                     ldappublisher.setModifyExistingUsers(value.equals(CHECKBOX_VALUE));
-                                } 
+                                }
                                 else {
                                     ldappublisher.setModifyExistingUsers(false);
                                 }
@@ -506,7 +506,7 @@ public class EditPublisherJSPHelper {
                                 } else {
                                     ldappublisher.setUserPassword(false);
                                 }
-                                
+
                                 String[] values = request.getParameterValues(SELECT_LDAPUSEFIELDINLDAPDN);
                                 if(values != null){
                                     ArrayList<Integer> usefields = new ArrayList<>();
@@ -643,7 +643,7 @@ public class EditPublisherJSPHelper {
 
         return includefile;
     }
-    
+
     private static final int[] AVAILABLEPUBLISHER_TYPES = new int[] {
         PublisherConst.TYPE_LDAPPUBLISHER, PublisherConst.TYPE_LDAPSEARCHPUBLISHER, PublisherConst.TYPE_ADPUBLISHER,
         PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER, PublisherConst.TYPE_MULTIGROUPPUBLISHER
@@ -652,7 +652,7 @@ public class EditPublisherJSPHelper {
         "LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER",
         "CUSTOMPUBLISHER", "MULTIGROUPPUBLISHER"
     };
-    
+
     public String getPublisherName() {
         return publishername;
     }
@@ -660,7 +660,7 @@ public class EditPublisherJSPHelper {
     public int getPublisherId(){
         return publisherId;
     }
-    
+
     public String getPublisherName(String className) {
         final String klassSimpleName = className.substring(className.lastIndexOf('.')+1);
         // Present the publisher with a nice name if a language key is present
@@ -671,17 +671,17 @@ public class EditPublisherJSPHelper {
         }
         return text;
     }
-    
+
     public String getCurrentPublisherName() {
         if (publisherdata instanceof CustomPublisherContainer) {
             ICustomPublisher iCustomPublisher = ((CustomPublisherContainer) publisherdata).getCustomPublisher();
             if(iCustomPublisher != null) {
                 return getPublisherName(iCustomPublisher.getClass().getName());
-            } 
+            }
         }
         return getPublisherName(publisherdata.getClass().getName());
     }
-    
+
     /** @return the available publishers as list that can be used by JSF h:datatable in the future. */
     public List<SelectItem> getSelectablePublishers() {
         final List<SelectItem> ret = new ArrayList<>();
@@ -722,7 +722,7 @@ public class EditPublisherJSPHelper {
         });
         return ret;
     }
-    
+
     public String getSelectedPublisherValue() {
         if (getPublisherType()==PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
             final CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisherdata;
@@ -735,7 +735,7 @@ public class EditPublisherJSPHelper {
         }
         return Integer.valueOf(getPublisherType()).toString();
     }
-    
+
     @SuppressWarnings("deprecation")
     public int getPublisherType(){
         int retval = PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER;
@@ -748,7 +748,7 @@ public class EditPublisherJSPHelper {
         if (publisherdata instanceof LdapSearchPublisher) {
             retval = PublisherConst.TYPE_LDAPSEARCHPUBLISHER;
         }
-        // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead. 
+        // Legacy VA publisher doesn't exist in community edition, so check the qualified class name instead.
         if (publisherdata.getClass().getName().equals("org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher")) {
             retval = PublisherConst.TYPE_VAPUBLISHER;
         }
@@ -764,9 +764,9 @@ public class EditPublisherJSPHelper {
     public boolean hasEditRights() {
         return ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_EDITPUBLISHER);
     }
-    
+
     /**
-     * 
+     *
      * @return true if the publisher type is inherently read-only
      */
     public boolean isReadOnly() {
@@ -780,9 +780,9 @@ public class EditPublisherJSPHelper {
             return false;
         }
     }
-    
+
     /**
-     * 
+     *
      * @return true if the publisher is deprecated and shouldn't be editable.
      */
     public boolean isDeprecated() {
@@ -792,22 +792,22 @@ public class EditPublisherJSPHelper {
            return false;
        }
     }
-    
+
     public int getPublisherQueueLength() {
     	return getPublisherQueueLength(publishername);
     }
     public int[] getPublisherQueueLength(int[] intervalLower, int[] intervalUpper) {
     	return getPublisherQueueLength(publishername, intervalLower, intervalUpper);
     }
-    
+
     public int getPublisherQueueLength(String publishername) {
     	return cabean.getPublisherQueueLength(cabean.getPublisherDataHandler().getPublisherId(publishername));
     }
     public int[] getPublisherQueueLength(String publishername, int[] intervalLower, int[] intervalUpper) {
     	return cabean.getPublisherQueueLength(cabean.getPublisherDataHandler().getPublisherId(publishername), intervalLower, intervalUpper);
     }
-    
-    public List<String> getCustomClasses() {        
+
+    public List<String> getCustomClasses() {
         final List<String> classes = new ArrayList<>();
         final ServiceLoader<ICustomPublisher> svcloader = ServiceLoader.load(ICustomPublisher.class);
         final boolean enabled = ((GlobalConfiguration) ejbcawebbean.getEjb().getGlobalConfigurationSession().getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableExternalScripts();
@@ -876,8 +876,8 @@ public class EditPublisherJSPHelper {
     public void setPublisherdata(BasePublisher publisherdata) {
         this.publisherdata = publisherdata;
     }
-    
-    /** 
+
+    /**
      * @return password placeholder instead of real password in order to not send clear text password to browser, or empty string in case there is no ldap password (i.e. new publisher).
      */
     public String getPasswordPlaceholder() {
@@ -891,9 +891,9 @@ public class EditPublisherJSPHelper {
     }
 
     List<TreeSet<Integer>> convertMultiPublishersStringToData(final Map<String, Integer> publisherNameToIdMap, final String textareaData) throws PublisherDoesntExistsException, PublisherExistsException {
-        TreeSet<Integer> selectedPublishers = new TreeSet();
-        List<String> listOfPublisherNames = Arrays.asList(textareaData.split("\n"));
-        ArrayList<TreeSet<Integer>> data = new ArrayList<>();
+        final TreeSet<Integer> selectedPublishers = new TreeSet<>();
+        final List<String> listOfPublisherNames = Arrays.asList(textareaData.split("\n"));
+        final ArrayList<TreeSet<Integer>> data = new ArrayList<>();
         TreeSet<Integer> tree = new TreeSet<>();
         for (String publisherName : listOfPublisherNames) {
             publisherName = publisherName.trim();

@@ -21,7 +21,6 @@ import javax.faces.event.ComponentSystemEvent;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
@@ -36,7 +35,7 @@ import org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper;
 @ViewScoped
 public class AdminIndexMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(AdminIndexMBean.class);
+    //private static final Logger log = Logger.getLogger(AdminIndexMBean.class);
 
     private CAInterfaceBean caBean;
     private EditPublisherJSPHelper editPublisherJSPHelper;

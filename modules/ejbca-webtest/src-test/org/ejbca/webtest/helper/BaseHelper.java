@@ -12,27 +12,26 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.log4j.Logger;
+import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * A base helper class for page operations of a web helper extensions.
@@ -43,7 +42,7 @@ public class BaseHelper {
 
     private static final Logger log = Logger.getLogger(BaseHelper.class);
 
-    protected static WebDriver webDriver;
+    protected WebDriver webDriver;
 
     /**
      * Built-in timeout for WebElement find.

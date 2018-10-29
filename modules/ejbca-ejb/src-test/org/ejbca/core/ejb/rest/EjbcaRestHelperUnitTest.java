@@ -50,7 +50,7 @@ import org.junit.runner.RunWith;
 
 /**
  * This class contains unit tests for EjbcaRestHelper class
- * 
+ *
  * @version $Id: EjbcaRestHelperUnitTest.java 29025 2018-05-25 08:45:54Z tarmo_r_helmes $
  *
  */
@@ -100,31 +100,20 @@ public class EjbcaRestHelperUnitTest {
     public void shouldFailOnFindingCertificateAuthorityByName() throws Exception {
 
         // given
-        String endEntityProfileName = "eep1";
-        String certificateAuthorityName = "CA1";
-        String certificateProfileName = "CP1";
-        int certificateProfileId = 1;
-        String subjectDn = "mydn=123";
-        String name = "test123";
-        int status = 20;
-        String encodedValidity = "";
-        int signedby = 1;
+        final String endEntityProfileName = "eep1";
+        final String certificateAuthorityName = "CA1";
+        final String certificateProfileName = "CP1";
 
-        X509Certificate mockX509Cert = EasyMock.mock(X509Certificate.class);
+        final X509Certificate mockX509Cert = EasyMock.mock(X509Certificate.class);
 
-        X509Certificate[] certs = new X509Certificate[1];
+        final X509Certificate[] certs = new X509Certificate[1];
         certs[0] = mockX509Cert;
 
-        Collection<Certificate> certificatechain = new ArrayList<>();
-        CAToken caToken = EasyMock.mock(CAToken.class);
-
-        CAInfo caInfo = new X509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
-
-        AuthenticationToken authenticationToken = EasyMock.mock(AuthenticationToken.class);
+        final AuthenticationToken authenticationToken = EasyMock.mock(AuthenticationToken.class);
 
         expect(caSessionBean.getCAInfo(authenticationToken, certificateAuthorityName)).andReturn(null);
         replay(caSessionBean);
-        EnrollPkcs10CertificateRequest request = new EnrollPkcs10CertificateRequest.Builder()
+        final EnrollPkcs10CertificateRequest request = new EnrollPkcs10CertificateRequest.Builder()
                 .certificateRequest(csr)
                 .certificateProfileName(certificateProfileName)
                 .endEntityProfileName(endEntityProfileName)
@@ -285,18 +274,18 @@ public class EjbcaRestHelperUnitTest {
         EndEntityInformation endEntityInformation = testClass.convertToEndEntityInformation(authenticationToken, request);
 
         // then
-        assertEquals("The injected endentity profile id in 'given' section didnt get converted into result properly", 
+        assertEquals("The injected endentity profile id in 'given' section didnt get converted into result properly",
                 endEntityProfileId, endEntityInformation.getEndEntityProfileId());
-        
+
         assertEquals("The injected certificate profile id in 'given' section didnt get converted into result properly",
                 certificateProfileId, endEntityInformation.getCertificateProfileId());
-        
+
         assertEquals("End entiy DN got incorrectly parsed pkcs10 certificate request",
                 "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", endEntityInformation.getDN());
 
         EasyMock.verify();
     }
-    
+
     @Test
     public void shouldParseCorrectDn() {
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);

@@ -3,7 +3,7 @@
  *  EJBCA - Proprietary Modules: Enterprise Certificate Authority        *
  *                                                                       *
  *  Copyright (c), PrimeKey Solutions AB. All rights reserved.           *
- *  The use of the Proprietary Modules are subject to specific           * 
+ *  The use of the Proprietary Modules are subject to specific           *
  *  commercial license terms.                                            *
  *                                                                       *
  *************************************************************************/
@@ -25,7 +25,6 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -75,13 +74,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
 
-    private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
+    //private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
     private static final String TEST_CA_NAME = "RestCertificateResourceTestCa";
     private static final String TEST_USERNAME = "CertificateRestSystemTestUser";
     private static final JSONParser jsonParser = new JSONParser();
-    
+
     private static X509CA x509TestCa;
-    
+
     private final String csr = "-----BEGIN CERTIFICATE REQUEST-----\n"
             + "MIIDWDCCAkACAQAwYTELMAkGA1UEBhMCRUUxEDAOBgNVBAgTB0FsYWJhbWExEDAO\n"
             + "BgNVBAcTB3RhbGxpbm4xFDASBgNVBAoTC25hYWJyaXZhbHZlMRgwFgYDVQQDEw9o\n"
@@ -102,7 +101,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             + "3V1hMBajTMGN9emWLR6pfj5P7QpVR4hkv3LvgCPf474pWA9l/4WiKBzrI76T5yz1\n"
             + "KoobCZQ2UrqnKFGEbdoNFchb2CDgdLnFu6Tbf6MW5zO5ypOIUih61Zf9Qyo=\n"
             + "-----END CERTIFICATE REQUEST-----\n";
-    
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
@@ -152,7 +151,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
             userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
             endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
-            final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(), 
+            final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(INTERNAL_ADMIN_TOKEN, TEST_USERNAME, "foo123", x509TestCa.getCAId(),
                     "1024", "RSA", false, false, false, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
             final KeyStore keyStore = KeyTools.createKeyStore(keyStoreBytes, "foo123");
             String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(TEST_USERNAME));
@@ -168,13 +167,13 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final String responseSerialNr = (String) actualJsonObject.get("serial_number");
             final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
             final String responseReason = (String) actualJsonObject.get("revocation_reason");
-            
+
             // Verify rest response
             assertEquals(issuerDn, responseIssuerDn);
             assertEquals(serialNr, responseSerialNr);
             assertEquals(true, responseStatus);
             assertEquals("KEY_COMPROMISE", responseReason);
-            
+
             // Verify actual database value
             CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
             String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
@@ -183,7 +182,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
         }
     }
-    
+
     @Test
     public void enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer() throws Exception {
         // Create CSR REST request
@@ -199,7 +198,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
         final ClientRequest request = newRequest("/v1/certificate/pkcs10enroll");
         request.body(MediaType.APPLICATION_JSON, requestBody);
-        // Send request 
+        // Send request
         try {
             final ClientResponse<?> actualResponse = request.post();
             final String actualJsonString = actualResponse.getEntity(String.class);
@@ -215,9 +214,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         } finally {
             endEntityManagementSession.deleteUser(INTERNAL_ADMIN_TOKEN, TEST_USERNAME);
         }
-    
+
     }
-    
+
     @Test
     public void finalizeKeyStoreExpectPkcs12Response() throws Exception {
         // Create an add end entity approval request
@@ -227,7 +226,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         approvalProfile.initialize();
         int profileId = -1;
         int approvalId = -1;
-        
+
         try {
             // Generate approval request
             profileId = approvalProfileSession.addApprovalProfile(INTERNAL_ADMIN_TOKEN, approvalProfile);
@@ -249,19 +248,19 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             } catch (WaitingForApprovalException e) {
                 requestId = e.getRequestId();
             }
-            Approval approval = new Approval("REST System Test Approval", AccumulativeApprovalProfile.FIXED_STEP_ID , 
+            Approval approval = new Approval("REST System Test Approval", AccumulativeApprovalProfile.FIXED_STEP_ID ,
                     approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().
                     values().iterator().next().getPartitionIdentifier());
             approvalId = getApprovalDataNoAuth(requestId).getApprovalId();
             approvalExecutionSession.approve(approvalAdmin, approvalId, approval);
-            
+
             // Attempt REST finalize
             final FinalizeRestRequest requestObject = new FinalizeRestRequest("P12", "foo123");
             final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
             final String requestBody = objectMapper.writeValueAsString(requestObject);
             final ClientRequest request = newRequest("/v1/certificate/" + requestId + "/finalize");
             request.body(MediaType.APPLICATION_JSON, requestBody);
-                    
+
             final ClientResponse<?> actualResponse = request.post();
             final String actualJsonString = actualResponse.getEntity(String.class);
             assertJsonContentType(actualResponse);
@@ -297,11 +296,11 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         }
         return approvals.iterator().next();
     }
-    
+
     /**
      * Disables REST and then runs a simple REST access test which will expect status 403 when
      * service is disabled by configuration.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     public void shouldRestrictAccessToRestResourceIfProtocolDisabled() throws Exception {
