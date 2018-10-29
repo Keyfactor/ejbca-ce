@@ -635,9 +635,8 @@ function pageLoad() {
         <% } %>
 
 <%/*was ENCTYPE="post"*/%>
-  	 <c:set var="csrf_tokenname"><csrf:tokenname/></c:set>
-  	 <c:set var="csrf_tokenvalue"><csrf:tokenvalue/></c:set>
-  <form name="ca" method="post" action="<%=THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" enctype='multipart/form-data'>
+  <form name="ca" method="post" action="<%=THIS_FILENAME %>" enctype='multipart/form-data'>
+    <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
     <input type="hidden" name='<%= HIDDEN_CACRYPTOTOKEN %>' value='<c:out value="<%= cryptoTokenIdParam %>"/>'>
     <input type="hidden" name='<%= HIDDEN_CASIGNALGO %>' value='<c:out value="<%= signatureAlgorithmParam %>"/>'/>
     <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'>
