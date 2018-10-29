@@ -23,6 +23,7 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -57,8 +58,8 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
     private String newHardTokenIssuer;
     private int newRoleId;
 
-    @PostConstruct
-    private void postConstruct() throws Exception {
+    public void initialize(ComponentSystemEvent event)  throws Exception {
+        // Invoke on initial request only
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS);
         tokenbean = (HardTokenInterfaceBean) req.getSession().getAttribute("tokenbean");
