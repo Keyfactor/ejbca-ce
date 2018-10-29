@@ -882,6 +882,7 @@
 		<!-- Always retrieve current version from Confluence -->
 		<antcall target="doc" inheritAll="true">
 			<param name="update.from.confluence" value="true"/>	
+            <param name="doc.update" value="true"/> 
 		</antcall>
 		<!-- Copy the retrieved documentation from the tmp/docs directory into doc/dist for the sake of this release-->
 		<copy todir="doc/dist">
