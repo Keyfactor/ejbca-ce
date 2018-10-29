@@ -1327,11 +1327,11 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 }
 
 .activated-entry {
-	background-color: #99b433;
+    background-color: #BAEEBA;
 }
 
 .deactivated-entry {
-	background-color: #ee1111;
+    background-color: #EEBABA;
 }
 
 /* CSS2 compatible expandable text */
