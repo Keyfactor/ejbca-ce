@@ -24,13 +24,15 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.cesecore.authorization.control.StandardRules;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 /**
  * 
- * JSF MBean backing the edit ca page pages.
+ * JSF MBean backing the import ca cert page.
  *
  * @version $Id$
  */
@@ -45,6 +47,15 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     private CADataHandler cadatahandler;
     private String importCaCertName;
     private UploadedFile uploadedFile;
+    
+    
+    public void initAccess() throws Exception {
+        // To check access 
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+        }
+    }    
     
     @PostConstruct
     public void init() {
