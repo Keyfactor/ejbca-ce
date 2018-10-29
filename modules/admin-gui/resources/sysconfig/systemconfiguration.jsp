@@ -510,7 +510,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</br>
 		</h:panelGroup>
 	
-		<t:dataTable value="#{systemConfigMBean.availableProtocols}" var="protocolinfos"
+		<t:dataTable value="#{systemConfigMBean.newAvailableProtocolInfos}" var="protocolinfos"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto; padding: 2em"
 					rowStyleClass="#{protocolinfos.enabled and protocolinfos.available ? 'activated-entry' : 'deactivated-entry'}">
 			<h:column>
@@ -529,7 +529,7 @@ org.cesecore.authorization.AuthorizationDeniedException
    				<f:facet name="header">
    					<h:outputText value="#{web.text.ACTIONS}"/>
    				</f:facet>
-				<h:commandButton action="#{systemConfigMBean.toggleProtocolStatus}" value="#{protocolinfos.enabled ? web.text.PC_ACTION_DISABLE : web.text.PC_ACTION_ENABLE}" 
+				<h:commandButton action="#{systemConfigMBean.toggleProtocolStatus(protocolinfos)}" value="#{protocolinfos.enabled ? web.text.PC_ACTION_DISABLE : web.text.PC_ACTION_ENABLE}" 
 					 rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}" disabled="#{!protocolinfos.available}"/>
 			</h:column>
 		</t:dataTable>
