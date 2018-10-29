@@ -53,9 +53,6 @@
 				value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}"
 				escape="false" />
 		</h1>
-		<div class="message">
-			<h:messages layout="table" errorClass="alert" />
-		</div>
 		<h:form id="cryptotokens">
 			<h:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}"
 				var="cryptoTokenGuiInfo" styleClass="grid"
