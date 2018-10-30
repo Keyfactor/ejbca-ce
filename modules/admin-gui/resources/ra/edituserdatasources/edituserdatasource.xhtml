@@ -74,13 +74,15 @@
                 <h:panelGroup id="general_settings"></h:panelGroup>
                 <h:outputLabel for="selectmodifyablefields" value="#{web.text.MODIFYABLEFIELDS}"/>
                 <h:selectManyListbox styleClass="select-list" id="selectmodifyablefields" name="selectmodifyablefields"
-                                     value="#{editUserDatasoucesMBean.datasource.modifiableFields}" size="10">
+                                     value="#{editUserDatasoucesMBean.datasource.modifiableFields}" size="10"
+                                     converter="javax.faces.Integer">
                     <f:selectItems value="#{editUserDatasoucesMBean.modifyableFieldSeletItemList}"/>
                 </h:selectManyListbox>
 
                 <h:outputLabel for="selectapplicablecas" value="#{web.text.APPLICABLECAS}"/>
                 <h:selectManyListbox styleClass="select-list" id="selectapplicablecas" name="selectapplicablecas"
-                                     value="#{editUserDatasoucesMBean.datasource.applicableCAs}" size="10">
+                                     value="#{editUserDatasoucesMBean.datasource.applicableCAs}" size="10"
+                                     converter="javax.faces.Integer">
                     <f:selectItems value="#{editUserDatasoucesMBean.applicableCAsSeletItemList}"/>
                 </h:selectManyListbox>
 
