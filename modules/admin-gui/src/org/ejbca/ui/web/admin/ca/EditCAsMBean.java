@@ -104,7 +104,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean useUserStorage = true;
     private boolean useCertificateStorage = true;
     private boolean isEditCA;
-    private boolean isCaTypeX509;
     private String caSubjectDN;
     private String currentCertProfile;
     private String defaultCertificateProfile;
@@ -136,7 +135,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private CmsCAServiceInfo cmscainfo = null; 
     private X509Certificate cmscert = null; 
     private List<ApprovalRequestItem> approvalRequestItems = null;
-    private Map<Integer, String> approvalProfileMap = getEjbcaWebBean().getApprovalProfileIdToNameMap();
     private String signatureAlgorithmParam = StringUtils.EMPTY;
     private String cryptoTokenIdParam = StringUtils.EMPTY;
     private String extendedServicesKeySpecParam = null;
@@ -153,17 +151,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     Map<String,Integer> casigners = getEjbcaWebBean().getActiveCANames();
     Map<Integer,String> publisheridtonamemap = getEjbcaWebBean().getPublisherIdToNameMapByValue();
     private boolean usePrintableStringSubjectDN;
-    private boolean useLdapDNOrder;
-    private String nameConstraintsPermitted;
-    private String nameConstraintsExcluded;
+    private boolean useLdapDNOrder = true; // Default in create ca page
+    private String nameConstraintsPermitted = StringUtils.EMPTY; // Default everywhere except editca page
+    private String nameConstraintsExcluded = StringUtils.EMPTY; // Default everywhere except editca page
     private String crlCaCRLDPExternal;
-    private boolean useAuthorityKeyIdentifier;
+    private boolean useAuthorityKeyIdentifier = true; // Default in create ca page
     private boolean authorityKeyIdentifierCritical;
-    private boolean useCrlNumber;
+    private boolean useCrlNumber = true; // Default
     private boolean crlNumberCritical;
     private boolean useCrlDistributiOnPointOnCrl;
     private boolean crlDistributionPointOnCrlCritical;
-    private String authorityInformationAccess;
+    private String authorityInformationAccess = StringUtils.EMPTY; // Default
     private boolean keepExpiredOnCrl;
     private String crlCaCrlPeriod;
     private String crlCaIssueInterval;
@@ -177,8 +175,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String certificateAiaDefaultCaIssuerUri;
     private List<String> usedValidators;
     private boolean serviceCmsActive;
-    private boolean finishUser;
-    private String sharedCmpRaSecret;
+    private boolean finishUser = true; // Default
+    private String sharedCmpRaSecret = StringUtils.EMPTY;
     private boolean includeInHealthCheck;
     private String signedBy;
     private String caEncodedValidity;
@@ -253,6 +251,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         CRYPTO_TOKEN_LINK = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() 
         + "cryptotoken/cryptotoken.jsf?cryptoTokenId=";
         
+        // Init include health check
+        includeInHealthCheck =  cainfo != null && cainfo.getIncludeInHealthCheck();
+        
         if (isEditCA) {
             initEditCaPage();
         } else {
@@ -309,6 +310,25 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caSubjectAltName = x509cainfo.getSubjectAltName();
         }
         
+        if (catype == CAInfo.CATYPE_X509) {
+            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+            if(x509cainfo != null) {
+                final List<String> uris = x509cainfo.getAuthorityInformationAccess();
+                authorityInformationAccess = null != uris ? StringUtils.join(uris, ";") : "";
+            }
+        }
+        
+        if (isCaexternal) {
+            crlCaCrlPeriod = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+            crlCaIssueInterval = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
+            crlCaOverlapTime = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
+            crlCaDeltaCrlPeriod = SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+        } else {
+            crlCaCrlPeriod = "1" + SimpleTime.TYPE_DAYS;
+            crlCaIssueInterval = "0" + SimpleTime.TYPE_MINUTES;
+            crlCaOverlapTime = "10" + SimpleTime.TYPE_MINUTES;
+            crlCaDeltaCrlPeriod = "0" + SimpleTime.TYPE_MINUTES;
+        } 
     }
     
     private void generateCryptoAlreadyInUseMap() {
@@ -442,6 +462,50 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                    this.policyId = policyId;
                }
              }
+            useUtf8Policy = x509cainfo.getUseUTF8PolicyText();
+            usePrintableStringSubjectDN = x509cainfo.getUsePrintableStringSubjectDN();
+            useLdapDNOrder = x509cainfo.getUseLdapDnOrder();
+            nameConstraintsExcluded = NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsExcluded());
+            nameConstraintsPermitted = NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsPermitted());
+            crlCaCRLDPExternal = x509cainfo.getExternalCdp();
+            useAuthorityKeyIdentifier = x509cainfo.getUseAuthorityKeyIdentifier();
+            authorityKeyIdentifierCritical = x509cainfo.getAuthorityKeyIdentifierCritical();
+            useCrlNumber = x509cainfo.getUseCRLNumber();
+            crlNumberCritical = x509cainfo.getCRLNumberCritical();
+            useCrlDistributiOnPointOnCrl = x509cainfo.getUseCrlDistributionPointOnCrl();
+            crlDistributionPointOnCrlCritical = x509cainfo.getCrlDistributionPointOnCrlCritical();
+
+            if (x509cainfo != null) {
+                final List<String> urisAuthorityInformationAccess = x509cainfo.getAuthorityInformationAccess();
+                final List<String> urisCertificateAiaDefaultCaIssuerUri = x509cainfo.getCertificateAiaDefaultCaIssuerUri();
+                authorityInformationAccess = null != urisAuthorityInformationAccess ? StringUtils.join(urisAuthorityInformationAccess, ";") : "";
+                certificateAiaDefaultCaIssuerUri = null != urisCertificateAiaDefaultCaIssuerUri ? StringUtils.join(urisCertificateAiaDefaultCaIssuerUri, ";") : "";
+            }
+            
+            keepExpiredOnCrl = x509cainfo.getKeepExpiredCertsOnCRL();
+            
+            if (isCaexternal) {
+                crlCaCrlPeriod = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+                crlCaIssueInterval = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
+                crlCaOverlapTime = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
+                crlCaDeltaCrlPeriod = SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+
+              } else {
+                crlCaCrlPeriod = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+                crlCaIssueInterval = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
+                crlCaOverlapTime = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
+                crlCaDeltaCrlPeriod =  SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
+              } 
+            
+
+
+        }
+        
+        serviceCmsActive = cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
+        finishUser = cainfo.getFinishUser();
+        
+        if (cainfo != null) {
+            sharedCmpRaSecret = ((X509CAInfo) cainfo).getCmpRaAuthSecret();
         }
         
         if (isCaUninitialized && catype == CAInfo.CATYPE_X509) {
@@ -976,12 +1040,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isUseUtf8Policy() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return isEditCA && x509cainfo.getUseUTF8PolicyText();
-        } else {
-            return this.useUtf8Policy;
-        }
+        return this.useUtf8Policy;
     }
     
     public void setUseUtf8Policy(final boolean utf8Policy) {
@@ -989,12 +1048,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isUsePrintableStringSubjectDN() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return isEditCA && x509cainfo.getUsePrintableStringSubjectDN();
-        } else {
-            return this.usePrintableStringSubjectDN;
-        }   
+        return this.usePrintableStringSubjectDN;
     }
     
     public void setUsePrintableStringSubjectDN(final boolean usePrintableStringSubjectDN) {
@@ -1002,12 +1056,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isUseLdapDNOrder() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return (isEditCA && x509cainfo.getUseLdapDnOrder()) || (!isEditCA);
-        } else {
-            return this.useLdapDNOrder;
-        }
+        return this.useLdapDNOrder;
     }
     
     public void setUseLdapDNOrder(final boolean useLdapDNOrder) {
@@ -1015,13 +1064,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getNameConstraintsPermittedString() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return !isEditCA ? ""
-                    : NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsPermitted());
-        } else {
-            return this.nameConstraintsPermitted;
-        }
+        return this.nameConstraintsPermitted;
     }
     
     public void setNameConstraintsPermittedString(final String nameConstraintsPermitted) {
@@ -1029,14 +1072,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getNameConstraintsExcludedString() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-
-            return !isEditCA ? ""
-                    : NameConstraint.formatNameConstraintsList(x509cainfo.getNameConstraintsExcluded());
-        } else {
-            return StringUtils.EMPTY;
-        }
+        return this.nameConstraintsExcluded;
     }
     
     public void setNameConstraintsExcludedString(final String nameConstraintsExcluded) {
@@ -1052,12 +1088,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCrlCaCRLDPExternal() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return isEditCA ? x509cainfo.getExternalCdp() : StringUtils.EMPTY;
-        } else {
-            return StringUtils.EMPTY;
-        }
+        return this.crlCaCRLDPExternal;
     }
     
     public void setCrlCaCRLDPExternal(final String crlCaCRLDPExternal) {
@@ -1065,12 +1096,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getCheckboxAuthorityKeyIdentifier() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            if ((isEditCA && x509cainfo.getUseAuthorityKeyIdentifier()) || !isEditCA)
-                return true;
-        }
-        return false;
+        return this.useAuthorityKeyIdentifier;
     }
     
     public void setCheckboxAuthorityKeyIdentifier(final boolean useAuthorityKeyIdentifier) {
@@ -1078,29 +1104,22 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getCheckboxAuthorityKeyIdentifierCritical() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            if(isEditCA){
-                if(!x509cainfo.getUseAuthorityKeyIdentifier() || isCaExternal())
-                    return false;
-                return x509cainfo.getAuthorityKeyIdentifierCritical();
-              }
-        }
-        return false;
+        return this.authorityKeyIdentifierCritical;
     }
     
     public void setCheckboxAuthorityKeyIdentifierCritical(final boolean authorityKeyIdentifierCritical) {
         this.authorityKeyIdentifierCritical = authorityKeyIdentifierCritical;
     }
     
+    public boolean isCheckboxAuthorityKeyIdentifierCriticalDisabled() {
+        if (isEditCA && catype == CAInfo.CATYPE_X509) {
+            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+            return !x509cainfo.getUseAuthorityKeyIdentifier() || isCaexternal;
+        }
+        return false;
+    }   
     
     public boolean getCheckboxUseCrlNumber() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            if ((isEditCA && x509cainfo.getUseCRLNumber()) || !isEditCA) {
-                return true;
-            }
-        }
         return this.useCrlNumber;
     }
     
@@ -1109,16 +1128,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getCheckboxCrlNumberCritical() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-
-            if (isEditCA) {
-                if (!x509cainfo.getUseCRLNumber() || isCaexternal)
-                    return false;
-                else
-                    return x509cainfo.getCRLNumberCritical();
-            }
-        }
         return this.crlNumberCritical;
     }
     
@@ -1126,11 +1135,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.crlNumberCritical = crlNumberCritical;
     }
     
-    public boolean getCheckboxUseCrlDistributiOnPointOnCrl() {
-        if (catype == CAInfo.CATYPE_X509) {
+    public boolean isCheckboxCrlNumberCriticalDisabled() {
+        if (isEditCA && catype == CAInfo.CATYPE_X509) {
             X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return isEditCA && x509cainfo.getUseCrlDistributionPointOnCrl();
+            return !x509cainfo.getUseCRLNumber() || isCaexternal;
         }
+        return false;
+    }
+    
+    public boolean getCheckboxUseCrlDistributiOnPointOnCrl() {
         return this.useCrlDistributiOnPointOnCrl;
     }
     
@@ -1139,16 +1152,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getCheckboxCrlDistributionPointOnCrlCritical() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-
-            if (isEditCA) {
-                if (!x509cainfo.getUseCrlDistributionPointOnCrl() || isCaexternal)
-                    return false;
-                else if (x509cainfo.getCrlDistributionPointOnCrlCritical())
-                    return true;
-            }
-        }
         return this.crlDistributionPointOnCrlCritical;
     }
     
@@ -1156,17 +1159,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
     }
     
-    public String getAuthorityInformationAccess() {
-        String authorityInformationAccess = StringUtils.EMPTY;
-        if (catype == CAInfo.CATYPE_X509) {
+    public boolean isCheckboxCrlDistributionPointOnCrlCriticalDisabled() {
+        if (isEditCA && catype == CAInfo.CATYPE_X509) {
             X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-
-            if (x509cainfo != null) {
-                final List<String> uris = x509cainfo.getAuthorityInformationAccess();
-                authorityInformationAccess = null != uris ? StringUtils.join(uris, ";") : "";
-            }
+            return !x509cainfo.getUseCrlDistributionPointOnCrl() || isCaexternal;
         }
-        return authorityInformationAccess;
+        return false;
+    }
+    
+    public String getAuthorityInformationAccess() {
+        return this.authorityInformationAccess;
+
     }
     
     public void setAuthorityInformationAccess(final String authorityInformationAccess) {
@@ -1174,12 +1177,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getCheckboxKeepExpiredOnCrl() {
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            if (isEditCA && x509cainfo.getKeepExpiredCertsOnCRL()) {
-                return true;
-            }
-        }
         return this.keepExpiredOnCrl;
     }
     
@@ -1188,13 +1185,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCrlCaCrlPeriod() {
-        if (isCaexternal) {
-            return SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-          } else if (isEditCA) {
-              return SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-          } else {
-              return  "1" + SimpleTime.TYPE_DAYS;
-          }
+        return this.crlCaCrlPeriod;
+
     }
     
     public void setCrlCaCrlPeriod(final String crlCaCrlPeriod) {
@@ -1202,13 +1194,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getCrlCaIssueInterval() {
-        if (isCaexternal) {
-            return SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
-        } else if (isEditCA) {
-            return SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
-        } else {
-            return "0" + SimpleTime.TYPE_MINUTES;
-        }
+        return this.crlCaIssueInterval;
     }
     
     public void setCrlCaIssueInterval(final String crlCaIssueInterval) {
@@ -1216,13 +1202,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }   
 
     public String getCrlCaOverlapTime() {
-        if (isCaexternal) {
-            return SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
-        } else if (isEditCA) {
-            return SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
-        } else {
-            return "10" + SimpleTime.TYPE_MINUTES;
-        }
+        return this.crlCaOverlapTime;
     }
 
     public void setCrlCaOverlapTime(final String crlCaOverlapTime) {
@@ -1230,13 +1210,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }       
     
     public String getCrlCaDeltaCrlPeriod() {
-        if (isCaexternal) {
-            return SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-        } else if (isEditCA) {
-            return SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-        } else {
-            return "0" + SimpleTime.TYPE_MINUTES;
-        }
+        return this.crlCaDeltaCrlPeriod;
     }
     
     public void setCrlCaDeltaCrlPeriod(final String crlCaDeltaCrlPeriod) {
@@ -1344,15 +1318,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }    
     
     public String getCertificateAiaDefaultCaIssuerUri() {
-        String certificateAiaDefaultCaIssuerUri = "";
-        if (catype == CAInfo.CATYPE_X509) {
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            if (x509cainfo != null) {
-                final List<String> uris = x509cainfo.getCertificateAiaDefaultCaIssuerUri();
-                certificateAiaDefaultCaIssuerUri = null != uris ? StringUtils.join(uris, ";") : "";
-            }
-        }
-        return certificateAiaDefaultCaIssuerUri;
+        return this.certificateAiaDefaultCaIssuerUri;
+
     }
     
     public void setCertificateAiaDefaultCaIssuerUri(final String certificateAiaDefaultCaIssuerUri) {
@@ -1440,11 +1407,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getCmsButtonStatus() {
-        if (isEditCA) {
-            return cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
-        } else {
-            return this.serviceCmsActive;
-        }
+        return this.serviceCmsActive;
     }
     
     public void setCmsButtonStatus(final boolean serviceCmsActive) {
@@ -1460,7 +1423,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getFinishUser() {
-        return (isEditCA && cainfo.getFinishUser()) || !isEditCA;
+        return this.finishUser;
     }
     
     public void setFinishUser(final boolean finishUser) {
@@ -1468,11 +1431,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCmpRaAuthSecretValue() {
-        if(isEditCA && cainfo != null) {
-            return ((X509CAInfo)cainfo).getCmpRaAuthSecret();
-        } else {
-            return this.sharedCmpRaSecret;
-        }
+        return this.sharedCmpRaSecret;
     }
     
     public void setCmpRaAuthSecretValue(final String cmpRaAuthSecretValue) {
@@ -1480,7 +1439,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean getIncludeInHealthCheck() {
-        return cainfo != null && cainfo.getIncludeInHealthCheck();
+        return this.includeInHealthCheck;
+        
     }
     
     public void setIncludeInHealthCheck(final boolean includeInHealthCheck) {

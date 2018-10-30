@@ -61,7 +61,6 @@ function checkcreatecafield(thetextfield, alerttext) {
 	return checkfieldforlegalchars(thetextfield, alerttext);
 }
 
-
 /**
  * Used in editcapage.xhtml
  * 

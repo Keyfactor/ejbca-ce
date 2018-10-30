@@ -102,7 +102,9 @@
 					<h:commandButton 
 							id="buttonsignrequest"
 							value="#{web.text.CREATEAUTHCSR}"
-							rendered="#{manageCAsMBean.canRenewResource}" /> <h:outputText
+							rendered="#{manageCAsMBean.canRenewResource}"
+							action="#{manageCAsMBean.createAuthCertSignRequest()}" /> 
+					<h:outputText
 							value="#{web.ejbcaWebBean.getHelpReference('/Signing_a_Rollover_Certificate.html')}"
 							escape="false" /></td>
 				</tr>
