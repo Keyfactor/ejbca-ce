@@ -164,7 +164,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         }
         Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData
                 .findDataByPublisherIdAndStatus(entityManager, publisherId, PublisherConst.STATUS_PENDING, 0);
-        if (datas.size() == 0) {
+        if (datas.isEmpty()) {
             log.debug("No publisher queue entries found for publisher " + publisherId);
         }
         Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();
@@ -236,7 +236,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
         Collection<PublisherQueueData> ret = new ArrayList<PublisherQueueData>();
         Collection<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> datas = org.ejbca.core.ejb.ca.publisher.PublisherQueueData
                 .findDataByFingerprint(entityManager, fingerprint);
-        if (datas.size() == 0) {
+        if (datas.isEmpty()) {
             log.debug("No publisher queue entries found for fingerprint " + fingerprint);
         } else {
             Iterator<org.ejbca.core.ejb.ca.publisher.PublisherQueueData> iter = datas.iterator();
@@ -516,9 +516,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     }
 
     private PublisherException getAsPublisherException(final Exception e) {
-        if (log.isDebugEnabled()) {
-            log.debug("Publisher threw exception", e);
-        }
+        log.debug("Publisher threw exception", e);
         if (e instanceof PublisherException) {
             return (PublisherException) e;
         }
