@@ -320,12 +320,17 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             log.error("Keystore file + '"+TEST_ADMIN_FILE+"' does not exist.");
             return;
         }
-
-        System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
-        System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
-        System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
-        System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
-
+        /* Similar to overriding system properties like
+         * 
+         *  System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
+         *  System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
+         *  System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
+         *  System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
+         * 
+         * but also ensures that these are actually loaded and used if another part of the JVM (like remote EJB CLI) has set these as well.
+         */
+        HttpsURLConnection.setDefaultSSLSocketFactory(getSSLFactory(TEST_ADMIN_FILE, PASSWORD.toCharArray())); 
+        
         createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
     }
 
@@ -488,14 +493,14 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
     }
     /** Getting SSL socket factory using the Admin cert created for client certificate authentication **/
-    private SSLSocketFactory getSSLFactory() throws IOException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException,
+    protected SSLSocketFactory getSSLFactory(final String keyStoreFile, final char[] keyStorePassword) throws IOException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException,
     CertificateException, KeyManagementException {
         // Put the key and certs in the user keystore (if available)
         java.security.KeyStore ks = java.security.KeyStore.getInstance("jks");
-        ks.load(new FileInputStream(TEST_ADMIN_FILE), PASSWORD.toCharArray());
+        ks.load(new FileInputStream(keyStoreFile), keyStorePassword);
         final KeyManagerFactory kmf;
         kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, PASSWORD.toCharArray());
+        kmf.init(ks, keyStorePassword);
         final KeyManager km[] = kmf.getKeyManagers();
 
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
@@ -516,7 +521,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         URL u = new URL(url);
         con = (HttpsURLConnection)u.openConnection();
         con.setHostnameVerifier(new SimpleVerifier());
-        con.setSSLSocketFactory(getSSLFactory());
+        con.setSSLSocketFactory(getSSLFactory(TEST_ADMIN_FILE, PASSWORD.toCharArray()));
         con.setRequestMethod("GET");
         con.getDoOutput();
         con.connect();
