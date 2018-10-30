@@ -117,7 +117,8 @@ public abstract class ProtocolOcspTestBase {
     protected int caid;
 
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class); // Stand alone OCSP version..
-
+    protected final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     ProtocolOcspTestBase(String protocol, String applicationPath, String resourceOcsp) throws MalformedURLException, URISyntaxException {
         httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
         httpPort = SystemTestsConfiguration.getRemotePortHttp("8080");
