@@ -1985,6 +1985,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public boolean isCVCAvailable() {
         return caBean.isCVCAvailable();
     }
+    
+    public boolean isRenderExternallySignedCaCreationRenewal() {
+        final int cryptoTokenId = catoken == null ? currentCryptoTokenId : catoken.getCryptoTokenId();
+        try {
+            return !isCaexternal && caBean.isCryptoTokenPresent(cryptoTokenId) && caBean.isCryptoTokenActive(cryptoTokenId) && isHasEditRight();
+        } catch (AuthorizationDeniedException e) {
+            log.error("Error calling ca bean!", e);
+        }
+        return false;
+    }
 
     public String createCa() {
         boolean illegaldnoraltname = false;
