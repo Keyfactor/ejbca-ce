@@ -501,10 +501,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         }
         
-        serviceCmsActive = cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
+        if (catype == CAInfo.CATYPE_X509) {
+            serviceCmsActive = cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
+        }
+
         finishUser = cainfo.getFinishUser();
         
-        if (cainfo != null) {
+        if (cainfo != null && catype == CAInfo.CATYPE_X509) {
             sharedCmpRaSecret = ((X509CAInfo) cainfo).getCmpRaAuthSecret();
         }
         
