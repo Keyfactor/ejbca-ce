@@ -98,7 +98,7 @@
 						&nbsp;
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:commandButton type="submit" id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');" value="#{web.text.IMPORTCA_KEYSTORE}" action="#{importCaMBean.importCaCertificate()}" />
+						<h:commandButton type="submit" id="buttonrecievefile" onclick="return checkFileRecieve('recievefile:filerecievefile', '#{web.text.YOUMUSTSELECT}');" value="#{web.text.IMPORTCA_KEYSTORE}" action="#{importCaMBean.importCaCertificate()}" />
 						&nbsp;&nbsp;&nbsp;
 						<h:commandButton id="buttoncancel" value="#{web.text.CANCEL}" action="managecas" immediate="true"/>
 					</h:panelGroup>
