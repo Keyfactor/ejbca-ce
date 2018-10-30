@@ -26,6 +26,11 @@
 	$Id$
 	-->
 </ui:remove>
+
+<f:metadata>
+    <f:event type="preRenderView" listener="#{importCaCertMBean.initAccess}"/>
+</f:metadata>
+
 <h:body>
 
 	<c:set var="row" value="0" />
