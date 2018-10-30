@@ -512,7 +512,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)
                 && authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
-            if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
+            if (!ret && userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 ret = false;
             }
             Collection<Integer> authorizedcas = caSession.getAuthorizedCaIds(admin);
