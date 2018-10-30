@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -212,7 +213,7 @@ public class MultiGroupPublisher extends BasePublisher {
         }
         log.debug("Done testing publishers in multi group publisher.");
         if (publisherException != null) {
-            final String msg = "Publishers [" + String.join(", ", failedNames) + "] failed. First failure: " +publisherException.getMessage();
+            final String msg = "Publishers [" + StringUtils.join(failedNames, ", ") + "] failed. First failure: " +publisherException.getMessage();
             log.info(msg, publisherException);
             throw new PublisherConnectionException(msg, publisherException);
         }
