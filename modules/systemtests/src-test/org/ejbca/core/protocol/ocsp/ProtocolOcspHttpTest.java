@@ -115,6 +115,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -255,7 +256,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             + "QuTvzwEXmrTMbbrPY2o1GOS8ulwOp1VI8PcOyGwRpHXzpRZPv2u9gTmYgnfu2PcU" + "F8NfHRFnPzFkO95KYFTYxZrg3vrU49IRJXqbjaeruQaKxPibxTDOsatJpWYAnw/s"
             + "KuCHXrnUlw5RLeublCbUAAAAAAAAAAAAAAAAAAAAAAAAMD0wITAJBgUrDgMCGgUA" + "BBRo3arw4fuHPsqvDnvA8Q/TLyjoRQQU3Xm6ZsAJT0/iLV7S3mKeme0FVGACAgQA" + "AAA=")
             .getBytes());
-
+    
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
@@ -1519,7 +1520,30 @@ Content-Type: text/html; charset=iso-8859-1
         log.trace("<testRootCACertNotIncludedInResponse()");
     }
 
-    
+    /**
+     * Attempts to perform OCSP lookup on a certificate with limited meta data
+     * @throws Exception
+     */
+    @Test
+    public void testOcspLookupWithLimitedCertificateData() throws Exception {
+        loadUserCert(this.caid);
+        // Delete currently stored certificate
+        internalCertStoreSession.removeCertificate(this.ocspTestCert);
+        // Update database (same certificate) with limited meta data
+        internalCertStoreSession.storeCertificateNoAuth(admin, 
+                this.ocspTestCert, 
+                null,
+                "someOtherFingerprint", 
+                CertificateConstants.CERT_ACTIVE, 
+                CertificateConstants.CERTTYPE_ENDENTITY, 
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
+                null, 
+                System.currentTimeMillis());
+        this.helper.reloadKeys();
+        this.helper.verifyStatusGood(this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
+        
+    }
     
     
     /**
