@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
@@ -180,10 +181,16 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     private void setUpNonAdmin() throws Exception {
         if (new File(TEST_NONADMIN_FILE).exists()) {
-            System.setProperty("javax.net.ssl.trustStore", TEST_NONADMIN_FILE);
-            System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
-            System.setProperty("javax.net.ssl.keyStore", TEST_NONADMIN_FILE);
-            System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
+            /* Similar to overriding system properties like
+             * 
+             *  System.setProperty("javax.net.ssl.trustStore", TEST_NONADMIN_FILE);
+             *  System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
+             *  System.setProperty("javax.net.ssl.keyStore", TEST_NONADMIN_FILE);
+             *  System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
+             * 
+             * but also ensures that these are actually loaded and used if another part of the JVM (like remote EJB CLI) has set these as well.
+             */
+            HttpsURLConnection.setDefaultSSLSocketFactory(getSSLFactory(TEST_NONADMIN_FILE, PASSWORD.toCharArray()));
             createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
         } else {
             log.error("No file '"+TEST_NONADMIN_FILE+"' exists.");
