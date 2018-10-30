@@ -4,8 +4,8 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
 >
 
 <ui:remove>
@@ -28,61 +28,48 @@
 </ui:remove>
 <h:body>
 
-	<c:set var="row" value="0" />
+  	<ui:param name="row" value="0" />
 	<ui:composition template="/WEB-INF/include/template.xhtml">
 		<ui:define name="content">
 			<h2>
-				<h:outputText value="#{web.text.IMPORTCA_CERTIFICATE}" />
+				<h:outputText value="#{web.text.SIGNREQUEST}" />
 			</h2>
-
-			<h:form id="recievefile"
-				method="post" enctype='multipart/form-data'>
+			<h3>
+				<h:outputText value="#{certSignRequestMBean.getSelectedCaNameSignCertRequest()}" />
+			</h3>
+		<h:form id="signcertrequest" enctype="multipart/form-data">
+		
 				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
-					columnClasses="editColumn1,editColumn2">
+					columnClasses="editColumn1,editColumn2">		
 					<h:panelGroup>
 						&nbsp;
 					</h:panelGroup>
+					
 					<h:outputLink value="managecas.xhtml">
 						<h:outputText value="#{web.text.BACKTOCAS}" />
 					</h:outputLink>
-
-					<h:panelGroup>
-						<h:outputLabel for="textfieldimportcaname"
-							value="#{web.text.IMPORTCA_CANAME}" style="font-weight: bold;" />
-					</h:panelGroup>
-					<h:panelGroup>
-						<h:inputText id="textfieldimportcaname" value="#{importCaCertMBean.importCaCertName}"
-							title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255">
-						</h:inputText>
-					</h:panelGroup>
-
+				
 					<h:panelGroup>
 						<h:outputLabel for="filerecievefile"
-							value="#{web.text.IMPORTCA_CERTIFICATEFILE}"
-							style="font-weight: bold;" />
+							value="#{web.text.PROCESSREQUEST_FILEPATH}"/>
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Creating_a_SubCA_Signed_by_an_External_CA.html')}" escape="false"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<t:inputFileUpload id="filerecievefile" value="#{importCaCertMBean.uploadedFile}" required="true" 
-						label="File containing full CA certificate chain in PEM format"/>
+						<t:inputFileUpload id="filerecievefile" value="#{certSignRequestMBean.uploadedFile}" required="true" label="Certificate request to sign"/>
 					</h:panelGroup>
-
+					
+					<h:panelGroup />
 					<h:panelGroup>
-						&nbsp;
+						<h:commandButton type="submit" id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');" 
+						value="#{web.text.SIGNREQUEST}" action="#{certSignRequestMBean.signRequest()}" />
+						&nbsp;&nbsp;&nbsp;
+						<h:commandButton id="buttoncancel" value="#{web.text.CANCEL}" action="managecas" immediate="true"/>
 					</h:panelGroup>
-
-					<h:panelGroup>
-						<h:commandButton 
-							id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');"
-							value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{importCaCertMBean.importCaCertificate()}"/>
-						<h:commandButton id="buttoncancel"
-							value="#{web.text.CANCEL}" action="managecas" immediate="true"/>
-					</h:panelGroup>
-
-				</h:panelGrid>
-			</h:form>
+					
+					</h:panelGrid>		
+		</h:form>
 		</ui:define>
 	</ui:composition>
 </h:body>
 </html>
-
