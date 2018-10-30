@@ -26,6 +26,11 @@
 	$Id$
 	-->
 </ui:remove>
+
+<f:metadata>
+    <f:event type="preRenderView" listener="#{importCaMBean.initAccess}"/>
+</f:metadata>
+
 <h:body>
 
   	<ui:param name="row" value="0" />
