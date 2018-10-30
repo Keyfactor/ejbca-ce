@@ -5,7 +5,7 @@
 	<property name="build-common.dir" location="${ejbca-common.dir}/build-common"/>
 	<property name="src.dir" location="${ejbca-common.dir}/src"/>
 	<property name="src-test.dir" location="${ejbca-common.dir}/src-test"/>
-	<!-- configdump, systemtests modules depends on /build-test -->
+	<!-- configdump, systemtests modules depend on /build-test -->
 	<property name="build-test.dir" location="${ejbca-common.dir}/build-test"/>
 
     <import file="${ejbca-common.dir}/../build.xml"/>
@@ -170,7 +170,7 @@
 		</junit>
 	</target>
 
-	<!-- configdump, systemtests modules depends on this target -->
+	<!-- configdump, systemtests modules depend on this target -->
 	<target name="compile-tests" depends="with.clover, cesecore-ejb, ejbca-ejb">
 		<mkdir dir="${build-test.dir}" />
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
