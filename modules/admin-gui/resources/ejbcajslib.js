@@ -30,8 +30,8 @@ function checkAll(checkboxlist,size) {
  * @param message the message to be printed in case no file is selected to import
  * @returns false if no file selected for import, true otherwise
  */
-function checkFileRecieve(message) {
-	if (document.getElementById('recievefile:filerecievefile').value == '') {
+function checkFileRecieve(element, message) {
+	if (document.getElementById(element).value == '') {
 		alert(message);
 		return false;
 	}

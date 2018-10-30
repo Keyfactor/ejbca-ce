@@ -61,7 +61,7 @@
 					
 					<h:panelGroup />
 					<h:panelGroup>
-						<h:commandButton type="submit" id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');" 
+						<h:commandButton type="submit" id="buttonrecievefile" onclick="return checkFileRecieve('signcertrequest:filerecievefile', '#{web.text.YOUMUSTSELECT}');" 
 						value="#{web.text.SIGNREQUEST}" action="#{certSignRequestMBean.signRequest()}" />
 						&nbsp;&nbsp;&nbsp;
 						<h:commandButton id="buttoncancel" value="#{web.text.CANCEL}" action="managecas" immediate="true"/>

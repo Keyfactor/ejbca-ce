@@ -73,7 +73,7 @@
 
 					<h:panelGroup>
 						<h:commandButton 
-							id="buttonrecievefile" onclick="return checkFileRecieve('#{web.text.YOUMUSTSELECT}');"
+							id="buttonrecievefile" onclick="return checkFileRecieve('recievefile:filerecievefile', '#{web.text.YOUMUSTSELECT}');"
 							value="#{web.text.IMPORTCA_CERTIFICATE}" action="#{importCaCertMBean.importCaCertificate()}"/>
 						<h:commandButton id="buttoncancel"
 							value="#{web.text.CANCEL}" action="managecas" immediate="true"/>
