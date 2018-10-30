@@ -938,7 +938,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public ArrayList<ProtocolGuiInfo> getNewAvailableProtocolInfos() {
+    public ArrayList<ProtocolGuiInfo> getAvailableProtocolInfos() {
         ArrayList<ProtocolGuiInfo> protocolInfos = new ArrayList<>();
         LinkedHashMap<String, Boolean> allPC = getAvailableProtocolsConfiguration().getAllProtocolsAndStatus();
         for (Entry<String, Boolean> entry : allPC.entrySet()) {
