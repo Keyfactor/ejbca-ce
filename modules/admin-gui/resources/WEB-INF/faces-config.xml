@@ -401,6 +401,14 @@
   		<from-outcome>manage</from-outcome>
   		<to-view-id>/peerconnector/peermgmt.jsp</to-view-id>
   	</navigation-case>
+  	<navigation-case>
+        	<from-outcome>peerprocessauth</from-outcome>
+	        <to-view-id>/peerconnector/peerprocessauth.jsp</to-view-id>
+    	</navigation-case>
+  		<navigation-case>
+	        <from-outcome>peerinauth</from-outcome>
+        	<to-view-id>/peerconnector/peerinauth.jsp</to-view-id>
+	</navigation-case>
   </navigation-rule>
   <navigation-rule>
   	<from-view-id>/peerconnector/peerconnector.xhtml</from-view-id>
