@@ -57,8 +57,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private boolean isEditCA;
     CADataHandler cadatahandler;
     Map<Integer, String> caidtonamemap;
-
-
     
     public String getCreateCaName() {
         return createCaName;
@@ -206,18 +204,15 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             cadatahandler.removeCA(selectedCaId);
         } catch (AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
-            log.error("Error while calling remove ca function!", e);
         }
         return EditCaUtil.MANAGE_CA_NAV;
     }
     
     public String renameCA() {
         if (canames.containsKey(createCaName)) {
-            log.error("Ca already exists!");
             addErrorMessage("Ca " + createCaName + " already exists!");
             return EditCaUtil.MANAGE_CA_NAV;
         } else if (selectedCaId == 0) {
-            log.error("Select a CA to rename first!");
             addErrorMessage("Select a CA to rename first!");
             return EditCaUtil.MANAGE_CA_NAV;
         }
@@ -225,11 +220,19 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         try {
             cadatahandler.renameCA(selectedCaId, createCaName);
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            log.error("Error happened while renaming ca! ", e);
             addErrorMessage(e.getMessage());
         } 
         return EditCaUtil.MANAGE_CA_NAV;
     }
-
-
+    
+    public String createAuthCertSignRequest() {
+        if (selectedCaId != 0) {
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
+            return EditCaUtil.SIGN_CERT_REQ_NAV;
+        } else {
+            addErrorMessage("Select a ca first!");
+            return EditCaUtil.MANAGE_CA_NAV;
+        }
+    }
 }

@@ -659,11 +659,11 @@
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxauthoritykeyidentifier" 
-						value="#{editCAsMBean.checkboxAuthorityKeyIdentifier}" disabled="#{not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.checkboxAuthorityKeyIdentifier}" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"/>
 					<h:outputLabel for="checkboxauthoritykeyidentifier" value="#{web.text.USE}"/>
 					&nbsp;
 					<h:selectBooleanCheckbox id="checkboxauthoritykeyidentifiercritical" 
-						value="#{editCAsMBean.checkboxAuthorityKeyIdentifierCritical}" disabled="#{not editCAsMBean.hasEditRight}"/>	
+						value="#{editCAsMBean.checkboxAuthorityKeyIdentifierCritical}" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxAuthorityKeyIdentifierCriticalDisabled}"/>	
 					<h:outputLabel for="checkboxauthoritykeyidentifiercritical" value="#{web.text.EXT_CRITICAL}"/>
 				</h:panelGroup>
 				
@@ -673,11 +673,11 @@
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxusecrlnumber" 
-						value="#{editCAsMBean.checkboxUseCrlNumber}" disabled="#{not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.checkboxUseCrlNumber}" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"/>
 					<h:outputLabel for="checkboxusecrlnumber" value="#{web.text.USE}"/>
 					&nbsp;
 					<h:selectBooleanCheckbox id="checkboxcrlnumbercritical" 
-						value="#{editCAsMBean.checkboxCrlNumberCritical}" disabled="#{not editCAsMBean.hasEditRight}"/>	
+						value="#{editCAsMBean.checkboxCrlNumberCritical}" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxCrlNumberCriticalDisabled}"/>	
 					<h:outputLabel for="checkboxcrlnumbercritical" value="#{web.text.EXT_CRITICAL}"/>
 				</h:panelGroup>
 
@@ -689,11 +689,11 @@
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl" 
-						value="#{editCAsMBean.checkboxUseCrlDistributiOnPointOnCrl}" disabled="#{not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.checkboxUseCrlDistributiOnPointOnCrl}" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"/>
 					<h:outputLabel for="checkboxusecrldistributionpointoncrl" value="#{web.text.USE}"/>
 					&nbsp;
 					<h:selectBooleanCheckbox id="checkboxcrldistributionpointoncrlcritical" 
-						value="#{editCAsMBean.checkboxCrlDistributionPointOnCrlCritical}"  disabled="#{not editCAsMBean.hasEditRight}"/>	
+						value="#{editCAsMBean.checkboxCrlDistributionPointOnCrlCritical}"  disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.checkboxCrlDistributionPointOnCrlCriticalDisabled}"/>	
 					<h:outputLabel for="checkboxcrldistributionpointoncrlcritical" value="#{web.text.EXT_CRITICAL}"/>
 				</h:panelGroup>
 				
@@ -704,11 +704,11 @@
 					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_CA_Issuer_URI')}" escape="false"/>
 				</h:panelGroup>
 				
-				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+				<h:panelGroup>
 					<h:outputText 
-						value="#{editCAsMBean.authorityInformationAccess}" />
+						value="#{editCAsMBean.authorityInformationAccess}" rendered="#{editCAsMBean.caExternal}"/>
 					<h:inputText size="40" maxlength="256" name="textfieldauthorityinformationaccess"
-						value="#{editCAsMBean.authorityInformationAccess}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.authorityInformationAccess}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}" rendered="#{not editCAsMBean.caExternal}"/>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
@@ -719,7 +719,7 @@
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxkeepexpiredoncrl" 
-						value="#{editCAsMBean.checkboxKeepExpiredOnCrl}" disabled="#{not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.checkboxKeepExpiredOnCrl}" disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}"/>
 					<h:outputLabel for="checkboxkeepexpiredoncrl" value="#{web.text.USE}"/>
 				</h:panelGroup>				
 				
@@ -736,7 +736,7 @@
 					<h:outputText 
 						value="#{editCAsMBean.crlCaCrlPeriod}" rendered = "#{editCAsMBean.caExternal}" />
 					<h:inputText size="20" maxlength="255" name="textfieldcrlperiod" id="textfieldcrlperiod"
-						value="#{editCAsMBean.crlCaCrlPeriod}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}" 
+						value="#{editCAsMBean.crlCaCrlPeriod}" disabled="#{not editCAsMBean.hasEditRight}" 
 						label="Ca Crl Period" style="border:2px solid #FFC300" required="true"/>
 						&nbsp; 
 					<h:outputText 
@@ -756,7 +756,7 @@
 					<h:outputText 
 						value="#{editCAsMBean.crlCaIssueInterval}" rendered = "#{editCAsMBean.caExternal}" />
 					<h:inputText size="20" maxlength="255" name="textfieldcrlissueinterval" 
-						value="#{editCAsMBean.crlCaIssueInterval}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.crlCaIssueInterval}" disabled="#{not editCAsMBean.hasEditRight}"/>
 						&nbsp; 
 					<h:outputText 
 						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}"  />
@@ -775,7 +775,7 @@
 					<h:outputText 
 						value="#{editCAsMBean.crlCaOverlapTime}" rendered = "#{editCAsMBean.caExternal}" />
 					<h:inputText size="20" maxlength="255" name="textfieldcrloverlaptime" 
-						value="#{editCAsMBean.crlCaOverlapTime}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.crlCaOverlapTime}" disabled="#{not editCAsMBean.hasEditRight}"/>
 						&nbsp; 
 					<h:outputText 
 						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}"  />
@@ -793,7 +793,7 @@
 					<h:outputText 
 						value="#{editCAsMBean.crlCaOverlapTime}" rendered = "#{editCAsMBean.caExternal}" />
 					<h:inputText size="20" maxlength="255" name="textfielddeltacrlperiod" id="textfielddeltacrlperiod"
-						value="#{editCAsMBean.crlCaDeltaCrlPeriod}" disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}" 
+						value="#{editCAsMBean.crlCaDeltaCrlPeriod}" disabled="#{not editCAsMBean.hasEditRight}" 
 						label="Ca Delta Crl Period" style="border:2px solid #FFC300" required="true"/>
 						&nbsp;
 					<br />	 
