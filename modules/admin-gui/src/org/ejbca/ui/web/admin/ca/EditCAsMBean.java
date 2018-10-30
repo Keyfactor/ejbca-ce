@@ -666,12 +666,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (this.cainfo != null) {
             String signAlgorithm = cainfo.getCAToken().getSignatureAlgorithm();
             if (signAlgorithm != null) {
-                this.currentCaSigningAlgorithm = signAlgorithm;
+                return signAlgorithm;
             } else {
-                this.currentCaSigningAlgorithm = getEjbcaWebBean().getText("NOTUSED");
+                return getEjbcaWebBean().getText("NOTUSED");
             }
         }
-        return this.currentCaSigningAlgorithm;
+        return StringUtils.EMPTY;
     }
     
     public String getEditCAPageTitle() {
@@ -710,16 +710,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getCurrentCaCryptoTokenName() {
-        if(cainfo != null) {
+        if (cainfo != null) {
             try {
                 return caBean.getCryptoTokenName(cainfo.getCAToken().getCryptoTokenId());
             } catch (AuthorizationDeniedException e) {
                 log.error("Error while getting crypto token name!", e);
-                return StringUtils.EMPTY;
             }
-        } else {
-            return StringUtils.EMPTY;
         }
+        return StringUtils.EMPTY;
     }
     
     public boolean isCurrentCaCryptoTokenPresent() {
@@ -728,7 +726,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return caBean.isCryptoTokenPresent(cainfo.getCAToken().getCryptoTokenId());
             } catch (AuthorizationDeniedException e) {
                 log.error("Error while getting the ca info!", e);
-                return false;
             }
         }
         return false;

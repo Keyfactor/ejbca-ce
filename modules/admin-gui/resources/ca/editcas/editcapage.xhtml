@@ -116,6 +116,14 @@
 							value="#{web.text.CRYPTOTOKEN}" style="font-weight: bold;" />
 						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Managing_Crypto_Tokens.html')}" escape="false"/>
 					</h:panelGroup>
+
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+						<h:outputLink value="#{editCAsMBean.currentCaCryptoTokenLink}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" >
+							<h:outputText value="#{editCAsMBean.currentCaCryptoTokenName}" />
+						</h:outputLink>
+						<h:outputText value="#{editCAsMBean.currentCaCryptoTokenName}" rendered="#{not editCAsMBean.currentCaCryptoTokenPresent}"/>
+					</h:panelGroup>
+
 					
  					<h:panelGroup rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
  						<h:outputText value="#{web.text.CRYPTOTOKEN_NOSUITABLE}" rendered="#{not editCAsMBean.cryptoTokenSuitable}" />
@@ -144,63 +152,59 @@
 						</ui:repeat>	
 					</h:panelGroup>
 					
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
-						<h:outputLink value="#{editCAsMBean.currentCaCryptoTokenLink}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" >
-							<h:outputText id="getcryptotoken" value="#{editCAsMBean.currentCaCryptoTokenName}" />
-						</h:outputLink>
-					</h:panelGroup>
+
 					
 					<!-- Edit CA -->
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputLabel for="defaultKey" value="defaultKey" />
 					</h:panelGroup>
 					
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputText id="defaultKey"
 							value="#{editCAsMBean.currentCaCryptoTokenDefaultKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 					</h:panelGroup>
 					
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputLabel for="certSignKey"
 							value="certSignKey" />
 					</h:panelGroup>
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputText id="certSignKey"
 							value="#{editCAsMBean.currentCaCryptoTokenCertSignKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 					</h:panelGroup>
 
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputLabel for="crlSignKey"
 							value="crlSignKey" />
 					</h:panelGroup>
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputText id="crlSignKey"
 							value="#{editCAsMBean.currentCaCryptoTokenCrlSignKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 					</h:panelGroup>
 
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputLabel for="keyEncryptKey"
 							value="keyEncryptKey" />
 					</h:panelGroup>
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputText id="keyEncryptKey"
 							value="#{editCAsMBean.currentCaCryptoTokenKeyEncryptKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 					</h:panelGroup>
 
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputLabel for="hardTokenEncrypt"
 							value="hardTokenEncrypt" />
 					</h:panelGroup>
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputText id="hardTokenEncrypt"
 							value="#{editCAsMBean.currentCaCryptoTokenHardTokenEncrypt}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 					</h:panelGroup>
 
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputLabel for="testKey"
 							value="testKey" />
 					</h:panelGroup>
-					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					<h:panelGroup rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputText id="testKey"
 							value="#{editCAsMBean.currentCaCryptoTokenTestKey}" rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 					</h:panelGroup>
