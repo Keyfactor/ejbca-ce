@@ -510,7 +510,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 			</br>
 		</h:panelGroup>
 	
-		<t:dataTable value="#{systemConfigMBean.newAvailableProtocolInfos}" var="protocolinfos"
+		<t:dataTable value="#{systemConfigMBean.availableProtocolInfos}" var="protocolinfos"
 					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto; padding: 2em"
 					rowStyleClass="#{protocolinfos.enabled and protocolinfos.available ? 'activated-entry' : 'deactivated-entry'}">
 			<h:column>
