@@ -38,12 +38,10 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * @version $Id: HardTokenIssuerMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
  */
-//@ManagedBean
-//@ViewScoped
+
 public class HardTokenIssuerMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(HardTokenIssuerMBean.class);
 
     HardTokenInterfaceBean tokenbean;
 
@@ -55,7 +53,7 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
     private String newHardTokenIssuer;
     private int newRoleId;
 
-    public void initialize(ComponentSystemEvent event)  throws Exception {
+    public void initialize(ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS);
@@ -66,7 +64,7 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
             } catch (ClassNotFoundException exc) {
                 throw new ServletException(exc.getMessage());
             } catch (Exception exc) {
-                throw new ServletException(" Cannot create bean of class " + HardTokenInterfaceBean.class.getName(), exc);
+                throw new ServletException("Cannot create bean of class " + HardTokenInterfaceBean.class.getName(), exc);
             }
             req.getSession().setAttribute("tokenbean", tokenbean);
         }
@@ -77,9 +75,9 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
         }
     }
 
-    public List<SelectItem> getHardTokenIssuereSeletItemList() {
+    public List<SelectItem> getHardTokenIssuerSeleсtItemList() {
         final Map<Integer, String> adminIdToNameMap = tokenbean.getRoleIdToNameMap();
-        TreeMap<String, HardTokenIssuerInformation> hardTokenIssuers = getEjbcaWebBean().getHardTokenIssuers();
+        final TreeMap<String, HardTokenIssuerInformation> hardTokenIssuers = getEjbcaWebBean().getHardTokenIssuers();
         final List<SelectItem> ret = new ArrayList<>();
         for (Map.Entry<String, HardTokenIssuerInformation> hardTokenIssuer : hardTokenIssuers.entrySet()) {
             String label = hardTokenIssuer.getKey() + ", " + adminIdToNameMap.get(hardTokenIssuer.getValue().getRoleDataId());
@@ -88,7 +86,7 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
         return ret;
     }
 
-    public List<SelectItem>  getHardTokenIssuingRoles(){
+    public List<SelectItem> getHardTokenIssuingRoles() {
         final List<SelectItem> ret = new ArrayList<>();
         for (Role role : tokenbean.getHardTokenIssuingRoles()) {
             ret.add(new SelectItem(role.getRoleId(), role.getRoleNameFull()));
@@ -98,12 +96,13 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
 
     public void addHardTokenIssuer() throws AuthorizationDeniedException {
         if (newHardTokenIssuer != null) {
-            if (StringUtils.isNotEmpty(newHardTokenIssuer.trim())) {
+            newHardTokenIssuer = newHardTokenIssuer.trim();
+            if (StringUtils.isNotEmpty(newHardTokenIssuer)) {
                 if (!StringTools.checkFieldForLegalChars(newHardTokenIssuer)) {
                     addErrorMessage("ONLYCHARACTERS");
                 } else {
                     try {
-                        tokenbean.addHardTokenIssuer(newHardTokenIssuer.trim(), newRoleId);
+                        tokenbean.addHardTokenIssuer(newHardTokenIssuer, newRoleId);
                         newHardTokenIssuer = null;
                         newRoleId = -1;
                     } catch (HardTokenIssuerExistsException e) {
@@ -124,10 +123,10 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
                     addErrorMessage("ONLYCHARACTERS");
                 } else {
                     try {
-                        tokenbean.renameHardTokenIssuer(selectedHardTokenIssuer, newHardTokenIssuer.trim(), newRoleId);
+                        tokenbean.renameHardTokenIssuer(selectedHardTokenIssuer, newHardTokenIssuer, newRoleId);
                         newHardTokenIssuer = null;
                     } catch (HardTokenIssuerExistsException e) {
-                        addErrorMessage("USERDATASOURCEALREADY");
+                        addErrorMessage("ISSUERALREADYEXISTS");
                     }
                 }
             }
