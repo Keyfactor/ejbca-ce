@@ -1156,9 +1156,19 @@ SHA-256 checksum: ${cesecorebinSHA256}
         <property name="revision" value="COMMITTED"/>	
 		
         <!-- find out svn.revision of HEAD, need svn.exe installed on local machine will end up in property ${Revision} -->
-        <exec executable="svn" output="svnlog.out">
+        <exec executable="svn" output="svnlog.out" failonerror="false" failifexecutionfails="false" resultproperty="exec.svn.errorcode">
             <arg line="info -r ${revision} --force-interactive"/>
         </exec>
+        <!-- Allow the revision to be specified using -Drelease.revision=12345 on systems where the "svn" CLI is not avilable. -->
+        <condition property="failifsvnfails" value="true">
+            <and>
+            	<not><isset property="release.revision"/></not>
+                <!-- Either the executable did not start (and hence this is unset) or the command failed with an error code. -->
+                <not><equals arg1="${exec.svn.errorcode}" arg2="0"/></not>
+            </and>
+        </condition>
+		<fail if="failifsvnfails" message="Failed to get current version using 'svn' CLI. Consider installing subversion or use -Drelease.revision=&lt;number&gt;."/>
+		<echo message="" append="true" file="svnlog.out"/>
 		<loadproperties srcFile="svnlog.out">
 		      <filterchain>
 		        <linecontains>
@@ -1166,6 +1176,8 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		        </linecontains>
 		      </filterchain>
 		</loadproperties>
+        <!-- If we failed to get the SVN revision from the CLI command, use the specified one -->
+        <property name="Revision" value="${release.revision}"/>
 		<delete file="svnlog.out"/>
 		<antcall target="update-svnrev-updatefile" /> <!-- do update of file only if property is set -->
     </target>
