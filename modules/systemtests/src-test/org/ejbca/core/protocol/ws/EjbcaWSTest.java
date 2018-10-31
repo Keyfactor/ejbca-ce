@@ -191,11 +191,12 @@ import org.junit.runners.MethodSorters;
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
  * <p>
- * The tests have four pre-requisites (all fulfilled in a "default" EJBCA installation):
+ * The tests have five pre-requisites (all fulfilled in a "default" EJBCA installation):
  * <li>A CA named ManagementCA or AdminCA1 must exist.
  * <li>That CA must be trusted in the appserver truststore.
  * <li>That CA must have issued the EJBCA server certificate.
  * <li>An admin end-entity with username "superadmin" must exist.
+ * <li>If EJBCA is not running on localhost, then target.hostname must be configured in systemtests.properties
  * 
  * @version $Id$
  */
