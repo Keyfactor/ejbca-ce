@@ -525,17 +525,15 @@ public class RequestInstance {
         } catch (IncomatibleTokenTypeException re) {
             iErrorMessage = intres.getLocalizedMessage("certreq.csrreceivedforservergentoken");
 		} catch (SignRequestException re) {
-		    log.error(re.getMessage(), re);
+		    log.info(re.getMessage(), re);
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq", re.getMessage());
 		} catch (SignRequestSignatureException se) {
 			String iMsg = intres.getLocalizedMessage("certreq.invalidsign");
-			log.error(iMsg, se);
+			log.info(iMsg, se);
 			debug.printMessage(iMsg);
 			debug.printDebugInfo();
 			return;
-		} catch (ArrayIndexOutOfBoundsException ae) {
-			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
-		} catch (DecoderException de) {
+		} catch (ArrayIndexOutOfBoundsException | DecoderException ae) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
 		} catch (IllegalKeyException e) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidkey", e.getMessage());
@@ -589,7 +587,8 @@ public class RequestInstance {
                         debug.print(HTMLTools.htmlescape(name) + ": <hidden>\n");
                     }
 				}
-				debug.takeCareOfException(e);
+				// Don't print back details to the client, this is considered information leak
+				//debug.takeCareOfException(e);
 				debug.printDebugInfo();
 			}
 		}
