@@ -90,17 +90,6 @@
         </echo>
     </target>
 
-	<condition property="update.from.confluence" value="true" else="false">
-		<istrue value="${doc.update}"/>
-    </condition>
-    
-    <condition property="connected.to.confluence" value="true" else="false">
-        <and>
-            <istrue value="${doc.update}"/>          
-    	    <isreachable url="http://${confluence.url}" timeout="2"/>
-    	</and>	
-    </condition>
-
     <condition property="mod.rest-api.exists">
         <available file="${mod.ejbca-rest-api.path}/build.xml" />
     </condition>
@@ -109,6 +98,10 @@
         <available file="${mod.acme.path}/build.xml" />
     </condition>
 
+    <condition property="update.from.confluence" value="true" else="false">
+        <istrue value="${doc.update}"/>
+    </condition>
+    
 	<target name="doc-confluence">
 		<antcall target="doc-confluence-from-server"/>
 		<antcall target="doc-confluence-copy-local"/>
@@ -118,7 +111,13 @@
 	    <delete dir="${docs.dest}" />
 	    <mkdir dir="${docs.dest}"/>
 	    
-		<fail message="Could not contact Confluence Server at http://${confluence.url}:${confluence.port}">
+        <condition property="connected.to.confluence" value="true" else="false">
+            <and>
+                <istrue value="${doc.update}"/>          
+                <isreachable url="http://${confluence.url}:${confluence.port}/" timeout="10"/>
+            </and>  
+        </condition>    
+        <fail message="Could not contact Confluence Server at http://${confluence.url}:${confluence.port}/. doc.update=${doc.update}">
 			<condition>
 	       		<isfalse value="${connected.to.confluence}"/>
 	       	</condition>
