@@ -334,7 +334,7 @@ public class EditPublisherJSPHelper {
                                 }
                                 if (custompublisherdata.isCustomUiRenderingSupported()) {
                                     final StringBuilder sb = new StringBuilder();
-                                    for (final CustomPublisherProperty customPublisherProperty : custompublisherdata.getCustomUiPropertyList()) {
+                                    for (final CustomPublisherProperty customPublisherProperty : custompublisherdata.getCustomUiPropertyList(this.cabean.getAuthenticationToken())) {
                                         final String customValue = request.getParameter(customPublisherProperty.getName());
                                         if (customPublisherProperty.getType()==CustomPublisherProperty.UI_BOOLEAN) {
                                             if (customValue==null) {
