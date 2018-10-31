@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -30,10 +31,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJBException;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -42,20 +45,25 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
@@ -145,11 +153,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String policyId;
     private boolean useUtf8Policy;
     
-    GlobalConfiguration globalconfiguration;
-    CADataHandler cadatahandler;
-    Map<Integer, String> caidtonamemap;
-    Map<String,Integer> casigners = getEjbcaWebBean().getActiveCANames();
-    Map<Integer,String> publisheridtonamemap = getEjbcaWebBean().getPublisherIdToNameMapByValue();
+    private GlobalConfiguration globalconfiguration;
+    private CADataHandler cadatahandler;
+    private Map<Integer, String> caidtonamemap;
+    private Map<String,Integer> casigners = getEjbcaWebBean().getActiveCANames();
+    private Map<Integer,String> publisheridtonamemap = getEjbcaWebBean().getPublisherIdToNameMapByValue();
     private boolean usePrintableStringSubjectDN;
     private boolean useLdapDNOrder = true; // Default in create ca page
     private String nameConstraintsPermitted = StringUtils.EMPTY; // Default everywhere except editca page
@@ -186,7 +194,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String signKeySpec = "2048"; // Default is 2048
     private String importCaName;
 
-    private byte[] fileBuffer;
+    private UploadedFile fileRecieveFileMakeRequest;
+    private UploadedFile fileRecieveFileRecieveRequest;
+
+
     private final Map<String, String> requestMap = new HashMap<String, String>();
 
     private String viewCertLink;
@@ -201,6 +212,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.acceptRevocationsNonExistingEntry = acceptRevocationsNonExistingEntry;
     }    
 
+    public UploadedFile getFileRecieveFileMakeRequest() {
+        return fileRecieveFileMakeRequest;
+    }
+
+    public void setFileRecieveFileMakeRequest(UploadedFile fileRecieveFileMakeRequest) {
+        this.fileRecieveFileMakeRequest = fileRecieveFileMakeRequest;
+    }
+    
+    
     public void initAccess() throws Exception {
         // To check access 
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -230,12 +250,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         cadatahandler = caBean.getCADataHandler();
         caidtonamemap = caBean.getCAIdToNameMap();
-
-        try {
-            fileBuffer = caBean.parseRequestParameters(request, requestMap);
-        } catch (IOException e) {
-            log.error("Error while getting file buffer from the request!", e);
-        }
 
         editCaName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("editCaName");
         createCaName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("createCaName");
@@ -421,13 +435,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (!isCaUninitialized) {
             if (cainfo.getSignedBy() >= 0 && cainfo.getSignedBy() <= CAInfo.SPECIALCAIDBORDER) {
                 if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
-                    this.signedBy = getEjbcaWebBean().getText("SELFSIGNED");
+                    this.signedBy = String.valueOf(CAInfo.SELFSIGNED);
                 }
                 if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
-                    this.signedBy = getEjbcaWebBean().getText("SIGNEDBYEXTERNALCA");
+                    this.signedBy = String.valueOf(CAInfo.SIGNEDBYEXTERNALCA);
                 }
             } else {
-                this.signedBy = (String) caidtonamemap.get(Integer.valueOf(cainfo.getSignedBy()));
+                this.signedBy = String.valueOf(cainfo.getSignedBy());
             }
         }
         
@@ -1986,6 +2000,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return caBean.isCVCAvailable();
     }
     
+    public boolean isSignedByExternal() {
+        log.info("Hi amin signed by is " + this.signedBy);
+        return this.signedBy != null ? (Integer.parseInt(this.signedBy) == CAInfo.SIGNEDBYEXTERNALCA) : false;
+    }
+    
     public boolean isRenderExternallySignedCaCreationRenewal() {
         final int cryptoTokenId = catoken == null ? currentCryptoTokenId : catoken.getCryptoTokenId();
         try {
@@ -1995,10 +2014,82 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         return false;
     }
-
-    public String createCa() {
+    
+    public void recieveRequest() {
+        byte[] fileBuffer = null;
+        try {
+            fileBuffer = fileRecieveFileRecieveRequest.getBytes();
+        } catch (IOException e) {
+            log.error("Error happened while uploading file!", e);
+        }
+        try {
+            cadatahandler.receiveResponse(currentCaId, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
+            //caactivated = true; //TODO check what are these two!
+            //cafuturerolloverdate = caBean.getRolloverNotBefore(currentCaId);
+        } catch (Exception e) {
+            addErrorMessage(e.getMessage());
+        }
+    }
+    
+    // Actions done in create ca page
+    public String createCa(final boolean buttonCreateCa, final boolean buttonMakeRequest) {
         boolean illegaldnoraltname = false;
         try {
+            illegaldnoraltname = saveOrCreateCaInternal(buttonCreateCa, buttonMakeRequest, null);
+        } catch (CAExistsException caee) {
+            Throwable t = caee.getCause();
+            if (null != t && t instanceof IllegalKeyException) {
+                addErrorMessage(t.getMessage());
+            }
+        } catch (CryptoTokenAuthenticationFailedException catfe) {
+            addErrorMessage(catfe.getMessage());
+            Throwable t = catfe.getCause();
+            while (t != null) {
+                String msg = t.getMessage();
+                if (msg != null) {
+                    addErrorMessage(msg);
+                }
+                t = t.getCause();
+            }
+        } catch (ParameterException pe) {
+            addErrorMessage(pe.getMessage());
+        } catch (EJBException ejbe) {
+            Exception ex = ejbe.getCausedByException();
+            if (ex instanceof InvalidAlgorithmParameterException) {
+                addErrorMessage(getEjbcaWebBean().getText("INVALIDSIGORKEYALGPARAM") + ": " + ex.getLocalizedMessage());
+            } else if (ex instanceof IllegalKeyException) {
+                addErrorMessage(ex.getLocalizedMessage());
+            } else {
+                throw ejbe;
+            }
+        } catch (Exception e) {
+            addErrorMessage(e.getMessage());
+        }
+        
+        final long crlperiod = SimpleTime.getInstance(this.crlCaCrlPeriod, "0"+SimpleTime.TYPE_MINUTES).getLong();
+
+        
+        if (catype == CAInfo.CATYPE_X509 && crlperiod != 0 && !illegaldnoraltname && buttonCreateCa) {
+            return EditCaUtil.MANAGE_CA_NAV;
+        }
+        if (catype == CAInfo.CATYPE_CVC && !illegaldnoraltname && buttonCreateCa) {
+            currentCaId = CertTools.stringToBCDNString(caSubjectDN).hashCode();
+            return EditCaUtil.MANAGE_CA_NAV;
+        }
+        if (buttonMakeRequest) {
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", createCaName);
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("cabean", caBean);
+            
+            return EditCaUtil.DISPLAY_RESULT_NAV;
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+    
+    private boolean saveOrCreateCaInternal(final boolean buttonCreateCa, final boolean buttonMakeRequest, final byte[] fileBuffer) 
+            throws CAExistsException, CryptoTokenAuthenticationFailedException, ParameterException, EJBException, Exception {
+        boolean illegaldnoraltname = false;
+
             illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam, signKeySpec, keySequenceFormat,
                     keySequenceValue, catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, // TODO: this must be default certificate profile
                     useNoConflictCertificateData, signedBy, description, caEncodedValidity, getApprovals(), finishUser, doEnforceUniquePublickeys,
@@ -2008,14 +2099,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     getAvailableKeyValidatorValues(), useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator,
                     authorityInformationAccess, certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded,
                     caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl,
-                    crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, true,
-                    false, cryptoTokenIdParam, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey, hardTokenEncryptKey,
-                    selectedKeyEncryptKey, testKey, fileBuffer);
-        } catch (Exception e) {
-            addErrorMessage(e.getMessage());
-        }
+                    crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, buttonCreateCa,
+                    buttonMakeRequest, cryptoTokenIdParam, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey, hardTokenEncryptKey,
+                    selectedKeyEncryptKey, testKey, null);
 
-        return illegaldnoraltname ? "error" : EditCaUtil.MANAGE_CA_NAV;
+        return illegaldnoraltname;
     }
     
     public String saveExternalCA() {
@@ -2031,51 +2119,188 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         
         return EditCaUtil.MANAGE_CA_NAV;
     }
+
+    private int getDefaultCertProfileId() {
+        return defaultCertificateProfile == null ? 0 : Integer.parseInt(defaultCertificateProfile);
+    }
     
-    public String saveCa() {
-        String subjectdn = null;
+    private String getSignedByString() {
         String signedByString = null;
-        CAInfo cainfo = null;
-        
+
         try {
             if (cadatahandler.getCAInfo(currentCaId).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
-                subjectdn = caSubjectDN;
                 signedByString = signedBy;
             } else {
-                subjectdn = cadatahandler.getCAInfo(currentCaId).getCAInfo().getSubjectDN();
                 signedByString = String.valueOf(cadatahandler.getCAInfo(currentCaId).getCAInfo().getSignedBy());
             }
         } catch (AuthorizationDeniedException e) {
             log.error("Error while accessing the ca data handler!", e);
-        } 
-        
-        int defaultCertprofileId = (defaultCertificateProfile == null ? 0 : Integer.parseInt(defaultCertificateProfile));
-        
+        }
+        return signedByString;
+    }
+    
+    private String getSubjectDn() {
+        String subjectdn = null;
+
         try {
-            cainfo = caBean.createCaInfo(currentCaId, editCaName, subjectdn, catype,
-                    keySequenceFormat, keySequenceValue, signedByString, description, caEncodedValidity,
-                    getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), finishUser,
-                    doEnforceUniquePublickeys, doEnforceUniqueDN, doEnforceUniqueSubjectDNSerialnumber,
-                    useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry,
-                    defaultCertprofileId, useNoConflictCertificateData, getApprovals(),
-                    getAvailablePublisherValues(), getAvailableKeyValidatorValues(), useAuthorityKeyIdentifier, authorityKeyIdentifierCritical, useCrlNumber,
-                    crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator, 
-                    authorityInformationAccess,
-                    certificateAiaDefaultCaIssuerUri,
-                    nameConstraintsPermitted, nameConstraintsExcluded,
-                    caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl,
-                    crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl
-                    );
+            if (cadatahandler.getCAInfo(currentCaId).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
+                subjectdn = caSubjectDN;
+            } else {
+                subjectdn = cadatahandler.getCAInfo(currentCaId).getCAInfo().getSubjectDN();
+            }
+        } catch (AuthorizationDeniedException e) {
+            log.error("Error while accessing the ca data handler!", e);
+        }
+
+        return subjectdn;
+    }    
+    
+    private CAInfo getCaInfo() throws ParameterException, NumberFormatException, AuthorizationDeniedException {
+        CAInfo cainfo = null;
+
+        try {
+            cainfo = caBean.createCaInfo(currentCaId, editCaName, getSubjectDn(), catype, keySequenceFormat, keySequenceValue, getSignedByString(), description,
+                    caEncodedValidity, getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), finishUser,
+                    doEnforceUniquePublickeys, doEnforceUniqueDN, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage,
+                    useCertificateStorage, acceptRevocationsNonExistingEntry, getDefaultCertProfileId(), useNoConflictCertificateData, getApprovals(),
+                    getAvailablePublisherValues(), getAvailableKeyValidatorValues(), useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
+                    useCrlNumber, crlNumberCritical, defaultCRLDistPoint, defaultCRLIssuer, defaultOCSPServiceLocator, authorityInformationAccess,
+                    certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCRL, useUtf8Policy,
+                    usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl, crlDistributionPointOnCrlCritical,
+                    includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl);
         } catch (Exception e) {
             addErrorMessage(e.getMessage());
         }
 
+        if (cadatahandler.getCAInfo(currentCaId).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
+            // Allow changing of subjectDN etc. for uninitialized CAs
+            cainfo.setSubjectDN(getSubjectDn());
+
+            // We can only update the CAToken properties if we have selected a valid cryptotoken
+            if (!StringUtils.isEmpty(cryptoTokenIdParam)) {
+                final int cryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
+
+                final Properties caTokenProperties = new Properties();
+                caTokenProperties.putAll(cainfo.getCAToken().getProperties());
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, cryptoTokenDefaultKey);
+                if (cryptoTokenCertSignKey.length() > 0) {
+                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, cryptoTokenCertSignKey);
+                }
+                if (cryptoTokenCertSignKey.length() > 0) {
+                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, cryptoTokenCertSignKey);
+                }
+                if (hardTokenEncryptKey.length() > 0) {
+                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, hardTokenEncryptKey);
+                }
+                if (selectedKeyEncryptKey.length() > 0) {
+                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, selectedKeyEncryptKey);
+                }
+                if (testKey.length() > 0) {
+                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKey);
+                }
+
+                final CAToken newCAToken = new CAToken(cryptoTokenId, caTokenProperties);
+                newCAToken.setSignatureAlgorithm(signatureAlgorithmParam);
+                newCAToken.setEncryptionAlgorithm(cainfo.getCAToken().getEncryptionAlgorithm());
+                newCAToken.setKeySequence(cainfo.getCAToken().getKeySequence());
+                newCAToken.setKeySequenceFormat(cainfo.getCAToken().getKeySequenceFormat());
+                cainfo.setCAToken(newCAToken);
+            }
+
+            int certprofileid = (currentCertProfile == null ? 0 : Integer.parseInt(currentCertProfile));
+            int signedby = (getSignedByString() == null ? 0 : Integer.parseInt(getSignedByString()));
+            if (signedby == currentCaId) {
+                signedby = CAInfo.SELFSIGNED;
+            }
+            cainfo.setCertificateProfileId(certprofileid);
+            cainfo.setDefaultCertificateProfileId(getDefaultCertProfileId());
+            cainfo.setUseNoConflictCertificateData(useNoConflictCertificateData);
+            cainfo.setSignedBy(signedby);
+
+            final String subjectaltname = caSubjectAltName;
+            if (!caBean.checkSubjectAltName(subjectaltname)) {
+                throw new ParameterException(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
+            }
+
+            List<CertificatePolicy> policies = null;
+            if (cainfo instanceof X509CAInfo) {
+                policies = caBean.parsePolicies(policyId);
+            }
+
+            List<ExtendedCAServiceInfo> extendedcaservices = null;
+            if (cainfo instanceof X509CAInfo) {
+                X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+                final String signkeyspec = signKeySpec != null ? signKeySpec : "2048";
+                extendedcaservices = caBean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceCmsActive);
+                x509cainfo.setExtendedCAServiceInfos(extendedcaservices);
+                x509cainfo.setSubjectAltName(subjectaltname);
+                x509cainfo.setPolicies(policies);
+            }
+        }
+        return cainfo;
+    }
+
+    public String initializeCa() {
+        try {
+            return initializeCaInternal(getCaInfo(), getSignedByString(), getDefaultCertProfileId());
+        } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+
+    public String saveCa() {
+        try {
+            return saveCaInternal(getCaInfo());
+        } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+
+    public String makeRequest() {
+        byte[] fileBuffer = null;
+        try {
+            fileBuffer = fileRecieveFileMakeRequest.getBytes();
+        } catch (IOException e) {
+            log.error("Error happened while uploading file!", e);
+        }
+
+        byte[] certreq = null;
+        try {
+            certreq = cadatahandler.makeRequest(currentCaId, fileBuffer, this.certExtrSignKeyReNewValue);
+        } catch (CADoesntExistsException | CryptoTokenOfflineException | AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
+        }
+        caBean.saveRequestData(certreq);
+
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caName", createCaName);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
+
+        return EditCaUtil.DISPLAY_RESULT_NAV;
+    }
+
+    private String initializeCaInternal(final CAInfo cainfo, final String signedByString, final int defaultCertprofileId) {
+        int certprofileid = (currentCertProfile == null ? 0 : Integer.parseInt(currentCertProfile));
+        int signedby = (signedByString == null ? 0 : Integer.parseInt(signedByString));
+        cainfo.setSignedBy(signedby);
+        cainfo.setCertificateProfileId(certprofileid);
+        cainfo.setDefaultCertificateProfileId(defaultCertprofileId);
+        cainfo.setUseNoConflictCertificateData(useNoConflictCertificateData);
+        try {
+            cadatahandler.initializeCA(cainfo);
+        } catch (CryptoTokenOfflineException | CADoesntExistsException | InvalidAlgorithmException | AuthorizationDeniedException ctoe) {
+            addErrorMessage(ctoe.getMessage());
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+
+    private String saveCaInternal(final CAInfo cainfo) {
         try {
             cadatahandler.editCA(cainfo);
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
         }
-        
         return EditCaUtil.MANAGE_CA_NAV;
     }
 
@@ -2118,5 +2343,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             availableKeyValidatorValues = StringUtils.join(usedValidators.toArray(), ";");
        }
         return availableKeyValidatorValues;
+    }
+
+    public UploadedFile getFileRecieveFileRecieveRequest() {
+        return fileRecieveFileRecieveRequest;
+    }
+
+    public void setFileRecieveFileRecieveRequest(UploadedFile fileRecieveFileRecieveRequest) {
+        this.fileRecieveFileRecieveRequest = fileRecieveFileRecieveRequest;
     }
 }

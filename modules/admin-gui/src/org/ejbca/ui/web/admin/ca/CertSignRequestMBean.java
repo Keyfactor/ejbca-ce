@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.ca;
 import java.beans.Beans;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -28,7 +27,6 @@ import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 /**
@@ -46,8 +44,6 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
 
     
     private CAInterfaceBean caBean;
-    CADataHandler cadatahandler;
-    Map<Integer, String> caidtonamemap;
     private String selectedCaName;
     private int selectedCaId;
     private UploadedFile uploadedFile;
@@ -74,8 +70,6 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
             request.getSession().setAttribute("cabean", caBean);
         }
         caBean.initialize(getEjbcaWebBean());
-        cadatahandler = caBean.getCADataHandler();
-        caidtonamemap = caBean.getCAIdToNameMap();
         
         selectedCaName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("selectedCaName");
         selectedCaId = (Integer) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("selectedCaId");

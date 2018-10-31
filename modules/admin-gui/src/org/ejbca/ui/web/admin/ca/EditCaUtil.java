@@ -24,7 +24,9 @@ public final class EditCaUtil {
     public static final String MANAGE_CA_NAV = "managecas";
     public static final String EDIT_CA_NAV = "editcapage";
     public static final String SIGN_CERT_REQ_NAV = "recievefile";
-
+    public static final String DISPLAY_RESULT_NAV = "displayresult";
+    public static final int CERTREQGENMODE = 0;
+    public static final int CERTGENMODE = 1;
     
     public static Object getTrimmedName(final String name) {
         if (name != null && !name.isEmpty()) {
