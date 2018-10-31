@@ -129,7 +129,9 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        globalConfigurationSession.saveConfiguration(intAdmin, cceConfigBackup);
+        if (cceConfigBackup != null) {
+            globalConfigurationSession.saveConfiguration(intAdmin, cceConfigBackup);
+        }
         certificateProfileSession.removeCertificateProfile(intAdmin, TEST_CERTIFICATE_PROFILE);
         endEntityProfileSession.removeEndEntityProfile(intAdmin, TEST_END_ENTITY_PROFILE);
         try {
