@@ -1,0 +1,140 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.ui.web.admin.ca;
+
+import java.io.Serializable;
+
+import javax.annotation.PostConstruct;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.control.StandardRules;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
+
+
+/**
+ * 
+ * JSF MBean backing the edit ca page.
+ *
+ * @version $Id$
+ */
+@ManagedBean
+@ViewScoped
+public class DisplayResultMBean extends BaseManagedBean implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(DisplayResultMBean.class);
+    
+    private CAInterfaceBean caBean;
+
+
+    private GlobalConfiguration globalconfiguration;
+    private String headline;
+    
+    private String[] headlines = {"CERTREQGEN","CERTIFICATEGENERATED"};
+
+    private String resultString = null;
+    private int filemode;
+    private String filePath;
+
+    private String pemlink = null;
+    private String binarylink =  null;
+    private String pkcs7link = StringUtils.EMPTY;
+    private String caName;
+    
+    public void initAccess() throws Exception {
+        // To check access 
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+        }
+    }  
+    
+    
+    @PostConstruct
+    public void init() {
+        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        try {
+            globalconfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+        } catch (Exception e) {
+            log.error("Error while initializing the global configuration!", e);
+        }
+
+        filemode = (Integer) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("filemode");
+        caName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("caname");
+        caBean = (CAInterfaceBean) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("cabean");
+        filePath = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getCaPath();
+        
+        if (filemode == EditCaUtil.CERTGENMODE) {
+            try {
+                resultString = caBean.getProcessedCertificateAsString();
+            } catch (Exception e) {
+                addErrorMessage(e.getMessage());
+            }
+        } else {
+            try {
+                resultString = caBean.getRequestDataAsString();
+            } catch (Exception e) {
+                addErrorMessage(e.getMessage());
+            }
+        }
+
+        if (filemode == EditCaUtil.CERTGENMODE) {
+            pemlink = filePath + "/editcas/cacertreq?cmd=cert";
+            binarylink = filePath + "/editcas/cacertreq?cmd=cert&format=binary";
+            pkcs7link = filePath + "/editcas/cacertreq?cmd=certpkcs7";
+        } else {
+            pemlink = filePath + "/editcas/cacertreq?cmd=certreq";
+            binarylink = filePath + "/editcas/cacertreq?cmd=certreq&format=binary";
+            pkcs7link= StringUtils.EMPTY;
+        }
+        
+        headline = getEjbcaWebBean().getText(headlines[filemode]);
+    }
+
+
+    public String getHeadline() {
+        return headline;
+    }
+    
+    public String getCaName() {
+        return getEjbcaWebBean().getText("CANAME") + " : " + caName;
+    }
+
+    public String getResultString() {
+        return resultString;
+    }
+
+    public String getPemlink() {
+        return pemlink;
+    }
+
+    public String getPkcs7link() {
+        return pkcs7link;
+    }
+
+    public String getBinarylink() {
+        return binarylink;
+    }
+    
+    public boolean isRenderPkcs7Link() {
+        return filemode == EditCaUtil.CERTGENMODE;
+    }
+}
