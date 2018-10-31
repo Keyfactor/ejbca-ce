@@ -465,6 +465,10 @@ public class CAInterfaceBean implements Serializable {
 		return returnval;
 	}
 
+	public AuthenticationToken getAuthenticationToken() {
+	    return authenticationToken;
+	}
+	
 	public String republish(CertificateView certificateView) throws AuthorizationDeniedException {
 		String returnval = "CERTREPUBLISHFAILED";
 		int certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;

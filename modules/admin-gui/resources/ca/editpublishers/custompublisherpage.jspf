@@ -59,7 +59,7 @@
         <% } %>
         
     <% if (custompublisher.isCustomUiRenderingSupported()) {
-    	for (org.ejbca.core.model.ca.publisher.CustomPublisherProperty current : custompublisher.getCustomUiPropertyList()) { %>
+    	for (org.ejbca.core.model.ca.publisher.CustomPublisherProperty current : custompublisher.getCustomUiPropertyList(ejbcawebbean.getAdminObject())) { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="45%" valign="top" align="right">
          <%= ejbcawebbean.getText(currentClassSimple.toUpperCase()+"_" + current.getName().replaceAll("\\.", "_").toUpperCase()) %>

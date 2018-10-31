@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -97,7 +98,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
     } // init
 
     @Override
-    public List<CustomPublisherProperty> getCustomUiPropertyList() {
+    public List<CustomPublisherProperty> getCustomUiPropertyList(final AuthenticationToken authenticationToken) {
         final List<CustomPublisherProperty> ret = new ArrayList<>();
         ret.add(new CustomPublisherProperty(CRL_FAIL_ON_ERRORCODE_PROPERTY_NAME, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(crlFailOnErrorCode)));
         ret.add(new CustomPublisherProperty(CRL_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(crlFailOnStandardError)));
@@ -110,6 +111,14 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher, CustomPu
         ret.add(new CustomPublisherProperty(REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, revokeExternalCommandFileName));
         ret.add(new CustomPublisherProperty(CALCULATE_DELTA_CRL_LOCALLY_PROPERTY_NAME, CustomPublisherProperty.UI_BOOLEAN, String.valueOf(calclulateDeltaCrlLocally)));
         return ret;
+    }
+    
+    @Override
+    public List<String> getCustomUiPropertyNames() {
+        return Arrays.asList(CRL_FAIL_ON_ERRORCODE_PROPERTY_NAME, CRL_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, CRL_EXTERNAL_COMMAND_PROPERTY_NAME,
+                CERT_FAIL_ON_ERRORCODE_PROPERTY_NAME, CERT_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, CERT_EXTERNAL_COMMAND_PROPERTY_NAME,
+                REVOKE_FAIL_ON_ERRORCODE_PROPERTY_NAME, REVOKE_FAIL_ON_STANDARD_ERROR_PROPERTY_NAME, REVOKE_EXTERNAL_COMMAND_PROPERTY_NAME,
+                CALCULATE_DELTA_CRL_LOCALLY_PROPERTY_NAME);
     }
 
     /**
