@@ -35,7 +35,7 @@ import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * @version $Id: HardTokenIssuerMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 
 public class HardTokenIssuerMBean extends BaseManagedBean implements Serializable {
