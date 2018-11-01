@@ -37,7 +37,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
- * @version $Id: EditUserDatasoucesMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializable {
 
