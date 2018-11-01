@@ -50,7 +50,7 @@ org.cesecore.authorization.control.StandardRules
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form id="currentAliasForm">
 	<h:panelGrid columns="2">
-		<h:outputLink value="adminweb/sysconfig/scepconfiguration.jsf"><h:outputText value="#{web.text.SCEP_ALIAS_NAV_BACK}"/></h:outputLink>
+		<h:outputLink value="adminweb/sysconfig/scepconfiguration.xhtml"><h:outputText value="#{web.text.SCEP_ALIAS_NAV_BACK}"/></h:outputLink>
 		<h:commandButton action="#{scepConfigMBean.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{!scepConfigMBean.currentAliasEditMode && scepConfigMBean.allowedToEdit}"/>
 		
 		<h:panelGroup id="placeholder1" />
