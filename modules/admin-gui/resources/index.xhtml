@@ -36,13 +36,13 @@
 
         <h:panelGroup class="version-info">
             <h:outputText value="#{web.text.VERSION} #{web.ejbcaVersion}" />
-            <h:outputText value="#{web.text.EXPORTABLE}" style="color: #FF0000; font-size: 0.7em;" rendered="#{ejbcawebbean.isUsingExportableCryptography()}"/>
+            <h:outputText value="#{web.text.EXPORTABLE}" style="color: #FF0000; font-size: 0.7em;" rendered="#{ejbcawebbean.usingExportableCryptography}"/>
             <noscript>
                 <h:outputText value="#{web.text.JAVASCRIPTDISABLED}" style="color: #FF0000; font-size: 0.7em;"/>
             </noscript>
-            <h:outputText value="#{web.text.POSTUPGRADE_REQUIRED}" style="color: #FF0000; font-size: 0.7em;" rendered="#{ejbcawebbean.isPostUpgradeRequired()}"/>
+            <h:outputText value="#{web.text.POSTUPGRADE_REQUIRED}" style="color: #FF0000; font-size: 0.7em;" rendered="#{ejbcawebbean.postUpgradeRequired}"/>
             <h3 id="welcome"><h:outputText
-                    value="#{web.text.WELCOME} #{ejbcawebbean.getUsersCommonName()} #{web.text.TOEJBCA}"/></h3>
+                    value="#{web.text.WELCOME} #{ejbcawebbean.usersCommonName} #{web.text.TOEJBCA}"/></h3>
         </h:panelGroup>
 
         <div id="information">
