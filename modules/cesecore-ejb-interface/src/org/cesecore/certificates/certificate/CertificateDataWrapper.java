@@ -139,7 +139,21 @@ public class CertificateDataWrapper implements CertificateWrapper, Comparable<Ce
         } else {
             // Sort descending by expiration date if certificates are not available        
             return new Long(other.getCertificateData().getExpireDate()).compareTo(getCertificateData().getExpireDate());
-        }     
+        }
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof CertificateDataWrapper)) {
+            return false;
+        }
+        final CertificateDataWrapper otherCertData = (CertificateDataWrapper) other;
+        return certificateData.equals(otherCertData.getCertificateData());
+    }
+
+    @Override
+    public int hashCode() {
+        return certificateData.hashCode();
     }
 
 }

@@ -31,6 +31,7 @@ import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -527,7 +528,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (!fingerprint.equals(certificateData.fingerprint)) {
             return false;
         }
-        if (!cAFingerprint.equals(certificateData.cAFingerprint)) {
+        if (!StringUtils.equals(cAFingerprint, certificateData.cAFingerprint)) {
             return false;
         }
         if (!equalsStatus(certificateData, strictStatus)) {
@@ -557,13 +558,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (revocationReason != certificateData.revocationReason) {
             return false;
         }
-        if (!username.equals(certificateData.username)) {
+        if (!StringUtils.equals(username, certificateData.username)) {
             return false;
         }
-        if (tag == null && certificateData.tag != null) {
-            return false;
-        }
-        if (tag != null && !tag.equals(certificateData.tag)) {
+        if (!StringUtils.equals(tag, certificateData.tag)) {
             return false;
         }
         if (certificateProfileId == null && certificateData.certificateProfileId != null) {
@@ -584,14 +582,8 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (updateTime != certificateData.updateTime) {
             return false;
         }
-        if (subjectAltName==null) {
-            if (certificateData.subjectAltName!=null) {
-                return false;
-            }
-        } else {
-            if (!subjectAltName.equals(certificateData.subjectAltName)) {
-                return false;
-            }
+        if (!StringUtils.equals(subjectAltName, certificateData.subjectAltName)) {
+            return false;
         }
         return true;
     }
