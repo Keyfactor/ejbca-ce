@@ -359,7 +359,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     + caCertificateStatus.revocationReason + ".");
                         }
                         //Check if CA cert is expired
-                        if (!CertTools.isCertificateValid(caCertificateChain.get(0), true)) {
+                        if (!CertTools.isCertificateValid(caCertificateChain.get(0), false)) {
                             log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
                                     + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate with expiration date "
                                     + CertTools.getNotAfter(caCertificateChain.get(0)) + ".");
