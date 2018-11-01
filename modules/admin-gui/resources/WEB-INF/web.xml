@@ -117,19 +117,18 @@
 		</init-param>
 	</filter>
 
-    <!--  use the Deny version to prevent anyone, including yourself, from framing the page
-          Since we are using frames in adminweb, we don't use deny.
+    <!--  use the Deny version to prevent anyone, including yourself, from framing the page -->
 	<filter-mapping> 
 		<filter-name>ClickjackFilterDeny</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-    -->
 
-	<!-- use the SameOrigin version to allow your application to frame, but nobody else -->
+	<!-- use the SameOrigin version to allow your application to frame, but nobody else
 	<filter-mapping> 
 		<filter-name>ClickjackFilterSameOrigin</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+    -->
 
 	<filter>
 		<filter-name>ContentSecurityPolicyFilter</filter-name>
