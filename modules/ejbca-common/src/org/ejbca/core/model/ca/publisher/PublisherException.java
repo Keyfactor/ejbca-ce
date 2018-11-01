@@ -44,4 +44,8 @@ public class PublisherException extends EjbcaException {
     public PublisherException(String msg) {
         super(msg);
     }
+    
+    public PublisherException(String msg, Throwable e) {
+        super(msg, e);
+    }
 }
