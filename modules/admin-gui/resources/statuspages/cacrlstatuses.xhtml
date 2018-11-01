@@ -30,11 +30,11 @@
 		<div class="status" id="crlstatus" >
 			<h4><h:outputText value="#{web.text.CAHEALTH}"/>
 				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Admin_GUI_Overview.html#CA%20Status')}" escape="false"/></h4>
-			<h:panelGroup rendered="#{ejbcawebbean.getAdminPreference().getFrontpageCaStatus()}">
-				<h:dataTable value="#{adminIndexMBean.getCaBean().getAuthorizedInternalCaCrlStatusInfos()}" var="caCrlStatusInfo" styleClass="grid">
+			<h:panelGroup rendered="#{ejbcawebbean.adminPreference.frontpageCaStatus}">
+				<h:dataTable value="#{adminIndexMBean.caBean.authorizedInternalCaCrlStatusInfos}" var="caCrlStatusInfo" styleClass="grid">
 					<h:column>
 						<f:facet name="header"><h:outputText value="#{web.text.CANAME}"/></f:facet>
-						<h:outputText value="#{caCrlStatusInfo.getCaName()}"/>
+						<h:outputText value="#{caCrlStatusInfo.caName}"/>
 					</h:column>
 					<h:column class="ca-status">
 						<f:facet name="header"><h:outputText value="#{web.text.CASERVICE}"/></f:facet>
@@ -50,14 +50,14 @@
 						<f:facet name="header"><h:outputText value="#{web.text.CRLSTATUS}"/></f:facet>
 						<h:graphicImage rendered="#{caCrlStatusInfo.isCrlStatus()}"
 										url="#{ejbcawebbean.getImagefileInfix('status-crl-uptodate.png')}"
-										alt="#{web.text.CASERVICE_ON}" title="#{web.text.CASERVICE_ON_TITLE}"/>
+										alt="#{web.text.CRLSTATUS_ON}" title="#{web.text.CRLSTATUS_ON_TITLE}"/>
 						<h:graphicImage rendered="#{!caCrlStatusInfo.isCrlStatus()}"
 										url="#{ejbcawebbean.getImagefileInfix('status-crl-expired.png')}"
 										alt="#{web.text.CRLSTATUS_OFF}" title="#{web.text.CRLSTATUS_OFF_TITLE}"/>
 					</h:column>
 				</h:dataTable>
 			</h:panelGroup>
-			<h:panelGroup rendered="#{!ejbcawebbean.getAdminPreference().getFrontpageCaStatus()}">
+			<h:panelGroup rendered="#{!ejbcawebbean.adminPreference.frontpageCaStatus}">
 				<h:outputText value="#{web.text.CANBEENABLED}"/>
 			</h:panelGroup>
 		</div>
