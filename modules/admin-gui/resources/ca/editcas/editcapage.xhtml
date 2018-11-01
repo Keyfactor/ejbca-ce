@@ -1129,7 +1129,7 @@
 				<h:panelGroup />
 				<h:panelGroup> 
 					<h:commandButton id="buttonmakerequest" value="#{web.text.MAKEREQUEST}" onclick="return checkallfields()" 
-						disabled="#{not editCAsMBean.signedByExternal}" action="#{editCAsMBean.createCa(false, true)}"/>
+						action="#{editCAsMBean.createCa(false, true)}" disabled="#{!editCAsMBean.signedByExternal}"/>
 				</h:panelGroup>
 				 
 				<h:panelGroup rendered="#{editCAsMBean.editCA}">
