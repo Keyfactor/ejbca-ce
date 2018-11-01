@@ -174,8 +174,8 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default: a localized text of "An exception has occurred."
 #web.errorpage.notification=An exception has occurred.
 #
-# Print the stacktrace of the exception
-# Default: true
+# Print the stacktrace of the exception back to the web browser
+# Default: false
 #web.errorpage.stacktrace=false
 
 # Custom Servlet filter for emulation of client certificate authentication to the Admin GUI
