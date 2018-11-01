@@ -46,7 +46,12 @@ public class EjbcaJSFHelper {
 
     /** Returns the EJBCA title */
     public String getEjbcaTitle(){
-    	return getEjbcaWebBean().getGlobalConfiguration().getEjbcaTitle();
+        GlobalConfiguration gc = getEjbcaWebBean().getGlobalConfiguration();
+        if (gc == null) {
+            log.warn("GlobalConfiguration is null trying to get from EjbcaWebBean, returning default Title.");
+            return  GlobalConfiguration.getEjbcaDefaultTitle();
+        }
+        return gc.getEjbcaTitle();
     }
     
     /** Returns the EJBCA theme */

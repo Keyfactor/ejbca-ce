@@ -350,6 +350,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     // Methods for manipulating the title.
     public   String getEjbcaTitle() {return (String) data.get(TITLE);}
+    public   static String getEjbcaDefaultTitle() {return DEFAULTEJBCATITLE;}
     public   void setEjbcaTitle(String ejbcatitle) {data.put(TITLE,ejbcatitle);}
 
 
