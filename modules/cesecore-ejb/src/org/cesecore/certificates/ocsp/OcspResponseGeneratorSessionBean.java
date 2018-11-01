@@ -335,7 +335,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                         + caCertificateStatus.revocationReason + ".");
                             }
                             //Check if CA cert is expired
-                            if (!CertTools.isCertificateValid(caCertificate)) {
+                            if (!CertTools.isCertificateValid(caCertificate, true)) {
                                 log.warn("Active CA with subject DN '" + CertTools.getSubjectDN(caCertificate) + "' and serial number "
                                         + CertTools.getSerialNumber(caCertificate) + " has an expired certificate with expiration date "
                                         + CertTools.getNotAfter(caCertificate) + ".");
@@ -359,7 +359,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     + caCertificateStatus.revocationReason + ".");
                         }
                         //Check if CA cert is expired
-                        if (!CertTools.isCertificateValid(caCertificateChain.get(0))) {
+                        if (!CertTools.isCertificateValid(caCertificateChain.get(0), true)) {
                             log.info("External CA with subject DN '" + CertTools.getSubjectDN(caCertificateChain.get(0)) + "' and serial number "
                                     + CertTools.getSerialNumber(caCertificateChain.get(0)) + " has an expired certificate with expiration date "
                                     + CertTools.getNotAfter(caCertificateChain.get(0)) + ".");
@@ -395,7 +395,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 + CertTools.getSerialNumber(ocspSigningCertificate) + " is revoked.");
                     }
                     //Check if signing cert is expired
-                    if (!CertTools.isCertificateValid(ocspSigningCertificate)) {
+                    if (!CertTools.isCertificateValid(ocspSigningCertificate, true)) {
                         log.warn("OCSP Responder certificate with subject DN '" + CertTools.getSubjectDN(ocspSigningCertificate) + "' and serial number "
                                 + CertTools.getSerialNumber(ocspSigningCertificate) + " is expired.");
                     }
@@ -1679,7 +1679,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
             final BasicOCSPResp ocspresp = generateBasicOcspResp(exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry, producedAt);
-            if (CertTools.isCertificateValid(signerCert)) {
+            if (CertTools.isCertificateValid(signerCert, false)) { // Don't warn about signer validity for each OCSP response...
                 return ocspresp;
             } else {
                 throw new OcspFailureException("Response was not validly signed.");
@@ -2194,7 +2194,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.error("No key available. " + errMsg);
                         continue;
                     }
-                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !CertTools.isCertificateValid(ocspSigningCertificate) ) {
+                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !CertTools.isCertificateValid(ocspSigningCertificate, true) ) {
                         sb.append('\n').append(errMsg);
                         continue;
                     }
