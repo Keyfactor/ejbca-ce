@@ -26,3 +26,4 @@
 "Nimbus Jose";                  "nimbus-jose-jwt-4.36.1";                       "ALv2";                 "LICENSE-APACHE-2.0";           "https://connect2id.com/products/nimbus-jose-jwt";                  "User for JSON Web Tokens in the ACME protocol";
 "SnakeYAML";                    "snakeyaml-1.19";                               "ALv2";                 "LICENSE-APACHE-2.0";           "https://bitbucket.org/asomov/snakeyaml";                           "Serialization of Java objects to/from YAML";
 "Google's Guava";               "guava-20.0";                                   "ALv2";                 "LICENSE-APACHE-2.0";           "https://github.com/google/guava";                                  "General purpose library, used in e.g. CAA and CT.";   
+"JCraft"						"jsch-0.1.54.jar"								"BSD"					"LICENSE"						"http://www.jcraft.com/jsch/"										"Used for SCP operations"

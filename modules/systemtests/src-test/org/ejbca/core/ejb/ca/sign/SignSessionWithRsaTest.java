@@ -1702,7 +1702,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         byte[] payload = new byte[]{1, 2, 3, 4};
         X509Certificate cacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
         //Have the data signed using the CA's signing keys
-        CMSSignedData signedData = new CMSSignedData(signSession.signPayload(internalAdmin, payload, getTestCAName()));
+        CMSSignedData signedData = new CMSSignedData(signSession.signPayload(internalAdmin, payload, getTestCAId()));
         //Construct a signer in order to verify the change
         SignerInformation signer = (SignerInformation) signedData.getSignerInfos().getSigners().iterator().next();
         JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
