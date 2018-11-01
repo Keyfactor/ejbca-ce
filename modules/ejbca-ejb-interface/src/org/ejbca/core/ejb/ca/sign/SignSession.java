@@ -458,6 +458,6 @@ public interface SignSession {
      * @throws CADoesntExistsException if a CA by the given name doesn't exist.
      * @throws SignRequestSignatureException if an error occurred during the signature process. 
      */
-    byte[] signPayload(final AuthenticationToken authenticationToken, byte[] data, final String signingCaName)
+    byte[] signPayload(final AuthenticationToken authenticationToken, byte[] data, final int signingCaId)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException;
 }
