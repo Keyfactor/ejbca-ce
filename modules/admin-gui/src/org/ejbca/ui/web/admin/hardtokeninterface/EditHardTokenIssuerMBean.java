@@ -21,7 +21,6 @@ import java.util.TreeMap;
 
 import javax.faces.model.SelectItem;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException;
@@ -29,12 +28,11 @@ import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * @version $Id: EditHardTokenIssuerMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 public class EditHardTokenIssuerMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(EditHardTokenIssuerMBean.class);
 
     private HardTokenIssuerMBean hardTokenIssuerMBean;
     private IssuerGui issuerGui;
