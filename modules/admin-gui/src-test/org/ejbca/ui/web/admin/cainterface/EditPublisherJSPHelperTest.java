@@ -27,7 +27,7 @@ import org.junit.Test;
 /**
  * Test for EditPublisherJSPHelper
  * @see EditPublisherJSPHelper
- * @version $Id: EditPublisherJSPHelperTest.java 29652 2018-08-15 12:05:16Z anatom $
+ * @version $Id$
  */
 public class EditPublisherJSPHelperTest {
 
