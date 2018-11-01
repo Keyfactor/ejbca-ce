@@ -73,6 +73,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -1681,12 +1682,12 @@ public abstract class CertTools {
 
     /**
      * Checks if a certificate is valid.
-     * Does also print a DEBUG if the certificate is about to expire.
+     * @param warnIfAboutToExpire Also print a WARN log message if the certificate is about to expire. If false, it is still printed at DEBUG level. 
      * 
      * @param signerCert the certificate to be tested
      * @return true if the certificate is valid
      */
-    public static boolean isCertificateValid(final X509Certificate signerCert) {
+    public static boolean isCertificateValid(final X509Certificate signerCert, final boolean warnIfAboutToExpire) {
         try {
             signerCert.checkValidity();
         } catch (CertificateExpiredException e) {
@@ -1696,7 +1697,6 @@ public abstract class CertTools {
             return false;
         } catch (CertificateNotYetValidException e) {
             if (log.isDebugEnabled()) {
-
                 log.debug(intres.getLocalizedMessage("ocsp.errornotyetvalid", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN()));
             }
             return false;
@@ -1709,8 +1709,9 @@ public abstract class CertTools {
         try {
             signerCert.checkValidity(warnDate);
         } catch (CertificateExpiredException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN(),
+            if (warnIfAboutToExpire || log.isDebugEnabled()) {
+                final Level logLevel = warnIfAboutToExpire ? Level.WARN : Level.DEBUG;
+                log.log(logLevel, intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN(),
                         signerCert.getNotAfter()));
             }
         } catch (CertificateNotYetValidException e) {
