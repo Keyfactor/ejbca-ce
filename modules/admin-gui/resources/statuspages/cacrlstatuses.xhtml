@@ -38,20 +38,20 @@
 					</h:column>
 					<h:column class="ca-status">
 						<f:facet name="header"><h:outputText value="#{web.text.CASERVICE}"/></f:facet>
-						<h:graphicImage rendered="#{caCrlStatusInfo.isCaService()}"
+						<h:graphicImage rendered="#{caCrlStatusInfo.caService}"
 										url="#{ejbcawebbean.getImagefileInfix('status-ca-active.png')}"
 										alt="#{web.text.CASERVICE_ON}" title="#{web.text.CASERVICE_ON_TITLE}"/>
-						<h:graphicImage rendered="#{!caCrlStatusInfo.isCaService()}"
+						<h:graphicImage rendered="#{!caCrlStatusInfo.caService}"
 										url="#{ejbcawebbean.getImagefileInfix('status-ca-offline.png')}"
 										alt="#{web.text.CASERVICE_OFF}" title="#{web.text.CASERVICE_OFF_TITLE}"/>
 
 					</h:column>
 					<h:column class="crl-status">
 						<f:facet name="header"><h:outputText value="#{web.text.CRLSTATUS}"/></f:facet>
-						<h:graphicImage rendered="#{caCrlStatusInfo.isCrlStatus()}"
+						<h:graphicImage rendered="#{caCrlStatusInfo.crlStatus}"
 										url="#{ejbcawebbean.getImagefileInfix('status-crl-uptodate.png')}"
 										alt="#{web.text.CRLSTATUS_ON}" title="#{web.text.CRLSTATUS_ON_TITLE}"/>
-						<h:graphicImage rendered="#{!caCrlStatusInfo.isCrlStatus()}"
+						<h:graphicImage rendered="#{!caCrlStatusInfo.crlStatus}"
 										url="#{ejbcawebbean.getImagefileInfix('status-crl-expired.png')}"
 										alt="#{web.text.CRLSTATUS_OFF}" title="#{web.text.CRLSTATUS_OFF_TITLE}"/>
 					</h:column>
