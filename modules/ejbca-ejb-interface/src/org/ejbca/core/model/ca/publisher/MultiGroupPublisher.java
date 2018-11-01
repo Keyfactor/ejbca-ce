@@ -119,12 +119,22 @@ public class MultiGroupPublisher extends BasePublisher {
 
     @Override
     public boolean willPublishCertificate(int status, int revocationReason) {
-        // Checking the randomized publishers here would introduce a race condition, so we don't do that
-        final boolean empty = getPublisherGroups().isEmpty();
-        if (empty && log.isDebugEnabled()) {
-            log.debug("No publishers configured in multi group publisher '" + getName() + "'.");
+        log.trace(">willPublishCertificate");
+        // We don't know exactly which publishers storeCertificate will use,
+        // so we just check the "first" one in each group. ("first" means lowest ID)
+        for (final TreeSet<Integer> group : getPublisherGroups()) {
+            if (group.isEmpty()) {
+                log.debug("An empty group was found in publisher '" + getName() + "'");
+            }
+            final int publisherId = group.first();
+            final BasePublisher publisher = getPublisher(publisherId);
+            if (publisher.willPublishCertificate(status, revocationReason)) {
+                log.trace("<willPublishCertificate: true");
+                return true;
+            }
         }
-        return !empty;
+        log.trace("<willPublishCertificate: false");
+        return false;
     }
 
     @Override
@@ -144,19 +154,20 @@ public class MultiGroupPublisher extends BasePublisher {
         log.trace(">storeCertificate");
         final List<Integer> publisherIdsToUse = new ArrayList<>();
         for (final BasePublisher publisher : getPublishersToUse(false)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Will publish certificate " + certificateData.getSerialNumberHex() + " to publisher '" + publisher.getName() + "'");
+            final boolean willPublish = publisher.willPublishCertificate(certificateData.getStatus(), certificateData.getRevocationReason());
+            if (willPublish) {
+                publisherIdsToUse.add(publisher.getPublisherId());
             }
-            publisherIdsToUse.add(publisher.getPublisherId());
+            if (log.isDebugEnabled()) {
+                log.debug("Will " + (willPublish ? "" : "NOT ") +"publish certificate " + certificateData.getSerialNumberHex() + " to publisher '" + publisher.getName() + "'");
+            }
         }
-        if (publisherIdsToUse.isEmpty()) {
-            log.info("No publishers available in multi group publisher '" + getName() + "'. Can't publish certificate " + certificateData.getSerialNumberHex());
-            return false;
-        }
-        try {
-            getPublisherSession().storeCertificate(authenticationToken, publisherIdsToUse, new CertificateDataWrapper(null, certificateData, base64CertData), password, userDN, extendedinformation);
-        } catch (AuthorizationDeniedException e) {
-            throw new PublisherException("Authorization was denied: " + e.getMessage());
+        if (!publisherIdsToUse.isEmpty()) {
+            try {
+                getPublisherSession().storeCertificate(authenticationToken, publisherIdsToUse, new CertificateDataWrapper(null, certificateData, base64CertData), password, userDN, extendedinformation);
+            } catch (AuthorizationDeniedException e) {
+                throw new PublisherException("Authorization was denied: " + e.getMessage());
+            }
         }
         log.trace("<storeCertificate");
         return true;
