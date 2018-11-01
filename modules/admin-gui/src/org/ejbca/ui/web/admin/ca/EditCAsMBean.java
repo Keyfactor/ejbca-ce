@@ -121,11 +121,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String certSignKeyRequestValue;
     private boolean checkBoxFutureRollOver;
     private String createCaName;
-    private String cryptoTokenDefaultKey;
-    private String cryptoTokenCertSignKey;
-    private String selectedKeyEncryptKey;
-    private String hardTokenEncryptKey;
-    private String testKey;
+    private String cryptoTokenDefaultKey = StringUtils.EMPTY; // Initialize to empty
+    private String cryptoTokenCertSignKey = StringUtils.EMPTY; // Initialize to empty
+    private String selectedKeyEncryptKey = StringUtils.EMPTY; // Initialize to empty
+    private String hardTokenEncryptKey = StringUtils.EMPTY; // Initialize to empty
+    private String testKey = StringUtils.EMPTY;// Initialize to empty;
     private String description;
     private boolean useNoConflictCertificateData;
     private boolean acceptRevocationsNonExistingEntry;
@@ -1851,7 +1851,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return resultList;
     }
     
-    
     public List<SelectItem> getExTServicesKeySpecList() {
         List<SelectItem> resultList = new ArrayList<>();
         
@@ -1866,7 +1865,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setSelectedCryptoTokenDefaultKey(final String selectedCryptoTokenDefaultKey) {
-        this.cryptoTokenDefaultKey = selectedCryptoTokenDefaultKey;
+        if (selectedCryptoTokenDefaultKey != null) {
+            this.cryptoTokenDefaultKey = selectedCryptoTokenDefaultKey;
+        }
     }
     
     public boolean isRenderCreateCaTokenKeys() {
@@ -1881,7 +1882,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setSelectedCryptoTokenCertSignKey(final String selectedCryptoTokenCertSignKey) {
-        this.cryptoTokenCertSignKey = selectedCryptoTokenCertSignKey;
+        if (selectedCryptoTokenCertSignKey != null) {
+            this.cryptoTokenCertSignKey = selectedCryptoTokenCertSignKey;
+        }
     }
 
     public String getSelectedKeyEncryptKey() {
@@ -1889,7 +1892,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setSelectedKeyEncryptKey(final String selectedKeyEncryptKey) {
-        this.selectedKeyEncryptKey = selectedKeyEncryptKey;
+        if (selectedKeyEncryptKey != null) {
+            this.selectedKeyEncryptKey = selectedKeyEncryptKey;
+        }
     }
 
     public String getSelectHardTokenEncrypt() {
@@ -1897,7 +1902,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void setSelectHardTokenEncrypt(final String selectHardTokenEncrypt) {
-        this.hardTokenEncryptKey = selectHardTokenEncrypt;
+        if (selectHardTokenEncrypt != null) {
+            this.hardTokenEncryptKey = selectHardTokenEncrypt;
+        }
     }
     
     public String getSelectTestKey() {
@@ -1905,7 +1912,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public void setSelectTestKey(final String testKey) {
-        this.testKey = testKey;
+        if (testKey != null) {
+            this.testKey = testKey;
+        }
     }
 
     public String getCertificateValidityHelp() {
@@ -2027,11 +2036,22 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    // Actions done in create ca page
-    public String createCa(final boolean buttonCreateCa, final boolean buttonMakeRequest) {
+    public String createCa() {
+        return createCaOrMakeRequest(true, false); // We are creating a ca!
+    }
+    
+    public String makeRequest() {
+        if (isEditCA) {
+            return makeRequestEditCa();
+        } else {
+            return createCaOrMakeRequest(false, true);
+        }
+    }
+    
+    private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
         boolean illegaldnoraltname = false;
         try {
-            illegaldnoraltname = saveOrCreateCaInternal(buttonCreateCa, buttonMakeRequest, null);
+            illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, null);
         } catch (CAExistsException caee) {
             Throwable t = caee.getCause();
             if (null != t && t instanceof IllegalKeyException) {
@@ -2059,20 +2079,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 throw ejbe;
             }
         } catch (Exception e) {
+            log.error("Error happened while creating ca!", e);
             addErrorMessage(e.getMessage());
         }
         
         final long crlperiod = SimpleTime.getInstance(this.crlCaCrlPeriod, "0"+SimpleTime.TYPE_MINUTES).getLong();
 
         
-        if (catype == CAInfo.CATYPE_X509 && crlperiod != 0 && !illegaldnoraltname && buttonCreateCa) {
+        if (catype == CAInfo.CATYPE_X509 && crlperiod != 0 && !illegaldnoraltname && createCa) {
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        if (catype == CAInfo.CATYPE_CVC && !illegaldnoraltname && buttonCreateCa) {
+        if (catype == CAInfo.CATYPE_CVC && !illegaldnoraltname && createCa) {
             currentCaId = CertTools.stringToBCDNString(caSubjectDN).hashCode();
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        if (buttonMakeRequest) {
+        if (makeRequest) {
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", createCaName);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("cabean", caBean);
@@ -2097,7 +2118,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     caDefinedFreshestCRL, useUtf8Policy, usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl,
                     crlDistributionPointOnCrlCritical, includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl, buttonCreateCa,
                     buttonMakeRequest, cryptoTokenIdParam, cryptoTokenCertSignKey, cryptoTokenCertSignKey, cryptoTokenDefaultKey, hardTokenEncryptKey,
-                    selectedKeyEncryptKey, testKey, null);
+                    selectedKeyEncryptKey, testKey, fileBuffer);
 
         return illegaldnoraltname;
     }
@@ -2254,10 +2275,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return EditCaUtil.MANAGE_CA_NAV;
     }
 
-    public String makeRequest() {
+    private String makeRequestEditCa() {
+        try {
+            getCaInfo();
+        } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
+        }
         byte[] fileBuffer = null;
         try {
-            fileBuffer = fileRecieveFileMakeRequest.getBytes();
+            if (fileRecieveFileMakeRequest != null) {
+                fileBuffer = fileRecieveFileMakeRequest.getBytes();
+            }
         } catch (IOException e) {
             log.error("Error happened while uploading file!", e);
         }
@@ -2269,9 +2297,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             addErrorMessage(e.getMessage());
         }
         caBean.saveRequestData(certreq);
-
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caName", createCaName);
+        
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", editCaName);
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("cabean", caBean);
+
 
         return EditCaUtil.DISPLAY_RESULT_NAV;
     }
