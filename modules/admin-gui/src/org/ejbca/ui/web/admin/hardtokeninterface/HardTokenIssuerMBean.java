@@ -42,7 +42,7 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
 
     private static final long serialVersionUID = 1L;
 
-    HardTokenInterfaceBean tokenbean;
+    private HardTokenInterfaceBean tokenbean;
 
     /**
      * Indicates a delete action in progress to render its view.
@@ -178,6 +178,10 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
      * Cancel action.
      */
     public void actionCancel() {
+        reset();
+    }
+
+    void reset() {
         deleteInProgress = false;
         selectedHardTokenIssuer = null;
     }
@@ -222,5 +226,9 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
 
     public void setNewRoleId(int newRoleId) {
         this.newRoleId = newRoleId;
+    }
+
+    public HardTokenInterfaceBean getTokenbean() {
+        return tokenbean;
     }
 }
