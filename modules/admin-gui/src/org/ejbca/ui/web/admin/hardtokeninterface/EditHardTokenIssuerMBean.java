@@ -115,7 +115,7 @@ public class EditHardTokenIssuerMBean extends BaseManagedBean implements Seriali
         try {
             hardTokenIssuerMBean.tokenbean.changeHardTokenIssuer(issuerGui.name, issuer);
         } catch (HardTokenIssuerDoesntExistsException e) {
-            e.printStackTrace();
+            addErrorMessage("HARDTOKENDOESNTEXIST");
         }
         reset();
         return "done";
