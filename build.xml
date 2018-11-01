@@ -549,6 +549,7 @@
             	<include name="snakeyaml-*.jar" />
             	<include name="dns*.jar" />
                 <include name="guava-*.jar" />
+            	<include name="jsch-*.jar" />
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct" erroronmissingdir="false">
                 <!-- Certificate Transparency -->

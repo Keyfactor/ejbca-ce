@@ -83,6 +83,10 @@
                 <input type="text" name="<%=current.getName()%>" id="<%=current.getName()%>" size="45" maxlength="255"  <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>
                         value='<c:out value="<%= current.getValue() %>"/>'>
     		<%
+    		} else if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_TEXTINPUT_PASSWORD) { %>
+            <input type="password" autocomplete="off" name="<%=current.getName()%>" id="<%=current.getName()%>" size="45" maxlength="255"  <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>
+                    value='<c:out value="<%= current.getValue() %>"/>'>
+			<%
     		} else if (current.getType() == org.ejbca.core.model.ca.publisher.CustomPublisherProperty.UI_BOOLEAN) { %>
 	            <input type="checkbox" name="<%=current.getName()%>" id="<%=current.getName()%>" value="true"  <% if(publisherhelper.isReadOnly()) { out.write("disabled"); } %>
 	           <%  if("true".equals(current.getValue())) { out.write(" CHECKED "); } %>/>

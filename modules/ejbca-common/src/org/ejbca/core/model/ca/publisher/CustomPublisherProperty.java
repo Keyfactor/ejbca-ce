@@ -27,6 +27,7 @@ public class CustomPublisherProperty {
     public static final int UI_SELECTONE = 1;
     public static final int UI_BOOLEAN   = 2;
     public static final int UI_TEXTOUTPUT = 3;
+    public static final int UI_TEXTINPUT_PASSWORD = 3;
 
     private final String name;
     private final int type;

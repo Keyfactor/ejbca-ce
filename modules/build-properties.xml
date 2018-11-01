@@ -285,6 +285,7 @@
 	<path id="lib.mail.classpath">
 		<fileset dir="${ejbca.home}/lib/ext" includes="mailapi.jar"/>
 	</path>
+	<path id="lib.jsch.classpath"><fileset dir="${ejbca.home}/lib" includes="jsch-*.jar"/></path>
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.owaspcsrfguard.classpath"><fileset dir="${ejbca.home}/lib/" includes="csrfguard-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>

@@ -1314,11 +1314,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public byte[] signPayload(final AuthenticationToken authenticationToken, final byte[] data, final String signingCaName)
+    public byte[] signPayload(final AuthenticationToken authenticationToken, final byte[] data, final int signingCaId)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CADoesntExistsException, SignRequestSignatureException {
-        CA ca = caSession.getCA(authenticationToken, signingCaName);
+        CA ca = caSession.getCA(authenticationToken, signingCaId);
         if (ca == null) {
-            throw new CADoesntExistsException("CA by name " + signingCaName + " does not exist.");
+            throw new CADoesntExistsException("CA with ID " + signingCaId + " does not exist.");
         }
         CAToken catoken = ca.getCAToken();
         CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
