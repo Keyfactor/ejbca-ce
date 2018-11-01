@@ -20,9 +20,6 @@ RUN cd $HOME \
 #Install JDK 1.8
 RUN apk --update add openjdk8
 
-#Setting Ant Home
-ENV ANT_HOME=/opt/ant/apache-ant-1.9.8
-
 #Setting Ant Params
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 
