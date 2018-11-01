@@ -2000,10 +2000,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return caBean.isCVCAvailable();
     }
     
-    public boolean isSignedByExternal() {
-        log.info("Hi amin signed by is " + this.signedBy);
-        return this.signedBy != null ? (Integer.parseInt(this.signedBy) == CAInfo.SIGNEDBYEXTERNALCA) : false;
-    }
     
     public boolean isRenderExternallySignedCaCreationRenewal() {
         final int cryptoTokenId = catoken == null ? currentCryptoTokenId : catoken.getCryptoTokenId();
@@ -2351,5 +2347,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void setFileRecieveFileRecieveRequest(UploadedFile fileRecieveFileRecieveRequest) {
         this.fileRecieveFileRecieveRequest = fileRecieveFileRecieveRequest;
+    }
+    
+    public boolean isSignedByExternal() {
+        return this.signedBy != null ? (Integer.parseInt(this.signedBy) == CAInfo.SIGNEDBYEXTERNALCA) : false;
     }
 }
