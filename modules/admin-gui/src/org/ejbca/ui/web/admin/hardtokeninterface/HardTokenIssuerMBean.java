@@ -26,7 +26,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.roles.Role;
 import org.cesecore.util.StringTools;
@@ -107,7 +106,6 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
                         newRoleId = -1;
                     } catch (HardTokenIssuerExistsException e) {
                         addErrorMessage("ISSUERALREADYEXISTS");
-                        newHardTokenIssuer = null;
                     }
                 }
             }
@@ -142,7 +140,7 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
                     addErrorMessage("ONLYCHARACTERS");
                 } else {
                     try {
-                        tokenbean.cloneHardTokenIssuer(selectedHardTokenIssuer,newHardTokenIssuer, newRoleId);
+                        tokenbean.cloneHardTokenIssuer(selectedHardTokenIssuer, newHardTokenIssuer, newRoleId);
                         newHardTokenIssuer = null;
                         newRoleId = -1;
                     } catch (HardTokenIssuerExistsException e) {
@@ -155,7 +153,8 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
 
     public void deleteHardTokenIssuer() throws AuthorizationDeniedException {
         if (selectedHardTokenIssuer != null) {
-            if (!selectedHardTokenIssuer.trim().equals("")) {
+            selectedHardTokenIssuer = selectedHardTokenIssuer.trim();
+            if (StringUtils.isNotEmpty(selectedHardTokenIssuer.trim())) {
                 boolean result = tokenbean.removeHardTokenIssuer(selectedHardTokenIssuer);
                 if (!result) {
                     addErrorMessage("COULDNTDELETEISSUER");
