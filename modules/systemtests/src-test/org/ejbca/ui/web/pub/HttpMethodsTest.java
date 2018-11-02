@@ -97,7 +97,7 @@ public class HttpMethodsTest {
         performResourceTest("/ejbca/index.jsp");
     }
 
-    /** Test the publicweb.war module. */
+    /** Test the publicweb.war module that it returns X-FRAME-OPTIONS and CSP headers. */
     @Test
     public void testPublicWebSecurityHeaders() throws Exception {
         // Check for X-FRAME-OPTIONS headers
@@ -114,7 +114,7 @@ public class HttpMethodsTest {
         assertEquals("Public web page should return xcsp default-src 'none'; object-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", xcsp);
     }
 
-    /** Test the adminweb.war module that it returns X-FRAME-OPTIONS on the error page. */
+    /** Test the adminweb.war module that it returns X-FRAME-OPTIONS and CSP headers on the error page (unathenticated). */
     @Test
     public void testAdminWebXFrameOptionsOnError() throws Exception {
         // Check for X-FRAME-OPTIONS headers
@@ -128,9 +128,28 @@ public class HttpMethodsTest {
         assertNotNull("Admin web error page should return X-FRAME-OPTIONS header", xframe);
         assertNotNull("Admin web error page should return content-security-policy header", csp);
         assertNotNull("Admin web error page should return x-content-security-policy header", xcsp);
-        assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", xframe);
+        assertEquals("Admin web error page should return X-FRAME-OPTIONS DENY", "DENY", xframe);
         assertEquals("Admin web error page should return csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", csp);
         assertEquals("Admin web error page should return x-csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", xcsp);
+    }
+
+    /** Test the ra-gui.war module that it returns X-FRAME-OPTIONS and CSP headers on the error page (unathenticated). */
+    @Test
+    public void testRAWebXFrameOptionsOnError() throws Exception {
+        // Check for X-FRAME-OPTIONS headers
+        // We will not be able to actually read this url, because we use port 8080, and RA web requires client authentication,
+        // But EJBCA will still return a "blank" page with the correct http header.
+        HttpURLConnection con = getHttpURLConnection(httpBaseUrl+"/ejbca/ra/index.xhtml");
+        String xframe = con.getHeaderField("X-FRAME-OPTIONS");
+        String csp = con.getHeaderField("content-security-policy");
+        String xcsp = con.getHeaderField("x-content-security-policy");
+        con.disconnect();
+        assertNotNull("Admin web error page should return X-FRAME-OPTIONS header", xframe);
+        assertNotNull("Admin web error page should return content-security-policy header", csp);
+        assertNotNull("Admin web error page should return x-content-security-policy header", xcsp);
+        assertEquals("Admin web error page should return X-FRAME-OPTIONS DENY", "DENY", xframe);
+        assertEquals("Admin web error page should return csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", csp);
+        assertEquals("Admin web error page should return x-csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", xcsp);
     }
 
     /** Test the webdist.war module. */

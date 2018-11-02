@@ -27,7 +27,7 @@
         <H2><c:out value='<%= ejbcawebbean.getText(\"AUTHORIZATIONDENIED\") %>' /></H2>
         <H4><c:out value='<%= ejbcawebbean.getText(\"CAUSE\") + \" : \" + exception.getMessage() %>' /></H4><%
         response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("X-FRAME-OPTIONS", "SAMEORIGIN" );
+        response.addHeader("X-FRAME-OPTIONS", "DENY" );
         response.addHeader("content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
         response.addHeader("x-content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
     } else if (exception instanceof CryptoTokenOfflineException) {
@@ -35,7 +35,7 @@
         <H2><c:out value='<%= ejbcawebbean.getText(\"CATOKENISOFFLINE\") %>' /></H2>
         <H4><c:out value='<%= ejbcawebbean.getText(\"CAUSE\") + \" : \" + exception.getMessage() %>' /></H4><%
         response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("X-FRAME-OPTIONS", "SAMEORIGIN" );
+        response.addHeader("X-FRAME-OPTIONS", "DENY" );
         response.addHeader("content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
         response.addHeader("x-content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
     } else if (exception instanceof ParameterException) { %>
@@ -47,7 +47,7 @@
         <H4><c:out value="<%= exception.getLocalizedMessage() %>" /></H4><%
         org.apache.log4j.Logger.getLogger("errorpage.jsp").info(exception.getMessage());
         response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("X-FRAME-OPTIONS", "SAMEORIGIN" );
+        response.addHeader("X-FRAME-OPTIONS", "DENY" );
         response.addHeader("content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
         response.addHeader("x-content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
     } else {
@@ -63,7 +63,7 @@
         }
         org.apache.log4j.Logger.getLogger("errorpage.jsp").error(exception.getMessage(), exception); // Prints in server.log
         response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("X-FRAME-OPTIONS", "SAMEORIGIN" );
+        response.addHeader("X-FRAME-OPTIONS", "DENY" );
         response.addHeader("content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
         response.addHeader("x-content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
     }
