@@ -15,18 +15,25 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.cert.Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.Base64CertData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.StringTools;
 
 
 
@@ -94,7 +101,37 @@ public class CustomPublisherContainer extends BasePublisher {
 	 *  Sets the propertydata used to configure this custom publisher.
 	 */   
 	public void setPropertyData(String propertydata){
-		data.put(PROPERTYDATA, propertydata);	
+	    if(isCustomUiRenderingSupported()) {
+            CustomPublisherUiSupport publisher = (CustomPublisherUiSupport) getCustomPublisher();
+	        //Check if any fields are passwords, and encrypt those
+	        Properties properties = new Properties();
+	        try {
+	            properties.load(new ByteArrayInputStream(propertydata.getBytes()));
+	        } catch (IOException e) {
+	            throw new IllegalArgumentException("Properties could not be loaded.", e);
+	        }
+	        StringBuilder encryptedProperties = new StringBuilder();
+	        for(Object key : properties.keySet()) {
+	            String value;
+	            if(publisher.getPropertyType((String)key) == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD) {
+	                //Property is of a type that shouldn't be written in clear text to disk. Encrypt!
+	                try {
+                        value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key));
+                    } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException
+                            | InvalidKeySpecException e) {
+                        throw new IllegalStateException("Could not encrypt private key password!", e);
+                    }
+	            } else {
+	                value = properties.getProperty((String) key);
+	            }
+	            encryptedProperties.append(key + "=" + value + "\n");
+	        }
+	        data.put(PROPERTYDATA, encryptedProperties.toString());  
+	    } else {
+	        data.put(PROPERTYDATA, propertydata);  
+	    }
+
+		
 	}
 	
 	public boolean isCustomAccessRulesSupported() {
