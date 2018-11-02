@@ -123,13 +123,14 @@ public interface PublisherSession {
      * @throws AuthorizationDeniedException */
     void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException;
 
-    /** Removes publisher data. Ignores if there are any references to the publisher from CA or certificate profiles, 
-     * just goes ahead and removes it.
+    /**
+     * Removes a publisher. References to the publisher from CA, certificate profiles and Multi Group Publishers
+     * are checked.
      * 
      * @param admin AuthenticationToken of admin.
      * @param name the name of the publisher to remove.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher, or if references exist.
      */
     void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 

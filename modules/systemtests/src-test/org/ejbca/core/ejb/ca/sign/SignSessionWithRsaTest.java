@@ -914,7 +914,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
             internalCertStoreSession.removeCertificate(certificatoriginalCertificateeSerialNumber);
             internalCertStoreSession.removeCertificate(newCertificateSerialNumber);
-            publisherSession.removePublisher(internalAdmin, publisherName);
+            publisherProxySession.removePublisherInternal(internalAdmin, publisherName);
             try {
                 endEntityManagementSession.deleteUser(internalAdmin, username);
             } catch (CouldNotRemoveEndEntityException | NoSuchEndEntityException e) {
