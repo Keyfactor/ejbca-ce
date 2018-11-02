@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -33,6 +35,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
@@ -43,6 +46,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -53,6 +57,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
@@ -88,11 +93,15 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     private EntityManager entityManager;
 
     @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
@@ -459,9 +468,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
+    public void removePublisherInternal(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace(">removePublisher(name: " + name + ")");
+            log.trace(">removePublisherInternal(name: " + name + ")");
         }
         authorizedToEditPublishers(admin);
         try {
@@ -475,7 +484,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 // Purge the cache here
                 PublisherCache.INSTANCE.removeEntry(htp.getId());
                 final String msg = intres.getLocalizedMessage("publisher.removedpublisher", name);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_REMOVAL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA,
                         admin.toString(), null, null, null, details);
@@ -484,8 +493,51 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             String msg = intres.getLocalizedMessage("publisher.errorremovepublisher", name);
             log.info(msg, e);
         }
+        log.trace("<removePublisherInternal()");
+    }
+
+    @Override
+    public void removePublisher(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace("<removePublisher()");
+            log.trace(">removePublisher(name: " + name + ")");
+        }
+        checkPublisherInUse(name);
+        removePublisherInternal(admin, name);
+        log.trace("<removePublisher()");
+    }
+
+    /**
+     * Checks if the given publisher is in use, and throws AuthorizationDeniedException with an informative error message if so. 
+     * @param name Name of publisher
+     * @throws AuthorizationDeniedException If in use by CAs, profiles or Multi Group Publishers.
+     */
+    private void checkPublisherInUse(final String name) throws AuthorizationDeniedException {
+        final List<String> inUseBy = new ArrayList<>();
+        int publisherId = getPublisherId(name);
+        if (caAdminSession.exitsPublisherInCAs(publisherId)) {
+            inUseBy.add("one or more CAs");
+        }
+        if (certificateProfileSession.existsPublisherIdInCertificateProfiles(publisherId)) {
+            inUseBy.add("one or more Certificate Profiles");
+        }
+        for (final Entry<Integer, BasePublisher> entry : getAllPublishersInternal().entrySet()) {
+            final BasePublisher publisher = entry.getValue();
+            if (publisher instanceof MultiGroupPublisher) {
+                final List<TreeSet<Integer>> publisherGroups = ((MultiGroupPublisher) publisher).getPublisherGroups();
+                for (final TreeSet<Integer> group : publisherGroups) {
+                    if (group.contains(publisherId)) {
+                        inUseBy.add("publisher '" + publisher.getName() + "'");
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!inUseBy.isEmpty()) {
+            final String message = "Publisher " + name + " can't be deleted because it's in use by: " +
+                    StringUtils.join(inUseBy, ", ");
+            log.info(message);
+            throw new AuthorizationDeniedException(message);
         }
     }
 

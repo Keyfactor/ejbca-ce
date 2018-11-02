@@ -62,10 +62,12 @@ public interface PublisherProxySessionRemote {
      */
     String getPublisherName(int id);
 
-    /** Removes a publisher from the database. 
-     * @throws AuthorizationDeniedException */
-    void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
-    
+    /**
+     * Removes publisher data. Ignores if there are any references to the publisher from CA, certificate profiles
+     * or Multi Group Publishers, just goes ahead and removes it.
+     */
+    void removePublisherInternal(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+
     /**
      * Renames a publisher.
      * @throws PublisherExistsException if publisher already exists.

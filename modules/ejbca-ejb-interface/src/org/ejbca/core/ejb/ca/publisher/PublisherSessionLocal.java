@@ -16,6 +16,8 @@ import java.util.Map;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 
@@ -75,7 +77,18 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @return an error message or an empty String if all are ok.
      */
     String testAllConnections(); // NOPMD: this is not a JUnit test
-    
+
+    /**
+     * Removes publisher data. Ignores if there are any references to the publisher from CA, certificate profiles
+     * or Multi Group Publishers, just goes ahead and removes it.
+     * 
+     * @param admin AuthenticationToken of admin.
+     * @param name the name of the publisher to remove.
+     * 
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     */
+    void removePublisherInternal(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+
     /**
      * Allows upgrade for Community Users to EJBCA 6.3.1.1 from previous versions of EJBCA by replacing the old 
      * VA publisher with a placeholder 

@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.publisher;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -291,6 +292,19 @@ public class MultiGroupPublisherSystemTest {
         assertEquals("wrong extendedinformation.getMaxLoginAttempts() in volatileData", 2, extendedinformation.getMaxLoginAttempts());
     }
 
+    /**
+     * Tests that you can't remove a publisher that's referenced by a multi group publisher
+     */
+    @Test
+    public void disallowedRemoval() {
+        try {
+            publisherSession.removePublisher(alwaysAllowToken, LDAP_PUBLISHER1_NAME);
+            fail("Should throw when trying to delete publisher that is in use by a multi group publisher");
+        } catch (AuthorizationDeniedException e) {
+            assertTrue("Exception message say that the publisher is in use by " + MGP_PUBLISHER_NAME + ". Message was: " + e.getMessage(), e.getMessage().contains("publisher '" + MGP_PUBLISHER_NAME + "'"));
+        }
+    }
+
     private static void cleanup() throws AuthorizationDeniedException {
         log.debug("Cleaning up");
         cleanupEndEntity();
@@ -298,10 +312,10 @@ public class MultiGroupPublisherSystemTest {
         endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, ENDENTITY_PROFILE_NAME);
         CaTestUtils.removeCa(alwaysAllowToken, CA_NAME, CA_NAME);
         certificateProfileSession.removeCertificateProfile(alwaysAllowToken, CERT_PROFILE_NAME);
+        publisherSession.removePublisher(alwaysAllowToken, MGP_PUBLISHER_NAME);
         publisherSession.removePublisher(alwaysAllowToken, LDAP_PUBLISHER1_NAME);
         publisherSession.removePublisher(alwaysAllowToken, LDAP_PUBLISHER2_NAME);
         publisherSession.removePublisher(alwaysAllowToken, CUSTOM_PUBLISHER1_NAME);
-        publisherSession.removePublisher(alwaysAllowToken, MGP_PUBLISHER_NAME);
     }
     
     private static void cleanupEndEntity() throws AuthorizationDeniedException {
