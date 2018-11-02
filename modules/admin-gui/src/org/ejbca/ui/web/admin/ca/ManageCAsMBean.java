@@ -54,7 +54,6 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
-    private boolean isEditCA;
     CADataHandler cadatahandler;
     Map<Integer, String> caidtonamemap;
     
@@ -183,20 +182,16 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             return EditCaUtil.MANAGE_CA_NAV;
         }
         
-        this.setEditCA(isEditCA);
-        // Here we set what is needed in EditCAsMBean
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editCaName", caidtonamemap.get(selectedCaId));
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("createCaName", EditCaUtil.getTrimmedName(this.createCaName));
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("isEditCA", this.isEditCA);        
+        // Here we set what is needed in editing ca mode
+        if (isEditCA) {
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editcaname", caidtonamemap.get(selectedCaId));
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caid", selectedCaId);
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", isEditCA);
+        } else { // And here for we set what is needed creating ca mode
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("createcaname", EditCaUtil.getTrimmedName(this.createCaName));
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", isEditCA);
+        }
         return EditCaUtil.EDIT_CA_NAV;
-    }
-
-    public boolean isEditCA() {
-        return isEditCA;
-    }
-
-    public void setEditCA(boolean isEditCA) {
-        this.isEditCA = isEditCA;
     }
     
     public String deleteCA() {

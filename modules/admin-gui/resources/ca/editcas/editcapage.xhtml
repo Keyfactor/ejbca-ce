@@ -61,7 +61,7 @@
 						<h:outputLabel for="getcaid" value="#{web.text.CAID}" rendered="#{editCAsMBean.editCA}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:outputText id="getcaid" value="#{editCAsMBean.currentCaId}" rendered="#{editCAsMBean.editCA}"/>
+						<h:outputText id="getcaid" value="#{editCAsMBean.caid}" rendered="#{editCAsMBean.editCA}"/>
 					</h:panelGroup>
 
 					<h:panelGroup>
@@ -459,11 +459,16 @@
 					<h:outputText class="dn"
 						value="#{editCAsMBean.caSubjectDN}" rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"/>
 					<h:inputText name="textfieldsubjectdn" size="45" maxlength="225"
-						value="#{editCAsMBean.caSubjectDN}" title="#{web.text.FORMAT_DN}" rendered = "#{editCAsMBean.editCA and editCAsMBean.caUninitialized}" disabled="#{not editCAsMBean.hasEditRight}"/>
+						value="#{editCAsMBean.caSubjectDN}" title="#{web.text.FORMAT_DN}" 
+						rendered = "#{editCAsMBean.editCA and editCAsMBean.caUninitialized}" 
+						disabled="#{not editCAsMBean.hasEditRight}">
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.CvcSubjectDNValidator" disabled="#{editCAsMBean.caTypeX509}"/>
+					</h:inputText>	
 					<h:inputText name="textfieldsubjectdn" size="45" maxlength="225" id="textfieldsubjectdn"
 						value="#{editCAsMBean.caSubjectDN}" title="#{web.text.FORMAT_DN}" rendered = "#{not editCAsMBean.editCA}" disabled="#{not editCAsMBean.hasEditRight}"
-						label="Ca Cert Subject DN" style="border:2px solid #FFC300" required="true"
-						/>						
+						label="Ca Cert Subject DN" style="border:2px solid #FFC300" required="true">
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.CvcSubjectDNValidator" disabled="#{editCAsMBean.caTypeX509}" />
+					</h:inputText>							
 				</h:panelGroup>
 
 				<h:panelGroup rendered = "#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
@@ -481,17 +486,17 @@
 				</h:panelGroup>
 				
 				<h:panelGroup rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}">
-					<h:outputText id="cert_signedby" value="#{editCAsMBean.signedBy}" />
+					<h:outputText id="cert_signedby" value="#{editCAsMBean.signedByString}" />
 				</h:panelGroup>
 				
 				<h:panelGroup rendered="#{editCAsMBean.editCA and editCAsMBean.caUninitialized}">
-					<h:selectOneMenu value="#{editCAsMBean.signedBy}" disabled="#{not editCAsMBean.hasEditRight}">
+					<h:selectOneMenu value="#{editCAsMBean.signedByString}" disabled="#{not editCAsMBean.hasEditRight}">
 						<f:selectItems value="#{editCAsMBean.signedByListUninitialized}"/>
 					</h:selectOneMenu>
 				</h:panelGroup>
 				
 				<h:panelGroup rendered="#{not editCAsMBean.editCA}">
-					<h:selectOneMenu value="#{editCAsMBean.signedBy}" disabled="#{not editCAsMBean.hasEditRight}">
+					<h:selectOneMenu value="#{editCAsMBean.signedByString}" disabled="#{not editCAsMBean.hasEditRight}">
 						<f:selectItems value="#{editCAsMBean.signedByCreateCAList}" /> 
 						<f:ajax event="change" render="textfieldvalidity buttonmakerequest buttoncreate checkboxactivatecmsservice 
 													   textfieldnameconstraintsexcluded textfieldnameconstraintspermitted 
