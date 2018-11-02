@@ -420,7 +420,7 @@ public class StringToolsTest {
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
                 fail("Decryption should not work with wrong key");
-            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException|NoSuchAlgorithmException|NoSuchProviderException|NoSuchPaddingException e) {
+            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException e) {
                 // we should end up here typically when encryption fails, but it's not 100% sure
             }
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
@@ -453,7 +453,7 @@ public class StringToolsTest {
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
                 assertFalse("Decryption should not work with wrong key. Decrypted data: "+pwd, "customEncryptionKey".equals(pwd));
-            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException|NoSuchAlgorithmException|NoSuchProviderException|NoSuchPaddingException e) {
+            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException e) {
                 // we should end up here typically when encryption fails, but it's not 100% sure
             }
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
@@ -486,7 +486,7 @@ public class StringToolsTest {
             try {
                 pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "foo123abc".toCharArray());
                 fail("Decryption should not work with wrong key");
-            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException|NoSuchAlgorithmException|NoSuchProviderException|NoSuchPaddingException e) {
+            } catch (IllegalBlockSizeException|BadPaddingException|InvalidKeyException|InvalidKeySpecException e) {
                 // we should end up here typically when encryption fails, but it's not 100% sure
             }
             pwd = StringTools.pbeDecryptStringWithSha256Aes192(pbe, "zeG6qE2zV7BddqHc".toCharArray());
