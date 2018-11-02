@@ -17,8 +17,6 @@ import java.io.Serializable;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -38,16 +36,11 @@ public class PublisherDataHandler implements Serializable {
     private static final long serialVersionUID = -5646053740072121787L;
 
     private PublisherSessionLocal publishersession;
-    private CAAdminSession caadminsession;
-    private CertificateProfileSession certificateProfileSession;
     private AuthenticationToken administrator;
 
     /** Creates a new instance of PublisherDataHandler */
-    public PublisherDataHandler(AuthenticationToken administrator, PublisherSessionLocal publishersession, CAAdminSession caadminsession,
-            CertificateProfileSession certificateProfileSession) {
+    public PublisherDataHandler(AuthenticationToken administrator, PublisherSessionLocal publishersession) {
         this.publishersession = publishersession;
-        this.caadminsession = caadminsession;
-        this.certificateProfileSession = certificateProfileSession;
         this.administrator = administrator;
     }
 
@@ -62,18 +55,12 @@ public class PublisherDataHandler implements Serializable {
         publishersession.changePublisher(administrator, name, publisher);
     }
 
-    /** Method to remove a publisher, returns true if deletion failed.*/
-    public boolean removePublisher(String name) throws AuthorizationDeniedException {
-        boolean returnval = true;
-
-        int publisherid = publishersession.getPublisherId(name);
-        if (!caadminsession.exitsPublisherInCAs(publisherid)
-                && !certificateProfileSession.existsPublisherIdInCertificateProfiles(publisherid)) {
-            publishersession.removePublisher(administrator, name);
-            returnval = false;
-        }
-
-        return returnval;
+    /**
+     * Removes a publisher
+     * @throw AuthorizationDeniedException if not authorized, or if references exist.
+     */
+    public void removePublisher(String name) throws AuthorizationDeniedException {
+        publishersession.removePublisher(administrator, name);
     }
 
     /** Metod to rename a publisher */

@@ -158,6 +158,7 @@ public class EditPublisherJSPHelper {
     private boolean initialized=false;
     private boolean  publisherexists       = false;
     private boolean  publisherdeletefailed = false;
+    private String   publisherDeleteFailedMessage = "";
     private boolean  publisherEditFailed = false;
     private String   publisherEditMessage = "";
     private boolean  connectionmessage = false;
@@ -225,7 +226,12 @@ public class EditPublisherJSPHelper {
                     publisher = request.getParameter(SELECT_PUBLISHER);
                     if(publisher != null){
                         if(!publisher.trim().equals("")){
-                            setPublisherdeletefailed(handler.removePublisher(publisher));
+                            try {
+                                handler.removePublisher(publisher);
+                            } catch (AuthorizationDeniedException e) {
+                                setPublisherdeletefailed(true);
+                                setPublisherDeleteFailedMessage(e.getMessage());
+                            }
                         }
                     }
                     includefile=PAGE_PUBLISHERS;
@@ -836,6 +842,12 @@ public class EditPublisherJSPHelper {
     }
     public void setPublisherdeletefailed(boolean publisherdeletefailed) {
         this.publisherdeletefailed = publisherdeletefailed;
+    }
+    public String getPublisherDeleteFailedMessage() {
+        return publisherDeleteFailedMessage;
+    }
+    public void setPublisherDeleteFailedMessage(String publisherDeleteFailedMessage) {
+        this.publisherDeleteFailedMessage = publisherDeleteFailedMessage;
     }
 
     public boolean isPublisherEditFailed() {

@@ -133,7 +133,7 @@ public class PublisherTest extends RoleUsingTestCase {
         boolean ret = true;
         for( final String publisherName : publisherNames ) {
             try {
-                publisherProxySession.removePublisher(internalAdmin, publisherName);
+                publisherProxySession.removePublisherInternal(internalAdmin, publisherName);
                 log.debug("Publisher named '"+publisherName+"' removed.");
             } catch (Exception pee) {ret = false;}
         }

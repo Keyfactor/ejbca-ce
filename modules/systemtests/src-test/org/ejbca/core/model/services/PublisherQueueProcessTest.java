@@ -66,7 +66,7 @@ public class PublisherQueueProcessTest {
 
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private PublisherProxySessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
 
     /**
@@ -146,10 +146,10 @@ public class PublisherQueueProcessTest {
             publisher.setKeepPublishedInQueue(true);
             publisher.setClassPath("org.ejbca.core.model.ca.publisher.DummyCustomPublisher");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, "TestPublishQueueProcessService", publisher);
+            publisherProxySession.addPublisher(admin, "TestPublishQueueProcessService", publisher);
         } catch (PublisherExistsException pee) {
         }
-        int publisherId = publisherSession.getPublisherId("TestPublishQueueProcessService");
+        int publisherId = publisherProxySession.getPublisherId("TestPublishQueueProcessService");
 
         // We must add new entries to the queue, since we could not know the
         // publisherId before
@@ -238,7 +238,7 @@ public class PublisherQueueProcessTest {
         serviceSession.removeService(admin, "TestPublishQueueProcessService12345");
         serviceSession.removeService(admin, "TestPublishQueueProcessService");
 
-        publisherSession.removePublisher(admin, "TestPublishQueueProcessService");
+        publisherSession.removePublisherInternal(admin, "TestPublishQueueProcessService");
 
     }
 }
