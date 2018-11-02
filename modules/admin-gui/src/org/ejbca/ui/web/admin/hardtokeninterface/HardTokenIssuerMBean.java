@@ -154,7 +154,7 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
     public void deleteHardTokenIssuer() throws AuthorizationDeniedException {
         if (selectedHardTokenIssuer != null) {
             selectedHardTokenIssuer = selectedHardTokenIssuer.trim();
-            if (StringUtils.isNotEmpty(selectedHardTokenIssuer.trim())) {
+            if (StringUtils.isNotEmpty(selectedHardTokenIssuer)) {
                 boolean result = tokenbean.removeHardTokenIssuer(selectedHardTokenIssuer);
                 if (!result) {
                     addErrorMessage("COULDNTDELETEISSUER");
