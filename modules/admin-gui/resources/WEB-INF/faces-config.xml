@@ -399,17 +399,18 @@
   	</navigation-case>
   	<navigation-case>
   		<from-outcome>manage</from-outcome>
-  		<to-view-id>/peerconnector/peermgmt.jsp</to-view-id>
+  		<to-view-id>/peerconnector/peermgmt.xhtml</to-view-id>
   	</navigation-case>
   	<navigation-case>
-        	<from-outcome>peerprocessauth</from-outcome>
-	        <to-view-id>/peerconnector/peerprocessauth.jsp</to-view-id>
-    	</navigation-case>
-  		<navigation-case>
-	        <from-outcome>peerinauth</from-outcome>
-        	<to-view-id>/peerconnector/peerinauth.jsp</to-view-id>
+        <from-outcome>peerprocessauth</from-outcome>
+	    <to-view-id>/peerconnector/peerprocessauth.jsp</to-view-id>
+    </navigation-case>
+    <navigation-case>
+        <from-outcome>peerinauth</from-outcome>
+        <to-view-id>/peerconnector/peerinauth.xhtml</to-view-id>
 	</navigation-case>
   </navigation-rule>
+  
   <navigation-rule>
   	<from-view-id>/peerconnector/peerconnector.xhtml</from-view-id>
   	<navigation-case>
@@ -418,7 +419,7 @@
   	</navigation-case>
   </navigation-rule>
   <navigation-rule>
-  	<from-view-id>/peerconnector/peermgmt.jsp</from-view-id>
+  	<from-view-id>/peerconnector/peermgmt.xhtml</from-view-id>
   	<navigation-case>
   		<from-outcome>done</from-outcome>
   		<to-view-id>/peerconnector/peerconnectors.xhtml</to-view-id>
