@@ -42,7 +42,8 @@ function check()
         <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOHARDTOKENPROFILES") %></a>
       </td>
     </tr>
-    <form name="uploadfile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >
+    <form name="uploadfile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+      <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
       <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=actions[edithardtokenprofile.uploadmode] %>'>            
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("PATHTOTEMPLATE") %></td>
