@@ -24,7 +24,8 @@ function check() {
         <h2><%= ejbcawebbean.getText("SIGNREQUEST") %></h2>
         <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= caname %>"/></h3>
     </div>
-    <form name="recievefile" action="<%= THIS_FILENAME %>?${csrf_tokenname}=${csrf_tokenvalue}" method="post" enctype='multipart/form-data' >
+    <form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+        <input type="hidden" name="<csrf:tokenname/>" value="<csrf:tokenvalue/>"/>
         <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_SIGNREQUEST %>'>
         <input type="hidden" name='<%= HIDDEN_CAID %>' value='<c:out value="<%= caid %>"/>'>
         <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
