@@ -380,7 +380,7 @@ function confirmrevocation(){
 				<% } %>
 				<% if ((rabean.authorizedToViewHistory(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations()) 
 					&& ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY)){ %>
-					<a href='<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>audit/search.jsf?username=<%= users[i].getUsername() %>'
+					<a href='<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>audit/search.xhtml?username=<%= users[i].getUsername() %>'
 						title='<%= ejbcawebbean.getText("VIEW_HISTORY_TITLE") %>'><c:out value='<%= ejbcawebbean.getText("HISTORY") %>' /></a>
 				<% } %>
 					</div></td>

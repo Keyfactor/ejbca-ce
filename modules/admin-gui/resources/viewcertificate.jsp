@@ -717,7 +717,7 @@ function confirmrepublish(){
               final int returnToId = Integer.parseInt(returnToParameter);
               switch (returnToId) {
               case 0: // 0 = send user to the audit log page
-            	  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
+            	  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
             	  break;
               case 1: // 1 = send user to the peer overview page
                   returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
