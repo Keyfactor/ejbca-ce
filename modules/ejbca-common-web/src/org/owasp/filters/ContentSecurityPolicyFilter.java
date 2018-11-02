@@ -20,11 +20,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Sample filter implementation to define a set of Content Security Policies.<br/>
+ * Sample filter implementation to define a set of Content Security Policies, and other security headers.<br/>
  * 
  * This implementation has a dependency on Commons Codec API.<br/>
  * 
  * This filter set CSP policies using all HTTP headers defined into W3C specification.<br/>
+ * and X-XSS-Protection, X-Content-Type-Options, X-FRAME-OPTIONS
  * <br/>
  * This implementation is oriented to be easily understandable and easily adapted.<br/>
  * 
@@ -199,7 +200,10 @@ public class ContentSecurityPolicyFilter implements Filter {
         httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
         // Also X-Content-Type-Options, see https://blogs.msdn.microsoft.com/ie/2008/09/02/ie8-security-part-vi-beta-2-update/
         httpResponse.setHeader("X-Content-Type-Options", "nosniff");
-        
+        // Also X-FRAME-OPTIONS, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+        // Used to be in a separate filter, ClickjackFilter, but there is no point in having multiple filters adding security headers
+        httpResponse.setHeader("X-FRAME-OPTIONS", "DENY" );            
+
         /* Step 3 : Let request continue chain filter */
         fchain.doFilter(request, response);
     }
