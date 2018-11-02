@@ -28,4 +28,11 @@ public interface CustomPublisherUiSupport {
     List<CustomPublisherProperty> getCustomUiPropertyList(final AuthenticationToken authenticationToken);
     
     List<String> getCustomUiPropertyNames();
+    
+    /**
+     * 
+     * @param label
+     * @return the type of the property (as defined in CustomPublisherProperty), or -1 if no such property exists
+     */
+    int getPropertyType(final String label);
 }

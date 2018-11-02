@@ -690,9 +690,8 @@ public final class StringTools {
      * as long as the 'password.encryption.key' is set, otherwise, it won't provide any real encryption more than obfuscation.
      * @throws InvalidKeySpecException
      */
-    public static String pbeEncryptStringWithSha256Aes192(final String in) throws NoSuchAlgorithmException, NoSuchProviderException,
-            NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
-            InvalidKeySpecException {
+    public static String pbeEncryptStringWithSha256Aes192(final String in)
+            throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
         char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
         return pbeEncryptStringWithSha256Aes192(in, p);
     }
@@ -703,9 +702,8 @@ public final class StringTools {
      * @param p encryption passphrase
      * @return hex encoded encrypted data in form "encryption_version:salt:count:encrypted_data" or clear text string if no strong crypto is available (Oracle JVM without unlimited strength crypto policy files)
      */
-    public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p) throws NoSuchAlgorithmException, NoSuchProviderException,
-    NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
-    InvalidKeySpecException {
+    public static String pbeEncryptStringWithSha256Aes192(final String in, char[] p)
+            throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("Encryption not possible due to weak crypto policy.");
@@ -717,10 +715,17 @@ public final class StringTools {
         final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
         final Cipher c;
         final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
-        c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
-        final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
-        c.init(Cipher.ENCRYPT_MODE, fact.generateSecret(keySpec));
-
+        try {
+            c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            c.init(Cipher.ENCRYPT_MODE, fact.generateSecret(keySpec));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Hard coded algorithm " + algorithm + " was not found.", e);
+        } catch(NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle provider was not installed.", e);
+        } catch (NoSuchPaddingException e) {
+            throw new IllegalStateException("Padding for hard coded algorithm " + algorithm + " was not found.", e);
+        }
         final byte[] enc = c.doFinal(in.getBytes(StandardCharsets.UTF_8));
         // Create a return value which is "encryption_version:salt:count:encrypted_data"
         StringBuilder ret = new StringBuilder(64);
@@ -738,13 +743,27 @@ public final class StringTools {
     }
 
     /**
+    *
+    * @param in hex encoded encrypted string in form "encryption_version:salt:count:encrypted_data", or just "encrypted_data" for older versions
+    * @return decrypted clear text string
+     * @throws InvalidKeySpecException 
+     * @throws BadPaddingException 
+     * @throws IllegalBlockSizeException 
+     * @throws InvalidKeyException 
+    */
+   public static String pbeDecryptStringWithSha256Aes192(final String in) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
+       char[] p = ConfigurationHolder.getString("password.encryption.key").toCharArray();
+       return pbeDecryptStringWithSha256Aes192(in, p);
+   }
+    
+    /**
      *
      * @param in hex encoded encrypted string in form "encryption_version:salt:count:encrypted_data", or just "encrypted_data" for older versions
      * @param p decryption passphrase
      * @return decrypted clear text string
      */
     public static String pbeDecryptStringWithSha256Aes192(final String in, char[] p) throws IllegalBlockSizeException, BadPaddingException,
-            InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
+            InvalidKeyException, InvalidKeySpecException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("Decryption not possible due to weak crypto policy.");
@@ -769,13 +788,21 @@ public final class StringTools {
         }
         // We can do different handling here depending on version, but currently we only have one so.
         final String algorithm = "PBEWithSHA256And192BitAES-CBC-BC";
-        final Cipher c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
-        final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
-        final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+        try {
+            final Cipher c = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            final PBEKeySpec keySpec = new PBEKeySpec(p, salt, count);
+            final SecretKeyFactory fact = SecretKeyFactory.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            c.init(Cipher.DECRYPT_MODE, fact.generateSecret(keySpec));
+            final byte[] dec = c.doFinal(Hex.decode(data.getBytes(StandardCharsets.UTF_8)));
+            return new String(dec);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Hard coded algorithm " + algorithm + " was not found.", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("BouncyCastle provider was not installed.", e);
+        } catch (NoSuchPaddingException e) {
+            throw new IllegalStateException("Padding for hard coded algorithm " + algorithm + " was not found.", e);
+        }
 
-        c.init(Cipher.DECRYPT_MODE, fact.generateSecret(keySpec));
-        final byte[] dec = c.doFinal(Hex.decode(data.getBytes(StandardCharsets.UTF_8)));
-        return new String(dec);
     }
 
     /** Method to handle different versions of password encryption transparently

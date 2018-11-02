@@ -13,6 +13,13 @@
 
 package org.ejbca.ui.cli;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 import org.apache.log4j.Logger;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
@@ -56,30 +63,35 @@ public class EncryptPwdCommand extends EjbcaCommandBase {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
+
+        final boolean readKey = parameters.get(ENCRYPT_KEY) != null;
+        log.info("Please note that this encryption does not provide absolute security. "
+                + "If 'password.encryption.key' property haven't been customized it doesn't provide more security than just preventing accidental viewing.");
+        char[] encryptionKey = null;
+        if (readKey) {
+            log.info("Enter encryption key: ");
+            encryptionKey = System.console().readPassword();
+        }
+        log.info("Enter word to encrypt: ");
+        String s = String.valueOf(System.console().readPassword());
+        CryptoProviderTools.installBCProvider();
+        log.info("Encrypting pwd (" + (readKey ? "with custom key" : "with default key") + ")");
+        final String enc;
+
         try {
-            final boolean readKey = parameters.get(ENCRYPT_KEY) != null;
-            log.info("Please note that this encryption does not provide absolute security. "
-                    + "If 'password.encryption.key' property haven't been customized it doesn't provide more security than just preventing accidental viewing.");
-            char[] encryptionKey = null;
             if (readKey) {
-                log.info("Enter encryption key: ");
-                encryptionKey = System.console().readPassword();
-            }
-            log.info("Enter word to encrypt: ");
-            String s = String.valueOf(System.console().readPassword());
-            CryptoProviderTools.installBCProvider();
-            log.info("Encrypting pwd ("+(readKey ? "with custom key" : "with default key")+")");
-            final String enc;
-            if (readKey) {
-                enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey);                
+                enc = StringTools.pbeEncryptStringWithSha256Aes192(s, encryptionKey);
             } else {
                 enc = StringTools.pbeEncryptStringWithSha256Aes192(s);
             }
-            log.info(enc);
-        } catch (Exception e) {
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException
+                | InvalidKeySpecException e) {
             log.error(e.getMessage());
             return CommandResult.FUNCTIONAL_FAILURE;
         }
+
+        log.info(enc);
+
         return CommandResult.SUCCESS;
     }
     
