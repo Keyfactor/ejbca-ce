@@ -67,39 +67,6 @@
         <url-pattern>*.xhtml</url-pattern>
     </filter-mapping>
 
-    <!-- Clickjack Filter from OWASP adding X-FRAME-OPTIONS header to pages to prevent including 
-         our pages in other frames. https://www.owasp.org/index.php/Clickjacking_Protection_for_Java_EE -->
-    <filter>
-        <filter-name>ClickjackFilterDeny</filter-name>
-        <filter-class>org.owasp.filters.ClickjackFilter</filter-class>
-        <init-param>
-            <param-name>mode</param-name>
-            <param-value>DENY</param-value>
-        </init-param>
-    </filter>
-
-    <filter>
-        <filter-name>ClickjackFilterSameOrigin</filter-name>
-        <filter-class>org.owasp.filters.ClickjackFilter</filter-class>
-        <init-param>
-            <param-name>mode</param-name>
-            <param-value>SAMEORIGIN</param-value>
-        </init-param>
-    </filter>
-
-    <!--  use the Deny version to prevent anyone, including yourself, from framing the page -->
-    <filter-mapping> 
-        <filter-name>ClickjackFilterDeny</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <!-- use the SameOrigin version to allow your application to frame, but nobody else
-    <filter-mapping> 
-        <filter-name>ClickjackFilterSameOrigin</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    -->
-
     <filter>
         <filter-name>ContentSecurityPolicyFilter</filter-name>
         <filter-class>org.owasp.filters.ContentSecurityPolicyFilter</filter-class>
