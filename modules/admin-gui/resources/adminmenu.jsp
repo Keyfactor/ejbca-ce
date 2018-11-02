@@ -42,7 +42,7 @@ org.ejbca.util.HTMLTools
                                + "/hardtokenissuerspage.xhtml";
        final String HT_EDITHARDTOKENPROFILES_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
                                + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
-       final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
+       final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
        final String LOG_CONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() + "/logconfiguration/logconfiguration.jsp";
        final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath()  + "/systemconfiguration.jsf";
        final String UPGRADE_LINK             =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "upgrade.jsf";
