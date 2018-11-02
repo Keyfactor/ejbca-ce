@@ -48,6 +48,9 @@ public class LogOutServlet extends HttpServlet {
         final Cookie killCookie = new Cookie(SESSIONCOOKIENAME, "");
         killCookie.setMaxAge(0);
         killCookie.setPath(request.getContextPath());
+        // JsessionID cookies that we can logout are always secure, and we only login over https, so do the same for logout
+        killCookie.setHttpOnly(true);
+        killCookie.setSecure(true);
         response.addCookie(killCookie);
         if (WebConfiguration.isProxiedAuthenticationEnabled()) {
         	// Redirect user to "/logout" that can be handled by a authentication proxy
