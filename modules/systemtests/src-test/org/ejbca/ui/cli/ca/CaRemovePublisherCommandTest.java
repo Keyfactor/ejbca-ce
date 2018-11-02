@@ -73,7 +73,7 @@ public class CaRemovePublisherCommandTest {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         command = new CaRemovePublisherCommand();
         try {
-            publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, PUBLISHER_NAME);
         } catch (Exception e) {
             // NOPMD: Ignore.
         }
@@ -111,7 +111,7 @@ public class CaRemovePublisherCommandTest {
             LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertNull("Publisher should have been removed", pub2);            
         } finally {
-            publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, PUBLISHER_NAME);
         }
     }
 
@@ -199,7 +199,7 @@ public class CaRemovePublisherCommandTest {
             assertEquals("CA should not contain reference to publisher.", 0, info2.getCRLPublishers().size());
 
         } finally {
-            publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, PUBLISHER_NAME);
             profileSession.removeCertificateProfile(admin, CERT_PROFILE_NAME);
         }
     }

@@ -22,7 +22,7 @@
         publisherhelper.setPublisherdeletefailed(false); 
         %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEPUBLISHER") %></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEPUBLISHER") + " " %><c:out value="<%= publisherhelper.getPublisherDeleteFailedMessage() %>"/></td>
       <td width="60%"></td>
     </tr>
   <% } %>

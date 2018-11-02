@@ -286,7 +286,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private final PublisherProxySessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -2594,9 +2594,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             final CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(DummyCustomPublisher.class.getName());
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, PUBLISHER_NAME, publisher);
+            publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
             assertEquals(0, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
-            final int publisherID = publisherSession.getPublisherId(PUBLISHER_NAME);
+            final int publisherID = publisherProxySession.getPublisherId(PUBLISHER_NAME);
             publisherQueueSession.addQueueData(publisherID, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
             assertEquals(1, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
             publisherQueueSession.addQueueData(publisherID, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
@@ -2608,7 +2608,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         } catch (EjbcaException_Exception e) {
             assertTrue(e.getMessage(), false);
         } finally {
-            publisherSession.removePublisher(admin, PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, PUBLISHER_NAME);
         }
     }
 

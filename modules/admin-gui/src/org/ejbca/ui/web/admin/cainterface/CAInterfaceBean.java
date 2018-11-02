@@ -204,7 +204,7 @@ public class CAInterfaceBean implements Serializable {
           this.ejbcawebbean = ejbcawebbean;
 
           cadatahandler = new CADataHandler(authenticationToken, ejbLocalHelper, ejbcawebbean);
-          publisherdatahandler = new PublisherDataHandler(authenticationToken, publishersession, caadminsession, certificateProfileSession);
+          publisherdatahandler = new PublisherDataHandler(authenticationToken, publishersession);
           isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
         }

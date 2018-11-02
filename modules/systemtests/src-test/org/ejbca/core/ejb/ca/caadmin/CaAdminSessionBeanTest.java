@@ -183,12 +183,12 @@ public class CaAdminSessionBeanTest {
             certificateProfileSession.removeCertificateProfile(alwaysAllowToken, certificateProfileName);
             
             //Remove the publishers
-            publisherProxySession.removePublisher(alwaysAllowToken, caPublisherName);
-            publisherProxySession.removePublisher(alwaysAllowToken, unauthorizedCaPublisherName);
-            publisherProxySession.removePublisher(alwaysAllowToken, unattachedCaPublisherName);
-            publisherProxySession.removePublisher(alwaysAllowToken, certificateProfilePublisherName);
-            publisherProxySession.removePublisher(alwaysAllowToken, unAuthorizedCustomPublisherName);
-            publisherProxySession.removePublisher(alwaysAllowToken, authorizedCustomPublisherName);
+            publisherProxySession.removePublisherInternal(alwaysAllowToken, caPublisherName);
+            publisherProxySession.removePublisherInternal(alwaysAllowToken, unauthorizedCaPublisherName);
+            publisherProxySession.removePublisherInternal(alwaysAllowToken, unattachedCaPublisherName);
+            publisherProxySession.removePublisherInternal(alwaysAllowToken, certificateProfilePublisherName);
+            publisherProxySession.removePublisherInternal(alwaysAllowToken, unAuthorizedCustomPublisherName);
+            publisherProxySession.removePublisherInternal(alwaysAllowToken, authorizedCustomPublisherName);
         }
     }
     

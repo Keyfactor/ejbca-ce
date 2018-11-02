@@ -89,14 +89,14 @@ public class PublisherSessionTest {
             int id1 = publisherProxySession.getPublisherId(name);
             assertEquals("Id should be the same after change, but it is not", id, id1);
             // Remove publishers
-            publisherProxySession.removePublisher(internalAdmin, name);
-            publisherProxySession.removePublisher(internalAdmin, name1);
+            publisherProxySession.removePublisherInternal(internalAdmin, name);
+            publisherProxySession.removePublisherInternal(internalAdmin, name1);
             assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name));
             assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(name1));
             assertNull("Should return null when publisher does not exist", publisherSession.getPublisher(id));
         } finally {
-            publisherProxySession.removePublisher(internalAdmin, name);
-            publisherProxySession.removePublisher(internalAdmin, name1);            
+            publisherProxySession.removePublisherInternal(internalAdmin, name);
+            publisherProxySession.removePublisherInternal(internalAdmin, name1);            
         }
     }
     
@@ -140,7 +140,7 @@ public class PublisherSessionTest {
             assertEquals("newvalue", pub.getDescription()); // new value
         } finally {
             configSession.updateProperty("publisher.cachetime", oldcachetime);
-            publisherProxySession.removePublisher(internalAdmin, name);
+            publisherProxySession.removePublisherInternal(internalAdmin, name);
         }
     } 
 
