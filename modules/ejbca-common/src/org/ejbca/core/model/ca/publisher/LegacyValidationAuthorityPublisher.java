@@ -12,15 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.model.ca.publisher;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * Holder class for preserving the data remaining from the old community VA Publisher
@@ -28,7 +24,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * @version $Id$
  *
  */
-public class LegacyValidationAuthorityPublisher extends CustomPublisherContainer implements ICustomPublisher, CustomPublisherUiSupport {
+public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase implements ICustomPublisher {
 
     public static final String OLD_VA_PUBLISHER_QUALIFIED_NAME = "org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher";
     
@@ -82,21 +78,11 @@ public class LegacyValidationAuthorityPublisher extends CustomPublisherContainer
         if (StringUtils.isEmpty(properties.getProperty(ONLYPUBLISHREVOKED))) {
             setOnlyPublishRevoked(false);
         }        
-    }
-    
-    @Override
-    public List<CustomPublisherProperty> getCustomUiPropertyList(final AuthenticationToken authenticationToken) {
-        final List<CustomPublisherProperty> ret = new ArrayList<CustomPublisherProperty>();        
-        ret.add(new CustomPublisherProperty(DATASOURCE, CustomPublisherProperty.UI_TEXTINPUT, getDataSource()));
-        ret.add(new CustomPublisherProperty(STORECERT, CustomPublisherProperty.UI_BOOLEAN, Boolean.toString(getStoreCert())));
-        ret.add(new CustomPublisherProperty(ONLYPUBLISHREVOKED, CustomPublisherProperty.UI_BOOLEAN, Boolean.toString(getOnlyPublishRevoked())));
-        ret.add(new CustomPublisherProperty(STORECRL, CustomPublisherProperty.UI_BOOLEAN, Boolean.toString(getStoreCRL())));
-        return ret;
-    }
-    
-    @Override
-    public List<String> getCustomUiPropertyNames() {
-        return Arrays.asList(DATASOURCE, STORECERT, ONLYPUBLISHREVOKED, STORECRL);
+        
+        addProperty(new CustomPublisherProperty(DATASOURCE, CustomPublisherProperty.UI_TEXTINPUT, getDataSource()));
+        addProperty(new CustomPublisherProperty(STORECERT, CustomPublisherProperty.UI_BOOLEAN, Boolean.toString(getStoreCert())));
+        addProperty(new CustomPublisherProperty(ONLYPUBLISHREVOKED, CustomPublisherProperty.UI_BOOLEAN, Boolean.toString(getOnlyPublishRevoked())));
+        addProperty(new CustomPublisherProperty(STORECRL, CustomPublisherProperty.UI_BOOLEAN, Boolean.toString(getStoreCRL())));
     }
     
     /**
