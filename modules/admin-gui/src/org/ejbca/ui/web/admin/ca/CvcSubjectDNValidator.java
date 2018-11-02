@@ -36,8 +36,8 @@ public class CvcSubjectDNValidator implements Validator {
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         
-        Matcher matchC = Pattern.compile("(^|,(\\s*))C=").matcher(value.toString());
-        Matcher matchCN = Pattern.compile("(^|,(\\s*))CN=").matcher(value.toString());
+        Matcher matchC = Pattern.compile("(^|,(\\s*))C=", Pattern.CASE_INSENSITIVE).matcher(value.toString());
+        Matcher matchCN = Pattern.compile("(^|,(\\s*))CN=", Pattern.CASE_INSENSITIVE).matcher(value.toString());
         
         if (!value.toString().equals(StringUtils.EMPTY) && (!matchC.find() || !matchCN.find())) {
             FacesMessage msg = new FacesMessage("Invalid CVC subject dn format. Example is CN=Test,C=SE", "SubjectDN validation failed!");
