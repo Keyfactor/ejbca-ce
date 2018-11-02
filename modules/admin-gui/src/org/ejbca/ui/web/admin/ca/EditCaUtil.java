@@ -27,6 +27,7 @@ public final class EditCaUtil {
     public static final String DISPLAY_RESULT_NAV = "displayresult";
     public static final int CERTREQGENMODE = 0;
     public static final int CERTGENMODE = 1;
+    public static final String DEFAULT_KEY_SIZE = "2048";
     
     public static Object getTrimmedName(final String name) {
         if (name != null && !name.isEmpty()) {
