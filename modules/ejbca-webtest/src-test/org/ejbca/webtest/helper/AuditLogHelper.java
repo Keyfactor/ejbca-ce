@@ -40,7 +40,7 @@ public class AuditLogHelper extends BaseHelper {
      */
     public static class Page {
         // General
-        static final String PAGE_URI = "/ejbca/adminweb/audit/search.jsf";
+        static final String PAGE_URI = "/ejbca/adminweb/audit/search.xhtml";
         static final By PAGE_LINK = By.id("supervisionAuditsearch");
         // Audit Log View
         static final By BUTTON_CLEAR_ALL_CONDITIONS = By.xpath("//input[contains(@value, 'Clear all conditions') and @type='submit']");
