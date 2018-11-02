@@ -6,7 +6,7 @@
 
 <tr id="Row<%=row++%2%>" class="section">
     <td width="45%" valign="top" align="right">
-        <strong><%= ejbcawebbean.getText("METAPUBLISHERSETTINGS") %></strong>
+        <strong><%= ejbcawebbean.getText("MULTIGROUPPUBLISHERSETTINGS") %></strong>
     </td>
     <td width="55%" valign="top">
         &nbsp;
@@ -28,7 +28,7 @@
     </td>
     <td width="55%" valign="top">
          <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_GROUPS%>" cols="45" rows="8" ><c:out value="<%= publisherhelper.getMultiPublishersDataAsString() %>"/></textarea>
-        <p class="help"><%= ejbcawebbean.getText("METAPUBLISHER_HELP") %></p> <br/>
-        <p class="help"><%= ejbcawebbean.getText("METAPUBLISHER_HELP2") %></p>
+        <p class="help"><%= ejbcawebbean.getText("MULTIGROUPPUBLISHER_HELP") %></p> <br/>
+        <p class="help"><%= ejbcawebbean.getText("MULTIGROUPPUBLISHER_HELP2") %></p>
     </td>
 </tr>
