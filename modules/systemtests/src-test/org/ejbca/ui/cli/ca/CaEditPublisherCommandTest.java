@@ -58,7 +58,7 @@ public class CaEditPublisherCommandTest {
     public void setUp() throws Exception {
         command = new CaEditPublisherCommand();
         try {
-            publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, PUBLISHER_NAME);
         } catch (Exception e) {
             // NOPMD: Ignore.
         }
@@ -89,7 +89,7 @@ public class CaEditPublisherCommandTest {
             result = command.execute(HAPPY_PATH_LISTFIELDS_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
         } finally {
-            publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, PUBLISHER_NAME);
         }
         // Try a custom publisher as well
         try {
@@ -105,7 +105,7 @@ public class CaEditPublisherCommandTest {
             CustomPublisherContainer pub2 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
             assertEquals("Propertydata was not changed as it should", "primekey http://www.primekey.se", pub2.getPropertyData());
         } finally {
-            publisherProxySession.removePublisher(admin, GCP_PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, GCP_PUBLISHER_NAME);
         }
 
     }
@@ -123,7 +123,7 @@ public class CaEditPublisherCommandTest {
             LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not changed as it should", "myhost1", pub2.getHostnames());
         } finally {
-            publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, PUBLISHER_NAME);
         }
     }
 
@@ -138,7 +138,7 @@ public class CaEditPublisherCommandTest {
             command.execute(INVALID_FIELD_ARGS);
             //TODO: Verify that publisher is unchanged
         } finally {
-            publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
+            publisherProxySession.removePublisherInternal(admin, PUBLISHER_NAME);
         }
     }
 
