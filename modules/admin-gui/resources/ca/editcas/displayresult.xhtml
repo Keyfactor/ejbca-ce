@@ -30,62 +30,57 @@
 	<f:event type="preRenderView"
 		listener="#{displayResultMBean.initAccess}" />
 </f:metadata>
-
-<h:body>
-
-	<ui:param name="row" value="0" />
-	<ui:composition template="/WEB-INF/include/template.xhtml">
-		<ui:define name="content">
-			<h2>
-				<h:outputText value="#{displayResultMBean.headline}" />
-			</h2>
-			<h3>
-				<h:outputText value="#{displayResultMBean.caName}" />
-			</h3>
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
-				columnClasses="editColumn1,editColumn2">
-				<h:panelGroup>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+	<ui:define name="content">
+		<h2>
+			<h:outputText value="#{displayResultMBean.headline}" />
+		</h2>
+		<h3>
+			<h:outputText value="#{displayResultMBean.caName}" />
+		</h3>
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+			cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+			columnClasses="editColumn1,editColumn2">
+			<h:panelGroup>
 						&nbsp;
 					</h:panelGroup>
 
-				<h:outputLink value="managecas.xhtml">
-					<h:outputText value="#{web.text.BACKTOCAS}" />
+			<h:outputLink value="managecas.xhtml">
+				<h:outputText value="#{web.text.BACKTOCAS}" />
+			</h:outputLink>
+
+			<h:panelGroup />
+			<h:panelGroup>
+				<h:form enctype="multipart/form-data">
+					<h:inputTextarea rows='20' cols='100'
+						value="#{displayResultMBean.resultString}" />
+				</h:form>
+
+			</h:panelGroup>
+		</h:panelGrid>
+
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+			cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+			columnClasses="editColumn1,editColumn2">
+			<h:panelGroup />
+			<h:panelGroup>
+				<h:outputLink value="#{displayResultMBean.pemlink}">
+					<h:outputText value="#{web.text.DOWNLOADPEM}" />
 				</h:outputLink>
+				<br />
+				<h:outputLink value="#{displayResultMBean.binarylink}">
+					<h:outputText value="#{web.text.DOWNLOADBINARY}" />
+				</h:outputLink>
+				<br />
+				<h:outputLink value="#{displayResultMBean.pkcs7link}"
+					rendered="#{displayResultMBean.renderPkcs7Link}">
+					<h:outputText value="#{web.text.DOWNLOADPEMASPKCS7}" />
+				</h:outputLink>
+			</h:panelGroup>
 
-				<h:panelGroup />
-				<h:panelGroup>
-					<h:form enctype="multipart/form-data">
-						<h:inputTextarea rows='20' cols='100'
-							value="#{displayResultMBean.resultString}" />
-					</h:form>
+		</h:panelGrid>
 
-				</h:panelGroup>
-			</h:panelGrid>
+	</ui:define>
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
-				columnClasses="editColumn1,editColumn2">
-				<h:panelGroup />
-				<h:panelGroup>
-					<h:outputLink value="#{displayResultMBean.pemlink}">
-						<h:outputText value="#{web.text.DOWNLOADPEM}" />
-					</h:outputLink>
-					<br />
-					<h:outputLink value="#{displayResultMBean.binarylink}">
-						<h:outputText value="#{web.text.DOWNLOADBINARY}" />
-					</h:outputLink>
-					<br />
-					<h:outputLink value="#{displayResultMBean.pkcs7link}"
-						rendered="#{displayResultMBean.renderPkcs7Link}">
-						<h:outputText value="#{web.text.DOWNLOADPEMASPKCS7}" />
-					</h:outputLink>
-				</h:panelGroup>
-
-			</h:panelGrid>
-
-		</ui:define>
-
-	</ui:composition>
-</h:body>
+</ui:composition>
 </html>

@@ -5,8 +5,7 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:c="http://java.sun.com/jsp/jstl/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
->
+	xmlns:t="http://myfaces.apache.org/tomahawk">
 
 <ui:remove>
 	<!--
@@ -28,89 +27,95 @@
 </ui:remove>
 
 <f:metadata>
-    <f:event type="preRenderView" listener="#{importCaMBean.initAccess}"/>
+	<f:event type="preRenderView" listener="#{importCaMBean.initAccess}" />
 </f:metadata>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+	<ui:define name="content">
+		<h2>
+			<h:outputText value="#{web.text.IMPORTCA_KEYSTORE}" />
+		</h2>
 
-<h:body>
-
-  	<ui:param name="row" value="0" />
-	<ui:composition template="/WEB-INF/include/template.xhtml">
-		<ui:define name="content">
-			<h2>
-				<h:outputText value="#{web.text.IMPORTCA_KEYSTORE}" />
-			</h2>
-			
-			<h:form id="recievefile" enctype="multipart/form-data" >
-				<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-					cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
-					columnClasses="editColumn1,editColumn2">		
-					<h:panelGroup>
+		<h:form id="recievefile" enctype="multipart/form-data">
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumn1,editColumn2">
+				<h:panelGroup>
 						&nbsp;
 					</h:panelGroup>
-					
-					<h:outputLink value="managecas.xhtml">
-						<h:outputText value="#{web.text.BACKTOCAS}" />
-					</h:outputLink>
-					
-					<h:panelGroup>
-						<h:outputLabel for="textfieldimportcaname"
-							value="#{web.text.IMPORTCA_CANAME}" style="font-weight: bold;" />
-					</h:panelGroup>
-					<h:panelGroup>
-						<h:inputText id="textfieldimportcaname" value="#{importCaMBean.importCaName}"
-							title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255">
-						</h:inputText>
-					</h:panelGroup>
-		
-					<h:panelGroup>
-						<h:outputLabel for="filerecievefile"
-							value="#{web.text.IMPORTCA_KEYSTOREFILE}"
-							style="font-weight: bold;" />
-					</h:panelGroup>
-					<h:panelGroup>
-						<t:inputFileUpload id="filerecievefile" value="#{importCaMBean.uploadedFile}" required="true" label="Full pathname of PKCS #12 file containing CA keys"/>
-					</h:panelGroup>
-					
-					<h:panelGroup>
-						<h:outputLabel for="textfieldimportcapassword"
-							value="#{web.text.IMPORTCA_KEYSTOREPASSWORD}"/>
-					</h:panelGroup>
-					<h:panelGroup>
-						<h:inputSecret autocomplete="off" id="textfieldimportcapassword" size="20" maxlength="255" value="#{importCaMBean.importPassword}"/>
-					</h:panelGroup>
 
-					<h:panelGroup>
-						<h:outputLabel for="textfieldimportcasignkeyalias"
-							value="#{web.text.IMPORTCA_SIGNKEYALIAS}"/>
-					</h:panelGroup>
-					<h:panelGroup>
-						<h:inputText id="textfieldimportcasignkeyalias" size="20" maxlength="255" title="#{web.text.FORMAT_ALIAS}" value="#{importCaMBean.importSigAlias}"/>
+				<h:outputLink value="managecas.xhtml">
+					<h:outputText value="#{web.text.BACKTOCAS}" />
+				</h:outputLink>
+
+				<h:panelGroup>
+					<h:outputLabel for="textfieldimportcaname"
+						value="#{web.text.IMPORTCA_CANAME}" style="font-weight: bold;" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="textfieldimportcaname"
+						value="#{importCaMBean.importCaName}"
+						title="#{web.text.FORMAT_ID_STR}" size="40" maxlength="255">
+					</h:inputText>
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputLabel for="filerecievefile"
+						value="#{web.text.IMPORTCA_KEYSTOREFILE}"
+						style="font-weight: bold;" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<t:inputFileUpload id="filerecievefile"
+						value="#{importCaMBean.uploadedFile}" required="true"
+						label="Full pathname of PKCS #12 file containing CA keys" />
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputLabel for="textfieldimportcapassword"
+						value="#{web.text.IMPORTCA_KEYSTOREPASSWORD}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputSecret autocomplete="off" id="textfieldimportcapassword"
+						size="20" maxlength="255" value="#{importCaMBean.importPassword}" />
+				</h:panelGroup>
+
+				<h:panelGroup>
+					<h:outputLabel for="textfieldimportcasignkeyalias"
+						value="#{web.text.IMPORTCA_SIGNKEYALIAS}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="textfieldimportcasignkeyalias" size="20"
+						maxlength="255" title="#{web.text.FORMAT_ALIAS}"
+						value="#{importCaMBean.importSigAlias}" />
 						&nbsp;
 						<span class="help">#{web.text.IMPORTCA_SIGNKEYALIAS_HELP}</span>
-					</h:panelGroup>
+				</h:panelGroup>
 
-					<h:panelGroup>
-						<h:outputLabel for="textfieldimportcaenckeyalias"
-							value="#{web.text.IMPORTCA_ENCKEYALIAS}"/>
-					</h:panelGroup>
-					<h:panelGroup>
-						<h:inputText id="textfieldimportcaenckeyalias" size="20" maxlength="255" title="#{web.text.FORMAT_ALIAS}" value="#{importCaMBean.importEncAlias}"/>
+				<h:panelGroup>
+					<h:outputLabel for="textfieldimportcaenckeyalias"
+						value="#{web.text.IMPORTCA_ENCKEYALIAS}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText id="textfieldimportcaenckeyalias" size="20"
+						maxlength="255" title="#{web.text.FORMAT_ALIAS}"
+						value="#{importCaMBean.importEncAlias}" />
 						&nbsp;
 						<span class="help">#{web.text.IMPORTCA_ENCKEYALIAS_HELP}</span>
-					</h:panelGroup>
+				</h:panelGroup>
 
-					<h:panelGroup>
+				<h:panelGroup>
 						&nbsp;
 					</h:panelGroup>
-					<h:panelGroup>
-						<h:commandButton type="submit" id="buttonrecievefile" onclick="return checkFileRecieve('recievefile:filerecievefile', '#{web.text.YOUMUSTSELECT}');" value="#{web.text.IMPORTCA_KEYSTORE}" action="#{importCaMBean.importCaCertificate()}" />
+				<h:panelGroup>
+					<h:commandButton type="submit" id="buttonrecievefile"
+						onclick="return checkFileRecieve('recievefile:filerecievefile', '#{web.text.YOUMUSTSELECT}');"
+						value="#{web.text.IMPORTCA_KEYSTORE}"
+						action="#{importCaMBean.importCaCertificate()}" />
 						&nbsp;&nbsp;&nbsp;
-						<h:commandButton id="buttoncancel" value="#{web.text.CANCEL}" action="managecas" immediate="true"/>
-					</h:panelGroup>
-	</h:panelGrid>
-	</h:form>
+						<h:commandButton id="buttoncancel" value="#{web.text.CANCEL}"
+						action="managecas" immediate="true" />
+				</h:panelGroup>
+			</h:panelGrid>
+		</h:form>
 	</ui:define>
-
-	</ui:composition>
-</h:body>
+</ui:composition>
 </html>
