@@ -81,7 +81,7 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
         caName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("caname");
         caBean = (CAInterfaceBean) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("cabean");
         filePath = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getCaPath();
-        
+
         if (filemode == EditCaUtil.CERTGENMODE) {
             try {
                 resultString = caBean.getProcessedCertificateAsString();
@@ -92,7 +92,12 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
             try {
                 resultString = caBean.getRequestDataAsString();
             } catch (Exception e) {
-                addErrorMessage(e.getMessage());
+                if (e.getMessage() == null) {
+                    // For some reason e doesn't provide a message for example in CVC certificate parser case
+                    addErrorMessage("An unknown exception happened while getting request data as string!");
+                } else {
+                    addErrorMessage(e.getMessage());
+                }
             }
         }
 
@@ -103,12 +108,11 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
         } else {
             pemlink = filePath + "/editcas/cacertreq?cmd=certreq";
             binarylink = filePath + "/editcas/cacertreq?cmd=certreq&format=binary";
-            pkcs7link= StringUtils.EMPTY;
+            pkcs7link = StringUtils.EMPTY;
         }
-        
+
         headline = getEjbcaWebBean().getText(headlines[filemode]);
     }
-
 
     public String getHeadline() {
         return headline;
