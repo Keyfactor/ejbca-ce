@@ -362,18 +362,7 @@
 					<h:selectOneMenu id="keysequenceformat"
 						value="#{editCAsMBean.keySequenceFormat}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:selectItem
-							itemValue="#{editCAsMBean.keySequenceFormatNumeric()}"
-							itemLabel="#{web.text.NUMERIC}" />
-						<f:selectItem
-							itemValue="#{editCAsMBean.keySequenceFormatAlphaNumeric()}"
-							itemLabel="#{web.text.ALPHANUMERIC}" />
-						<f:selectItem
-							itemValue="#{editCAsMBean.keySequenceFormatCountryCodePlusNumeric()}"
-							itemLabel="#{web.text.COUNTRYCODEPLUSNUMERIC}" />
-						<f:selectItem
-							itemValue="#{editCAsMBean.keySequenceFormatCountryCodePlusAlphaNumeric()}"
-							itemLabel="#{web.text.COUNTRYCODEPLUSALPHANUMERIC}" />
+						<f:selectItems value="#{editCAsMBean.getKeySequenceFormatList()}"/>
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -387,7 +376,7 @@
 				<h:panelGroup
 					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCVCAvailalble}">
 					<h:inputText id="keysequence" size="6" maxlength="10"
-						value="#{editCAsMBean.keySequenceValue}"
+						value="#{editCAsMBean.keySequence}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 				</h:panelGroup>
 
