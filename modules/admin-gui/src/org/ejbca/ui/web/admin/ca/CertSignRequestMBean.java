@@ -97,7 +97,8 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
         }
         try {
             if (caBean.createAuthCertSignRequest(selectedCaId, fileBuffer)) {
-                return EditCaUtil.MANAGE_CA_NAV;
+                FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
+                return EditCaUtil.DISPLAY_RESULT_NAV;
             }
         } catch (Exception e) {
             addErrorMessage(e.getMessage());
