@@ -168,7 +168,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public String updateIsEditCA(final boolean isEditCA) {
+    public String editCaPage(final boolean isEditCA) {
         if (!isEditCA && (createCaName == null || createCaName.isEmpty())) {
             return EditCaUtil.MANAGE_CA_NAV;
         }
