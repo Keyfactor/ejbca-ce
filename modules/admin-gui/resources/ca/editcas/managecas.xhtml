@@ -66,7 +66,7 @@
 								<h:commandButton 
 										id="buttoneditca"
 										value="#{manageCAsMBean.editCAButtonValue}" 
-										action="#{manageCAsMBean.updateIsEditCA(true)}"/></td>
+										action="#{manageCAsMBean.editCaPage(true)}"/></td>
 								<td width="5%" align="center">&nbsp;</td>
 								<td width="25%" align="left">
 								<h:commandButton
@@ -129,7 +129,7 @@
 							value="#{web.text.CREATE}..."
 							rendered="#{manageCAsMBean.canAddResource}" 
 							onclick="return checkcreatecafield(document.getElementById('managecas:textfieldcaname'), '#{web.text.ONLYCHARACTERS}');"
-							action="#{manageCAsMBean.updateIsEditCA(false)}"
+							action="#{manageCAsMBean.editCaPage(false)}"
 							
 							/> &nbsp; 
 						<h:commandButton id="buttonrenameca"

@@ -29,7 +29,7 @@ public final class EditCaUtil {
     public static final int CERTGENMODE = 1;
     public static final String DEFAULT_KEY_SIZE = "2048";
     
-    public static Object getTrimmedName(final String name) {
+    public static String getTrimmedName(final String name) {
         if (name != null && !name.isEmpty()) {
             return name.replaceAll("\\([^()]*\\)", StringUtils.EMPTY).replaceAll(", ", StringUtils.EMPTY);
         } else {
