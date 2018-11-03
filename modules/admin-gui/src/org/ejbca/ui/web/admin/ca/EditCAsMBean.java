@@ -103,8 +103,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private int currentCaStatus;
     private String currentCaType;
     private String currentCaSigningAlgorithm;
-    private String keySequenceFormat;
-    private String keySequenceValue = CAToken.DEFAULT_KEYSEQUENCE;
+    private int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+    private String keySequence = CAToken.DEFAULT_KEYSEQUENCE;
     private boolean doEnforceUniquePublickeys = true;
     private boolean doEnforceUniqueDN = true;
     private boolean doEnforceUniqueSubjectDNSerialnumber;
@@ -228,6 +228,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
        
     @PostConstruct
     public void init() {
+        
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
         if (caBean == null) {
@@ -552,39 +553,32 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return " : " + this.createCaName;
     }
 
-    public String getKeySequenceFormat() {
+    public int getKeySequenceFormat() {
         return keySequenceFormat;
     }
 
-    public void setKeySequenceFormat(final String keySequenceFormat) {
+    public void setKeySequenceFormat(final int keySequenceFormat) {
         this.keySequenceFormat = keySequenceFormat;
     }
     
-    public int keySequenceFormatNumeric() {
-        return StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+    public List<SelectItem> getKeySequenceFormatList() {
+        List<SelectItem> resultList = new ArrayList<>();
+        resultList.add(new SelectItem(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, getEjbcaWebBean().getText("NUMERIC")));
+        resultList.add(new SelectItem(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC, getEjbcaWebBean().getText("ALPHANUMERIC")));
+        resultList.add(new SelectItem(StringTools.KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC, getEjbcaWebBean().getText("COUNTRYCODEPLUSNUMERIC")));
+        resultList.add(new SelectItem(StringTools.KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC, getEjbcaWebBean().getText("COUNTRYCODEPLUSALPHANUMERIC")));
+        return resultList;
     }
 
-    public int keySequenceFormatAlphaNumeric() {
-        return StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC;
-    }
-
-    public int keySequenceFormatCountryCodePlusNumeric() {
-        return StringTools.KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC;
-    }
-
-    public int keySequenceFormatCountryCodePlusAlphaNumeric() {
-        return StringTools.KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC;
-    }
-
-    public String getKeySequenceValue() {
+    public String getKeySequence() {
         if (catoken != null) {
-            return catoken.getKeySequence();
+            keySequence = catoken.getKeySequence();
         }
-        return keySequenceValue;
+        return keySequence;
     }
 
-    public void setKeySequenceValue(final String keySequenceValue) {
-        this.keySequenceValue = keySequenceValue;
+    public void setKeySequence(final String keySequenceValue) {
+        this.keySequence = keySequenceValue;
     }
     
     public String getDescription() {
@@ -1819,9 +1813,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean saveOrCreateCaInternal(final boolean buttonCreateCa, final boolean buttonMakeRequest, final byte[] fileBuffer) 
             throws CAExistsException, CryptoTokenAuthenticationFailedException, ParameterException, EJBException, Exception {
         boolean illegaldnoraltname = false;
+        String keySequenceFormatParam = getKeySequenceFormatParam();
 
-            illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam, signKeySpec, keySequenceFormat,
-                    keySequenceValue, catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, // TODO: this must be default certificate profile
+            illegaldnoraltname = caBean.actionCreateCaMakeRequest(createCaName, signatureAlgorithmParam, signKeySpec, keySequenceFormatParam,
+                    keySequence, catype, caSubjectDN, currentCertProfile, defaultCertificateProfile, // TODO: this must be default certificate profile
                     useNoConflictCertificateData, signedByString, description, caEncodedValidity, getApprovals(), finishUser, doEnforceUniquePublickeys,
                     doEnforceUniqueDN, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage,
                     acceptRevocationsNonExistingEntry, caSubjectAltName, policyId, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
@@ -1836,6 +1831,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return illegaldnoraltname;
     }
     
+
+
     // ===================================================== Create CA Actions ============================================= //
     // ===================================================== Edit CA Actions =============================================== //
     
@@ -1977,9 +1974,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     private CAInfo getCaInfo() throws ParameterException, NumberFormatException, AuthorizationDeniedException {
         CAInfo cainfo = null;
+        
+        String keySequenceFormatParam = getKeySequenceFormatParam();
 
         try {
-            cainfo = caBean.createCaInfo(caid, editCaName, getSubjectDn(), catype, keySequenceFormat, keySequenceValue, signedByString, description,
+            cainfo = caBean.createCaInfo(caid, editCaName, getSubjectDn(), catype, keySequenceFormatParam, keySequence, signedByString, description,
                     caEncodedValidity, getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), finishUser,
                     doEnforceUniquePublickeys, doEnforceUniqueDN, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage,
                     useCertificateStorage, acceptRevocationsNonExistingEntry, getDefaultCertProfileId(), useNoConflictCertificateData, getApprovals(),
@@ -2135,6 +2134,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return onlyView;
     }
     
+    private String getKeySequenceFormatParam() {
+        return String.valueOf(this.keySequenceFormat);
+
+    }
+    
     private void initCreateCaPage() {
         // Defaults in the create CA page
         if (signatureAlgorithmParam == null || signatureAlgorithmParam.length() == 0) {
@@ -2188,6 +2192,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     private void initEditCaPage() {
+        
         catoken = cainfo.getCAToken();
         keyValidatorMap = getEjbcaWebBean().getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap(cainfo.getCAType());
         if (signatureAlgorithmParam == null || signatureAlgorithmParam.isEmpty()) {
@@ -2200,8 +2205,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 && !cadatahandler.isCARevoked(cainfo);
         waitingresponse = cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
         isCaUninitialized = cainfo.getStatus() == CAConstants.CA_UNINITIALIZED;
+
         try {
             catype = cadatahandler.getCAInfo(caid).getCAInfo().getCAType();
+            keySequenceFormat = cadatahandler.getCAInfo(caid).getCAToken().getKeySequenceFormat();
         } catch (AuthorizationDeniedException e) {
             log.error("Error while trying to get ca info!", e);
         }
@@ -2333,7 +2340,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
               } 
         }
         
-        if (catype == CAInfo.CATYPE_X509) {
+        if (catype == CAInfo.CATYPE_X509 && cmscainfo != null) {
             serviceCmsActive = cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
         }
 
