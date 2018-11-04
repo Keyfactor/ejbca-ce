@@ -77,13 +77,13 @@
 						styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeX509?'selected':'notSelected'}"
 						action="#{editCAsMBean.setCaTypeX509()}"
 						value="#{editCAsMBean.caTypeX509?'✓':' '}#{web.text.X509}">
-						<f:ajax render="@form" />
+						<f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form" />
 					</h:commandButton>
 					<h:commandButton
 						styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeCVC?'selected':''}"
 						action="#{editCAsMBean.setCaTypeCVC()}"
 						value="#{editCAsMBean.caTypeCVC?'✓':' '}#{web.text.CVCCA}">
-						<f:ajax render="@form" />
+						<f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form" />
 					</h:commandButton>
 				</h:panelGroup>
 
@@ -637,7 +637,7 @@
 						<f:ajax event="change"
 							render="textfieldvalidity buttonmakerequest buttoncreate checkboxactivatecmsservice 
 													   textfieldnameconstraintsexcluded textfieldnameconstraintspermitted 
-													   textfieldpolicyid textfieldsubjectaltname" />
+													   textfieldpolicyid textfieldsubjectaltname selectcertificateprofile" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -650,19 +650,12 @@
 					<h:outputText name="selectcertificateprofile"
 						value="#{editCAsMBean.certificateProfileEditCAUninitialized}"
 						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}" />
-					<h:selectOneMenu name="selectcertificateprofile"
+					<h:selectOneMenu id="selectcertificateprofile"
 						value="#{editCAsMBean.currentCertProfile}"
-						rendered="#{editCAsMBean.editCA and editCAsMBean.caUninitialized}"
-						disabled="#{not editCAsMBean.hasEditRight}">
+						rendered="#{editCAsMBean.renderSelectCertificateProfile}"
+						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal}">
 						<f:selectItems value="#{editCAsMBean.certificateProfiles}" />
 					</h:selectOneMenu>
-					<h:selectOneMenu name="selectcertificateprofile"
-						value="#{editCAsMBean.currentCertProfile}"
-						rendered="#{not editCAsMBean.editCA}"
-						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:selectItems value="#{editCAsMBean.certificateProfiles}" />
-					</h:selectOneMenu>
-
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
@@ -1039,11 +1032,9 @@
 						label="Ca Delta Crl Period" style="border:2px solid #FFC300"
 						required="true" />
 						&nbsp;
+					<h:outputText value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}" />
 					<br />
-					<h:outputText
-						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}" />
-					<h:outputLabel value="#{web.text.CRL_CA_DELTACRLPERIOD_HELP}"
-						class="help" />
+					<h:outputLabel value="#{web.text.CRL_CA_DELTACRLPERIOD_HELP}" class="help" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
@@ -1272,11 +1263,12 @@
 					<h:outputLabel for="checkboxactivatecmsservice"
 						value="#{web.text.ACTIVATE}" />
 			    &nbsp;&nbsp;&nbsp;
-				<h:commandButton name="checkboxrenewcmscertificate"
+				<h:commandButton 
 						value="#{web.text.REVOKERENEWCMSCERT}"
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.waitingForResponse}"
-						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}" />
-					<h:commandButton type="button"
+						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"
+						action="#{editCAsMBean.renewAndRevokeCmsCertificate()}" />
+				<h:commandButton type="button"
 						title="#{web.text.VIEW_CMSCERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}"
 						value="#{web.text.VIEW_CMSCERTIFICATE}"
 						onclick="viewcmscert(#{editCAsMBean.cmsCertLink()})"
@@ -1289,7 +1281,6 @@
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Finish_User')}"
 						escape="false" />
-
 				</h:panelGroup>
 
 				<h:panelGroup>
@@ -1407,17 +1398,21 @@
 						</h:panelGroup>
 						<h:panelGroup>
 							<h:selectBooleanCheckbox name="checkboxcreatelinkcertificate"
-								value="true" disabled="true"
-								rendered="#{editCAsMBean.caTypeCVC}" />
+								disabled="true"
+								rendered="#{editCAsMBean.caTypeCVC}" 
+								value="#{editCAsMBean.createLinkCertificate}"/>
 							<h:selectBooleanCheckbox name="checkboxcreatelinkcertificate"
-								value="true" disabled="#{not editCAsMBean.hasEditRight}" />
+								value="#{editCAsMBean.createLinkCertificate}" 
+								disabled="#{not editCAsMBean.hasEditRight}" 
+								rendered="#{!editCAsMBean.caTypeCVC}" />
 						</h:panelGroup>
 
 						<h:panelGroup />
 						<h:panelGroup>
 							<h:commandButton name="buttonrenewca" value="#{web.text.RENEWCA}"
 								onclick='return confirmrenewal()'
-								disabled="#{not editCAsMBean.hasEditRight}" />
+								action="#{editCAsMBean.renewCa()}"
+								disabled="#{!editCAsMBean.hasEditRight}" />
 						</h:panelGroup>
 
 						<h:panelGroup>
@@ -1449,6 +1444,7 @@
 							<h:commandButton name="buttonrollover"
 								value="#{web.text.CAROLLOVERBUTTON}"
 								onclick="#{editCAsMBean.confirmRolloverDate}"
+								action="#{editCAsMBean.rolloverCA()}"
 								rendered="#{editCAsMBean.editCA and editCAsMBean.rollOverDate}" />
 						</h:panelGroup>
 					</h:panelGrid>
@@ -1457,7 +1453,8 @@
 				<h:panelGroup />
 				<h:commandButton name="buttonpublishca"
 					value="#{web.text.REPUBLISHCA}"
-					rendered="#{editCAsMBean.renderRepublishCA}" />
+					rendered="#{editCAsMBean.renderRepublishCA}"
+					action="#{editCAsMBean.publishCA()}" />
 				<h:panelGroup>
 
 				</h:panelGroup>
@@ -1618,7 +1615,7 @@
 						onclick='return checkallfields()'
 						value="#{web.text.SAVE_AND_INITIALIZE}"
 						rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
-						action="#{editCAsMBean.initializeCa}" />
+						action="#{editCAsMBean.initializeCa()}" />
 
 					<h:outputText
 						value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_INITIALIZE}"
