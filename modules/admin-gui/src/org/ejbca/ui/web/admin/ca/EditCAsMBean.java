@@ -21,8 +21,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,7 +65,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.approval.ApprovalProfileSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
@@ -77,7 +74,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.certprof.CertProfileBean.ApprovalRequestItem;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * 
@@ -136,6 +132,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private boolean isCaexternal = false;
     private boolean isCaRevoked = false;
     private Map<Integer, String> keyValidatorMap = getEjbcaWebBean().getEjb().getKeyValidatorSession().getKeyValidatorIdToNameMap();
+    private Map<Integer, String> approvalProfileMap = getEjbcaWebBean().getApprovalProfileIdToNameMap();
     private boolean signbyexternal = false;
     private boolean revokable = true;
     private boolean waitingresponse = false;  
@@ -279,6 +276,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
+    private List<ApprovalRequestItem> initApprovalRequestItems() {
+        List<ApprovalRequestItem> approvalRequestItems = new ArrayList<>();
+        if (cainfo != null) {
+            for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+                int usedapprovalprofile = cainfo.getApprovals().get(approvalRequestType);
+                approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, usedapprovalprofile));
+            }
+        }
+        return approvalRequestItems;
+    }
+
     public int getCaid() {
         return caid;
     }
@@ -1080,33 +1088,23 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 } else {
                     approvalProfileId = -1;
                 }
-                approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));                    
+                approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvalProfileId));
             }
         }
         return approvalRequestItems;
     }
     
-
-    
+    public void setApprovalRequestItems(final List<ApprovalRequestItem> approvalRequestItems) {
+        this.approvalRequestItems = approvalRequestItems;
+    }
     
     public List<SelectItem> getAvailableApprovalProfiles() {
-        List<SelectItem> ret = new ArrayList<>();
-        ApprovalProfileSession approvalProfileSession = getEjbcaWebBean().getEjb().getApprovalProfileSession();
-        Map<Integer, String> approvalProfiles = approvalProfileSession.getApprovalProfileIdToNameMap();
-        Set<Entry<Integer, String>> entries = approvalProfiles.entrySet();
-        for(Entry<Integer, String> entry : entries) {
-            ret.add(new SelectItem(entry.getKey(), entry.getValue()));
+        List<SelectItem> resultList = new ArrayList<>();
+        List<Integer> approvalProfileIds = getEjbcaWebBean().getSortedApprovalProfileIds();
+        for(Integer approvalProfileId : approvalProfileIds) {
+            resultList.add(new SelectItem(approvalProfileId, approvalProfileMap.get(approvalProfileId)));
         }
-
-        // Sort list by name
-        Collections.sort(ret, new Comparator<SelectItem>() {
-            @Override
-            public int compare(final SelectItem a, final SelectItem b) {
-                return a.getLabel().compareToIgnoreCase(b.getLabel());
-            }
-        });
-        ret.add(0, new SelectItem(-1, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("NONE")));
-        return ret;
+        return resultList;
     }
     
     public List<SelectItem> getAvailableValidators() {
@@ -1830,8 +1828,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         return illegaldnoraltname;
     }
-    
-
 
     // ===================================================== Create CA Actions ============================================= //
     // ===================================================== Edit CA Actions =============================================== //
@@ -2064,6 +2060,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     
     // ===================================================== Other helpers   ============================================= //
+    
+    private Map<ApprovalRequestType, Integer> getApprovals() {
+        Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
+        if (approvalRequestItems != null || !approvalRequestItems.isEmpty()) {
+            for (final ApprovalRequestItem approvalRequestItem : approvalRequestItems) {
+                approvals.put(approvalRequestItem.getRequestType(), approvalRequestItem.getApprovalProfileId());
+            }
+        }
+        return approvals;
+    }    
+    
     private long getCrlIssueInterval() {
         return SimpleTime.getInstance(crlCaIssueInterval, "0" + SimpleTime.TYPE_MINUTES).getLong();
     }
@@ -2115,14 +2122,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         return subjectdn;
     }    
-    
-    private Map<ApprovalRequestType, Integer> getApprovals() {
-        Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();
-        for (int approvalProfileId : getEjbcaWebBean().getSortedApprovalProfileIds()) {
-            approvals.put(ApprovalRequestType.getFromIntegerValue(approvalProfileId), approvalProfileId);
-        }
-        return approvals;
-    }
 
     private boolean isAuthorized() {
         boolean onlyView = false;
@@ -2378,6 +2377,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         
         caSubjectDN = cainfo.getSubjectDN();
+        approvalRequestItems = initApprovalRequestItems();
     }
 
     private void generateCryptoAlreadyInUseMap() {
