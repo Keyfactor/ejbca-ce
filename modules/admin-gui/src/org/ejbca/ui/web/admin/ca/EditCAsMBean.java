@@ -50,11 +50,13 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -94,7 +96,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private String editCaName;
     private int caid = 0;
-
+    
+    private TreeMap<String,Integer> rootCaProfiles = getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames();
+    private TreeMap<String,Integer> subCaProfiles = getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames();
 
     private int currentCaStatus;
     private String currentCaType;
@@ -125,6 +129,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String description;
     private boolean useNoConflictCertificateData;
     private boolean acceptRevocationsNonExistingEntry;
+    private boolean createLinkCertificate = true;
 
     private CAInfo cainfo = null;
     private CAToken catoken = null;
@@ -744,9 +749,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem> getCertificateProfiles() {
         List<SelectItem> resultList = new ArrayList<>();
-        for(Entry<String, String> entry : caBean.getAvailableCaCertificateProfiles())
-        {
-            resultList.add(new SelectItem(entry.getKey(), (String) EditCaUtil.getTrimmedName(entry.getValue()), ""));
+        if (this.signedByString != null && Integer.parseInt(this.signedByString) == CAInfo.SELFSIGNED) {
+            for (final Entry<String, Integer> entry : rootCaProfiles.entrySet()) {
+                resultList.add(new SelectItem(entry.getValue(), entry.getKey()));
+            }
+        } else if (this.signedByString != null) {
+            for (final Entry<String, Integer> entry : subCaProfiles.entrySet()) {
+                resultList.add(new SelectItem(entry.getValue(), entry.getKey()));
+            }
         }
         return resultList;
     }
@@ -1677,6 +1687,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return false;
     }
     
+    public boolean isRenderSelectCertificateProfile() {
+        return (isEditCA && isCaUninitialized) || !isEditCA;
+    }
+    
+    
     public String caCertLink() {
         return viewCertLink + "?caid=" + caid;
     }
@@ -1756,6 +1771,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return this.signedByString != null ? (Integer.parseInt(this.signedByString) == CAInfo.SIGNEDBYEXTERNALCA) : false;
     }
 
+    public void resetSignedBy() {
+        this.signedByString = String.valueOf(CAInfo.SELFSIGNED);
+    }
+    
+    public boolean isCreateLinkCertificate() {
+        return createLinkCertificate;
+    }
+
+    public void setCreateLinkCertificate(final boolean createLinkCertificate) {
+        this.createLinkCertificate = createLinkCertificate;
+    }
+
 
     // ===================================================== Create CA Actions ============================================= //
     
@@ -1831,6 +1858,43 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     // ===================================================== Create CA Actions ============================================= //
     // ===================================================== Edit CA Actions =============================================== //
+
+
+    /**
+     * Renew and revoke a CMS certificate
+     * 
+     * @return Navigates back to manage ca page
+     */
+    public String renewAndRevokeCmsCertificate() {
+        try {
+            cadatahandler.renewAndRevokeCmsCertificate(caid);
+            addInfoMessage(getEjbcaWebBean().getText("CMSCERTIFICATERENEWED"));
+        } catch (CADoesntExistsException | CAOfflineException | CertificateRevokeException | AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+    
+    /**
+     * Renews a ca 
+     * @return navigates back to manage ca page.
+     */
+    public String renewCa() {
+        boolean carenewed = false;
+        try {
+            if (includeInHealthCheck && certificateAiaDefaultCaIssuerUri != null && !certificateAiaDefaultCaIssuerUri.isEmpty()) {
+                carenewed = cadatahandler.renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, certificateAiaDefaultCaIssuerUri);
+            } else {
+                carenewed = cadatahandler.renewCA(caid, certSignKeyReNewValue, createLinkCertificate);
+            }
+        } catch (Exception e) {
+            addErrorMessage(e.getMessage());
+        }
+        if (carenewed) {
+            addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
     
     /**
      * Revoke a ca (in editca page) and navigates back to the managecas.xhtml
@@ -1857,7 +1921,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 cadatahandler.editCA(x509caInfo);
             }
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            log.error("Error happened while saving external CA!", e);
+            addErrorMessage(e.getMessage());
         }
         
         return EditCaUtil.MANAGE_CA_NAV;
@@ -1890,6 +1954,35 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     /**
+     * Republishs a ca and navigates back to manageca page with the result.
+     * 
+     * @return
+     */
+    public String publishCA() {
+        try {
+            cadatahandler.publishCA(caid);
+            addInfoMessage(getEjbcaWebBean().getText("CACERTPUBLISHINGQUEUED"));
+        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+
+    /**
+     * Rollovers a ca and navigates back to manageca page.
+     * 
+     * @return
+     */
+    public String rolloverCA() {
+        try {
+            cadatahandler.rolloverCA(caid);
+        } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
+        }
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+    
+    /**
      * Receives a request (in editcas page) and navigates to managecas.xhtml page
      * @return
      */
@@ -1904,8 +1997,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         try {
             cadatahandler.receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
-            //caactivated = true; //TODO check what are these two! // This must be passed to managecas.xhtml
-            cafuturerolloverdate = caBean.getRolloverNotBefore(caid); // This must be passed to managecas.xhtml
+            cafuturerolloverdate = caBean.getRolloverNotBefore(caid);
+            if (cafuturerolloverdate != null) {
+                addInfoMessage(getEjbcaWebBean().getText("CAROLLOVERPENDING") + getEjbcaWebBean().formatAsISO8601(cafuturerolloverdate));
+            } else {
+                addInfoMessage(getEjbcaWebBean().getText("CAACTIVATED"));
+            }
         } catch (Exception e) {
             addErrorMessage(e.getMessage());
         }
@@ -1953,8 +2050,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         cainfo.setUseNoConflictCertificateData(useNoConflictCertificateData);
         try {
             cadatahandler.initializeCA(cainfo);
-        } catch (CryptoTokenOfflineException | CADoesntExistsException | InvalidAlgorithmException | AuthorizationDeniedException ctoe) {
-            addErrorMessage(ctoe.getMessage());
+        } catch (CryptoTokenOfflineException | CADoesntExistsException | InvalidAlgorithmException | AuthorizationDeniedException e) {
+            addErrorMessage(e.getMessage());
         }
         return EditCaUtil.MANAGE_CA_NAV;
     }
@@ -2187,7 +2284,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             crlCaIssueInterval = "0" + SimpleTime.TYPE_MINUTES;
             crlCaOverlapTime = "10" + SimpleTime.TYPE_MINUTES;
             crlCaDeltaCrlPeriod = "0" + SimpleTime.TYPE_MINUTES;
-        } 
+        }
+        
+        this.signedByString = String.valueOf(CAInfo.SELFSIGNED);
     }
     
     private void initEditCaPage() {
@@ -2396,4 +2495,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
     }
+
+
 }

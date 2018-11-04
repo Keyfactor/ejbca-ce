@@ -196,13 +196,16 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     
     public String deleteCA() {
         try {
-            cadatahandler.removeCA(selectedCaId);
+            if (!cadatahandler.removeCA(selectedCaId)) {
+                addErrorMessage(getEjbcaWebBean().getText("COULDNTDELETECA"));
+            }
         } catch (AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
         }
         return EditCaUtil.MANAGE_CA_NAV;
     }
     
+    //TODO: add error messages to language file.
     public String renameCA() {
         if (canames.containsKey(createCaName)) {
             addErrorMessage("Ca " + createCaName + " already exists!");
