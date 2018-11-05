@@ -511,8 +511,7 @@ org.cesecore.authorization.AuthorizationDeniedException
 		</h:panelGroup>
 	
 		<t:dataTable value="#{systemConfigMBean.availableProtocolInfos}" var="protocolinfos"
-					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto; padding: 2em"
-					rowStyleClass="#{protocolinfos.enabled and protocolinfos.available ? 'activated-entry' : 'deactivated-entry'}">
+					styleClass="grid" style="border-collapse: collapse; right: auto; left: auto; padding: 2em">
 			<h:column>
    				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_PROTOCOL_TITLE}"/></f:facet>
 				<h:outputText value="#{protocolinfos.protocol}"/>
@@ -522,8 +521,12 @@ org.cesecore.authorization.AuthorizationDeniedException
 				<h:outputText value="#{protocolinfos.url}"/>
 			</h:column>
 			<h:column>
-   				<f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_STATUS_TITLE}"/></f:facet>
-				<h:outputText value="#{protocolinfos.status}"/>
+   			    <f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_STATUS_TITLE}"/></f:facet>
+   				<div>
+   				    <h:graphicImage rendered="#{protocolinfos.enabled}" url="#{adminMenuBean.adminWebUrl}/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
+   				    <h:graphicImage rendered="#{!protocolinfos.enabled}" url="#{adminMenuBean.adminWebUrl}/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
+   				    <h:outputText value="#{protocolinfos.status}"/>
+   				</div>
 			</h:column>
 			<h:column>
    				<f:facet name="header">
