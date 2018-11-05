@@ -712,15 +712,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem> getSignedByListUninitialized() {
         List<SelectItem> signedByList = new ArrayList<>();
+
+        signedByList.add(new SelectItem(CAInfo.SELFSIGNED, getEjbcaWebBean().getText("SELFSIGNED"), ""));
+        signedByList.add(new SelectItem(CAInfo.SIGNEDBYEXTERNALCA, getEjbcaWebBean().getText("EXTERNALCA"), ""));
+
         for (final Object nameOfCa : casigners.keySet()) {
             int entryId = casigners.get(nameOfCa.toString());
             if (entryId == cainfo.getCAId()) {
                 continue;
             }
-
-            if (cainfo.getSignedBy() == entryId) {
-                signedByList.add(new SelectItem(entryId, nameOfCa.toString(), ""));
-            }
+            signedByList.add(new SelectItem(entryId, nameOfCa.toString(), ""));
         }
         return signedByList;
     }
@@ -1212,33 +1213,37 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.caRevokeReason = caRevokeReason;
     }
     
-    public List<String> getCertSignKeyReNewList() {
+    public List<SelectItem> getCertSignKeyReNewList() {
         final int cryptoTokenId = catoken==null ? currentCryptoTokenId : catoken.getCryptoTokenId();
         // Cache the lookup/iteration over all the keys in the CryptoToken
-        List<String> availableCryptoTokenAliases = new ArrayList<>();
-        availableCryptoTokenAliases.add(getEjbcaWebBean().getText("RENEWCA_USINGKEYSEQUENCE"));
+        List<SelectItem> resultList = new ArrayList<>();
+        resultList.add(new SelectItem(StringUtils.EMPTY, getEjbcaWebBean().getText("RENEWCA_USINGKEYSEQUENCE")));
         try {
             if (!isCaexternal && caBean.isCryptoTokenPresent(cryptoTokenId) && caBean.isCryptoTokenActive(cryptoTokenId)) {
-                return availableCryptoTokenAliases = caBean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam);
+                for (final String alias : caBean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam)) {
+                    resultList.add(new SelectItem(alias, alias, ""));
+            }
             }
         } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
             log.error("Error while accessing the ca bean for fetching token data!", e);
         }
-        return availableCryptoTokenAliases;
+        return resultList;
     }
 
-    public List<String> getCertSignKeyRecieveReqList() {
+    public List<SelectItem> getCertSignKeyRecieveReqList() {
         final int cryptoTokenId = catoken==null ? currentCryptoTokenId : catoken.getCryptoTokenId();
         // Cache the lookup/iteration over all the keys in the CryptoToken
-        List<String> availableCryptoTokenAliases = new ArrayList<>();
+        List<SelectItem> resultList = new ArrayList<>();
         try {
             if (!isCaexternal && caBean.isCryptoTokenPresent(cryptoTokenId) && caBean.isCryptoTokenActive(cryptoTokenId)) {
-                return availableCryptoTokenAliases = caBean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam);
+                for (final String alias : caBean.getAvailableCryptoTokenAliases(cryptoTokenId, signatureAlgorithmParam)) {
+                    resultList.add(new SelectItem(alias, alias, ""));
+                }
             }
         } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
             log.error("Error while accessing the ca bean for fetching token data!", e);
         }
-        return availableCryptoTokenAliases;
+        return resultList;
     }
 
     public String getCertSignKeyReNewValue() {
@@ -1424,7 +1429,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
 
         if (numSelected == 0) {
-            resultList.add(new SelectItem(getEjbcaWebBean().getText("CRYPTOTOKEN_MISSING_OR_EMPTY"), cryptoTokenIdParam));
+            resultList.add(new SelectItem(cryptoTokenIdParam, "-" + getEjbcaWebBean().getText("CRYPTOTOKEN_MISSING_OR_EMPTY") + " " + cryptoTokenIdParam + "-"));
             cryptoTokenIdParam = null;
             currentCryptoTokenId = 0;
         }
@@ -2362,17 +2367,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
         
-        if (!isCaUninitialized) {
-            if (cainfo.getSignedBy() >= 0 && cainfo.getSignedBy() <= CAInfo.SPECIALCAIDBORDER) {
-                if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
-                    this.signedByString = String.valueOf(CAInfo.SELFSIGNED);
-                }
-                if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
-                    this.signedByString = String.valueOf(CAInfo.SIGNEDBYEXTERNALCA);
-                }
-            } else {
-                this.signedByString = String.valueOf(cainfo.getSignedBy());
+        if (cainfo.getSignedBy() >= 0 && cainfo.getSignedBy() <= CAInfo.SPECIALCAIDBORDER) {
+            if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
+                this.signedByString = String.valueOf(CAInfo.SELFSIGNED);
             }
+            if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+                this.signedByString = String.valueOf(CAInfo.SIGNEDBYEXTERNALCA);
+            }
+        } else {
+            this.signedByString = String.valueOf(cainfo.getSignedBy());
         }
         
         caEncodedValidity = cainfo.getEncodedValidity();
@@ -2478,6 +2481,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         
         caSubjectDN = cainfo.getSubjectDN();
         approvalRequestItems = initApprovalRequestItems();
+        
+        if (isCaUninitialized) {
+            createLinkCertificate = false;
+        }
+        
     }
 
     private void generateCryptoAlreadyInUseMap() {
