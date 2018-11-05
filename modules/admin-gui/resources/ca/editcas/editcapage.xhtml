@@ -342,7 +342,7 @@
 
 				<h:panelGroup
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
-					<h:selectOneMenu name="selectsize"
+					<h:selectOneMenu id="selectsize"
 						value="#{editCAsMBean.signKeySpec}">
 						<f:selectItems value="#{editCAsMBean.exTServicesKeySpecList}" />
 					</h:selectOneMenu>

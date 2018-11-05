@@ -54,8 +54,8 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
-    CADataHandler cadatahandler;
-    Map<Integer, String> caidtonamemap;
+    private CADataHandler cadatahandler;
+    private Map<Integer, String> caidtonamemap;
     
     public String getCreateCaName() {
         return createCaName;
@@ -174,7 +174,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         
         if (!isEditCA && canames.containsKey(createCaName)) {
-            addErrorMessage("Ca " + createCaName + " already exists!");
+            addErrorMessage(getEjbcaWebBean().getText("CAALREADYEXISTS", false, createCaName));
             return EditCaUtil.MANAGE_CA_NAV;
         }
         
@@ -205,13 +205,12 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         return EditCaUtil.MANAGE_CA_NAV;
     }
     
-    //TODO: add error messages to language file.
     public String renameCA() {
         if (canames.containsKey(createCaName)) {
-            addErrorMessage("Ca " + createCaName + " already exists!");
+            addErrorMessage(getEjbcaWebBean().getText("CAALREADYEXISTS", false, createCaName));
             return EditCaUtil.MANAGE_CA_NAV;
         } else if (selectedCaId == 0) {
-            addErrorMessage("Select a CA to rename first!");
+            addErrorMessage(getEjbcaWebBean().getText("SELECTCATORENAME"));
             return EditCaUtil.MANAGE_CA_NAV;
         }
         
@@ -229,7 +228,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
             return EditCaUtil.SIGN_CERT_REQ_NAV;
         } else {
-            addErrorMessage("Select a ca first!");
+            addErrorMessage(getEjbcaWebBean().getText("SELECTCAFIRST"));
             return EditCaUtil.MANAGE_CA_NAV;
         }
     }
