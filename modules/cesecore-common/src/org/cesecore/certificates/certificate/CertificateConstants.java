@@ -101,13 +101,6 @@ public final class CertificateConstants {
 	public static final int ENCIPHERONLY     = 7;
 	public static final int DECIPHERONLY     = 8;
 
-	// Revocation reasons identifiers
-    public static final String[] reasontexts = {
-        "REV_UNSPECIFIED",			"REV_KEYCOMPROMISE",	"REV_CACOMPROMISE",
-        "REV_AFFILIATIONCHANGED",	"REV_SUPERSEDED",		"REV_CESSATIONOFOPERATION",
-        "REV_CERTIFICATEHOLD",		"REV_UNUSED",			"REV_REMOVEFROMCRL",
-        "REV_PRIVILEGEWITHDRAWN",	"REV_AACOMPROMISE"
-    };
     public static final int HIGN_REASON_BOUNDRARY = 11;
 
 
