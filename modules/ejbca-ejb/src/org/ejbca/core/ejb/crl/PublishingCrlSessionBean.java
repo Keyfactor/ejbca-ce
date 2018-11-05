@@ -491,7 +491,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     // We want to include certificates that was revoked after the last CRL was issued, but before this one
                     // so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
                     // If chosen to keep expired certificates on CRL, we will NOT do this but keep them (ISO 9594-8 par. 8.5.2.12)
-                    if ( !keepexpiredcertsoncrl && revokedCertInfo.getExpireDate().before(lastCrlCreationDate) ) {
+                    if ( !keepexpiredcertsoncrl && revokedCertInfo.getExpireDate() != null && revokedCertInfo.getExpireDate().before(lastCrlCreationDate) ) {
                         // Certificate has expired, set status to archived in the database
                         if (log.isDebugEnabled()) {
                             final long freeMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
