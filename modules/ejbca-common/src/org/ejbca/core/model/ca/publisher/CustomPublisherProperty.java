@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.ca.publisher;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -21,7 +22,9 @@ import java.util.List;
  * 
  * @version $Id$
  */
-public class CustomPublisherProperty {
+public class CustomPublisherProperty implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public static final int UI_TEXTINPUT = 0;
     public static final int UI_SELECTONE = 1;
