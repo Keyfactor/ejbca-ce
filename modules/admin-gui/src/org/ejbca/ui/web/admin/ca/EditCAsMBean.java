@@ -102,7 +102,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     private int currentCaStatus;
     private String currentCaType;
-    private String currentCaSigningAlgorithm;
     private int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
     private String keySequence = CAToken.DEFAULT_KEYSEQUENCE;
     private boolean doEnforceUniquePublickeys = true;
@@ -194,7 +193,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String caCryptoTokenKeyEncryptKey;
     private String caCryptoTokenTestKey;
     private String signKeySpec = EditCaUtil.DEFAULT_KEY_SIZE; 
-    private String importCaName;
 
     private UploadedFile fileRecieveFileMakeRequest;
     private UploadedFile fileRecieveFileRecieveRequest;
@@ -1811,8 +1809,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         boolean illegaldnoraltname = false;
         try {
             illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, null);
+
+            if (illegaldnoraltname) {
+                addErrorMessage(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
+            }
         } catch (Exception e) {
-            log.error("Error happened while creating ca!", e);
             addErrorMessage(e.getMessage());
         }
         
