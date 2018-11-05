@@ -523,8 +523,8 @@ org.cesecore.authorization.AuthorizationDeniedException
 			<h:column>
    			    <f:facet name="header"><h:outputText value="#{web.text.PC_TABLE_STATUS_TITLE}"/></f:facet>
    				<div>
-   				    <h:graphicImage rendered="#{protocolinfos.enabled and protocolinfos.available}" url="#{adminMenuBean.adminWebUrl}/images/status-ca-active.png" height="16" width="16" style="border-width:0"/>
-   				    <h:graphicImage rendered="#{!protocolinfos.enabled or !protocolinfos.available}" url="#{adminMenuBean.adminWebUrl}/images/status-ca-offline.png" height="16" width="16" style="border-width:0"/>
+   				    <h:graphicImage rendered="#{protocolinfos.enabled and protocolinfos.available}" url="#{adminMenuBean.adminWebUrl}/images/status-ca-active.png" height="16" width="16" style="border-width:0;padding-right: 0.5em;"/>
+   				    <h:graphicImage rendered="#{!protocolinfos.enabled or !protocolinfos.available}" url="#{adminMenuBean.adminWebUrl}/images/status-ca-offline.png" height="16" width="16" style="border-width:0;padding-right: 0.5em;"/>
    				    <h:outputText value="#{protocolinfos.status}"/>
    				</div>
 			</h:column>
