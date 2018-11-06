@@ -154,6 +154,8 @@
 	<property name="httpsserver.bindaddress.pubhttps" value="0.0.0.0" />
 	<property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
 	<property name="httpserver.external.fqdn" value="" />
+	<property name="target.hostname" value="localhost" />
+	<property name="target.port.http" value="8080" />
 	<condition property="doc.war.enabled">
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
