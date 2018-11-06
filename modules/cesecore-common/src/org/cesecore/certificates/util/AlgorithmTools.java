@@ -46,8 +46,10 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
@@ -89,6 +91,8 @@ public abstract class AlgorithmTools {
             AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1,
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
+            AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1,
+            AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1,
             AlgorithmConstants.SIGALG_SHA384_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA512_WITH_RSA,
             AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA,
@@ -593,16 +597,23 @@ public abstract class AlgorithmTools {
                 throw new AlgorithmsToolRuntimeException("Certificate type neither X509 nor CVS.");
             }
             // Try to make it easier to display some signature algorithms that cert.getSigAlgName() does not have a good string for.
-            if (certSignatureAlgorithmTmp.equalsIgnoreCase("1.2.840.113549.1.1.10") && cert instanceof X509Certificate) {
-                // Figure out if it is SHA1 or SHA256
+            // We typically don't get here, since the x509cert.getSigAlgName handles id_RSASSA_PSS nowadays, this is old legacy code, 
+            // only triggered if the resulting signature algorithm returned above is an OID in stead of a sign alg name 
+            // (i.e. 1.2.840.113549.1.1.10 instead of SHA256WithRSAAndMGF1 
+            if (certSignatureAlgorithmTmp.equalsIgnoreCase(PKCSObjectIdentifiers.id_RSASSA_PSS.getId()) && cert instanceof X509Certificate) {
+                // Figure out the hash algorithm, it's hidden in the Signature Algorithm Parameters when using RSA PSS
                 // If we got this value we should have a x509 cert
                 final X509Certificate x509cert = (X509Certificate) cert;
                 final byte[] params = x509cert.getSigAlgParams();
-                if ((params != null) && (params.length == 2)) {
-                    certSignatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1;
-                } else {
-                    certSignatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1;
+                // Below code snipped from BC, it's hidden as private/protected methods so we can't use BC directly.
+                final RSASSAPSSparams rsaParams = RSASSAPSSparams.getInstance(params);
+                String digestName = MessageDigestUtils.getDigestName(rsaParams.getHashAlgorithm().getAlgorithm());
+                int dIndex = digestName.indexOf('-');
+                if (dIndex > 0 && !digestName.startsWith("SHA3"))
+                {
+                    digestName = digestName.substring(0, dIndex) + digestName.substring(dIndex + 1);
                 }
+                certSignatureAlgorithm = digestName + "withRSAandMGF1";
             } else {
                 certSignatureAlgorithm = certSignatureAlgorithmTmp;
             }
@@ -659,8 +670,12 @@ public abstract class AlgorithmTools {
             } else {
                 if (certSignatureAlgorithm.indexOf("SHA1") != -1) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1;
-                } else {
+                } else if (certSignatureAlgorithm.indexOf("256") != -1) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1;
+                } else if (certSignatureAlgorithm.indexOf("384") != -1) {
+                    signatureAlgorithm = AlgorithmConstants.SIGALG_SHA384_WITH_RSA_AND_MGF1;
+                } else if (certSignatureAlgorithm.indexOf("512") != -1) {
+                    signatureAlgorithm = AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1;
                 }
             }
         } else if (publickey instanceof DSAPublicKey) {
