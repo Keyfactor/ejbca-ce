@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -98,12 +99,12 @@ public class CaEditPublisherCommandTest {
             gcp.setPropertyData("foo=bar");
             publisherProxySession.addPublisher(admin, GCP_PUBLISHER_NAME, gcp);
             CustomPublisherContainer pub1 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
-            assertEquals("Propertydata was not added as it should", "foo=bar", pub1.getPropertyData());
+            assertEquals("Propertydata was not added as it should", "foo=bar", StringUtils.trim(pub1.getPropertyData()));
             CommandResult result = command.execute(HAPPY_PATH_GCP_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we edited
             CustomPublisherContainer pub2 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
-            assertEquals("Propertydata was not changed as it should", "primekey http://www.primekey.se", pub2.getPropertyData());
+            assertEquals("Propertydata was not changed as it should", "primekey=http://www.primekey.se", StringUtils.trim(pub2.getPropertyData()));
         } finally {
             publisherProxySession.removePublisherInternal(admin, GCP_PUBLISHER_NAME);
         }
