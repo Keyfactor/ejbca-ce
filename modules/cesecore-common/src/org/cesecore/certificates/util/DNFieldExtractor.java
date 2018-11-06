@@ -14,11 +14,19 @@
 package org.cesecore.certificates.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.ietf.ldap.LDAPDN;
 
@@ -97,6 +105,8 @@ public class DNFieldExtractor implements java.io.Serializable {
     private HashMap<Integer, String> dnfields;
     private boolean existsother = false;
     private boolean illegal = false;
+    /** We want to know if the DN has some multi value RDNs */
+    private boolean hasMultiValueRDN = false;
     private int type;
 
     public int getType() {
@@ -106,12 +116,11 @@ public class DNFieldExtractor implements java.io.Serializable {
     /**
      * Creates a new instance of DNFieldExtractor
      * 
-     * @param dn
-     *            DOCUMENT ME!
-     * @param type
-     *            DOCUMENT ME!
+     * @param dn the DN we want to process for example CN=Tomas,O=PrimeKey,C=SE
+     * @param type one of the constants {@link #TYPE_SUBJECTDN}, {@link #TYPE_SUBJECTALTNAME}, {@link #TYPE_SUBJECTDIRATTR}
+     * @throws IllegalArgumentException if DN is multi-valued but has multi-values that are not one on {@link #allowedMulti} 
      */
-    public DNFieldExtractor(final String dn, final int type) {
+    public DNFieldExtractor(final String dn, final int type) throws IllegalArgumentException {
         dnfields = new HashMap<>();
         setDN(dn, type);
     }
@@ -141,7 +150,7 @@ public class DNFieldExtractor implements java.io.Serializable {
         case DNFieldExtractor.TYPE_SUBJECTDN: return DnComponents.getDnProfileFields();
         case DNFieldExtractor.TYPE_SUBJECTALTNAME: return DnComponents.getAltNameFields();
         case DNFieldExtractor.TYPE_SUBJECTDIRATTR: return DnComponents.getDirAttrFields();
-        default: throw new IllegalStateException("Invalid DN type");
+        default: throw new IllegalArgumentException("Invalid DN type");
         }
     }
 
@@ -168,21 +177,31 @@ public class DNFieldExtractor implements java.io.Serializable {
         case DNFieldExtractor.TYPE_SUBJECTDN: return DnComponents.getDnIdFromDnName(dnComponent);
         case DNFieldExtractor.TYPE_SUBJECTALTNAME: return DnComponents.getDnIdFromAltName(dnComponent);
         case DNFieldExtractor.TYPE_SUBJECTDIRATTR: DnComponents.getDnIdFromDirAttr(dnComponent);
-        default: throw new IllegalStateException("Invalid DN type");
+        default: throw new IllegalArgumentException("Invalid DN type");
         }
     }
+    
+    /** The only DN components that are allowed to be used in multi-value RDNs, to prevent users from 
+     * making horrible mistakes like a multi-vavlue RDN like 'O=PrimeKey+Tech' */
+    static final List<ASN1ObjectIdentifier> allowedMulti = new ArrayList<>(Arrays.asList(
+            CeSecoreNameStyle.CN, 
+            CeSecoreNameStyle.SERIALNUMBER,
+            CeSecoreNameStyle.SURNAME,
+            CeSecoreNameStyle.UID,
+            CeSecoreNameStyle.GIVENNAME,
+            CeSecoreNameStyle.DN_QUALIFIER)
+            );
+
 
     /**
-     * Fills the dnfields variable with dn (or altname or subject dir attrs) numerical ids and the value of the components 
-     * (i.e. the value of CN). Also populates fieldnumbers with number of occurances in dn
+     * Fills the dnfields variable with dn (or altname or subject dir attrs) numerical IDs and the value of the components 
+     * (i.e. the value of CN). Also populates fieldnumbers with number of occurrences in dn
      * 
-     * @param dn
-     *            DOCUMENT ME!
-     * @param type
-     *            DOCUMENT ME!
+     * @param dn the DN we want to process for example CN=Tomas,O=PrimeKey,C=SE
+     * @param type one of the constants {@link #TYPE_SUBJECTDN}, {@link #TYPE_SUBJECTALTNAME}, {@link #TYPE_SUBJECTDIRATTR}
+     * @throws IllegalArgumentException if DN is multi-valued but has multi-values that are not one on {@link #allowedMulti} 
      */
-    public final void setDN(final String dn, final int type) {
-
+    public final void setDN(final String dninput, final int type) throws IllegalArgumentException {
         this.type = type;
         final ArrayList<Integer> ids;
         if (type == TYPE_SUBJECTDN) {
@@ -199,13 +218,46 @@ public class DNFieldExtractor implements java.io.Serializable {
             fieldnumbers.put(id, 0);
         }
 
+        String dn = dninput;
         if ((dn != null) && !dn.equalsIgnoreCase("null")) {
-            dnfields = new HashMap<>();
             try {
+                if (type == TYPE_SUBJECTDN) {
+                    // Check if there are multi value RDNs
+                    RDN[] rdns = IETFUtils.rDNsFromString(dn, CeSecoreNameStyle.INSTANCE);
+                    final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
+                    boolean hasMultiValue = false;
+                    for (RDN rdn : rdns) {
+                        if (rdn.isMultiValued()) {
+                            hasMultiValue = true;
+                            // If DN is multi valued we will split it up and create a non-multi-value DN string, in order to make it easy to validate the different 
+                            // fields against required fields and validators in an EE profile
+                            hasMultiValueRDN = true;
+                            AttributeTypeAndValue avas[] = rdn.getTypesAndValues();
+                            for (AttributeTypeAndValue ava : avas) {
+                                // We only allow a subset of DN attributes to be multi-valued however
+                                if (!allowedMulti.contains(ava.getType())) {
+                                    throw new IllegalArgumentException("A DN is not allowed to contain a multi value RDN of type: "+ava.getType().getId());
+                                }
+                                nameBuilder.addRDN(ava);
+                            }
+                        } else {
+                            AttributeTypeAndValue ava = rdn.getFirst();
+                            nameBuilder.addRDN(ava);
+                        }
+                    }
+                    if (hasMultiValue) {
+                        // No need to waste time on this if we didn't have any multi values, we spent enough time above already
+                        final X500Name x500Name = nameBuilder.build();
+                        dn = x500Name.toString();
+                        if (log.isDebugEnabled()) {
+                            log.debug("Exploded DN with multi-value RDN from '"+dninput+"' to '"+dn+"'.");
+                        }
+                    }
+                }
+                dnfields = new HashMap<>();
                 final String[] dnexploded = LDAPDN.explodeDN(dn, false);
                 for (int i = 0; i < dnexploded.length; i++) {
                     boolean exists = false;
-
                     for(Integer id : ids) {
                         Integer number = fieldnumbers.get(id);
                         String field;
@@ -216,27 +268,28 @@ public class DNFieldExtractor implements java.io.Serializable {
                         } else {
                             field = DnComponents.getDirAttrExtractorFieldFromDnId(id.intValue());
                         }
-                        final String dnex = dnexploded[i].toUpperCase();
+                        final String dnex = dnexploded[i];
+                        final String dnexupper = dnex.toUpperCase();
                         if (id.intValue() == DNFieldExtractor.URI) {
                             // Fix up URI, which can have several forms
-                            if (dnex.indexOf(CertTools.URI.toUpperCase(Locale.ENGLISH) + "=") > -1) {
+                            if (dnexupper.indexOf(CertTools.URI.toUpperCase(Locale.ENGLISH) + "=") > -1) {
                                 field = CertTools.URI.toUpperCase(Locale.ENGLISH) + "=";
                             }
-                            if (dnex.indexOf(CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=") > -1) {
+                            if (dnexupper.indexOf(CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=") > -1) {
                                 field = CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=";
                             }
                         }
-                       
-                        if (dnex.startsWith(field)) {
-                           
+
+                        if (dnexupper.startsWith(field)) {
+
                             exists = true;
                             final String rdn;
                             final String tmp;
                             // LDAPDN.unescapeRDN don't like fields with just a key but no contents. Example: 'OU='
-                            if (dnexploded[i].charAt(dnexploded[i].length() - 1) != '=') {
-                                tmp = LDAPDN.unescapeRDN(dnexploded[i]);
+                            if (dnex.charAt(dnex.length() - 1) != '=') {
+                                tmp = LDAPDN.unescapeRDN(dnex);
                             } else {
-                                tmp = dnexploded[i];
+                                tmp = dnex;
                             }
                             // We don't want the CN= (or whatever) part of the RDN
                             if (tmp.toUpperCase().startsWith(field)) {
@@ -248,7 +301,7 @@ public class DNFieldExtractor implements java.io.Serializable {
                             // Same code for TYPE_SUBJECTDN, TYPE_SUBJECTALTNAME and TYPE_SUBJECTDIRATTR and we will never get here
                             // if it is not one of those types
                             dnfields.put(Integer.valueOf((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
-                            
+
                             number = Integer.valueOf(number.intValue() + 1);
                             fieldnumbers.put(id, number);
                         }
@@ -344,14 +397,25 @@ public class DNFieldExtractor implements java.io.Serializable {
     }
 
     /**
-     * Returns the complete array determining the number of DN components of the various types (i.e. if there are two CNs but 0 Ls etc)
+     * Returns the complete array determining the number of DN components of the various types (i.e. if there are two CNs but 0 L:s etc)
      * 
-     * TODO: DOCUMENT
+     * Example, a DN with 'CN=User,O=PrimeKey,C=SE', will return:
+     * (2, 1)
+     * (9, 1)
+     * (13, 1)
+     * And all other IDs in the returned map with (id, 0)
      * 
-     * @return DOCUMENT ME!
+     * @return HashMap mapping DN component field ID to number of occurrences in this DN
      */
     public HashMap<Integer, Integer> getNumberOfFields() {
         return fieldnumbers;
+    }
+
+    /** 
+     * @return true if the input DN contains multi value RDNs
+     */
+    public boolean hasMultiValueRDN() {
+        return hasMultiValueRDN;
     }
 
     public boolean isIllegal() {
