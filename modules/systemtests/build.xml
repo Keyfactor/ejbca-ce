@@ -233,7 +233,7 @@
 	<target name="assert-appserverrunning" description="Check that the server is running">
 		<echo message="Verifying that the application server is up and running..."/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="appserver.notrunning.publicweb">
-			<http url="http://localhost:${httpserver.pubhttp}/ejbca/index.jsp"/>
+			<http url="http://${target.hostname}:${httpserver.pubhttp}/ejbca/index.jsp"/>
 		</waitfor>
 		<fail message="Please start application server before running this script" if="appserver.notrunning.publicweb"/>
 	</target>
@@ -241,7 +241,7 @@
 	<target name="assert-appserverrunning-ocsp" description="Check that the server is at least running the OCSP service">
 		<echo message="Verifying that the application server is up and running..."/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="appserver.notrunning.ocsp">
-			<http url="http://localhost:${httpserver.pubhttp}/ejbca/publicweb/status/ocsp/"/>
+			<http url="http://${target.hostname}:${httpserver.pubhttp}/ejbca/publicweb/status/ocsp/"/>
 		</waitfor>
 		<fail message="Please start application server before running this script" if="appserver.notrunning.ocsp"/>
 	</target>
