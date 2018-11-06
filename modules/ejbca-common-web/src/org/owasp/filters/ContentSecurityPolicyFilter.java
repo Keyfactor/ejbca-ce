@@ -45,6 +45,9 @@ public class ContentSecurityPolicyFilter implements Filter {
     /** Collection of CSP polcies that will be applied */
     private String policies = null;
 
+    /** which mode X-FRAME-OPTIONS should have, default DENY */
+    private String frameOptionsMode = "DENY";
+
     /** Used for Script Nonce */
     //private SecureRandom prng = null;
 
@@ -120,6 +123,11 @@ public class ContentSecurityPolicyFilter implements Filter {
 
         // Target formating
         this.policies = cspPolicies.toString().replaceAll("(\\[|\\])", "").replaceAll(",", ";").trim();
+        
+        String mode = filterConfig.getInitParameter("frameoptionsmode");
+        if ( mode != null ) {
+            frameOptionsMode = mode;
+        }
     }
 
     /**
@@ -202,7 +210,7 @@ public class ContentSecurityPolicyFilter implements Filter {
         httpResponse.setHeader("X-Content-Type-Options", "nosniff");
         // Also X-FRAME-OPTIONS, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
         // Used to be in a separate filter, ClickjackFilter, but there is no point in having multiple filters adding security headers
-        httpResponse.setHeader("X-FRAME-OPTIONS", "DENY" );            
+        httpResponse.setHeader("X-FRAME-OPTIONS", frameOptionsMode );            
 
         /* Step 3 : Let request continue chain filter */
         fchain.doFilter(request, response);
