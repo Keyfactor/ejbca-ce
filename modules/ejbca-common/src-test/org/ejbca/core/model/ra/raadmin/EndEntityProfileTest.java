@@ -87,6 +87,9 @@ public class EndEntityProfileTest {
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "www.primekey.com");
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "xn--primekey.se");
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "a.b.primekey.cu.uk");
+        // This is actually invalid and should not be allowed to pass, but it does with the above regexp (i.e. the regexp is not a perfect dnsName validator)
+        // Anything with hyphens for 3rd/4th char is reserved, and xn— needs to be well formed & normalized
+        EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "aa--primekey.se");
         try {
             EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "foo_.primekey.se");
             fail("should throw EndEntityFieldValidatorException on invalid value: foo_.primekey.se");
