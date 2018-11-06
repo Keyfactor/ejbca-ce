@@ -670,7 +670,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 issuerDN = CertTools.getIssuerDN(cacert);
             }
         } catch (Exception e) {
-            // En error happended
+            addErrorMessage(e.getMessage());
             issuerDN = e.getMessage();
         }
         return issuerDN;
