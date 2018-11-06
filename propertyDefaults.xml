@@ -74,6 +74,7 @@
     <property file="${ejbca.home}/conf/crlstore.properties" />
     <property file="${ejbca.home}/conf/va.properties" />
     <property file="${ejbca.home}/conf/va-publisher.properties" />
+    <property file="${ejbca.home}/conf/systemtests.properties" />
 
     <!-- httpsserver.hostname must be set cause it's used in preprocess. It will only be set here if not set in any property file -->
     <property name="httpsserver.hostname" value="localhost"/>
