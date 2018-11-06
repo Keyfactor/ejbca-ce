@@ -254,11 +254,11 @@ public class CustomPublisherContainer extends BasePublisher {
                 log.info("Publisher class "+classPath+" is not available in this version/build of EJBCA.");
                 return null;
             } catch (IllegalAccessException iae) {
-                throw new RuntimeException(iae);
+                throw new IllegalStateException(iae);
             } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
+                throw new IllegalStateException(ioe);
             } catch (InstantiationException ie) {
-                throw new RuntimeException(ie);
+                throw new IllegalStateException(ie);
             }
 		}
 		
