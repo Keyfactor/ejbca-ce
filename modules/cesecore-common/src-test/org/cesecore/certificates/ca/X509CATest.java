@@ -137,7 +137,9 @@ public class X509CATest {
 	@Test
 	public void testX509CABasicOperationsRSA() throws Exception {
 	    doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA512_WITH_RSA);
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1);
         // AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1 uses small w in With. Test with capital as well
         // because this was used previously so need to be supported for upgraded systems.
         doTestX509CABasicOperations("SHA256WithRSAandMGF1");
@@ -1351,8 +1353,10 @@ public class X509CATest {
     private static String getTestKeyPairAlgName(String algName) {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
             algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ||
-            algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
-            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
+            algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA) ||
+            algName.equals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA) ||
+            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1) ||
+            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {
             return algName;
         } else {
             return "SHA256withRSA";
@@ -1367,6 +1371,8 @@ public class X509CATest {
         } else if (algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
             return "brainpoolp224r1";
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
+            return "2048"; // RSA-PSS required at least 2014 bits
+        } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {
             return "2048"; // RSA-PSS required at least 2014 bits
         } else {
             return "1024"; // Assume RSA
