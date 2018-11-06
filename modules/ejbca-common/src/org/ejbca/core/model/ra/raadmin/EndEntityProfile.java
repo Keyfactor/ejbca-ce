@@ -92,7 +92,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    public static final float LATEST_VERSION = 14;
+    public static final float LATEST_VERSION = 15;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -236,6 +236,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String REUSECERTIFICATE = "REUSECERTIFICATE";
     private static final String REVERSEFFIELDCHECKS = "REVERSEFFIELDCHECKS"; 
     private static final String ALLOW_MERGEDN_WEBSERVICES = "ALLOW_MERGEDN_WEBSERVICES";
+    private static final String ALLOW_MULTI_VALUE_RDNS = "ALLOW_MULTI_VALUE_RDNS";
     
     private static final String PRINTINGUSE            = "PRINTINGUSE";
     private static final String PRINTINGDEFAULT        = "PRINTINGDEFAULT";
@@ -1152,6 +1153,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	data.put(ALLOW_MERGEDN_WEBSERVICES, Boolean.valueOf(merge));
     }
 
+    /** @return true if multi value RDNs should be supported, on a few specific RDNs. Default is false. */
+    public boolean getAllowMultiValueRDNs(){
+        return getValueDefaultFalse(ALLOW_MULTI_VALUE_RDNS);
+    }
+    
+    public void setAllowMultiValueRDNs(final boolean allow){
+        data.put(ALLOW_MULTI_VALUE_RDNS, Boolean.valueOf(allow));
+    }
+
     /** @return true if printing of userdata should be done. default is false. */
     public boolean getUsePrinting(){
     	return getValueDefaultFalse(PRINTINGUSE);
@@ -1315,10 +1325,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (log.isTraceEnabled()) {
     		log.trace(">doesUserFulfillEndEntityProfileWithoutPassword()");
     	}
+    	// get a DNFieldExtractor used to validate DN fields. Multi-value RDNs are "converted" into non-multi-value RDNs 
+    	// just to re-use standard validation mechanisms. 
+    	// DNFieldextractor validates (during contruction) that only components valid for multi-value use are used.
     	final DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	if (subjectdnfields.isIllegal()) {
     		throw new EndEntityProfileValidationException("Subject DN is illegal.");
     	}
+        if (subjectdnfields.hasMultiValueRDN() && !getAllowMultiValueRDNs()) {
+            throw new EndEntityProfileValidationException("Subject DN has multi value RDNs, which is not allowed.");
+        }
     	final DNFieldExtractor subjectaltnames = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	if (subjectaltnames.isIllegal()) {
     		throw new EndEntityProfileValidationException("Subject alt names are illegal.");
@@ -1337,6 +1353,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (subjectdirattrs.existsOther()) {
     		throw new EndEntityProfileValidationException("Unsupported Subject Directory Attribute Field found in:" + subjectdirattr );
     	}
+    	// Make sure that all required fields exist
     	checkIfAllRequiredFieldsExists(subjectdnfields, subjectaltnames, subjectdirattrs, username, email);
     	// Make sure that there are enough fields to cover all required in profile
     	checkIfForIllegalNumberOfFields(subjectdnfields, subjectaltnames, subjectdirattrs);
@@ -1975,6 +1992,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 					}
     			}
         	}
+        	// In version 15 (EJBCA 7.0) we included ability for multi-value RDNs
+            if (getVersion() < 15) {
+                setAllowMultiValueRDNs(false);
+            }
+
         	// Finally, update the version stored in the map to the current version
             data.put(VERSION, new Float(LATEST_VERSION));
         }

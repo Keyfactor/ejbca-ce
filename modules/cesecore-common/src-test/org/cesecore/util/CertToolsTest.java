@@ -60,6 +60,7 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x509.Extension;
@@ -794,10 +795,20 @@ public class CertToolsTest {
         // it is allowed to escape ,
         assertEquals(StringTools.strip(bcdn21), "CN=Foo',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");
 
-        String dn22 = "C=SE,O=Foo\\, Inc, OU=Foo, Dep, CN=Foo'";
+        try {
+        	// Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+        	// We used to swallow this badly formatted DN string, but doesn't do that anymore
+            String dn22 = "C=SE,O=Foo\\, Inc, OU=Foo, Dep, CN=Foo'";
+            CertTools.stringToBCDNString(dn22);
+            fail("should fail since directory string is badly formatted 'Foo, Dep' and the '-character must be escaped");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Exception message is wrong", "badly formatted directory string", e.getMessage());
+        }
+        // If we want to use comma, it must be escaped
+        String dn22 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
         String bcdn22 = CertTools.stringToBCDNString(dn22);
-        assertEquals(bcdn22, "CN=Foo',OU=Foo,O=Foo\\, Inc,C=SE");
-        assertEquals(StringTools.strip(bcdn22), "CN=Foo',OU=Foo,O=Foo\\, Inc,C=SE");
+        assertEquals(bcdn22, "CN=Foo',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");
+        assertEquals(StringTools.strip(bcdn22), "CN=Foo',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");
 
         String dn23 = "C=SE,O=Foo, OU=FooOU, CN=Foo, DN=qualf";
         String bcdn23 = CertTools.stringToBCDNString(dn23);
@@ -808,19 +819,51 @@ public class CertToolsTest {
         assertEquals(CertTools.stringToBCDNString(dn24),
                 "TelephoneNumber=08555-666,PostalAddress=Stockholm,BusinessCategory=Surf boards,PostalCode=11122,CN=foo,CN=bar,O=CN,O=C,C=CN");
 
-        // This isn't a legal SubjectDN. Since legacy BC did not support multivalues, we assume that the user meant \+.
+        // This wasn't a legal SubjectDN until EJBCA 7.0.0. Since legacy BC did not support multi-values, we used to assume that the user meant \+.
         String dn25 = "CN=user+name, C=CN";
-        assertEquals("CN=user\\+name,C=CN", CertTools.stringToBCDNString(dn25));
-
+        try {
+            // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+            CertTools.stringToBCDNString(dn25);
+            fail("Should have thrown an exception due to badly formatted string. CN=user+name is not a valid multi-value RDN (should perhaps be CN=user+UID=name)");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Exception message is wrong", "badly formatted directory string", e.getMessage());
+        }
+        // We must escape plus signs
         String dn26 = "CN=user\\+name, C=CN";
         assertEquals("CN=user\\+name,C=CN", CertTools.stringToBCDNString(dn26));
         
-        String dn27 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\\"";
+        try {
+            String dn27 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\\"";
+            // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+            CertTools.stringToBCDNString(dn27);
+            fail("Should have thrown an exception due to badly formatted string");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Exception message is wrong", "Unknown object id - b\\+ar\\, C - passed to distinguished name", e.getMessage());
+        }
+        // Equal signs and plus must be escaped
+        String dn27 = "CN=test123456, O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"";
         assertEquals("CN=test123456,O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"", CertTools.stringToBCDNString(dn27));
-        String dn27_1 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\";
-        assertEquals("CN=test123456,O=\\\"foo\\+b\\+ar\\, C\\=SE\\\\", CertTools.stringToBCDNString(dn27_1));
 
-        String dn28 = "jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,=fff,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se";
+        String dn27_1 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\";
+        try {
+            // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+            assertEquals("CN=test123456,O=\\\"foo\\+b\\+ar\\, C\\=SE\\\\", CertTools.stringToBCDNString(dn27_1));
+            fail("Should have thrown an exception due to badly formatted string");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Exception message is wrong", "Unknown object id - b\\+ar\\, C - passed to distinguished name", e.getMessage());
+        }
+
+        try {
+            String dn28 = "jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,=fff,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se";
+            // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+            CertTools.stringToBCDNString(dn28);
+            fail("Should have thrown an exception due to badly formatted string");
+        } catch (StringIndexOutOfBoundsException e) {
+            // due to the "=fff" that does not have a type
+            assertEquals("Exception message is wrong", "String index out of range: 0", e.getMessage());
+        }
+        // No invalid parts like '=fff' allowed
+        String dn28 = "jurisdictionCountry=SE,jurisdictionState=Stockholm,SURNAME=Json,CN=oid,jurisdictionLocality=Solna,SN=12345,unstructuredname=foo.bar.com,unstructuredaddress=1.2.3.4,NAME=name,C=se";
         assertEquals("JurisdictionCountry=SE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,unstructuredAddress=1.2.3.4,unstructuredName=foo.bar.com,CN=oid,Name=name,SN=12345,SURNAME=Json,C=se",
                 CertTools.stringToBCDNString(dn28));
         
@@ -845,10 +888,12 @@ public class CertToolsTest {
         assertEquals("CN=cn,O=the org", CertTools.stringToBCDNString(dn33b));
         // The following has changed from earlier EJBCA versions there the trailing escaped space would have been kept. (Perhaps through a change in BC's X500NameBuilder.)
         // Document the current behavior with this test to catch future changes.
+        // this value changed again when introducing multi-valued RDNs and starting to use IETFUtils.rDNsFromString in ECA-3934
         String dn34a = "CN=cn,O=\\ the org\\ ,C=SE";
-        assertEquals("CN=cn,O=\\ the org\\\\,C=SE", CertTools.stringToBCDNString(dn34a));
+        // Backslash-space in the end used to become backslash-backslash-space, now only backslash-space, which is more logical
+        assertEquals("CN=cn,O=\\ the org\\ ,C=SE", CertTools.stringToBCDNString(dn34a));
         String dn34b = "CN=cn,O=\\ the org\\ ";
-        assertEquals("CN=cn,O=\\ the org\\\\", CertTools.stringToBCDNString(dn34b));
+        assertEquals("CN=cn,O=\\ the org\\ ", CertTools.stringToBCDNString(dn34b));
         // Same string as tested in EjbcaWSTest.test51CertificateRequestWithNoForbiddenChars
         String dn35 = "CN=Foo,O=|\n|\r|;|A|!|`|?|$|~|, C=SE";
         assertEquals("CN=Foo,O=|\n|\r|\\;|A|!|`|?|$|~|,C=SE", CertTools.stringToBCDNString(dn35));
@@ -953,23 +998,41 @@ public class CertToolsTest {
         assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,"
                 +"O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid", bcdn1);
 
-        dn1 = "CN=CommonName, 3.3.3.3=3333Oid,O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName,"+
+        try {
+            dn1 = "CN=CommonName, 3.3.3.3=3333Oid,O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName,"+
+                    " GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+            // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+            // 3.3.3.3 is not a valid OID 
+            CertTools.stringToBCDNString(dn1);
+            fail("should have thrown");
+        } catch (IllegalArgumentException e) {
+            // 3.3.3.3 is not a valid OID so it should throw
+            assertEquals("Exception message is wrong", "string 3.3.3.3 not an OID", e.getMessage());            
+        }
+
+        // 3.3.3.3 is not a valid OID so don't try to include it
+        dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName,"+
                 " GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
         bcdn1 = CertTools.stringToBCDNString(dn1);
-        log.debug("dn1: " + dn1);
-        log.debug("bcdn1: " + bcdn1);
-        // 3.3.3.3 is not a valid OID so it should be silently dropped
         assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,"
-                        +"OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid", bcdn1);
+                +"OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid", bcdn1);
 
-        dn1 = "CN=CommonName, 2.3.3.3=3333Oid,O=Org, K=KKK, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName,"
+        try {
+            dn1 = "CN=CommonName, 2.3.3.3=3333Oid,O=Org, K=KKK, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName,"
+                    +" GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+            // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+            CertTools.stringToBCDNString(dn1);
+        } catch (IllegalArgumentException e) {
+            // K is not a valid OID so it should throw
+            assertEquals("Exception message is wrong", "Unknown object id - K - passed to distinguished name", e.getMessage());            
+        }
+        // Drop the K
+        dn1 = "CN=CommonName, 2.3.3.3=3333Oid,O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName,"
                 +" GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+        // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         bcdn1 = CertTools.stringToBCDNString(dn1);
-        log.debug("dn1: " + dn1);
-        log.debug("bcdn1: " + bcdn1);
-        assertEquals(
-                bcdn1,
-                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid,2.3.3.3=3333Oid");
+        assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid,2.3.3.3=3333Oid",
+        		bcdn1);
 
         log.trace("<test04DNComponents()");
     }
@@ -1145,7 +1208,13 @@ public class CertToolsTest {
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn11));
 
         // Test some bad input
-        assertEquals("", CertTools.stringToBCDNString("asdasd,asdassd"));
+        try {
+            // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+            assertEquals("", CertTools.stringToBCDNString("asdasd,asdassd"));
+        } catch (IllegalArgumentException e) {
+            // invalid and should throw
+            assertEquals("Exception message is wrong", "badly formatted directory string", e.getMessage());
+        }
 
         log.trace("<test09TestReverse()");
     }
@@ -1982,9 +2051,14 @@ public class CertToolsTest {
     
     @Test
     public void testStringToBcX500WithTrailingComma() {
-        X500Name result = CertTools.stringToBcX500Name("CN=,");
-        assertNotNull(result);
-        assertEquals("CN=\\,", result.toString());
+        // Legacy behavior changed with multi-valued RDNs when we started using IETFUtils.rDNsFromString
+        // Previously we (wrongly) converted this into an escaped comma 'CN=\\,'. See ECA-3934
+        try {
+            CertTools.stringToBcX500Name("CN=,");
+            fail("Should have failed with exception dues to badly formatted directory string");
+        } catch (IllegalArgumentException e) {
+            assertEquals("wrong exception message", "badly formatted directory string", e.getMessage());
+        }
     }
 
 
@@ -1997,17 +2071,26 @@ public class CertToolsTest {
     
     @Test
     public void testStringToBcX500WithValueAndTrailingComma() {
-        X500Name result = CertTools.stringToBcX500Name("CN=f,");
-        assertNotNull(result);
-        assertEquals("CN=f\\,", result.toString());
+        // Legacy behavior changed with multi-valued RDNs when we started using IETFUtils.rDNsFromString
+        // Previously we (wrongly) converted this into an escaped comma 'CN=f\\,'. See ECA-3934
+        try {
+            CertTools.stringToBcX500Name("CN=f,");
+            fail("Should have failed with exception dues to badly formatted directory string");
+        } catch (IllegalArgumentException e) {
+            assertEquals("wrong exception message", "badly formatted directory string", e.getMessage());
+        }
     }
 
     @Test
     public void testStringToBcX500WithEmpty() {
-        // Legacy behavior
-        X500Name result = CertTools.stringToBcX500Name("");
-        assertNotNull(result);    
-        assertEquals("", result.toString());
+        // Legacy behavior changed with multi-valued RDNs when we started using IETFUtils.rDNsFromString
+        // Previously we (wrongly) converted this into an empty string ''. See ECA-3934
+        try {
+            CertTools.stringToBcX500Name("");
+            fail("Should have failed with exception dues to badly formatted directory string");
+        } catch (IllegalArgumentException e) {
+            assertEquals("wrong exception message", "badly formatted directory string", e.getMessage());
+        }
     }
  
     @Test
@@ -2167,6 +2250,16 @@ public class CertToolsTest {
         checkNCException(cacert, validDN, new GeneralName(GeneralName.iPAddress, new DEROctetString(InetAddress.getByName("2001:DB8::").getAddress())), "Disallowed SAN (IPv6 address) was accepted");
     }
     
+    /** Check Name Constraints that are expected to fail NC validation, and fail the JUnit test of the NC validation 
+     * does not fail with am IllegalNameException
+     */
+    private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
+        try {
+            CertTools.checkNameConstraints(cacert, subjectDNName, new GeneralNames(subjectAltName));
+            fail(message);
+        } catch (IllegalNameException e) { /* NOPMD expected */ }
+    }    
+
     @Test
     public void testCertificateWithEmptyOU() throws CertificateParsingException {
         byte[] customerCertificate = ("-----BEGIN CERTIFICATE-----\n"
@@ -2520,10 +2613,114 @@ public class CertToolsTest {
         assertFalse("1.2.3.4".matches(CertTools.getOidWildcardPattern("1.2a3.4")));
     }
     
-    private void checkNCException(X509Certificate cacert, X500Name subjectDNName, GeneralName subjectAltName, String message) {
-        try {
-            CertTools.checkNameConstraints(cacert, subjectDNName, new GeneralNames(subjectAltName));
-            fail(message);
-        } catch (IllegalNameException e) { /* NOPMD expected */ }
+    @Test
+    public void testMultiValueRDN() {
+
+        {
+            String dn = "CN=Enrico Maria+serialNumber=123,C=SE";
+            X500Name name = CertTools.stringToUnorderedX500Name(dn, CeSecoreNameStyle.INSTANCE);
+            // This should be encoded as a multi-value RDN, where serialNumber is inside the CN RDN
+            // In EJBCA before 7.0 we didn't handle multi-values, so serialNumber was extracted as it's own RDN
+            // * Old style not handling multi-values:
+            // DER Sequence
+            //   DER Set
+            //     DER Sequence
+            //        ObjectIdentifier(2.5.4.3)
+            //        UTF8String(Enrico Maria) 
+            //   DER Set
+            //     DER Sequence
+            //        ObjectIdentifier(2.5.4.5)
+            //        PrintableString(123) 
+            //   DER Set
+            //     DER Sequence
+            //        ObjectIdentifier(2.5.4.6)
+            //        PrintableString(SE)
+            // 
+            // * New style handling multi-values
+            // DER Sequence
+            // DER Set
+            //    DER Sequence
+            //        ObjectIdentifier(2.5.4.5)
+            //        PrintableString(123) 
+            //    DER Sequence
+            //        ObjectIdentifier(2.5.4.3)
+            //        UTF8String(Enrico Maria) 
+            // DER Set
+            //    DER Sequence
+            //        ObjectIdentifier(2.5.4.6)
+            //        PrintableString(SE)
+            String dump = ASN1Dump.dumpAsString(name);
+            log.error(dump);
+            // Should contain only two RDNs, CN and C, since serialNumber is "inside" of the CN RDN
+            RDN[] rdns = name.getRDNs();
+            assertEquals("Since it's a multi-value RDNs, we should only have two RDNs", 2, rdns.length);
+            // but, name.getAttributeTypes take multi values into consideration and return all types
+            ASN1ObjectIdentifier[] ids = name.getAttributeTypes();
+            assertEquals("We should have three RDNs, counting the ids in multi-valued RDNs", 3, ids.length);
+            // The String representation of multi-value RDNs is a bit randomg, i.e. SN=123+CN=foo vs CN=bar+UID=123, this
+            // is because the multi-values are part of an ASN.1 set, which is "unordered", but always encoded in the same way in ASN.1,
+            // so "ordered" according to ASN.1 DERSet encoding
+            assertEquals("Multi-valued RDNs should be toString:ed properly with +", "SN=123+CN=Enrico Maria,C=SE", name.toString());
+
+            // Second test, ordered BC X500 name
+            name = CertTools.stringToBcX500Name(dn);
+            dump = ASN1Dump.dumpAsString(name);
+            log.error(dump);
+            rdns = name.getRDNs();
+            assertEquals("Since it's a multi-value RDNs, we should only have two RDNs", 2, rdns.length);
+            // but, name.getAttributeTypes take multi values into consideration and return all types
+            ids = name.getAttributeTypes();
+            assertEquals("We should have three RDNs, counting the ids in multi-valued RDNs", 3, ids.length);
+            assertEquals("Multi-valued RDNs should be toString:ed properly with +", "SN=123+CN=Enrico Maria,C=SE", name.toString());
+            assertEquals("Multi value RDNs should be handled with + sign", "SN=123+CN=Enrico Maria,C=SE", CertTools.stringToBCDNString(dn));
+        }
+        {
+            // A bit more complex
+            String dn = "CN=Enrico Maria+serialNumber=123,C=SE,O=PrimeKey,OU=Tech";
+            X500Name name = CertTools.stringToUnorderedX500Name(dn, CeSecoreNameStyle.INSTANCE);
+            // Should contain only two RDNs, CN and C, since serialNumber is "inside" of the CN RDN
+            RDN[] rdns = name.getRDNs();
+            assertEquals("Since it's a multi-value RDNs, we should only have two RDNs", 4, rdns.length);
+            // but, name.getAttributeTypes take multi values into consideration and return all types
+            ASN1ObjectIdentifier[] ids = name.getAttributeTypes();
+            assertEquals("We should have three RDNs, counting the ids in multi-valued RDNs", 5, ids.length);
+            assertEquals("Multi-valued RDNs should be toString:ed properly with +", "SN=123+CN=Enrico Maria,C=SE,O=PrimeKey,OU=Tech", name.toString());
+
+            // Second test, ordered BC X500 name
+            name = CertTools.stringToBcX500Name(dn);
+            rdns = name.getRDNs();
+            assertEquals("Since it's a multi-value RDNs, we should only have two RDNs", 4, rdns.length);
+            // but, name.getAttributeTypes take multi values into consideration and return all types
+            ids = name.getAttributeTypes();
+            assertEquals("We should have three RDNs, counting the ids in multi-valued RDNs", 5, ids.length);
+            assertEquals("Multi-valued RDNs should be toString:ed properly with +", "SN=123+CN=Enrico Maria,OU=Tech,O=PrimeKey,C=SE", name.toString());
+            assertEquals("Multi value RDNs should be handled with + sign", "SN=123+CN=Enrico Maria,OU=Tech,O=PrimeKey,C=SE", CertTools.stringToBCDNString(dn));
+        }
+        {
+            // Another DN
+            String dn = "CN=Tomas+UID=12345,O=PK,C=SE";
+            X500Name name = CertTools.stringToUnorderedX500Name(dn, CeSecoreNameStyle.INSTANCE);
+            // Should contain only two RDNs, CN and C, since serialNumber is "inside" of the CN RDN
+            RDN[] rdns = name.getRDNs();
+            assertEquals("Since it's a multi-value RDNs, we should only have two RDNs", 3, rdns.length);
+            // but, name.getAttributeTypes take multi values into consideration and return all types
+            ASN1ObjectIdentifier[] ids = name.getAttributeTypes();
+            assertEquals("We should have three RDNs, counting the ids in multi-valued RDNs", 4, ids.length);
+            assertEquals("Multi-valued RDNs should be toString:ed properly with +", "CN=Tomas+UID=12345,O=PK,C=SE", name.toString());
+
+            // Second test, ordered BC X500 name
+            name = CertTools.stringToBcX500Name(dn);
+            rdns = name.getRDNs();
+            assertEquals("Since it's a multi-value RDNs, we should only have two RDNs", 3, rdns.length);
+            // but, name.getAttributeTypes take multi values into consideration and return all types
+            ids = name.getAttributeTypes();
+            assertEquals("We should have three RDNs, counting the ids in multi-valued RDNs", 4, ids.length);
+            assertEquals("Multi-valued RDNs should be toString:ed properly with +", "CN=Tomas+UID=12345,O=PK,C=SE", name.toString());
+            assertEquals("Multi value RDNs should be handled with + sign", "CN=Tomas+UID=12345,O=PK,C=SE", CertTools.stringToBCDNString(dn));
+        }
+        {        
+            String dn = "DN=200590+givenName=Enrico Maria+serialNumber=IT:MEZCAL86T16H523D+surname=Ciaffi,O=Test1,C=IT,O=Test";
+            assertEquals("Multi value RDNs should be handled with + sign", "SURNAME=Ciaffi+DN=200590+GIVENNAME=Enrico Maria+SN=IT:MEZCAL86T16H523D,O=Test1,O=Test,C=IT", CertTools.stringToBCDNString(dn));
+        }
     }    
 }
