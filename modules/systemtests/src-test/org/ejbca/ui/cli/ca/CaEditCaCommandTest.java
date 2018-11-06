@@ -16,6 +16,9 @@ package org.ejbca.ui.cli.ca;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -38,6 +41,9 @@ public class CaEditCaCommandTest {
 
     private static final String CA_NAME = "CaEditCaCommandTest";
     private static final String[] HAPPY_PATH_ARGS = { CA_NAME, "CRLPeriod", "2592000000"};
+    private static final String[] HAPPY_PATH_SINGLEARRAY_ARGS = { CA_NAME, "validators", "123"};
+    private static final String[] HAPPY_PATH_MULTIARRAY_ARGS = { CA_NAME, "validators", "123;234"};
+    private static final String[] HAPPY_PATH_EMPTYARRAY_ARGS = { CA_NAME, "validators", ""};
 
     private CaEditCaCommand caEditCommand;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaEditCommandTest"));
@@ -69,7 +75,30 @@ public class CaEditCaCommandTest {
         info = caSession.getCAInfo(admin, CA_NAME);
         assertEquals("CRLPeriod of a edited CA is incorrect. Edit did not work?", 2592000000L, info.getCRLPeriod());
     }
-    
+
+    /** Test trivial happy path for setting an array of values, validators. */
+    @Test
+    public void testExecuteHappyPathArrays() throws Exception {
+        CAInfo info = caSession.getCAInfo(admin, CA_NAME);
+        assertEquals("Validators of a newly created default CA is incorrect, did default value change?", 0, info.getValidators().size());
+        caEditCommand.execute(HAPPY_PATH_SINGLEARRAY_ARGS);
+        info = caSession.getCAInfo(admin, CA_NAME);
+        Collection<Integer> validators = info.getValidators();
+        assertEquals("Validators of a edited CA didn't set the right number of values (1). Edit did not work?", 1, validators.size());
+        assertEquals("Validators of a edited CA didn't set the right value.", 123, validators.iterator().next().intValue());
+        caEditCommand.execute(HAPPY_PATH_MULTIARRAY_ARGS);
+        info = caSession.getCAInfo(admin, CA_NAME);
+        validators = info.getValidators();
+        assertEquals("Validators of a edited CA didn't set the right number of values (2). Edit did not work?", 2, validators.size());
+        Iterator<Integer> iter = validators.iterator();
+        assertEquals("Validators of a edited CA didn't set the right value.", 123, iter.next().intValue());
+        assertEquals("Validators of a edited CA didn't set the right value.", 234, iter.next().intValue());
+        caEditCommand.execute(HAPPY_PATH_EMPTYARRAY_ARGS);
+        info = caSession.getCAInfo(admin, CA_NAME);
+        validators = info.getValidators();
+        assertEquals("Validators of a edited CA didn't set the right number of values (0). Edit did not work?", 0, validators.size());
+    }
+
     @Test
     public void testRenameCa() throws AuthorizationDeniedException {
         final String newName = "CaEditCaCommandTestNewName";
