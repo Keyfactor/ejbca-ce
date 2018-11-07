@@ -37,100 +37,86 @@
 		</h1>
 
 		<h:form id="managecas">
-			<table class="list">
-				<tr>
-					<td width="40%">
+			<h:panelGrid styleClass="list">
+				<h:panelGroup>
 						<h3>
 							<h:outputText value="#{web.text.LISTOFCAS}" />
 						</h3>
-					</td>
-					<td width="60%"></td>
-				</tr>
-				<tr>
-					<td width="40%">
+				</h:panelGroup>
+				<h:panelGroup>
 					<h:selectOneListbox
 							value="#{manageCAsMBean.selectedCaId}" style="width: 50em" size="15"
 							class="select-list">
 							<f:selectItems value="#{manageCAsMBean.listOfCas.entrySet()}" var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
 						    <f:ajax render="@form"/>
 					</h:selectOneListbox>
-					</td>
-					<td width="60%"></td>
-				</tr>
+				</h:panelGroup>
 
-				<tr>
-					<td width="40%">
-						<table width="100%" border="0" cellspacing="0" cellpadding="0">
-							<tr>
-								<td width="20%" align="left">
+				<h:panelGroup>
+						<h:panelGrid columns="4" >
+						<h:panelGroup>
 								<h:commandButton 
 										id="buttoneditca"
 										value="#{manageCAsMBean.editCAButtonValue}" 
-										action="#{manageCAsMBean.editCaPage(true)}"/></td>
-								<td width="5%" align="center">&nbsp;</td>
-								<td width="25%" align="left">
+										action="#{manageCAsMBean.editCaPage(true)}"/>
+						</h:panelGroup>
+						<h:panelGroup>				
 								<h:commandButton
 										class="buttonstyle" 
 										onclick="return confirmcaaction('#{manageCAsMBean.confirmMessage}')"
 										id="buttondeleteca"
 										value="#{web.text.DELETECA}"
 										action="#{manageCAsMBean.deleteCA()}"
-										rendered="#{manageCAsMBean.canRemoveResource}" /></td>
-								<td width="25%" align="left">
+										rendered="#{manageCAsMBean.canRemoveResource}" />
+						</h:panelGroup>
+						<h:panelGroup>
 								<h:commandButton 
 										id="buttonimportca"
 										value="#{manageCAsMBean.importKeystoreText}"
 										rendered="#{manageCAsMBean.canAddResource}" 
-										action="importca"/></td>
-								<td width="25%" align="right">
+										action="importca"/>
+						</h:panelGroup>
+						<h:panelGroup>				
 								<h:commandButton
 										id="buttonimportcacert"
 										value="#{manageCAsMBean.importCertificateText}"
 										rendered="#{manageCAsMBean.canAddResource}" 
-										action="importcacert"/></td>
+										action="importcacert"/>
 
-							</tr>
-						</table>
-					</td>
-					<td width="60%"></td>
-				</tr>
-			</table>
+						</h:panelGroup>
+						</h:panelGrid>
+				</h:panelGroup>
+			</h:panelGrid>
 
-			<table class="actions">
-				<tr>
-					<td width="100%">
+			<h:panelGrid class="actions" columns="1">
+				<h:panelGroup>
 					<h:commandButton 
 							id="buttonsignrequest"
 							value="#{web.text.CREATEAUTHCSR}"
 							rendered="#{manageCAsMBean.canRenewResource}"
-							action="#{manageCAsMBean.createAuthCertSignRequest()}" /> 
+							action="#{manageCAsMBean.createAuthCertSignRequest()}" style="margin-right:3px;"/> 
 					<h:outputText
 							value="#{web.ejbcaWebBean.getHelpReference('/Signing_a_Rollover_Certificate.html')}"
-							escape="false" /></td>
-				</tr>
-				<tr>
-					<td width="100%">
+							escape="false" />
+				</h:panelGroup>
+				<h:panelGroup>
 						<h3>
 							<h:outputText value="#{web.text.ADDCA}"
 								rendered="#{manageCAsMBean.canAddOrEditResource}" />
 						</h3>
-					</td>
-				</tr>
-				<tr>
-					<td width="100%">
+				</h:panelGroup>
+				<h:panelGroup>
 						<h:inputText
 							id="textfieldcaname" size="40" maxlength="255"
 							title="#{web.text.FORMAT_ID_STR}"
 							value="#{manageCAsMBean.createCaName}"
 							rendered="#{manageCAsMBean.canAddOrEditResource}"
 							/> &nbsp; 
-							<!-- Add action initiate create page here -->
 						<h:commandButton id="buttoncreateca"
 							value="#{web.text.CREATE}..."
 							rendered="#{manageCAsMBean.canAddResource}" 
 							onclick="return checkcreatecafield(document.getElementById('managecas:textfieldcaname'), '#{web.text.ONLYCHARACTERS}');"
 							action="#{manageCAsMBean.editCaPage(false)}"
-							
 							/> &nbsp; 
 						<h:commandButton id="buttonrenameca"
 							value="#{web.text.RENAME_SELECTED}"
@@ -138,9 +124,8 @@
 							action="#{manageCAsMBean.renameCA()}"
 							onclick="return checkfieldforlegalchars(document.getElementById('managecas:textfieldcaname'), '#{web.text.ONLYCHARACTERS}');"
 							/>
-					</td>
-				</tr>
-			</table>
+				</h:panelGroup>
+			</h:panelGrid>
 		</h:form>
 	</ui:define>
 </ui:composition>

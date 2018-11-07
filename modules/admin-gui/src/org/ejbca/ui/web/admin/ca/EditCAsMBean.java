@@ -281,10 +281,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     private List<ApprovalRequestItem> initApprovalRequestItems() {
         List<ApprovalRequestItem> approvalRequestItems = new ArrayList<>();
-        if (cainfo != null) {
+        if (cainfo != null && cainfo.getApprovals() != null) {
+            LinkedHashMap<ApprovalRequestType, Integer> approvals = (LinkedHashMap<ApprovalRequestType, Integer>) cainfo.getApprovals();
             for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
-                int usedapprovalprofile = cainfo.getApprovals().get(approvalRequestType);
-                approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, usedapprovalprofile));
+                if (approvals.containsKey(approvalRequestType)) {
+                    approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvals.get(approvalRequestType)));
+                }
             }
         }
         return approvalRequestItems;
