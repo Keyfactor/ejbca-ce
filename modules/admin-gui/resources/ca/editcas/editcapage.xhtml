@@ -630,7 +630,8 @@
 									textfieldnameconstraintspermitted 
 									textfieldpolicyid 
 									textfieldsubjectaltname 
-									selectcertificateprofile" />
+									selectcertificateprofile" 
+						/>
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -647,7 +648,8 @@
 									textfieldnameconstraintspermitted 
 									textfieldpolicyid 
 									textfieldsubjectaltname 
-									selectcertificateprofile" />
+									selectcertificateprofile" 
+						/>
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -797,7 +799,7 @@
 					rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
 					<h:inputTextarea id="textfieldnameconstraintspermitted" rows="4"
 						cols="38" value="#{editCAsMBean.nameConstraintsPermittedString}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal}" />
+						disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}" />
 					<br />
 					<h:outputText class="help"
 						value="#{web.text.EXT_PKIX_NC_PERMITTED_HELP1}"
@@ -809,7 +811,7 @@
 
 				<h:panelGroup
 					rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
-					<h:outputLabel for="textfieldnameconstraintspermitted"
+					<h:outputLabel for="textfieldnameconstraintsexcluded"
 						value="#{web.text.EXT_PKIX_NC_EXCLUDED}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Name_Constraints')}"
@@ -821,7 +823,7 @@
 					rendered="#{not editCAsMBean.caExternal and editCAsMBean.caTypeX509}">
 					<h:inputTextarea id="textfieldnameconstraintsexcluded" rows="4"
 						cols="38" value="#{editCAsMBean.nameConstraintsExcludedString}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal}" />
+						disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}" />
 					<br />
 					<h:outputText class="help"
 						value="#{web.text.EXT_PKIX_NC_EXCLUDED_HELP}"
