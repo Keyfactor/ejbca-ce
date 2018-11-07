@@ -49,7 +49,7 @@ public class AuditLogHelper extends BaseHelper {
         static final By BUTTON_APPLY_FILTERING_CONDITION = By.xpath("//input[contains(@src, 'success') and @type='image']");
         static final By INPUT_DISPLAY_START_POSITION = By.id("search2:startIndex2");
         static final By INPUT_NR_OF_RESULTS_PER_PAGE = By.id("search2:maxResults");
-        static final By BUTTON_RELOAD_VIEW = By.xpath("//input[@class='commandLink reload']");
+        static final By BUTTON_RELOAD_VIEW = By.xpath("//input[@class='commandLinkAudit reload']");
 
         /**
          * Child elements for Event Log Row.
