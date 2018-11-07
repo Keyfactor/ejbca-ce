@@ -367,93 +367,96 @@ public abstract class CertTools {
             dn = dn.substring(1, dn.length() - 1);
         }
         final X500NameBuilder nameBuilder = new X500NameBuilder(nameStyle);
-        // split dn string into RDNs 
-        RDN[] rdns;
-        // Will throw an IllegalArgumentException if the DN is badly formatted
-        rdns = IETFUtils.rDNsFromString(dn, nameStyle);
+        // split DN string into RDNs, but if it is empty, don't try to split it
+        // this means an empty X500Name will be returned, as according to the javadoc
+        if (dn.length() > 0) {            
+            RDN[] rdns;
+            // Will throw an IllegalArgumentException if the DN is badly formatted
+            rdns = IETFUtils.rDNsFromString(dn, nameStyle);
 
-        for (RDN rdn: rdns) {
-            if (rdn.isMultiValued()) {
-                AttributeTypeAndValue avas[] = rdn.getTypesAndValues();
-                nameBuilder.addMultiValuedRDN(avas);
-            } else {
-                AttributeTypeAndValue ava = rdn.getFirst();
-                nameBuilder.addRDN(ava);
+            for (RDN rdn: rdns) {
+                if (rdn.isMultiValued()) {
+                    AttributeTypeAndValue avas[] = rdn.getTypesAndValues();
+                    nameBuilder.addMultiValuedRDN(avas);
+                } else {
+                    AttributeTypeAndValue ava = rdn.getFirst();
+                    nameBuilder.addRDN(ava);
+                }
             }
-        }
 
-// This was the old legacy way we did the IETFUtils.rDNsFromString manually before
-// Keep it for reference at until EJBCA 7.2 or something, just to aid in potential support cases
-//        boolean quoted = false;
-//        boolean escapeNext = false;
-//        int currentStartPosition = -1;
-//        String currentPartName = null;
-//        for (int i = 0; i < dn.length(); i++) {
-//            final char current = dn.charAt(i);
-//            // Toggle quoting for every non-escaped "-char
-//            if (!escapeNext && current == '"') {
-//                quoted = !quoted;
-//            }
-//            // If there is an unescaped and unquoted =-char the proceeding chars is a part name
-//            if (currentStartPosition == -1 && !quoted && !escapeNext && current == '=' && 1 <= i) {
-//                // Trim spaces (e.g. "O =value")
-//                int endIndexOfPartName = i;
-//                while (endIndexOfPartName > 0 && dn.charAt(endIndexOfPartName - 1) == ' ') {
-//                    endIndexOfPartName--;
-//                }
-//                int startIndexOfPartName = endIndexOfPartName - 1;
-//                final String endOfPartNameSearchChars = ", +";
-//                while (startIndexOfPartName > 0 && (endOfPartNameSearchChars.indexOf(dn.charAt(startIndexOfPartName - 1)) == -1)) {
-//                    startIndexOfPartName--;
-//                }
-//                currentPartName = dn.substring(startIndexOfPartName, endIndexOfPartName);
-//                currentStartPosition = i + 1;
-//            }
-//            // When we have found a start marker, we need to be on the lookout for the ending marker
-//            if (currentStartPosition != -1 && ((!quoted && !escapeNext && (current == ',' || current == '+')) || i == dn.length() - 1)) {
-//                int endPosition = (i == dn.length() - 1) ? dn.length() - 1 : i - 1;
-//                // Remove white spaces from the end of the value
-//                while (endPosition > currentStartPosition && dn.charAt(endPosition) == ' ') {
-//                    endPosition--;
-//                }
-//                // Remove white spaces from the beginning of the value
-//                while (endPosition > currentStartPosition && dn.charAt(currentStartPosition) == ' ') {
-//                    currentStartPosition++;
-//                }
-//                // Only return the inner value if the part is quoted
-//                if (currentStartPosition < dn.length() && dn.charAt(currentStartPosition) == '"' && dn.charAt(endPosition) == '"') {
-//                    currentStartPosition++;
-//                    endPosition--;
-//                }
-//                String currentValue = dn.substring(currentStartPosition, endPosition + 1);
-//                // Unescape value (except escaped #) since the nameBuilder will double each escape
-//                currentValue = unescapeValue(new StringBuilder(currentValue)).toString();
-//                try {
-//                    // -- First search the OID by name in declared OID's
-//                    ASN1ObjectIdentifier oid = DnComponents.getOid(currentPartName);
-//                    // -- If isn't declared, we try to create it
-//                    if (oid == null) {
-//                        oid = new ASN1ObjectIdentifier(currentPartName);
-//                    }
-//                    nameBuilder.addRDN(oid, currentValue);
-//                } catch (IllegalArgumentException e) {
-//                    // If it is not an OID we will ignore it
-//                    log.warn("Unknown DN component ignored and silently dropped: " + currentPartName);
-//                }
-//                // Reset markers
-//                currentStartPosition = -1;
-//                currentPartName = null;
-//            }
-//            if (escapeNext) {
-//                // This character was escaped, so don't escape the next one
-//                escapeNext = false;
-//            } else {
-//                if (!quoted && current == '\\') {
-//                    // This escape character is not escaped itself, so the next one should be
-//                    escapeNext = true;
-//                }
-//            }
-//        }
+            // This was the old legacy way we did the IETFUtils.rDNsFromString manually before
+            // Keep it for reference at until EJBCA 7.2 or something, just to aid in potential support cases
+            //        boolean quoted = false;
+            //        boolean escapeNext = false;
+            //        int currentStartPosition = -1;
+            //        String currentPartName = null;
+            //        for (int i = 0; i < dn.length(); i++) {
+            //            final char current = dn.charAt(i);
+            //            // Toggle quoting for every non-escaped "-char
+            //            if (!escapeNext && current == '"') {
+            //                quoted = !quoted;
+            //            }
+            //            // If there is an unescaped and unquoted =-char the proceeding chars is a part name
+            //            if (currentStartPosition == -1 && !quoted && !escapeNext && current == '=' && 1 <= i) {
+            //                // Trim spaces (e.g. "O =value")
+            //                int endIndexOfPartName = i;
+            //                while (endIndexOfPartName > 0 && dn.charAt(endIndexOfPartName - 1) == ' ') {
+            //                    endIndexOfPartName--;
+            //                }
+            //                int startIndexOfPartName = endIndexOfPartName - 1;
+            //                final String endOfPartNameSearchChars = ", +";
+            //                while (startIndexOfPartName > 0 && (endOfPartNameSearchChars.indexOf(dn.charAt(startIndexOfPartName - 1)) == -1)) {
+            //                    startIndexOfPartName--;
+            //                }
+            //                currentPartName = dn.substring(startIndexOfPartName, endIndexOfPartName);
+            //                currentStartPosition = i + 1;
+            //            }
+            //            // When we have found a start marker, we need to be on the lookout for the ending marker
+            //            if (currentStartPosition != -1 && ((!quoted && !escapeNext && (current == ',' || current == '+')) || i == dn.length() - 1)) {
+            //                int endPosition = (i == dn.length() - 1) ? dn.length() - 1 : i - 1;
+            //                // Remove white spaces from the end of the value
+            //                while (endPosition > currentStartPosition && dn.charAt(endPosition) == ' ') {
+            //                    endPosition--;
+            //                }
+            //                // Remove white spaces from the beginning of the value
+            //                while (endPosition > currentStartPosition && dn.charAt(currentStartPosition) == ' ') {
+            //                    currentStartPosition++;
+            //                }
+            //                // Only return the inner value if the part is quoted
+            //                if (currentStartPosition < dn.length() && dn.charAt(currentStartPosition) == '"' && dn.charAt(endPosition) == '"') {
+            //                    currentStartPosition++;
+            //                    endPosition--;
+            //                }
+            //                String currentValue = dn.substring(currentStartPosition, endPosition + 1);
+            //                // Unescape value (except escaped #) since the nameBuilder will double each escape
+            //                currentValue = unescapeValue(new StringBuilder(currentValue)).toString();
+            //                try {
+            //                    // -- First search the OID by name in declared OID's
+            //                    ASN1ObjectIdentifier oid = DnComponents.getOid(currentPartName);
+            //                    // -- If isn't declared, we try to create it
+            //                    if (oid == null) {
+            //                        oid = new ASN1ObjectIdentifier(currentPartName);
+            //                    }
+            //                    nameBuilder.addRDN(oid, currentValue);
+            //                } catch (IllegalArgumentException e) {
+            //                    // If it is not an OID we will ignore it
+            //                    log.warn("Unknown DN component ignored and silently dropped: " + currentPartName);
+            //                }
+            //                // Reset markers
+            //                currentStartPosition = -1;
+            //                currentPartName = null;
+            //            }
+            //            if (escapeNext) {
+            //                // This character was escaped, so don't escape the next one
+            //                escapeNext = false;
+            //            } else {
+            //                if (!quoted && current == '\\') {
+            //                    // This escape character is not escaped itself, so the next one should be
+            //                    escapeNext = true;
+            //                }
+            //            }
+            //        }
+        }
         
         // finally builds X500 name 
         final X500Name x500Name = nameBuilder.build();
