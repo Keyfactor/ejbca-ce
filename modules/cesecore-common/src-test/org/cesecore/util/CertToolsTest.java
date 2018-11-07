@@ -2083,14 +2083,10 @@ public class CertToolsTest {
 
     @Test
     public void testStringToBcX500WithEmpty() {
-        // Legacy behavior changed with multi-valued RDNs when we started using IETFUtils.rDNsFromString
-        // Previously we (wrongly) converted this into an empty string ''. See ECA-3934
-        try {
-            CertTools.stringToBcX500Name("");
-            fail("Should have failed with exception dues to badly formatted directory string");
-        } catch (IllegalArgumentException e) {
-            assertEquals("wrong exception message", "badly formatted directory string", e.getMessage());
-        }
+        // Legacy behavior changed converting an empty input into an empty output is kept
+        X500Name result = CertTools.stringToBcX500Name("");
+        assertNotNull(result);    
+        assertEquals("Empty input should result in empty output", "", result.toString());
     }
  
     @Test
