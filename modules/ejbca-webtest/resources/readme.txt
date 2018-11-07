@@ -1,0 +1,3 @@
+"Project";         "Library Name";                       "License type(s)";      "License text";                        "Source";                                                           "Comment";
+"geckodriver";     "geckodriver-v0.23.0-linux64.tar";    "MPL/2.0";              "Mozilla Public License Version 2.0";  "https://github.com/mozilla/geckodriver/releases";                  "for Linux";
+"geckodriver.exe"; "geckodriver-v0.23.0-win64";          "MPL/2.0";              "LICENSE-APACHE-2.0";                  "https://github.com/mozilla/geckodriver/releases";                  "for windows";
