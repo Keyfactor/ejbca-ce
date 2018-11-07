@@ -477,7 +477,6 @@ table.grid tfoot tr:active {
 /* --- Forms: List/Actions */
 table.list,
 table.actions {
-	width: 100%;
 	margin: 0em;
 	padding: 0em;
 	border: 0px;
