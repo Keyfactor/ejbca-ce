@@ -200,7 +200,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String viewCertLink;
     private String throwAwayDefaultProfile;
 
-
     public boolean isAcceptRevocationsNonExistingEntry() {
         return acceptRevocationsNonExistingEntry;
     }
@@ -666,7 +665,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         String issuerDN = "unknown";
         try {
             Collection<Certificate> cachain = cainfo.getCertificateChain();
-            if (cachain != null) {
+            if (cachain != null && !cachain.isEmpty()) {
                 Iterator<Certificate> iter = cachain.iterator();
                 Certificate cacert = (Certificate) iter.next();
                 issuerDN = CertTools.getIssuerDN(cacert);
@@ -2506,6 +2505,4 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }
     }
-
-
 }
