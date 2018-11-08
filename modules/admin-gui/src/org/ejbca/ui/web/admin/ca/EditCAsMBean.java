@@ -154,6 +154,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String policyId;
     private boolean useUtf8Policy;
     
+    // These two are used in CA life cycle section of edit ca page.
+    private boolean cANameChange;
+    private String newSubjectDn = "newCAName"; 
+    
+
     private GlobalConfiguration globalconfiguration;
     private CADataHandler cadatahandler;
     private Map<Integer, String> caidtonamemap;
@@ -291,6 +296,22 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return approvalRequestItems;
     }
 
+    public String getNewSubjectDn() {
+        return newSubjectDn;
+    }
+
+    public void setNewSubjectDn(String newSubjectDn) {
+        this.newSubjectDn = newSubjectDn;
+    }
+
+    public boolean iscANameChange() {
+        return cANameChange;
+    }
+
+    public void setcANameChange(boolean cANameChange) {
+        this.cANameChange = cANameChange;
+    }
+    
     public int getCaid() {
         return caid;
     }
@@ -1889,8 +1910,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String renewCa() {
         boolean carenewed = false;
         try {
-            if (includeInHealthCheck && certificateAiaDefaultCaIssuerUri != null && !certificateAiaDefaultCaIssuerUri.isEmpty()) {
-                carenewed = cadatahandler.renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, certificateAiaDefaultCaIssuerUri);
+            if (cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()) {
+                carenewed = cadatahandler.renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, newSubjectDn);
             } else {
                 carenewed = cadatahandler.renewCA(caid, certSignKeyReNewValue, createLinkCertificate);
             }
