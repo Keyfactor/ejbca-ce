@@ -4,7 +4,6 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk">
 
 <ui:remove>
@@ -689,7 +688,9 @@
 						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.editCA or editCAsMBean.caUninitialized or not editCAsMBean.signByExternal}"
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal and !editCAsMBean.caUninitialized}"
 						label="Ca Validity" style="border:2px solid #FFC300"
-						required="true" />
+						required="true" >
+					<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					</h:inputText>	
 					<br />
 					<h:outputText class="help"
 						value="#{web.text.CERT_VALIDITY_CA_HELP}"
@@ -978,7 +979,9 @@
 					<h:inputText size="20" maxlength="255" name="textfieldcrlperiod"
 						id="textfieldcrlperiod" value="#{editCAsMBean.crlCaCrlPeriod}"
 						disabled="#{not editCAsMBean.hasEditRight}" label="Ca Crl Period"
-						style="border:2px solid #FFC300" required="true" />
+						style="border:2px solid #FFC300" required="true"> 
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					</h:inputText>	
 						&nbsp; 
 					<h:outputText
 						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}" />
@@ -999,7 +1002,9 @@
 					<h:inputText size="20" maxlength="255"
 						name="textfieldcrlissueinterval"
 						value="#{editCAsMBean.crlCaIssueInterval}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}" >
+					<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					</h:inputText>	
 						&nbsp; 
 					<h:outputText
 						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}" />
@@ -1020,7 +1025,9 @@
 					<h:inputText size="20" maxlength="255"
 						name="textfieldcrloverlaptime"
 						value="#{editCAsMBean.crlCaOverlapTime}"
-						disabled="#{not editCAsMBean.hasEditRight}" />
+						disabled="#{not editCAsMBean.hasEditRight}" >
+					<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					</h:inputText>	
 						&nbsp; 
 					<h:outputText
 						value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}" />
@@ -1042,7 +1049,9 @@
 						value="#{editCAsMBean.crlCaDeltaCrlPeriod}"
 						disabled="#{not editCAsMBean.hasEditRight}"
 						label="Ca Delta Crl Period" style="border:2px solid #FFC300"
-						required="true" />
+						required="true">
+					<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					</h:inputText>	
 						&nbsp;
 					<h:outputText value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}" />
 					<br />
@@ -1387,30 +1396,36 @@
 							</h:selectOneMenu>
 						</h:panelGroup>
 
-						<h:outputLabel value="#{web.text.RENEWCA_USECANAMECHANGE}"
-							rendered="#{editCAsMBean.renderUseCaNameChange}" />
-						<h:outputText
-							value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CA_Name_Change')}"
-							escape="false" rendered="#{editCAsMBean.renderUseCaNameChange}" />
+						<h:panelGroup rendered="#{editCAsMBean.renderUseCaNameChange}">
+							<h:outputLabel value="#{web.text.RENEWCA_USECANAMECHANGE}"/>
+							<h:outputText
+								value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CA_Name_Change')}"
+								escape="false" />
+						</h:panelGroup>
+						<h:panelGroup rendered="#{editCAsMBean.renderUseCaNameChange}">	
 						<h:selectBooleanCheckbox name="checkboxcanamechange"
 							id="idcheckboxcanamechange"
-							value="#{editCAsMBean.includeInHealthCheck}"
-							onchange="toggleCANameChange()"
-							disabled="#{not editCAsMBean.hasEditRight}"
-							rendered="#{editCAsMBean.renderUseCaNameChange}" />
-						<h:outputText value="#{web.text.RENEWCA_NEW_SUBJECT_DN_ICAO}"
-							rendered="#{editCAsMBean.renderUseCaNameChange}" />
-						<h:inputText size="45" maxlength="255" id="idnewsubjectdn"
-							name="textfieldnewsubjectdn" title="#{web.text.FORMAT_DN}"
-							value="#{editCAsMBean.certificateAiaDefaultCaIssuerUri}"
-							rendered="#{editCAsMBean.renderUseCaNameChange}" disabled="true" />
-
+							value="#{editCAsMBean.cANameChange}"
+							disabled="#{!editCAsMBean.hasEditRight}" >
+							<f:ajax event="change" render=":editcapage:idnewsubjectdn" />	
+						</h:selectBooleanCheckbox>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{editCAsMBean.renderUseCaNameChange}">	
+							<h:outputText value="#{web.text.RENEWCA_NEW_SUBJECT_DN_ICAO}"/>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{editCAsMBean.renderUseCaNameChange}" >	
+							<h:inputText size="45" maxlength="255" 
+								title="#{web.text.FORMAT_DN}"
+								value="#{editCAsMBean.newSubjectDn}"
+								id="idnewsubjectdn"
+							 	disabled="#{editCAsMBean.caTypeCVC or !editCAsMBean.hasEditRight or !editCAsMBean.cANameChange}" />
+						</h:panelGroup>
 						<h:panelGroup>
 							<h:outputText value="#{web.text.RENEWCA_LINKCERTIFICATE}" />
 						</h:panelGroup>
 						<h:panelGroup>
 							<h:selectBooleanCheckbox name="checkboxcreatelinkcertificate"
-								disabled="true"
+								disabled="#{editCAsMBean.caTypeCVC or !editCAsMBean.hasEditRight}"
 								rendered="#{editCAsMBean.caTypeCVC}" 
 								value="#{editCAsMBean.createLinkCertificate}"/>
 							<h:selectBooleanCheckbox name="checkboxcreatelinkcertificate"
