@@ -64,8 +64,8 @@
     <target name="optionaltestconfigdump" if="${configdump.exists}"><antcall target="configdump" inheritrefs="true"/><ant antfile="build.xml" dir="modules/configdump" target="test" /></target>
     <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
     <target name="optionaltestpeerconnector" if="${peerconnector.exists}"><ant antfile="build.xml" dir="modules/peerconnector" target="test" /></target>
-    <condition property="vapublisher.exists"><available file="modules/va/publisher" /></condition>
-    <target name="optionaltestvapublisher" if="${vapublisher.exists}"><ant antfile="build.xml" dir="modules/va" target="test" /></target>
+    <condition property="ee-plugins.exist"><available file="modules/plugins-ee/build.xml" /></condition>
+    <target name="optionaltestplugins" if="${ee-plugins.exist}"><ant antfile="build.xml" dir="modules/plugins-ee" target="test" /></target>
     <condition property="acme.exists"><available file="modules/acme"/></condition>
     <target name="optionaltestacme-unit" if="${acme.exists}"><ant antfile="build.xml" dir="modules/acme" target="test:unit"/></target>
     <target name="optionaltestacme-system" if="${acme.exists}"><ant antfile="build.xml" dir="modules/acme" target="test:system"/></target>
