@@ -906,6 +906,9 @@
 		<convertdot/> <!-- convert dots to underscores in version string -->
         <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
 		<property name="basezipfile" value="ejbca_${edition}_${ejbca.zipversion}"/>
+        <condition property="edition.is.ee" value="true">
+            <equals arg1="${edition}" arg2="ee" casesensitive="true"/>
+        </condition>
 		<zip destfile="../${basezipfile}.zip">
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700" > 
 		    	<include name="**/**" />
@@ -931,13 +934,72 @@
 		    	<exclude name="lib/ext/openclover-ant/**" />
 		    	<!-- Exclude Web Tests -->
 		    	<exclude name="modules/ejbca-webtest/**"/>
+                <exclude name="lib/ext/webtest/**"/>
 		    	<!-- Exclude internal Confluence information -->
 		    	<exclude name="src/doc.properties" />
+		    	<!-- Exclude modules that are not present in Community Edition -->
+                <exclude unless="edition.is.ee" name="modules/ejbca-entity/src-cli/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-entity/src-test/org/ejbca/ui/cli/OcspMonitoringToolTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/database/DatabaseCliCommandTest.java"/>
+                <exclude unless="edition.is.ee" name="conf/databaseprotection.properties.sample"/>
+                <exclude unless="edition.is.ee" name="modules/cesecore-entity/src/org/cesecore/dbprotection/ProtectedDataConfiguration.java"/>
+                <exclude unless="edition.is.ee" name="modules/cesecore-entity/src/org/cesecore/dbprotection/ProtectedDataIntegrityImpl.java"/>
+                <exclude unless="edition.is.ee" name="modules/cesecore-entity/src-test/org/cesecore/dbprotection/**"/>
+                <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/ca/CvcEacCA.java"/>
+                <exclude unless="edition.is.ee" name="modules/cesecore-common/src-test/org/cesecore/certificates/ca/CVCCATest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/ws/EjbcaWSCVCTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/ca/caadmin/CVCCAsTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/ui/cli/ca/CaInitCvcCommandTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/CaImportCVCCACommand.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/ui/cli/ca/CaImportCVCCACommandTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/ejb/ca/sign/SignSessionCvcTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/cesecore/certificates/ca/CaCvcSessionTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/validationtool/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/cmp/authentication/CmpVendorModeImpl.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/cmp/VendorAuthenticationTest.java"/>
+                <exclude unless="edition.is.ee" name="modules/cmpProxy/**"/>
+                <exclude unless="edition.is.ee" name="modules/ct/**"/>
+                <exclude unless="edition.is.ee" name="lib/ct/**"/>
+                <exclude unless="edition.is.ee" name="modules/peerconnector/**"/>
+                <exclude unless="edition.is.ee" name="modules/peerconnector/src-interface/org/ejbca/peerconnector/**"/>
+                <exclude unless="edition.is.ee" name="modules/peerconnector/src-ejb/org/ejbca/peerconnector/**"/>
+                <exclude unless="edition.is.ee" name="modules/admin-gui/src/org/ejbca/ui/web/admin/peerconnector/**"/>
+                <exclude unless="edition.is.ee" name="modules/admin-gui/resources/peerconnector/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ScepRaModeExtension.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ProtocolScepHttpRATest.java"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-ejb/src/org/ejbca/core/protocol/scep/ClientCertificateRenewalExtension.java"/>
+                <exclude unless="edition.is.ee" name="modules/systemtests/src-test/org/ejbca/core/protocol/scep/ScepClientCertificateRenewalTest.java"/>
+                <exclude unless="edition.is.ee" name="src/java/profilemappings_enterprise.properties"/>
+                <exclude unless="edition.is.ee" name="modules/edition-specific-ee/**"/>
+                <exclude unless="edition.is.ee" name="modules/externalra/**"/>
+                <exclude unless="edition.is.ee" name="modules/externalra-gui/**"/>
+                <exclude unless="edition.is.ee" name="modules/externalra-scep/**"/>
+                <exclude unless="edition.is.ee" name="modules/cmpclient/**"/>
+                <exclude unless="edition.is.ee" name="modules/acme/**"/>
+                <exclude unless="edition.is.ee" name="lib/dnsjava-*.jar"/>
+                <exclude unless="edition.is.ee" name="lib/dnssecjava-*.jar"/>
+                <exclude unless="edition.is.ee" name="lib/nimbus-jose-jwt-*.jar"/>
+                <exclude unless="edition.is.ee" name="modules/est/**"/>
+                <exclude unless="edition.is.ee" name="modules/caa/**"/>
+                <exclude unless="edition.is.ee" name="modules/cesecore-common/src/org/cesecore/certificates/certificate/certextensions/BasicCVCertificateExtension.java"/>
+                <exclude unless="edition.is.ee" name="modules/configdump/**"/>
+                <exclude unless="edition.is.ee" name="modules/unidfnr/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-rest-api/**"/>
+                <exclude unless="edition.is.ee" name="modules/ejbca-common/src/org/ejbca/util/swagger/SnakeCaseConverter.java"/>
+                <exclude unless="edition.is.ee" name="lib/ext/jackson2/**"/>
+                <exclude unless="edition.is.ee" name="lib/ext/resteasy-jaxrs-lib/**"/>
+                <exclude unless="edition.is.ee" name="lib/ext/swagger docs/**"/>
+                <exclude unless="edition.is.ee" name="lib/ext/swagger/**"/>
+                <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 		    	<exclude name="bin/backup/**" />
 		    	<exclude name="modules/statedump/**" />
+                <exclude unless="edition.is.ee" name="modules/ejbca-entity/**"/>
+                <exclude unless="edition.is.ee" name="modules/configdump/**"/>
+                <exclude unless="edition.is.ee" name="modules/externalra/**"/>
+                <exclude unless="edition.is.ee" name="modules/validationtool/**"/>
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
