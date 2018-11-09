@@ -1308,11 +1308,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getBinaryCaIdLink() {
-        return "cacertreq?cmd=linkcert&format=binary&caid=" + caid;
+        return EditCaUtil.LINK_CERT_BASE_URI + "format=binary&caid=" + caid;
     }
     
     public String getCaIdLink() {
-        return "cacertreq?cmd=linkcert&caid=" + caid;
+        return EditCaUtil.LINK_CERT_BASE_URI + "caid=" + caid;
     }
     
     public boolean isRenderLinkCertificate() {
