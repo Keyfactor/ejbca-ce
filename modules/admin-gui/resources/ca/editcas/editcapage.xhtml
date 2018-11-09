@@ -579,7 +579,7 @@
 						rendered="#{editCAsMBean.editCA and editCAsMBean.caUninitialized}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:validator
-							validatorId="org.ejbca.ui.web.admin.ca.CvcSubjectDNValidator"
+							validatorId="org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator"
 							disabled="#{editCAsMBean.caTypeX509}" />
 					</h:inputText>
 					<h:inputText name="textfieldsubjectdn" size="45" maxlength="225"
@@ -590,7 +590,7 @@
 						label="Ca Cert Subject DN" style="border:2px solid #FFC300"
 						required="true">
 						<f:validator
-							validatorId="org.ejbca.ui.web.admin.ca.CvcSubjectDNValidator"
+							validatorId="org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator"
 							disabled="#{editCAsMBean.caTypeX509}" />
 					</h:inputText>
 				</h:panelGroup>
@@ -689,7 +689,7 @@
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal and !editCAsMBean.caUninitialized}"
 						label="Ca Validity" style="border:2px solid #FFC300"
 						required="true" >
-					<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator"/>
 					</h:inputText>	
 					<br />
 					<h:outputText class="help"
@@ -980,7 +980,7 @@
 						id="textfieldcrlperiod" value="#{editCAsMBean.crlCaCrlPeriod}"
 						disabled="#{not editCAsMBean.hasEditRight}" label="Ca Crl Period"
 						style="border:2px solid #FFC300" required="true"> 
-						<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+						<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator"/>
 					</h:inputText>	
 						&nbsp; 
 					<h:outputText
@@ -1003,7 +1003,7 @@
 						name="textfieldcrlissueinterval"
 						value="#{editCAsMBean.crlCaIssueInterval}"
 						disabled="#{not editCAsMBean.hasEditRight}" >
-					<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator"/>
 					</h:inputText>	
 						&nbsp; 
 					<h:outputText
@@ -1026,7 +1026,7 @@
 						name="textfieldcrloverlaptime"
 						value="#{editCAsMBean.crlCaOverlapTime}"
 						disabled="#{not editCAsMBean.hasEditRight}" >
-					<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator"/>
 					</h:inputText>	
 						&nbsp; 
 					<h:outputText
@@ -1050,7 +1050,7 @@
 						disabled="#{not editCAsMBean.hasEditRight}"
 						label="Ca Delta Crl Period" style="border:2px solid #FFC300"
 						required="true">
-					<f:validator validatorId="org.ejbca.ui.web.admin.ca.CRLFieldValidator"/>
+					<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator"/>
 					</h:inputText>	
 						&nbsp;
 					<h:outputText value="#{web.text.YEAR365DAYS}  ,  #{web.text.MO30DAYS}" />
@@ -1418,7 +1418,10 @@
 								title="#{web.text.FORMAT_DN}"
 								value="#{editCAsMBean.newSubjectDn}"
 								id="idnewsubjectdn"
-							 	disabled="#{editCAsMBean.caTypeCVC or !editCAsMBean.hasEditRight or !editCAsMBean.cANameChange}" />
+							 	disabled="#{editCAsMBean.caTypeCVC or !editCAsMBean.hasEditRight or !editCAsMBean.cANameChange}" >
+							 	<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.NewSubjectDNValidator"/>
+							 	<f:attribute name="currentSubjectDN" value="#{editCAsMBean.caSubjectDN}"/>
+							</h:inputText> 	
 						</h:panelGroup>
 						<h:panelGroup>
 							<h:outputText value="#{web.text.RENEWCA_LINKCERTIFICATE}" />
@@ -1434,10 +1437,10 @@
 								rendered="#{!editCAsMBean.caTypeCVC}" />
 						</h:panelGroup>
 
-						<h:panelGroup />
+						<h:panelGroup/>
 						<h:panelGroup>
 							<h:commandButton name="buttonrenewca" value="#{web.text.RENEWCA}"
-								onclick='return confirmrenewal()'
+								onclick="return confirmcaaction('#{web.text.AREYOUSURERENEWCA}')"
 								action="#{editCAsMBean.renewCa()}"
 								disabled="#{!editCAsMBean.hasEditRight}" />
 						</h:panelGroup>
@@ -1445,13 +1448,16 @@
 						<h:panelGroup>
 							<h:outputText value="#{web.text.RENEWCA_FROMLASTRENEWAL}" />
 						</h:panelGroup>
-						<h:panelGroup>
-							<h:link value="#{editCAsMBean.binaryCaIdLink}" outcome="DER"
-								rendered="#{editCAsMBean.renderCaIdLink}" />
-							<h:link value="#{editCAsMBean.caIdLink}" outcome="PEM"
-								rendered="#{editCAsMBean.renderCaIdLink}" />
-							<h:outputText value="#{web.text.RENEWCA_NOTAVAILABLE}"
-								rendered="#{not editCAsMBean.renderCaIdLink}" />
+						<h:panelGroup rendered="#{editCAsMBean.renderLinkCertificate}">
+							<h:outputLink value="#{editCAsMBean.binaryCaIdLink}" > 
+								<h:outputText value="DER, " />
+							</h:outputLink>
+							<h:outputLink value="#{editCAsMBean.caIdLink}" >
+								<h:outputText value="PEM" />
+							</h:outputLink>
+						</h:panelGroup>
+						<h:panelGroup rendered="#{!editCAsMBean.renderLinkCertificate}">	
+							<h:outputText value="#{web.text.RENEWCA_NOTAVAILABLE}" />
 						</h:panelGroup>
 
 						<h:panelGroup>
