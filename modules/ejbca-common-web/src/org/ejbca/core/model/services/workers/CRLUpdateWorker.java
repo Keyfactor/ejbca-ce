@@ -25,7 +25,6 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 /**
  * Class managing the updating of CRLs. Loops through the list of CAs to check and generates CRLs and deltaCRLs if needed.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class CRLUpdateWorker extends BaseWorker {
