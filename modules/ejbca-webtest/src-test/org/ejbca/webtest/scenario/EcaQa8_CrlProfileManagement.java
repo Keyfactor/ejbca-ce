@@ -72,8 +72,8 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.add(webDriver, TestData.CA_NAME);
-        CaHelper.setValidity(webDriver, "1y");
+        caHelper.addCa(TestData.CA_NAME);
+        caHelper.setValidity("1y");
 
         // CRL settings
         WebElement crlExpirePeriod = webDriver.findElement(By.xpath("//input[@name='textfieldcrlperiod']"));
@@ -86,8 +86,8 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
         crlIssueInterval.sendKeys("22h");
         crlOverlapTime.sendKeys("30m");
 
-        CaHelper.save(webDriver);
-        CaHelper.assertExists(webDriver, TestData.CA_NAME);
+        caHelper.saveCa();
+        caHelper.assertExists(TestData.CA_NAME);
 
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());
@@ -110,8 +110,8 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
         crlIssueInterval.clear();
         crlIssueInterval.sendKeys("20h");
 
-        CaHelper.save(webDriver);
-        CaHelper.assertExists(webDriver, TestData.CA_NAME);
+        caHelper.saveCa();
+        caHelper.assertExists(TestData.CA_NAME);
 
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());
