@@ -36,7 +36,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 /**
  * A base helper class for page operations of a web helper extensions.
  *
- * @version $Id: BaseHelper.java 330091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id: BaseHelper.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
  */
 public class BaseHelper {
 
@@ -130,6 +130,21 @@ public class BaseHelper {
             log.debug("Cannot find WebElement [" + childElementId.toString() + "] inside WebElement [" + rootElement.getTagName() + "]", ex);
         }
         return null;
+    }
+
+    /**
+     * Finds child web elements by locator within given element.
+     *
+     * @param rootElement    an input element.
+     * @param childElementId child locator.
+     *
+     * @return a list of child web elements.
+     */
+    protected List<WebElement> findElements(final WebElement rootElement, final By childElementId) {
+        assertNotNull("Root element cannot be null.", rootElement);
+        // Wait
+        waitForElementBecomeVisible(rootElement);
+        return rootElement.findElements(childElementId);
     }
 
     /**
@@ -395,6 +410,31 @@ public class BaseHelper {
     protected String getElementValue(final WebElement webElement) {
         if(webElement != null) {
             return webElement.getAttribute("value");
+        }
+        return null;
+    }
+
+    /**
+     * Asserts a given element exists and returns its text.
+     *
+     * @param elementId locator.
+     *
+     * @return element's text or null.
+     */
+    protected String getElementText(final By elementId) {
+        return getElementText(findElement(elementId));
+    }
+
+    /**
+     * Asserts a given element is not null and returns its text.
+     *
+     * @param webElement webElement non-null web element.
+     *
+     * @return element's text or null.
+     */
+    protected String getElementText(final WebElement webElement) {
+        if(webElement != null) {
+            return webElement.getText();
         }
         return null;
     }

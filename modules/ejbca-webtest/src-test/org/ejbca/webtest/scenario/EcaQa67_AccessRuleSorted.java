@@ -12,92 +12,64 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.roles.Role;
-import org.cesecore.roles.management.RoleSessionRemote;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AdminRolesHelper;
-import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
+ * In 'advanced mode' for 'Access Rules' the content should be sorted by name alphabetically. This makes it
+ * rather easier to review the access rules or locate the appropriate access rules you want to set.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-67">ECAQA-67</a>
  *
- * @version $Id: EcaQa67_AccessRuleSorted.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id: EcaQa67_AccessRuleSorted.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa67_AccessRuleSorted extends WebTestBase {
-    
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWebTest"));
-    private static final String roleName = "ECAQA67_TestRole";
-    
-    private static WebDriver webDriver;
-    private static RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+
+    // Helpers
+    private static AdminRolesHelper adminRolesHelper;
+
+    // Test Data
+    public static class TestData {
+        static final String ROLE_NAME = "ECAQA67_TestRole";
+    }
  
     @BeforeClass
     public static void init() {
-        beforeClass(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
-        webDriver = getWebDriver();
+        // super
+        beforeClass(true, null);
+        final WebDriver webDriver = getWebDriver();
+        // Init helpers
+        adminRolesHelper = new AdminRolesHelper(webDriver);
     }
     
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        webDriver.quit();
-        Role role = roleSession.getRole(admin, null, roleName);
-        roleSession.deleteRoleIdempotent(admin, role.getRoleId());
+        // Remove generated artifacts
+        removeAdministratorRoleByName(TestData.ROLE_NAME);
+        // super
+        afterClass();
     }
     
     @Test
-    public void testA_addRoleAndEditRules() {
-        AdminRolesHelper.goTo(webDriver, getAdminWebUrl());
-        AdminRolesHelper.addRole(webDriver, roleName, true);
-        AdminRolesHelper.editAccessRules(webDriver, roleName);
-        webDriver.findElement(By.xpath("//tr/td/a[text()='Advanced Mode']")).click();
+    public void stepA_addRoleAndEditRules() {
+        // Add Role
+        adminRolesHelper.openPage(getAdminWebUrl());
+        adminRolesHelper.addRole(TestData.ROLE_NAME);
+        adminRolesHelper.openEditAccessRulesPage(TestData.ROLE_NAME);
+        adminRolesHelper.switchViewModeFromBasicToAdvanced();
     }
     
     @Test
-    public void testB_assertOrdering() {
-        List<String> displayedRulesOrder;
-        List<String> sortedRules;
-        List<WebElement> ruleGroups = webDriver.findElements(By.xpath("//td/table[@class='fullwidth']"));
-        for (WebElement ruleGroup : ruleGroups) {
-            displayedRulesOrder = new ArrayList<>();
-            String groupName = ruleGroup.findElement(By.xpath(".//thead/tr/th")).getText();
-            List<WebElement> rows = ruleGroup.findElements(By.xpath(".//td[@class='rulesColumn1 alignmiddle']"));
-            for (WebElement row : rows) {
-                displayedRulesOrder.add(row.getText());
-            }
-            sortedRules = new ArrayList<>();
-            sortedRules.addAll(displayedRulesOrder);
-            sortIgnoreCase(sortedRules);
-            assertEquals(groupName + " was not sorted alphabetically", sortedRules, displayedRulesOrder);
-        }
+    public void stepB_assertAccessRulesOrdering() {
+        adminRolesHelper.assertAllAccessRuleStringsAreSortedAsc();
     }
-    
-    private void sortIgnoreCase(List<String> rulesToSort) {
-        Collections.sort(rulesToSort, new Comparator<String>() {
-            @Override
-            public int compare(String first, String second) {
-                return first.compareToIgnoreCase(second);
-            }
 
-        });
-    }
 }

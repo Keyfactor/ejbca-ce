@@ -10,80 +10,166 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Helper class for handling 'Administrator Roles' page in automated web tests
- * @version $Id: AdminRolesHelper.java 29443 2018-07-03 12:46:36Z henriks $
+ * Helper class for handling 'Administrator Roles' page in automated web tests.
  *
+ * @version $Id: AdminRolesHelper.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
  */
-public final class AdminRolesHelper {
-    
-    private AdminRolesHelper() {
-        throw new AssertionError("Cannot instantiate class");
-    }
-    
+public class AdminRolesHelper extends BaseHelper {
+
     /**
-     * Navigates to 'Administrator Roles' page and verifies outcome
-     * @param webDriver the webDriver to use in navigation
-     * @param adminWebUrl URL of EJBCA Admin Web
+     * Contains constants and references of the 'Certificate Profiles' page.
      */
-    public static void goTo(WebDriver webDriver, String adminWebUrl) {
-        webDriver.get(adminWebUrl);
-        webDriver.findElement(By.xpath("//li/a[contains(@href,'roles.xhtml')]")).click();
-        assertEquals("Clicking 'Administrator Roles' link did not redirect to expected page",
-                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
-                "/ejbca/adminweb/administratorprivileges/roles.xhtml");
-    }
-    
-    /**
-     * Adds a role
-     * @param webDriver the webDriver to use in navigation
-     * @param roleName to add
-     * @param assertSuccess verify that the role was added to the list of administrator roles
-     */
-    public static void addRole(WebDriver webDriver, String roleName, boolean assertSuccess) {
-        webDriver.findElement(By.xpath("//input[@value='Add' and @type='submit']")).click();
-        webDriver.findElement(By.xpath("//input[@title='Mandatory role name']")).sendKeys(roleName);
-        WebElement popupSpan = webDriver.findElement(By.id("modal:add"));
-        popupSpan.findElement(By.xpath("..//input[@value='Add']")).click();
-        
-        if (assertSuccess) {
-            assertExists(webDriver, roleName);
+    public static class Page {
+        // General
+        static final String PAGE_URI = "/ejbca/adminweb/administratorprivileges/roles.xhtml";
+        static final By PAGE_LINK = By.id("sysFuncsRoles");
+        //
+        static final By BUTTON_ADD = By.id("roles:list:addRoleButton");
+        static final By TEXT_MESSAGE = By.xpath("//*[@id='messages']//li[@class='infoMessage']");
+        static final By INPUT_MODAL_ROLE_NAME = By.id("modal:roleNameInputField");
+        static final By BUTTON_MODAL_ADD = By.id("modal:confirmAddRoleButton");
+        // Form
+//        static final String TEXT_VIEW_MODE_SWITCH_BASIC = "Basic Mode";
+        static final String TEXT_VIEW_MODE_SWITCH_ADVANCED = "Advanced Mode";
+        static final By BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED = By.id("viewModeSwitchBasicOrAdvanced");
+//        static final By BUTTON_VIEW_MODE_SWITCH_CONFIG_OR_SUMMARY = By.id("viewModeSwitchConfigOrSummary");
+        static final By TEXT_TITLE_ROLE = By.id("titleRole");
+        static final By TABLES_ACCESS_RULES = By.xpath("//td/table[@class='fullwidth']");
+        static final By CELL_ACCESS_RULE_GROUP_NAME = By.xpath(".//thead/tr/th");
+        static final By CELL_ACCESS_RULE_TEXT = By.xpath(".//td[@class='rulesColumn1 alignmiddle']");
+        // Dynamic references' parts
+        static final String TABLE_ROLES = "//*[@id='roles:list']";
+        // Dynamic references
+        static By getRolesTableRowContainingText(final String text) {
+            return By.xpath(TABLE_ROLES + "//tr/td[text()='" + text + "']");
+        }
+        static By getAccessRulesButtonFromRolesTableRowContainingText(final String text) {
+            return By.xpath(TABLE_ROLES + "//tr/td[text()='" + text + "']/../td[3]/a[text()='Access Rules']");
         }
     }
-    
-    /**
-     * Edits access rules of the given role
-     * @param webDriver the webDriver to use in navigation
-     * @param roleName to edit
-     */
-    public static void editAccessRules(WebDriver webDriver, String roleName) {
-        WebElement row = webDriver.findElement(By.xpath("//tr/td[text()='" + roleName + "']"));
-        row.findElement(By.xpath("..//a[@title='Edit Access Rules']")).click();
+
+    public AdminRolesHelper(final WebDriver webDriver) {
+        super(webDriver);
     }
-    
+
     /**
-     * Checks that a given Administrator Role exists in list of Administrator Roles.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param cpName the name of the Certificate Profile
+     * Opens the page 'Administrator Roles' by clicking menu link on home page and asserts the correctness of resulting URI.
+     *
+     * @param webUrl home page URL.
      */
-    public static void assertExists(WebDriver webDriver, String roleName) {
-        try {
-            webDriver.findElement(By.xpath("//tr/td[text()='" + roleName + "']"));
-        } catch (NoSuchElementException e) {
-            fail(roleName + " was not found in the list of Administrator Roles");
+    public void openPage(final String webUrl) {
+        openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);
+    }
+
+    /**
+     * Adds a role.
+     *
+     * @param roleName role name.
+     */
+    public void addRole(final String roleName) {
+        clickLink(Page.BUTTON_ADD);
+        fillInput(Page.INPUT_MODAL_ROLE_NAME, roleName);
+        clickLink(Page.BUTTON_MODAL_ADD);
+        assertRoleAdded();
+        assertRoleNameExists(roleName);
+    }
+
+    /**
+     * Clicks 'Access Rules' for the role.
+     *
+     * @param roleName role name.
+     */
+    public void openEditAccessRulesPage(final String roleName) {
+        // Click 'Access Rules' of the role
+        clickLink(Page.getAccessRulesButtonFromRolesTableRowContainingText(roleName));
+        // Assert correct edit page
+        assertRoleTitleExists( "Administrator Role : ", roleName);
+    }
+
+    /**
+     * Switches the view to 'Advanced Mode' if the link with proper text exists.
+     */
+    public void switchViewModeFromBasicToAdvanced() {
+        if(Page.TEXT_VIEW_MODE_SWITCH_ADVANCED.equals(getElementText(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED))) {
+            clickLink(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED);
         }
     }
+
+    /**
+     * Asserts the group of access rules' values are sorted in ascending order.
+     */
+    public void assertAllAccessRuleStringsAreSortedAsc() {
+        final List<WebElement> accessRuleGroups = findElements(Page.TABLES_ACCESS_RULES);
+        assertNotNull("Acess rule groups list is null", accessRuleGroups);
+        assertFalse("Access rule groups are empty.", accessRuleGroups.isEmpty());
+        // Check elements
+        for (WebElement accessRuleGroup : accessRuleGroups) {
+            final String accessRuleGroupName = findElement(accessRuleGroup, Page.CELL_ACCESS_RULE_GROUP_NAME).getText();
+            final List<String> accessRuleGroupTexts = getAccessRuleTexts(accessRuleGroup);
+            final List<String> sortedAccessRuleGroupTexts = new ArrayList<>(accessRuleGroupTexts);
+            sortedAccessRuleGroupTexts.sort(String::compareToIgnoreCase);
+            assertEquals("'" + accessRuleGroupName + "' group was not sorted alphabetically.", sortedAccessRuleGroupTexts, accessRuleGroupTexts);
+        }
+
+    }
+
+    // Asserts the 'Manage Administrator Roles' add title exists.
+    private void assertRoleAdded() {
+        final WebElement roleAddMessage = findElement(Page.TEXT_MESSAGE);
+        if(roleAddMessage == null) {
+            fail("Role add message was not found.");
+        }
+        assertEquals(
+                "Expected role add message was not displayed.",
+                "Role added.",
+                roleAddMessage.getText()
+        );
+    }
+
+    // Asserts the 'Manage Administrator Roles' name exists.
+    private void assertRoleNameExists(final String roleName) {
+        assertElementExists(
+                Page.getRolesTableRowContainingText(roleName),
+                roleName + " was not found on 'Manage Administrator Roles' page."
+        );
+    }
+
+    // Asserts the 'Administrator Role' name title exists.
+    private void assertRoleTitleExists(final String prefixString, final String roleName) {
+        if(roleName == null) {
+            fail("Role cannot be null.");
+        }
+        final WebElement roleTitle = findElement(Page.TEXT_TITLE_ROLE);
+        assertEquals(
+                "Action on wrong role.",
+                prefixString + roleName,
+                roleTitle.getText()
+        );
+    }
+
+    // Returns Access Rule Texts for the specific group represented by root element
+    private List<String> getAccessRuleTexts(final WebElement rootElement) {
+        final List<String> textsList = new ArrayList<>();
+        final List<WebElement> accessRuleRows = findElements(rootElement, Page.CELL_ACCESS_RULE_TEXT);
+        for (WebElement accessRuleRow : accessRuleRows) {
+            textsList.add(accessRuleRow.getText());
+        }
+        return textsList;
+    }
+
 }
