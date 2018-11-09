@@ -390,10 +390,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return isAuthorized() ? getEjbcaWebBean().getText("VIECA") : getEjbcaWebBean().getText("EDITCA");
     }
 
-    public String actionImportCA() {
-        return "";
-    }
-
     public String getImportKeystoreText() {
         return getEjbcaWebBean().getText("IMPORTCA_KEYSTORE") + "...";
     }
