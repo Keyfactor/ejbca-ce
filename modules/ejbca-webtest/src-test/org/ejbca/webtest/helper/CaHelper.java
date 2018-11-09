@@ -12,8 +12,10 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -34,13 +36,37 @@ public class CaHelper extends BaseHelper {
         // General
         static final String PAGE_URI = "/ejbca/adminweb/ca/editcas/editcas.jsp";
         static final By PAGE_LINK = By.id("caEditcas");
+
+        static final String CRL_PAGE_URI = "/ejbca/adminweb/ca/cafunctions.xhtml";
+        static final By CRL_PAGE_LINK = By.id("caCafunctions");
         //
+        static final By BUTTON_CREATE_CA = By.xpath("//input[@name='buttoncreateca']");
+        static final By BUTTON_SAVE = By.xpath("//input[@name='buttoncreate' or @name='buttonsave']");
+        static final By BUTTON_EDIT = By.xpath("//input[@name='buttoneditca']");
         static final By BUTTON_RENEW_CA = By.xpath("//input[@name='buttonrenewca']");
         static final By BUTTON_DELETE_CA = By.xpath("//input[@name='buttondeleteca']");
+
+        static final By CANAME = By.xpath("//input[@name='textfieldcaname']");
+        static final By SELECT_CA = By.xpath("//select[@name='selectcas']");
+        static final By VALIDITY = By.id("textfieldvalidity");
+        static final By SUBJECT_DN = By.id("textfieldsubjectdn");
+
+        static final By CONTAINER = By.xpath("//div[@class='container']");
         // Dynamic references
         static By getCaTableRowContainingText(final String text) {
             return By.xpath("//td[text()='" + text + "']");
         }
+        static By getCrlCreateButonByCaName(final String caName) {
+            return By.xpath("//a[text() = 'Get CRL' and contains(@href, 'CN=" + caName + "')]/following-sibling::form/input[contains(@value, 'Create CRL')]");
+        }
+        static By getPreContainsCaName(final String caName) {
+            return By.xpath("//pre[contains(text(), '" + caName + "')]");
+        }
+        static By getCrlUrl(final String caName) {
+            return By.xpath("//a[text()='Get CRL' and contains(@href, '" + caName + "')]");
+        }
+
+
     }
 
     public CaHelper(final WebDriver webDriver) {
@@ -55,6 +81,15 @@ public class CaHelper extends BaseHelper {
     public void openPage(final String webUrl) {
         openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);
     }
+
+    /**
+     * Opens the page 'Certificate Authorities' by clicking menu link on home page and asserts the correctness of resulting URI.
+     *
+     * @param webUrl home page URL.
+     */
+    public void openCrlPage(final String webUrl) {
+        openPageByLinkAndAssert(webUrl, Page.CRL_PAGE_LINK, Page.CRL_PAGE_URI);
+    }
     
     /**
      * Adds a new CA. Browser will end up in the edit page for this CA once method is done.
@@ -62,9 +97,9 @@ public class CaHelper extends BaseHelper {
      * @param caName the name of the CA
      */
     public void addCa(String caName) {
-        WebElement nameInput = webDriver.findElement(By.xpath("//input[@name='textfieldcaname']"));
+        WebElement nameInput = webDriver.findElement(Page.CANAME);
         nameInput.sendKeys(caName);
-        webDriver.findElement(By.xpath("//input[@name='buttoncreateca']")).click();
+        webDriver.findElement(Page.BUTTON_CREATE_CA).click();
     }
     
     /**
@@ -75,12 +110,12 @@ public class CaHelper extends BaseHelper {
      */
     public static void edit(WebDriver webDriver, String caName) {
         try {
-            Select caList = new Select(webDriver.findElement(By.xpath("//select[@name='selectcas']")));
+            Select caList = new Select(webDriver.findElement(Page.SELECT_CA));
             caList.selectByVisibleText(caName + ", (Active)");
         } catch (NoSuchElementException e) {
             fail("Could not edit ca: " + caName + ". Was not found in list of CAs");
         }
-        webDriver.findElement(By.xpath("//input[@name='buttoneditca']")).click();
+        webDriver.findElement(Page.BUTTON_EDIT).click();
     }
     
     /**
@@ -88,7 +123,7 @@ public class CaHelper extends BaseHelper {
      *
      */
     public void saveCa() {
-        webDriver.findElement(By.xpath("//input[@name='buttoncreate' or @name='buttonsave']")).click();
+        webDriver.findElement(Page.BUTTON_SAVE).click();
     }
 
     /**
@@ -98,7 +133,7 @@ public class CaHelper extends BaseHelper {
      * @param subjectDn the Subject DN to set
      */
     public static void setSubjectDn(WebDriver webDriver, String subjectDn) {
-        WebElement dnInput = webDriver.findElement(By.id("textfieldsubjectdn"));
+        WebElement dnInput = webDriver.findElement(Page.SUBJECT_DN);
         dnInput.clear();
         dnInput.sendKeys(subjectDn);
     }
@@ -109,7 +144,7 @@ public class CaHelper extends BaseHelper {
      * @param validityString (*y *mo *d *h *m *s) or end date of the certificate. E.g. '1y'
      */
     public void setValidity(String validityString) {
-        WebElement validityInput = webDriver.findElement(By.id("textfieldvalidity"));
+        WebElement validityInput = webDriver.findElement(Page.VALIDITY);
         validityInput.sendKeys(validityString);
     }
     
@@ -121,7 +156,7 @@ public class CaHelper extends BaseHelper {
      */
     public void assertExists(String caName) {
         try {
-            Select caList = new Select(webDriver.findElement(By.xpath("//select[@name='selectcas']")));
+            Select caList = new Select(webDriver.findElement(Page.SELECT_CA));
             caList.selectByVisibleText(caName + ", (Active)");
         } catch (NoSuchElementException e) {
             fail(caName + " was not found in the List of Certificate Authorities");
@@ -167,5 +202,29 @@ public class CaHelper extends BaseHelper {
         if(titleWebElement == null) {
             fail("Title was not found [" + titleText + "].");
         }
+    }
+
+    public void assertCrlLinkWorks(String caName ){
+        String crlUrl = webDriver.findElement(Page.getCrlUrl(caName)).getAttribute("href");
+        webDriver.get("view-source:" + crlUrl);
+        try {
+            webDriver.findElement(Page.getPreContainsCaName(caName));
+        } catch (NoSuchElementException e) {
+            fail("The CRL didn't contain the CA's name.");
+        }
+    }
+
+    public void clickCrlLinkAndAssertNumberIncreased(String caName){
+        String crlText = getCrlNumber(caName);
+        int crlNumber = Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
+        // Click 'Create CRL' button
+        webDriver.findElement(Page.getCrlCreateButonByCaName(caName)).click();
+        // Make sure that the CRL number has been incremented
+        crlText = getCrlNumber(caName);
+        assertEquals("The CRL number was not incremented.", crlNumber + 1, Integer.parseInt(StringUtils.substringAfter(crlText, "number ")));
+    }
+
+    private String getCrlNumber(String caName) {
+        return StringUtils.substringBetween(webDriver.findElement(Page.CONTAINER).getText(), caName, " Get CRL");
     }
 }

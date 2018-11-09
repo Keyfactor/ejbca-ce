@@ -106,32 +106,10 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
     public void testB_crl() {
         // Update default timestamp
         auditLogHelper.initFilterTime();
-        // Go to 'CA Structure & CRLs'
-        webDriver.get(getAdminWebUrl());
-        webDriver.findElement(By.id("caCafunctions")).click();
-        // Verify that the 'Get CRL' link works
-        String crlUrl = webDriver.findElement(By.xpath("//a[text()='Get CRL' and contains(@href, '" + TestData.CA_NAME + "')]")).getAttribute("href");
-        webDriver.get("view-source:" + crlUrl);
-        try {
-            webDriver.findElement(By.xpath("//pre[contains(text(), '" + TestData.CA_NAME + "')]"));
-        } catch (NoSuchElementException e) {
-            fail("The CRL didn't contain the CA's name.");
-        }
-        // Go to 'CA Structure & CRLs'
-        webDriver.get(getAdminWebUrl());
-        webDriver.findElement(By.id("caCafunctions")).click();
-        // Take note of the CRL number
-        String crlText = StringUtils.substringBetween(webDriver.findElement(By.xpath("//div[@class='container']")).getText(), TestData.CA_NAME, " Get CRL");
-        System.out.println("crlText");
-        System.out.println(crlText);
-        int crlNumber = Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
-        // Click 'Create CRL' button
-        webDriver.findElement(
-                By.xpath("//a[text() = 'Get CRL' and contains(@href, 'CN=" + TestData.CA_NAME + "')]/following-sibling::form/input[contains(@value, 'Create CRL')]")
-        ).click();
-        // Make sure that the CRL number has been incremented
-        crlText = StringUtils.substringBetween(webDriver.findElement(By.xpath("//div[@class='container']")).getText(), TestData.CA_NAME, " Get CRL");
-        assertEquals("The CRL number was not incremented.", crlNumber + 1, Integer.parseInt(StringUtils.substringAfter(crlText, "number ")));
+        caHelper.openCrlPage(getAdminWebUrl());
+        caHelper.assertCrlLinkWorks(TestData.CA_NAME);
+        caHelper.openCrlPage(getAdminWebUrl());
+        caHelper.clickCrlLinkAndAssertNumberIncreased(TestData.CA_NAME);
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.assertLogEntryByEventText(
