@@ -227,6 +227,7 @@
 		</fileset>
 	</path>
 
+    <mkdir dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="*.jar"/>
@@ -235,6 +236,7 @@
 		</fileset>
 	</path>
 
+	<mkdir dir="${ejbca.home}/lib/ext/swagger"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.swagger.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/swagger">
 			<include name="*.jar"/>
@@ -243,6 +245,7 @@
 		</fileset>
 	</path>
 
+    <mkdir dir="${ejbca.home}/lib/ext/jackson2"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.jackson2.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
 			<include name="*.jar"/>
@@ -407,6 +410,7 @@
 	</path>
 	
 	<!-- Certificate Transparency -->
+    <mkdir dir="${ejbca.home}/lib/ct"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.ctlog.classpath">
 		<path refid="lib.commons-codec.classpath"/>
 		<path refid="lib.json-simple.classpath"/>
