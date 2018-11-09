@@ -579,7 +579,7 @@
 			<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="false"></ant>
 	</target>
 	
-	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common">
+	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common" if="${mod.plugins-ee.exists}">
 		<ant antfile="${mod.plugins.path}/build.xml" target="build" inheritall="false">
 			<property name="runoncesetup.hasrun" value="true"/>
 			<property name="external-deps-satfisfied" value="isset"/>
