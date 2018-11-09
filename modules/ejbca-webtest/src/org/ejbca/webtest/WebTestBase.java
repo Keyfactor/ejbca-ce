@@ -15,6 +15,7 @@ package org.ejbca.webtest;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -23,6 +24,8 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.Role;
+import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -40,9 +43,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
  *
- * @version $Id: WebTestBase.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id: WebTestBase.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
  */
 public abstract class WebTestBase {
+
+    private static final Logger log = Logger.getLogger(WebTestBase.class);
 
     private static ConfigurationHolder config;
 
@@ -242,5 +247,23 @@ public abstract class WebTestBase {
     protected static void removeEndEntityByUsername(final String username) throws CouldNotRemoveEndEntityException, NoSuchEndEntityException, AuthorizationDeniedException {
         final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         endEntityManagementSession.deleteUser(ADMIN_TOKEN, username);
+    }
+
+    /**
+     * Removes the 'Administrator Role' using EJB instance.
+     *
+     * @param roleName role name for deletion.
+     *
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeAdministratorRoleByName(final String roleName) throws AuthorizationDeniedException {
+        final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
+        final Role role = roleSession.getRole(ADMIN_TOKEN, null, roleName);
+        if(role != null) {
+            roleSession.deleteRoleIdempotent(ADMIN_TOKEN, role.getRoleId());
+        }
+        else {
+            log.error("Cannot remove Administrator Role [" + roleName + "].");
+        }
     }
 }
