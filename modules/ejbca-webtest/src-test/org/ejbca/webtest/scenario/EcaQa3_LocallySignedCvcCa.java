@@ -63,16 +63,16 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
     @Test
     public void a_createRootCa() {
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.add(webDriver, rootName);
+        caHelper.addCa(rootName);
 
         // Set CA Type, Subject DN and Validity
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectcatype']")))).selectByVisibleText("CVC");
         CaHelper.setSubjectDn(webDriver, rootDn);
-        CaHelper.setValidity(webDriver, "1y");
+        caHelper.setValidity("1y");
 
         // Save the CA and check that save was successful
-        CaHelper.save(webDriver);
-        CaHelper.assertExists(webDriver, rootName);
+        caHelper.saveCa();
+        caHelper.assertExists(rootName);
     }
 
     @Test
@@ -84,18 +84,18 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
     @Test
     public void c_createSubCa() {
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.add(webDriver, subName);
+        caHelper.addCa(subName);
 
         // Set CA Type, Crypto Token, Subject DN, Signed By, Validity and Certificate Profile
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectcatype']")))).selectByVisibleText("CVC");
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectcryptotoken']")))).selectByVisibleText(rootName);
         CaHelper.setSubjectDn(webDriver, subDn);
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectsignedby']")))).selectByVisibleText(rootName);
-        CaHelper.setValidity(webDriver, "2y");
+        caHelper.setValidity("2y");
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectcertificateprofile']")))).selectByVisibleText("SUBCA");
 
         // Save the CA and check that save was successful
-        CaHelper.save(webDriver);
-        CaHelper.assertExists(webDriver, subName);
+        caHelper.saveCa();
+        caHelper.assertExists(subName);
     }
 }

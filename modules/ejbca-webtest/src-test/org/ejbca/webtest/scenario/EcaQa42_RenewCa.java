@@ -69,10 +69,10 @@ public class EcaQa42_RenewCa extends WebTestBase {
     @Test
     public void stepA_addCa() {
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.add(webDriver, TestData.CA_NAME);
-        CaHelper.setValidity(webDriver, "1y");
-        CaHelper.save(webDriver);
-        CaHelper.assertExists(webDriver, TestData.CA_NAME);
+        caHelper.addCa(TestData.CA_NAME);
+        caHelper.setValidity("1y");
+        caHelper.saveCa();
+        caHelper.assertExists(TestData.CA_NAME);
     }
 
     @Test

@@ -58,11 +58,10 @@ public class CaHelper extends BaseHelper {
     
     /**
      * Adds a new CA. Browser will end up in the edit page for this CA once method is done.
-     * 
-     * @param webDriver the WebDriver to use
+     *
      * @param caName the name of the CA
      */
-    public static void add(WebDriver webDriver, String caName) {
+    public void addCa(String caName) {
         WebElement nameInput = webDriver.findElement(By.xpath("//input[@name='textfieldcaname']"));
         nameInput.sendKeys(caName);
         webDriver.findElement(By.xpath("//input[@name='buttoncreateca']")).click();
@@ -86,10 +85,9 @@ public class CaHelper extends BaseHelper {
     
     /**
      * Saves & Creates the CA
-     * 
-     * @param webDriver
+     *
      */
-    public static void save(WebDriver webDriver) {
+    public void saveCa() {
         webDriver.findElement(By.xpath("//input[@name='buttoncreate' or @name='buttonsave']")).click();
     }
 
@@ -107,11 +105,10 @@ public class CaHelper extends BaseHelper {
     
     /**
      * Sets the CA's validity.
-     * 
-     * @param webDriver the WebDriver to use
+     *
      * @param validityString (*y *mo *d *h *m *s) or end date of the certificate. E.g. '1y'
      */
-    public static void setValidity(WebDriver webDriver, String validityString) {
+    public void setValidity(String validityString) {
         WebElement validityInput = webDriver.findElement(By.id("textfieldvalidity"));
         validityInput.sendKeys(validityString);
     }
@@ -119,11 +116,10 @@ public class CaHelper extends BaseHelper {
     
     /**
      * Checks that a given CA exists in 'List of Certificate Authorities'.
-     * 
-     * @param webDriver the WebDriver to use
+     *
      * @param caName the name of the Certificate Profile
      */
-    public static void assertExists(WebDriver webDriver, String caName) {
+    public void assertExists(String caName) {
         try {
             Select caList = new Select(webDriver.findElement(By.xpath("//select[@name='selectcas']")));
             caList.selectByVisibleText(caName + ", (Active)");
@@ -146,7 +142,7 @@ public class CaHelper extends BaseHelper {
         if(isConfirmed) {
             assertTitleExists(expectedTitle);
         }
-        CaHelper.assertExists(webDriver, caName);
+        assertExists(caName);
     }
 
     /**
@@ -163,7 +159,7 @@ public class CaHelper extends BaseHelper {
         if(isConfirmed) {
             assertTitleExists(expectedTitle);
         }
-        CaHelper.assertExists(webDriver, caName);
+        assertExists(caName);
     }
 
     private void assertTitleExists(final String titleText) {

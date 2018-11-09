@@ -69,11 +69,11 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     @Test
     public void testA_addCa() {
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.add(webDriver, caName);
+        caHelper.addCa(caName);
         // Set validity (required)
-        CaHelper.setValidity(webDriver, "1y");
-        CaHelper.save(webDriver);
-        CaHelper.assertExists(webDriver, caName);
+        caHelper.setValidity("1y");
+        caHelper.saveCa();
+        caHelper.assertExists(caName);
     }
     
     @Test
