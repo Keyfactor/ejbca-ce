@@ -156,7 +156,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     // These two are used in CA life cycle section of edit ca page.
     private boolean cANameChange;
-    private String newSubjectDn = "newCAName"; 
+    private String newSubjectDn; 
     
 
     private GlobalConfiguration globalconfiguration;
@@ -1308,25 +1308,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getBinaryCaIdLink() {
-        return "adminweb/ca/editcas/cacertreq?cmd=linkcert&format=binary&caid=" + caid;
+        return "cacertreq?cmd=linkcert&format=binary&caid=" + caid;
     }
     
     public String getCaIdLink() {
-        return "adminweb/ca/editcas/cacertreq?cmd=linkcert&caid=" + caid;
+        return "cacertreq?cmd=linkcert&caid=" + caid;
     }
     
-    public boolean isRenderCaIdLink() {
-        try {
-            return isEditCA && !isCaexternal && !waitingresponse && caBean.isCryptoTokenPresent(currentCryptoTokenId)
-                    && caBean.isCryptoTokenActive(currentCryptoTokenId) && cainfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA && !isCaRevoked();
-        } catch (AuthorizationDeniedException e) {
-            log.error("Error while accessing the ca bean!", e);
-        }
-        return false;
-    }
-    
-    private boolean isCaRevoked() {
-        return false;
+    public boolean isRenderLinkCertificate() {
+        return caBean.getLinkCertificate(caid) != null;
     }
 
     public boolean isRollOverDate() {
@@ -2506,6 +2496,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         
         if (isCaUninitialized) {
             createLinkCertificate = false;
+        }
+        
+        if (isRenderUseCaNameChange()) {
+            newSubjectDn = cainfo.getSubjectDN();
         }
         
     }

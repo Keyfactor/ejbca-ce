@@ -10,7 +10,10 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.ca;
+package org.ejbca.ui.web.admin.ca.validators;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -20,25 +23,27 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.util.SimpleTime;
 
 /**
- * Validator used in validating CRL and Validity fields.
+ * Validator used in validating CVC subject dn field (create ca page).
  * 
- * @version $Id$
+ * @version $Id: CvcSubjectDNValidator.java 30378 2018-11-02 21:05:32Z aminkh $
  *
  */
-@FacesValidator("org.ejbca.ui.web.admin.ca.CRLFieldValidator")
-public class CRLFieldValidator implements Validator {
+@FacesValidator("org.ejbca.ui.web.admin.ca.validators.CvcSubjectDNValidator")
+public class CvcSubjectDNValidator implements Validator {
 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-        SimpleTime simpleTime = SimpleTime.getInstance((String)value, StringUtils.EMPTY);
-
-        if (!value.toString().equals(StringUtils.EMPTY) && (simpleTime == null)) {
-            FacesMessage msg = new FacesMessage("Invalid CRL or Validity field input!");
+        
+        Matcher matchC = Pattern.compile("(^|,(\\s*))C=", Pattern.CASE_INSENSITIVE).matcher(value.toString());
+        Matcher matchCN = Pattern.compile("(^|,(\\s*))CN=", Pattern.CASE_INSENSITIVE).matcher(value.toString());
+        
+        if (!value.toString().equals(StringUtils.EMPTY) && (!matchC.find() || !matchCN.find())) {
+            FacesMessage msg = new FacesMessage("Invalid CVC subject dn format. Example is CN=Test,C=SE", "SubjectDN validation failed!");
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(msg);
         }
     }
+
 }
