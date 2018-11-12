@@ -34,7 +34,7 @@ public class CaHelper extends BaseHelper {
      */
     public static class Page {
         // General
-        static final String PAGE_URI = "/ejbca/adminweb/ca/editcas/editcas.jsp";
+        static final String PAGE_URI = "/ejbca/adminweb/ca/editcas/managecas.xhtml";
         static final By PAGE_LINK = By.id("caEditcas");
 
         static final String CRL_PAGE_URI = "/ejbca/adminweb/ca/cafunctions.xhtml";
