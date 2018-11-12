@@ -381,10 +381,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             return "UNKNOWN";
         }
     }
-    
-    public String getThisFileName() {
-        return globalconfiguration.getAdminWebPath() + "/editcas/editcapage.jsp";
-    }
 
     public boolean isEditCA() {
         return isEditCA;
