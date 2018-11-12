@@ -336,7 +336,7 @@ public class EcaQa87_ApprovalMgmtPartition  extends WebTestBase {
 
     @Test
     public void testH_createCa() {
-        WebElement caLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ca/editcas/editcas.jsp')]"));
+        WebElement caLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ca/editcas/managecas.xhtml')]"));
         caLink.click();
         webDriver.findElement(By.xpath("//input[@name='textfieldcaname']")).sendKeys(caName);
         webDriver.findElement(By.xpath("//input[@name='buttoncreateca']")).click();
