@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
  * @version $Id$
  *
  */
-public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase implements ICustomPublisher {
+public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase implements CustomPublisherUiSupport {
 
     public static final String OLD_VA_PUBLISHER_QUALIFIED_NAME = "org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher";
     
@@ -78,7 +78,7 @@ public class LegacyValidationAuthorityPublisher extends CustomPublisherUiBase im
         if (StringUtils.isEmpty(properties.getProperty(ONLYPUBLISHREVOKED))) {
             setOnlyPublishRevoked(false);
         }        
-        
+        addProperty(new CustomPublisherProperty(DESCRIPTION, CustomPublisherProperty.UI_TEXTINPUT, getDescription()));
         addProperty(new CustomPublisherProperty(DATASOURCE, CustomPublisherProperty.UI_TEXTINPUT, getDataSource()));
         addProperty(new CustomPublisherProperty(STORECERT, CustomPublisherProperty.UI_BOOLEAN, Boolean.toString(getStoreCert())));
         addProperty(new CustomPublisherProperty(ONLYPUBLISHREVOKED, CustomPublisherProperty.UI_BOOLEAN, Boolean.toString(getOnlyPublishRevoked())));
