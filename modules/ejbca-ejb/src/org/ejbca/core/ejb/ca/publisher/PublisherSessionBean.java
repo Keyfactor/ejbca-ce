@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
@@ -497,7 +498,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void removePublisher(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
+    public void removePublisher(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException, ReferencesToItemExistException {
         if (log.isTraceEnabled()) {
             log.trace(">removePublisher(name: " + name + ")");
         }
@@ -509,9 +510,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     /**
      * Checks if the given publisher is in use, and throws AuthorizationDeniedException with an informative error message if so. 
      * @param name Name of publisher
-     * @throws AuthorizationDeniedException If in use by CAs, profiles or Multi Group Publishers.
+     * @throws ReferencesToItemExistException If in use by CAs, profiles or Multi Group Publishers.
      */
-    private void checkPublisherInUse(final String name) throws AuthorizationDeniedException {
+    private void checkPublisherInUse(final String name) throws ReferencesToItemExistException {
         final List<String> inUseBy = new ArrayList<>();
         int publisherId = getPublisherId(name);
         if (caAdminSession.exitsPublisherInCAs(publisherId)) {
@@ -537,7 +538,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             final String message = "Publisher " + name + " can't be deleted because it's in use by: " +
                     StringUtils.join(inUseBy, ", ");
             log.info(message);
-            throw new AuthorizationDeniedException(message);
+            throw new ReferencesToItemExistException(message);
         }
     }
 
