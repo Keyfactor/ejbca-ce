@@ -1225,6 +1225,22 @@ body.popup {
 
 /*--------------------------------------------------------------------------*/
 
+.helpReference {
+	margin-left: 2px;
+}
+
+.mandatory {
+	border:2px solid #FFC300;
+}
+
+.smallHelp {
+	line-height: 1.4em;
+	font-size: 0.70em;
+	white-space: normal;
+	color: #606060;		/* Keep it, for old web browsers */
+	color: rgba(0,0,0,.6);
+}
+
 .alert { color: red; font-size: 11pt; font-weight: bold; background-color: white; }
 .info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
 
