@@ -144,7 +144,7 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         saveButton.sendKeys(Keys.RETURN);
 
         //Create CA
-        WebElement caLink = webDriverSuperAdmin.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ca/editcas/editcas.jsp')]"));
+        WebElement caLink = webDriverSuperAdmin.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ca/editcas/managecas.xhtml')]"));
         caLink.click();
         webDriverSuperAdmin.findElement(By.xpath("//input[@name='textfieldcaname']")).sendKeys(caName);
         webDriverSuperAdmin.findElement(By.xpath("//input[@name='buttoncreateca']")).click();

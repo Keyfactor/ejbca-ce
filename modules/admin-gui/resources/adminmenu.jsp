@@ -24,7 +24,7 @@ org.ejbca.util.HTMLTools
        
        final String APPROVAL_PROFILES_LINK	 =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/editapprovalprofiles.xhtml";
        
-       final String EDITCA_LINK              =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/editcas/editcas.jsp";
+       final String EDITCA_LINK              =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/editcas/managecas.xhtml";
        final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editpublishers/editpublishers.jsp";
        final String EDITVALIDATORS_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editvalidators/editvalidators.xhtml";
 
