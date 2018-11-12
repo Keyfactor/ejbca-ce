@@ -22,7 +22,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * 
  * @version $Id$
  */
-public interface CustomPublisherUiSupport {
+public interface CustomPublisherUiSupport extends ICustomPublisher {
 
     /** @return A list of the publisher's properties in such a way that a UI can parse the information. */
     List<CustomPublisherProperty> getCustomUiPropertyList(final AuthenticationToken authenticationToken);

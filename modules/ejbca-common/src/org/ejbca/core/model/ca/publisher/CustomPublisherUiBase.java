@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 
@@ -30,6 +31,7 @@ public abstract class CustomPublisherUiBase extends CustomPublisherContainer imp
    
     public CustomPublisherUiBase() {
         super();
+        init(new Properties());
     }
     
     public CustomPublisherUiBase(final BasePublisher publisher) {
