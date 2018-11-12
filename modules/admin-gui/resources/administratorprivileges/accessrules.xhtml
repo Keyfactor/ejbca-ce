@@ -42,10 +42,10 @@
                     </h2>
                 </h:panelGroup>
                 <h:panelGrid columns="1" styleClass="fullwidth alignright">
-                    <h:outputLink value="roles.xhtml">
+                    <h:outputLink id="backToAdministratorRoles" value="roles.xhtml">
                         <h:outputText value="#{web.text.BACKTOROLES}"/>
                     </h:outputLink>
-                    <h:outputLink value="rolemembers.xhtml" rendered="#{not empty accessRulesBean.role}">
+                    <h:outputLink id="viewMembers" value="rolemembers.xhtml" rendered="#{not empty accessRulesBean.role}">
                         <f:param name="roleId" value="#{accessRulesBean.role.roleId}"/>
                         <h:outputText value="#{web.text.ROLEMEMBERS}" rendered="#{accessRulesBean.authorizedToEditRole}"/>
                         <h:outputText value="#{web.text.VIEWROLEMEMBERS}" rendered="#{!accessRulesBean.authorizedToEditRole}"/>
@@ -124,7 +124,7 @@
                     
                     <h:panelGroup/>
                     <h:panelGroup>
-                        <h:commandButton action="#{accessRulesBean.actionSaveAccessRules}" value="#{web.text.SAVE}"
+                        <h:commandButton id="basicModeSave" action="#{accessRulesBean.actionSaveAccessRules}" value="#{web.text.SAVE}"
                             rendered="#{accessRulesBean.authorizedToEditRole and !accessRulesBean.accessRulesTemplateCustom}">
                             <f:ajax execute="@form" render="@all"/>
                         </h:commandButton>
@@ -132,7 +132,7 @@
                     
                 </h:panelGrid>
 
-                <h:panelGroup rendered="#{accessRulesBean.advancedMode}">
+                <h:panelGroup id="advancedMode" rendered="#{accessRulesBean.advancedMode}">
 
                     <h:panelGroup id="summary" rendered="#{accessRulesBean.advancedModeSummary}">
                         <h:dataTable id="accessrules" value="#{accessRulesBean.accessRules}" var="accessRuleItem" headerClass="listHeader" rowClasses="Row0,Row1">
@@ -148,7 +148,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup id="config" rendered="#{!accessRulesBean.advancedModeSummary}">
-                        <h:dataTable value="#{accessRulesBean.authorizedResourcesByCategory}" var="accessRuleCollection"
+                        <h:dataTable id="advancedRulesTable" value="#{accessRulesBean.authorizedResourcesByCategory}" var="accessRuleCollection"
                             headerClass="listHeader" styleClass="fullwidth">
                             <h:column>
                                 <h:dataTable value="#{accessRuleCollection.collection}" var="accessRuleItem" rendered="#{not empty accessRuleCollection.collection}"
@@ -173,8 +173,8 @@
                                 </h:dataTable>
                             </h:column>
                             <f:facet name="footer">
-                                <h:panelGrid styleClass="edit-bottom fullwidth" columns="1" style="text-align: center;">
-                                    <h:commandButton action="#{accessRulesBean.actionSaveAccessRulesAdvanced}" value="#{web.text.SAVE}"
+                                <h:panelGrid id="advancedModeFooter" styleClass="edit-bottom fullwidth" columns="1" style="text-align: center;">
+                                    <h:commandButton id="advancedModeSave" action="#{accessRulesBean.actionSaveAccessRulesAdvanced}" value="#{web.text.SAVE}"
                                         rendered="#{accessRulesBean.authorizedToEditRole}">
                                         <f:ajax execute="@form" render="@all"
                                             onevent="function(data){ejbca.adminweb.onAjaxSuccessScrollTo(data,'messagesBlock');}"/>
