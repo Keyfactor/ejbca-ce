@@ -44,11 +44,10 @@
 						<span class="date"> Posted: 2018-02-22</span>  
 					</p>  
 					<p>
-						<strong>The Definitive EJBCA Upgrade Guide</strong>
-						<a href="http://blog.ejbca.org/2017/12/the-definitive-ejbca-upgrade-guide.html" target="ejbcablog">We've finally written out
-						 the official and definitive upgrade guide!</a> 
+						<strong>Keep track of certificate issuance using Graylog</strong>
+						<a href="http://blog.ejbca.org/2018/10/keep-track-of-certificate-issuance.html" target="ejbcablog">Create nice dashboards with Graylog or other log analytics tools!</a> 
 						<br/>
-						<span class="date"> Posted: 2017-12-11</span>
+						<span class="date"> Posted: 2010-10-08</span>
 					</p> 
 					<p>
 						<strong>PKI-in-a-box!</strong>
@@ -94,10 +93,10 @@
 			<li>Mobile PKI, <a href="docs/SCEP.html">enrolling iOS</a> etc.</li>
 			<li>Secure mobile networks, i.e. 3GPP/LTE/4G using the <a href="docs/CMP.html">CMP protocol</a>.</li>
 			<li>Counterfeit prevention by signing and pairing accessories.</li>
-			<li>Internet of Things (IoT). Need some hundreds of millions of certificates fast? EJBCA will handle it.</li>
+			<li>PKI for the Internet of Things (IoT PKI). Unique identities for each IoT device, certificate authentication for TLS/DTLS, Code Signing. Need hundreds of millions of certificates fast? EJBCA will handle it.</li>
 			<li>Mobile Device Management (MdM) and Enterprise Mobility Management (EMM).</li>
 			<li>Issue citizen certificates for access to government resources, used in passports etc.</li>
-			<li>CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for <a href="docs/CVC_CA.html">EAC ePassports</a>, eIDs and eDL.</li>
+			<li>ePassport PKI. CSCA and Document Signers, CVCAs, DVs and CV certificates (CVC) to Document Verifiers and Inspection Systems for <a href="docs/CVC_CA.html">EAC ePassports</a>, eIDs and eDL.</li>
 			<li>... and many many more ...</li>
 			</ul>
 			</subsection>

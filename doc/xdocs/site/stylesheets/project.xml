@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="EJBCA" href="https://www.ejbca.org/">
 
-    <title>EJBCA - Open Source PKI Certificate Authority</title>
+    <title>EJBCA - Open Source PKI Certificate Authority. PKI for Enterprise, IoT, Mobile, eIDAS, ePassport and more.</title>
     <body>
        <menusection name="Home" index="0" href="/index.html">
             <menu name="EJBCA">
