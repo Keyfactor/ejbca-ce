@@ -929,9 +929,21 @@
 		    	<exclude name="**/*.sh" />
 		    	<exclude name="**/jndi.properties" />
 		    	<exclude name="**/hs_err*" />
+                <exclude name="**/*.log" />
+                <exclude name=".metadata/**" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
 		    	<exclude name="lib/ext/openclover-ant/**" />
+                <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
+                <exclude name="modules/dist/**" />
+                <exclude name="modules/buildtools/build/**" />
+                <exclude name="modules/cesecore-common/build/**" />
+                <exclude name="modules/cesecore-ejb-interface/build/**" />
+                <exclude name="modules/cesecore-entity/build/**" />
+                <exclude name="modules/ejbca-common/build-common/**" />
+                <exclude name="modules/va/build-va-publisher/**" />
+                <!-- Exclude continious integration files -->
+                <exclude name="jenkins-files/**" />
 		    	<!-- Exclude Web Tests -->
 		    	<exclude name="modules/ejbca-webtest/**"/>
                 <exclude name="lib/ext/webtest/**"/>
