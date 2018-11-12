@@ -205,7 +205,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         final AuthenticationTokenMetaData authenticationTokenMetaData = AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(roleMember.getTokenType());
         final String tokenTypeString = getEjbcaWebBean().getText(authenticationTokenMetaData.getTokenType());
         final String tokenMatchKeyString = getEjbcaWebBean().getText(authenticationTokenMetaData.getAccessMatchValueIdMap().get(roleMember.getTokenMatchKey()).name());
-        return tokenTypeString + ":" + tokenMatchKeyString;
+        return tokenTypeString + ": " + tokenMatchKeyString;
     }
 
     /** @return true if the currently selected tokenType and tokenMatchKey combo implies that is has been issued by a CA */
