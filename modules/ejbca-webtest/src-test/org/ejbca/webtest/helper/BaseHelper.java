@@ -246,6 +246,16 @@ public class BaseHelper {
     }
 
     /**
+     * Selects a single option in the 'select' HTML element by name without assertion of selection.
+     *
+     * @param selectWebElement select web element.
+     * @param selectionOption option's names.
+     */
+    protected void selectOptionByName(final WebElement selectWebElement, final String selectionOption) {
+        selectOptionsByName(selectWebElement, Collections.singletonList(selectionOption), false);
+    }
+
+    /**
      * Selects a single option in the 'select' HTML element by value and asserts that the option is selected.
      *
      * @param selectId locator.
@@ -280,6 +290,20 @@ public class BaseHelper {
         // which causes the org.openqa.selenium.StaleElementReferenceException
         final WebElement selectedWebElement = findElement(selectId);
         assertSelectionOfAllOptions(new Select(selectedWebElement), selectionOptions, SELECT_BY.TEXT);
+    }
+
+    /**
+     * Selects options by name in the 'select' HTML element without assertion of selection.
+     *
+     * @param selectWebElement select web element.
+     * @param selectionOptions  a list of option names to select.
+     * @param useDeselectAll    deselection flag for the already selected options.
+     */
+    protected void selectOptionsByName(final WebElement selectWebElement, final List<String> selectionOptions, final boolean useDeselectAll) {
+        assertNotNull("Page select was not found", selectWebElement);
+        selectOptions(new Select(selectWebElement), selectionOptions, useDeselectAll, SELECT_BY.TEXT);
+        // For assertion, reload the object as a selection may trigger the refresh/reload event and modify the DOM
+        // which causes the org.openqa.selenium.StaleElementReferenceException
     }
 
     /**

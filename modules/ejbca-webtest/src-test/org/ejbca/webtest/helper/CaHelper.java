@@ -22,6 +22,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
+import java.util.List;
+
 /**
  * 'Certificate Authorities' helper class for EJBCA Web Tests.
  * 
@@ -204,6 +206,14 @@ public class CaHelper extends BaseHelper {
         }
     }
 
+    // TODO Refactor ECA-7343
+    public void selectApprovalProfileName(final String approvalProfileName) {
+        List<WebElement> approvalDropDowns = webDriver.findElements(By.xpath("//select[contains(@name, 'approvalprofile_')]"));
+        for (WebElement approvalDropDown : approvalDropDowns) {
+            new Select(approvalDropDown).selectByVisibleText(approvalProfileName);
+        }
+    }
+
     public void assertCrlLinkWorks(String caName ){
         String crlUrl = webDriver.findElement(Page.getCrlUrl(caName)).getAttribute("href");
         webDriver.get("view-source:" + crlUrl);
@@ -227,4 +237,5 @@ public class CaHelper extends BaseHelper {
     private String getCrlNumber(String caName) {
         return StringUtils.substringBetween(webDriver.findElement(Page.CONTAINER).getText(), caName, " Get CRL");
     }
+
 }

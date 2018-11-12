@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.webtest;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +28,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -250,7 +252,7 @@ public abstract class WebTestBase {
     }
 
     /**
-     * Removes the 'Administrator Role' using EJB instance.
+     * Removes the 'Administrator Role' by name using EJB instance.
      *
      * @param roleName role name for deletion.
      *
@@ -264,6 +266,23 @@ public abstract class WebTestBase {
         }
         else {
             log.error("Cannot remove Administrator Role [" + roleName + "].");
+        }
+    }
+
+    /**
+     * Removes the 'Approval Profile' by name using EJB instance.
+     *
+     * @param approvalProfileName approval profile name for deletion.
+     *
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeApprovalProfileByName(final String approvalProfileName) throws AuthorizationDeniedException {
+        final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
+        final Map<Integer, String> approvalIdNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
+        for (Map.Entry<Integer, String> approvalProfile : approvalIdNameMap.entrySet()) {
+            if (approvalProfile.getValue().equals(approvalProfileName)) {
+                approvalProfileSession.removeApprovalProfile(ADMIN_TOKEN, approvalProfile.getKey());
+            }
         }
     }
 }

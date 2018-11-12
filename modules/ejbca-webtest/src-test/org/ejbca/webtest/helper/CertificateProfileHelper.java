@@ -19,6 +19,7 @@ import org.openqa.selenium.WebElement;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -29,6 +30,40 @@ import static org.junit.Assert.fail;
  * @version $Id: CertificateProfileHelper.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 public class CertificateProfileHelper extends BaseHelper {
+
+    /**
+     * Enum of Approval Settings linking a setting with its index of web elements.
+     */
+    public enum ApprovalSetting {
+
+        /**
+         * Approval Settings / 'Add/Edit End Entity'
+         */
+        ADD_OR_EDIT_END_ENTITY(0),
+        /**
+         * Approval Settings / 'Key Recovery'
+         */
+        KEY_RECOVERY(1),
+        /**
+         * Approval Settings / 'Revocation'
+         */
+        REVOCATION(2);
+
+        private final int index;
+
+        ApprovalSetting(final int index) {
+            this.index = index;
+        }
+
+        /**
+         * Returns the setting index.
+         *
+         * @return the setting index.
+         */
+        public int getIndex() {
+            return index;
+        }
+    }
 
     /**
      * Contains constants and references of the 'Certificate Profiles' page.
@@ -316,6 +351,10 @@ public class CertificateProfileHelper extends BaseHelper {
          * QC Statements extension / 'Custom QC-statements Text'
          */
         static final By INPUT_QC_STATEMENTS_EXTENSION_CUSTOM_QC_STATEMENTS_TEXT = By.id("cpf:textfieldqccustomstringtext");
+        /**
+         * Approval Settings / '*'
+         */
+        static final By SELECT_APPROVAL_SETTINGS_ALL = By.cssSelector("[id$=approvalProfile]");
         // Buttons
         static final By BUTTON_CANCEL_PROFILE = By.id("cpf:cancelEditButton");
         static final By BUTTON_SAVE_PROFILE = By.id("cpf:saveProfileButton");
@@ -325,6 +364,10 @@ public class CertificateProfileHelper extends BaseHelper {
         // Dynamic references
         static By getCPTableRowContainingText(final String text) {
             return By.xpath(TABLE_CERTIFICATE_PROFILES + "//tr/td[text()='" + text + "']");
+        }
+
+        static By getViewButtonFromCPTableRowContainingText(final String text) {
+            return By.xpath(TABLE_CERTIFICATE_PROFILES + "//tr/td[text()='" + text + "']/following-sibling::td//input[@value='Edit']");
         }
 
         static By getEditButtonFromCPTableRowContainingText(final String text) {
@@ -367,6 +410,18 @@ public class CertificateProfileHelper extends BaseHelper {
         clickLink(Page.BUTTON_ADD);
         // Assert Certificate Profile exists
         assertCertificateProfileNameExists(certificateProfileName);
+    }
+
+    /**
+     * Opens the view page for a Certificate Profile, then asserts that the correct Certificate Profile is being viewed.
+     *
+     * @param certificateProfileName a Certificate Profile name.
+     */
+    public void openViewCertificateProfilePage(final String certificateProfileName) {
+        // Click edit button for Certificate Profile
+        clickLink(Page.getViewButtonFromCPTableRowContainingText(certificateProfileName));
+        // Assert correct edit page
+        assertCertificateProfileTitleExists(Page.TEXT_TITLE_EDIT_CERTIFICATE_PROFILE, "Certificate Profile: ", certificateProfileName);
     }
 
     /**
@@ -1339,12 +1394,45 @@ public class CertificateProfileHelper extends BaseHelper {
         assertCertificateProfileSaved();
     }
 
-    // Asserts the 'Certificate Profile' name exists.
-    private void assertCertificateProfileNameExists(final String certificateProfileName) {
+    /**
+     * Asserts the certificate profile name exists in the list.
+     *
+     * @param certificateProfileName certificate profile name.
+     */
+    public void assertCertificateProfileNameExists(final String certificateProfileName) {
         assertElementExists(
                 Page.getCPTableRowContainingText(certificateProfileName),
                 certificateProfileName + " was not found on 'Certificate Profiles' page."
         );
+    }
+
+    /**
+     * Selects the value by name in the select of Approval Setting by ApprovalSetting type.
+     *
+     * @param approvalSetting approval setting type.
+     * @param name text to select by.
+     */
+    public void selectApprovalSetting(final ApprovalSetting approvalSetting, final String name) {
+        final List<WebElement> approvalSettingElements = getListOfApprovalSettingElements();
+        assertApprovalSettingExistsInListOfElements(approvalSettingElements, approvalSetting);
+        final WebElement approvalSettingElement = approvalSettingElements.get(approvalSetting.getIndex());
+        selectOptionByName(approvalSettingElement, name);
+    }
+
+    /**
+     * Asserts the name is selected in the select f Approval Setting by ApprovalSetting type.
+     *
+     * @param approvalSetting approval setting type.
+     * @param name selected name.
+     */
+    public void assertApprovalSettingHasSelectedName(final ApprovalSetting approvalSetting, final String name) {
+        final List<WebElement> approvalSettingElements = getListOfApprovalSettingElements();
+        assertApprovalSettingExistsInListOfElements(approvalSettingElements, approvalSetting);
+        final WebElement approvalSettingElement = approvalSettingElements.get(approvalSetting.getIndex());
+        final List<String> approvalSettingSelectedNames = getSelectSelectedNames(approvalSettingElement);
+        assertNotNull("Approval Setting [" + approvalSetting.name() + "] was not found.", approvalSettingSelectedNames);
+        assertFalse("Approval Setting [" + approvalSetting.name() + "] selection is empty.", approvalSettingSelectedNames.isEmpty());
+        assertEquals("Value mismatch for Approval Setting [" + approvalSetting.name() + "].", name, approvalSettingSelectedNames.get(0));
     }
 
     // Asserts the 'Certificate Profile' name does not exist.
@@ -1384,6 +1472,17 @@ public class CertificateProfileHelper extends BaseHelper {
                 "Certificate Profile saved.",
                 certificateProfileSaveMessage.getText()
         );
+    }
+
+    private List<WebElement> getListOfApprovalSettingElements() {
+        final List<WebElement> approvalSettingElements = findElements(Page.SELECT_APPROVAL_SETTINGS_ALL);
+        assertNotNull("Cannot find Approval Setting elements.", approvalSettingElements);
+        assertFalse("Approval Setting elements are empty.", approvalSettingElements.isEmpty());
+        return approvalSettingElements;
+    }
+
+    private void assertApprovalSettingExistsInListOfElements(final List<WebElement> elements, final ApprovalSetting approvalSetting) {
+        assertFalse("Approval Setting [" + approvalSetting.name() + "] was not found", approvalSetting.getIndex() >= elements.size());
     }
 
 }
