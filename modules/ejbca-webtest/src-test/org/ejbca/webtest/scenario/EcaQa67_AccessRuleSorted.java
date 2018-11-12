@@ -44,7 +44,7 @@ public class EcaQa67_AccessRuleSorted extends WebTestBase {
     @BeforeClass
     public static void init() {
         // super
-        beforeClass(true, null);
+        beforeClass(true, null);//TODO ECA-7495 ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
         final WebDriver webDriver = getWebDriver();
         // Init helpers
         adminRolesHelper = new AdminRolesHelper(webDriver);
