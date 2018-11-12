@@ -12,111 +12,96 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.*;
-
-import java.util.List;
-
 import org.ejbca.webtest.WebTestBase;
-import org.ejbca.webtest.utils.ConfigurationConstants;
+import org.ejbca.webtest.helper.AdminRolesHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
+import org.junit.runners.MethodSorters;
+
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 
 /**
- * 
  * This test verifies the role template and access rules of Super Administrator template. In order to run the test, a Firefox profile
  * containing a superadmin certificate as first selection is required. The profile name can either be specified in /conf/profiles.properties
  * or a new Firefox profile can be created with the name 'superadmin'.
+ * <br/>
+ * Reference: <a href="https://jira.primekey.se/browse/ECAQA-78">ECAQA-78</a>
  * 
  * @version $Id: EcaQa78_SuperAdminAccess.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa78_SuperAdminAccess extends WebTestBase {
-    
-    private static WebDriver webDriver;
-    
+
+    // Helpers
+    private static AdminRolesHelper adminRolesHelper;
+
+    // Test Data
+    public static class TestData {
+        static final String ROLE_NAME = "Super Administrator Role";
+        static final String TEXT_SUPER_ADMINISTRATORS = "Super Administrators";
+        static final String TEXT_ALL_SELECTED = "All";
+    }
+
     @BeforeClass
     public static void init() {
-        beforeClass(true, ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
-        webDriver = getWebDriver();
+        // super
+        beforeClass(true, null);//TODO ECA-7495 ConfigurationConstants.PROFILE_FIREFOX_SUPERADMIN);
+        final WebDriver webDriver = getWebDriver();
+        // Init helpers
+        adminRolesHelper = new AdminRolesHelper(webDriver);
     }
     
     @AfterClass
     public static void exit() {
-        webDriver.quit();
+        // super
+        afterClass();
     }
     
     @Test
-    public void verifyAccessRules() {
-        webDriver.get(getAdminWebUrl());
-        WebElement adminRolesLink = webDriver.findElement(By.xpath("//a[contains(@href,'ejbca/adminweb/administratorprivileges/roles.xhtml')]"));
-        adminRolesLink.click();
-        
-        WebElement rolesListTable = webDriver.findElement(By.id("roles:list"));
-        WebElement superAdminRow = rolesListTable.findElement(By.xpath(".//td[contains(text(), 'Super Administrator Role')]"));
-        
-        try {
-            // role id 1 is expected to be superadmin
-            superAdminRow.findElement(By.xpath("../td/a[@href='rolemembers.xhtml?roleId=1']"));
-            superAdminRow.findElement(By.xpath("../td/a[@href='accessrules.xhtml?roleId=1']"));
-            superAdminRow.findElement(By.xpath("../td/div/input[@value='Rename']"));
-            superAdminRow.findElement(By.xpath("../td/div/input[@value='Delete']"));
-            webDriver.findElement(By.xpath("//input[@value='Add']"));
-        } catch (NoSuchElementException e) {
-            fail("Failed to locate link or button in admin roles: " + e.getMessage());
-        }
-        
-        superAdminRow.findElement(By.xpath("../td/a[@href='accessrules.xhtml?roleId=1']")).click();
-        
-        try {
-            assertEquals("Unexpected header at 'Edit Access Rules' page","Administrator Role : Super Administrator Role", webDriver.findElement(By.xpath("//h2")).getText());
-            assertEquals("Unexpected link text", "Back to Administrator Roles", webDriver.findElement(By.xpath("//a[@href='roles.xhtml']")).getText());
-            assertEquals("Unexpected link text", "Members", webDriver.findElement(By.xpath("//a[@href='rolemembers.xhtml?roleId=1']")).getText());
-            assertEquals("Unexpected link text", "Advanced Mode", webDriver.findElement(By.xpath("//a[@href='accessrules.xhtml?roleId=1&advanced=true']")).getText());
-            webDriver.findElement(By.xpath("//input[@value='Save']"));
-        } catch (NoSuchElementException e) {
-            fail("Could not locate item on page 'Edit Access Rules': " + e.getMessage());
-        }
-        
-        Select roleTemplate = new Select(webDriver.findElement(By.id("accessRulesForm:selectrole")));
-        Select authCas = new Select(webDriver.findElement(By.id("accessRulesForm:selectcas")));
-        Select eeRules = new Select(webDriver.findElement(By.id("accessRulesForm:selectendentityrules")));
-        Select eeps = new Select(webDriver.findElement(By.id("accessRulesForm:selectendentityprofiles")));
-        Select validators = new Select(webDriver.findElement(By.id("accessRulesForm:selectkeyvalidators")));
-        Select intKeyBindings = new Select(webDriver.findElement(By.id("accessRulesForm:selectinternalkeybindingrules")));
-        Select otherRules = new Select(webDriver.findElement(By.id("accessRulesForm:selectother")));
-        
-        assertEquals("Role template was not 'Super Administrators'", "Super Administrators", roleTemplate.getFirstSelectedOption().getText());
-        assertEquals("All CAs was not authorized for Super Admin Template", "All", authCas.getFirstSelectedOption().getText());
-        assertEquals("All End entity rules was not authorized for Super Admin Template", eeRules.getOptions().size(), eeRules.getAllSelectedOptions().size());
-        assertEquals("All End entity profiles was not authorized for Super Admin Template", "All", eeps.getFirstSelectedOption().getText());
-        assertEquals("All validators was not authorized for Super Admin Template", "All", validators.getFirstSelectedOption().getText());
-        assertEquals("All Internal key bindings was not authorized for Super Admin Template", intKeyBindings.getOptions().size(), intKeyBindings.getAllSelectedOptions().size());
-        assertEquals("All 'Other rules' was not authorized for Super Admin Template", otherRules.getOptions().size(), otherRules.getAllSelectedOptions().size());
-        
-        assertEquals("Authorized CAs was not disabled", "true", webDriver.findElement(By.id("accessRulesForm:selectcas")).getAttribute("disabled"));
-        assertEquals("End Entity Rules was not disabled", "true", webDriver.findElement(By.id("accessRulesForm:selectendentityrules")).getAttribute("disabled"));
-        assertEquals("End Entity Profiles was not disabled", "true", webDriver.findElement(By.id("accessRulesForm:selectendentityprofiles")).getAttribute("disabled"));
-        assertEquals("Validators was not disabled", "true", webDriver.findElement(By.id("accessRulesForm:selectkeyvalidators")).getAttribute("disabled"));
-        assertEquals("Internal Keybinding Rules was not disabled", "true", webDriver.findElement(By.id("accessRulesForm:selectinternalkeybindingrules")).getAttribute("disabled"));
-        assertEquals("Other Rules was not disabled", "true", webDriver.findElement(By.id("accessRulesForm:selectother")).getAttribute("disabled"));
-        
+    public void stepA_verifyManageAdministratorRolesView() {
+        adminRolesHelper.openPage(getAdminWebUrl());
+        adminRolesHelper.assertExistsMembersLinkForRole(TestData.ROLE_NAME);
+        adminRolesHelper.assertExistsAccessRulesLinkForRole(TestData.ROLE_NAME);
+        adminRolesHelper.assertExistsRenameButtonForRole(TestData.ROLE_NAME);
+        adminRolesHelper.assertExistsDeleteButtonForRole(TestData.ROLE_NAME);
+        adminRolesHelper.assertExistsAddRoleButton();
+    }
+
+    @Test
+    public void stepB_verifyAccessRulesViewInBasicMode() {
+        adminRolesHelper.openEditAccessRulesPage(TestData.ROLE_NAME);
+        // Check navigation links
+        adminRolesHelper.assertExistsBackToAdministratorRolesLink();
+        adminRolesHelper.assertExistsMembersLinkForRole();
+        adminRolesHelper.assertExistsAdvancedModeLink();
+        adminRolesHelper.assertExistsSaveButton();
+        // Check select's status
+        adminRolesHelper.assertRoleTemplateIsEnabled(true);
+        adminRolesHelper.assertAuthorizedCAsIsEnabled(false);
+        adminRolesHelper.assertEndEntityRulesIsEnabled(false);
+        adminRolesHelper.assertEndEntityProfilesIsEnabled(false);
+        adminRolesHelper.assertValidatorsIsEnabled(false);
+        adminRolesHelper.assertInternalKeybindingRulesIsEnabled(false);
+        adminRolesHelper.assertOtherRulesIsEnabled(false);
+        // Check selects' values
+        adminRolesHelper.assertRoleTemplateHasSelectedName(TestData.TEXT_SUPER_ADMINISTRATORS);
+        adminRolesHelper.assertAuthorizedCAsHasSelectedName(TestData.TEXT_ALL_SELECTED);
+        adminRolesHelper.assertEndEntityRulesHasAllSelected();
+        adminRolesHelper.assertEndEntityProfilesHasSelectedName(TestData.TEXT_ALL_SELECTED);
+        adminRolesHelper.assertValidatorsHasSelectedName(TestData.TEXT_ALL_SELECTED);
+        adminRolesHelper.assertInternalKeybindingRulesHasAllSelected();
+        adminRolesHelper.assertOtherRulesHasAllSelected();
+    }
+
+    @Test
+    public void stepC_verifyAccessRulesView() {
         // Go to advanced mode
-        webDriver.findElement(By.xpath("//a[@href='accessrules.xhtml?roleId=1&advanced=true']")).click();
-        WebElement radioRoot = webDriver.findElement(By.xpath("//span[contains(text(),'/')]"));
-        // Verify root ('/') is allowed
-        radioRoot.findElement(By.xpath("../..//input[contains(@checked, 'checked') and contains(@value, 'ALLOW')]"));
-        
-        List<WebElement> allRules = webDriver.findElements(By.xpath("//table[@class='selectStateRadio']"));
-        // Remove root (should always be first encountered element in DOM)
-        allRules.remove(0);
-        for (WebElement rule : allRules) {
-            WebElement checkedRadio = rule.findElement(By.xpath(".//input[@checked='checked']"));
-            assertEquals("UNDEFINED", checkedRadio.getAttribute("value"));
-        }
+        adminRolesHelper.switchViewModeFromBasicToAdvanced();
+        // Verify root ('/') is allowed 'ALLOW'
+        adminRolesHelper.assertRuleCheckedRadioButtonsHasValue(0, 0, "ALLOW");
+        // Remaining rules > 0 should have 'Inherit' checked with value 'UNDEFINED'
+        adminRolesHelper.assertRuleCheckedRadioButtonsHasValue(1, Integer.MAX_VALUE, "UNDEFINED");
     }
 }
