@@ -70,8 +70,7 @@ public interface CryptoTokenManagementSession {
      * @param properties a properties file containing implementation specific values
      * @param data the keystore data. If null a new, empty keystore will be created
      * @param authenticationCode the authentication code to the slot. Will not activate the slot if offline
-     *
-     * @throws AuthorizationDeniedException
+     * @throws AuthorizationDeniedException if caller is not authorized to create crypto tokens
      * @throws CryptoTokenNameInUseException
      * @throws CryptoTokenOfflineException
      * @throws CryptoTokenAuthenticationFailedException
@@ -91,7 +90,7 @@ public interface CryptoTokenManagementSession {
      * @param data  the keystore data. If null a new, empty keystore will be created
      * @param authenticationCode authenticationCode the authentication code to the slot
      * @return the ID of a newly persisted CryptoToken from the supplied parameters.
-     * @throws AuthorizationDeniedException
+     * @throws AuthorizationDeniedException if caller is not authorized to create crypto tokens
      * @throws CryptoTokenOfflineException
      * @throws CryptoTokenAuthenticationFailedException
      * @throws CryptoTokenNameInUseException
@@ -110,7 +109,7 @@ public interface CryptoTokenManagementSession {
      * @param tokenName
      * @param properties
      * @param authenticationCode
-     * @throws AuthorizationDeniedException
+     * @throws AuthorizationDeniedException if caller is not authorized to edit the crypto token
      * @throws CryptoTokenOfflineException
      * @throws CryptoTokenAuthenticationFailedException
      * @throws CryptoTokenNameInUseException
@@ -124,22 +123,30 @@ public interface CryptoTokenManagementSession {
      * Changes the name and key placeholders of a CryptoToken. Doesn't de-activate the crypto token,
      * and can't be used to change any other properties (e.g. PKCS#11 slot etc.) or the authentication code.
      *
-     * @param authenticationToken
+     * @param authenticationToken authentication token of the caller, for checking authorization
      * @param cryptoTokenId Id of the existing crypto token
      * @param newName New name of the crypto token.
      * @param newPlaceholders New key placeholders, in the same format as they are stored in the crypto token properties.
-     * @throws AuthorizationDeniedException
+     * @throws AuthorizationDeniedException if caller is not authorized to edit the crypto token
      * @throws CryptoTokenNameInUseException If the new name is already in use.
      */
     void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String newName, String newPlaceholders) throws AuthorizationDeniedException, CryptoTokenNameInUseException;
     
-    /** @return value object with non-sensitive information about the CryptoToken for UI use or similar, or null if token does not exist. */
+    /** Gets CryptoTokenInfo of a crypto token
+     * @param authenticationToken authentication token of the caller, for checking authorization
+     * @param cryptoTokenId Id of the existing crypto token
+     * @return value object (CryptoTokenInfo) with non-sensitive information about the CryptoToken for UI use or similar, or null if token does not exist. 
+     * @throws AuthorizationDeniedException if caller is not authorized to the crypto token */
     CryptoTokenInfo getCryptoTokenInfo(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
 
-    /** @return List value objects with non-sensitive information about authorized CryptoToken for UI use or similar. Returns empty list if no tokens exist. */
+    /** Gets CryptoTokenInfo of all crypto tokens the caller is authorized to
+     * @param authenticationToken authentication token of the caller, for checking authorization
+     * @return List value objects with non-sensitive information about authorized CryptoToken for UI use or similar. Returns empty list if no tokens exist. */
     List<CryptoTokenInfo> getCryptoTokenInfos(AuthenticationToken authenticationToken);
 
-    /** @return the cryptoTokenId from the more user friendly name. Return null of there is no such CryptoToken. */
+    /** 
+     * @param cryptoTokenName the name of the crypto token whose ID we want
+     * @return the cryptoTokenId from the more user friendly name. Return null of there is no such CryptoToken. */
     Integer getIdFromName(String cryptoTokenName);
 
     /** @return a List of all the key pair aliases present in the specified CryptoToken. */
