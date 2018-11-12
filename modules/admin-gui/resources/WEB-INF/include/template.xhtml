@@ -107,7 +107,7 @@
           <h:outputLink id="sysFuncsRoles" value="#{adminMenuBean.adminWebUrl}/administratorprivileges/roles.xhtml" rendered="#{adminMenuBean.authorizedToViewRoles}"><h:outputText value="#{web.text.NAV_ROLES}"/></h:outputLink>
           <h:outputLink id="sysFuncsKeyBindings" value="#{adminMenuBean.adminWebUrl}/keybind/keybindings.xhtml" rendered="#{adminMenuBean.authorizedViewInternalKeyBindings}"><h:outputText value="#{web.text.NAV_KEYBINDINGS}"/></h:outputLink>
           <h:outputLink id="sysFuncsPeerSystems" value="#{adminMenuBean.adminWebUrl}/peerconnector/peerconnectors.xhtml" rendered="#{adminMenuBean.authorizedToViewPeerConnectors}"><h:outputText value="#{web.text.NAV_PEERCONNECTOR}"/></h:outputLink>
-          <h:outputLink id="sysFuncsServices" value="#{adminMenuBean.adminWebUrl}/services/listservices.jsf" rendered="#{adminMenuBean.authorizedToViewServices}"><h:outputText value="#{web.text.NAV_SERVICES}"/></h:outputLink>
+          <h:outputLink id="sysFuncsServices" value="#{adminMenuBean.adminWebUrl}/services/listservices.xhtml" rendered="#{adminMenuBean.authorizedToViewServices}"><h:outputText value="#{web.text.NAV_SERVICES}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>
       <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSystemConfigurationHeader}">
