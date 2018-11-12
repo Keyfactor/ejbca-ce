@@ -162,12 +162,16 @@ public class CustomPublisherContainer extends BasePublisher {
         return new ArrayList<>();
     }
 	
-    public Properties getProperties() throws IOException {
+    public Properties getProperties() {
         final Properties properties = new Properties();
         final String propertyData = getPropertyData();
         // Re-Factor: Here the strings are escaped: \\ -> \; \n -> new line, etc.
         if (propertyData != null) {
-            properties.load(new ByteArrayInputStream(propertyData.getBytes()));
+            try {
+                properties.load(new ByteArrayInputStream(propertyData.getBytes()));
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not retrieve properties from database", e);
+            }
         }
         /*
          * The below code is only to be able to handle the change of our EnterpriseValidationAuthorityPublisher from
@@ -253,13 +257,9 @@ public class CustomPublisherContainer extends BasePublisher {
                 // publisher configured (Peer publisher for example)
                 log.info("Publisher class "+classPath+" is not available in this version/build of EJBCA.");
                 return null;
-            } catch (IllegalAccessException iae) {
+            } catch (IllegalAccessException | InstantiationException iae) {
                 throw new IllegalStateException(iae);
-            } catch (IOException ioe) {
-                throw new IllegalStateException(ioe);
-            } catch (InstantiationException ie) {
-                throw new IllegalStateException(ie);
-            }
+            } 
 		}
 		
 		return custompublisher;
