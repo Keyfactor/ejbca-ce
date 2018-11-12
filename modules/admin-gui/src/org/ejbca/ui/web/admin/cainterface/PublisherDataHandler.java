@@ -17,6 +17,7 @@ import java.io.Serializable;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -57,9 +58,10 @@ public class PublisherDataHandler implements Serializable {
 
     /**
      * Removes a publisher
-     * @throw AuthorizationDeniedException if not authorized, or if references exist.
+     * @throws AuthorizationDeniedException if not authorized
+     * @throws ReferencesToItemExistException if references exist.
      */
-    public void removePublisher(String name) throws AuthorizationDeniedException {
+    public void removePublisher(String name) throws ReferencesToItemExistException, AuthorizationDeniedException {
         publishersession.removePublisher(administrator, name);
     }
 
