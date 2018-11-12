@@ -23,6 +23,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
@@ -138,6 +139,9 @@ public class CaRemovePublisherCommand extends BaseCaAdminCommand {
             }
         } catch (AuthorizationDeniedException e1) {
             log.error("CLI User was not authorized to remove publishers.");
+            return CommandResult.AUTHORIZATION_FAILURE;
+        } catch (ReferencesToItemExistException e1) {
+            log.error("The publisher is in use. " + e1.getMessage());
             return CommandResult.AUTHORIZATION_FAILURE;
         }
         return CommandResult.SUCCESS;

@@ -41,6 +41,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -205,7 +206,7 @@ public class MultiGroupPublisherSystemTest {
     }
 
     @AfterClass
-    public static void afterClass() throws AuthorizationDeniedException {
+    public static void afterClass() throws AuthorizationDeniedException, ReferencesToItemExistException {
         log.trace(">afterClass");
         cleanup();
         log.trace("<afterClass");
@@ -296,16 +297,16 @@ public class MultiGroupPublisherSystemTest {
      * Tests that you can't remove a publisher that's referenced by a multi group publisher
      */
     @Test
-    public void disallowedRemoval() {
+    public void disallowedRemoval() throws AuthorizationDeniedException {
         try {
             publisherSession.removePublisher(alwaysAllowToken, LDAP_PUBLISHER1_NAME);
             fail("Should throw when trying to delete publisher that is in use by a multi group publisher");
-        } catch (AuthorizationDeniedException e) {
-            assertTrue("Exception message say that the publisher is in use by " + MGP_PUBLISHER_NAME + ". Message was: " + e.getMessage(), e.getMessage().contains("publisher '" + MGP_PUBLISHER_NAME + "'"));
+        } catch (ReferencesToItemExistException e) {
+            assertTrue("Exception message should say that the publisher is in use by " + MGP_PUBLISHER_NAME + ". Message was: " + e.getMessage(), e.getMessage().contains("publisher '" + MGP_PUBLISHER_NAME + "'"));
         }
     }
 
-    private static void cleanup() throws AuthorizationDeniedException {
+    private static void cleanup() throws AuthorizationDeniedException, ReferencesToItemExistException {
         log.debug("Cleaning up");
         cleanupEndEntity();
         internalCertificateStoreSession.removeCertificatesBySubject(CA_DN);

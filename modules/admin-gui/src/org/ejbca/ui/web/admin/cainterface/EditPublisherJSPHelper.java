@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -228,7 +229,7 @@ public class EditPublisherJSPHelper {
                         if(!publisher.trim().equals("")){
                             try {
                                 handler.removePublisher(publisher);
-                            } catch (AuthorizationDeniedException e) {
+                            } catch (ReferencesToItemExistException e) {
                                 setPublisherdeletefailed(true);
                                 setPublisherDeleteFailedMessage(e.getMessage());
                             }

@@ -21,6 +21,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
@@ -130,9 +131,10 @@ public interface PublisherSession {
      * @param admin AuthenticationToken of admin.
      * @param name the name of the publisher to remove.
      * 
-     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher, or if references exist.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     * @throws ReferencesToItemExistException if references exist from other items in the database.
      */
-    void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+    void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException, ReferencesToItemExistException;
 
     /**
      * Stores the certificate to the given collection of publishers. See
