@@ -74,14 +74,38 @@
                     <h3><h:outputLabel value="#{web.text.THEME}"/></h3>
                     <h:outputLabel styleClass="help" value="#{web.text.THEME_HELP}"/>
                 </h:panelGroup>
-                
                 <h:panelGroup>
                     <h:selectOneMenu id="theme" value="#{myPreferencesMBean.adminPreference.theme}">
                         <f:selectItems value="#{myPreferencesMBean.availableThemes}"/>
                     </h:selectOneMenu>
                 </h:panelGroup>
                  
+                <h:panelGroup>
+                    <h3><h:outputLabel value="#{web.text.NUMBEROFRECORDSPERPAGE}"/></h3>
+                    <h:outputLabel styleClass="help" value="#{web.text.NUMBEROFRECORDSPERPAGE_HELP}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:selectOneMenu id="entriesPerPage" value="#{myPreferencesMBean.adminPreference.entriesPerPage}">
+                        <f:selectItems value="#{myPreferencesMBean.possibleEntriesPerPage}"/>
+                    </h:selectOneMenu>
+                </h:panelGroup>
                 
+                <h:panelGroup>
+                    <h3><h:outputLabel value="#{web.text.CASTATUSONHOMEPAGE}"/></h3>
+                    <h:outputLabel styleClass="help" value="#{web.text.CASTATUSONHOMEPAGE_HELP}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:selectBooleanCheckbox id="frontpageCaStatus" value="#{myPreferencesMBean.adminPreference.frontpageCaStatus}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h3><h:outputLabel value="#{web.text.PUBLISHERQUEUESTATUSON}"/></h3>
+                    <h:outputLabel styleClass="help" value="#{web.text.PUBLISHERQUEUESTATUSON_HELP}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:selectBooleanCheckbox id="frontpagePublisherQueueStatus" value="#{myPreferencesMBean.adminPreference.frontpagePublisherQueueStatus}"/>
+                </h:panelGroup>
+                                
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>
                     <h:commandButton value="#{web.text.SAVE}" action="#{myPreferencesMBean.save}"/>
