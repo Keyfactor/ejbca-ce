@@ -71,8 +71,8 @@ public class X509CertificateAuthenticationTokenTest {
             SignatureException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         certificate = CertTools.genSelfCert(
-                "C=Test,O=Test,CN=Test,DC=Test,L=Test,SN=Test,ST=Test,OU=Test,T=Test,UID=Test,E=Test,RFC822NAME=Test,UPN=Test", 365, null,
-                keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+                "C=Test,O=Test,CN=Test,DC=Test,L=Test,SN=Test,ST=Test,OU=Test,T=Test,UID=Test,E=Test,EmailAddress=Test", 365, null,
+                keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
     }
 
     @After
