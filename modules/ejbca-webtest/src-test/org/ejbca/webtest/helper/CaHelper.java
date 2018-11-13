@@ -42,15 +42,15 @@ public class CaHelper extends BaseHelper {
         static final String CRL_PAGE_URI = "/ejbca/adminweb/ca/cafunctions.xhtml";
         static final By CRL_PAGE_LINK = By.id("caCafunctions");
         //
-        static final By BUTTON_CREATE_CA = By.xpath("//input[@name='buttoncreateca']");
-        static final By BUTTON_SAVE = By.xpath("//input[@name='buttoncreate' or @name='buttonsave']");
+        static final By BUTTON_CREATE_CA = By.id("managecas:buttoncreateca");
+        static final By BUTTON_SAVE = By.id("editcapage:buttoncreate");
         static final By BUTTON_EDIT = By.xpath("//input[@name='buttoneditca']");
         static final By BUTTON_RENEW_CA = By.xpath("//input[@name='buttonrenewca']");
         static final By BUTTON_DELETE_CA = By.xpath("//input[@name='buttondeleteca']");
 
-        static final By CANAME = By.xpath("//input[@name='textfieldcaname']");
+        static final By CANAME = By.id("managecas:textfieldcaname");
         static final By SELECT_CA = By.xpath("//select[@name='selectcas']");
-        static final By VALIDITY = By.id("textfieldvalidity");
+        static final By VALIDITY = By.id("editcapage:textfieldvalidity");
         static final By SUBJECT_DN = By.id("textfieldsubjectdn");
 
         static final By CONTAINER = By.xpath("//div[@class='container']");
@@ -208,7 +208,7 @@ public class CaHelper extends BaseHelper {
 
     // TODO Refactor ECA-7343
     public void selectApprovalProfileName(final String approvalProfileName) {
-        List<WebElement> approvalDropDowns = webDriver.findElements(By.xpath("//select[contains(@name, 'approvalprofile_')]"));
+        List<WebElement> approvalDropDowns = webDriver.findElements(By.xpath("//select[contains(@name, ':approvalprofile')]"));
         for (WebElement approvalDropDown : approvalDropDowns) {
             new Select(approvalDropDown).selectByVisibleText(approvalProfileName);
         }
