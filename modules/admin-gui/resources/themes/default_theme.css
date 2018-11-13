@@ -1109,6 +1109,12 @@ table#config tr td:first-child {
 .listColumn1 { text-align: left; width: 40%; }
 .listColumn2 { text-align: left; width: 60%; }
 
+/* --- Table: My Preferences */
+.myPreferencesColumn { 
+    text-align: left; 
+    width: 50%; 
+}
+    
 /* --- Table: SUP > Logs */
 
 td#InfoRow0 { color: black; font-size: 9pt; background-color: white; }
