@@ -37,12 +37,13 @@ import org.ejbca.ui.web.admin.configuration.WebLanguage;
 public class MyPreferencesMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 2L;
-    //private static final Logger log = Logger.getLogger(MyPreferencesMBean.class);
 
     private AdminPreference adminPreference;
     
     List<SelectItem> availableLanguages;
     List<SelectItem> availableThemes;
+    List<SelectItem> possibleEntriesPerPage;
+    
     
     // Authentication check and audit log page access request
     public void initialize(final ComponentSystemEvent event) throws Exception {
@@ -54,13 +55,12 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
             adminPreference = getEjbcaWebBean().getAdminPreference();
             initAvailableLanguages();
             initThemes();
+            initPossibleEntriesPerPage();
         }
     }
-    
-    public void initAvailableLanguages() {
-        
+
+    private void initAvailableLanguages() {
         availableLanguages = new ArrayList<>();
-        
         final List<WebLanguage> availableWebLanguages = getEjbcaWebBean().getWebLanguages();
         for (final WebLanguage availableWebLanguage : availableWebLanguages) {
             final SelectItem availableLanguage = new SelectItem(availableWebLanguage.getId(), availableWebLanguage.toString());
@@ -68,12 +68,21 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
         }
     }
     
-    public void initThemes() {
+    private void initThemes() {
         availableThemes = new ArrayList<>();
         final String[] themes = getEjbcaWebBean().getGlobalConfiguration().getAvailableThemes();
         for (final String theme : themes) {
             final SelectItem availableTheme = new SelectItem(theme);
             availableThemes.add(availableTheme);
+        }
+    }
+
+    private void initPossibleEntriesPerPage() {
+        possibleEntriesPerPage = new ArrayList<>();
+        final String[] possibleEntiresPerPage = getEjbcaWebBean().getGlobalConfiguration().getPossibleEntiresPerPage();
+        for (final String value : possibleEntiresPerPage) {
+            final SelectItem possibleEntryValue = new SelectItem(Integer.parseInt(value));
+            possibleEntriesPerPage.add(possibleEntryValue);
         }
     }
     
@@ -88,7 +97,11 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
     public List<SelectItem> getAvailableThemes() {
         return availableThemes;
     }
-
+    
+    public List<SelectItem> getPossibleEntriesPerPage() {
+        return possibleEntriesPerPage;
+    }
+    
     /**
      * Save action.
      * @return the navigation outcome defined in faces-config.xml.
@@ -106,11 +119,13 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
         } catch (final AdminDoesntExistException e) {
             addNonTranslatedErrorMessage(e.getMessage());
         }
+        addInfoMessage("MY_PREFERENCES_SAVED");
         return "done";
     }
     
     public String cancel() {
         reset();
+        addInfoMessage("MY_PREFERENCES_CANCELED");
         return "done";
     }
     

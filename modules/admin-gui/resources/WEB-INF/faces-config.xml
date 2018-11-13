@@ -432,6 +432,14 @@
   	</navigation-case>
   </navigation-rule>
   
+  <navigation-rule>
+    <from-view-id>/mypreferences.xhtml</from-view-id>
+    <navigation-case>
+        <from-outcome>done</from-outcome>
+        <to-view-id>/mypreferences.xhtml</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  
   <factory>
   		<exception-handler-factory>org.ejbca.ui.web.admin.CaExceptionHandlerFactory</exception-handler-factory>
   </factory>
