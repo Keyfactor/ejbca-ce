@@ -602,6 +602,10 @@ public class EjbcaWebBean implements Serializable {
         return adminsweblanguage.getText(template);
     }
 
+    public List<WebLanguage> getWebLanguages() {
+        return adminsweblanguage.getWebLanguages();
+    }
+    
     /**
      * @param template the entry in the language file to get
      * @param unescape true if html entities should be unescaped (&auml; converted to the real char)

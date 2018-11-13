@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:component="http://java.sun.com/jsf/composite/component"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+
+<ui:remove>
+	<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     -->
+</ui:remove>
+
+<f:metadata> 
+    <f:event type="preRenderView" listener="#{myPreferencesMBean.initialize}"/> 
+</f:metadata> 
+
+<ui:composition template="/WEB-INF/include/template.xhtml">
+	<ui:define name="content">
+		<h:panelGroup>
+			<h1>
+			    <h:outputText value="#{web.text.ADMINISTRATORPREFERENCES}" />
+			</h1>
+			<h2>
+                <h:outputText value="#{web.text.FORADMIN} #{ejbcawebbean.getUsersCommonName()}" />
+			</h2>
+		</h:panelGroup>
+		<h:form id="defaultmypreferences">
+		
+            <h:panelGrid id="config" width="100%" styleClass="action" columns="2" border="0" cellspacing="3" cellpadding="3" rowClasses="Row0,Row1" columnClasses="myPreferencesColumn, myPreferencesColumn">
+                <h:panelGroup>
+                    &nbsp;
+                </h:panelGroup>
+                <h:panelGroup>
+                    &nbsp;
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h3><h:outputLabel value="#{web.text.PREFEREDLANGUAGE}"/></h3>
+                    <h:outputLabel styleClass="help" value="#{web.text.PREFEREDLANGUAGE_HELP}"/>
+                </h:panelGroup>    
+                <h:panelGroup>
+                    <h:selectOneMenu id="preferredLanguage" value="#{myPreferencesMBean.adminPreference.preferedLanguage}" converter="javax.faces.Integer">
+	                    <f:selectItems value="#{myPreferencesMBean.availableLanguages}"/>
+	                </h:selectOneMenu>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h3><h:outputLabel value="#{web.text.SECONDARYLANGUAGE}"/></h3>
+                    <h:outputLabel styleClass="help" value="#{web.text.SECONDARYLANGUAGE_HELP}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:selectOneMenu id="secondaryLanguage" value="#{myPreferencesMBean.adminPreference.secondaryLanguage}" converter="javax.faces.Integer">
+                        <f:selectItems value="#{myPreferencesMBean.availableLanguages}"/>
+                    </h:selectOneMenu>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h3><h:outputLabel value="#{web.text.THEME}"/></h3>
+                    <h:outputLabel styleClass="help" value="#{web.text.THEME_HELP}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:selectOneMenu id="theme" value="#{myPreferencesMBean.adminPreference.theme}">
+                        <f:selectItems value="#{myPreferencesMBean.availableThemes}"/>
+                    </h:selectOneMenu>
+                </h:panelGroup>
+                 
+                
+                <h:panelGroup>&nbsp;</h:panelGroup>
+                <h:panelGroup>
+                    <h:commandButton value="#{web.text.SAVE}" action="#{myPreferencesMBean.save}"/>
+                    <h:commandButton value="#{web.text.CANCEL}" action="#{myPreferencesMBean.cancel}" immediate="true"/>
+                </h:panelGroup>
+            </h:panelGrid>
+		</h:form>
+		
+	</ui:define>
+</ui:composition>
+</html>

@@ -162,6 +162,12 @@
     	    <value>#{systemConfigMBean}</value>
     	</managed-property>
   </managed-bean>
+  <managed-bean>
+        <managed-bean-name>myPreferencesMBean</managed-bean-name>
+        <managed-bean-class>org.ejbca.ui.web.admin.mypreferences.MyPreferencesMBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  
   
   <validator>
         <validator-id>dummyValidator</validator-id>

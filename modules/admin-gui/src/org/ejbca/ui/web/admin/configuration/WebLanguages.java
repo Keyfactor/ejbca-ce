@@ -16,6 +16,8 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletContext;
 
@@ -38,14 +40,23 @@ public class WebLanguages implements java.io.Serializable {
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
+    private final int userspreferedlanguage;
+    private final int userssecondarylanguage;
+
+    private String[] availablelanguages;
+    private String[] languagesenglishnames;
+    private String[] languagesnativenames;
+    private LanguageProperties[] languages = null;
+    private List<WebLanguage> webLanguages;
+    
     /** Constructor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
     /** Special constructor used by Ejbca web bean */
-    private void init(ServletContext servletContext, GlobalConfiguration globalconfiguration) {
+    private void init(final ServletContext servletContext, final GlobalConfiguration globalconfiguration) {
         if(languages == null){
             // Get available languages.
             availablelanguages=null;
-            String availablelanguagesstring = globalconfiguration.getAvailableLanguagesAsString();
+            final String availablelanguagesstring = globalconfiguration.getAvailableLanguagesAsString();
             availablelanguages =  availablelanguagesstring.split(",");
             for(int i=0; i < availablelanguages.length;i++){
                 availablelanguages[i] = availablelanguages[i].trim().toLowerCase();
@@ -60,7 +71,7 @@ public class WebLanguages implements java.io.Serializable {
             languages = new LanguageProperties[availablelanguages.length];
             for(int i = 0; i < availablelanguages.length; i++){
                 languages[i] = new LanguageProperties();
-                String propsfile = "/" + globalconfiguration.getLanguagePath() + "/"
+                final String propsfile = "/" + globalconfiguration.getLanguagePath() + "/"
                 + globalconfiguration.getLanguageFilename() + "."
                 + availablelanguages[i] +".properties";
                 
@@ -83,7 +94,7 @@ public class WebLanguages implements java.io.Serializable {
                     } finally {
                         if (is != null) {is.close();}
                     }
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     throw new IllegalStateException("Properties file " + propsfile + " could not be read.", e);
                 }
                
@@ -91,14 +102,23 @@ public class WebLanguages implements java.io.Serializable {
             // Get languages English and native names
             languagesenglishnames = new String[availablelanguages.length];
             languagesnativenames = new String[availablelanguages.length];
+            
+            webLanguages = new ArrayList<WebLanguage>();
+            
             for(int i = 0; i < availablelanguages.length; i++){
-                languagesenglishnames[i] = languages[i].getProperty("LANGUAGE_ENGLISHNAME");
-                languagesnativenames[i] = languages[i].getProperty("LANGUAGE_NATIVENAME");
+                final String englishName = languages[i].getProperty("LANGUAGE_ENGLISHNAME");
+                final String nativeName = languages[i].getProperty("LANGUAGE_NATIVENAME");
+                final String abbreviation = availablelanguages[i];
+                
+                languagesenglishnames[i] = englishName;
+                languagesnativenames[i] = nativeName;
+                
+                webLanguages.add(new WebLanguage(i, englishName, nativeName, abbreviation));
             }
         }
     }
-
-    public WebLanguages(ServletContext servletContext, GlobalConfiguration globalconfiguration, int preferedlang, int secondarylang) {
+    
+    public WebLanguages(final ServletContext servletContext, final GlobalConfiguration globalconfiguration, final int preferedlang, final int secondarylang) {
         init(servletContext, globalconfiguration);
         this.userspreferedlanguage=preferedlang;
         this.userssecondarylanguage=secondarylang;
@@ -106,7 +126,7 @@ public class WebLanguages implements java.io.Serializable {
 
 
     /** The main method that looks up the template text in the users preferred language. */
-    public  String getText(String template, Object... params){
+    public  String getText(final String template, final Object... params){
       String returnvalue = null;
       try{
         returnvalue= languages[userspreferedlanguage].getMessage(template, params);
@@ -116,7 +136,7 @@ public class WebLanguages implements java.io.Serializable {
         if(returnvalue == null){
             returnvalue= intres.getLocalizedMessage(template, params);
         }        
-      }catch(java.lang.NullPointerException e){}
+      }catch(final java.lang.NullPointerException e){}
       if(returnvalue == null) {
         returnvalue = template;
       }
@@ -138,14 +158,8 @@ public class WebLanguages implements java.io.Serializable {
       return languagesnativenames;
     }
 
-
-    // Protected fields
-    private int userspreferedlanguage;
-    private int userssecondarylanguage;
-
-    private String[] availablelanguages;
-    private String[] languagesenglishnames;
-    private String[] languagesnativenames;
-    private LanguageProperties[] languages = null;
-
+    /* Returns a list of available languages for EJBCA */
+    public List<WebLanguage> getWebLanguages() {
+        return webLanguages;
+    }
 }
