@@ -85,7 +85,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     @Test
     public void testC_editCaExpectNoNameChangeAvailable() {
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.edit(webDriver, caName);
+        caHelper.edit(caName);
         try {
             webDriver.findElement(By.id("idcheckboxcanamechange"));
             webDriver.findElement(By.id("idnewsubjectdn"));
@@ -104,7 +104,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     @Test
     public void testE_editCaExpectNameChangeAvailable() {
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.edit(webDriver, caName);
+        caHelper.edit(caName);
         try {
             webDriver.findElement(By.id("idcheckboxcanamechange"));
             WebElement newDn = webDriver.findElement(By.id("idnewsubjectdn"));

@@ -34,6 +34,7 @@ public class CaStructureHelper extends BaseHelper {
         static final String CRL_PAGE_URI = "/ejbca/adminweb/ca/cafunctions.xhtml";
         static final By CRL_PAGE_LINK = By.id("caCafunctions");
 
+        static final By CONTAINER = By.xpath("//div[@class='container']");
 
         // Dynamic references
         static By getCrlUrl(final String caName) {
@@ -42,6 +43,9 @@ public class CaStructureHelper extends BaseHelper {
 
         static By getPreContainsCaName(final String caName) {
             return By.xpath("//pre[contains(text(), '" + caName + "')]");
+        }
+        static By getCrlCreateButonByCaName(final String caName) {
+            return By.xpath("//a[text() = 'Get CRL' and contains(@href, 'CN=" + caName + "')]/following-sibling::form/input[contains(@value, 'Create CRL')]");
         }
     }
 
@@ -76,14 +80,14 @@ public class CaStructureHelper extends BaseHelper {
     public void clickCrlLinkAndAssertNumberIncreased(String caName){
         int crlNumber = getCrlNumber(caName);
         // Click 'Create CRL' button
-        webDriver.findElement(CaHelper.Page.getCrlCreateButonByCaName(caName)).click();
+        clickLink(Page.getCrlCreateButonByCaName(caName));
         // Make sure that the CRL number has been incremented
         assertEquals("The CRL number was not incremented.", crlNumber + 1, getCrlNumber(caName));
     }
 
 
     private int getCrlNumber(String caName) {
-        String crlText = StringUtils.substringBetween(webDriver.findElement(CaHelper.Page.CONTAINER).getText(), caName, " Get CRL");
+        String crlText = StringUtils.substringBetween(webDriver.findElement(Page.CONTAINER).getText(), caName, " Get CRL");
         return Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
     }
 }
