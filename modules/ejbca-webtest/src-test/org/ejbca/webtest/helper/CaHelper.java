@@ -12,17 +12,15 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
-import java.util.List;
+import static org.junit.Assert.fail;
 
 /**
  * 'Certificate Authorities' helper class for EJBCA Web Tests.
@@ -39,8 +37,6 @@ public class CaHelper extends BaseHelper {
         static final String PAGE_URI = "/ejbca/adminweb/ca/editcas/managecas.xhtml";
         static final By PAGE_LINK = By.id("caEditcas");
 
-        static final String CRL_PAGE_URI = "/ejbca/adminweb/ca/cafunctions.xhtml";
-        static final By CRL_PAGE_LINK = By.id("caCafunctions");
         //
         static final By BUTTON_CREATE_CA = By.id("managecas:buttoncreateca");
         static final By BUTTON_SAVE = By.id("editcapage:buttoncreate");
@@ -49,7 +45,7 @@ public class CaHelper extends BaseHelper {
         static final By BUTTON_DELETE_CA = By.xpath("//input[@name='buttondeleteca']");
 
         static final By CANAME = By.id("managecas:textfieldcaname");
-        static final By SELECT_CA = By.xpath("//select[@name='selectcas']");
+        static final By SELECT_CA = By.id("managecas:selectcas");
         static final By VALIDITY = By.id("editcapage:textfieldvalidity");
         static final By SUBJECT_DN = By.id("textfieldsubjectdn");
 
@@ -61,13 +57,6 @@ public class CaHelper extends BaseHelper {
         static By getCrlCreateButonByCaName(final String caName) {
             return By.xpath("//a[text() = 'Get CRL' and contains(@href, 'CN=" + caName + "')]/following-sibling::form/input[contains(@value, 'Create CRL')]");
         }
-        static By getPreContainsCaName(final String caName) {
-            return By.xpath("//pre[contains(text(), '" + caName + "')]");
-        }
-        static By getCrlUrl(final String caName) {
-            return By.xpath("//a[text()='Get CRL' and contains(@href, '" + caName + "')]");
-        }
-
 
     }
 
@@ -84,15 +73,6 @@ public class CaHelper extends BaseHelper {
         openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);
     }
 
-    /**
-     * Opens the page 'Certificate Authorities' by clicking menu link on home page and asserts the correctness of resulting URI.
-     *
-     * @param webUrl home page URL.
-     */
-    public void openCrlPage(final String webUrl) {
-        openPageByLinkAndAssert(webUrl, Page.CRL_PAGE_LINK, Page.CRL_PAGE_URI);
-    }
-    
     /**
      * Adds a new CA. Browser will end up in the edit page for this CA once method is done.
      *
@@ -212,30 +192,6 @@ public class CaHelper extends BaseHelper {
         for (WebElement approvalDropDown : approvalDropDowns) {
             new Select(approvalDropDown).selectByVisibleText(approvalProfileName);
         }
-    }
-
-    public void assertCrlLinkWorks(String caName ){
-        String crlUrl = webDriver.findElement(Page.getCrlUrl(caName)).getAttribute("href");
-        webDriver.get("view-source:" + crlUrl);
-        try {
-            webDriver.findElement(Page.getPreContainsCaName(caName));
-        } catch (NoSuchElementException e) {
-            fail("The CRL didn't contain the CA's name.");
-        }
-    }
-
-    public void clickCrlLinkAndAssertNumberIncreased(String caName){
-        String crlText = getCrlNumber(caName);
-        int crlNumber = Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
-        // Click 'Create CRL' button
-        webDriver.findElement(Page.getCrlCreateButonByCaName(caName)).click();
-        // Make sure that the CRL number has been incremented
-        crlText = getCrlNumber(caName);
-        assertEquals("The CRL number was not incremented.", crlNumber + 1, Integer.parseInt(StringUtils.substringAfter(crlText, "number ")));
-    }
-
-    private String getCrlNumber(String caName) {
-        return StringUtils.substringBetween(webDriver.findElement(Page.CONTAINER).getText(), caName, " Get CRL");
     }
 
 }

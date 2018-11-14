@@ -12,24 +12,19 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import java.util.Arrays;
 
-import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.helper.CaStructureHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-
-import java.util.Arrays;
 
 /**
  * This test aims is to create CRLs and download CRLs and check if these operations are successful.
@@ -45,6 +40,7 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
     private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
+    private static CaStructureHelper caStructureHelper;
     private static AuditLogHelper auditLogHelper;
     // Test Data
     private static class TestData {
@@ -58,6 +54,7 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
         webDriver = getWebDriver();
         // Init helpers
         caHelper = new CaHelper(webDriver);
+        caStructureHelper = new CaStructureHelper(webDriver);
         auditLogHelper = new AuditLogHelper(webDriver);
     }
 
@@ -103,13 +100,13 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
     }
 
     @Test
-    public void testB_crl() {
+    public void stepB_crl() {
         // Update default timestamp
         auditLogHelper.initFilterTime();
-        caHelper.openCrlPage(getAdminWebUrl());
-        caHelper.assertCrlLinkWorks(TestData.CA_NAME);
-        caHelper.openCrlPage(getAdminWebUrl());
-        caHelper.clickCrlLinkAndAssertNumberIncreased(TestData.CA_NAME);
+        caStructureHelper.openCrlPage(getAdminWebUrl());
+        caStructureHelper.assertCrlLinkWorks(TestData.CA_NAME);
+        caStructureHelper.openCrlPage(getAdminWebUrl());
+        caStructureHelper.clickCrlLinkAndAssertNumberIncreased(TestData.CA_NAME);
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.assertLogEntryByEventText(
