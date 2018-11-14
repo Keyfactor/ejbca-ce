@@ -50,7 +50,7 @@ public class P11Slot {
     private final String libraryFileName;
     
     private P11Slot(final Pkcs11SlotLabelType slotLabelType, final String slotLabel, final String sharedLibrary, final String attributesFile,
-            final String friendlyName) throws NoSuchSlotException {
+            final String friendlyName, boolean addProvider) throws NoSuchSlotException {
         this.slotLabelType = slotLabelType;
         this.slotLabel = slotLabel;
         this.sharedLibrary = sharedLibrary;
@@ -60,10 +60,10 @@ public class P11Slot {
         if (provider==null) {
             throw new NoSuchSlotException("Slot labeled " + slotLabel + " could not be located.");
         }
-        addProviderIfNotExisting();
+        addProviderIfNotExisting(addProvider);
     }
 
-    private P11Slot(final String sunP11ConfigFileName) throws NoSuchSlotException {
+    private P11Slot(final String sunP11ConfigFileName, boolean addProvider) throws NoSuchSlotException {
         this.slotLabelType = Pkcs11SlotLabelType.SUN_FILE;
         this.sunP11ConfigFileName = sunP11ConfigFileName;
         this.slotLabel = null;
@@ -73,10 +73,15 @@ public class P11Slot {
         if (this.provider==null) {
             throw new NoSuchSlotException("Slot configured in " + sunP11ConfigFileName + " could not be located.");
         }
-        addProviderIfNotExisting();
+        addProviderIfNotExisting(addProvider);
     }
 
-    private void addProviderIfNotExisting() {
+    /** Add a PKCS11 Crypto Provider to Java Security.addProvider, if it is not already added, and add==true.
+     * The add parameter can seem redundant, but it is here in order to centralize control of what is added as a 
+     * Crypto Provider, instead if distributing it to multiple places in the code.
+     * @param add default value should be true, set to false to create a P11 slot without actually adding the P11 provider to Java Security
+     */
+    private void addProviderIfNotExisting(boolean add) {
         // If we already have a provider installed, it means there is another Crypto Token already using this slot
         // It can potentially be a Database Integrity Protection Crypto Token
         // We can't remove the already existing provider as that will cause the existing one to stop working. 
@@ -91,9 +96,14 @@ public class P11Slot {
             provider = Security.getProvider(provider.getName());
             log.info("Found an existing PKCS#11 Provider while activating Crypto Token, re-using that instead of a new one: "+provider.getName());
         } else {
-            Security.addProvider(provider);
-            if (log.isDebugEnabled()) {
-                log.debug("PKCS#11 Provider successfully added: "+provider.getName());
+        	// Give the possibility to create a P11 slot without actually adding the P11 provider to Java Security
+            if (add) {
+                Security.addProvider(provider);
+                if (log.isDebugEnabled()) {
+                    log.debug("PKCS#11 Provider successfully added: "+provider.getName());
+                }
+            } else {
+                log.info("Did not find an existing PKCS#11 Provider while activating Crypto Token, but was configured to not add one either: "+provider.getName());
             }
         }
     }
@@ -162,14 +172,15 @@ public class P11Slot {
      * @param attributesFile Attributes file. Optional. Set to null if not used
      * @param token Token that should use this object
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
+     * @param addProvider default value should be true, set to false to create a P11 slot without actually adding the P11 provider to Java Security
      * @return P11Slot
      * @throws CryptoTokenOfflineException if token can not be activated
      * @throws NoSuchSlotException if no slot with the label defined by slotLabel could be found
      */
     public static P11Slot getInstance(final String slotLabel, final String sharedLibrary, final Pkcs11SlotLabelType slotLabelType, 
-            final String attributesFile, final P11SlotUser token, final int id) throws CryptoTokenOfflineException, NoSuchSlotException {       
+            final String attributesFile, final P11SlotUser token, final int id, boolean addProvider) throws CryptoTokenOfflineException, NoSuchSlotException {       
         final String friendlyName = slotLabel + sharedLibrary + slotLabelType.toString();
-        return getInstance(friendlyName, slotLabel, sharedLibrary, slotLabelType, attributesFile, token, id);
+        return getInstance(friendlyName, slotLabel, sharedLibrary, slotLabelType, attributesFile, token, id, addProvider);
     }
 
     /**
@@ -181,35 +192,37 @@ public class P11Slot {
      * @param attributesFile Attributes file. Optional. Set to null if not used
      * @param p11SlotUser Token that should use this object
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
+     * @param addProvider default value should be true, set to false to create a P11 slot without actually adding the P11 provider to Java Security
      * @return P11Slot
      * @throws CryptoTokenOfflineException if token can not be activated
      * @throws NoSuchSlotException if no slot by the given label could be found
      */
     public static P11Slot getInstance(final String friendlyName, final String slotLabel, final String sharedLibrary, final Pkcs11SlotLabelType slotLabelType, 
-            final String attributesFile, final P11SlotUser p11SlotUser, final int id) throws NoSuchSlotException, CryptoTokenOfflineException {
+            final String attributesFile, final P11SlotUser p11SlotUser, final int id, boolean addProvider) throws NoSuchSlotException, CryptoTokenOfflineException {
         if (log.isDebugEnabled()) {
-        	log.debug("P11Slot.getInstance(): "+String.valueOf(slotLabelType)+"'"+slotLabel+"', '"+sharedLibrary+"', "+", '"+attributesFile+"', "+id);
+            log.debug("P11Slot.getInstance(): "+String.valueOf(slotLabelType)+"'"+slotLabel+"', '"+sharedLibrary+"', "+", '"+attributesFile+"', "+id);
         }
-        return getInstance(slotLabelType, friendlyName, slotLabel, sharedLibrary, attributesFile, null, p11SlotUser, id);
+        return getInstance(slotLabelType, friendlyName, slotLabel, sharedLibrary, attributesFile, null, p11SlotUser, id, addProvider);
     }
     /**
      * As {@link #getInstance(String, String, boolean, String, org.ejbca.util.keystore.P11Slot.P11SlotUser)} but is using config file instead parameters. Do only use this method if the P11 shared library is ony specified in this config file.
      * @param sunP11ConfigFileName name of config file
      * @param p11SlotUser Token that should use this object.
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
+     * @param addProvider default value should be true, set to false to create a P11 slot without actually adding the P11 provider to Java Security
      * @return a new P11Slot instance
      * @throws CryptoTokenOfflineException
      * @throws NoSuchSlotException if no slot defined by the label in configFileName could be found.
      */
-    public static P11Slot getInstance(final String sunP11ConfigFileName, final P11SlotUser p11SlotUser, final int id) throws NoSuchSlotException, CryptoTokenOfflineException {
+    public static P11Slot getInstance(final String sunP11ConfigFileName, final P11SlotUser p11SlotUser, final int id, boolean addProvider) throws NoSuchSlotException, CryptoTokenOfflineException {
         if (log.isDebugEnabled()) {
             log.debug("P11Slot.getInstance(): '"+sunP11ConfigFileName+"', "+Pkcs11SlotLabelType.SUN_FILE.toString()+", "+id);
         }
-        return getInstance(Pkcs11SlotLabelType.SUN_FILE, null, null, null, null, sunP11ConfigFileName, p11SlotUser, id);
+        return getInstance(Pkcs11SlotLabelType.SUN_FILE, null, null, null, null, sunP11ConfigFileName, p11SlotUser, id, addProvider);
     }
 
     private static P11Slot getInstance(final Pkcs11SlotLabelType slotLabelType, final String friendlyName, final String slotLabel, final String sharedLibrary,
-            final String attributesFile, final String sunP11ConfigFileName, final P11SlotUser p11SlotUser, final int id) throws NoSuchSlotException, CryptoTokenOfflineException {
+            final String attributesFile, final String sunP11ConfigFileName, final P11SlotUser p11SlotUser, final int id, boolean addProvider) throws NoSuchSlotException, CryptoTokenOfflineException {
         try {
             final String slotMapKey;
             if (Pkcs11SlotLabelType.SUN_FILE.equals(slotLabelType)) {
@@ -228,9 +241,9 @@ public class P11Slot {
                 p11Slot = slotMap.get(slotMapKey);
                 if (p11Slot==null) {
                     if (Pkcs11SlotLabelType.SUN_FILE.equals(slotLabelType)) {
-                        p11Slot = new P11Slot(sunP11ConfigFileName);
+                        p11Slot = new P11Slot(sunP11ConfigFileName, addProvider);
                     } else {
-                        p11Slot = new P11Slot(slotLabelType, slotLabel, sharedLibrary, attributesFile, friendlyName);
+                        p11Slot = new P11Slot(slotLabelType, slotLabel, sharedLibrary, attributesFile, friendlyName, addProvider);
                     }
                     slotMap.put(slotMapKey, p11Slot);
                 }
