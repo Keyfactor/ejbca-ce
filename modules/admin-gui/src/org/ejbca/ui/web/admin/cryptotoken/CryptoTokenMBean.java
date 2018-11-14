@@ -33,6 +33,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -289,6 +290,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
+    private boolean p11SlotUsed = false; // Note if the P11 slot is already used by another crypto token, forcing a confirm
     private boolean currentCryptoTokenEditMode = true;  // currentCryptoTokenId==0 from start
 
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
@@ -313,6 +315,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private void flushCurrent() {
         keyPairGuiList = null;
         currentCryptoToken = null;
+        p11SlotUsed = false;
     }
     
     /** @return a List of all CryptoToken Identifiers referenced by CAs. */
@@ -411,16 +414,25 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public boolean isAllowedToDelete() {
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DELETE_CRYPTOTOKEN.resource());
     }
+
+    public void saveCurrentCryptoTokenWithCheck() throws AuthorizationDeniedException {
+        saveCurrentCryptoToken(true);
+    }
+    public void saveCurrentCryptoToken() throws AuthorizationDeniedException {
+        saveCurrentCryptoToken(false);
+    }
     
     /** Invoked when admin requests a CryptoToken creation. */
-    public void saveCurrentCryptoToken() throws AuthorizationDeniedException {
+    private void saveCurrentCryptoToken(boolean checkSlotInUse) throws AuthorizationDeniedException {
         String msg = null;
         if (!getCurrentCryptoToken().getSecret1().equals(getCurrentCryptoToken().getSecret2())) {
             msg = "Authentication codes do not match!";
         } else {
             try {
+                final String name = getCurrentCryptoToken().getName();
                 final Properties properties = new Properties();
                 String className = null;
+                boolean alreadyUsed = false;
                 if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                     className = PKCS11CryptoToken.class.getName();
                     String library = getCurrentCryptoToken().getP11Library();
@@ -454,11 +466,28 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     if (!"default".equals(p11AttributeFile)) {
                         properties.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, p11AttributeFile);
                     }
+                    if (checkSlotInUse) {
+                        log.info("Checking if slot is already used");
+                        List<CryptoTokenInfo> usedBy = cryptoTokenManagementSession.isCryptoTokenSlotUsed(authenticationToken, name, className, properties);
+                        if (!usedBy.isEmpty()) {
+                            msg = "The P11 slot is already used by other crypto token(s)";
+                            for (CryptoTokenInfo cryptoTokenInfo : usedBy) {
+                                String usedByName = cryptoTokenInfo.getName();
+                                if (StringUtils.isNumeric(usedByName)) {
+                                    // if the crypto token name is purely numeric, it is likely to be a database protection token
+                                    usedByName = usedByName + " (database protection?)";
+                                }
+                                msg += "; "+usedByName;
+                            }
+                            msg += ". Re-using P11 slots in multiple crypto tokens is discouraged, and all parameters must be identical. Re-enter authentication code and Confirm Save to continue.";
+                            alreadyUsed = true;
+                            p11SlotUsed = true;
+                        }
+                    }
                 } else if (SoftCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                     className = SoftCryptoToken.class.getName();
                     properties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
                 }
-
                 if (getCurrentCryptoToken().isAllowExportPrivateKey()) {
                     properties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, String.valueOf(getCurrentCryptoToken().isAllowExportPrivateKey()));
                 }
@@ -468,33 +497,34 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 if (getCurrentCryptoToken().isAllowExplicitParameters()) {
                     properties.setProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS, String.valueOf(getCurrentCryptoToken().isAllowExplicitParameters()));
                 }
-                
-                final char[] secret = getCurrentCryptoToken().getSecret1().toCharArray();
-                final String name = getCurrentCryptoToken().getName();
-                if (getCurrentCryptoTokenId() == 0) {
-                    if (secret.length>0) {
-                        if (getCurrentCryptoToken().isAutoActivate()) {
-                            BaseCryptoToken.setAutoActivatePin(properties, new String(secret), true);
-                        }
-                        currentCryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, name, className, properties, null, secret);
-                        msg = "CryptoToken created successfully.";
-                    } else {
-                        super.addNonTranslatedErrorMessage("You must provide an authentication code to create a CryptoToken.");
-                    }
-                } else {
-                    if (getCurrentCryptoToken().isAutoActivate()) {
+
+                if (!alreadyUsed) {
+                    final char[] secret = getCurrentCryptoToken().getSecret1().toCharArray();
+                    if (getCurrentCryptoTokenId() == 0) {
                         if (secret.length>0) {
-                            BaseCryptoToken.setAutoActivatePin(properties, new String(secret), true);
+                            if (getCurrentCryptoToken().isAutoActivate()) {
+                                BaseCryptoToken.setAutoActivatePin(properties, new String(secret), true);
+                            }
+                            currentCryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, name, className, properties, null, secret);
+                            msg = "CryptoToken created successfully.";
                         } else {
-                            // Indicate that we want to reuse current auto-pin if present
-                            properties.put(CryptoTokenManagementSession.KEEP_AUTO_ACTIVATION_PIN, Boolean.TRUE.toString());
+                            super.addNonTranslatedErrorMessage("You must provide an authentication code to create a CryptoToken.");
                         }
+                    } else {
+                        if (getCurrentCryptoToken().isAutoActivate()) {
+                            if (secret.length>0) {
+                                BaseCryptoToken.setAutoActivatePin(properties, new String(secret), true);
+                            } else {
+                                // Indicate that we want to reuse current auto-pin if present
+                                properties.put(CryptoTokenManagementSession.KEEP_AUTO_ACTIVATION_PIN, Boolean.TRUE.toString());
+                            }
+                        }
+                        cryptoTokenManagementSession.saveCryptoToken(authenticationToken, getCurrentCryptoTokenId(), name, properties, secret);
+                        msg = "CryptoToken saved successfully.";
                     }
-                    cryptoTokenManagementSession.saveCryptoToken(authenticationToken, getCurrentCryptoTokenId(), name, properties, secret);
-                    msg = "CryptoToken saved successfully.";
+                    flushCaches();
+                    setCurrentCryptoTokenEditMode(false);                    
                 }
-                flushCaches();
-                setCurrentCryptoTokenEditMode(false);
             } catch (CryptoTokenOfflineException e) {
                 msg = e.getMessage();
             } catch (CryptoTokenAuthenticationFailedException e) {
@@ -956,4 +986,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (libinfo == null) return null;
         return libinfo.getSlotList();
     }
+
+    /** @return true if we have checked and noticed that the P11 slot of the crypto token we try to create is the same as an already existing crypto token (including database protection tokens)
+     */
+    public boolean isP11SlotUsed() {
+        return p11SlotUsed;
+    }
+    
 }
