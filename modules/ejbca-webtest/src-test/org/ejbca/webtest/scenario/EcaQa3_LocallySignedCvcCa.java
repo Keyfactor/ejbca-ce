@@ -67,7 +67,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
 
         // Set CA Type, Subject DN and Validity
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectcatype']")))).selectByVisibleText("CVC");
-        CaHelper.setSubjectDn(webDriver, rootDn);
+        caHelper.setSubjectDn(rootDn);
         caHelper.setValidity("1y");
 
         // Save the CA and check that save was successful
@@ -89,7 +89,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
         // Set CA Type, Crypto Token, Subject DN, Signed By, Validity and Certificate Profile
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectcatype']")))).selectByVisibleText("CVC");
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectcryptotoken']")))).selectByVisibleText(rootName);
-        CaHelper.setSubjectDn(webDriver, subDn);
+        caHelper.setSubjectDn(subDn);
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectsignedby']")))).selectByVisibleText(rootName);
         caHelper.setValidity("2y");
         (new Select(webDriver.findElement(By.xpath("//select[@name='selectcertificateprofile']")))).selectByVisibleText("SUBCA");
