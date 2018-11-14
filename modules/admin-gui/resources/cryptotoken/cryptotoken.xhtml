@@ -271,9 +271,13 @@
 						value="#{web.text.CRYPTOTOKEN_CANCEL}"
 						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode &amp;&amp; cryptoTokenMBean.currentCryptoTokenId != 0}" />
 					<h:commandButton
-						action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
+						action="#{cryptoTokenMBean.saveCurrentCryptoTokenWithCheck}"
 						value="#{web.text.CRYPTOTOKEN_SAVE}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}" />
+						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed}" />
+                    <h:commandButton
+                        action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
+                        value="#{web.text.CRYPTOTOKEN_SAVE_CONFIRM}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.p11SlotUsed}" />
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>

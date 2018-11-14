@@ -25,6 +25,7 @@ import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
@@ -55,6 +56,10 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public static final String SHLIB_LABEL_KEY = "sharedLibrary";
     public static final String ATTRIB_LABEL_KEY = "attributesFile";
     public static final String PASSWORD_LABEL_KEY = "pin";
+    /** Flag that if set, prevent adding the P11 provider with Security.addProvider.
+     * Can be used to create a crypto token without actually installing it in Java Security, so it
+     * can be created temporarily */
+    public static final String DO_NOT_ADD_P11_PROVIDER = "doNotAddP11Provider";
     
     @Deprecated //Remove once upgrading from 5.0->6.0 is no longer supported
     public static final String SLOT_LIST_INDEX_KEY = "slotListIndex";
@@ -97,14 +102,15 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         Pkcs11SlotLabelType type = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
         String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
         String attributesFile = properties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY);
+        Boolean addProvider = !BooleanUtils.toBoolean(properties.getProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER));
 
         String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
 
         if(friendlyName != null){
-            p11slot = P11Slot.getInstance(friendlyName, sSlotLabel, sharedLibrary, type, attributesFile, this, id);
+            p11slot = P11Slot.getInstance(friendlyName, sSlotLabel, sharedLibrary, type, attributesFile, this, id, addProvider);
         } else {
             // getInstance will run autoActivate()
-            p11slot = P11Slot.getInstance(sSlotLabel, sharedLibrary, type, attributesFile, this, id);
+            p11slot = P11Slot.getInstance(sSlotLabel, sharedLibrary, type, attributesFile, this, id, addProvider);
             
         }
         final Provider provider = p11slot.getProvider();
