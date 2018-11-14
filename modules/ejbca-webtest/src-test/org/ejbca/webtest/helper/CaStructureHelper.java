@@ -74,17 +74,16 @@ public class CaStructureHelper extends BaseHelper {
     }
 
     public void clickCrlLinkAndAssertNumberIncreased(String caName){
-        String crlText = getCrlNumberAsString(caName);
-        int crlNumber = Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
+        int crlNumber = getCrlNumber(caName);
         // Click 'Create CRL' button
         webDriver.findElement(CaHelper.Page.getCrlCreateButonByCaName(caName)).click();
         // Make sure that the CRL number has been incremented
-        crlText = getCrlNumberAsString(caName);
-        assertEquals("The CRL number was not incremented.", crlNumber + 1, Integer.parseInt(StringUtils.substringAfter(crlText, "number ")));
+        assertEquals("The CRL number was not incremented.", crlNumber + 1, getCrlNumber(caName));
     }
 
 
-    private String getCrlNumberAsString(String caName) {
-        return StringUtils.substringBetween(webDriver.findElement(CaHelper.Page.CONTAINER).getText(), caName, " Get CRL");
+    private int getCrlNumber(String caName) {
+        String crlText = StringUtils.substringBetween(webDriver.findElement(CaHelper.Page.CONTAINER).getText(), caName, " Get CRL");
+        return Integer.parseInt(StringUtils.substringAfter(crlText, "number "));
     }
 }
