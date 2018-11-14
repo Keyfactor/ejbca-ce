@@ -44,7 +44,7 @@
 						</h3>
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:selectOneListbox
+					<h:selectOneListbox id="selectcas"
 							value="#{manageCAsMBean.selectedCaId}" style="width: 50em" size="15"
 							class="select-list">
 							<f:selectItems value="#{manageCAsMBean.listOfCas.entrySet()}" var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
