@@ -100,7 +100,7 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
                 checkIfFileExists(sharedLibraryPath);
                 final String sSlot =  props.getProperty("ejbcawsracli.p11.slot");
                 final Pkcs11SlotLabelType type = Pkcs11SlotLabelType.getFromKey(props.getProperty("ejbcawsracli.p11.slotlabeltype"));
-                final P11Slot slot = P11Slot.getInstance(sSlot, sharedLibraryPath, type, null, this, 0);// no CA set ID to 0 to indicate just one user
+                final P11Slot slot = P11Slot.getInstance(sSlot, sharedLibraryPath, type, null, this, 0, true);// no CA set ID to 0 to indicate just one user
                 final AuthProvider provider = (AuthProvider) slot.getProvider();
                 final String providerName = provider.getName();
                 final PasswordHandler handler = new PasswordHandler(password);

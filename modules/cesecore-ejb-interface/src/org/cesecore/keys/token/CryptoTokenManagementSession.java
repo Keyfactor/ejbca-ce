@@ -60,6 +60,23 @@ public interface CryptoTokenManagementSession {
      */
     boolean isCryptoTokenPresent(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
 
+    /** Checks if an intended Crypto Token (to be created) is already used. Primarily of use for PKCS#11 Crypto Tokens as there
+     * can be issues if creating multiple crypto tokens referencing the same PKCS#11 Slot.
+     * @param authenticationToken an authentication token defining which crypto tokens can be compared, if this does not have full privileges the check is not complete
+     * @param tokenName the name of the token we want to check
+     * @param className the classname, org.cesecore.keys.token.PKCS11CryptoToken if this check should return anything but an empty list 
+     * @param properties crypto token properties, with the full PKCS#11 properties needed to create a PKCS#11 crypto token
+     * @return List or CryptoTokenInfo which are using the same slot, or an empty list if there is none, an empty list is thus a sign to "go ahead"
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenNameInUseException
+     * @throws CryptoTokenOfflineException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws NoSuchSlotException
+     */
+    public List<CryptoTokenInfo> isCryptoTokenSlotUsed(AuthenticationToken authenticationToken, String tokenName, String className, Properties properties) 
+    		throws AuthorizationDeniedException, CryptoTokenNameInUseException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, NoSuchSlotException;
+
     /**
      * Creates a crypto token with a known ID. Note that using an already existing ID will lead to an error at a later state. 
      * 
