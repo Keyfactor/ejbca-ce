@@ -46,7 +46,7 @@ public class P11Slot {
     private final String slotLabel;
     private final String sharedLibrary;
     private final String sunP11ConfigFileName;
-    private final Provider provider;
+    private Provider provider;
     private final String libraryFileName;
     
     private P11Slot(final Pkcs11SlotLabelType slotLabelType, final String slotLabel, final String sharedLibrary, final String attributesFile,
@@ -60,7 +60,7 @@ public class P11Slot {
         if (provider==null) {
             throw new NoSuchSlotException("Slot labeled " + slotLabel + " could not be located.");
         }
-        addProvider();
+        addProviderIfNotExisting();
     }
 
     private P11Slot(final String sunP11ConfigFileName) throws NoSuchSlotException {
@@ -73,16 +73,28 @@ public class P11Slot {
         if (this.provider==null) {
             throw new NoSuchSlotException("Slot configured in " + sunP11ConfigFileName + " could not be located.");
         }
-        addProvider();
+        addProviderIfNotExisting();
     }
 
-    private void addProvider() {
-        if (Security.getProvider(provider.getName())!=null) {
-            Security.removeProvider(provider.getName());
-        }
-        Security.addProvider(provider);
-        if (log.isDebugEnabled()) {
-            log.debug("Provider successfully added: "+provider);
+    private void addProviderIfNotExisting() {
+        // If we already have a provider installed, it means there is another Crypto Token already using this slot
+        // It can potentially be a Database Integrity Protection Crypto Token
+        // We can't remove the already existing provider as that will cause the existing one to stop working. 
+        // A classic error message when that happens is: 
+        // java.security.InvalidKeyException: Private key must be instance of RSAPrivate(Crt)Key or have PKCS#8 encoding
+        // Some HSMs (like Thales) only have one slot so in many cases it is a must to be able to use the same slot for
+        // database integrity protection and a Crypto Token for CAs
+        if (Security.getProvider(provider.getName()) != null) {
+            // Because of the above, and how Sun P11 Provider works, we can re-use the existing provider
+            // Of course, of this provider is not working (disconnected to HSM was disconnected or similar), this 
+            // P11Slot will also just not work, while a remove and re-add might have caused it to start working
+            provider = Security.getProvider(provider.getName());
+            log.info("Found an existing PKCS#11 Provider while activating Crypto Token, re-using that instead of a new one: "+provider.getName());
+        } else {
+            Security.addProvider(provider);
+            if (log.isDebugEnabled()) {
+                log.debug("PKCS#11 Provider successfully added: "+provider.getName());
+            }
         }
     }
 
