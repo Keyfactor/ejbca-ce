@@ -886,8 +886,8 @@
             <param name="doc.update" value="true"/> 
 		</antcall>
 		<!-- Copy the retrieved documentation from the tmp/docs directory into doc/dist for the sake of this release-->
-		<copy todir="doc/dist">
-		    <fileset dir="tmp/htdocs/docs" includes="**/*"/>
+		<copy todir="doc/dist" overwrite="true">
+		    <fileset dir="tmp/htdocs/docs" includes="**/*" excludes="**/jquery.min.js"/>
 		</copy>
 		<!-- A small script that converts the version x.y.z to x_y_z to be used in the file. JavaScript does not work under Java 1.5. -->
 		<scriptdef name="convertdot" language="javascript">
