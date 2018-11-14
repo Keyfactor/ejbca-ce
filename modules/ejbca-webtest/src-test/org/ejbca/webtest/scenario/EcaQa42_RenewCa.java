@@ -80,7 +80,7 @@ public class EcaQa42_RenewCa extends WebTestBase {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.edit(webDriver, TestData.CA_NAME);
+        caHelper.edit(TestData.CA_NAME);
         assertEquals("", "signKey", new Select(webDriver.findElement(By.xpath("//select[@name='selectcertsignkeyrenew']"))).getFirstSelectedOption().getText());
         caHelper.renewCaAndAssert(TestData.TEXT_CA_RENEWAL_ALERT_MESSAGE, true, TestData.TEXT_CA_RENEWAL_SUCCESS_MESSAGE, TestData.CA_NAME);
         // Verify Audit Log
@@ -93,7 +93,7 @@ public class EcaQa42_RenewCa extends WebTestBase {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.edit(webDriver, TestData.CA_NAME);
+        caHelper.edit(TestData.CA_NAME);
         new Select(webDriver.findElement(By.xpath("//select[@name='selectcertsignkeyrenew']"))).selectByVisibleText("– Generate new key using KeySequence –");
         caHelper.renewCaAndAssert(TestData.TEXT_CA_RENEWAL_ALERT_MESSAGE, true, TestData.TEXT_CA_RENEWAL_SUCCESS_MESSAGE, TestData.CA_NAME);
         // Verify Audit Log
@@ -105,7 +105,7 @@ public class EcaQa42_RenewCa extends WebTestBase {
     @Test
     public void stepD_checkNewKeys() {
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.edit(webDriver, TestData.CA_NAME);
+        caHelper.edit(TestData.CA_NAME);
         assertEquals("Unexpected value for certSignKey", "signKey00001", webDriver.findElement(By.xpath("//td[text()='certSignKey']//following-sibling::td")).getText());
         assertEquals("Unexpected value for crlSignKey", "signKey00001", webDriver.findElement(By.xpath("//td[text()='crlSignKey']//following-sibling::td")).getText());
         assertEquals("Unexpected value for Key sequence", "00001", webDriver.findElement(By.xpath("//input[@name='textfieldkeysequence']")).getAttribute("value"));

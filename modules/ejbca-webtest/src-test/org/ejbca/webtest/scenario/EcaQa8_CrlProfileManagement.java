@@ -103,7 +103,7 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         caHelper.openPage(getAdminWebUrl());
-        CaHelper.edit(webDriver, TestData.CA_NAME);
+        caHelper.edit(TestData.CA_NAME);
 
         // Change 'CRL Issue Interval'
         WebElement crlIssueInterval = webDriver.findElement(By.xpath("//input[@name='textfieldcrlissueinterval']"));

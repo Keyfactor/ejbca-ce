@@ -44,20 +44,16 @@ public class CaHelper extends BaseHelper {
         static final By BUTTON_RENEW_CA = By.xpath("//input[@name='buttonrenewca']");
         static final By BUTTON_DELETE_CA = By.xpath("//input[@name='buttondeleteca']");
 
-        static final By CANAME = By.id("managecas:textfieldcaname");
         static final By SELECT_CA = By.id("managecas:selectcas");
-        static final By VALIDITY = By.id("editcapage:textfieldvalidity");
-        static final By SUBJECT_DN = By.id("textfieldsubjectdn");
 
-        static final By CONTAINER = By.xpath("//div[@class='container']");
+        static final By INPUT_CANAME = By.id("managecas:textfieldcaname");
+        static final By INPUT_VALIDITY = By.id("editcapage:textfieldvalidity");
+        static final By INPUT_SUBJECT_DN = By.id("textfieldsubjectdn");
+
         // Dynamic references
         static By getCaTableRowContainingText(final String text) {
             return By.xpath("//td[text()='" + text + "']");
         }
-        static By getCrlCreateButonByCaName(final String caName) {
-            return By.xpath("//a[text() = 'Get CRL' and contains(@href, 'CN=" + caName + "')]/following-sibling::form/input[contains(@value, 'Create CRL')]");
-        }
-
     }
 
     public CaHelper(final WebDriver webDriver) {
@@ -79,25 +75,23 @@ public class CaHelper extends BaseHelper {
      * @param caName the name of the CA
      */
     public void addCa(String caName) {
-        WebElement nameInput = webDriver.findElement(Page.CANAME);
-        nameInput.sendKeys(caName);
-        webDriver.findElement(Page.BUTTON_CREATE_CA).click();
+        fillInput(Page.INPUT_CANAME, caName);
+        clickLink(Page.BUTTON_CREATE_CA);
     }
     
     /**
      * Selects CA from the list of CAs and clicks on 'Edit CA'
-     * 
-     * @param webDriver the WebDriver to use
+     *
      * @param caName the name of the CA to edit
      */
-    public static void edit(WebDriver webDriver, String caName) {
+    public void edit(String caName) {
         try {
-            Select caList = new Select(webDriver.findElement(Page.SELECT_CA));
+            Select caList = new Select(findElement(Page.SELECT_CA));
             caList.selectByVisibleText(caName + ", (Active)");
         } catch (NoSuchElementException e) {
             fail("Could not edit ca: " + caName + ". Was not found in list of CAs");
         }
-        webDriver.findElement(Page.BUTTON_EDIT).click();
+        clickLink(Page.BUTTON_EDIT);
     }
     
     /**
@@ -105,19 +99,19 @@ public class CaHelper extends BaseHelper {
      *
      */
     public void saveCa() {
-        webDriver.findElement(Page.BUTTON_SAVE).click();
+        clickLink(Page.BUTTON_SAVE);
     }
 
     /**
      * Sets the CA's Subject DN.
-     * 
-     * @param webDriver the WebDriver to use
+     *
      * @param subjectDn the Subject DN to set
      */
-    public static void setSubjectDn(WebDriver webDriver, String subjectDn) {
-        WebElement dnInput = webDriver.findElement(Page.SUBJECT_DN);
+    public void setSubjectDn(String subjectDn) {
+        WebElement dnInput = webDriver.findElement(Page.INPUT_SUBJECT_DN);
         dnInput.clear();
         dnInput.sendKeys(subjectDn);
+        fillInput(Page.INPUT_SUBJECT_DN, subjectDn);
     }
     
     /**
@@ -126,8 +120,7 @@ public class CaHelper extends BaseHelper {
      * @param validityString (*y *mo *d *h *m *s) or end date of the certificate. E.g. '1y'
      */
     public void setValidity(String validityString) {
-        WebElement validityInput = webDriver.findElement(Page.VALIDITY);
-        validityInput.sendKeys(validityString);
+        fillInput(Page.INPUT_VALIDITY, validityString);
     }
     
     
@@ -138,7 +131,7 @@ public class CaHelper extends BaseHelper {
      */
     public void assertExists(String caName) {
         try {
-            Select caList = new Select(webDriver.findElement(Page.SELECT_CA));
+            Select caList = new Select(findElement(Page.SELECT_CA));
             caList.selectByVisibleText(caName + ", (Active)");
         } catch (NoSuchElementException e) {
             fail(caName + " was not found in the List of Certificate Authorities");
