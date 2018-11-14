@@ -13,17 +13,23 @@
 package org.ejbca.ui.cli.cryptotoken;
 
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
@@ -53,6 +59,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String SLOT_REFERENCE_TYPE_KEY = "--slotlabeltype";
     private static final String SLOT_REFERENCE_KEY = "--slotlabel";
     private static final String PKCS11_ATTR_FILE_KEY = "--attr";
+    private static final String PKCS11_SLOTCOLLIDE_IGNORE= "--forceusedslots";
 
     {
         registerParameter(new Parameter(CRYPTOTOKEN_NAME_KEY, "Token Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -77,6 +84,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(" + PKCS11CryptoToken.class.getSimpleName() + ") Slot reference."));
         registerParameter(new Parameter(PKCS11_ATTR_FILE_KEY, "Attribute File", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "(" + PKCS11CryptoToken.class.getSimpleName() + ") PKCS#11 Attribute File"));
+        registerParameter(new Parameter(PKCS11_SLOTCOLLIDE_IGNORE, "Ignore used P11 slots", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Ignore warnings, and confirm yes, for P11 slots that are already used."));
         // ePassport CSCA only
         registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
@@ -97,9 +105,12 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
 
         final String cryptoTokenName = parameters.get(CRYPTOTOKEN_NAME_KEY);
         final boolean autoActivate = Boolean.valueOf(parameters.get(AUTOACTIVATE_KEY));
+        final boolean ignoreslotwarning = (parameters.get(PKCS11_SLOTCOLLIDE_IGNORE) != null);
         final String type = parameters.get(TYPE_KEY);
         final String className;
         final Properties cryptoTokenPropertes = new Properties();
+        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
         if (SoftCryptoToken.class.getSimpleName().equals(type)) {
             className = SoftCryptoToken.class.getName();
             cryptoTokenPropertes.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY,
@@ -155,6 +166,37 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 }
                 cryptoTokenPropertes.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, attributeFileName);
             }
+
+            // Check if this crypto token is already used
+            try {
+                List<CryptoTokenInfo> usedBy = cryptoTokenManagementSession.isCryptoTokenSlotUsed(getAuthenticationToken(), cryptoTokenName, className, cryptoTokenPropertes);
+                if (!usedBy.isEmpty() && !ignoreslotwarning) {
+                    for (CryptoTokenInfo cryptoTokenInfo : usedBy) {
+                        String name = cryptoTokenInfo.getName();
+                        if (StringUtils.isNumeric(name)) {
+                            // if the crypto token name is purely numeric, it is likely to be a database protection token
+                            name = name + " (database protection?)";
+                        }
+                        getLogger().info("The P11 slot is already used by another crypto token: "+name);
+                    }
+                    getLogger().info("Do you want to continue anyhow? [yes/no]: ");
+                    String yes = System.console().readLine();
+                    if (!StringUtils.equalsIgnoreCase("yes", yes)) {
+                        getLogger().info("Exiting...");
+                        return CommandResult.CLI_FAILURE;                    
+                    }
+                }
+            } catch (CryptoTokenNameInUseException | CryptoTokenOfflineException | CryptoTokenAuthenticationFailedException
+                    | AuthorizationDeniedException | NoSuchSlotException e) {
+                getLogger().info("There is an error creating the Crypto Token: "+e.getMessage());
+                getLogger().info("Do you want to continue anyhow? [yes/no]: ");
+                String yes = System.console().readLine();
+                if (!StringUtils.equalsIgnoreCase("yes", yes)) {
+                    getLogger().info("Exiting...");
+                    return CommandResult.CLI_FAILURE;                    
+                }
+            }
+
         } else {
             getLogger().info("Invalid CryptoToken type: " + type);
             return CommandResult.CLI_FAILURE;
@@ -169,8 +211,6 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             BaseCryptoToken.setAutoActivatePin(cryptoTokenPropertes, new String(authenticationCode), true);
         }
         try {
-            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-                    .getRemoteSession(CryptoTokenManagementSessionRemote.class);
             final Integer cryptoTokenIdNew = cryptoTokenManagementSession.createCryptoToken(getAuthenticationToken(), cryptoTokenName, className,
                     cryptoTokenPropertes, null, authenticationCode);
             getLogger().info("CryptoToken with id " + cryptoTokenIdNew + " created successfully.");

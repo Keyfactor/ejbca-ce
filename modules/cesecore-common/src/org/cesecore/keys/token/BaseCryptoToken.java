@@ -392,11 +392,15 @@ public abstract class BaseCryptoToken implements CryptoToken {
                 prov.put("Alg.Alias.Cipher.RSA/ECB/PKCS1Padding", "RSA//PKCS1v1_5");
                 prov.put("Alg.Alias.Cipher.1.2.840.113549.3.7", "DES3/CBC/PKCS5Padding");
             }
+            // The provider will typically not be installed here. The BC provider (for soft crypto tokens)
+            // is installed during startup, as a generally used provider, 
+            // and the P11 provider for a specific slot is installed in #P11Slot
             if (Security.getProvider(pName) == null) {
+                log.info("Adding Provider from BaseCryptoToken: "+pName);
                 Security.addProvider(prov);
             }
             if (Security.getProvider(pName) == null) {
-                throw new ProviderException("Not possible to install provider: " + pName);
+                throw new ProviderException("Not possible to install provider from BaseCryptoToken: " + pName);
             }
         } else {
             if (log.isDebugEnabled()) {
