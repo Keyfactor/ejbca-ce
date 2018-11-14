@@ -260,7 +260,7 @@ public class X509CATest {
         assertEquals(X509KeyUsage.digitalSignature|X509KeyUsage.nonRepudiation|X509KeyUsage.keyEncipherment, bcku);
 
         // Create a CRL
-        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+        Collection<RevokedCertInfo> revcerts = new ArrayList<>();
         X509CRLHolder crl = x509ca.generateCRL(cryptoToken, revcerts, 1);
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
