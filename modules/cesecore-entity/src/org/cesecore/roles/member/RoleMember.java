@@ -14,16 +14,17 @@ package org.cesecore.roles.member;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.roles.Role;
 
 /**
- * Value object for the RoleMemberData entity bean, so that we don't have to pass information like row protection remotely. 
- * 
+ * Value object for the RoleMemberData entity bean, so that we don't have to pass information like row protection remotely.
+ *
  * @version $Id$
  */
 public class RoleMember implements Serializable {
-    
+
     public static int ROLE_MEMBER_ID_UNASSIGNED = 0;
     public static int NO_ROLE = Role.ROLE_ID_UNASSIGNED;
     public static int NO_ISSUER = 0;
@@ -40,9 +41,9 @@ public class RoleMember implements Serializable {
 
     /**
      * Constructor for a new RoleMember. Will by default be constructed with the primary key 0, which means that this object hasn't been
-     * persisted yet. In that case, the primary key will be set by the CRUD bean. 
-     * 
-     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
+     * persisted yet. In that case, the primary key will be set by the CRUD bean.
+     *
+     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc.
      * @param tokenIssuerId the issuer identifier of this token or 0 if not relevant
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
@@ -55,8 +56,8 @@ public class RoleMember implements Serializable {
 
     /**
      * Constructor for a RoleMember object that has already been assigned an ID (the RoleMember already exists).
-     * 
-     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc. 
+     *
+     * @param accessMatchValue the AccessMatchValue to match this object with, i.e CN, SN, etc.
      * @param tokenIssuerId the issuer identifier of this token or 0 if not relevant
      * @param tokenMatchValue the actual value with which to match
      * @param roleId roleId the ID of the role to which this member belongs. May be null.
@@ -145,12 +146,20 @@ public class RoleMember implements Serializable {
     public void setRoleId(int roleId) {
         this.roleId = roleId;
     }
-    
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isSameAs(final RoleMember roleMember) {
+        return this.getTokenIssuerId() == roleMember.getTokenIssuerId() 
+                && this.getTokenMatchKey() == roleMember.getTokenMatchKey()
+                && this.getTokenMatchOperator() == roleMember.getTokenMatchOperator()
+                && StringUtils.equals(this.getTokenMatchValue(), roleMember.getTokenMatchValue())
+                && StringUtils.equals(this.getTokenType(), roleMember.getTokenType());
     }
 }
