@@ -44,9 +44,7 @@
 	
 	<condition property="certstore.enabled.if.defined"><istrue value="${certstore.enabled}"/></condition>
 
-	<target name="ejbca-build" depends="certstore.war">    	
-		<echo message="certstore_foo: ${certstore.enabled}"/>
-	</target>
+	<target name="ejbca-build" description="Build this module" depends="certstore.war"/>
 	<target name="certstore.war" depends="ejbca-certstore-compile" if="certstore.enabled.if.defined">
 		<war destfile="${mod.certstore.war}" webxml="${resources.dir}/WEB-INF/web-certstore-ejbca.xml" basedir="${build-certstore.dir}"/>
 	</target>
