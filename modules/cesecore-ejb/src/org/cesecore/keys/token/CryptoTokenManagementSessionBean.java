@@ -20,8 +20,10 @@ import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +54,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
@@ -136,7 +137,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
 
     @Override
-    public List<CryptoTokenInfo> isCryptoTokenSlotUsed(final AuthenticationToken authenticationToken, final String tokenName,
+    public List<String> isCryptoTokenSlotUsed(final AuthenticationToken authenticationToken, final String tokenName,
             final String className, final Properties properties)
             throws AuthorizationDeniedException, CryptoTokenNameInUseException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, NoSuchSlotException {
@@ -149,54 +150,75 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // Creating a duplicate P11 crypto token can be destructive, ideally we would check all crypto tokens, 
         // but we only check the ones the admin has access to in order to not leak information 
         List<CryptoTokenInfo> infos = getCryptoTokenInfos(authenticationToken);
-        List<CryptoTokenInfo> ret = new ArrayList<>();
+        List<String> ret = new ArrayList<>();
+        List<String> providers = new ArrayList<>();
         String tokenP11Lib = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
+        final String providerNameToCheck = createProviderName(tokenName, className, properties);
+        if (log.isDebugEnabled()) {
+            log.debug("isCryptoTokenUsed: Provider name to check for: "+providerNameToCheck);
+        }
         if (StringUtils.isNotEmpty(tokenP11Lib)) {
             for (CryptoTokenInfo cti : infos) {
                 // We are concerned about PKCS#11 usage
                 String ctiP11lib = cti.getP11Library();
                 CryptoToken token = cryptoTokenSession.getCryptoToken(cti.getCryptoTokenId());
+                final String ctiProviderName = token.getSignProviderName();
+                providers.add(ctiProviderName);
                 if (token != null) {
-                    isP11SlotSame(tokenName, className, properties, ret, tokenP11Lib, cti, ctiP11lib, token.getSignProviderName());
+                    isP11SlotSame(tokenP11Lib, providerNameToCheck, ctiP11lib, ctiProviderName, cti.getName(), ret);
                 }
             }
             // Check for database protection crypto tokens as well, these are not stored as crypto tokens in the database, but only 
             // as parameters in databaseprotection.properties, and thus requires special handling
-            Map<Integer, CryptoToken> tokensMap = ProtectedDataConfiguration.instance().getCryptoTokens();
-            for (CryptoToken cryptoToken : tokensMap.values()) {
-                if (cryptoToken != null) {
-                    CryptoTokenInfo info = new CryptoTokenInfo(0, cryptoToken.getTokenName(), false, false, cryptoToken.getClass(), cryptoToken.getProperties());
-                    // We are concerned about PKCS#11 usage
-                    String p11lib = info.getP11Library();
-                    isP11SlotSame(tokenName, className, properties, ret, tokenP11Lib, info, p11lib, cryptoToken.getSignProviderName());                    
-                }
+            Provider[] installedProviders = Security.getProviders();
+            if (installedProviders != null) {
+                for (int i = 0; i < installedProviders.length; i++) {
+                    final String installedProviderName = installedProviders[i].getName();
+                    if (log.isDebugEnabled()) {
+                        log.debug("isCryptoTokenUsed: Checking installed provider: "+installedProviderName);
+                    }
+                    if (StringUtils.equals(providerNameToCheck, installedProviderName)) {
+                        // We found a match, but don't add duplicates
+                        if (!providers.contains(installedProviderName)) {
+                            log.debug("isCryptoTokenUsed: Found a match between "+providerNameToCheck+" and installed provider "+installedProviderName+", which was not already listed, must be a database protection token.");
+                            ret.add(installedProviderName+" (database protection?)");
+                        }
+                    }
+                }                
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<isCryptoTokenUsed: " + tokenName + ", " + className);
+            log.trace("<isCryptoTokenUsed: " + tokenName + ", " + className + ", " + ret.size());
         }
         return ret; 
     }
 
-    private void isP11SlotSame(final String tokenName, final String className, final Properties properties,
-            List<CryptoTokenInfo> ret, String tokenP11Lib, CryptoTokenInfo cti, String ctiP11lib, String providerName) throws NoSuchSlotException {
+    private void isP11SlotSame(String tokenP11Lib, String providerNameToCheck, String ctiP11lib, String ctiProviderName, String ctiName, List<String> ret) throws NoSuchSlotException {
         if (StringUtils.isNotEmpty(ctiP11lib)) {
-            log.info("Found P11 Lib for crypto token '"+cti.getName()+"': "+ctiP11lib);
             if (StringUtils.equalsIgnoreCase(tokenP11Lib, ctiP11lib)) {
-                // We have a match, watch out...check if we are using the same slot as well
+                // We have a match on the library, watch out...check if we are using the same slot as well
                 // Now it gets exciting, since you can address the slot through different things (slotID, slotName, p11Config)
                 // it is really hard to check easily, we need to create the provider and see if the provider name is the same
-                properties.setProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER, "true");                       
-                final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
-                String provider = cryptoToken.getSignProviderName();
-                log.info("Provider from dummy created token: "+provider);
-                log.info("Provider from token: "+providerName);
-                if (StringUtils.equals(provider, providerName)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("isCryptoTokenUsed: Provider for token we check for: "+providerNameToCheck);
+                    log.debug("isCryptoTokenUsed Provider for existing token: "+ctiProviderName);
+                }
+                if (StringUtils.equals(providerNameToCheck, ctiProviderName)) {
                     // We had a match, return this crypto token in the list of crypto tokens that we use
-                    ret.add(cti);
+                    ret.add(ctiName);
                 }
             }
         }
+    }
+
+    private String createProviderName(final String tokenName, final String className, final Properties properties) throws NoSuchSlotException {
+        properties.setProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER, "true");                       
+        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
+        final String providerName = cryptoToken.getSignProviderName();
+        if (log.isDebugEnabled()) {
+            log.debug("isCryptoTokenUsed: Created provider (without installing) to check for collisions: "+providerName);
+        }
+        return providerName;
     }
 
     @Override
