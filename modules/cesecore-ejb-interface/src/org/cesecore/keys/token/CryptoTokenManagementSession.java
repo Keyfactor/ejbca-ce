@@ -73,7 +73,7 @@ public interface CryptoTokenManagementSession {
      * @throws CryptoTokenAuthenticationFailedException
      * @throws NoSuchSlotException
      */
-    public List<CryptoTokenInfo> isCryptoTokenSlotUsed(AuthenticationToken authenticationToken, String tokenName, String className, Properties properties) 
+    public List<String> isCryptoTokenSlotUsed(AuthenticationToken authenticationToken, String tokenName, String className, Properties properties) 
     		throws AuthorizationDeniedException, CryptoTokenNameInUseException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, NoSuchSlotException;
 
