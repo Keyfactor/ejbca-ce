@@ -157,6 +157,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         if (log.isDebugEnabled()) {
             log.debug("isCryptoTokenUsed: Provider name to check for: "+providerNameToCheck);
         }
+        // Only do this check for P11 tokens
         if (StringUtils.isNotEmpty(tokenP11Lib)) {
             for (CryptoTokenInfo cti : infos) {
                 // We are concerned about PKCS#11 usage
