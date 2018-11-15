@@ -468,11 +468,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     }
                     if (checkSlotInUse) {
                         log.info("Checking if slot is already used");
-                        List<CryptoTokenInfo> usedBy = cryptoTokenManagementSession.isCryptoTokenSlotUsed(authenticationToken, name, className, properties);
+                        List<String> usedBy = cryptoTokenManagementSession.isCryptoTokenSlotUsed(authenticationToken, name, className, properties);
                         if (!usedBy.isEmpty()) {
                             msg = "The P11 slot is already used by other crypto token(s)";
-                            for (CryptoTokenInfo cryptoTokenInfo : usedBy) {
-                                String usedByName = cryptoTokenInfo.getName();
+                            for (String cryptoTokenName : usedBy) {
+                                String usedByName = cryptoTokenName;
                                 if (StringUtils.isNumeric(usedByName)) {
                                     // if the crypto token name is purely numeric, it is likely to be a database protection token
                                     usedByName = usedByName + " (database protection?)";

@@ -169,10 +169,10 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
 
             // Check if this crypto token is already used
             try {
-                List<CryptoTokenInfo> usedBy = cryptoTokenManagementSession.isCryptoTokenSlotUsed(getAuthenticationToken(), cryptoTokenName, className, cryptoTokenPropertes);
+                List<String> usedBy = cryptoTokenManagementSession.isCryptoTokenSlotUsed(getAuthenticationToken(), cryptoTokenName, className, cryptoTokenPropertes);
                 if (!usedBy.isEmpty() && !ignoreslotwarning) {
-                    for (CryptoTokenInfo cryptoTokenInfo : usedBy) {
-                        String name = cryptoTokenInfo.getName();
+                    for (String usedByName : usedBy) {
+                        String name = usedByName;
                         if (StringUtils.isNumeric(name)) {
                             // if the crypto token name is purely numeric, it is likely to be a database protection token
                             name = name + " (database protection?)";
