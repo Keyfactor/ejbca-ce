@@ -40,7 +40,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Adds a role member.
- * 
+ *
  * @version $Id$
  */
 public class AddRoleMemberCommand extends BaseRolesCommand {
@@ -154,12 +154,24 @@ public class AddRoleMemberCommand extends BaseRolesCommand {
         final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, accessMatchValue.getNumericValue(), accessMatchType.getNumericValue(),
                 matchValue, role.getRoleId(), description);
         try {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class).persist(getAuthenticationToken(), roleMember);
+            final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+            if (roleMemberExists(roleMember, roleMemberSession)) {
+                getLogger().error(
+                        "The role member " + roleMember.getTokenMatchValue() + " was not added because it already exists in the role " + roleName);
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            roleMemberSession.persist(getAuthenticationToken(), roleMember);
         } catch (AuthorizationDeniedException e) {
             getLogger().error("CLI user not authorized to edit role");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            return CommandResult.AUTHORIZATION_FAILURE;
         }
         return CommandResult.SUCCESS;
+    }
+
+    private boolean roleMemberExists(final RoleMember roleMember, final RoleMemberSessionRemote roleMemberSession)
+            throws AuthorizationDeniedException {
+        return roleMemberSession.getRoleMembersByRoleId(getAuthenticationToken(), roleMember.getRoleId()).stream()
+                .anyMatch(existingMember -> existingMember.isSameAs(roleMember));
     }
 
     @Override
