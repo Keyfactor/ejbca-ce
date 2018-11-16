@@ -117,17 +117,6 @@ public class EndEntityAccessSessionTest extends CaTestCase {
     /**
      * This test tests the method findUserBySubjectAndIssuerDN with multiple
      * users that share the same DN. 
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
-     * @throws EjbcaException 
-     * @throws WaitingForApprovalException 
-     * @throws EndEntityProfileValidationException 
-     * @throws EndEntityExistsException 
-     * @throws RemoveException 
-     * @throws CertificateSerialNumberException 
-     * @throws IllegalNameException 
-     * @throws ApprovalException 
-     * @throws CustomFieldException 
      */
     @Test
     public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException,

@@ -91,7 +91,7 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException
 	 * @throws AuthorizationDeniedException
 	 * @throws UserDoesntFullfillEndEntityProfile
-	 * @throws WaitingForApprovalException
+	 * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
 	 * @throws EjbcaException
 	 */
     void editUser(UserDataVOWS userdata) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
@@ -346,7 +346,7 @@ public interface IEjbcaWS {
 	 * @throws NotFoundException
 	 * @throws EjbcaException for other errors, an error code like ErrorCode.SIGNATURE_ERROR (popo/inner signature verification failed) is set.
 	 * @throws ApprovalException
-	 * @throws WaitingForApprovalException
+	 * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
 	 * @throws CertificateExpiredException
 	 * @throws CesecoreException
 	 * @see org.cesecore.ErrorCode
@@ -379,7 +379,7 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException if caname does not exist
 	 * @throws AuthorizationDeniedException if administrator is not authorized to create request, renew keys etc.
 	 * @throws ApprovalException if a non-expired approval for this action already exists, i.e. the same action has already been requested.
-	 * @throws WaitingForApprovalException if the operation requires approval from another CA administrator, in this case an approval request is created for another administrator to approve
+	 * @throws WaitingForApprovalException if the operation requires approval from another CA administrator, in this case an approval request is created for another administrator to approve. The request ID will be included as a field in this exception.
 	 * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCade is set in the EjbcaException
 	 */
 	byte[] caRenewCertRequest(String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException;
@@ -401,8 +401,8 @@ public interface IEjbcaWS {
 	 *
 	 * @throws CADoesntExistsException if caname does not exist
 	 * @throws AuthorizationDeniedException if administrator is not authorized to import certificate.
-	 * @throws ApprovalException if the operation requires approval from another CA administrator, in this case an approval request is created for another administrator to approve
-	 * @throws WaitingForApprovalException if there is already a request waiting for approval
+	 * @throws ApprovalException if there is already a request waiting for approval.
+	 * @throws WaitingForApprovalException if the operation requires approval from another CA administrator, in this case an approval request is created for another administrator to approve. The request ID will be included as a field in this exception. 
 	 * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCade is set in the EjbcaException
 	 * @throws CesecoreException
 	 */
@@ -422,7 +422,7 @@ public interface IEjbcaWS {
      * @throws AuthorizationDeniedException
      * @throws EjbcaException
      * @throws ApprovalException
-     * @throws WaitingForApprovalException
+     * @throws WaitingForApprovalException The request ID will be included as a field in this exception. 
      * @throws CesecoreException
 	 */
 	void caCertResponseForRollover(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException;
@@ -572,8 +572,8 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if certificate doesn't exist
-	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
-	 * @throws ApprovalException There already exists an approval request for this task
+	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved. The request ID will be included as a field in this exception.
+	 * @throws ApprovalException There already exists an approval request for this task.  
 	 * @throws AlreadyRevokedException The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate
 	 * @throws EjbcaException internal error
 	 * @throws RevokeBackDateNotAllowedForProfileException if back date is not allowed in the certificate profile
@@ -598,7 +598,7 @@ public interface IEjbcaWS {
 	 * @throws NotFoundException
 	 * @throws EjbcaException
 	 * @throws ApprovalException
-	 * @throws WaitingForApprovalException
+	 * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
 	 * @throws AlreadyRevokedException
 	 */
 	void revokeCert(String issuerDN, String certificateSN, int reason) throws CADoesntExistsException, AuthorizationDeniedException, 
@@ -615,7 +615,7 @@ public interface IEjbcaWS {
      * @throws NotFoundException if certificate doesn't exist
      * @throws EjbcaException internal error
      * @throws ApprovalException There already exists an approval request for this task
-     * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
+     * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved. The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate
      * @throws RevokeBackDateNotAllowedForProfileException if back date is not allowed in the certificate profile
      * @throws DateNotValidException if the date is not a valid ISO 8601 string or if it is in the future.
@@ -651,7 +651,7 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException if a referenced CA does not exist.
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if user doesn't exist.
-	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved.
+	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved. The request ID will be included as a field in this exception.
 	 * @throws ApprovalException if there already exists an approval request for this task.
 	 * @throws AlreadyRevokedException if the user already was revoked.
 	 * @throws EjbcaException any EjbcaException.
@@ -676,7 +676,7 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if user doesn't exist
-	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
+	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved. The request ID will be included as a field in this exception.
 	 * @throws ApprovalException if there already exists an approval request for this task
 	 * @throws EjbcaException if there is a configuration or other error
 	 */
@@ -704,7 +704,7 @@ public interface IEjbcaWS {
      * @throws CADoesntExistsException if a referenced CA does not exist
      * @throws AuthorizationDeniedException if client isn't authorized.
      * @throws NotFoundException if user doesn't exist
-     * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
+     * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved. The request ID will be included as a field in this exception.
      * @throws ApprovalException if there already exists an approval request for this task
      * @throws EjbcaException if there is a configuration or other error
      */
@@ -737,7 +737,7 @@ public interface IEjbcaWS {
      * @return the generated keystore
      * @throws AuthorizationDeniedException if the requesting administrator is unauthorized to perform this operation
      * @throws CADoesntExistsException referenced CA cannot be found in any EJBCA instance
-     * @throws WaitingForApprovalException request has bean added to list of tasks to be approved
+     * @throws WaitingForApprovalException if the request has bean added to list of tasks to be approved. The request ID will be included as a field in this exception.
      * @throws EjbcaException other exceptions
      */
     KeyStore keyRecoverEnroll(String username, String certSNinHex, String issuerDN, String password, String hardTokenSN)
@@ -754,11 +754,11 @@ public interface IEjbcaWS {
 	 * </pre>
 	 *
 	 * @param hardTokenSN of the hardTokenSN
-	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants
+	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOCATION_REASON_ constants
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if token doesn't exist
-	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
+	 * @throws WaitingForApprovalException If request has been added to list of tasks to be approved. The request ID will be included as a field in this exception.
 	 * @throws ApprovalException There already exists an approval request for this task
 	 * @throws AlreadyRevokedException The token was already revoked.
 	 * @throws EjbcaException
@@ -855,11 +855,10 @@ public interface IEjbcaWS {
 	 * @return a List of the generated certificates.
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws AuthorizationDeniedException if the administrator isn't authorized.
-	 * @throws WaitingForApprovalException if the caller is a non-admin a must be approved before it is executed.
+	 * @throws WaitingForApprovalException if the caller is a non-admin a must be approved before it is executed. The request ID will be included as a field in this exception.
 	 * @throws HardTokenExistsException if the given hardtoken serial number already exists.
 	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
 	 * @throws ApprovalException  if error happened with the approval mechanisms
-	 * @throws WaitingForApprovalException if the request haven't been processed yet.
 	 * @throws ApprovalRequestExecutionException if the approval request was rejected
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws EjbcaException
@@ -1240,7 +1239,7 @@ public interface IEjbcaWS {
 	 * @throws NotFoundException if user cannot be found
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws ApprovalException
-	 * @throws WaitingForApprovalException
+	 * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
 	 * @throws EjbcaException
 	 * @see #editUser(UserDataVOWS)
 	 */
@@ -1284,7 +1283,7 @@ public interface IEjbcaWS {
 	 * @throws NotFoundException if user cannot be found
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws ApprovalException thrown if a end needs to be created as part of this request, but that action requires approvals.
-	 * @throws WaitingForApprovalException never thrown, but remains for legacy reasons
+	 * @throws WaitingForApprovalException never thrown, but remains for legacy reasons.
 	 * @throws EjbcaException
 	 * @see #editUser(UserDataVOWS)
 	 */
