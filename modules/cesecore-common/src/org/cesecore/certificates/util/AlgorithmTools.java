@@ -608,10 +608,9 @@ public abstract class AlgorithmTools {
                 // Below code snipped from BC, it's hidden as private/protected methods so we can't use BC directly.
                 final RSASSAPSSparams rsaParams = RSASSAPSSparams.getInstance(params);
                 String digestName = MessageDigestUtils.getDigestName(rsaParams.getHashAlgorithm().getAlgorithm());
-                int dIndex = digestName.indexOf('-');
-                if (dIndex > 0 && !digestName.startsWith("SHA3"))
-                {
-                    digestName = digestName.substring(0, dIndex) + digestName.substring(dIndex + 1);
+                // This is just to convert SHA-256 into SHA256, while SHA3-256 should remain as it is
+                if (digestName.contains("-") && !digestName.startsWith("SHA3")) {
+                    digestName = StringUtils.remove(digestName, '-');
                 }
                 certSignatureAlgorithm = digestName + "withRSAandMGF1";
             } else {
