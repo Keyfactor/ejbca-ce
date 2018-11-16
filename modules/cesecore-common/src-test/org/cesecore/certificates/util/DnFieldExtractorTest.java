@@ -39,7 +39,7 @@ public class DnFieldExtractorTest {
         if (DnComponents.enterpriseMappingsExist()) {
             assertEquals(31, i.size());
         } else {
-            assertEquals(28, i.size());
+            assertEquals(27, i.size());
         }
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
@@ -64,9 +64,17 @@ public class DnFieldExtractorTest {
     	num = extractor.getNumberOfFields(DNFieldExtractor.O);
     	assertEquals(1, num);
         num = extractor.getNumberOfFields(DNFieldExtractor.ORGANIZATIONIDENTIFIER);
-        assertEquals(1, num);
+        if (DnComponents.enterpriseMappingsExist()) {
+            assertEquals(1, num);
+        } else {
+            assertEquals(0, num);            
+        }
         final String oi = extractor.getField(DNFieldExtractor.ORGANIZATIONIDENTIFIER, 0);
-        assertEquals("12345", oi);
+        if (DnComponents.enterpriseMappingsExist()) {
+            assertEquals("12345", oi);
+        } else {
+            assertEquals("", oi);            
+        }
     	String fieldstr = extractor.getFieldString(DNFieldExtractor.CN);
     	assertEquals("CN=Tomas Gustavsson", fieldstr);
     	fieldstr = extractor.getFieldString(DNFieldExtractor.DC);
@@ -74,8 +82,11 @@ public class DnFieldExtractorTest {
     	boolean illegal = extractor.isIllegal();
     	assertFalse(illegal);
     	boolean other = extractor.existsOther();
-    	assertFalse(other);
-    	
+        if (DnComponents.enterpriseMappingsExist()) {
+            assertFalse(other);
+        } else {
+            assertTrue(other);            
+        }
     	dn = "dn=qualifier,cn=Tomas Gustavsson,1.1.1.1=Foo,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	illegal = extractor.isIllegal();
@@ -103,7 +114,11 @@ public class DnFieldExtractorTest {
     	String dn = "DnsName=foo.bar.se,rfc822Name=foo@bar.se,krb5principal=foo/bar@P.COM,registeredId=1.1.1.2";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
-    	assertEquals(17,i.size());
+        if (DnComponents.enterpriseMappingsExist()) {
+            assertEquals(17,i.size());
+        } else {
+            assertEquals(16,i.size());            
+        }
     	final String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
     	assertEquals("foo.bar.se", dns);
     	boolean illegal = extractor.isIllegal();
