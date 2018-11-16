@@ -13,7 +13,7 @@
 package org.ejbca.core.model.ca.publisher;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -27,7 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 public abstract class CustomPublisherUiBase extends CustomPublisherContainer implements CustomPublisherUiSupport {
 
     private static final long serialVersionUID = 1L;
-    private  Map<String, CustomPublisherProperty> properties = new HashMap<>();
+    private  Map<String, CustomPublisherProperty> properties = new LinkedHashMap<>();
    
     public CustomPublisherUiBase() {
         super();
