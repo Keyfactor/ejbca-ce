@@ -189,7 +189,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     /** Adds a user to the database, the string array must be in format defined in class UserView.
-     * @throws WaitingForApprovalException
+     * @throws WaitingForApprovalException The request ID will be included as a field in this exception. 
      * @throws EndEntityProfileValidationException
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
@@ -338,7 +338,7 @@ public class RAInterfaceBean implements Serializable {
      * @throws CADoesntExistsException if CA with ID in userdata does not exist
      * @throws AuthorizationDeniedException if admin is not authorized to CA
      * @throws EndEntityProfileValidationException if End Entity doesn't match profile
-     * @throws WaitingForApprovalException if the request requires approval
+     * @throws WaitingForApprovalException if the request requires approval. The request ID will be included as a field in this exception. 
      * @throws IllegalNameException  if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws ApprovalException if an approval already is waiting for specified action
