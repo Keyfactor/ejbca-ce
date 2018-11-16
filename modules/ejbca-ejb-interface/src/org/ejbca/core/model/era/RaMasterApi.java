@@ -432,7 +432,7 @@ public interface RaMasterApi {
      * @param clearpwd
      * @throws AuthorizationDeniedException
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
-     * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
+     * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity. The request ID will be included as a field in this exception.
      * @return true if used has been added, false otherwise
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
@@ -452,7 +452,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException if administrator isn't authorized to add user
      * @throws EndEntityProfileValidationException if data doesn't fulfill requirements of end entity profile
      * @throws EndEntityExistsException  if user already exists or some other database error occur during commit
-     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException if the caid of the user does not exist
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
@@ -545,7 +545,7 @@ public interface RaMasterApi {
      * @param clearpwd should password be stored in clear way(true) or hashed (false)
      * @throws AuthorizationDeniedException
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
-     * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity
+     * @throws WaitingForApprovalException if approval is required to finalize the adding of the end entity. The request ID will be included as a field in this exception.
      * @return generated keystore. If the provided data is invalid, then this can in certain cases be null.
      * @since Initial RA Master API version (EJBCA 6.14.0)
      */
@@ -619,7 +619,7 @@ public interface RaMasterApi {
      * @param newRevocationReason One of RevokedCertInfo.REVOCATION_REASON_...
      * @return true if the operation was successful, false if the certificate could not be revoked for example since it did not exist
      * @throws ApprovalException if there was a problem creating the approval request
-     * @throws WaitingForApprovalException if the request has been sent for approval
+     * @throws WaitingForApprovalException if the request has been sent for approval. The request ID will be included as a field in this exception.
      * @since Initial RA Master API version (EJBCA 6.6.0)
      */
     boolean changeCertificateStatus(AuthenticationToken authenticationToken, String fingerprint, int newStatus, int newRevocationReason)
@@ -646,7 +646,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException
      * @throws NoSuchEndEntityException if certificate to revoke can not be found
      * @throws ApprovalException if revocation has been requested and is waiting for approval.
-     * @throws WaitingForApprovalException
+     * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws RevokeBackDateNotAllowedForProfileException
      * @throws AlreadyRevokedException
      * @throws CADoesntExistsException in addition to the above throws if the CA (from issuerdn) is not handled by this instance, fail-fast
@@ -687,7 +687,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery preparations
      * @throws ApprovalException if key recovery is already awaiting approval
      * @throws CADoesntExistsException if CA which enrolled the certificate no longer exists
-     * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled)
+     * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled). The request ID will be included as a field in this exception.
      * @throws NoSuchEndEntityException if End Entity bound to certificate isn't found.
      * @throws EndEntityProfileValidationException if End Entity doesn't match profile
      * @since Added between Master RA API version 1 and 2 (EJBCA 6.9.0), lacks an exact API version
@@ -704,7 +704,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException administrator not authorized to edit user
      * @throws EndEntityProfileValidationException data doesn't fulfill EEP requirements
      * @throws ApprovalException if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException if the action has been added in the approval queue
+     * @throws WaitingForApprovalException if the action has been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException if the user's CA doesn't exist
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists
@@ -725,7 +725,7 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException administrator not authorized to edit user
      * @throws EndEntityProfileValidationException data doesn't fulfill EEP requirements
      * @throws ApprovalException if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException if the action has been added in the approval queue
+     * @throws WaitingForApprovalException if the action has been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException if the user's CA doesn't exist
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists
@@ -748,7 +748,7 @@ public interface RaMasterApi {
      * @param issuerDN which issued the certificate
      * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery preparations
      * @throws EjbcaException wrapped exceptions caught in EjbcaWS
-     * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled)
+     * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled). The request ID will be included as a field in this exception.
      * @throws ApprovalException if an approval is already pending to recover this certificate
      * @throws CADoesntExistsException if CA which enrolled the certificate no longer exists
      * @since Added between Master RA API version 1 and 2 (EJBCA 6.9.0), lacks an exact API version
@@ -766,7 +766,7 @@ public interface RaMasterApi {
      * @param hardTokenSN see {@link org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest IEjbcaWS.certificateRequest()}
      * @return KeyStore generated, post recovery
      * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried out during key recovery and enrollment
-     * @throws WaitingForApprovalException if operation requires approval (expected to be thrown with approvals enabled)
+     * @throws WaitingForApprovalException if operation requires approval (expected to be thrown with approvals enabled). The request ID will be included as a field in this exception.
      * @throws EjbcaException exception with errorCode if check fails
      * @throws CADoesntExistsException if CA which issued the certificate no longer exists
      * @throws ApprovalException if an approval is already pending to recover this certificate

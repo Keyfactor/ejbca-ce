@@ -100,9 +100,7 @@ public interface EndEntityManagementSession {
      *             if data doesn't fulfill requirements of end entity profile
      * @throws EndEntityExistsException
      *             if user already exists or some other database error occur during commit
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
+     * @throws WaitingForApprovalException  if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException
      *             if the caid of the user does not exist
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
@@ -124,7 +122,7 @@ public interface EndEntityManagementSession {
      * @throws AuthorizationDeniedException if the administrator isn't authorized to add user
      * @throws EndEntityProfileValidationException if data doesn't fulfill requirements of the end entity profile
      * @throws EndEntityExistsException if user already exists or some other database error occurs during commit
-     * @throws WaitingForApprovalException if approval is required and the action has been added in the approval queue.
+     * @throws WaitingForApprovalException if approval is required and the action has been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws IllegalNameException if the Subject DN or SAN failed constraints
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      * @throws ApprovalException if an approval already exists for this request.
@@ -150,10 +148,7 @@ public interface EndEntityManagementSession {
      *             if data doesn't fulfill requirements of end entity profile
      * @throws EndEntityExistsException
      *             if user already exists or some other database error occur during commit
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
-     * @throws WaitingForApprovalException
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CustomFieldException if the end entity was not validated by a locally defined field validator
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws ApprovalException if an approval already exists for this request.
@@ -177,9 +172,7 @@ public interface EndEntityManagementSession {
      *             if data doesn't fullfil requirements of end entity profile
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException
      *             if the caid of the user does not exist
      * @throws IllegalNameException if the Subject DN failed constraints
@@ -203,10 +196,8 @@ public interface EndEntityManagementSession {
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
      * @throws EndEntityProfileValidationException
-     *             if data doesn't fllfil requirements of end entity profile
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
+     *             if data doesn't fulfill requirements of end entity profile
+     * @throws WaitingForApprovalException  if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException if the caid of the user does not exist
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
@@ -233,9 +224,7 @@ public interface EndEntityManagementSession {
      *             if data doesn't fullfil requirements of end entity profile
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException
      *             if the caid of the user does not exist
      * @throws IllegalNameException if the Subject DN failed constraints
@@ -263,9 +252,7 @@ public interface EndEntityManagementSession {
      *             if data doesn't fulfill requirements of end entity profile
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
+     * @throws WaitingForApprovalException  if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException
      *             if the caid of the user does not exist
      * @throws IllegalNameException if the Subject DN failed constraints
@@ -295,11 +282,8 @@ public interface EndEntityManagementSession {
      *             if data doesn't fulfill requirements of end entity profile
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
-     * @throws CADoesntExistsException
-     *             if the caid of the user does not exist
+     * @throws WaitingForApprovalException  if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
+     * @throws CADoesntExistsException if the caid of the user does not exist
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateSerialNumberException if SubjectDN serial number already exists.
      * @throws NoSuchEndEntityException NoSuchEndEntityException if the user does not exist
@@ -329,7 +313,7 @@ public interface EndEntityManagementSession {
      * @param status the new status, from 'UserData'.
      * 
      * @throws ApprovalException if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      */
     void setUserStatus(AuthenticationToken admin, String username, int status) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException;
 
@@ -343,7 +327,7 @@ public interface EndEntityManagementSession {
      * @param lastApprovingAdmin the last administrator to have approved the request
      * 
      * @throws ApprovalException if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue. The request ID will be included as a field in this exception.
      * @throws NoSuchEndEntityException if the end entity was not found
      * 
      */
@@ -430,7 +414,7 @@ public interface EndEntityManagementSession {
      * @throws AuthorizationDeniedException if client isn't authorized.
      * @throws CADoesntExistsException if a referenced CA does not exist.
      * @throws ApprovalException if there already exists an approval request for this task.
-     * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved.
+     * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved. The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException if the user already was revoked.
      * @throws NoSuchEndEntityException if End Entity bound to certificate isn't found.
      * @throws CouldNotRemoveEndEntityException if the user could not be deleted.
@@ -469,7 +453,7 @@ public interface EndEntityManagementSession {
      * @throws AuthorizationDeniedException
      * @throws NoSuchEndEntityException if certificate to revoke can not be found
      * @throws ApprovalException if revocation has been requested and is waiting for approval.
-     * @throws WaitingForApprovalException
+     * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException
      * @throws RevokeBackDateNotAllowedForProfileException
      */
@@ -492,7 +476,7 @@ public interface EndEntityManagementSession {
      * @throws AlreadyRevokedException if the certificate was already revoked
      * @throws NoSuchEndEntityException if certificate to revoke can not be found
      * @throws ApprovalException if an approval already exists for this request.
-     * @throws WaitingForApprovalException
+     * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException
      */
     void revokeCert(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason)
@@ -514,7 +498,7 @@ public interface EndEntityManagementSession {
      * @throws AlreadyRevokedException if the certificate was already revoked
      * @throws NoSuchEndEntityException if certificate to revoke can not be found
      * @throws ApprovalException if an approval already exists for this request.
-     * @throws WaitingForApprovalException
+     * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException
      * @throws CertificateProfileDoesNotExistException if no profile was found with certRevocationDto.certificateProfileId input parameter.
      */
@@ -541,7 +525,7 @@ public interface EndEntityManagementSession {
      * @throws AlreadyRevokedException if the certificate was already revoked
      * @throws NoSuchEndEntityException
      * @throws ApprovalException if an approval already exists for this request.
-     * @throws WaitingForApprovalException
+     * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws AlreadyRevokedException
      */
     void revokeCertAfterApproval(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason, int approvalRequestID,
@@ -595,7 +579,7 @@ public interface EndEntityManagementSession {
      * @throws AuthorizationDeniedException if requesting administrator isn't authorized to perform key recovery
      * @throws ApprovalException if an approval already exists to edit user status
      * @throws CADoesntExistsException if CA holding the user does not exist
-     * @throws WaitingForApprovalException if the request requires approval. Expected to be thorws if approval is required to edit end entity
+     * @throws WaitingForApprovalException if the request requires approval. Expected to be thrown if approval is required to edit end entity. The request ID will be included as a field in this exception.
      */
     public boolean prepareForKeyRecoveryInternal(AuthenticationToken admin, String username, int endEntityProfileId, Certificate certificate) 
             throws AuthorizationDeniedException, ApprovalException, CADoesntExistsException, WaitingForApprovalException;

@@ -220,7 +220,7 @@ public abstract class BatchCreateTool {
      * @return a file handle to the P12
      *            
      * @throws AuthorizationDeniedException 
-     * @throws WaitingForApprovalException 
+     * @throws WaitingForApprovalException The request ID will be included as a field in this exception.
      * @throws FinderException 
      * @throws ApprovalException 
      * @throws IOException 

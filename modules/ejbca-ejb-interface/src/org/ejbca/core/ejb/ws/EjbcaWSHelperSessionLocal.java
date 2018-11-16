@@ -99,7 +99,7 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
      * @throws NoSuchEndEntityException if there's no end entity with the given username
      * @throws AuthorizationDeniedException if not authorized to the given end entity
      * @throws ApprovalException if an approval error occurred while setting end entity status 
-     * @throws WaitingForApprovalException if approval is required for setting the end entity status
+     * @throws WaitingForApprovalException if approval is required for setting the end entity status. The request ID will be included as a field in this exception.
      */
     void checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password) 
             throws CertificateNotYetValidException, CertificateExpiredException, EndEntityProfileValidationException,
@@ -151,7 +151,7 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
       * @throws AuthorizationDeniedException
       * @throws EjbcaException
       * @throws ApprovalException
-      * @throws WaitingForApprovalException
+      * @throws WaitingForApprovalException. The request ID will be included as a field in this exception.
       * @throws CertPathValidatorException
       * @throws CesecoreException
       * @throws CertificateParsingException 

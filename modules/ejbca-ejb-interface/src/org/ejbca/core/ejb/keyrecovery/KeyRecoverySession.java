@@ -52,7 +52,7 @@ public interface KeyRecoverySession {
      * @param endEntityProfileId used by the end entity
      * @param checkNewest 
      * @throws ApprovalException if approval already exists
-     * @throws WaitingForApprovalException if approval is required. Expected to be thrown in this case
+     * @throws WaitingForApprovalException if approval is required. Expected to be thrown in this case. The request ID will be included as a field in this exception.
      * @throws CADoesntExistsException if the issuer of the certificate doesn't exist
      */
     public void checkIfApprovalRequired(AuthenticationToken admin, CertificateWrapper certificate, String username, int endEntityProfileId, boolean checkNewest) 

@@ -303,7 +303,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @throws EndEntityExistsException if the end entity already exists
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws EndEntityProfileValidationException if the end entity fails constrains set by the end entity profile
-     * @throws WaitingForApprovalException to mark that a request has been created and is awaiting approval
+     * @throws WaitingForApprovalException to mark that a request has been created and is awaiting approval. The request ID will be included as a field in this exception.
 
      */
     private EndEntityInformation addUser(final AuthenticationToken admin, EndEntityInformation endEntity, final boolean clearpwd,

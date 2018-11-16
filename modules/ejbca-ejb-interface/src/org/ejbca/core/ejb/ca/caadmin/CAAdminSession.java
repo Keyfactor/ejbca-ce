@@ -447,9 +447,7 @@ public interface CAAdminSession {
      *             it the administrator isn't authorized to activate the CA.
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
+     * @throws WaitingForApprovalException  if approval is required and the action have been added in the  approval queue. The request ID will be included as a field in this exception. 
      */
     void activateCAService(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, ApprovalException,
             WaitingForApprovalException, CADoesntExistsException;
