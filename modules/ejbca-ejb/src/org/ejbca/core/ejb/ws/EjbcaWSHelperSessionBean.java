@@ -738,6 +738,9 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         // create response messages, for CVC certificates we use a regular X509ResponseMessage
         X509ResponseMessage msg = new X509ResponseMessage();
         msg.setCertificate(CertTools.getCertfromByteArray(cert, java.security.cert.Certificate.class));
+        if(cainfo == null) {
+            throw new CADoesntExistsException("CA by name " + caname + " not found.");
+        }
         // Activate the CA's token using the provided keystorepwd if any
         if (keystorepwd!=null) {
             cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
