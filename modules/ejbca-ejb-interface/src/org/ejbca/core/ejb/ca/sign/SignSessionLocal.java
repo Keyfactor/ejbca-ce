@@ -87,8 +87,8 @@ public interface SignSessionLocal extends SignSession {
      * @throws CertificateRevokeException if certificate was meant to be issued revoked, but could not.  (rollback)
      * @throws CertificateCreateException if certificate couldn't be created.  (rollback)
      * @throws AuthorizationDeniedException if the authentication token wasn't authorized to the CA defined in the request  (rollback)
-     * @throws ApprovalException if changing the end entity status requires approval (does not require rollback)
-     * @throws WaitingForApprovalException if an approval is already waiting for the status to be changed (does not require rollback)
+     * @throws ApprovalException if an approval is already waiting for the status to be changed (does not require rollback). 
+     * @throws WaitingForApprovalException if changing the end entity status requires approval (does not require rollback). The request ID will be included as a field in this exception. 
      */
     ResponseMessage createCertificateIgnoreStatus(final AuthenticationToken admin, final RequestMessage req,
             Class<? extends CertificateResponseMessage> responseClass,  boolean ignorePassword) throws AuthorizationDeniedException, NoSuchEndEntityException,
