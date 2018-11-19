@@ -134,7 +134,7 @@ public class EjbcaRestHelperUnitTest {
         String certificateAuthorityName = "CA1";
         String certificateProfileName = "CP1";
         int certificateProfileId = 1;
-        String subjectDn = "mydn=123";
+        String subjectDn = CertTools.stringToBCDNString("CN=mydn"); 
         String name = "test123";
         int status = 20;
         String encodedValidity = "";
@@ -180,7 +180,7 @@ public class EjbcaRestHelperUnitTest {
         String certificateAuthorityName = "CA1";
         String certificateProfileName = "CP1";
         int certificateProfileId = 1;
-        String subjectDn = "mydn=123";
+        String subjectDn = CertTools.stringToBCDNString("CN=mydn"); 
         String name = "test123";
         int status = 20;
         String encodedValidity = "";
@@ -230,7 +230,7 @@ public class EjbcaRestHelperUnitTest {
         String certificateProfileName = "CP1";
         String username = "testuser";
         int certificateProfileId = 9;
-        String subjectDn = "mydn=123";
+        String subjectDn = CertTools.stringToBCDNString("CN=mydn"); 
         String name = "test123";
         int status = 20;
         String encodedValidity = "";
