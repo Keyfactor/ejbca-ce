@@ -80,7 +80,7 @@ public class CaRestResourceUnitTest {
     // Extend class to test without security
     private static class CaRestResourceWithoutSecurity extends CaRestResource {
         @Override
-        protected AuthenticationToken getAdmin(HttpServletRequest requestContext, boolean allowNonAdmins) {
+        protected AuthenticationToken getAdmin(final HttpServletRequest requestContext, final boolean allowNonAdmins) {
             return authenticationToken;
         }
     }
@@ -190,7 +190,7 @@ public class CaRestResourceUnitTest {
         // when
         expect(raMasterApiProxy.getCertificateChain(eq(authenticationToken), anyInt())).andThrow(new CADoesntExistsException(expectedMessage));
         replay(raMasterApiProxy);
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/certificate/download").get();
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/CN=Ca name/certificate/download").get();
         final String actualJsonString = actualResponse.getEntity(String.class);
         // then
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), actualResponse.getStatus());
@@ -209,7 +209,7 @@ public class CaRestResourceUnitTest {
         // when
         expect(raMasterApiProxy.getCertificateChain(eq(authenticationToken), anyInt())).andReturn(certificates);
         replay(raMasterApiProxy);
-        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/certificate/download").get();
+        final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/CN=Ca name/certificate/download").get();
         final String actualString = actualResponse.getEntity(String.class);
         // then
         assertTrue(actualString.contains(CertTools.BEGIN_CERTIFICATE));
@@ -221,7 +221,7 @@ public class CaRestResourceUnitTest {
     @Test
     public void shouldReturnLatestCrlIssuedByCa() throws Exception {
         // given
-        String expectedCertificate = "Certificate";
+        final String expectedCertificate = "Certificate";
 
         // when
         expect(raMasterApiProxy.getLatestCrlByIssuerDn(eq(authenticationToken), anyString(), anyBoolean())).andReturn(expectedCertificate.getBytes());
@@ -230,8 +230,8 @@ public class CaRestResourceUnitTest {
         final String actualString = actualResponse.getEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualString);
         final String actualCertificate = (String)actualJsonObject.get("crl");
-        byte[] decoded = Base64.decodeBase64(actualCertificate);
-        String decodedActualCertificate = new String(decoded, "utf-8");
+        final byte[] decoded = Base64.decodeBase64(actualCertificate);
+        final String decodedActualCertificate = new String(decoded, "utf-8");
 
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
@@ -267,11 +267,11 @@ public class CaRestResourceUnitTest {
             }
 
             @Override
-            public void verify(PublicKey key) {
+            public void verify(final PublicKey key) {
             }
 
             @Override
-            public void verify(PublicKey key, String sigProvider) {
+            public void verify(final PublicKey key, final String sigProvider) {
             }
 
             @Override
