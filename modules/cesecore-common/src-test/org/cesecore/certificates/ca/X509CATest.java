@@ -1353,6 +1353,7 @@ public class X509CATest {
     private static String getTestKeyPairAlgName(String algName) {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
             algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ||
+            algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA) ||
             algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1) ||
