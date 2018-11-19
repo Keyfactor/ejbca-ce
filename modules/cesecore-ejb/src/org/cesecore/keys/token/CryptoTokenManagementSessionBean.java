@@ -150,13 +150,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // Creating a duplicate P11 crypto token can be destructive, ideally we would check all crypto tokens, 
         // but we only check the ones the admin has access to in order to not leak information 
         List<CryptoTokenInfo> infos = getCryptoTokenInfos(authenticationToken);
-        List<String> ret = new ArrayList<>();
         List<String> providers = new ArrayList<>();
         String tokenP11Lib = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
         final String providerNameToCheck = createProviderName(tokenName, className, properties);
         if (log.isDebugEnabled()) {
             log.debug("isCryptoTokenUsed: Provider name to check for: "+providerNameToCheck);
         }
+        // Return list of Crypto Token name
+        List<String> ret = new ArrayList<>();
         // Only do this check for P11 tokens
         if (StringUtils.isNotEmpty(tokenP11Lib)) {
             for (CryptoTokenInfo cti : infos) {
@@ -166,7 +167,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 final String ctiProviderName = token.getSignProviderName();
                 providers.add(ctiProviderName);
                 if (token != null) {
-                    isP11SlotSame(tokenP11Lib, providerNameToCheck, ctiP11lib, ctiProviderName, cti.getName(), ret);
+                    ret = isP11SlotSame(tokenP11Lib, providerNameToCheck, ctiP11lib, ctiProviderName, cti.getName());
                 }
             }
             // Check for database protection crypto tokens as well, these are not stored as crypto tokens in the database, but only 
@@ -194,7 +195,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return ret; 
     }
 
-    private void isP11SlotSame(String tokenP11Lib, String providerNameToCheck, String ctiP11lib, String ctiProviderName, String ctiName, List<String> ret) throws NoSuchSlotException {
+    private List<String> isP11SlotSame(String tokenP11Lib, String providerNameToCheck, String ctiP11lib, String ctiProviderName, String ctiName) throws NoSuchSlotException {
+        List<String> ret = new ArrayList<>();
         if (StringUtils.isNotEmpty(ctiP11lib)) {
             if (StringUtils.equalsIgnoreCase(tokenP11Lib, ctiP11lib)) {
                 // We have a match on the library, watch out...check if we are using the same slot as well
@@ -210,6 +212,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 }
             }
         }
+        return ret;
     }
 
     private String createProviderName(final String tokenName, final String className, final Properties properties) throws NoSuchSlotException {
