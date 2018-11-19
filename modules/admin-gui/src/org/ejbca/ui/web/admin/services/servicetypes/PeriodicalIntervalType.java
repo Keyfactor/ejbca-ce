@@ -41,7 +41,7 @@ public class PeriodicalIntervalType extends IntervalType {
     private String value;
 	
 	public PeriodicalIntervalType() {
-		super("periodicalinterval.jsp", NAME, true);
+		super(ServiceTypeUtil.PERIODICALINTERVAL_SUB_PAGE, NAME, true);
 		this.unit = DEFAULT_UNIT;
 		this.value = DEFAULT_VALUE;
 	}
