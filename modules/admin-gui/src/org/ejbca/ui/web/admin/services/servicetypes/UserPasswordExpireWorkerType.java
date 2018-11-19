@@ -28,6 +28,6 @@ public class UserPasswordExpireWorkerType extends BaseEmailNotifyingWorkerType {
     public static final String NAME = "USERPASSWORDEXPIREWORKER";
 	
 	public UserPasswordExpireWorkerType(){
-		super(NAME, "userpasswordexpireworker.jsp", UserPasswordExpireWorker.class.getName());
+		super(NAME, ServiceTypeUtil.USERPASSWORDEXPIREWORKER_SUB_PAGE, UserPasswordExpireWorker.class.getName());
 	}
 }

@@ -25,6 +25,6 @@ public class RolloverWorkerType extends BaseEmailNotifyingWorkerType {
 	public static final String NAME = "ROLLOVERWORKER";
 
 	public RolloverWorkerType(){
-		super(NAME, "rolloverworker.jsp", RolloverWorker.class.getName());
+		super(NAME, ServiceTypeUtil.ROLLOVERWORKER_SUB_PAGE, RolloverWorker.class.getName());
 	}
 }

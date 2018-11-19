@@ -24,6 +24,7 @@ import java.util.Properties;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.CustomServiceWorkerProperty;
 import org.ejbca.core.model.services.CustomServiceWorkerUiSupport;
 import org.ejbca.core.model.services.IWorker;
@@ -38,6 +39,9 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @version $Id$
  */
 public class CustomWorkerType extends WorkerType {
+    
+    private static final Logger log = Logger.getLogger(CustomWorkerType.class);
+
 	
 	private static final long serialVersionUID = 1790314768357040269L;
     public static final String NAME = "CUSTOMWORKER";
@@ -50,7 +54,7 @@ public class CustomWorkerType extends WorkerType {
     private ListDataModel<CustomServiceWorkerProperty> customUiPropertyListDataModel = null;
 
 	public CustomWorkerType() {
-		super("customworker.jsp", NAME, true);
+		super(ServiceTypeUtil.CUSTOMWORKER_SUB_PAGE, NAME, true);
 		
 		compatibleActionTypeNames.add(CustomActionType.NAME);
 		compatibleActionTypeNames.add(NoActionType.NAME);
@@ -172,30 +176,27 @@ public class CustomWorkerType extends WorkerType {
 	                final Properties currentProperties = new Properties();
 	                currentProperties.load(new ByteArrayInputStream(getPropertyText().getBytes()));
 	                customUiPropertyList.addAll(customPublisherUiSupport.getCustomUiPropertyList(EjbcaJSFHelper.getBean().getAdmin(), currentProperties, EjbcaJSFHelper.getBean().getText()));
-	            } catch (InstantiationException e) {
-	                e.printStackTrace();
-	            } catch (IllegalAccessException e) {
-	                e.printStackTrace();
-	            } catch (ClassNotFoundException e) {
-	                e.printStackTrace();
-	            } catch (IOException e) {
-	                e.printStackTrace();
-	            }
+	            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IOException e) {
+	                log.error("Error while getting the custom publisher ui support!", e);
+	            } 
 	            this.customUiPropertyListDataModel = new ListDataModel<>(customUiPropertyList);
             }
 	    }
 	    return customUiPropertyListDataModel;
 	}
 	
-	public List<SelectItem> getCustomUiPropertySelectItems() {
-	    final List<SelectItem> ret = new ArrayList<>();
-	    final CustomServiceWorkerProperty customServiceWorkerProperty = getCustomUiPropertyList().getRowData();
-	    customServiceWorkerProperty.getOptions();
-	    for (int i=0; i<customServiceWorkerProperty.getOptions().size(); i++) {
-	        ret.add(new SelectItem(customServiceWorkerProperty.getOptions().get(i), customServiceWorkerProperty.getOptionTexts().get(i)));
-	    }
-	    return ret;
-	}
+    public List<SelectItem> getCustomUiPropertySelectItems() {
+        final List<SelectItem> ret = new ArrayList<>();
+        if (getCustomUiPropertyList() != null && getCustomUiPropertyList().isRowAvailable()) {
+            final CustomServiceWorkerProperty customServiceWorkerProperty = getCustomUiPropertyList().getRowData();
+            if (customServiceWorkerProperty.getOptions() != null) {
+                for (int i = 0; i < customServiceWorkerProperty.getOptions().size(); i++) {
+                    ret.add(new SelectItem(customServiceWorkerProperty.getOptions().get(i), customServiceWorkerProperty.getOptionTexts().get(i)));
+                }
+            }
+        }
+        return ret;
+    }
 	
 	public String getCustomUiTitleText() {
         final String customClassSimpleName = getClassPath().substring(getClassPath().lastIndexOf('.')+1);
@@ -204,7 +205,10 @@ public class CustomWorkerType extends WorkerType {
 
     public String getCustomUiPropertyText() {
         final String customClassSimpleName = getClassPath().substring(getClassPath().lastIndexOf('.')+1);
-        final String name = (getCustomUiPropertyList().getRowData()).getName().replaceAll("\\.", "_");
+        String name = "";
+        if (getCustomUiPropertyList()!= null && getCustomUiPropertyList().isRowAvailable()) {
+            name = (getCustomUiPropertyList().getRowData()).getName().replaceAll("\\.", "_");
+        }
         return EjbcaJSFHelper.getBean().getText().get(customClassSimpleName.toUpperCase() + "_" + name.toUpperCase());
     }
 }

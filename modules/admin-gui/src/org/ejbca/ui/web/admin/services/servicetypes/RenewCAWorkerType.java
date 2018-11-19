@@ -33,7 +33,7 @@ public class RenewCAWorkerType extends BaseEmailNotifyingWorkerType {
 	private boolean renewkeys = false;	
 
 	public RenewCAWorkerType(){
-		super(NAME, "renewcaworker.jsp", RenewCAWorker.class.getName());
+		super(NAME, ServiceTypeUtil.RENEWCAWORKER_SUB_PAGE, RenewCAWorker.class.getName());
 	}
 	
 	public boolean isRenewKeys() {
