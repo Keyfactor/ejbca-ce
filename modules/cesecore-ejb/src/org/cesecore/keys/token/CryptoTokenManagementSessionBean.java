@@ -167,7 +167,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 final String ctiProviderName = token.getSignProviderName();
                 providers.add(ctiProviderName);
                 if (token != null) {
-                    ret = isP11SlotSame(tokenP11Lib, providerNameToCheck, ctiP11lib, ctiProviderName, cti.getName());
+                    if (isP11SlotSame(tokenP11Lib, providerNameToCheck, ctiP11lib, ctiProviderName, cti.getName())) {
+                        ret.add(ctiProviderName);
+                    }
                 }
             }
             // Check for database protection crypto tokens as well, these are not stored as crypto tokens in the database, but only 
@@ -195,8 +197,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return ret; 
     }
 
-    private List<String> isP11SlotSame(String tokenP11Lib, String providerNameToCheck, String ctiP11lib, String ctiProviderName, String ctiName) throws NoSuchSlotException {
-        List<String> ret = new ArrayList<>();
+    private boolean isP11SlotSame(String tokenP11Lib, String providerNameToCheck, String ctiP11lib, String ctiProviderName, String ctiName) throws NoSuchSlotException {
+        boolean ret = false;
         if (StringUtils.isNotEmpty(ctiP11lib)) {
             if (StringUtils.equalsIgnoreCase(tokenP11Lib, ctiP11lib)) {
                 // We have a match on the library, watch out...check if we are using the same slot as well
@@ -207,8 +209,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                     log.debug("isCryptoTokenUsed Provider for existing token: "+ctiProviderName);
                 }
                 if (StringUtils.equals(providerNameToCheck, ctiProviderName)) {
-                    // We had a match, return this crypto token in the list of crypto tokens that we use
-                    ret.add(ctiName);
+                    // We had a match, the caller knows the crypto token name
+                    ret = true;
                 }
             }
         }
