@@ -62,13 +62,17 @@
 </h:form>
 <h:form id="editForm">
 
-<h:panelGroup rendered="#{editService.renderCustomWorker}">
-	<ui:include src="#{editService.workerPage}" />
-</h:panelGroup>
+<f:subview id="customWorkerPage">
+	<h:panelGroup rendered="#{editService.renderCustomWorker}">
+		<ui:include src="#{editService.workerPage}" />
+	</h:panelGroup>
+</f:subview>
 
-<h:panelGrid styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field" rendered="#{!editService.renderCustomWorker}" >
-	<ui:include src="#{editService.workerPage}" />
-</h:panelGrid>
+<f:subview id="workerPage">
+	<h:panelGrid styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field" rendered="#{!editService.renderCustomWorker}" >
+		<ui:include src="#{editService.workerPage}" />
+	</h:panelGrid>
+</f:subview>
    
 <h:panelGrid styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
     <h:panelGroup>
