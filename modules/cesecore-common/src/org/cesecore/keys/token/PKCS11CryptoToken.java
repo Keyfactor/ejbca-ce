@@ -117,7 +117,8 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         if (addProvider) {
             setJCAProvider(provider);
         } else {
-            log.info("Configured to not add PKCS#11 Provider from BaseCryptoToken: "+provider.getName());
+            setJCAProviderName(provider.getName());
+            log.info("Configured to not add PKCS#11 Provider: "+provider.getName());
         }
         if (log.isDebugEnabled()) {
             log.debug("<init: id=" + id);
