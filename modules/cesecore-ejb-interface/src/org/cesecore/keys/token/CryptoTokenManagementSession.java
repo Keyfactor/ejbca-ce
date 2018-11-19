@@ -66,7 +66,7 @@ public interface CryptoTokenManagementSession {
      * @param tokenName the name of the token we want to check
      * @param className the classname, org.cesecore.keys.token.PKCS11CryptoToken if this check should return anything but an empty list 
      * @param properties crypto token properties, with the full PKCS#11 properties needed to create a PKCS#11 crypto token
-     * @return List or CryptoTokenInfo which are using the same slot, or an empty list if there is none, an empty list is thus a sign to "go ahead"
+     * @return List or crypto token names which are using the same slot, or an empty list if there is none, an empty list is thus a sign to "go ahead"
      * @throws AuthorizationDeniedException
      * @throws CryptoTokenNameInUseException
      * @throws CryptoTokenOfflineException
