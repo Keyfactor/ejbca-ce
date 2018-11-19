@@ -24,6 +24,11 @@
      $Id$
      -->
 </ui:remove>
+
+<f:metadata>
+    <f:event type="preRenderView" listener="#{listServicesManagedBean.initAccess}"/>
+</f:metadata>
+
 <body>
 <ui:composition template="/WEB-INF/include/template.xhtml">
 	<ui:define name="content">
