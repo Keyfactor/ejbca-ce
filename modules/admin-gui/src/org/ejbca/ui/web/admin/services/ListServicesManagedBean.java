@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.faces.application.Application;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 
 import org.apache.commons.lang.StringUtils;
@@ -37,6 +39,8 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  *
  * @version $Id$
  */
+@ManagedBean (name = "listServicesManagedBean")
+@SessionScoped
 public class ListServicesManagedBean extends BaseManagedBean {
 
 	private static final long serialVersionUID = 1L;

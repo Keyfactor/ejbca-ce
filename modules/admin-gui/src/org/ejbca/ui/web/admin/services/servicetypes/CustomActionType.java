@@ -34,7 +34,7 @@ public class CustomActionType extends ActionType {
     public static final String NAME = "CUSTOMACTION";
 	
 	public CustomActionType() {
-		super("customaction.jsp", NAME, true);
+		super(ServiceTypeUtil.CUSTOMACTION_SUB_PAGE, NAME, true);
 	}
 
 	private String autoClassPath;

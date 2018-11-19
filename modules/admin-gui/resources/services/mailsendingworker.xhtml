@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+	<ui:remove>
+		<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     $Id$
+     -->
+	</ui:remove>
+
+<body>
+<ui:composition>
+	<h:panelGroup>
+		<h:outputText value="#{web.text.SENDNOTIFICATIONTOENDUSER}"
+			style="font-weight:bold;" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:selectBooleanCheckbox name="certCheckSendUserNotification"
+			value="#{editService.notifyingType.useEndUserNotifications}"
+			disabled="#{not editService.hasEditRights}" >
+			<f:ajax render=":editForm"/>
+		</h:selectBooleanCheckbox>	
+		<h:outputLabel 
+			value="#{web.text.USE}" />
+		<f:verbatim>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</f:verbatim>
+		<h:outputText styleClass="help"
+			value="#{web.text.SENDNOTIFICATIONTOENDUSER_HELP}" />
+	</h:panelGroup>
+
+	<h:panelGroup>
+		<h:outputText value="#{web.text.ENDUSERSUBJECT}" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:inputText name="certCheckEndUserSubjectTextField"
+			value="#{!editService.notifyingType.useEndUserNotifications ? '' : editService.notifyingType.endUserSubject}" size="45"
+			title="#{web.text.FORMAT_STRING}"
+			disabled="#{not editService.hasEditRights or !editService.notifyingType.useEndUserNotifications}" />
+	</h:panelGroup>
+
+	<h:panelGroup>
+		<h:outputText value="#{web.text.ENDUSERMESSAGE}" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:inputTextarea name="certCheckEndUserMessageTextArea"
+			value="#{!editService.notifyingType.useEndUserNotifications ? '' : editService.notifyingType.endUserMessage}" rows="8"
+			cols="45" disabled="#{not editService.hasEditRights or !editService.notifyingType.useEndUserNotifications}" />
+		<br />	
+		<h:outputText value="#{web.text.ENDUSERMESSAGE_HELP}"
+			styleClass="help" />
+	</h:panelGroup>
+
+	<h:panelGroup>
+		<h:outputText value="#{web.text.SENDNOTIFICATIONTOADMIN}"
+			style="font-weight:bold;" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:selectBooleanCheckbox name="certCheckSendAdminNotification"
+			value="#{editService.notifyingType.useAdminNotifications}"
+			disabled="#{not editService.hasEditRights}" >
+		<f:ajax render=":editForm"/>
+		</h:selectBooleanCheckbox>
+			
+		<h:outputLabel 
+			value="#{web.text.USE}" />
+		<f:verbatim>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</f:verbatim>
+		<h:outputText styleClass="help"
+			value="#{web.text.SENDNOTIFICATIONTOADMIN_HELP}" />
+	</h:panelGroup>
+
+	<h:panelGroup>
+		<h:outputText value="#{web.text.ADMINSUBJECT}" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:inputText name="certCheckAdminSubjectTextField"
+			value="#{!editService.notifyingType.useAdminNotifications ? '' : editService.notifyingType.adminSubject}" size="45"
+			title="#{web.text.FORMAT_STRING}"
+			disabled="#{not editService.hasEditRights or !editService.notifyingType.useAdminNotifications}" />
+	</h:panelGroup>
+
+	<h:panelGroup>
+		<h:outputText value="#{web.text.ADMINMESSAGE}" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:inputTextarea name="certCheckAdminMessageTextArea"
+			value="#{!editService.notifyingType.useAdminNotifications ? '' : editService.notifyingType.adminMessage}" rows="8" cols="45"
+			disabled="#{not editService.hasEditRights or !editService.notifyingType.useAdminNotifications}" />
+		<br />	
+		<h:outputText value="#{web.text.ADMINMESSAGE_HELP}" styleClass="help"/>
+	</h:panelGroup>
+
+</ui:composition>
+
+</body>
+</html>

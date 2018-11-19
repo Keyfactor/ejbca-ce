@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+	<ui:remove>
+		<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     $Id$
+     -->
+	</ui:remove>
+
+<body>
+<ui:composition>
+	<h:panelGroup>
+		<h:outputText value="#{web.text.PERIODICALSETTINGS}"
+			style="font-weight:bold;" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<f:verbatim>&#xA0;</f:verbatim>
+	</h:panelGroup>
+
+	<h:panelGroup>
+		<h:outputText value="#{web.text.PERIOD}" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:inputText id="periodicalValueTextField"
+			value="#{editService.periodicalIntervalType.value}" size="5"
+			title="#{web.text.FORMAT_INTEGER}"
+			disabled="#{not editService.hasEditRights}" />
+		<f:verbatim>
+		</f:verbatim>
+		<h:selectOneMenu id="periodicalUnitSelect"
+			value="#{editService.periodicalIntervalType.unit}"
+			disabled="#{not editService.hasEditRights}">
+			<f:selectItems
+				value="#{editService.periodicalIntervalType.availableUnits}" />
+		</h:selectOneMenu>
+	</h:panelGroup>
+
+</ui:composition>
+</body>
+</html>

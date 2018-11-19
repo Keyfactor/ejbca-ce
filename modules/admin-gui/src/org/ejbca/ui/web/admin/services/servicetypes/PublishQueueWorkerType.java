@@ -34,7 +34,7 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	private List<String> selectedPublisherIdsToCheck = new ArrayList<>();
 
 	public PublishQueueWorkerType(){
-		super(NAME, "publishqueueprocessworker.jsp", PublishQueueProcessWorker.class.getName());
+		super(NAME, ServiceTypeUtil.PUBLISHQUEUEPROCESSWORKER_SUB_PAGE, PublishQueueProcessWorker.class.getName());
 		// No action available for this worker
 		deleteAllCompatibleActionTypes();
 		addCompatibleActionTypeName(NoActionType.NAME);				
