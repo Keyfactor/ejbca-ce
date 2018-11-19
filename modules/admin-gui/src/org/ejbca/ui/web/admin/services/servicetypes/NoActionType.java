@@ -31,7 +31,7 @@ public class NoActionType extends ActionType {
 	private transient Properties properties = new Properties();
 	
 	public NoActionType() {
-		super("noaction.jsp", NAME, true);
+		super(ServiceTypeUtil.NOACTION_SUB_PAGE, NAME, true);
 	}
 
     String unit;

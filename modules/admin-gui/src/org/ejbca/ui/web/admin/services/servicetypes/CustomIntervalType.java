@@ -34,7 +34,7 @@ public class CustomIntervalType extends IntervalType {
     public static final String NAME = "CUSTOMINTERVAL";
 	
 	public CustomIntervalType() {
-		super("custominterval.jsp", NAME, true);
+		super(ServiceTypeUtil.CUSTOMINTERVAL_SUB_PAGE, NAME, true);
 	}
 
 	private String autoClassPath;

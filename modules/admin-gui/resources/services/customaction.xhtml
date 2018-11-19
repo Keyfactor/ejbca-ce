@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+	<ui:remove>
+		<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     $Id$
+     -->
+	</ui:remove>
+
+<body>
+<ui:composition>
+	<h:panelGroup>
+		<h:outputText value="#{web.text.CUSTOMACTIONSETTINGS}" style="font-weight:bold;"/>
+	</h:panelGroup>
+	<h:panelGroup>
+		<f:verbatim>&#xA0;</f:verbatim>
+	</h:panelGroup>
+
+	<h:panelGroup>
+		<h:outputText value="#{web.text.CUSTOMACTIONCLASSPATH}" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:selectOneMenu id="actionClassPathSelect"
+			value="#{editService.customActionType.autoClassPath}"
+			disabled="#{not editService.hasEditRights}"
+			rendered="#{editService.manualClassPathsEnabled}"
+			>
+			<f:selectItems
+				value="#{editService.serviceConfigurationView.availableCustomActionItems}" />
+			<f:selectItem itemValue="" itemLabel="#{web.text.MANUALCLASSPATH}" />
+			<f:ajax event="change" render=":editForm" />
+		</h:selectOneMenu>
+
+		<ui:fragment rendered="#{editService.manualClassPathsEnabled}">
+			<br />
+		</ui:fragment>
+		<h:inputText name="actionClassPathTextField"
+			value="#{editService.customActionType.manualClassPath}" 
+			size="45"
+			disabled="#{editService.actionClassPathTextFieldDisabled}" 
+			rendered="#{editService.manualClassPathsEnabled}" />
+
+		<h:selectOneMenu name="actionClassPathSelect"
+			value="#{editService.customActionType.autoClassPath}" 
+			disabled="#{!editService.hasEditRights}"
+			rendered="#{!editService.manualClassPathsEnabled}">
+			<f:selectItem itemValue="" itemLabel="#{web.text.PLEASE_SELECT}" />
+			<f:selectItems
+				value="#{editService.serviceConfigurationView.availableCustomActionItems}" />
+			<f:selectItems value="#{editService.manualCustomItems.actions}" />
+		</h:selectOneMenu>
+
+		<h:panelGroup
+			rendered="#{!empty editService.manualCustomItems.actions and !editService.manualClassPathsEnabled}">
+			<h:outputText
+						value="#{web.text.OLDMANUALCLASSPATHELP}" styleClass="help"/>
+		</h:panelGroup>
+
+
+	</h:panelGroup>
+
+	<h:panelGroup>
+		<h:outputText value="#{web.text.CUSTOMACTIONPROPERTIES}" />
+	</h:panelGroup>
+	<h:panelGroup>
+		<h:inputTextarea id="actionPropsTextArea"
+			value="#{editService.customActionType.propertyText}" rows="8"
+			cols="45" disabled="#{!editService.hasEditRights}" />
+	</h:panelGroup>
+
+</ui:composition>
+</body>
+</html>

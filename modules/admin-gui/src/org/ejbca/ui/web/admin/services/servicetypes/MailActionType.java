@@ -30,7 +30,7 @@ public class MailActionType extends ActionType {
     public static final String NAME = "MAILNOTIFICATIONACTION";
 
 	public MailActionType(){
-		super("mailaction.jsp", NAME, true);
+		super(ServiceTypeUtil.MAILACTION_SUB_PAGE, NAME, true);
 	}
 	
 	private String senderAddress = "";
