@@ -2528,6 +2528,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         for (final int validatorId : ca.getValidators()) {
             final Validator validator = keyValidatorSession.getValidator(validatorId);
+            if (validator == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Missing validator ID " + validatorId + " in CA '" + ca.getName() + "'");
+                }
+                continue;
+            }
             if (validator.getValidatorTypeIdentifier().equals(DnsNameValidator.CAA_TYPE_IDENTIFIER)) {
                 caaIdentities.addAll(((DnsNameValidator) validator).getIssuers());
             }
