@@ -1109,6 +1109,10 @@ table#config tr td:first-child {
 .listColumn1 { text-align: left; width: 40%; }
 .listColumn2 { text-align: left; width: 60%; }
 
+.subTableColumn1 { text-align: left; width: 50%; }
+.subTableColumn2 { text-align: right; width: 50%; }
+
+
 /* --- Table: My Preferences */
 .myPreferencesColumn { 
     text-align: left; 

@@ -28,7 +28,7 @@ public class HsmKeepAliveWorkerType extends BaseWorkerType {
     private static final long serialVersionUID = -1598910154971679252L;
     
     public HsmKeepAliveWorkerType() {
-        super("hsmkeepaliveworker.jsp", NAME, true, HsmKeepAliveWorker.class.getName());
+        super(ServiceTypeUtil.HSMKEEPALIVEWORKER_SUB_PAGE, NAME, true, HsmKeepAliveWorker.class.getName());
         // No action available for this worker
         deleteAllCompatibleActionTypes();
         addCompatibleActionTypeName(NoActionType.NAME);
