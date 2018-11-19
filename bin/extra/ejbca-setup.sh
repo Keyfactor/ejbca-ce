@@ -435,7 +435,6 @@ are_you_sure() {
 
 init_installer() {
   echo "This will destroy your complete EJBCA installation in database $database_name"
-  echo "This will also 'kill -9' all your currently running java processes."
   echo "Do you want this?"
   select yn in "Yes" "No"; do
       case $yn in
