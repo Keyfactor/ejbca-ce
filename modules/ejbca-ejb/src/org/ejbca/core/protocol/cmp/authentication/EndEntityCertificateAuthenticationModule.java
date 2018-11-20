@@ -24,7 +24,9 @@ import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
@@ -37,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -69,6 +72,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
@@ -921,7 +925,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             // No CertPathValidatorException thrown means it passed
             return true;
         } catch (CertPathValidatorException e) {
-            this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid "+" - "+e.getMessage();
+            this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid  - " + getCertPathValidatorExceptionMessage(e);
             if(log.isDebugEnabled()) {
                 log.debug(this.errorMessage + ": SubjectDN=" + CertTools.getSubjectDN(endentitycert));
             }
@@ -937,6 +941,25 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             log.info("NoSuchAlgorithmException", e);
         }
         return false;
+    }
+    
+    /**
+     * Returns the message from a CertPathValidatorException. For the common cases, this method is locale independent.
+     */
+    private String getCertPathValidatorExceptionMessage(final CertPathValidatorException e) {
+        Certificate endEntityCert = null;
+        if (e.getCertPath() != null && CollectionUtils.isNotEmpty(e.getCertPath().getCertificates())) {
+            endEntityCert = e.getCertPath().getCertificates().get(0);
+        }
+        // getReason returns BasicReason.UNSPECIFIED for expired or not yet valid certs, so we need to look at the cause.
+        final Throwable cause = e.getCause();
+        if (cause instanceof CertificateExpiredException) {
+            return "Certificate has expired. NotAfter: " + ValidityDate.formatAsUTC(CertTools.getNotAfter(endEntityCert)) + " UTC";
+        } else if (cause instanceof CertificateNotYetValidException) {
+            return "Certificate is not yet valid. NotBefore: " + ValidityDate.formatAsUTC(CertTools.getNotBefore(endEntityCert)) + " UTC";
+        } else {
+            return e.getMessage();
+        }
     }
 
     private boolean isExtraCertActive(final CertificateInfo certinfo) {
