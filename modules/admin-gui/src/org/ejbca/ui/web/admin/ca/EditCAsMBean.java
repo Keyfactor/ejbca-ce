@@ -1808,7 +1808,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     fileBuffer = fileRecieveFileMakeRequest.getBytes();
                 }
             } catch (IOException e) {
-                log.error("Error happened while uploading file!", e);
+                log.info("Error happened while uploading file!", e);
             }
 
             try {
