@@ -29,7 +29,7 @@
 	<f:event type="preRenderView" listener="#{editCAsMBean.initAccess}" />
 </f:metadata>
 
-<ui:composition template="/WEB-INF/include/template.xhtml">
+<ui:decorate template="/WEB-INF/include/template.xhtml">
 	<ui:define name="content">
 		<h2>
 			<h:outputText value="#{editCAsMBean.editCAPageTitle}" />
@@ -1723,5 +1723,5 @@
 		<!-- ==================================================================== Export CA Header  ============================================================================ -->
 
 	</ui:define>
-</ui:composition>
+</ui:decorate>
 </html>

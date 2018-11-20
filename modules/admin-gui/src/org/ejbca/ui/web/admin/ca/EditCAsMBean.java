@@ -1800,14 +1800,38 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     // ======================================= Helpers ===================================================================//
     private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
         boolean illegaldnoraltname = false;
-        try {
-            illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, null);
 
-            if (illegaldnoraltname) {
-                addErrorMessage(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
+        if (makeRequest) {
+            byte[] fileBuffer = null;
+            try {
+                if (fileRecieveFileMakeRequest != null) {
+                    fileBuffer = fileRecieveFileMakeRequest.getBytes();
+                }
+            } catch (IOException e) {
+                log.error("Error happened while uploading file!", e);
             }
-        } catch (Exception e) {
-            addErrorMessage(e.getMessage());
+
+            try {
+                illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
+
+                if (illegaldnoraltname) {
+                    addErrorMessage(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
+                }
+            } catch (Exception e) {
+                addErrorMessage(e.getMessage());
+                return EditCaUtil.MANAGE_CA_NAV;
+            }
+        } else {
+            try {
+                illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, null);
+
+                if (illegaldnoraltname) {
+                    addErrorMessage(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
+                }
+            } catch (Exception e) {
+                addErrorMessage(e.getMessage());
+                return EditCaUtil.MANAGE_CA_NAV;
+            } 
         }
         
         final long crlperiod = SimpleTime.getInstance(this.crlCaCrlPeriod, "0"+SimpleTime.TYPE_MINUTES).getLong();
@@ -1820,7 +1844,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             return EditCaUtil.MANAGE_CA_NAV;
         }
 
-        if (makeRequest) {
+        if (makeRequest && !illegaldnoraltname) {
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", createCaName);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("cabean", caBean);
