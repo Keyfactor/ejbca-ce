@@ -73,7 +73,15 @@ public abstract class SystemTestsConfiguration {
     public static String getRemotePortHttps(final String defaultValue) {
         return getProperties().getProperty("target.port.https", defaultValue);
     }
-    
+
+    public static String[] getServerCertificateCaNames() {
+        return getProperties().getProperty("target.servercert.ca", "ManagementCA;AdminCA1").split(";");
+    }
+
+    public static String[] getClientCertificateCaNames() {
+        return getProperties().getProperty("target.clientcert.ca", "ManagementCA;AdminCA1").split(";");
+    }
+
     public static String getPkcs11Library(String defaultValue) {
         return getProperties().getProperty(PKCS11_LIBRARY, defaultValue);
     }
