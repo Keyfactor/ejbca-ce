@@ -128,7 +128,7 @@ public class HttpMethodsTest {
         assertNotNull("Admin web error page should return X-FRAME-OPTIONS header", xframe);
         assertNotNull("Admin web error page should return content-security-policy header", csp);
         assertNotNull("Admin web error page should return x-content-security-policy header", xcsp);
-        assertEquals("Admin web error page should return X-FRAME-OPTIONS DENY", "DENY", xframe);
+        assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", xframe);
         assertEquals("Admin web error page should return csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", csp);
         assertEquals("Admin web error page should return x-csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", xcsp);
     }
