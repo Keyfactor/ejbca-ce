@@ -63,7 +63,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
     /**
      * <p>Returns the ids for validators conflicting with a given key validator which is to be added.</p>
      * <p>A new validator is conflicting either if it has the same id or if has the same name and type as an
-     * existing validator. A validator can be added to this session iff this method returns an empty list.</p>
+     * existing validator. A validator can be added to this session if this method returns an empty list.</p>
      * @param validator the validator to be added to this session
      * @return a list of ids for conflicting validators, or an empty list if there are no conflicts
      */
