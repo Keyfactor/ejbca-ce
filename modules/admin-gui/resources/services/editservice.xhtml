@@ -28,7 +28,7 @@
 </f:metadata>
 
 <body>
-<ui:composition template="/WEB-INF/include/template.xhtml">
+<ui:decorate template="/WEB-INF/include/template.xhtml">
 	<ui:define name="content">
 	
 	<h2><h:outputText value="#{web.text.EDITSERVICE}" rendered="#{editService.hasEditRights}" /></h2>
@@ -169,6 +169,6 @@ function enableAll(){
 </h:panelGrid>
 </h:form>
 	</ui:define>
-</ui:composition>
+</ui:decorate>
 </body>
 </html>
