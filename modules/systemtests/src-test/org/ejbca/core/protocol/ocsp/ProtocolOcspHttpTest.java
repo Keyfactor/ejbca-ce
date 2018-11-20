@@ -1529,20 +1529,23 @@ Content-Type: text/html; charset=iso-8859-1
         loadUserCert(this.caid);
         // Delete currently stored certificate
         internalCertStoreSession.removeCertificate(this.ocspTestCert);
-        // Update database (same certificate) with limited meta data
-        internalCertStoreSession.storeCertificateNoAuth(admin, 
-                this.ocspTestCert, 
-                null,
-                "someOtherFingerprint", 
-                CertificateConstants.CERT_ACTIVE, 
-                CertificateConstants.CERTTYPE_ENDENTITY, 
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
-                null, 
-                System.currentTimeMillis());
-        this.helper.reloadKeys();
-        this.helper.verifyStatusGood(this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
-        
+        try {
+            // Update database (same certificate) with limited meta data
+            internalCertStoreSession.storeCertificateNoAuth(admin, 
+                    this.ocspTestCert, 
+                    null,
+                    "someOtherFingerprint", 
+                    CertificateConstants.CERT_ACTIVE, 
+                    CertificateConstants.CERTTYPE_ENDENTITY, 
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
+                    null, 
+                    System.currentTimeMillis());
+            this.helper.reloadKeys();
+            this.helper.verifyStatusGood(this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
+        } finally {
+            internalCertStoreSession.removeCertificate(this.ocspTestCert);
+        }
     }
     
     
