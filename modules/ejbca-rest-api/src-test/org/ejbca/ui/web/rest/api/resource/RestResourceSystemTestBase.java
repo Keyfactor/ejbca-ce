@@ -38,6 +38,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
+import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -137,8 +138,6 @@ public class RestResourceSystemTestBase {
     //
     private static final String KEY_STORE_PASSWORD = "changeit";
     private static final String TRUSTED_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "truststore_" + new Date().getTime() + ".jks";
-    private static final String TRUSTED_CA_0_NAME = "ManagementCA";
-    private static final String TRUSTED_CA_1_NAME = "AdminCA1";
     private static final String CERTIFICATE_USER_NAME = "RestApiTestUser";
     private static final String CERTIFICATE_SUBJECT_DN = "CN=" + CERTIFICATE_USER_NAME;
     private static final String CERTIFICATE_PASSWORD = "RestApiTestUser123";
@@ -153,10 +152,11 @@ public class RestResourceSystemTestBase {
     static {
         try {
             // Trusted CA setup: ManagementCA/AdminCA1 import into trustedKeyStore
-            final CAInfo trustedCaInfo = getTrustedCaInfo();
-            final List<Certificate> trustedCaCertificateChain = trustedCaInfo.getCertificateChain();
+            final CAInfo serverCertCaInfo = CaTestUtils.getServerCertCaInfo(INTERNAL_ADMIN_TOKEN);
+            final CAInfo clientCertCaInfo = CaTestUtils.getClientCertCaInfo(INTERNAL_ADMIN_TOKEN);
+            final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
             final KeyStore trustedKeyStore = initJksKeyStore(TRUSTED_STORE_PATH);
-            importDataIntoJksKeystore(TRUSTED_STORE_PATH, trustedKeyStore, trustedCaInfo.getName().toLowerCase(), trustedCaCertificateChain.get(0).getEncoded(), null, null);
+            importDataIntoJksKeystore(TRUSTED_STORE_PATH, trustedKeyStore, serverCertCaInfo.getName().toLowerCase(), trustedCaCertificateChain.get(0).getEncoded(), null, null);
             final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(trustedKeyStore);
             // Login Certificate setup:
@@ -164,7 +164,7 @@ public class RestResourceSystemTestBase {
             // - Sign a certificate by ManagementCA/AdminCA1
             // - RestApiTestUser certificate and private key import into loginKeyStore
             final KeyStore loginKeyStore = initJksKeyStore(LOGIN_STORE_PATH);
-            final EndEntityInformation endEntityInformation = createEndEntityInformation(trustedCaInfo.getCAId());
+            final EndEntityInformation endEntityInformation = createEndEntityInformation(clientCertCaInfo.getCAId());
             final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
             endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, endEntityInformation, false);
             final SimpleRequestMessage simpleRequestMessage = new SimpleRequestMessage(keyPair.getPublic(), endEntityInformation.getUsername(), endEntityInformation.getPassword());
@@ -177,7 +177,7 @@ public class RestResourceSystemTestBase {
             ROLE_MEMBER = roleMemberSession.persist(INTERNAL_ADMIN_TOKEN,
                     new RoleMember(
                             X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                            trustedCaInfo.getCAId(),
+                            clientCertCaInfo.getCAId(),
                             X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                             AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
                             CERTIFICATE_USER_NAME,
@@ -271,14 +271,6 @@ public class RestResourceSystemTestBase {
 
     private static String getBaseUrl() {
         return "https://"+ HTTPS_HOST +":" + HTTPS_PORT + "/ejbca/ejbca-rest-api";
-    }
-
-    private static CAInfo getTrustedCaInfo() throws AuthorizationDeniedException {
-        if(!caSession.existsCa(TRUSTED_CA_0_NAME) && !caSession.existsCa(TRUSTED_CA_1_NAME)) {
-            throw new RuntimeException("Cannot find the required CA [" + TRUSTED_CA_0_NAME + "] or [" + TRUSTED_CA_1_NAME + "]");
-        }
-        final CAInfo trustedCa0Info = caSession.getCAInfo(INTERNAL_ADMIN_TOKEN, TRUSTED_CA_0_NAME);
-        return (trustedCa0Info != null ? trustedCa0Info : caSession.getCAInfo(INTERNAL_ADMIN_TOKEN, TRUSTED_CA_1_NAME));
     }
 
     private static KeyStore initJksKeyStore(final String keyStoreFilePath) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {

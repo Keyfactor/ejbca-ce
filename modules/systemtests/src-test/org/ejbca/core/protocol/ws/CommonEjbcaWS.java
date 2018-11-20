@@ -96,6 +96,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.Store;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -350,7 +351,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        final CAInfo caInfo = caSession.getCAInfo(intAdmin, getAdminCAName());
+        final CAInfo caInfo = CaTestUtils.getClientCertCaInfo(intAdmin);
         assertNotNull("No CA with name " + getAdminCAName() + " was found.", caInfo);
         final EndEntityInformation endEntityInformation1 = new EndEntityInformation();
         endEntityInformation1.setUsername(TEST_ADMIN_USERNAME);
@@ -504,7 +505,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         final KeyManager km[] = kmf.getKeyManagers();
 
         final TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(ks);
+        final java.security.KeyStore trustStore = java.security.KeyStore.getInstance("jks");
+        final CAInfo serverCertCaInfo = CaTestUtils.getServerCertCaInfo(intAdmin);
+        trustStore.load(null, keyStorePassword);
+        trustStore.setCertificateEntry("trustedca", serverCertCaInfo.getCertificateChain().get(0));
+        tmf.init(trustStore);
         final TrustManager tm[] = tmf.getTrustManagers();
         if ( km==null && tm==null ) {
             return (SSLSocketFactory)SSLSocketFactory.getDefault();

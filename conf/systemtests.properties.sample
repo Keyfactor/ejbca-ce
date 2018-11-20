@@ -15,6 +15,14 @@
 # Normally this overrides "8443" in the tests.
 #target.port.https=443
 
+# Name of CA that has issues the target server TLS certificate. The CA can be an external CA.
+# Use ; to search for multiple CAs.
+#target.servercert.ca=ManagementCA;AdminCA1
+
+# Name of CA that is trusted in the appserver truststore. Must be an active CA that can issue certificates.
+# Use ; to search for multiple CAs.
+#target.clientcert.ca=ManagementCA;AdminCA1
+
 # Full path to the PKCS#11 library 
 #pkcs11.library=/opt/p11proxy/p11proxy.so 
 
