@@ -1,5 +1,8 @@
 #!/bin/sh
 
+echo '=================== CHECKING JAVA VERSION: ================================='
+java -version
+
 cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
 cp /opt/conf/* /app/ejbca/conf/
