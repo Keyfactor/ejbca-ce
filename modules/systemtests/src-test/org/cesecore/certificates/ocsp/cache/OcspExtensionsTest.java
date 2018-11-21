@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ocsp.cache;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -137,7 +138,12 @@ public class OcspExtensionsTest {
      */
     @Test
     public void testRetrieveOcspCtSstListExtension() {
-        
+        try {
+            Class.forName("org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension");
+        } catch (ClassNotFoundException e) {
+            assumeTrue("Skipping test on Community Edition (class OcspCtSctListExtension does not exist)", false);
+        }
+
         // we cant use OcspCtSctListExtension.OCSP_SCTLIST_OID, 
         // because org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension is not included in Community edition
         final String OCSP_SCTLIST_OID = "1.3.6.1.4.1.11129.2.4.5";
