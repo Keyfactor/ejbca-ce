@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -111,7 +112,7 @@ public class BasicCertificateExtension extends CertificateExtension implements C
         }
 
         public static final Encoding fromString(String value) {
-            return lookupMap.get(value);
+            return lookupMap.get(StringUtils.upperCase(value, Locale.ROOT));
         }
 
 
