@@ -1679,14 +1679,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null);
             x509cainfo.setSubjectAltName(subjectaltname);
             x509cainfo.setPolicies(policies);
-            x509cainfo.setExpireTime(CertTools.getNotAfter(x509CaCertificate));
             cainfo = x509cainfo;
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
             cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, certprofileid, validityString, signedby, null, null);
         } else {
             throw new CertificateImportException("Certificate was of an unknown type: " + caCertificate.getType());
         }
-
+        cainfo.setExpireTime(CertTools.getNotAfter(caCertificate));
         cainfo.setDescription("CA created by certificate import.");
 
         if (cainfo instanceof X509CAInfo) {
