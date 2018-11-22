@@ -962,32 +962,35 @@ public interface IEjbcaWS {
 			PublisherException, EjbcaException;
 
 	/**
-	 * Looks up if a requested action has been approved.
-	 *
+     * Looks up if a requested action has been approved. <b>Note:</b> This method uses a hash to identify the approval.
+     * If you have a requestId, please use {@link #getRemainingNumberOfApprovals} instead. 
+     * <p>
 	 * Authorization requirements: A valid certificate
-	 *
-	 * <p>If an approval was found but it is pending or suspended on the local system, 
-     *    then the request will be forwarded to upstream peer systems (if any).</p>
-
-	 * @param approvalId unique id for the action
+     * <p>
+     * If an approval was found but it is pending or suspended on the local system, 
+     * then the request will be forwarded to upstream peer systems (if any).
+     *
+     * @param approvalId unique hash for the action. Note that this is <b>not</b> the same as requestId. Please use {@link #getRemainingNumberOfApprovals} if you have a requestId. 
 	 * @return the number of approvals left, 0 if approved otherwise is the ApprovalDataVO.STATUS constants returned indicating the status. If the request was proxied to a CA instance, and the request fails for technical reasons -9 is returned.
 	 * @throws ApprovalException if approvalId does not exist
 	 * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it won't throw it anymore.
 	 * @throws EjbcaException if error occurred server side
+     * @see #getRemainingNumberOfApprovals
 	 */
 	int isApproved(int approvalId) throws ApprovalException,
 			EjbcaException, ApprovalRequestExpiredException;
 
 	/**
-	 * <p>If an approval was found but it is pending or suspended on the local system, 
-     *    then the request will be forwarded to upstream peer systems (if any).</p>
-     *     
-	 * @param requestId the ID of an approval request
+     * Returns the number of remaining approvals.
+     * <p>
+     * If an approval was found but it is pending or suspended on the local system, 
+     * then the request will be forwarded to upstream peer systems (if any).
+     *
+     * @param requestId the ID of an approval request. This value can be obtained from {@link WaitingForApprovalException#getRequestId}
      * @return the remaining number of approvals for this request (with 0 meaning that the request has passed) or -1 if the request has been denied. If the request was proxied to a CA instance, and the request fails for technical reasons -9 is returned.
 	 * @throws ApprovalException if a request of the given ID didn't exist
 	 * @throws AuthorizationDeniedException if the current requester wasn't authorized.
      * @throws ApprovalRequestExpiredException if approval request was expired before having a definite status
-	 *
 	 */
 	int getRemainingNumberOfApprovals(int requestId) throws ApprovalException, AuthorizationDeniedException, ApprovalRequestExpiredException;
 
