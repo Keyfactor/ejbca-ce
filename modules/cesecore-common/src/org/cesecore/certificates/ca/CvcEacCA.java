@@ -97,8 +97,8 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	}
 
 	@Override
-	public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
-	    super.init(data, caId, subjectDN, name, status, updateTime);
+	public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
+	    super.init(data, caId, subjectDN, name, status, updateTime, expireTime);
 	}
 
     @Override

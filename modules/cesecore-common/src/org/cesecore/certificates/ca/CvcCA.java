@@ -65,11 +65,11 @@ public abstract class CvcCA extends CA implements Serializable {
 	    }
 	    return ret;
 	}
-	public static CvcCA getInstance(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
+	public static CvcCA getInstance(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
         // For future: Type here should be extracted from data to select between different implementations 
         CvcCA ret = (CvcCA)createCAImpl("EAC");
         if (ret != null) {
-            ret.init(data, caId, subjectDN, name, status, updateTime);
+            ret.init(data, caId, subjectDN, name, status, updateTime, expireTime);
         }
         return ret;
 	}
@@ -97,8 +97,9 @@ public abstract class CvcCA extends CA implements Serializable {
 
 	/** Constructor used when retrieving existing CVCCA from database. */
 	@SuppressWarnings("deprecation")
-    public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
+    public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
 		super.init(data);
+		setExpireTime(expireTime);
 		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<>();
         for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
             //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
