@@ -119,13 +119,11 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
         } catch (final AdminDoesntExistException e) {
             addNonTranslatedErrorMessage(e.getMessage());
         }
-        addInfoMessage("MY_PREFERENCES_SAVED");
         return "done";
     }
     
     public String cancel() {
         reset();
-        addInfoMessage("MY_PREFERENCES_CANCELED");
         return "done";
     }
     
