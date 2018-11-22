@@ -27,14 +27,14 @@ import org.cesecore.configuration.ConfigurationBase;
 
 /**
  * This file handles configuration of Available Extended Key Usages
- * 
+ *
  * @version $Id$
  */
 public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase implements Serializable{
 
     private static final long serialVersionUID = -3430732247486886608L;
     public static final String CONFIGURATION_ID = "AVAILABLE_EXTENDED_KEY_USAGES";
-    
+
     /** Creates a new instance of AvailableExtendedKeyUsagesConfiguration without defaults */
     public AvailableExtendedKeyUsagesConfiguration(boolean ignored)  {
         super();
@@ -100,9 +100,11 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
        // RFC 4556 - Kerberos PKINIT server/KDC (id-pkinit-KPKdc)
        addExtKeyUsage("1.3.6.1.5.2.3.5", "EKU_KRB_PKINIT_KDC");
        // -- ICAO (International Civil Aviation Organization) extended key usages
+       // Machine Readable Travel Documents - Part 12, Pubic Key Infrastructure for MRTDs, Seventh Edition 2015, Doc 9303
        // ICAO Master List Signer (cscaMasterListSigningKey)
-       // http://www.icao.int/Security/mrtd/PKD%20Documents/PKDTechnicalDocuments/GuidanceDocument-PKIforMachineReadableTravelDocuments.pdf
        addExtKeyUsage("2.23.136.1.1.3", "EKU_ICAO_MASTERLISTSIGNING");
+       // ICAO Deviation List Signer
+       addExtKeyUsage("2.23.136.1.1.8", "EKU_ICAO_DEVIATIONLISTSIGNING");
        // -- NIST (National Institute of Standards and Technology) extended key usages
        // The id-PIV-cardAuth keyPurposeID specifies that the public key is used to authenticate the PIV-I card rather than the PIV-I card holder.
        // http://www.idmanagement.gov/sites/default/files/documents/pivi_certificate_crl_profile.pdf
@@ -114,24 +116,24 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         LinkedHashMap<Object, Object> d = (LinkedHashMap<Object, Object>) dataobj;
         data = d;
     }
-    
+
     @Override
     public String getConfigurationId() {
         return CONFIGURATION_ID;
     }
-    
+
     public boolean isExtendedKeyUsageSupported(String oid) {
         return data.containsKey(oid.trim());
     }
-    
+
     public void addExtKeyUsage(String oid, String name) {
         data.put(oid.trim(), name);
     }
-    
+
     public void removeExtKeyUsage(String oid) {
         data.remove(oid.trim());
     }
-    
+
     public String getExtKeyUsageName(String oid) {
         oid = oid.trim();
         String name = (String) data.get(oid);
@@ -140,7 +142,7 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         }
         return name;
     }
-    
+
     public List<String> getAllOIDs() {
         Set<Object> keyset = data.keySet();
         ArrayList<String> keys = new ArrayList<String>();
@@ -151,14 +153,14 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         }
         return keys;
     }
-    
+
     public Map<String, String> getAllEKUOidsAndNames() {
         @SuppressWarnings("unchecked")
         Map<String, String> ret = (Map<String, String>) saveData();
         ret.remove("version");
         return ret;
     }
-    
+
     public Properties getAsProperties() {
         Properties properties = new Properties();
         Map<String, String> allEkus = getAllEKUOidsAndNames();
@@ -167,8 +169,8 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
         }
         return properties;
     }
-    
+
     @Override
     public void upgrade() {}
-    
+
 }
