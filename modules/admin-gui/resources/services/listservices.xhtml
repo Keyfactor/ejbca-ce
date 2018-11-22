@@ -25,12 +25,16 @@
      -->
 </ui:remove>
 
-<f:metadata>
-    <f:event type="preRenderView" listener="#{listServicesManagedBean.initAccess}"/>
-</f:metadata>
-
 <body>
-<ui:decorate template="/WEB-INF/include/template.xhtml">
+<ui:composition template="/WEB-INF/include/template.xhtml">
+
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:event type="preRenderView" listener="#{listServicesManagedBean.initAccess}" />
+			</f:metadata>
+		</ui:define>
+
+
 	<ui:define name="content">
 		<h1>
 			<h:outputText value="#{web.text.MANAGESERVICES}" />
@@ -108,6 +112,6 @@
 			</h:panelGrid>
 		</h:form>
 	</ui:define>
-</ui:decorate>
+</ui:composition>
 </body>
 </html>
