@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.ConfigurationBase;
 
@@ -179,7 +180,11 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         }
     }
     
-    private CertificateExtension getCertificateExtensionFromFile(int id, Properties propertiesInFile) throws CertificateExtentionConfigurationException {
+    /**
+     * Used for upgrading from old certextensions.properties files.
+     * Package-internal to allow for testing.
+     */
+    static CertificateExtension getCertificateExtensionFromFile(int id, Properties propertiesInFile) throws CertificateExtentionConfigurationException {
         String PROPERTY_ID           = "id";
         String PROPERTY_OID          = ".oid";
         String PROPERTY_CLASSPATH    = ".classpath";
@@ -187,18 +192,16 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         String PROPERTY_USED         = ".used";
         String PROPERTY_TRANSLATABLE = ".translatable";
         String PROPERTY_CRITICAL     = ".critical";
-        String PROPERTY_REQUIRED     = ".required";
         
         try{
-            String oid = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_OID);
-            String classPath = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_CLASSPATH);
-            String displayName = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_DISPLAYNAME);
+            String oid = StringUtils.trim(propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_OID));
+            String classPath = StringUtils.trim(propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_CLASSPATH));
+            String displayName = StringUtils.trim(propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_DISPLAYNAME));
             log.debug(PROPERTY_ID + id + PROPERTY_USED + ":" + propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_USED));
             boolean used = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_USED).trim().equalsIgnoreCase("TRUE");
             boolean translatable = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_TRANSLATABLE).trim().equalsIgnoreCase("TRUE");
             boolean critical = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_CRITICAL).trim().equalsIgnoreCase("TRUE");
-            boolean required = propertiesInFile.getProperty(PROPERTY_ID + id + PROPERTY_REQUIRED).trim().equalsIgnoreCase("TRUE");
-            log.debug(id + ", " + used + ", " +oid + ", " +critical+ ", " +required+ ", " +translatable +  ", " + displayName);   
+            log.debug(id + ", " + used + ", " +oid + ", " +critical+ ", " +translatable +  ", " + displayName);   
             if(used){
                 if(oid != null && classPath != null && displayName != null){
                     Class<?> implClass = Class.forName(classPath);
@@ -207,7 +210,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
                     if(translatable) {
                         extensionProperties.put("translatable", true);
                     }
-                    certificateExtension.init(id, oid.trim(), displayName, critical, required, extensionProperties);
+                    certificateExtension.init(id, oid.trim(), displayName, critical, /*required=*/true, extensionProperties);
                     return certificateExtension;
 
                 }else{
@@ -221,7 +224,7 @@ public class AvailableCustomCertificateExtensionsConfiguration extends Configura
         return null;
     }
     
-    private Properties getExtensionProperties(int id, Properties propertiesInFile) {
+    private static Properties getExtensionProperties(int id, Properties propertiesInFile) {
         Properties extProps = new Properties();
         Iterator<Object> keyIter = propertiesInFile.keySet().iterator();
         String matchString = "id" + id + ".property."; 
