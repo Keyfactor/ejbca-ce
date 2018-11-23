@@ -34,6 +34,16 @@
 		<priority value="INFO"/>
 	</category>
 
+    <!-- Avoid that these chatty classes' output appear in the console -->
+    <category name="org.ejbca.config.EjbcaConfigurationHolder" additivity="false">
+        <priority value="DEBUG"/>
+        <appender-ref ref="full"/>
+    </category>
+    <category name="org.cesecore.config.ConfigurationHolder" additivity="false">
+        <priority value="DEBUG"/>
+        <appender-ref ref="full"/>
+    </category>
+
 	<root> 
 		<!-- Set basic limit for console -->
 		<priority value="DEBUG" /> 
