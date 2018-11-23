@@ -105,8 +105,7 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
     }
     
     /**
-     * Save action.
-     * @return the navigation outcome defined in faces-config.xml.
+     * Save and redirect to adminweb root page.
      * @throws IOException 
      */
     public void save() throws IOException {
@@ -125,6 +124,10 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
         redirectToAdminweb();
     }
     
+    /**
+     * revert all values on page and redirect to adminweb root page
+     * @throws IOException
+     */
     public void cancel() throws IOException {
         reset();
         redirectToAdminweb();
