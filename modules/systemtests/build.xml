@@ -304,9 +304,9 @@
 		<!-- Workaround for tests TestCertificateProfile -->
 		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" failonerror="false"/>
 		<!-- Workaround for tests TestCertificateProfile -->
-		<echo message="Checking if the CMP TCP listener is listening on port 127.0.0.1:5587... (will result in additional tests being run)"/>
+		<echo message="Checking if the CMP TCP listener is listening on port ${tcpCmpProxyIP}:${tcpCmpProxyPort}... (will result in additional tests being run)"/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
-			<socket server="127.0.0.1" port="5587"/>
+			<socket server="${tcpCmpProxyIP}" port="${tcpCmpProxyPort}"/>
 		</waitfor>
 		<!-- needed by the cesecore tests -->
 		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
@@ -429,9 +429,9 @@
 
 	<target name="runcmp" depends="build, assert-appserverrunning" description="Run CMP system tests">
 		<antcall target="showtime"/>
-		<echo message="Checking if the CMP TCP listener is listening on port 127.0.0.1:5587..."/>
+		<echo message="Checking if the CMP TCP listener is listening on port ${tcpCmpProxyIP}:${tcpCmpProxyPort}..."/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
-			<socket server="127.0.0.1" port="5587"/>
+			<socket server="${tcpCmpProxyIP}" port="${tcpCmpProxyPort}"/>
 		</waitfor>
 		<fail if="cmptcplistener.notrunning" message="This test requires a running CMP TCP listener"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
