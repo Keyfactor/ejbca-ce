@@ -56,6 +56,22 @@
     	    <value>#{certProfilesBean}</value>
     	</managed-property>
   </managed-bean>
+  
+  <managed-bean>
+        <managed-bean-name>cmpConfigMBean</managed-bean-name>
+        <managed-bean-class>org.ejbca.ui.web.admin.cmp.CmpConfigMBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+		<managed-bean-name>editCmpConfigMBean</managed-bean-name>
+		<managed-bean-class>org.ejbca.ui.web.admin.cmp.EditCmpConfigMBean</managed-bean-class>
+		<managed-bean-scope>view</managed-bean-scope>
+		<managed-property>
+		    <property-name>cmpConfigMBean</property-name>
+		    <value>#{cmpConfigMBean}</value>
+		</managed-property>
+  </managed-bean>
+  
   <managed-bean>
     	<managed-bean-name>validatorsBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.keys.validation.ValidatorsBean</managed-bean-class>
@@ -230,6 +246,29 @@
       <to-view-id>/ca/caactivation.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
+
+  <navigation-rule>
+  	<from-view-id>/sysconfig/cmpaliases.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>edit</from-outcome>
+  		<to-view-id>/sysconfig/cmpalias.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+  	<from-view-id>/sysconfig/cmpaliases.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>view</from-outcome>
+  		<to-view-id>/sysconfig/cmpalias.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+   <navigation-rule>
+  	<from-view-id>/sysconfig/cmpalias.xhtml</from-view-id>
+  	<navigation-case>
+  		<from-outcome>done</from-outcome>
+  		<to-view-id>/sysconfig/cmpaliases.xhtml</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+
   <navigation-rule>
     <from-view-id>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</from-view-id>
     <navigation-case>

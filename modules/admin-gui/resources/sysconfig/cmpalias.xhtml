@@ -1,0 +1,336 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:component="http://java.sun.com/jsf/composite/component"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+	<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     -->
+</ui:remove>
+
+<ui:composition template="/WEB-INF/include/template.xhtml">
+	<ui:define name="content">
+
+		<h2><h:outputText value="#{cmpConfigMBean.authorizedToEdit ? web.text.CMPEDITALIAS : web.text.CMP_VIEW_ALIAS}" /></h2>
+        <h3><h:outputText value="#{web.text.CMPALIAS}"/> : <h:outputText value="#{editCmpConfigMBean.selectedCmpAlias}"/></h3>
+		
+		 <h:form id="editcmpaliasform">
+            <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
+	           	<h:panelGroup>&nbsp;</h:panelGroup>
+	        	<h:panelGroup>&nbsp;</h:panelGroup>
+
+	        	<!--  CMP Operational mode  -->
+	            <h:panelGroup>
+	            	<h:outputText value="#{web.text.CMPOPERATIONALMODE}" styleClass="titles"/>
+	        		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPOPERATIONALMODE_HELP}" styleClass="help"/>
+	            </h:panelGroup>
+	            <h:panelGroup>
+	            	<h:selectOneRadio id="selectcmpmode" value="#{editCmpConfigMBean.operationalMode}">
+	            		<f:selectItem itemLabel="#{web.text.CMPCLIENTMODE}" itemValue="client" />
+	            		<f:selectItem itemLabel="#{web.text.CMPRAMODE}" itemValue="ra" />
+	            		<f:ajax execute=":editcmpaliasform:authmodule" render="@form"/>
+	            	</h:selectOneRadio>
+	            </h:panelGroup>
+				
+			    <!--  CMP Authentication Modules  -->
+				<h:panelGroup>
+	            	<h:outputText value="#{web.text.CMPAUTHENTICATIONMODULE}" styleClass="titles"/>
+	        		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPAUTHENTICATIONMODULE_HELP}" styleClass="help"/>
+	            </h:panelGroup>
+	            <h:panelGroup id="authmodule">
+	            	<h:selectBooleanCheckbox value="#{editCmpConfigMBean.hmacSelected}">
+						<f:ajax render="editcmpaliasform:authmodule"/>	            	
+	            	</h:selectBooleanCheckbox> 
+	            	<h:outputText value="HMAC"/>
+	            	<h:selectOneRadio id="selecthmacsecretmode" value="#{editCmpConfigMBean.hmacSecretMode}" 
+	            			disabled="#{!editCmpConfigMBean.hmacSelected}"
+	            			rendered="#{editCmpConfigMBean.raMode}">
+	            		<f:selectItem itemLabel="#{web.text.CMPHMACCASECRET}" itemValue="shared"/>
+	            		<f:selectItem itemLabel="#{web.text.CMPHMACSPECIFYSECRET}" itemValue="specified"/>
+            			<f:ajax render=":editcmpaliasform:authmodule"/>
+	            	</h:selectOneRadio>
+	            	<h:inputText id="inputhmacsecret" value="#{editCmpConfigMBean.hmacSecret}" 
+	            			disabled="#{editCmpConfigMBean.caSharedSecret or !editCmpConfigMBean.hmacSelected}"
+	            			rendered="#{editCmpConfigMBean.raMode}"/>
+	            	<br/>
+	            	<h:panelGroup id="endentitycertificategroup" rendered="#{editCmpConfigMBean.responseProtection ne 'pbe'}">
+	            		<h:selectBooleanCheckbox value="#{editCmpConfigMBean.eeCertSelected}">
+	            			<f:ajax render=":editcmpaliasform:endentitycertificategroup"/>
+	            		</h:selectBooleanCheckbox>
+	            		<h:outputText value="EndEntityCertificate"/>
+	            		<h:outputText value="#{web.text.CMPECCISSUERCA}" rendered="#{editCmpConfigMBean.raMode}"/>
+						<h:selectOneMenu value="#{editCmpConfigMBean.selectedIssuerCa}" 
+								disabled="#{!editCmpConfigMBean.eeCertSelected}"
+								rendered="#{editCmpConfigMBean.raMode}">
+							<f:selectItems value="#{editCmpConfigMBean.caNameSelectItems}"/>
+						</h:selectOneMenu>	            		
+            		</h:panelGroup>
+	            	<br/>
+	            	<h:selectBooleanCheckbox id="regtokenpwdcheckbox" value="#{editCmpConfigMBean.regTokenPwdSelected}" rendered="#{!editCmpConfigMBean.raMode}"/>
+	            	<h:outputText value="RegTokenPwd" rendered="#{!editCmpConfigMBean.raMode}"/>
+	            	<br/>
+	            	<h:selectBooleanCheckbox id="dnpartpwdcheckbox" value="#{editCmpConfigMBean.dnPartPwdSelected}" rendered="#{!editCmpConfigMBean.raMode}">
+	            		<f:ajax render=":editcmpaliasform:authmodule"/>
+	            	</h:selectBooleanCheckbox>
+	            	<h:outputText value="DnPartPwd" rendered="#{!editCmpConfigMBean.raMode}"/>
+	            	<h:outputText value="#{web.text.CMPAUTHSUBJECTDNPART}" rendered="#{!editCmpConfigMBean.raMode}"/>
+	            	<h:selectOneMenu id="dnpartselectmenu" value="#{editCmpConfigMBean.selectedDnField}"
+	            			rendered="#{!editCmpConfigMBean.raMode}"
+	            			disabled="#{!editCmpConfigMBean.dnPartPwdSelected}">
+                    	<f:selectItems value="#{editCmpConfigMBean.dnFieldSelectItems}"/>
+	            	</h:selectOneMenu>
+	            </h:panelGroup>
+            </h:panelGrid>
+         
+ 			<!--  Client Mode   -->
+         	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2" rendered="#{!editCmpConfigMBean.raMode}">
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CMPCLIENTMODE}" style="font-weight: bold;"/>
+                </h:panelGroup>
+	        	<h:panelGroup>&nbsp;</h:panelGroup>
+	       		<h:panelGroup>
+	            	<h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT_HELP}" styleClass="help"/>
+			       	<br/>
+	      			<h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT_HELP1}" styleClass="help"/>
+	      			<br/>
+	      			<h:outputText value="#{web.text.CMPEXTRCTUSERNAMECOMPONENT_HELP2}" styleClass="help"/>
+	            </h:panelGroup>
+	        	<h:selectOneMenu id="usernamecomponentselectmenu" value="#{editCmpConfigMBean.selectedUsernameComponent}">
+                    	<f:selectItems value="#{editCmpConfigMBean.dnFieldSelectItems}"/>
+            	</h:selectOneMenu>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX_HELP}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:inputText value="#{editCmpConfigMBean.raNameGenPrefix}"/>
+   		       	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX_HELP}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:inputText value="#{editCmpConfigMBean.raNameGenPostfix}"/>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPVENDORCERT}" styleClass="titles"/>
+ 			       	<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPVENDORCERT_USE_HELP}" styleClass="help"/>
+	      			<br/>
+	      			<h:outputText value="#{web.text.CMPVENDORCERT_USE_HELP1}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:selectBooleanCheckbox id="vendormodecheckbox" value="#{editCmpConfigMBean.vendorMode}">
+	            		<f:ajax render=":editcmpaliasform:vendorcas"/>
+            	</h:selectBooleanCheckbox>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" styleClass="titles"/>
+			       	<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS_HELP}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:panelGroup id="vendorcas">
+	        		<h:selectOneMenu id="selectvendorca" value="#{editCmpConfigMBean.vendorCa}"  disabled="#{!editCmpConfigMBean.vendorMode}">
+                    	<f:selectItems value="#{editCmpConfigMBean.vendorCaSelectItems}"/>
+            		</h:selectOneMenu>
+	        	</h:panelGroup>
+	        </h:panelGrid>
+         
+         	<!--  RA Mode   -->
+         	<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2" rendered="#{editCmpConfigMBean.raMode}">
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CMPRAMODE}" style="font-weight: bold;"/>
+                </h:panelGroup>
+	        	<h:panelGroup>&nbsp;</h:panelGroup>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPALLOWVERIFYPOPO}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPALLOWVERIFYPOPO_HELP}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:panelGroup>
+		        	<h:selectBooleanCheckbox id="verifypopocheckbox" value="#{editCmpConfigMBean.allowRaVerifyPopo}"/>
+		        	<h:outputText  value="#{web.text.ALLOW}"/>
+	        	</h:panelGroup>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME_HELP}" styleClass="help"/>
+        			<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME_HELP1}" styleClass="help"/>
+        			<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME_HELP2}" styleClass="help"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME_HELP3}" styleClass="help"/>
+        			<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONSCHEME_HELP4}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:panelGroup id="namegenerationscheme">
+	        		<h:selectOneRadio id="ranamegenschemeselectradio" value="#{editCmpConfigMBean.raNameGenScheme}">
+	        			<f:selectItems value="#{editCmpConfigMBean.availableRaNameGenSchemes}"/>
+	        			<f:ajax render="editcmpaliasform:namegenerationscheme"/>
+	        		</h:selectOneRadio>
+	        		<h:inputText id="ranamegeninputfield" value="#{editCmpConfigMBean.raNameGenParams}" rendered="#{editCmpConfigMBean.raNameGenScheme eq 'FIXED'}"/>
+	        		<h:panelGroup id="ranameschemednpart" rendered="#{editCmpConfigMBean.raNameGenScheme eq 'DN'}">
+	            		<h:selectOneMenu id="ranameschemednpartselectmenu" value="#{editCmpConfigMBean.selectedRaNameSchemeDnPart}">
+	                    	<f:selectItems value="#{editCmpConfigMBean.dnFieldSelectItems}"/>
+	                    	<f:ajax event="change" update="@this"/>
+		            	</h:selectOneMenu>
+		            	<h:commandButton id="addranameschemednpartbutton" value="#{web.text.ADD}" action="#{editCmpConfigMBean.actionAddRaNameSchemeDnPart}">
+		            		<f:ajax render="editcmpaliasform:namegenerationscheme"/>
+		            	</h:commandButton>
+		            	<h:commandButton id="removeranameschemednpartbutton" value="#{web.text.REMOVE}" action="#{editCmpConfigMBean.actionRemoveRaNameSchemeDnPart}">
+		            		<f:ajax render="editcmpaliasform:namegenerationscheme"/>
+		            	</h:commandButton>
+	            	</h:panelGroup>
+	            	<h:outputText id="selectedranameschemednparts" value="#{editCmpConfigMBean.raNameGenParams}" rendered="#{editCmpConfigMBean.raNameGenScheme eq 'DN'}"/>
+	        	</h:panelGroup>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONPREFIX_HELP}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:inputText value="#{editCmpConfigMBean.raNameGenPrefix}"/>
+   		       	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRANAMEGENERATIONPOSTFIX_HELP}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:inputText value="#{editCmpConfigMBean.raNameGenPostfix}"/>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRAPASSWORDGENPARAMS}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRAPASSWORDGENPARAMS_HELP}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:inputText id="rapwdgeninputfield" value="#{editCmpConfigMBean.raPwdGenParams}"/>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRAALLOWCUSTOMSERNO}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRAALLOWCUSTOMSERNO_HELP}" styleClass="help"/>
+	      			<br/>
+	      			<h:outputText value="#{web.text.CMPRAALLOWCUSTOMSERNO_HELP1}" styleClass="help"/>
+	        	</h:panelGroup>
+	        	<h:selectBooleanCheckbox id="allowcustomcertserialcheckbox" value="#{editCmpConfigMBean.allowRaCustomSerno}"/>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRAEEPROFILE}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRAEEPROFILE_HELP}" styleClass="help"/>
+     			</h:panelGroup>
+	        	<h:selectOneMenu id="selecteeprofilemenu" value="#{editCmpConfigMBean.raEeProfile}">
+	        		<f:selectItems value="#{editCmpConfigMBean.raEeProfileSelectItems}"/>
+	        		<f:ajax event="change" update="@this" render="editcmpaliasform:selectcertprofilemenu selectracamenu"/>
+	        	</h:selectOneMenu>
+        		<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRACERTPROFILE}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRACERTPROFILE_HELP}" styleClass="help"/>
+	      			<br/>
+	      			<h:outputText value="#{web.text.CMPRACERTPROFILE_HELP1}" styleClass="help"/>
+     			</h:panelGroup>
+	        	<h:selectOneMenu id="selectcertprofilemenu" value="#{editCmpConfigMBean.raCertProfile}">
+	        		<f:selectItems value="#{editCmpConfigMBean.raCertProfileSelectItems}"/>
+	        	</h:selectOneMenu>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRACANAME}" styleClass="titles"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRACANAME_HELP}" styleClass="help"/>
+	      			<br/>
+	      			<h:outputText value="#{web.text.CMPRACANAME_HELP1}" styleClass="help"/>
+     			</h:panelGroup>
+     			<h:selectOneMenu id="selectracamenu" value="#{editCmpConfigMBean.raCaName}">
+     				<f:selectItems value="#{editCmpConfigMBean.raCaSelectItems}"/>
+     			</h:selectOneMenu>
+       		</h:panelGrid>
+       		
+       		<!--  Response Configuration  -->
+       		
+       		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CMPRESPONSECONFIGURATION}" style="font-weight: bold;"/>
+                </h:panelGroup>
+	        	<h:panelGroup>&nbsp;</h:panelGroup>
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRESPONSEPROTECTION}" styleClass="titles"/>
+        			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRESPONSEPROTECTION_HELP}" styleClass="help"/>
+      			</h:panelGroup>
+      			<h:selectOneMenu value="#{editCmpConfigMBean.responseProtection}">
+      				<f:selectItems value="#{editCmpConfigMBean.cmpResponseProtectionSelectItems}"/>
+      				<f:ajax render=":editcmpaliasform:authmodule"/>
+      			</h:selectOneMenu>
+	        	
+	        	<h:panelGroup>
+	        		<h:outputText value="#{web.text.CMPRESPONSECAPUBS}" styleClass="titles"/>
+        			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
+	        		<br/>
+	      			<h:outputText value="#{web.text.CMPRESPONSECAPUBS_HELP}" styleClass="help"/>
+      			</h:panelGroup>
+      			<h:panelGroup id="cmpresponseadditionalcacertsgroup">
+	      			<h:selectOneMenu value="#{editCmpConfigMBean.selectedCmpResponseAdditionalCaCert}">
+	      				<f:selectItems value="#{editCmpConfigMBean.cmpResponseAdditionalCaCerts}"/>
+	      				<f:ajax event="change" update="editcmpaliasform:cmpresponseadditionalcacertsgroup"/>
+	      			</h:selectOneMenu>
+		        	<h:commandButton id="addcmpadditionalcacertbutton" value="#{web.text.ADD}" action="#{editCmpConfigMBean.actionAddResponseAdditionalCaCert}">
+	           			<f:ajax render="editcmpaliasform:cmpresponseadditionalcacertsgroup"/>
+	            	</h:commandButton>
+	            	<h:commandButton id="removecmpadditionalcacertbutton" value="#{web.text.REMOVE}" action="#{editCmpConfigMBean.removeAddResponseAdditionalCaCert}">
+	            		<f:ajax render="editcmpaliasform:cmpresponseadditionalcacertsgroup"/>
+            		</h:commandButton>
+            		<h:outputText value="#{editCmpConfigMBean.selectedCmpResponseAdditionalCaCertList}"/>
+      			</h:panelGroup>
+	        	
+	        	
+        	</h:panelGrid>
+       		
+         	
+       		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%"
+                       rowClasses="Row0,Row1" columnClasses="editColumnSystem1,editColumn2">
+	       		<h:panelGroup>&nbsp;</h:panelGroup>
+	         	<h:panelGroup>
+		            <h:commandButton id="savebutton" value="#{web.text.SAVE}" action="#{editCmpConfigMBean.save}"/>
+		            <h:commandButton id="cancelbutton" value="#{web.text.CANCEL}" action="#{editCmpConfigMBean.cancel}" immediate="true"/>
+	         	</h:panelGroup>
+         	</h:panelGrid>
+         </h:form>	
+
+
+	</ui:define>
+</ui:composition>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
