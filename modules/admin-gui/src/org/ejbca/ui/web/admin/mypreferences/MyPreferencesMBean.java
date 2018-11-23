@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.configuration.WebLanguage;
  * JavaServer Faces Managed Bean for managing MyPreferences.
  * Session scoped and will cache the user preferences.
  *
- * @version $Id: MyPreferencesMBean.java 30173 2018-10-24 14:26:46Z tarmor $
+ * @version $Id$
  */
 public class MyPreferencesMBean extends BaseManagedBean implements Serializable {
 
