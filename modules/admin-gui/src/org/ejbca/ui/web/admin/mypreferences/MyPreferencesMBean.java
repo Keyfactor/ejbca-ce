@@ -12,10 +12,12 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.mypreferences;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
@@ -105,8 +107,9 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
     /**
      * Save action.
      * @return the navigation outcome defined in faces-config.xml.
+     * @throws IOException 
      */
-    public String save() {
+    public void save() throws IOException {
         try {
             if(!getEjbcaWebBean().existsAdminPreference()){
                 getEjbcaWebBean().addAdminPreference(adminPreference);
@@ -119,12 +122,17 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
         } catch (final AdminDoesntExistException e) {
             addNonTranslatedErrorMessage(e.getMessage());
         }
-        return "done";
+        redirectToAdminweb();
     }
     
-    public String cancel() {
+    public void cancel() throws IOException {
         reset();
-        return "done";
+        redirectToAdminweb();
+    }
+    
+    private void redirectToAdminweb() throws IOException {
+        final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+        ec.redirect(ec.getRequestContextPath());
     }
     
     private void reset() {
