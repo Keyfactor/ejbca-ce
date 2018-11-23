@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.EJB;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
@@ -39,8 +37,8 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * @version $Id$
  *
  */
-@ManagedBean
-@SessionScoped
+//@ManagedBean
+//@SessionScoped
 public class CmpConfigMBean extends BaseManagedBean implements Serializable {
 
     @EJB
@@ -186,5 +184,9 @@ public class CmpConfigMBean extends BaseManagedBean implements Serializable {
     
     public boolean isAuthorizedToEdit() {
         return isAuthorizedTo(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+    }
+    
+    public boolean isViewOnly() {
+        return viewOnly;
     }
 }
