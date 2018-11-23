@@ -93,6 +93,7 @@ public class JdbcTool extends ClientToolBox {
         if (jdbcUrl!=null && username!=null && password!=null && !linesInFile.isEmpty()) {
             try {
                 errorCode = new JdbcTool().run(jdbcUrl, username, password, linesInFile);
+                log.info("Done.");
             } catch (SQLException e) {
                 log.error(e.getMessage());
                 errorCode = 2;
@@ -106,9 +107,7 @@ public class JdbcTool extends ClientToolBox {
     }
 
     private int run(final String jdbcUrl, final String username, final String password, final List<String> linesInFile) throws SQLException {
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection(jdbcUrl, username, password);
+        try (final Connection connection = DriverManager.getConnection(jdbcUrl, username, password);) {
             connection.setAutoCommit(true);
             log.info("Connected.");
             final StringBuilder sb = new StringBuilder();
@@ -119,28 +118,20 @@ public class JdbcTool extends ClientToolBox {
                     if (line.endsWith(";")) {
                         sb.deleteCharAt(sb.length()-1);
                         try {
-                            Statement statement = null;
-                            try {
-                                statement = connection.createStatement();
+                            try (final Statement statement = connection.createStatement();) {
                                 final String sqlStatement = sb.toString();
                                 if (sqlStatement.toUpperCase().startsWith("SELECT")) {
-                                    ResultSet resultSet = null;
-                                    try {
-                                        resultSet = statement.executeQuery(sb.toString());
+                                    try (final ResultSet resultSet = statement.executeQuery(sb.toString());) {
                                         final boolean hasResult = resultSet!=null && resultSet.next();
                                         log.info("'" + sqlStatement + "' -> " + (hasResult ? "hit" : "miss"));
                                         if (linesInFile.size()==1 && !hasResult) {
                                             return 4;
                                         }
-                                    } finally {
-                                        if (resultSet!=null) { resultSet.close(); }
                                     }
                                 } else {
                                     final int rowCount = statement.executeUpdate(sb.toString());
                                     log.info("'" + sqlStatement + "' -> " + rowCount);
                                 }
-                            } finally {
-                                if (statement!=null) { statement.close(); }
                             }
                         } catch (SQLException e) {
                             log.error(e.getMessage());
@@ -152,10 +143,7 @@ public class JdbcTool extends ClientToolBox {
                     }
                 }
             }
-        } finally {
-            if (connection!=null) { connection.close(); }
         }
-        log.info("Done.");
         return 0;
     }
 }
