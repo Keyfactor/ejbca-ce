@@ -466,23 +466,6 @@ public abstract class CertTools {
         return x500Name;
     }
 
-    /** Removes any unescaped '\' character from the provided StringBuilder. Assumes that escaping quotes have been stripped. 
-     * Special treatment of the # sign, which if not escaped will be treated as hex encoded DER value by BC. */
-    private static StringBuilder unescapeValue(final StringBuilder sb) {
-        boolean esq = false;
-        int index = 0;
-        while (index < (sb.length()-1)) {
-            if (!esq && sb.charAt(index) == '\\' && sb.charAt(index+1) != '#') {
-                esq = true;
-                sb.deleteCharAt(index);
-            } else {
-                esq = false;
-                index++;
-            }
-        }
-        return sb;
-    }
-
     // Remove extra '+' character escaping
     public static String getUnescapedPlus(final String value) {
         StringBuilder buf = new StringBuilder(value);
