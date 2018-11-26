@@ -54,13 +54,13 @@ public final class EditCaUtil {
         }         
     }
     
-    public static byte[] getUploadedFile(final UploadedFile uploadedFile) {
+    public static byte[] getUploadedFileBuffer(final UploadedFile uploadedFile) {
         byte[] fileBuffer = null;
         if (uploadedFile != null) {
             try {
                 fileBuffer = uploadedFile.getBytes();
             } catch (IOException e) {
-                throw new FacesException("Can not upload filedue to IO exception.", e);
+                throw new FacesException("Can not get uploaded file buffer due to IO exception.", e);
             }
         }
         return fileBuffer;

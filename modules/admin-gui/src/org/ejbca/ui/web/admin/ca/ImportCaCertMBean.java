@@ -93,7 +93,7 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     }    
     
     public String importCaCertificate() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFile(uploadedFile);
+        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
         try {
             cadatahandler.importCACert(importCaCertName, fileBuffer);
         } catch (Exception e) {

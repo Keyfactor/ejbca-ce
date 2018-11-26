@@ -124,7 +124,7 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
     }    
     
     public String importCaCertificate() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFile(uploadedFile);
+        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
         try {
             cadatahandler.importCAFromKeyStore(importCaName, fileBuffer, importPassword, importSigAlias, importEncAlias);
         } catch (Exception e) {
