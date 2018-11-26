@@ -1790,7 +1790,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         boolean illegaldnoraltname = false;
 
         if (makeRequest) {
-            final byte[] fileBuffer = EditCaUtil.getUploadedFile(fileRecieveFileMakeRequest);
+            final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
             try {
                 illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
                 if (illegaldnoraltname) {
@@ -1983,7 +1983,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return
      */
     public String recieveRequest() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFile(fileRecieveFileRecieveRequest);
+        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileRecieveRequest);
         Date cafuturerolloverdate = null;
 
         try {
@@ -2006,7 +2006,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return
      */
     public String importCACertUpdate() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFile(fileRecieveFileImportRenewal);
+        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileImportRenewal);
         try {
             cadatahandler.importCACertUpdate(caid, fileBuffer);
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
@@ -2024,7 +2024,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
         }
-        final byte[] fileBuffer = EditCaUtil.getUploadedFile(fileRecieveFileMakeRequest);
+        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
 
         byte[] certreq = null;
         try {
