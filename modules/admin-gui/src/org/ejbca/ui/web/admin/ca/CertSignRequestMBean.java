@@ -93,7 +93,7 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     }
     
     public String signRequest() {
-        final byte[] fileBuffer = EditCaUtil.getUploadedFile(uploadedFile);
+        final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(uploadedFile);
         try {
             if (caBean.createAuthCertSignRequest(selectedCaId, fileBuffer)) {
                 FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
