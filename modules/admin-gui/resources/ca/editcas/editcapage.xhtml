@@ -25,11 +25,14 @@
 	-->
 </ui:remove>
 
-<f:metadata>
-	<f:event type="preRenderView" listener="#{editCAsMBean.initAccess}" />
-</f:metadata>
+<ui:composition template="/WEB-INF/include/template.xhtml">
 
-<ui:decorate template="/WEB-INF/include/template.xhtml">
+    <ui:define name="metadata">
+        <f:metadata>
+        	<f:event type="preRenderView" listener="#{editCAsMBean.initAccess}" />
+        </f:metadata>
+    </ui:define>
+
 	<ui:define name="content">
 		<h2>
 			<h:outputText value="#{editCAsMBean.editCAPageTitle}" />
@@ -1617,7 +1620,7 @@
 						<h:commandButton 
 							name="buttonreceiveimportrenewal"
 							value="#{web.text.RECEIVE_IMPORT_RENEWAL}"
-							action="{editCAsMBean.importCACertUpdate()}" />
+							action="#{editCAsMBean.importCACertUpdate()}" />
 					</h:panelGroup>
 				</h:panelGrid>
 			</h:panelGrid>
@@ -1677,9 +1680,10 @@
 						rendered="#{not editCAsMBean.editCA or not editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
 						disabled="#{editCAsMBean.signedByExternal}" />
         	    &nbsp;&nbsp;&nbsp;
-				<h:commandButton name="buttoncancel"
-						onclick='return checkallfields()' value="#{web.text.CANCEL}"
-						action="#{editCAsMBean.cancel}" immediate="true" />
+				<h:button 
+						name="buttoncancel"
+						value="#{web.text.CANCEL}"
+						outcome="managecas.xhtml?faces-redirect=true"  />
 
 				</h:panelGroup>
 
@@ -1689,15 +1693,17 @@
 						rendered="#{editCAsMBean.renderSaveExternalCa}"
 						action="#{editCAsMBean.saveExternalCA()}" />
 				&nbsp;&nbsp;&nbsp;
-				<h:commandButton name="buttoncancel" value="#{web.text.CANCEL}"
+				<h:button name="buttoncancel" value="#{web.text.CANCEL}"
 						rendered="#{editCAsMBean.renderSaveExternalCa}"
-						action="#{editCAsMBean.cancel}" immediate="true" />
-					<h:commandButton name="buttoncancel" value="#{web.text.BACK}"
-						rendered="#{not editCAsMBean.renderSaveExternalCa}" />
+						outcome="managecas.xhtml?faces-redirect=true" />
+					<h:button name="buttoncancel" value="#{web.text.BACK}"
+						rendered="#{not editCAsMBean.renderSaveExternalCa}" 
+						outcome="managecas.xhtml?faces-redirect=true" />
 				</h:panelGroup>
 
 			</h:panelGrid>
-		</h:form>
+			</h:form>
+
 		<!-- ==================================================================== Form Buttons (End Of CA Form)  =============================================================== -->
 
 		<!-- ==================================================================== Export CA Header  ============================================================================ -->
@@ -1723,5 +1729,5 @@
 		<!-- ==================================================================== Export CA Header  ============================================================================ -->
 
 	</ui:define>
-</ui:decorate>
+</ui:composition>
 </html>
