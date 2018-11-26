@@ -59,6 +59,9 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     
     @PostConstruct
     public void init() {
+        
+        EditCaUtil.navigateToManageCaPageIfNotPostBack();
+        
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
         if (caBean == null) {
@@ -90,12 +93,7 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
     }    
     
     public String importCaCertificate() {
-        byte[] fileBuffer = null;
-        try {
-            fileBuffer = uploadedFile.getBytes();
-        } catch (IOException e) {
-            log.error("Error happened while uploading file!", e);
-        }
+        final byte[] fileBuffer = EditCaUtil.getUploadedFile(uploadedFile);
         try {
             cadatahandler.importCACert(importCaCertName, fileBuffer);
         } catch (Exception e) {
