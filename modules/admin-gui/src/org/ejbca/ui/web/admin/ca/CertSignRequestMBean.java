@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.ca;
 import java.beans.Beans;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -58,6 +59,8 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     
     @PostConstruct
     public void init() {
+        EditCaUtil.navigateToManageCaPageIfNotPostBack();
+        
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
         if (caBean == null) {
@@ -71,8 +74,9 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
         }
         caBean.initialize(getEjbcaWebBean());
         
-        selectedCaName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("selectedCaName");
-        selectedCaId = (Integer) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("selectedCaId");
+        final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+        selectedCaName = (String) requestMap.get("selectedCaName");
+        selectedCaId = (Integer) requestMap.get("selectedCaId");
 
     }
     
@@ -89,12 +93,7 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     }
     
     public String signRequest() {
-        byte[] fileBuffer = null;
-        try {
-            fileBuffer = uploadedFile.getBytes();
-        } catch (IOException e) {
-            log.error("Error happened while uploading file!", e);
-        }
+        final byte[] fileBuffer = EditCaUtil.getUploadedFile(uploadedFile);
         try {
             if (caBean.createAuthCertSignRequest(selectedCaId, fileBuffer)) {
                 FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
