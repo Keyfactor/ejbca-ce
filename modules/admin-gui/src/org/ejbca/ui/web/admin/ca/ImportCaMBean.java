@@ -62,6 +62,9 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
     
     @PostConstruct
     public void init() {
+        
+        EditCaUtil.navigateToManageCaPageIfNotPostBack();
+        
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
         if (caBean == null) {
@@ -121,12 +124,7 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
     }    
     
     public String importCaCertificate() {
-        byte[] fileBuffer = null;
-        try {
-            fileBuffer = uploadedFile.getBytes();
-        } catch (IOException e) {
-            log.error("Error happened while uploading file!", e);
-        }
+        final byte[] fileBuffer = EditCaUtil.getUploadedFile(uploadedFile);
         try {
             cadatahandler.importCAFromKeyStore(importCaName, fileBuffer, importPassword, importSigAlias, importEncAlias);
         } catch (Exception e) {
@@ -135,5 +133,4 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
         }
         return EditCaUtil.MANAGE_CA_NAV;
     }
-    
 }

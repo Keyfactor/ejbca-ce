@@ -168,29 +168,28 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public String editCaPage(final boolean isEditCA) {
-        if (!isEditCA && (createCaName == null || createCaName.isEmpty())) {
+    public String editCaPage() {
+        if (selectedCaId == 0) {
+            return EditCaUtil.MANAGE_CA_NAV;
+        }
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editcaname", caidtonamemap.get(selectedCaId));
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caid", selectedCaId);
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", true);
+        return EditCaUtil.EDIT_CA_NAV;
+    }
+    
+    public String createCaPage() {
+        if (createCaName == null || createCaName.isEmpty()) {
             return EditCaUtil.MANAGE_CA_NAV;
         }
         
-        if (!isEditCA && canames.containsKey(createCaName)) {
+        if (canames.containsKey(createCaName)) {
             addErrorMessage(getEjbcaWebBean().getText("CAALREADYEXISTS", false, createCaName));
             return EditCaUtil.MANAGE_CA_NAV;
         }
         
-        if (isEditCA && (selectedCaId == 0)) {
-            return EditCaUtil.MANAGE_CA_NAV;
-        }
-        
-        // Here we set what is needed in editing ca mode
-        if (isEditCA) {
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editcaname", caidtonamemap.get(selectedCaId));
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caid", selectedCaId);
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", isEditCA);
-        } else { // And here for we set what is needed creating ca mode
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("createcaname", EditCaUtil.getTrimmedName(this.createCaName));
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", isEditCA);
-        }
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("createcaname", EditCaUtil.getTrimmedName(this.createCaName));
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", false);
         return EditCaUtil.EDIT_CA_NAV;
     }
     

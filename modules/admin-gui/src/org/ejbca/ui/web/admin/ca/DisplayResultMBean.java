@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.ca;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -70,6 +71,8 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
     
     @PostConstruct
     public void init() {
+        EditCaUtil.navigateToManageCaPageIfNotPostBack();
+        
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         try {
             globalconfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
@@ -77,9 +80,11 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
             log.error("Error while initializing the global configuration!", e);
         }
 
-        filemode = (Integer) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("filemode");
-        caName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("caname");
-        caBean = (CAInterfaceBean) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("cabean");
+        final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+        
+        filemode = (Integer) requestMap.get("filemode");
+        caName = (String) requestMap.get("caname");
+        caBean = (CAInterfaceBean) requestMap.get("cabean");
         filePath = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getCaPath();
 
         if (filemode == EditCaUtil.CERTGENMODE) {

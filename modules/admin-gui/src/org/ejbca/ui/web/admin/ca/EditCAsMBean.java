@@ -34,6 +34,7 @@ import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJBException;
+import javax.faces.FacesException;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -205,6 +206,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private List<String> availableCryptoTokenAliases = null;
 
     private String viewCertLink;
+    
+    
 
     public UploadedFile getFileRecieveFileImportRenewal() {
         return fileRecieveFileImportRenewal;
@@ -230,7 +233,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.fileRecieveFileMakeRequest = fileRecieveFileMakeRequest;
     }
     
-    
     public void initAccess() throws Exception {
         // To check access 
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -240,7 +242,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
        
     @PostConstruct
-    public void init() {
+    public void initialize() {
+        EditCaUtil.navigateToManageCaPageIfNotPostBack();
         
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
@@ -249,6 +252,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 caBean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
             } catch (ClassNotFoundException | IOException e) {
                 log.error("Error while initializing ca bean!", e);
+                throw new FacesException("Error while initializing ca bean!", e);
             }
             request.getSession().setAttribute("cabean", caBean);
         }
@@ -258,18 +262,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             globalconfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
         } catch (Exception e) {
             log.error("Error while initializing the global configuration!", e);
+            throw new FacesException("Error while initializing the global configuration!", e);
         }
         cadatahandler = caBean.getCADataHandler();
         caidtonamemap = caBean.getCAIdToNameMap();
 
-        isEditCA = (Boolean) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("iseditca");
-        
-        if (isEditCA) {
-            editCaName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("editcaname");
-            caid = (Integer) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("caid");
-        } else {
-            createCaName = (String) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("createcaname");
-        }
+        final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+        initPageVariables(requestMap);
 
         viewCertLink = getEjbcaWebBean().getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
         
@@ -285,6 +284,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         // Init include health check
         includeInHealthCheck =  cainfo != null && cainfo.getIncludeInHealthCheck();
         
+        // Here we do initialize the sub views.
         if (isEditCA) {
             initEditCaPage();
         } else {
@@ -292,18 +292,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    private List<ApprovalRequestItem> initApprovalRequestItems() {
-        List<ApprovalRequestItem> approvalRequestItems = new ArrayList<>();
-        if (cainfo != null && cainfo.getApprovals() != null) {
-            LinkedHashMap<ApprovalRequestType, Integer> approvals = (LinkedHashMap<ApprovalRequestType, Integer>) cainfo.getApprovals();
-            for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
-                if (approvals.containsKey(approvalRequestType)) {
-                    approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvals.get(approvalRequestType)));
-                }
-            }
-        }
-        return approvalRequestItems;
-    }
 
     public String getNewSubjectDn() {
         return newSubjectDn;
@@ -1662,10 +1650,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return catype == CAInfo.CATYPE_X509 && isHasEditRight();
     }
     
-    public String cancel() {
-        return EditCaUtil.MANAGE_CA_NAV;
-    }
-    
     public String cmsCertLink() throws UnsupportedEncodingException {
         if (cmscert != null) {
             return "adminweb/viewcertificate.jsp?"
@@ -1797,23 +1781,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
+    public String cancel() {
+        return EditCaUtil.MANAGE_CA_NAV;
+    }
+    
     // ======================================= Helpers ===================================================================//
     private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
         boolean illegaldnoraltname = false;
 
         if (makeRequest) {
-            byte[] fileBuffer = null;
-            try {
-                if (fileRecieveFileMakeRequest != null) {
-                    fileBuffer = fileRecieveFileMakeRequest.getBytes();
-                }
-            } catch (IOException e) {
-                log.info("Error happened while uploading file!", e);
-            }
-
+            final byte[] fileBuffer = EditCaUtil.getUploadedFile(fileRecieveFileMakeRequest);
             try {
                 illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
-
                 if (illegaldnoraltname) {
                     addErrorMessage(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
                 }
@@ -1824,7 +1803,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             try {
                 illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, null);
-
                 if (illegaldnoraltname) {
                     addErrorMessage(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
                 }
@@ -2005,14 +1983,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return
      */
     public String recieveRequest() {
-        byte[] fileBuffer = null;
+        final byte[] fileBuffer = EditCaUtil.getUploadedFile(fileRecieveFileRecieveRequest);
         Date cafuturerolloverdate = null;
 
-        try {
-            fileBuffer = fileRecieveFileRecieveRequest.getBytes();
-        } catch (IOException e) {
-            log.error("Error happened while uploading file!", e);
-        }
         try {
             cadatahandler.receiveResponse(caid, fileBuffer, certSignKeyRequestValue, checkBoxFutureRollOver);
             cafuturerolloverdate = caBean.getRolloverNotBefore(caid);
@@ -2033,22 +2006,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return
      */
     public String importCACertUpdate() {
-        byte[] fileBuffer = null;
-        try {
-            if (fileRecieveFileImportRenewal != null) {
-                fileBuffer = fileRecieveFileImportRenewal.getBytes();
-            }
-        } catch (IOException e) {
-            log.error("Error happened while uploading file!", e);
-        }
-
+        final byte[] fileBuffer = EditCaUtil.getUploadedFile(fileRecieveFileImportRenewal);
         try {
             cadatahandler.importCACertUpdate(caid, fileBuffer);
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
         } catch (Exception e) {
             addErrorMessage(e.getMessage());
         }
-
         return EditCaUtil.MANAGE_CA_NAV;
     }
     
@@ -2060,14 +2024,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
         }
-        byte[] fileBuffer = null;
-        try {
-            if (fileRecieveFileMakeRequest != null) {
-                fileBuffer = fileRecieveFileMakeRequest.getBytes();
-            }
-        } catch (IOException e) {
-            log.error("Error happened while uploading file!", e);
-        }
+        final byte[] fileBuffer = EditCaUtil.getUploadedFile(fileRecieveFileMakeRequest);
 
         byte[] certreq = null;
         try {
@@ -2076,7 +2033,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             addErrorMessage(e.getMessage());
         }
         caBean.saveRequestData(certreq);
-        
+
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caname", editCaName);
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("cabean", caBean);
@@ -2196,8 +2153,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     // ===================================================== Edit CA Actions ============================================= //
-
-    
     
     // ===================================================== Other helpers   ============================================= //
     
@@ -2568,5 +2523,37 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 log.error("Error while accessing ca bean!", e);
             }
         }
+    }
+    
+    private void initPageVariables(final Map<String, Object> requestMap) {
+        // Make sure we have required parameters available in request map
+        if (requestMap != null && requestMap.get("iseditca") instanceof Boolean) {
+            isEditCA = (Boolean) requestMap.get("iseditca");
+            if (isEditCA) {
+                editCaName = (String) requestMap.get("editcaname");
+                caid = (Integer) requestMap.get("caid");
+            } else {
+                createCaName = (String) requestMap.get("createcaname");
+            }
+        } else { // This page is accessed not via manage ca page we should not continue!
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(EditCaUtil.MANAGE_CA_NAV + ".xhtml");
+            } catch (IOException e) {
+                throw new FacesException("Cannot redirect to " + EditCaUtil.MANAGE_CA_NAV + " due to IO exception.", e);
+            }
+        }
+    }
+
+    private List<ApprovalRequestItem> initApprovalRequestItems() {
+        List<ApprovalRequestItem> approvalRequestItems = new ArrayList<>();
+        if (cainfo != null && cainfo.getApprovals() != null) {
+            LinkedHashMap<ApprovalRequestType, Integer> approvals = (LinkedHashMap<ApprovalRequestType, Integer>) cainfo.getApprovals();
+            for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
+                if (approvals.containsKey(approvalRequestType)) {
+                    approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvals.get(approvalRequestType)));
+                }
+            }
+        }
+        return approvalRequestItems;
     }
 }

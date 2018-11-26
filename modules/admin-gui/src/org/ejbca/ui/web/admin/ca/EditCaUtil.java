@@ -12,7 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca;
 
+import java.io.IOException;
+
+import javax.faces.FacesException;
+import javax.faces.context.FacesContext;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 
 /**
  * 
@@ -36,5 +42,27 @@ public final class EditCaUtil {
         } else {
             return StringUtils.EMPTY;
         }
+    }
+    
+    public static void navigateToManageCaPageIfNotPostBack() {
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            try {
+                FacesContext.getCurrentInstance().getExternalContext().redirect(EditCaUtil.MANAGE_CA_NAV + ".xhtml");
+            } catch (IOException e) {
+                throw new FacesException("Cannot redirect to " + EditCaUtil.MANAGE_CA_NAV + " due to IO exception.", e);
+            }
+        }         
+    }
+    
+    public static byte[] getUploadedFile(final UploadedFile uploadedFile) {
+        byte[] fileBuffer = null;
+        if (uploadedFile != null) {
+            try {
+                fileBuffer = uploadedFile.getBytes();
+            } catch (IOException e) {
+                throw new FacesException("Can not upload filedue to IO exception.", e);
+            }
+        }
+        return fileBuffer;
     }
 }
