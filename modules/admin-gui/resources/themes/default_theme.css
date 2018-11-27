@@ -494,6 +494,7 @@ table.actions tr td h3 {
 
 /* --- Forms: Edit/Action/View */
 table.view,
+table.view-top,
 table.action,
 table.edit-top,
 table.edit-bottom,
@@ -507,6 +508,7 @@ table.edit-bottom {
 	margin-top: -1px;
 }
 table.view tr td,
+table.view-top tr td,
 table.action tr td,
 table.edit-top tr td,
 table.edit-ctnd tr td,
@@ -643,15 +645,20 @@ table.action tr:last-child td {
 }
 
 /* --- Form: View */
-table.view {
+table.view,
+table.view-top {
 	margin-top: .25em;
 }
-table.view tr td {
+
+table.view tr td,
+table.view-top tr td {
 	padding: .15em .5em !important;
 	line-height: 1.4em;
 }
+
 /* Headers, Sections, and Footers */
 table.view tr:first-child td,
+table.view-top tr:first-child td,
 table.view tr.section td {
 	background-color: #E5E5E5;
 	border-top: 3px solid #CCCCCC;
@@ -663,7 +670,8 @@ table.view tr:last-child td {
 	color: #000;
 }
 /* Titles */
-table.view tr.title td {
+table.view tr.title td,
+table.view-top tr.title td {
 	background-color: #F2F2F2;
 	/* Color: rgba(229,229,229,1) = #E5E5E5 */
 	background-image: -moz-linear-gradient(top, rgba(229,229,229,1) 0%, rgba(229,229,229,0) 100%);		/* FF3.6+ */
@@ -676,6 +684,7 @@ table.view tr.title td {
 
 /* --- Forms: Edit/Action/View */		/* KEEP IT HERE */
 table.view table,
+table.view-top table,
 table.action table,
 table.edit-top table,
 table.edit-bottom table,
@@ -684,6 +693,7 @@ table.edit table {
 	border-spacing: 0px;
 }
 table.view table tr td,
+table.view-top table tr td,
 table.action table tr td,
 table.edit-top table tr td,
 table.edit-bottom table tr td,
