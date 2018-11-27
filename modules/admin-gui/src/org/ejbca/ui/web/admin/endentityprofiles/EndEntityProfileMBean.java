@@ -57,7 +57,12 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper;
-
+/**
+ * 
+ * JSF MBean backing end entity profile page.
+ *
+ * @version $Id$
+ */
 @ManagedBean
 @RequestScoped
 public class EndEntityProfileMBean extends BaseManagedBean implements Serializable {
@@ -69,7 +74,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     
-    static final String CHECKBOX_VALUE           = EndEntityProfile.TRUE; 
+    static final String CHECKBOX_VALUE = EndEntityProfile.TRUE; 
     
     
     private EndEntityProfilesMBean endEntityProfilesMBean;
