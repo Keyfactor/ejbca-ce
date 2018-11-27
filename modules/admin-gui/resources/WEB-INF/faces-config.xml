@@ -73,6 +73,16 @@
   </managed-bean>
   
   <managed-bean>
+    	<managed-bean-name>endEntityProfileMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.endentityprofiles.EndEntityProfileMBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+    	<managed-property>
+    	    <property-name>endEntityProfilesMBean</property-name>
+    	    <value>#{endEntityProfilesMBean}</value>
+    	</managed-property>
+  </managed-bean>
+  
+  <managed-bean>
     	<managed-bean-name>validatorsBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.keys.validation.ValidatorsBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
@@ -267,6 +277,18 @@
   		<from-outcome>done</from-outcome>
   		<to-view-id>/sysconfig/cmpaliases.xhtml</to-view-id>
   	</navigation-case>
+  </navigation-rule>
+  
+  <navigation-rule>
+    <from-view-id>/ra/editendentityprofiles/editendentityprofiles.xhtml</from-view-id>
+    <navigation-case>
+      <from-outcome>edit</from-outcome>
+      <to-view-id>/ra/editendentityprofiles/endentityprofilepage.xhtml</to-view-id>
+    </navigation-case>
+    <navigation-case>
+      <from-outcome>view</from-outcome>
+      <to-view-id>/ra/editendentityprofiles/endentityprofilepage.xhtml</to-view-id>
+    </navigation-case>
   </navigation-rule>
 
   <navigation-rule>
