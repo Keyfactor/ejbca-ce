@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:c="http://java.sun.com/jsp/jstl/core"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     
+     $Id: viewcainfo.xhtml 30542 2018-11-19 13:35:45Z tarmor $
+     -->
+</ui:remove>
+
+<f:metadata> 
+    <f:event type="preRenderView" listener="#{viewCAInfoMBean.initialize}"/> 
+</f:metadata>
+
+<ui:composition template="/WEB-INF/include/popup.xhtml">
+    <ui:define name="content">
+        <h2>
+            <h:outputText value="#{web.text.VIEW_CAINFORMATION_HEADING}" />
+        </h2>
+        
+        <h:form id="viewcainfo">
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.caName.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.caName.data}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.subjectDn.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.subjectDn.data}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.alternativeName.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.alternativeName.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.caType.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.caType.data}"/>
+                </h:panelGroup>
+            </h:panelGrid>
+            
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                <h:panelGroup>
+                    <strong><h:outputText value="#{web.text.CADATA}" /></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.expireTime.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.expireTime.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.status.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.status.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.description.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.description.data}"/>
+                </h:panelGroup>
+            </h:panelGrid>
+            
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                <h:panelGroup>
+                    <strong><h:outputText value="#{web.text.CRLSPECIFICDATA}" /></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.expireTime.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.expireTime.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlIssueInterval.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlIssueInterval.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlOverlapTime.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlOverlapTime.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.deltaCrlPeriod.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.deltaCrlPeriod.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlPublishers.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlPublishers.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.validators.text}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.validators.data}"/>
+                </h:panelGroup>
+                
+            </h:panelGrid>
+            
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>
