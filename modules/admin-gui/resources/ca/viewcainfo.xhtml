@@ -34,34 +34,34 @@
 <ui:composition template="/WEB-INF/include/popup.xhtml">
     <ui:define name="content">
         <h2>
-            <h:outputText value="#{web.text.VIEW_CAINFORMATION_HEADING}" />
+            <h:outputText value="#{web.text.VIEW_caGuiInfo_HEADING}" />
         </h2>
         
         <h:form id="viewcainfo">
             <h:panelGrid columns="2" styleClass="view-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.caName.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.caName.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.caName.data}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.caName.data}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.subjectDn.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.subjectDn.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.subjectDn.data}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.subjectDn.data}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.alternativeName.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.alternativeName.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.caType.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.caType.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.caType.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.caType.data}"/>
                 </h:panelGroup>
             </h:panelGrid>
             
@@ -72,22 +72,22 @@
                 <h:panelGroup>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.expireTime.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.expireTime.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.status.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.status.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.status.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.status.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.description.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.description.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.description.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.description.data}"/>
                 </h:panelGroup>
             </h:panelGrid>
             
@@ -98,40 +98,40 @@
                 <h:panelGroup>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.expireTime.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.expireTime.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlIssueInterval.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlIssueInterval.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlIssueInterval.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlIssueInterval.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlOverlapTime.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlOverlapTime.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlOverlapTime.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlOverlapTime.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.deltaCrlPeriod.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.deltaCrlPeriod.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.deltaCrlPeriod.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.deltaCrlPeriod.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlPublishers.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.crlPublishers.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.validators.text}"/></strong>
+                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.validators.text}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caInformation.validators.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.validators.data}"/>
                 </h:panelGroup>
                 
             </h:panelGrid>

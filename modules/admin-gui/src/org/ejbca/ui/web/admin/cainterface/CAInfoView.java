@@ -196,63 +196,63 @@ public class CAInfoView implements Serializable, Cloneable {
 	}
 	
     private void buildCaInformation(final CAInfo cainfo, final EjbcaWebBean ejbcawebbean) {
-        caInformation = new CaGuiInfo();
+        caGuiInfo = new CaGuiInfo();
         
         final String subjectDnText = ejbcawebbean.getText("CERT_SUBJECTDN");
         final String subjectDn = HTMLTools.htmlescape(cainfo.getSubjectDN());
-        caInformation.setSubjectDn(new CaInfoProperty(subjectDnText, subjectDn));
+        caGuiInfo.setSubjectDn(new CaInfoProperty(subjectDnText, subjectDn));
         
         final String caNameText = ejbcawebbean.getText("CANAME");
         final String caName = HTMLTools.htmlescape(cainfo.getName());
-        caInformation.setCaName(new CaInfoProperty(caNameText, caName));
+        caGuiInfo.setCaName(new CaInfoProperty(caNameText, caName));
         
         final String caTypeText = ejbcawebbean.getText("CATYPE");
         final int caType = cainfo.getCAType();
         final String caTypeValue = (caType == CAInfo.CATYPE_CVC) ? ejbcawebbean.getText("CVCCA") : ejbcawebbean.getText("X509");
-        caInformation.setCaType(new CaInfoProperty(caTypeText, caTypeValue));
+        caGuiInfo.setCaType(new CaInfoProperty(caTypeText, caTypeValue));
         
         final String expireTimeText = ejbcawebbean.getText("EXPIRES");
         final String expireTime = (cainfo.getExpireTime() == null) ? "" : ejbcawebbean.formatAsISO8601(cainfo.getExpireTime());
-        caInformation.setExpireTime(new CaInfoProperty(expireTimeText, expireTime));
+        caGuiInfo.setExpireTime(new CaInfoProperty(expireTimeText, expireTime));
         
         final String statusText = ejbcawebbean.getText("STATUS");
         final String caTokenStatus = getStatus(cainfo, ejbcawebbean);
-        caInformation.setStatus(new CaInfoProperty(statusText, caTokenStatus));
+        caGuiInfo.setStatus(new CaInfoProperty(statusText, caTokenStatus));
         
         final String descriptionText = ejbcawebbean.getText("DESCRIPTION");
         final String description = HTMLTools.htmlescape(cainfo.getDescription());
-        caInformation.setDescription(new CaInfoProperty(descriptionText, description));
+        caGuiInfo.setDescription(new CaInfoProperty(descriptionText, description));
         
         final String crlPeriodText = ejbcawebbean.getText("CRL_CA_CRLPERIOD");
         final String crlPeriod = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-        caInformation.setCrlPeriod(new CaInfoProperty(crlPeriodText, crlPeriod));
+        caGuiInfo.setCrlPeriod(new CaInfoProperty(crlPeriodText, crlPeriod));
         
         final String issueIntervalText = ejbcawebbean.getText("CRL_CA_ISSUEINTERVAL");
         final String issueInterval = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);
-        caInformation.setCrlIssueInterval(new CaInfoProperty(issueIntervalText, issueInterval));
+        caGuiInfo.setCrlIssueInterval(new CaInfoProperty(issueIntervalText, issueInterval));
         
         final String overlapTimeText = ejbcawebbean.getText("CRL_CA_OVERLAPTIME");
         final String overlapTime = SimpleTime.getInstance(cainfo.getCRLOverlapTime()).toString(SimpleTime.TYPE_MINUTES);
-        caInformation.setCrlOverlapTime(new CaInfoProperty(overlapTimeText, overlapTime));
+        caGuiInfo.setCrlOverlapTime(new CaInfoProperty(overlapTimeText, overlapTime));
         
         final String deltaCrlPeriodText = ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD");
         final String deltaCrlPeriod = SimpleTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
-        caInformation.setDeltaCrlPeriod(new CaInfoProperty(deltaCrlPeriodText, deltaCrlPeriod));
+        caGuiInfo.setDeltaCrlPeriod(new CaInfoProperty(deltaCrlPeriodText, deltaCrlPeriod));
     }
     
     private void addX509CAInformation(final CAInfo cainfo, final EjbcaWebBean ejbcawebbean, 
             final Map<Integer, String> publishersidtonamemap, final Map<Integer, String> keyValidatorsIdToNameMap) {
         final String alternativeNameText = ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME");
         final String alternativeName = HTMLTools.htmlescape(((X509CAInfo) cainfo).getSubjectAltName());
-        caInformation.setAlternativeName(new CaInfoProperty(alternativeNameText, alternativeName));
+        caGuiInfo.setAlternativeName(new CaInfoProperty(alternativeNameText, alternativeName));
         
         final String publishersText = ejbcawebbean.getText("PUBLISHERS");
         final String publishers = getPublishers(cainfo, ejbcawebbean, publishersidtonamemap);
-        caInformation.setCrlPublishers(new CaInfoProperty(publishersText, publishers));
+        caGuiInfo.setCrlPublishers(new CaInfoProperty(publishersText, publishers));
                 
         final String validatorsText = ejbcawebbean.getText("VALIDATORS");
         final String validators = getValidarors(cainfo, ejbcawebbean, keyValidatorsIdToNameMap);
-        caInformation.setValidators(new CaInfoProperty(validatorsText, validators));
+        caGuiInfo.setValidators(new CaInfoProperty(validatorsText, validators));
     }
 
     private String getValidarors(final CAInfo cainfo, final EjbcaWebBean ejbcawebbean, final Map<Integer, String> keyValidatorsIdToNameMap) {
@@ -307,10 +307,10 @@ public class CAInfoView implements Serializable, Cloneable {
         return "";
     }
 	
-    private CaGuiInfo caInformation;
+    private CaGuiInfo caGuiInfo;
     
-    public CaGuiInfo getCaInformation() {
-        return caInformation;
+    public CaGuiInfo getCaGuiInfo() {
+        return caGuiInfo;
     }
     
     // TODO cleanup those getters later
