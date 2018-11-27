@@ -52,6 +52,13 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	 */
 	void setApprovals(ApprovalData approvalData, Collection<Approval> approvals);
 	
+    /**
+     * Returns the first found non expired approval requests with the matching approvalID (hash), 
+     * non expired approval requests have status ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, ApprovalDataVO.STATUS_APPROVED or ApprovalDataVO.STATUS_REJECTED 
+     * 
+     * @param approvalId the request hash (approvalId in the database)
+     * @return ApprovalData or null
+     */
 	ApprovalData findNonExpiredApprovalDataLocal(int approvalId);
 	
 	/**
@@ -82,11 +89,11 @@ public interface ApprovalSessionLocal extends ApprovalSession {
       * Moves the expiration date forward and sets the status for Waiting for Approval. Doesn't do any authorization checks.
       * 
       * @param authenticationToken The administrator requesting extension of the request. Used for audit logging only.
-      * @param approvalDataId Id of the approval request
+      * @param requestId the unique database requestID of the approval request
       * @param extendForMillis The new expiration date will be set to current time plus this number of milliseconds
       * @throws IllegalStateException if the request has been approved or denied already.
       */
-     void extendApprovalRequestNoAuth(AuthenticationToken authenticationToken, int approvalDataId, long extendForMillis);
+     void extendApprovalRequestNoAuth(AuthenticationToken authenticationToken, int requestId, long extendForMillis);
      
      /**
       * Method returning a list of approvals from the give query

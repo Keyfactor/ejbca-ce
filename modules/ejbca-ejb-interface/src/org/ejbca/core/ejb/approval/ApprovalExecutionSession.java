@@ -50,7 +50,7 @@ public interface ApprovalExecutionSession {
      * 4. Runs the approval command in the end entity bean.
      * 
      * @param admin The administrator approving the request
-     * @param approvalId the approvalId of the request that the admin tries to approve
+     * @param approvalId the approvalId (hash) of the request that the admin tries to approve
      * @param approval the new approval to vet
      * 
      * @throws ApprovalRequestExpiredException
@@ -86,6 +86,10 @@ public interface ApprovalExecutionSession {
      * approval have been made by this user earlier.
      * 
      * 4. Runs the approval command in the end entity bean.
+     * 
+     * @param admin The administrator approving the request
+     * @param approvalId the approvalId (hash) of the request that the admin tries to approve
+     * @param approval the approval to reject
      * 
      * @throws SelfApprovalException if the administrator performing the approval is the same as the one requesting the original action. 
      * @throws AuthenticationFailedException if the authentication token failed to authenticate
