@@ -150,7 +150,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         } else {
             // There exists no approval request with status waiting. Add a new one
             try {
-                requestId = findFreeApprovalId();
+                requestId = findFreeRequestId();
                 final ApprovalData approvalData = new ApprovalData(requestId);
                 updateApprovalData(approvalData, approvalRequest);
                 entityManager.persist(approvalData);
@@ -182,11 +182,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     @Override
-    public void editApprovalRequest(final AuthenticationToken admin, final int id, final ApprovalRequest approvalRequest) throws ApprovalException {
+    public void editApprovalRequest(final AuthenticationToken admin, final int requestId, final ApprovalRequest approvalRequest) throws ApprovalException {
         if (log.isTraceEnabled()) {
-            log.trace(">editApprovalRequest: hash="+approvalRequest.generateApprovalId()+", id="+id);
+            log.trace(">editApprovalRequest: hash="+approvalRequest.generateApprovalId()+", requestId="+requestId);
         }
-        final ApprovalData ad = findById(id);
+        final ApprovalData ad = findById(requestId);
         if (ad == null) {
             throw new ApprovalException("The approval request does not exist");
         }
@@ -196,7 +196,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         try {
             approvalRequest.addEditedByAdmin(admin);
             updateApprovalData(ad, approvalRequest);
-            String msg = intres.getLocalizedMessage("approval.edited", id);
+            String msg = intres.getLocalizedMessage("approval.edited", requestId);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             List<ApprovalDataText> texts = approvalRequest.getNewRequestDataAsText(admin);
@@ -206,7 +206,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             auditSession.log(EjbcaEventTypes.APPROVAL_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("approval.errorediting", id);
+            String msg = intres.getLocalizedMessage("approval.errorediting", requestId);
             log.error(msg, e);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
@@ -215,7 +215,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
         }
         if (log.isTraceEnabled()) {
-            log.trace(">editApprovalRequest: hash="+approvalRequest.generateApprovalId()+", id="+id);
+            log.trace(">editApprovalRequest: hash="+approvalRequest.generateApprovalId()+", requestId="+requestId);
         }
     }
     
@@ -238,24 +238,24 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void removeApprovalRequest(AuthenticationToken admin, int id) {
+    public void removeApprovalRequest(AuthenticationToken admin, int requestId) {
         if (log.isTraceEnabled()) {
-            log.trace(">removeApprovalRequest: id="+id);
+            log.trace(">removeApprovalRequest: requestId="+requestId);
         }
         try {
-            ApprovalData ad = findById(Integer.valueOf(id));
+            ApprovalData ad = findById(Integer.valueOf(requestId));
             if (ad != null) {
                 entityManager.remove(ad);
-                final String detailsMsg = intres.getLocalizedMessage("approval.removed", id);
+                final String detailsMsg = intres.getLocalizedMessage("approval.removed", requestId);
                 auditSession.log(EjbcaEventTypes.APPROVAL_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(ad.getCaid()), null, null, detailsMsg);
             } else {
-                String msg = intres.getLocalizedMessage("approval.notexist", id);
+                String msg = intres.getLocalizedMessage("approval.notexist", requestId);
                 log.info(msg);
                 throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, msg);
             }
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("approval.errorremove", id);
+            String msg = intres.getLocalizedMessage("approval.errorremove", requestId);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
@@ -264,7 +264,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.error("Error removing approval request", e);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<removeApprovalRequest: id="+id);
+            log.trace("<removeApprovalRequest: requestId="+requestId);
         }
     }
 
@@ -730,11 +730,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return null;
     }
 
-    private Integer findFreeApprovalId() {
+    private Integer findFreeRequestId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
-                return findByApprovalId(i).size() == 0;
+                return findById(i) == null;
             }
         };
         return Integer.valueOf( ProfileID.getNotUsedID(db) );
@@ -830,14 +830,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     @Override
-    public void extendApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int approvalDataId, final long extendForMillisParam) {
+    public void extendApprovalRequestNoAuth(final AuthenticationToken authenticationToken, final int requestId, final long extendForMillisParam) {
         if (extendForMillisParam <= 0) {
             throw new IllegalArgumentException("Time to extend for must be a positive non-zero number: " + extendForMillisParam);
         }
         
-        final ApprovalData approvalData = findById(approvalDataId);
+        final ApprovalData approvalData = findById(requestId);
         if (approvalData == null) {
-            throw new IllegalStateException("Approval request with ID " + approvalDataId + " does not exist");
+            throw new IllegalStateException("Approval request with requestID " + requestId + " does not exist");
         }
         
         // Check status
