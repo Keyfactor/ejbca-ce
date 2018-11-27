@@ -33,7 +33,7 @@
 		<h:selectBooleanCheckbox name="certCheckSendUserNotification"
 			value="#{editService.notifyingType.useEndUserNotifications}"
 			disabled="#{not editService.hasEditRights}" >
-			<f:ajax render=":editForm"/>
+			<f:ajax render=":editForm:workerPage:certCheckEndUserSubjectTextField :editForm:workerPage:certCheckEndUserMessageTextArea"/>
 		</h:selectBooleanCheckbox>	
 		<h:outputLabel 
 			value="#{web.text.USE}" />
@@ -46,7 +46,7 @@
 		<h:outputText value="#{web.text.ENDUSERSUBJECT}" />
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputText name="certCheckEndUserSubjectTextField"
+		<h:inputText id="certCheckEndUserSubjectTextField"
 			value="#{!editService.notifyingType.useEndUserNotifications ? '' : editService.notifyingType.endUserSubject}" size="45"
 			title="#{web.text.FORMAT_STRING}"
 			disabled="#{not editService.hasEditRights or !editService.notifyingType.useEndUserNotifications}" />
@@ -56,7 +56,7 @@
 		<h:outputText value="#{web.text.ENDUSERMESSAGE}" />
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputTextarea name="certCheckEndUserMessageTextArea"
+		<h:inputTextarea id="certCheckEndUserMessageTextArea"
 			value="#{!editService.notifyingType.useEndUserNotifications ? '' : editService.notifyingType.endUserMessage}" rows="8"
 			cols="45" disabled="#{not editService.hasEditRights or !editService.notifyingType.useEndUserNotifications}" />
 		<br />	
@@ -72,7 +72,7 @@
 		<h:selectBooleanCheckbox name="certCheckSendAdminNotification"
 			value="#{editService.notifyingType.useAdminNotifications}"
 			disabled="#{not editService.hasEditRights}" >
-		<f:ajax render=":editForm"/>
+		<f:ajax render=":editForm:workerPage:certCheckAdminSubjectTextField :editForm:workerPage:certCheckAdminMessageTextArea"/>
 		</h:selectBooleanCheckbox>
 			
 		<h:outputLabel 
@@ -86,7 +86,7 @@
 		<h:outputText value="#{web.text.ADMINSUBJECT}" />
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputText name="certCheckAdminSubjectTextField"
+		<h:inputText id="certCheckAdminSubjectTextField"
 			value="#{!editService.notifyingType.useAdminNotifications ? '' : editService.notifyingType.adminSubject}" size="45"
 			title="#{web.text.FORMAT_STRING}"
 			disabled="#{not editService.hasEditRights or !editService.notifyingType.useAdminNotifications}" />
@@ -96,7 +96,7 @@
 		<h:outputText value="#{web.text.ADMINMESSAGE}" />
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputTextarea name="certCheckAdminMessageTextArea"
+		<h:inputTextarea id	="certCheckAdminMessageTextArea"
 			value="#{!editService.notifyingType.useAdminNotifications ? '' : editService.notifyingType.adminMessage}" rows="8" cols="45"
 			disabled="#{not editService.hasEditRights or !editService.notifyingType.useAdminNotifications}" />
 		<br />	
