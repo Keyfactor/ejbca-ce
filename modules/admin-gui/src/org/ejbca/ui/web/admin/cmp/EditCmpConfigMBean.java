@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.web.admin.cmp;
 
+import java.beans.Beans;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +25,9 @@ import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -35,14 +39,13 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 /**
  * 
  * @version $Id$
  *
  */
-//@ManagedBean
-//@ViewScoped
 public class EditCmpConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -55,8 +58,22 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
     
+    private CAInterfaceBean caBean;
+    
     @PostConstruct
     public void initialize() {
+        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
+        if (caBean == null) {
+            try {
+                caBean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
+            } catch (ClassNotFoundException | IOException e) {
+                log.error("Error while initializing ca bean!", e);
+            }
+            request.getSession().setAttribute("cabean", caBean);
+        }
+        caBean.initialize(getEjbcaWebBean());
+        
         getEjbcaWebBean().clearCmpConfigClone();
         cmpConfiguration = getEjbcaWebBean().getCmpConfigForEdit(getSelectedCmpAlias());
         initAuthModule();
@@ -65,7 +82,9 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     private CmpConfiguration cmpConfiguration;
     private CmpConfigMBean cmpConfigBean;
     private String selectedRaNameSchemeDnPart;
+    private String selectedVendorCa;
     private String selectedCmpResponseAdditionalCaCert;
+    private String selectedPkiResponseAdditionalCaCert;
     
     // Authentication module specific
     private boolean hmacSelected;
@@ -89,30 +108,8 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
                 getRaNameGenScheme().equals(UsernameGeneratorParams.USERNAME)) {
             setRaNameGenParams("");
         }
-        if (hmacSelected && hmacSharedSecret) {
-            setAuthParameter(CmpConfiguration.AUTHMODULE_HMAC, "-");
-        } else if (!hmacSelected) {
-            setAuthParameter(CmpConfiguration.AUTHMODULE_HMAC ,"");
-        } else {
-            setAuthParameter(CmpConfiguration.AUTHMODULE_HMAC, hmacParam);
-        }
-        // TODO prevent save with no auth module selected
         
-        if (!eeCertSelected) {
-            setAuthParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, "");
-        } else if (!isRaMode() && eeCertSelected) {
-            setAuthParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, "-");
-        } else {
-            setAuthParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, selectedIssuerCa);
-        }
-        
-        setAuthParameter(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD, regTokenPwdSelected ? "-" : "");
-        
-        if (!dnPartPwdSelected || isRaMode()) {
-            setAuthParameter(CmpConfiguration.AUTHMODULE_DN_PART_PWD, "");
-        } else {
-            setAuthParameter(CmpConfiguration.AUTHMODULE_DN_PART_PWD, selectedDnField);
-        }
+        setAuthParameters();
         
         getEjbcaWebBean().updateCmpConfigFromClone(getSelectedCmpAlias());
         return "done";
@@ -138,7 +135,6 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     
     public void actionRemoveRaNameSchemeDnPart() {
         String currentNameGenParam = cmpConfiguration.getRANameGenParams(getSelectedCmpAlias());
-        selectedRaNameSchemeDnPart = selectedRaNameSchemeDnPart == null ? dnfields.get(0) : selectedRaNameSchemeDnPart;
         if(StringUtils.contains(currentNameGenParam, selectedRaNameSchemeDnPart)) {
             String[] params = currentNameGenParam.split(";");
             if(params.length == 1) {
@@ -163,11 +159,23 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         return selectItems;
     }
     
+    public List<SelectItem> getCertConfirmCaSelectItems() {
+        List<SelectItem> caOptions = getCaNameSelectItems();
+        caOptions.add(0, new SelectItem(getEjbcaWebBean().getText("CMPDEFAULTCA_DISABLED")));
+        return caOptions;
+    }
+    
     public List<SelectItem> getDnFieldSelectItems() {
         final List<SelectItem> selectItems = new ArrayList<>();
         for (String  dnField : dnfields) {
             selectItems.add(new SelectItem(dnField));
         }
+        return selectItems;
+    }
+    
+    public List<SelectItem> getExtUsernameComponentSelectItems() {
+        final List<SelectItem> selectItems = getDnFieldSelectItems();
+        selectItems.add(0, new SelectItem("DN"));
         return selectItems;
     }
     
@@ -228,6 +236,16 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         return selectItems;
     }
     
+    // TODO redundant
+    public List<SelectItem> getPkiResponseAdditionalCaCerts() {
+        final List<SelectItem> selectItems = new ArrayList<>();
+        final TreeMap<String, Integer> caIdMap = getEjbcaWebBean().getCAOptions();
+        for (Map.Entry<String, Integer> entry : caIdMap.entrySet()) {
+            selectItems.add(new SelectItem(entry.getValue(), entry.getKey()));
+        }
+        return selectItems;
+    }
+    
     public CmpConfigMBean getCmpConfigMBean() {
         return cmpConfigBean;
     }
@@ -246,11 +264,39 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     
     /**           CMP Authentication Modules              **/
     
-    private void setAuthParameter(String module, String parameter) {
+    // The authentication module is different from all other fields in this page.
+    // Due to legacy design, all of the has to be set at once, rather than
+    // using getters & setters, in order to not overwrite value for other fields.
+    private void setAuthParameters() {
         ArrayList<String> authModules = new ArrayList<>();
         ArrayList<String> authParams = new ArrayList<>();
-        authModules.add(module);
-        authParams.add(parameter);
+        
+        if (hmacSelected && hmacSharedSecret) {
+            authModules.add(CmpConfiguration.AUTHMODULE_HMAC);
+            authParams.add("-");
+        } else if (hmacSelected && !hmacSharedSecret) {
+            authModules.add(CmpConfiguration.AUTHMODULE_HMAC);
+            authParams.add(hmacParam);
+        }
+
+        if (!isRaMode() && eeCertSelected) {
+            authModules.add(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+            authParams.add("-");
+        } else if (isRaMode() && eeCertSelected) {
+            authModules.add(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+            authParams.add(selectedIssuerCa);
+        }
+        
+        if (regTokenPwdSelected && !isRaMode()) {
+            authModules.add(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD);
+            authParams.add("-");
+        }
+        
+        if (!isRaMode() && dnPartPwdSelected) {
+            authModules.add(CmpConfiguration.AUTHMODULE_DN_PART_PWD);
+            authParams.add(selectedDnField);
+        }
+        
         cmpConfiguration.setAuthenticationProperties(getSelectedCmpAlias(), authModules, authParams);
     }
     
@@ -259,17 +305,29 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         final String eeCertParam = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, getSelectedCmpAlias());
         final String regTokenPwdParam = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD, getSelectedCmpAlias());
         final String dnPartPwdParam = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_DN_PART_PWD, getSelectedCmpAlias());
-        hmacSelected = !StringUtils.isEmpty(hmacAuthParam);
+        
+log.info("hmacAuthParam: '" + hmacAuthParam + "'");
+log.info("eeCertParam: '" + eeCertParam + "'");
+log.info("regTokenPwdParam: '" + regTokenPwdParam + "'");
+log.info("dnPartPwdParam: '" + dnPartPwdParam + "'");
+        
+        hmacSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_HMAC);
+        eeCertSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        regTokenPwdSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD);
+        dnPartPwdSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_DN_PART_PWD);
+        
+        
         hmacParam = hmacAuthParam;
         if (hmacAuthParam.isEmpty() || hmacAuthParam.equals("-")) {
             hmacSharedSecret = true;
             hmacParam = "";
         }
-        eeCertSelected = !StringUtils.isEmpty(eeCertParam);
-        selectedIssuerCa = eeCertParam;
-        regTokenPwdSelected = regTokenPwdParam.equals("-");
-        dnPartPwdSelected = !StringUtils.isEmpty(dnPartPwdParam);
-        selectedDnField = dnPartPwdParam;
+        if (!StringUtils.isEmpty(eeCertParam)) {
+            selectedIssuerCa = eeCertParam;
+        }
+        if (!StringUtils.isEmpty(dnPartPwdParam)) {
+            selectedDnField = dnPartPwdParam;
+        }
     }
     
     public void setHmacSelected(final boolean hmacSelected) {
@@ -316,7 +374,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
 
     public String getSelectedIssuerCa() {
-        return selectedIssuerCa;
+        return StringUtils.isEmpty(selectedIssuerCa) ? String.valueOf(getCaNameSelectItems().get(0).getValue()) : selectedIssuerCa;
     }
 
     public void setSelectedIssuerCa(String selectedIssuerCa) {
@@ -340,7 +398,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
     
     public String getSelectedDnField() {
-        return selectedDnField;
+        return StringUtils.isEmpty(selectedDnField) ? String.valueOf(getDnFieldSelectItems().get(0).getValue()) : selectedDnField;
     }
 
     public void setSelectedDnField(String selectedDnField) {
@@ -377,7 +435,8 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
     
     public String getSelectedUsernameComponent() {
-        return cmpConfiguration.getExtractUsernameComponent(getSelectedCmpAlias());
+        String current = cmpConfiguration.getExtractUsernameComponent(getSelectedCmpAlias());
+        return StringUtils.isEmpty(current) ? String.valueOf(getExtUsernameComponentSelectItems().get(0).getValue()) : current;
     }
     
     public void setRaNameGenPrefix(String prefix) {
@@ -403,13 +462,39 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     public boolean getVendorMode() {
         return cmpConfiguration.getVendorMode(getSelectedCmpAlias());
     }
-    
-    public void setVendorCa(String ca) {
-        cmpConfiguration.setVendorCA(getSelectedCmpAlias(), ca);
-    }
-    
+  
     public String getVendorCa() {
         return cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+    }
+    
+    public void setSelectedVendorCa(String selectedVendorCa) {
+        this.selectedVendorCa = selectedVendorCa;
+    }
+
+    public String getSelectedVendorCa() {
+        return selectedVendorCa == null ? String.valueOf(getVendorCaSelectItems().get(0).getValue()) : selectedVendorCa;
+    }
+
+    public void actionAddVendorCa() {
+        final String currentVendorCas = cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+        List<String> currentVendorCaList = new ArrayList<String>();
+        if (StringUtils.isNotBlank(currentVendorCas)) {
+            currentVendorCaList = new ArrayList<String>((List<String>) Arrays.asList( currentVendorCas.split(";")));
+        }
+        if (!currentVendorCaList.contains(getSelectedVendorCa())) {
+            currentVendorCaList.add(getSelectedVendorCa());
+        }
+        cmpConfiguration.setVendorCA(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
+    }
+    
+    public void actionRemoveVendorCa() {
+        final String currentVendorCas = cmpConfiguration.getVendorCA(getSelectedCmpAlias());
+        if (StringUtils.isNotBlank(currentVendorCas)) {
+            final List<String> currentVendorCaList = new ArrayList<String>((List<String>) Arrays.asList( currentVendorCas.split(";")));
+            if (currentVendorCaList.remove(getSelectedVendorCa())) {
+                cmpConfiguration.setVendorCA(getSelectedCmpAlias(), StringUtils.join(currentVendorCaList, ";"));
+            }
+        }
     }
     
     /**           RA mode                                               **/
@@ -448,7 +533,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
 
     public String getSelectedRaNameSchemeDnPart() {
-        return selectedRaNameSchemeDnPart;
+        return selectedRaNameSchemeDnPart == null ? dnfields.get(0) : selectedRaNameSchemeDnPart;
     }
 
     public void setSelectedRaNameSchemeDnPart(String selectedRaNameSchemeDnPart) {
@@ -515,7 +600,8 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
     
     public String getSelectedCmpResponseAdditionalCaCert() {
-        return selectedCmpResponseAdditionalCaCert;
+        return selectedCmpResponseAdditionalCaCert == null ? 
+                String.valueOf(getCmpResponseAdditionalCaCerts().get(0).getValue()) : selectedCmpResponseAdditionalCaCert;
     }
     
     //TODO Error handling
@@ -524,32 +610,122 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         return getEjbcaWebBean().getCaNamesString(responseCaPubsCaList);
     }
     
-    public void actionAddResponseAdditionalCaCert() {
+    public void actionAddCmpResponseAdditionalCaCert() {
         final String responseCaPubsCaList = cmpConfiguration.getResponseCaPubsCA(getSelectedCmpAlias());
         List<String> newResponseCaPubsCaList = new ArrayList<String>();
-        selectedCmpResponseAdditionalCaCert = selectedCmpResponseAdditionalCaCert == null ? 
-                String.valueOf(getCmpResponseAdditionalCaCerts().get(0).getValue()) : selectedCmpResponseAdditionalCaCert;
         if (StringUtils.isNotBlank(responseCaPubsCaList)) {
             newResponseCaPubsCaList = (List<String>) new ArrayList<String>(Arrays.asList( responseCaPubsCaList.split(";")));
         }
-        if (!newResponseCaPubsCaList.contains(selectedCmpResponseAdditionalCaCert)) {
-            newResponseCaPubsCaList.add(selectedCmpResponseAdditionalCaCert);
+        if (!newResponseCaPubsCaList.contains(getSelectedCmpResponseAdditionalCaCert())) {
+            newResponseCaPubsCaList.add(getSelectedCmpResponseAdditionalCaCert());
         }
         cmpConfiguration.setResponseCaPubsCA(getSelectedCmpAlias(), StringUtils.join(newResponseCaPubsCaList, ";"));
     }
     
-    public void removeAddResponseAdditionalCaCert() {
+    public void actionRemoveCmpResponseAdditionalCaCert() {
         final String responseCaPubsCaList = cmpConfiguration.getResponseCaPubsCA(getSelectedCmpAlias());
-        selectedCmpResponseAdditionalCaCert = selectedCmpResponseAdditionalCaCert == null ? 
-                String.valueOf(getCmpResponseAdditionalCaCerts().get(0).getValue()) : selectedCmpResponseAdditionalCaCert;
         if (StringUtils.isNotBlank(responseCaPubsCaList)) {
             final List<String> list = new ArrayList<String>((List<String>) Arrays.asList(responseCaPubsCaList.split(";")));
-            if (list.remove(selectedCmpResponseAdditionalCaCert)) {
+            if (list.remove(getSelectedCmpResponseAdditionalCaCert())) {
                 cmpConfiguration.setResponseCaPubsCA(getSelectedCmpAlias(), StringUtils.join(list, ";"));
             }
         }
     }
+
+    public void setSelectedPkiResponseAdditionalCaCert(String selectedPkiResponseAdditionalCaCert) {
+        this.selectedPkiResponseAdditionalCaCert = selectedPkiResponseAdditionalCaCert;
+    }
     
+    public String getSelectedPkiResponseAdditionalCaCert() {
+        return selectedPkiResponseAdditionalCaCert == null ? 
+                String.valueOf(getPkiResponseAdditionalCaCerts().get(0).getValue()) : selectedPkiResponseAdditionalCaCert;
+    }
+    
+    //TODO Error handling
+    public String getSelectedPkiResponseAdditionalCaCertList() throws NumberFormatException, AuthorizationDeniedException {
+        final String responseCaExtraCertsCaList = cmpConfiguration.getResponseExtraCertsCA(getSelectedCmpAlias());
+        return getEjbcaWebBean().getCaNamesString(responseCaExtraCertsCaList);
+    }
+    
+    public void actionAddPkiResponseAdditionalCaCert() {
+        final String cas = cmpConfiguration.getResponseExtraCertsCA(getSelectedCmpAlias());
+        List<String> list = new ArrayList<String>();
+        if (StringUtils.isNotBlank(cas)) {
+            list = (List<String>) new ArrayList<String>(Arrays.asList( cas.split(";")));
+        }
+        if (!list.contains(getSelectedPkiResponseAdditionalCaCert())) {
+            list.add(getSelectedPkiResponseAdditionalCaCert());
+        }
+        cmpConfiguration.setResponseExtraCertsCA(getSelectedCmpAlias(), StringUtils.join(list, ";"));
+    }
+    
+    public void actionRemovePkiResponseAdditionalCaCert() {
+        final String cas = cmpConfiguration.getResponseExtraCertsCA(getSelectedCmpAlias());
+        if (StringUtils.isNotBlank(cas)) {
+            final List<String> list = new ArrayList<String>((List<String>) Arrays.asList( cas.split(";")));
+            if (list.remove(getSelectedPkiResponseAdditionalCaCert())) {
+                    cmpConfiguration.setResponseExtraCertsCA(getSelectedCmpAlias(), StringUtils.join(list, ";"));
+            }
+        }
+    }
+    
+    public String getResponseConfigDefaultCa() {
+        String current = cmpConfiguration.getCMPDefaultCA(getSelectedCmpAlias());
+        for (String caName : getEjbcaWebBean().getCANames().keySet()) {
+            if (caBean.getCASubjectDNNoAuth(caName).equals(current)) {
+                return caName;
+            }
+        }
+        return getEjbcaWebBean().getText("CMPDEFAULTCA_DISABLED");
+    }
+    
+    public void setResponseConfigDefaultCa(String ca) {
+        if (ca.equals(getEjbcaWebBean().getText("CMPDEFAULTCA_DISABLED")) || StringUtils.isEmpty(ca)) {
+            cmpConfiguration.setCMPDefaultCA(getSelectedCmpAlias(), "");
+        } else {
+            cmpConfiguration.setCMPDefaultCA(getSelectedCmpAlias(), caBean.getCASubjectDNNoAuth(ca));
+        }
+    }
+    
+    public boolean isAllowAutoKeyUpdate() {
+        return cmpConfiguration.getKurAllowAutomaticUpdate(getSelectedCmpAlias());
+    }
+    
+    public void setAllowAutoKeyUpdate(final boolean allow) {
+        cmpConfiguration.setKurAllowAutomaticUpdate(getSelectedCmpAlias(), allow);
+    }
+    
+    public boolean isAllowCertRenewalSameKeys() {
+        return cmpConfiguration.getKurAllowSameKey(getSelectedCmpAlias());
+    }
+    
+    public void setAllowCertRenewalSameKeys(final boolean allow) {
+        cmpConfiguration.setKurAllowSameKey(getSelectedCmpAlias(), allow);
+    }
+    
+    public boolean isAllowServerGenKeys() {
+        return cmpConfiguration.getAllowServerGeneratedKeys(getSelectedCmpAlias());
+    }
+    
+    public void setAllowServerGenKeys(final boolean allow) {
+        cmpConfiguration.setAllowServerGeneratedKeys(getSelectedCmpAlias(), allow);
+    }
+    
+    public String getTrustedCertsPath() {
+        return cmpConfiguration.getRACertPath(getSelectedCmpAlias());
+    }
+    
+    public void setTrustedCertsPath(final String path) {
+        cmpConfiguration.setRACertPath(getSelectedCmpAlias(), path);
+    }
+    
+    public boolean isOmitVerificationsInEec() {
+        return cmpConfiguration.getOmitVerificationsInEEC(getSelectedCmpAlias());
+    }
+    
+    public void setOmitVerificationsInEec(final boolean omit) {
+        cmpConfiguration.setOmitVerificationsInECC(getSelectedCmpAlias(), omit);
+    }
 }
 
 
