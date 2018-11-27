@@ -24,6 +24,7 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
+import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -176,6 +177,9 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             	getPrintStream().println();              
             }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());
+            }catch(WaitingForApprovalException_Exception e){
+                getPrintStream().println("Waiting for approval: " + e.getMessage());
+                getPrintStream().println("Approval requestID: " + e.getFaultInfo().getRequestId());
             }catch(UserDoesntFullfillEndEntityProfile_Exception e){
             	getPrintStream().println("Error : Given userdata doesn't fulfill end entity profile. : " +  e.getMessage());
             }
