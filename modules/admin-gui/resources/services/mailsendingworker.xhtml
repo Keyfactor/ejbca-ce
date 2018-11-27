@@ -30,7 +30,7 @@
 			style="font-weight:bold;" />
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectBooleanCheckbox name="certCheckSendUserNotification"
+		<h:selectBooleanCheckbox id="certCheckSendUserNotification"
 			value="#{editService.notifyingType.useEndUserNotifications}"
 			disabled="#{not editService.hasEditRights}" >
 			<f:ajax render=":editForm:workerPage:certCheckEndUserSubjectTextField :editForm:workerPage:certCheckEndUserMessageTextArea"/>
@@ -69,7 +69,7 @@
 			style="font-weight:bold;" />
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectBooleanCheckbox name="certCheckSendAdminNotification"
+		<h:selectBooleanCheckbox id="certCheckSendAdminNotification"
 			value="#{editService.notifyingType.useAdminNotifications}"
 			disabled="#{not editService.hasEditRights}" >
 		<f:ajax render=":editForm:workerPage:certCheckAdminSubjectTextField :editForm:workerPage:certCheckAdminMessageTextArea"/>
