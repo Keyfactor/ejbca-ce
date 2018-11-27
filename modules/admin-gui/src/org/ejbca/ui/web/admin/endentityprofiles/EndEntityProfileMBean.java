@@ -67,7 +67,7 @@ import org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper;
 @RequestScoped
 public class EndEntityProfileMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(CertProfileBean.class);
+    private static final Logger log = Logger.getLogger(EndEntityProfileMBean.class);
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
