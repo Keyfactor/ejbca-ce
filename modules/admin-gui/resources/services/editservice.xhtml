@@ -77,7 +77,7 @@
 	</h:panelGrid>
 </f:subview>
    
-<h:panelGrid styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
+<h:panelGrid id="intervalPage" styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
     <h:panelGroup>
 		<h:outputText value="#{web.text.SELECTINTERVAL}"/>
 	</h:panelGroup>
@@ -86,7 +86,7 @@
 						 valueChangeListener="#{editService.changeInterval}" 
 		                 disabled="#{not editService.hasEditRights}">
 			<f:selectItems value="#{editService.serviceConfigurationView.availableIntervals}"/>
-			<f:ajax render=":editForm"/>             
+			<f:ajax render=":editForm:intervalPage"/>             
 		</h:selectOneMenu>			
 	</h:panelGroup>
 
@@ -94,7 +94,7 @@
 
 </h:panelGrid>
 
-<h:panelGrid styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
+<h:panelGrid id="actionPage" styleClass="edit-ctnd" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1 label,editColumn2 field">
     <h:panelGroup>
 		<h:outputText value="#{web.text.SELECTACTION}"/>
 	</h:panelGroup>
@@ -103,7 +103,7 @@
 						 valueChangeListener="#{editService.changeAction}"
 		                 disabled="#{not editService.hasEditRights}">
 			<f:selectItems value="#{editService.serviceConfigurationView.availableActions}"/>
-			<f:ajax render=":editForm"/>             
+			<f:ajax render=":editForm:actionPage"/>             
 		</h:selectOneMenu>			
 	</h:panelGroup>
   
