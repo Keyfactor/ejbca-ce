@@ -231,7 +231,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
             if (!x509Certificate.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_OCSPSigning.getId())) {
                 throw new CertificateImportException("Extended Key Usage 1.3.6.1.5.5.7.3.9 (EKU_PKIX_OCSPSIGNING) is required.");
             }
-            if (!x509Certificate.getKeyUsage()[0] && !x509Certificate.getKeyUsage()[1] ) {
+            if (x509Certificate.getKeyUsage() != null && !x509Certificate.getKeyUsage()[0] && !x509Certificate.getKeyUsage()[1] ) {
                 throw new CertificateImportException("Key Usage digitalSignature is required (nonRepudiation would also be accepted).");
             }
         } catch (CertificateParsingException e) {

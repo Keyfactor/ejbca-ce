@@ -95,6 +95,8 @@ public class OcspKeyBindingTest {
                 OcspKeyBinding.isOcspSigningCertificate(getCertificate(X509KeyUsage.nonRepudiation + X509KeyUsage.cRLSign, ekuExtensionOnly), ekuConfig));
         assertTrue("KU=digitalSignature+nonRepudiation and EKU=id_kp_OCSPSigning should be treated as a valid OCSP singing certificate.",
                 OcspKeyBinding.isOcspSigningCertificate(getCertificate(X509KeyUsage.digitalSignature + X509KeyUsage.nonRepudiation, ekuExtensionOnly), ekuConfig));
+        assertTrue("Non existing KU is ok according to RFC5280 and should be treated as a valid OCSP signing certificate.",
+                OcspKeyBinding.isOcspSigningCertificate(getCertificate(0, ekuExtensionOnly), ekuConfig));
     }
 
     @Test
