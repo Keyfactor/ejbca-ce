@@ -40,7 +40,7 @@
 		</h:panelGroup>
 		<h:panelGroup>
 			<f:verbatim>&#xA0;</f:verbatim>
-			<h:inputHidden name="workerClassPathSelectHidden"
+			<h:inputHidden id="workerClassPathSelectHidden"
 				value="#{editService.customWorkerType.autoClassPath}"
 				rendered="#{empty editService.manualCustomItems.workers}" />
 		</h:panelGroup>
@@ -54,7 +54,7 @@
 		<h:panelGroup
 			rendered="#{!editService.customWorkerType.customUiRenderingSupported}">
 
-			<h:selectOneMenu name="workerClassPathSelect"
+			<h:selectOneMenu id="workerClassPathSelectManual"
 				value="#{editService.customWorkerType.autoClassPath}"
 				disabled="#{!editService.hasEditRights}"
 				rendered = "#{editService.manualClassPathsEnabled}">
@@ -68,7 +68,7 @@
 				disabled="#{!editService.hasEditRights or editService.workerClassPathTextFieldDisabled}"
 				rendered = "#{editService.manualClassPathsEnabled}"/>
 
-			<h:selectOneMenu name="workerClassPathSelect"
+			<h:selectOneMenu id="workerClassPathSelectAuto"
 				value="#{editService.customWorkerType.autoClassPath}"
 				disabled="#{not editService.hasEditRights}"
 				rendered = "#{!editService.manualClassPathsEnabled}">
@@ -91,7 +91,7 @@
 		</h:panelGroup>
 		<h:panelGroup
 			rendered="#{!editService.customWorkerType.customUiRenderingSupported}">
-			<h:inputTextarea name="workerPropsTextArea"
+			<h:inputTextarea id="workerPropsTextArea"
 				value="#{editService.customWorkerType.propertyText}" rows="8"
 				cols="45" disabled="#{not editService.hasEditRights}" />
 		</h:panelGroup>
