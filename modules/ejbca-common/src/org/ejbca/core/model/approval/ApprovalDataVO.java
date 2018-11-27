@@ -123,7 +123,7 @@ public class ApprovalDataVO implements Serializable {
 	 *  Constructed from action data as actiontype, admin, username etc. It should
      *  result in the same approvalid if the admin tries to request the same action twice.
 	 *
-	 * @return Returns the approvalId.
+	 * @return Returns the approvalId (hash).
 	 */
 	public int getApprovalId() {
 		return approvalId;

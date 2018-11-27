@@ -35,7 +35,7 @@ public interface ApprovalSession {
      * 
      * If the approvalId already exists, with a non expired approval, a new approval request is added to the database. An approvalException is thrown otherwise
      * 
-     * @return the database identifier of the created request
+     * @return the database identifier, requestID, of the created request
      * 
      * @throws ApprovalException
      *             if an approval already exists for this request.
@@ -121,20 +121,20 @@ public interface ApprovalSession {
     /**
      * Method used to remove an approval from database.
      * 
-     * @param id the unique id of the approvalrequest, not the same as approvalId
+     * @param requestId the unique requestId of the approval request, not the same as approvalId
      */
-    void removeApprovalRequest(AuthenticationToken admin, int id);
+    void removeApprovalRequest(AuthenticationToken admin, int requestId);
     
     /**
      * Changes an approval request. The administrator will be blacklisted from approving the request.
      * This operation changes the approvalId (the hash of the request), but not the id of the request.
      * 
      * @param admin administrator, will be added to the list of admins who have edited the request.
-     * @param id the unique id of the approvalrequest, not the same as approvalId.
+     * @param requestId the unique requestID of the approval request, not the same as approvalID.
      * @param approvalRequest modified request
      * @throws ApprovalException if the approval request does not exist, or may not be edited.
      */
-    void editApprovalRequest(AuthenticationToken admin, int id, ApprovalRequest approvalRequest) throws ApprovalException;
+    void editApprovalRequest(AuthenticationToken admin, int requestId, ApprovalRequest approvalRequest) throws ApprovalException;
 
     /**
      * Method returning an approval requests with status 'waiting', 'Approved'
