@@ -400,25 +400,25 @@
   </navigation-rule>
   	
   <navigation-rule>
-  	<from-view-id>/services/listservices.jsp</from-view-id>
+  	<from-view-id>/services/listservices.xhtml</from-view-id>
   	<navigation-case>
   		<from-outcome>listservices</from-outcome>
-  		<to-view-id>/services/listservices.jsp</to-view-id>
+  		<to-view-id>/services/listservices.xhtml</to-view-id>
   	</navigation-case>
   	<navigation-case>
   		<from-outcome>editservice</from-outcome>
-  		<to-view-id>/services/editservice.jsp</to-view-id>
+  		<to-view-id>/services/editservice.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>
   <navigation-rule>
-  	<from-view-id>/services/editservice.jsp</from-view-id>
+  	<from-view-id>/services/editservice.xhtml</from-view-id>
   	<navigation-case>
   		<from-outcome>listservices</from-outcome>
-  		<to-view-id>/services/listservices.jsp</to-view-id>
+  		<to-view-id>/services/listservices.xhtml</to-view-id>
   	</navigation-case>
   	<navigation-case>
   		<from-outcome>editservice</from-outcome>
-  		<to-view-id>/services/editservice.jsp</to-view-id>
+  		<to-view-id>/services/editservice.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>
 
