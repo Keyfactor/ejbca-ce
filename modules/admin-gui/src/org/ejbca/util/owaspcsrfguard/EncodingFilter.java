@@ -40,7 +40,7 @@ public class EncodingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException,IOException {
-        log.trace("Using EncodingFilter to set HTTP reqyest character encoding");
+        log.trace("Using EncodingFilter to set HTTP request character encoding");
         try {
             RequestHelper.setDefaultCharacterEncoding((HttpServletRequest)request);
         } catch (UnsupportedEncodingException e) {
