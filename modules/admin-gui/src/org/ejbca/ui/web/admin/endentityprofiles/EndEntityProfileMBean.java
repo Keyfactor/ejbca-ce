@@ -245,7 +245,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        return profiledata.getMinPwdStrength();// if correct, call EE profile directly from xhtml page
    }
    
-   //
+   // 
    public boolean isUseMaxFailLogins(){
        return profiledata.getMaxFailedLoginsUsed();
    }
@@ -255,9 +255,9 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        profiledata.setUse(EndEntityProfile.MAXFAILEDLOGINS, 0, bool);
    }
    
-   //
+   // unused?
    public boolean isFailedLoginsModifyable() {
-       return profiledata.isModifyable(EndEntityProfile.MAXFAILEDLOGINS, 0);
+      return profiledata.getMaxFailedLoginsModifiable();
    }
    
   //
@@ -265,7 +265,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        profiledata.setModifyable(EndEntityProfile.MAXFAILEDLOGINS, 0, bool);
    }
    
-   //
+   // use existing method + toString() or return int?
    public String getMaxFailedLogins() {
        String maxString = profiledata.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0);
        if ( maxString.equals("-1")) {
@@ -287,7 +287,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        if (bool) {
            profiledata.setValue(EndEntityProfile.MAXFAILEDLOGINS, 0, "-1");
        }else {
-           profiledata.setValue(EndEntityProfile.MAXFAILEDLOGINS, 0, "");
+           profiledata.setValue(EndEntityProfile.MAXFAILEDLOGINS, 0, getMaxFailedLogins());
        }
    }
    
@@ -336,7 +336,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    
    //
    public void setEmailRequired(boolean bool){
-       profiledata.setRequired(EndEntityProfile.EMAIL, 0, bool);
+       profiledata .setRequired(EndEntityProfile.EMAIL, 0, bool);
    }
    
    //
