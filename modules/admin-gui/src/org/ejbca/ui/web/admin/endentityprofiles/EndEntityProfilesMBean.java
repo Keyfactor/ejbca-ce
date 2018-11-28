@@ -118,7 +118,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void setEndEntityProfileName(String endEntityProfileName) {
         endEntityProfileName = endEntityProfileName.trim();
-        if (StringTools.checkFieldForLegalChars(endEntityProfileName)) {
+        if (!StringTools.checkFieldForLegalChars(endEntityProfileName)) {
             addErrorMessage("ONLYCHARACTERS");
         } else {
             this.endEntityProfileName = endEntityProfileName;
@@ -176,7 +176,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 final EndEntityProfile endEntityProfile = new EndEntityProfile();
                 endEntityProfile.setAvailableCAs(getEjbcaWebBean().getAuthorizedCAIds());
                 getEjbcaWebBean().getEjb().getEndEntityProfileSession().addEndEntityProfile(getAdmin(), endEntityProfileName, endEntityProfile);
-                setEndEntityProfileName("");
             } catch (EndEntityProfileExistsException e) {
                 addErrorMessage("ENDENTITYPROFILEALREADY");
             } catch (AuthorizationDeniedException e) {
@@ -258,7 +257,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 } else {
                     try {
                         getEjbcaWebBean().getEjb().getEndEntityProfileSession().renameEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
-                        setEndEntityProfileName("");
                     } catch (EndEntityProfileExistsException e) {
                         addErrorMessage("ENDENTITYPROFILEALREADY");
                     } catch (AuthorizationDeniedException e) {
@@ -285,9 +283,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public String saveProfile() {
         return "done";
     }
+    
     public String leaveProfile() {
         return "done";
     }
+    
     public String getInputName() {
         return ejbcaWebBean.getText("FORMAT_ID_STR");
     }
@@ -504,7 +504,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             } catch (AuthorizationDeniedException e) {
                 addNonTranslatedErrorMessage(e.getMessage()); 
             }
-            setEndEntityProfileName("");
         }
         actionCancel();
     }
