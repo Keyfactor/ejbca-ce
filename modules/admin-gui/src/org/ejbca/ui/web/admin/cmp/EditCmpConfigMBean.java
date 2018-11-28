@@ -33,6 +33,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.CmpConfiguration;
@@ -42,7 +43,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 /**
- * 
+ * JavaServer Faces Managed Bean for editing CMP alias.
  * @version $Id$
  *
  */
@@ -51,10 +52,10 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EditCmpConfigMBean.class);
 
-    // TODO available elsewhere perhaps?
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title", 
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
             "telephoneNumber", "pseudonym", "streetAddress", "name", "CIF", "NIF");
+    
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
     
@@ -79,8 +80,17 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         initAuthModule();
     }
     
+    public void authorize() throws Exception {
+        // Invoke on initial request only
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+        }
+    }
+    
     private CmpConfiguration cmpConfiguration;
     private CmpConfigMBean cmpConfigBean;
+    
     private String selectedRaNameSchemeDnPart;
     private String selectedVendorCa;
     private String selectedCmpResponseAdditionalCaCert;
@@ -89,14 +99,11 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     // Authentication module specific
     private boolean hmacSelected;
     private boolean hmacSharedSecret;
-    private String hmacParam;
-    
     private boolean eeCertSelected;
-    private String selectedIssuerCa;
-    
     private boolean regTokenPwdSelected;
-    
     private boolean dnPartPwdSelected;
+    private String hmacParam;
+    private String selectedIssuerCa;
     private String selectedDnField;
     
     public String cancel() {
@@ -118,37 +125,35 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     public void actionAddRaNameSchemeDnPart() {
         String currentNameGenParam = cmpConfiguration.getRANameGenParams(getSelectedCmpAlias());
         String[] params = currentNameGenParam == null ? new String[0] : currentNameGenParam.split(";");
-        // First item of list is initially rendered as selected, though not set in practice.
-        selectedRaNameSchemeDnPart = selectedRaNameSchemeDnPart == null ? dnfields.get(0) : selectedRaNameSchemeDnPart;
         // Verify that current param is instance of DN fields
         if((params.length > 0) && ( dnfields.contains(params[0]) )) {
-            if(!ArrayUtils.contains(params, selectedRaNameSchemeDnPart)) {
-                currentNameGenParam += ";" + selectedRaNameSchemeDnPart;
-            } else {
-                // TODO Error message "DN part already added"
+            if(!ArrayUtils.contains(params, getSelectedRaNameSchemeDnPart())) {
+                currentNameGenParam += ";" + getSelectedRaNameSchemeDnPart();
             }
         } else {
-                currentNameGenParam = selectedRaNameSchemeDnPart;
+                currentNameGenParam = getSelectedRaNameSchemeDnPart();
         }
         cmpConfiguration.setRANameGenParams(getSelectedCmpAlias(), currentNameGenParam);
     }
     
     public void actionRemoveRaNameSchemeDnPart() {
         String currentNameGenParam = cmpConfiguration.getRANameGenParams(getSelectedCmpAlias());
-        if(StringUtils.contains(currentNameGenParam, selectedRaNameSchemeDnPart)) {
+        if(StringUtils.contains(currentNameGenParam, getSelectedRaNameSchemeDnPart())) {
             String[] params = currentNameGenParam.split(";");
             if(params.length == 1) {
                 currentNameGenParam = "";
             } else {
-                if(StringUtils.equals(params[0], selectedRaNameSchemeDnPart)) {
-                    currentNameGenParam = StringUtils.remove(currentNameGenParam, selectedRaNameSchemeDnPart + ";");
+                if(StringUtils.equals(params[0], getSelectedRaNameSchemeDnPart())) {
+                    currentNameGenParam = StringUtils.remove(currentNameGenParam, getSelectedRaNameSchemeDnPart() + ";");
                 } else {
-                    currentNameGenParam = StringUtils.remove(currentNameGenParam, ";" + selectedRaNameSchemeDnPart);
+                    currentNameGenParam = StringUtils.remove(currentNameGenParam, ";" + getSelectedRaNameSchemeDnPart());
                 }
             }
             cmpConfiguration.setRANameGenParams(getSelectedCmpAlias(), currentNameGenParam);
         }
     }
+    
+    /** Select item lists for rendering **/
     
     public List<SelectItem> getCaNameSelectItems() {
         final List<SelectItem> selectItems = new ArrayList<>();
@@ -207,7 +212,6 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         return selectItems;
     }
     
-    // TODO error handling
     public List<SelectItem> getRaCaSelectItems() throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         final List<SelectItem> selectItems = new ArrayList<>();
         final Collection<String> availableCas = getEjbcaWebBean().getAvailableCAsOfEEProfile(getRaEeProfile());
@@ -227,17 +231,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         return selectItems;
     }
     
-    public List<SelectItem> getCmpResponseAdditionalCaCerts() {
-        final List<SelectItem> selectItems = new ArrayList<>();
-        final TreeMap<String, Integer> caIdMap = getEjbcaWebBean().getCAOptions();
-        for (Map.Entry<String, Integer> entry : caIdMap.entrySet()) {
-            selectItems.add(new SelectItem(entry.getValue(), entry.getKey()));
-        }
-        return selectItems;
-    }
-    
-    // TODO redundant
-    public List<SelectItem> getPkiResponseAdditionalCaCerts() {
+    public List<SelectItem> getAdditionalCaCertSelectItems() {
         final List<SelectItem> selectItems = new ArrayList<>();
         final TreeMap<String, Integer> caIdMap = getEjbcaWebBean().getCAOptions();
         for (Map.Entry<String, Integer> entry : caIdMap.entrySet()) {
@@ -258,6 +252,10 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         return cmpConfigBean.getSelectedCmpAlias();
     }
 
+    public boolean isViewOnly() {
+        return cmpConfigBean.isViewOnly();
+    }
+    
     public boolean isRaMode() {
         return getOperationalMode().equals("ra");
     }
@@ -282,7 +280,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         if (!isRaMode() && eeCertSelected) {
             authModules.add(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
             authParams.add("-");
-        } else if (isRaMode() && eeCertSelected) {
+        } else if (isRaMode() && eeCertSelected && !getResponseProtection().equals("pbe")) {
             authModules.add(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
             authParams.add(selectedIssuerCa);
         }
@@ -303,19 +301,12 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     private void initAuthModule() {
         final String hmacAuthParam = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, getSelectedCmpAlias());
         final String eeCertParam = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, getSelectedCmpAlias());
-        final String regTokenPwdParam = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD, getSelectedCmpAlias());
         final String dnPartPwdParam = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_DN_PART_PWD, getSelectedCmpAlias());
-        
-log.info("hmacAuthParam: '" + hmacAuthParam + "'");
-log.info("eeCertParam: '" + eeCertParam + "'");
-log.info("regTokenPwdParam: '" + regTokenPwdParam + "'");
-log.info("dnPartPwdParam: '" + dnPartPwdParam + "'");
         
         hmacSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_HMAC);
         eeCertSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         regTokenPwdSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD);
         dnPartPwdSelected = cmpConfiguration.isInAuthModule(getSelectedCmpAlias(), CmpConfiguration.AUTHMODULE_DN_PART_PWD);
-        
         
         hmacParam = hmacAuthParam;
         if (hmacAuthParam.isEmpty() || hmacAuthParam.equals("-")) {
@@ -404,17 +395,20 @@ log.info("dnPartPwdParam: '" + dnPartPwdParam + "'");
     public void setSelectedDnField(String selectedDnField) {
         this.selectedDnField = selectedDnField;
     }
-
     
-    // Not convenient way of toggling boolean, though required due to limitations with <h:selectOneRadio>
+    /**
+     * @param mode 'client' or 'ra'
+     */
     public void setOperationalMode(String mode) {
         if (mode.equals("ra")) {
             cmpConfiguration.setRAMode(getSelectedCmpAlias(), true);
         } else {
             cmpConfiguration.setRAMode(getSelectedCmpAlias(), false);
+            setResponseProtection("signature");
         }
     }
     
+    // Not convenient way of toggling boolean, though required due to limitations with <h:selectOneRadio>
     public String getOperationalMode() {
         if (cmpConfiguration.getRAMode(getSelectedCmpAlias())) {
             return "ra";
@@ -582,6 +576,9 @@ log.info("dnPartPwdParam: '" + dnPartPwdParam + "'");
     
     /**           Response Configuration                           **/
     
+    /**
+     * @param mode 'pbe' or 'signature'
+     */
     public void setResponseProtection(String mode) {
         if (mode.equals("pbe")) {
             hmacSelected = true;
@@ -601,10 +598,9 @@ log.info("dnPartPwdParam: '" + dnPartPwdParam + "'");
     
     public String getSelectedCmpResponseAdditionalCaCert() {
         return selectedCmpResponseAdditionalCaCert == null ? 
-                String.valueOf(getCmpResponseAdditionalCaCerts().get(0).getValue()) : selectedCmpResponseAdditionalCaCert;
+                String.valueOf(getAdditionalCaCertSelectItems().get(0).getValue()) : selectedCmpResponseAdditionalCaCert;
     }
     
-    //TODO Error handling
     public String getSelectedCmpResponseAdditionalCaCertList() throws NumberFormatException, AuthorizationDeniedException {
         final String responseCaPubsCaList = cmpConfiguration.getResponseCaPubsCA(getSelectedCmpAlias());
         return getEjbcaWebBean().getCaNamesString(responseCaPubsCaList);
@@ -638,10 +634,9 @@ log.info("dnPartPwdParam: '" + dnPartPwdParam + "'");
     
     public String getSelectedPkiResponseAdditionalCaCert() {
         return selectedPkiResponseAdditionalCaCert == null ? 
-                String.valueOf(getPkiResponseAdditionalCaCerts().get(0).getValue()) : selectedPkiResponseAdditionalCaCert;
+                String.valueOf(getAdditionalCaCertSelectItems().get(0).getValue()) : selectedPkiResponseAdditionalCaCert;
     }
     
-    //TODO Error handling
     public String getSelectedPkiResponseAdditionalCaCertList() throws NumberFormatException, AuthorizationDeniedException {
         final String responseCaExtraCertsCaList = cmpConfiguration.getResponseExtraCertsCA(getSelectedCmpAlias());
         return getEjbcaWebBean().getCaNamesString(responseCaExtraCertsCaList);
@@ -727,20 +722,3 @@ log.info("dnPartPwdParam: '" + dnPartPwdParam + "'");
         cmpConfiguration.setOmitVerificationsInECC(getSelectedCmpAlias(), omit);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
