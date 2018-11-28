@@ -27,11 +27,14 @@ import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
  */
 public abstract class SystemTestsConfiguration {
 
-    public static final String PKCS11_LIBRARY = "pkcs11.library";
-    public static final String PKCS11_SLOT_PIN = "pkcs11.slotpin";
-    public static final String PKCS11_SECURITY_PROVIDER = "pkcs11.provider";
-    public static final String PKCS11_SLOT_TYPE = "pkcs11.slottype"; 
-    public static final String PKCS11_SLOT_VALUE = "pkcs11.slottypevalue"; 
+    private static final String PKCS11_LIBRARY = "pkcs11.library";
+    private static final String PKCS11_SLOT_PIN = "pkcs11.slotpin";
+    private static final String PKCS11_SECURITY_PROVIDER = "pkcs11.provider";
+    private static final String PKCS11_SLOT_TYPE = "pkcs11.slottype"; 
+    private static final String PKCS11_SLOT_VALUE = "pkcs11.slottypevalue";
+    // These are public so they can be used in error messages
+    public static final String TARGET_CLIENTCERT_CA = "target.clientcert.ca";
+    public static final String TARGET_SERVERCERT_CA = "target.servercert.ca";
 
     
     private static final Logger log = Logger.getLogger(SystemTestsConfiguration.class);
@@ -75,11 +78,11 @@ public abstract class SystemTestsConfiguration {
     }
 
     public static String[] getServerCertificateCaNames() {
-        return getProperties().getProperty("target.servercert.ca", "ManagementCA;AdminCA1").split(";");
+        return getProperties().getProperty(TARGET_SERVERCERT_CA, "ManagementCA;AdminCA1").split(";");
     }
 
     public static String[] getClientCertificateCaNames() {
-        return getProperties().getProperty("target.clientcert.ca", "ManagementCA;AdminCA1").split(";");
+        return getProperties().getProperty(TARGET_CLIENTCERT_CA, "ManagementCA;AdminCA1").split(";");
     }
 
     public static String getPkcs11Library(String defaultValue) {
