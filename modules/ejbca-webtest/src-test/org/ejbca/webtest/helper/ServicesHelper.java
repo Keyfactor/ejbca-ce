@@ -25,7 +25,7 @@ public class ServicesHelper extends BaseHelper {
      */
     public static class Page {
         // General
-        static final String PAGE_URI = "/ejbca/adminweb/services/listservices.jsf";
+        static final String PAGE_URI = "/ejbca/adminweb/services/listservices.xhtml";
         static final By PAGE_LINK = By.id("sysFuncsServices");
         // Services Form
         static final By INPUT_NAME = By.xpath("//input[contains(@name, 'newServiceName')]");
