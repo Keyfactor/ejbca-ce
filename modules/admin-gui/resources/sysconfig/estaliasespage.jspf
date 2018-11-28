@@ -14,7 +14,7 @@
 
   <table class="list">
 
-<% if ( !ejbcawebbean.isEstConfigurationPresent() ) { %>
+<% if ( !ejbcawebbean.isRunningEnterprise() ) { %>
         <tr>
             <td width="40%" class="alert"><%= ejbcawebbean.getText("ESTNOTAVAILABLE") %></td>
             <td width="60%"></td>
@@ -84,7 +84,7 @@
 <% } %>    
     
   </table>
-  <% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()) && ejbcawebbean.isEstConfigurationPresent()) { %>
+  <% if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource()) && ejbcawebbean.isRunningEnterprise()) { %>
   <table class="actions">
     <tr> 
       <td width="100%"><h3><%= ejbcawebbean.getText("ESTADDALIAS") %></h3></td>
