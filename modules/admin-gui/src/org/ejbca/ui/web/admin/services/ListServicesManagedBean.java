@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 
 /**
- * Class used to manage the listservices.jsp page
+ * Class used to manage the listservices.xhtml page
  * Contains and manages the available services
  * 
  *
