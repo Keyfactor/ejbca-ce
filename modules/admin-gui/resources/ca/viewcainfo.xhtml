@@ -34,7 +34,7 @@
 <ui:composition template="/WEB-INF/include/popup.xhtml">
     <ui:define name="content">
         <h2>
-            <h:outputText value="#{web.text.VIEW_caGuiInfo_HEADING}" />
+            <h:outputText value="#{web.text.VIEW_CAINFORMATION_HEADING}" />
         </h2>
         
         <h:form id="viewcainfo">
@@ -52,13 +52,13 @@
                     <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.subjectDn.data}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.caType.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.caType.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.caType.data}"/>
@@ -72,22 +72,28 @@
                 <h:panelGroup>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.status.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.status.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.status.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.description.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.description.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.description.data}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.ocsp.text}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.ocsp.data}"/>
                 </h:panelGroup>
             </h:panelGrid>
             
@@ -98,42 +104,55 @@
                 <h:panelGroup>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPeriod.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.expireTime.data}"/>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPeriod.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlIssueInterval.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlIssueInterval.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlIssueInterval.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlOverlapTime.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlOverlapTime.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlOverlapTime.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.deltaCrlPeriod.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.deltaCrlPeriod.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.deltaCrlPeriod.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.validators.text}"/></strong>
+                    <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.validators.text}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.validators.data}"/>
                 </h:panelGroup>
+            </h:panelGrid>
                 
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                <h:panelGroup>
+                    <strong><h:outputText value="#{web.text.SERVICES}" /></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.INCLUDEINHEALTHCHECK}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:selectBooleanCheckbox value="#{viewCAInfoMBean.caInfo.CAInfo.includeInHealthCheck}" disabled="true"/>
+                </h:panelGroup>
             </h:panelGrid>
             
         </h:form>
