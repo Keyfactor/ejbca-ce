@@ -217,7 +217,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return ret;
     }
 
-    private String createProviderName(final String tokenName, final String className, final Properties properties) throws NoSuchSlotException {
+    private String createProviderName(final String tokenName, final String className, final Properties tokenprops) throws NoSuchSlotException {
+        // Make a complete clone of the original properties, as we modify it to be non-addable-provider token properties below
+        // if we did that on the original tokenprops, this method would have a side effect in modifying caller parameters 
+        // (which causes things to break since the provider is not installed)
+        Properties properties = new Properties();
+        properties.putAll(tokenprops);
         properties.setProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER, "true");                       
         final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, null, -1, tokenName, false);
         final String providerName = cryptoToken.getSignProviderName();
