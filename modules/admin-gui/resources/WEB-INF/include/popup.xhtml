@@ -31,24 +31,12 @@
 	        <link rel="stylesheet" type="text/css" href="#{web.ejbcaWebBean.baseUrl}/#{web.ejbcaWebBean.cssFile}"/>
 	        <script type="text/javascript" src="#{adminMenuBean.adminWebUrl}/ejbcajslib.js"></script>
 	    </h:head>
-	    <h:body dir="ltr" styleClass="ltrDirection isJsf">
-	    
-	       <h:panelGroup layout="block" styleClass="container">
-		        <h:panelGroup layout="block" id="messagesAndContent">
-		            <h:panelGroup layout="block" id="messagesBlock">
-		                <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="false"/>
-		            </h:panelGroup>
-		    
-		            <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">
-		                <ui:insert name="content">
-		                    <h:outputText value="If you see this then whatever you're looking at couldn't be rendered."/>
-		                </ui:insert>
-		            </h:panelGroup>
-		        </h:panelGroup>
-        
+	    <h:body styleClass="popup">
+            <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">
+                <ui:insert name="content">
+                    <h:outputText value="If you see this then whatever you're looking at couldn't be rendered."/>
+                </ui:insert>
             </h:panelGroup>
-        
-            
 	    </h:body>
     </f:view>
 </html>

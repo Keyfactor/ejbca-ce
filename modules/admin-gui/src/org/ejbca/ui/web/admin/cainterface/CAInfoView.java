@@ -78,7 +78,8 @@ public class CAInfoView implements Serializable, Cloneable {
            "EXT_ABBR_SUBJECTALTNAME",
            "CATYPE",
            "CADATA",               /* CA data */
-           "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ 
+           "EXPIRES",
+           "STATUS",               /*"CATOKENSTATUS"*/ 
            "",
            "DESCRIPTION",
            "CRLSPECIFICDATA",      /* CRL Specific Data */
@@ -253,6 +254,10 @@ public class CAInfoView implements Serializable, Cloneable {
         final String validatorsText = ejbcawebbean.getText("VALIDATORS");
         final String validators = getValidarors(cainfo, ejbcawebbean, keyValidatorsIdToNameMap);
         caGuiInfo.setValidators(new CaInfoProperty(validatorsText, validators));
+        
+        final String ocspText = ejbcawebbean.getText("OCSPSERVICE");
+        final String ocsp = ((X509CAInfo)cainfo).getDefaultOCSPServiceLocator();
+        caGuiInfo.setOcsp(new CaInfoProperty(ocspText, ocsp));
     }
 
     private String getValidarors(final CAInfo cainfo, final EjbcaWebBean ejbcawebbean, final Map<Integer, String> keyValidatorsIdToNameMap) {
