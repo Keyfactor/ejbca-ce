@@ -236,7 +236,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected static final String PASSWORD = "foo123";
 
     protected EjbcaWS ejbcaraws;
-    protected static String ADMIN_CA_NAME;
+    /** Either ManagementCA or AdminCA1 */
+    protected static String managementCaName;
 
     protected final static AuthenticationToken intAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CommonEjbcaWS"));
     protected final String hostname;
@@ -298,8 +299,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         log.debug("hostname="+hostname+ " httpsPort="+httpsPort);
     }
 
+    /**
+     * Returns either ManagementCA or AdminCA1, depending on which one exists.
+     * This CA can be expected to be active, but may or may not be trusted for TLS connections to EJBCA.
+     * <p>
+     * For using TLS connections in system tests, use {@link CaTestUtils#getClientCertCaInfo} and {@link CaTestUtils#getServerCertCaInfo}.
+     * @return Name of CA.
+     */
     protected static String getAdminCAName() {
-        return ADMIN_CA_NAME;
+        return managementCaName;
     }
 
     protected static void adminBeforeClass() {
@@ -310,9 +318,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected static void setAdminCAName() {
         List<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getActiveCANames(intAdmin);
         if(canames.contains("AdminCA1")) {
-            ADMIN_CA_NAME = "AdminCA1";
+            managementCaName = "AdminCA1";
         } else if(canames.contains("ManagementCA")) {
-            ADMIN_CA_NAME = "ManagementCA";
+            managementCaName = "ManagementCA";
         }
     }
 

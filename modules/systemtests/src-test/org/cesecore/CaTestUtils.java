@@ -444,8 +444,8 @@ public abstract class CaTestUtils {
     public static CAInfo getClientCertCaInfo(final AuthenticationToken authenticationToken) {
         final CAInfo caInfo = getCaInfo(authenticationToken, SystemTestsConfiguration.getClientCertificateCaNames());
         if (caInfo.getStatus() != CAConstants.CA_ACTIVE) {
-            log.warn("CA for issuing client certificates is not active. Please check the following CAs or change 'target.clientcert.ca': '" +
-                    StringUtils.join(SystemTestsConfiguration.getClientCertificateCaNames(), "', '") + "'");
+            log.warn("CA for issuing client certificates is not active. Please check the following CAs or change '" + SystemTestsConfiguration.TARGET_CLIENTCERT_CA +
+                    "': '" + StringUtils.join(SystemTestsConfiguration.getClientCertificateCaNames(), "', '") + "'");
         }
         return caInfo;
     }
@@ -467,7 +467,8 @@ public abstract class CaTestUtils {
             }
         }
         throw new IllegalStateException("Cannot find the required CA. Looked for: '" + StringUtils.join(cas, "', '") +
-                "'. Use 'target.servercert.ca' and 'target.clientcert.ca' in systemtests.properties to override.");
+                "'. Use '" + SystemTestsConfiguration.TARGET_SERVERCERT_CA + "' and '" + SystemTestsConfiguration.TARGET_CLIENTCERT_CA +
+                "' in systemtests.properties to override.");
     }
 
 }

@@ -107,7 +107,7 @@ import org.jboss.resteasy.client.core.executors.ApacheHttpClient4Executor;
 /**
  * An intermediate class to support REST API system tests and setup the SSL connection/authentication.
  *
- * @version $Id: RestResourceSystemTestBase.java 29137 2018-06-07 12:40:12Z andrey_s_helmes $
+ * @version $Id$
  */
 public class RestResourceSystemTestBase {
 
@@ -151,7 +151,7 @@ public class RestResourceSystemTestBase {
 
     static {
         try {
-            // Trusted CA setup: ManagementCA/AdminCA1 import into trustedKeyStore
+            // Trusted CA setup: import CA that issued server certificate into trustedKeyStore (configurable with target.servercert.ca)
             final CAInfo serverCertCaInfo = CaTestUtils.getServerCertCaInfo(INTERNAL_ADMIN_TOKEN);
             final CAInfo clientCertCaInfo = CaTestUtils.getClientCertCaInfo(INTERNAL_ADMIN_TOKEN);
             final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
@@ -160,8 +160,8 @@ public class RestResourceSystemTestBase {
             final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(trustedKeyStore);
             // Login Certificate setup:
-            // - ManagementCA/AdminCA1 import into loginKeyStore
-            // - Sign a certificate by ManagementCA/AdminCA1
+            // - - Import trusted CA (configurable with target.clientcert.ca) into loginKeyStore
+            // - Sign a certificate using this CA
             // - RestApiTestUser certificate and private key import into loginKeyStore
             final KeyStore loginKeyStore = initJksKeyStore(LOGIN_STORE_PATH);
             final EndEntityInformation endEntityInformation = createEndEntityInformation(clientCertCaInfo.getCAId());
