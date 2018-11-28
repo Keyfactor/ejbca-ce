@@ -157,12 +157,12 @@
 				    			autocomplete="new-password" 
 					   			size="5" 
 					   			maxlength="255"
-								disabled="#{not endEntityProfileMBean.useMaxFailLogins or endEntityProfileMBean.maxFailLoginsUnlimited}">
+								disabled="#{not endEntityProfileMBean.profiledata.maxFailedLoginsUsed or endEntityProfileMBean.maxFailLoginsUnlimited}">
 				    		</h:inputText>
 				    		<h:selectBooleanCheckbox 
 				    			id="failedAttemptsUnlimited" 
 				    			value="#{endEntityProfileMBean.maxFailLoginsUnlimited}" 
-				    			disabled="#{not endEntityProfileMBean.useMaxFailLogins or endEntityProfilesMBean.viewOnly}">
+				    			disabled="#{not endEntityProfileMBean.profiledata.maxFailedLoginsUsed or endEntityProfilesMBean.viewOnly}">
 				    			<f:ajax render=":eeProfiles:passwordfailedattemptsgrid"/>
 				    		</h:selectBooleanCheckbox>
 				    		<h:outputLabel for="passwordfailedattemptsgrid" value="#{web.text.UNLIMITED}" />
@@ -170,7 +170,7 @@
 				    	<h:selectBooleanCheckbox 
 				    		id="attemptsmodifyable" 
 				    		value="#{endEntityProfileMBean.failedLoginsModifyable}" 
-				    		disabled="#{not endEntityProfileMBean.useMaxFailLogins or endEntityProfilesMBean.viewOnly}">
+				    		disabled="#{not endEntityProfileMBean.profiledata.maxFailedLoginsUsed or endEntityProfilesMBean.viewOnly}">
 				    	</h:selectBooleanCheckbox>
 				    	<h:outputLabel for="passwordfailedattemptsgrid" value="#{web.text.MODIFYABLE}" />
 				</h:panelGrid>
@@ -264,7 +264,7 @@
 	       	        <h:panelGrid id="reverseFieldChecksGrid" columns="2">
 	       	    		<h:selectBooleanCheckbox 
 	       	    			id="reverseFieldChecksCheckBox" 
-	       	    			value="#{endEntityProfileMBean.useReverseFieldChecks}" 
+	       	    			value="#{endEntityProfileMBean.profiledata.reverseFieldChecks}" 
 	       	    			disabled="#{endEntityProfilesMBean.viewOnly}">
 						</h:selectBooleanCheckbox>
 						<h:outputLabel for="reverseFieldChecksGrid" value="#{web.text.USE}"/>
