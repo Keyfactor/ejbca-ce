@@ -1451,21 +1451,8 @@ public class EjbcaWebBean implements Serializable {
         return StringUtils.join(result, ";");
     }
 
-
-    //**********************
-    //     EST
-    //**********************
-
-    /** @return true if the EST implementation is present. */
-    public boolean isEstConfigurationPresent() {
-        return enterpriseEjbLocalHelper.isRunningEnterprise();
-    }
-    
-    public boolean isRestConfigurationPresent() {
-        return enterpriseEjbLocalHelper.isRunningEnterprise();
-    }
-
-    public boolean isAcmeConfigurationPresent() {
+    /** @return true if we are running in the enterprise mode otherwise false. */
+    public boolean isRunningEnterprise() {
         return enterpriseEjbLocalHelper.isRunningEnterprise();
     }
 
