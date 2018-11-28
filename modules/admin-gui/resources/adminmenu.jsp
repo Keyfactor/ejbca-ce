@@ -354,7 +354,7 @@ org.ejbca.util.HTMLTools
 <%
 
     // If authorized to edit ACME Configuration then display related links.
-      if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE) && ejbcawebbean.isAcmeConfigurationPresent() ){
+      if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE) && ejbcawebbean.isRunningEnterprise() ){
           if(!configheaderprinted){      
         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
         configheaderprinted = true;

@@ -959,12 +959,17 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     /** @return true if EST is enabled. Should be false for EJBCA CE */
     public boolean isEstAvailable() {
-        return getEjbcaWebBean().isEstConfigurationPresent();
+        return getEjbcaWebBean().isRunningEnterprise();
     }
 
     /** @return true if REST is enabled. Should be false for EJBCA CE */
     public boolean isRestAvailable() {
-        return getEjbcaWebBean().isRestConfigurationPresent();
+        return getEjbcaWebBean().isRunningEnterprise();
+    }
+    
+    /** @return true if ACME is enabled. Should be false for EJBCA CE */
+    public boolean isAcmeAvailable() {
+        return getEjbcaWebBean().isRunningEnterprise();
     }
 
     public class ProtocolGuiInfo {
@@ -1009,6 +1014,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST.getName()) && !isRestAvailable()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.ACME.getName()) && !isAcmeAvailable()) {
                 available = false;
             }
             return available;
