@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.CustomLoader;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
- * Class used to populate the fields in the customworker.jsp subview page. 
+ * Class used to populate the fields in the customworker.xhtml subview page. 
  * 
  * Is compatible with custom action and custom interval. 
  *

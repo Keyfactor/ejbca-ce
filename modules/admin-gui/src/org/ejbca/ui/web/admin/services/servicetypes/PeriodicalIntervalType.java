@@ -23,7 +23,7 @@ import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
- * Class used to populate the fields in the custominterval.jsp subview page. 
+ * Class used to populate the fields in the custominterval.xhtml subview page. 
  * 
  *
  * @version $Id$
