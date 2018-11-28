@@ -22,7 +22,7 @@ import org.ejbca.core.model.services.IInterval;
 import org.ejbca.ui.web.admin.CustomLoader;
 
 /**
- * Class used to populate the fields in the custominterval.jsp subview page. 
+ * Class used to populate the fields in the custominterval.xhtml subview page. 
  * 
  *
  * @version $Id$
