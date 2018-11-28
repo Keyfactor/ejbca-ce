@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.StringTools;
@@ -37,8 +38,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * @version $Id$
  *
  */
-//@ManagedBean
-//@SessionScoped
 public class CmpConfigMBean extends BaseManagedBean implements Serializable {
 
     @EJB
@@ -81,20 +80,20 @@ public class CmpConfigMBean extends BaseManagedBean implements Serializable {
     
     // Many of the following validations are redundant in CmpConfiguration. However,
     // we need them to display proper error messages
-    public void addCmpAlias() {
+    public void addCmpAlias() throws AuthorizationDeniedException {
         if (StringUtils.isNotEmpty(newCmpAlias.trim())) {
             if (!StringTools.checkFieldForLegalChars(newCmpAlias)) {
                 addErrorMessage("ONLYCHARACTERS");
             } else if (getCmpConfig().aliasExists(newCmpAlias.trim())) {
                 addErrorMessage("CMPALIASEXISTS");
             } else {
-                getCmpConfig().addAlias(newCmpAlias.trim());
+                getEjbcaWebBean().addCmpAlias(newCmpAlias);
                 newCmpAlias = null;
             }
         }
     }
 
-    public void renameCmpAlias() {
+    public void renameCmpAlias() throws AuthorizationDeniedException {
         if (selectedCmpAlias != null && newCmpAlias != null) {
             newCmpAlias = newCmpAlias.trim();
             if (StringUtils.isNotEmpty(newCmpAlias) && StringUtils.isNotEmpty(selectedCmpAlias)) {
@@ -103,14 +102,14 @@ public class CmpConfigMBean extends BaseManagedBean implements Serializable {
                 } else if (getCmpConfig().aliasExists(newCmpAlias)) {
                     addErrorMessage("CMPALIASEXISTS");
                 } else {
-                    getCmpConfig().renameAlias(selectedCmpAlias, newCmpAlias);
+                    getEjbcaWebBean().renameCmpAlias(selectedCmpAlias, newCmpAlias);
                     newCmpAlias = null;
                 }
             }
         }
     }
 
-    public void cloneCmpAlias() {
+    public void cloneCmpAlias() throws AuthorizationDeniedException {
         if (selectedCmpAlias != null && newCmpAlias != null) {
             newCmpAlias = newCmpAlias.trim();
             if (StringUtils.isNotEmpty(newCmpAlias) && StringUtils.isNotEmpty(selectedCmpAlias)) {
@@ -119,16 +118,16 @@ public class CmpConfigMBean extends BaseManagedBean implements Serializable {
                 } else if(getCmpConfig().aliasExists(newCmpAlias)) {
                     addErrorMessage("CMPALIASEXISTS");
                 } else {
-                    getCmpConfig().cloneAlias(selectedCmpAlias, newCmpAlias);
+                    getEjbcaWebBean().cloneCmpAlias(selectedCmpAlias, newCmpAlias);
                     newCmpAlias = null;
                 }
             }
         }
     }
 
-    public void deleteCmpAlias() {
+    public void deleteCmpAlias() throws AuthorizationDeniedException {
         if (StringUtils.isNotEmpty(selectedCmpAlias)) {
-            getCmpConfig().removeAlias(selectedCmpAlias);
+            getEjbcaWebBean().removeCmpAlias(selectedCmpAlias);
         }
         actionCancel();
     }
