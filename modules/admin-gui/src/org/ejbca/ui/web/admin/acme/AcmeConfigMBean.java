@@ -17,6 +17,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
@@ -41,6 +43,9 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  *
  * @version $Id: AcmeConfigMBean.java 28125 2018-01-29 16:41:28Z bastianf $
  */
+
+@ManagedBean(name = "acmeConfigMBean")
+@SessionScoped
 public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(AcmeConfigMBean.class);
