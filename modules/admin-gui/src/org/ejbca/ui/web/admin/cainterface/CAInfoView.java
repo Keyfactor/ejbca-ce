@@ -118,9 +118,9 @@ public class CAInfoView implements Serializable, Cloneable {
    public CAInfoView(final CAInfo cainfo, final EjbcaWebBean ejbcawebbean, final Map<Integer, String> publishersidtonamemap, final Map<Integer, String> keyValidatorsIdToNameMap) {
       this.cainfo = cainfo;  
       
-      buildCaInformation(cainfo, ejbcawebbean);
-      
       if (cainfo instanceof X509CAInfo) {
+        buildCaInformation(cainfo, ejbcawebbean);
+          
         addX509CAInformation(cainfo, ejbcawebbean, publishersidtonamemap, keyValidatorsIdToNameMap);
         
         setupGeneralInfo(X509CA_CAINFODATATEXTS, cainfo, ejbcawebbean);
@@ -153,6 +153,7 @@ public class CAInfoView implements Serializable, Cloneable {
 		cainfodata[SECTION_SERVICE]          = "&nbsp;"; // Section row
         
       } else if (cainfo instanceof CVCCAInfo) {
+          buildCaInformation(cainfo, ejbcawebbean);
           setupGeneralInfo(CVCCA_CAINFODATATEXTS, cainfo, ejbcawebbean);
       }
    }

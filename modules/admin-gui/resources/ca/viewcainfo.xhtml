@@ -51,10 +51,10 @@
                 <h:panelGroup>
                     <strong><h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.subjectDn.data}"/></strong>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!empty viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.text}">
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.text}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!empty viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.text}">
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.alternativeName.data}"/>
                 </h:panelGroup>
                 <h:panelGroup>
@@ -127,16 +127,16 @@
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.deltaCrlPeriod.data}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!empty viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.text}">
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.text}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!empty viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.text}">
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.crlPublishers.data}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!empty viewCAInfoMBean.caInfo.caGuiInfo.validators.text}">
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.validators.text}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!empty viewCAInfoMBean.caInfo.caGuiInfo.validators.text}">
                     <h:outputLabel value="#{viewCAInfoMBean.caInfo.caGuiInfo.validators.data}"/>
                 </h:panelGroup>
             </h:panelGrid>
