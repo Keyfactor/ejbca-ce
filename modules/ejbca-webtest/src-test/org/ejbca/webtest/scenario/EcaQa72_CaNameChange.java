@@ -58,7 +58,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     }
     
     private void editNameChangeGlobalConfig(boolean saveAsEnabled) {
-        webDriver.findElement(By.xpath("//li/a[contains(@href,'systemconfiguration.jsf')]")).click();
+        webDriver.findElement(By.xpath("//li/a[contains(@href,'systemconfiguration.xhtml')]")).click();
         WebElement checkboxEnableNameChange = webDriver.findElement(By.id("systemconfiguration:enableicaocanamechange"));
         if ((!checkboxEnableNameChange.isSelected() && saveAsEnabled) || (checkboxEnableNameChange.isSelected() && !saveAsEnabled)) {
             checkboxEnableNameChange.click();

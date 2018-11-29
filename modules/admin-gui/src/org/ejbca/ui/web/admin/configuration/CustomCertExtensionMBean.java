@@ -310,10 +310,8 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
     //              Current Extension Properties
     // ------------------------------------------------------------    
     public ListDataModel<CustomExtensionPropertyGUIInfo> getCurrentExtensionPropertiesList() {
-        if (currentExtensionProperties == null) {
-            currentExtensionProperties = new ListDataModel<>(new ArrayList<>(getCurrentExtensionGUIInfo()
-                    .getExtensionProperties().values()));
-        }
+        currentExtensionProperties = new ListDataModel<>(new ArrayList<>(getCurrentExtensionGUIInfo()
+                .getExtensionProperties().values()));
         return currentExtensionProperties;
     }
        
