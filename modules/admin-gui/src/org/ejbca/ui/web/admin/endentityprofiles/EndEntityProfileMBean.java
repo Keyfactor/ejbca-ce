@@ -410,16 +410,16 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    
    // doesn't return anything of value yet
    public String getCurrentSubjectDNAttribute() { 
-       return currentAttribute;
+       return currentSubjectDNAttribute;
    }
    
    public void setCurrentSubjectDNAttribute(String attribute) {
-        currentAttribute = attribute;
+        currentSubjectDNAttribute = attribute;
    }
    
-   //testing...
-   //doesn't set value yet
-   private String currentAttribute;
+   // testing...
+   // doesn't set value yet
+   private String currentSubjectDNAttribute;
    private String value;
    private String addedAttribute;
    private boolean added = false;
@@ -437,14 +437,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        profiledata.setUse(value,0,true);
        profiledata.setModifyable(value,0,true);*/
        
-       addedAttribute = new String(currentAttribute); // I need to fetch the value from the selected component here instead...
+       addedAttribute = new String(currentSubjectDNAttribute); // I need to fetch the value from the selected component here instead...
        subjectDnAdditions.add(addedAttribute);
        added = true;
        return "";
    }
    
-   //but all components should be returned
-   //Using a saved list of additions that is appended to existing components is temporary solution 
+   
+   // Using a saved list of additions that is appended to existing components is temporary solution 
    private List<String> subjectDnAdditions = new ArrayList<String>();;
    
    public List<String> getSubjectDnComponent() {
@@ -483,7 +483,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        return value;
    }
    
-   //dummy method that only sets value of first field
+   // temp method that only sets value of first field
    public void setSubjectDNAttributeValue(String subjectDnAttributeValue) {
        int currentAttributeField = 0;
        int [] fielddata = null;
@@ -491,7 +491,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        profiledata.setValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER], subjectDnAttributeValue);
    }
    
-   //useless; returns the last sdn field always!!!
+   // can't use: returns the last sdn field always!!!
    public boolean isSubjectDNAttributeRequired(){
        int numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
        int [] fielddata = null;
@@ -501,7 +501,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        return profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
    }
    
-   //only returns the last attribute field, should be dynamic; see currentAttribute or similar...
+   // only returns the last attribute field, should be dynamic; see currentAttribute or similar...
    public boolean isSubjectDNAttributeModifyable(){
        int numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
        int [] fielddata = null;
