@@ -226,9 +226,8 @@ public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     /** Invoked when admin cancels a ACME alias create or edit. */
-    public String cancelCurrentAlias() {
+    public void cancelCurrentAlias() {
         flushCache();
-        return "acmeconfiguration?faces-redirect=true";
     }
 
     /** Invoked when admin saves the ACME alias configurations 
