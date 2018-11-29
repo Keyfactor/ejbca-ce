@@ -37,6 +37,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -71,6 +72,7 @@ import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
@@ -308,6 +310,34 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private GoogleCtPolicy googleCtPolicy;
 
 
+    // Authentication check and audit log page access request
+    public void initialize(ComponentSystemEvent event) throws Exception {
+        // Invoke on initial request only
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR);
+            if (!authorizationSession.isAuthorized(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) &&
+                    !authorizationSession.isAuthorized(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource()) &&
+                    !authorizationSession.isAuthorized(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {
+                    throw new AuthorizationDeniedException("Administrator was not authorized to any configuration.");
+                }
+        }
+    }
+    
+    public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+        }
+    }
+    
+    public void authorizeViewCertExtension(ComponentSystemEvent event) throws Exception {
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
+        }
+    }
+    
     public SystemConfigMBean() {
         super();
     }
@@ -853,23 +883,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getAvailableKeyAliases() {
-        if (availableKeyAliases == null) {
-            availableKeyAliases = new ArrayList<>();
-            if (currentConfig.getLocalKeyRecoveryCryptoTokenId() != 0) {
-                try {
-                    final List<String> aliases = new ArrayList<>(cryptoTokenManagementSession.getKeyPairAliases(getEjbcaWebBean().getAdminObject(), currentConfig.getLocalKeyRecoveryCryptoTokenId()));
-                    Collections.sort(aliases);
-                    for (final String keyAlias : aliases) {
-                        if (currentConfig.getLocalKeyRecoveryKeyAlias() == null && keyAlias != null &&
-                                (keyAlias.startsWith("default") || keyAlias.startsWith("privatedec"))) {
-                            currentConfig.setLocalKeyRecoveryKeyAlias(keyAlias);
-                        }
-                        availableKeyAliases.add(new SelectItem(keyAlias));
+        availableKeyAliases = new ArrayList<>();
+        if (currentConfig.getLocalKeyRecoveryCryptoTokenId() != 0) {
+            try {
+                final List<String> aliases = new ArrayList<>(cryptoTokenManagementSession.getKeyPairAliases(getEjbcaWebBean().getAdminObject(), currentConfig.getLocalKeyRecoveryCryptoTokenId()));
+                Collections.sort(aliases);
+                for (final String keyAlias : aliases) {
+                    if (currentConfig.getLocalKeyRecoveryKeyAlias() == null && keyAlias != null &&
+                            (keyAlias.startsWith("default") || keyAlias.startsWith("privatedec"))) {
+                        currentConfig.setLocalKeyRecoveryKeyAlias(keyAlias);
                     }
-                    availableKeyAliases.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT_KEY")));
-                } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
-                    log.debug("Crypto Token is not usable. Can't list key aliases", e);
+                    availableKeyAliases.add(new SelectItem(keyAlias));
                 }
+                availableKeyAliases.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT_KEY")));
+            } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
+                log.debug("Crypto Token is not usable. Can't list key aliases", e);
             }
         }
         return availableKeyAliases;

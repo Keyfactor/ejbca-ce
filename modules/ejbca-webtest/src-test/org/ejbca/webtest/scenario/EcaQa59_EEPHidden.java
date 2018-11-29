@@ -71,12 +71,12 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     @Test
     public void testA_enableKeyRecovery() {
         webDriver.get(getAdminWebUrl());
-        WebElement configLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/sysconfig/systemconfiguration.jsf')]"));
+        WebElement configLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/sysconfig/systemconfiguration.xhtml')]"));
         configLink.click();
 
         WebElement currentTab = webDriver.findElement(By.xpath("//a[@class='tabLinktrue']"));
         if (!currentTab.getText().equals("Basic Configurations")) {
-            currentTab = webDriver.findElement(By.xpath("//a[@href='adminweb/sysconfig/systemconfiguration.jsf?tab=Basic%20Configurations'"));
+            currentTab = webDriver.findElement(By.xpath("//a[@href='adminweb/sysconfig/systemconfiguration.xhtml?tab=Basic%20Configurations'"));
             currentTab.click();
             currentTab = webDriver.findElement(By.xpath("//a[@class='tabLinktrue']"));
             assertEquals("Could not navigate to 'Basic Configurations' tab", currentTab.getText(), "Basic Configurations");
