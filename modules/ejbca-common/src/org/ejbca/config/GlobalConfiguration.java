@@ -72,7 +72,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     // Default name of headbanner in web interface.
     public static final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
     // Default name of footbanner page in web interface.
-    public static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp"; // used from systemconfiguration.jsp
+    public static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
 
     // Default list of nodes in cluster
     private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
