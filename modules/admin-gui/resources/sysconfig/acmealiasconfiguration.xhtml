@@ -90,7 +90,7 @@
                     <h:panelGroup id="dnsResolver" >
                         <h:inputText  value="#{acmeConfigMBean.currentAlias.dnsResolver}" size="45" 
                         			  rendered="#{acmeConfigMBean.currentAliasEditMode}">
-                            <f:validator validatorId="legalCharsValidator"/>
+                            <f:validator validatorId="org.ejbca.util.validator.ipAddressValidator"/>
                         </h:inputText>
                         <h:outputText value="#{acmeConfigMBean.currentAlias.dnsResolver}" rendered="#{!acmeConfigMBean.currentAliasEditMode}"/>
                     </h:panelGroup>
@@ -122,7 +122,7 @@
                     <h:panelGroup/>
 
                     <h:panelGroup>
-                        <h:commandButton action="#{acmeConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{acmeConfigMBean.currentAliasEditMode}" style="margin-right:3px;"/>
+                        <h:commandButton action="#{acmeConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{acmeConfigMBean.currentAliasEditMode}" style="margin-right:3px;" immediate="true"/>
                         <h:commandButton action="#{acmeConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{acmeConfigMBean.currentAliasEditMode}"
                         	disabled="#{acmeConfigMBean.saveCurrentAliasDisabled}"/>
                     </h:panelGroup>
