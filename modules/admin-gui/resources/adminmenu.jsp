@@ -54,7 +54,7 @@ org.ejbca.util.HTMLTools
        
        final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() + "/roles.xhtml";
        
-       final String ACMECONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/acmeconfiguration.jsf";
+       final String ACMECONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/acmeconfiguration.xhtml";
        final String SCEPCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/scepconfiguration.xhtml";
        
        final String ESTCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/estconfiguration.jsp";
