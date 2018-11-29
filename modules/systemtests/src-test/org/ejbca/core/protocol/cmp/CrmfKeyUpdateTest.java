@@ -888,7 +888,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field is not valid  - Trust anchor for certification path not found.";
+            final String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field is not valid - Trust anchor for certification path not found.";
             assertEquals(expectedErrMsg, errMsg);
         } finally {
             removeTestCA(differentX509ca.getCAId());
