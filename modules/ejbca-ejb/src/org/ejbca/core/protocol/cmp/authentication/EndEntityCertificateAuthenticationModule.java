@@ -925,7 +925,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             // No CertPathValidatorException thrown means it passed
             return true;
         } catch (CertPathValidatorException e) {
-            this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid  - " + getCertPathValidatorExceptionMessage(e);
+            this.errorMessage = "The certificate attached to the PKIMessage in the extraCert field is not valid - " + getCertPathValidatorExceptionMessage(e);
             if(log.isDebugEnabled()) {
                 log.debug(this.errorMessage + ": SubjectDN=" + CertTools.getSubjectDN(endentitycert));
             }
