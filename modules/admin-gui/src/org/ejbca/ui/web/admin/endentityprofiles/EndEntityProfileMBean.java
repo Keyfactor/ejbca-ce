@@ -388,14 +388,16 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            
            attributesReturned.add(new SelectItem(attributeReturned, attributeReturned ));
        }
-       //To get the correct value in selectItem, check this?
+       //To get the correct value in selectItem, check this:
+       
        /*public static String[] getSubjectDNProfileFields() {
            return DnComponents.getDnProfileFields().toArray(new String[0]);
        }*/
      
        //From DnComponents class: getDnProfileFields() has this:  dnProfileFields.add(profilename) ... where profilename is from:
+       
        //loadProfileMappingsFromFile(String propertiesFile)
-       //loadProfileMappingsFromFile("/profilemappings_enterprise.properties").. so where is this .properties?
+       //loadProfileMappingsFromFile("/profilemappings_enterprise.properties")
        
        /** returns two int : the first is the DN field which is a constant in DN field extractor,
         * the second is in which order the attribute is, 0 is first OU and 1 can mean second OU (if OU is specified in the first value).
@@ -420,10 +422,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    // testing...
    // doesn't set value yet
    private String currentSubjectDNAttribute;
-   private String value;
-   private String addedAttribute;
-   private boolean added = false;
+   private String addedSubjectDNAttribute;
+   private boolean isSubjectDNAdded = false;
    
+   // Using a saved list of additions that is appended to existing components is temporary solution 
+   private List<String> subjectDnAdditions = new ArrayList<String>();
+      
    public String addSubjectDNAttribute(){
        //value = new String(currentAttribute);
        /*profiledata.addField(DnComponents.COUNTRYOFRESIDENCE);
@@ -437,15 +441,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        profiledata.setUse(value,0,true);
        profiledata.setModifyable(value,0,true);*/
        
-       addedAttribute = new String(currentSubjectDNAttribute); // I need to fetch the value from the selected component here instead...
-       subjectDnAdditions.add(addedAttribute);
-       added = true;
-       return "";
+       addedSubjectDNAttribute = new String(currentSubjectDNAttribute); // I need to fetch the value from the selected component here instead...
+       subjectDnAdditions.add(addedSubjectDNAttribute);
+       isSubjectDNAdded = true;
+       return ""; // remove
    }
-   
-   
-   // Using a saved list of additions that is appended to existing components is temporary solution 
-   private List<String> subjectDnAdditions = new ArrayList<String>();;
    
    public List<String> getSubjectDnComponent() {
        List<String> components = new ArrayList<String>();
@@ -460,7 +460,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            temp = iterator.next();
            components.add(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])));
        } 
-       if (added) {
+       if (isSubjectDNAdded) {
            Iterator<String> addedAttributeIterator = subjectDnAdditions.iterator();
            while(addedAttributeIterator.hasNext()) {
                components.add(addedAttributeIterator.next());
@@ -471,7 +471,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    
    // but only last is returned and only if it has a value
    public String getSubjectDNAttributeValue() {
-       String value = "NO VALUE IN THE LAST FIELD RETURNED";//REMOVE...
+       String value = "NO VALUE IN THE LAST FIELD RETURNED";// remove
        int [] fielddata = null;
        int numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
        for(int i=0; i < numberofsubjectdnfields; i++){
@@ -517,10 +517,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        for(int i=0; i < numberofsubjectdnfields; i++){
            fielddata =  profiledata.getSubjectDNFieldsInOrder(i);
        }
-       profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER], changeable);//wrong fielddata!!
+       profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER], changeable);//wrong field data
    }
    
-   //... only returns the last fielddata
+   //... only returns the last field
    public boolean isSubjectDNAttributeValidation() {
        int numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
        int [] fielddata = null;
@@ -564,21 +564,36 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            subjectAltName = attributeString[stringElement.intValue()];
            if (EndEntityProfile.isFieldImplemented(subjectAltName)) {
                subjectAltNameReturned = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileName(subjectAltName));
-               subjectAltNamesReturned.add(new SelectItem(subjectAltNameNr, subjectAltNameReturned ));
+               //subjectAltNamesReturned.add(new SelectItem(subjectAltNameNr, subjectAltNameReturned ));
+               subjectAltNamesReturned.add(new SelectItem(subjectAltNameReturned, subjectAltNameReturned));
            }
        }
        return subjectAltNamesReturned;
    }
    
-   // just temp value atm
-   public String getCurrentSubjectAltNameType() { 
-       return "PLACEHOLDER";
+   private String currentSubjectAltName;
+   private String addedSubjectAltName;
+   private boolean isSubjectAltNameAdded = false;
+   
+   // Using a saved list of additions that is appended to existing components is temporary solution 
+   private List<String> subjectAltNameAdditions = new ArrayList<String>();
+   
+   
+   public String addSubjectAltName() {
+       addedSubjectAltName = new String(currentSubjectAltName); // I need to fetch the value from the selected component here instead...
+       subjectAltNameAdditions.add(addedSubjectAltName);
+       isSubjectAltNameAdded = true;
+       return "";// remove
    }
    
    // just temp value atm
-   public void setCurrentSubjectAltNameType(String san) {
-       String TEMPattribute = san ;
-       TEMPattribute = TEMPattribute + "";
+   public String getCurrentSubjectAltNameType() { 
+       return currentSubjectAltName;
+   }
+   
+   // just temp value atm
+   public void setCurrentSubjectAltNameType(String subjectAltNameType) {
+       currentSubjectAltName = subjectAltNameType;
    }
    
    //
@@ -595,9 +610,16 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            temp = iterator.next();
            components.add(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE]))); 
        }
+       if (isSubjectAltNameAdded) {
+           Iterator<String> addedAltNameComponentIterator = subjectAltNameAdditions.iterator();
+           while(addedAltNameComponentIterator.hasNext()) {
+               components.add(addedAltNameComponentIterator.next());
+           }
+       }
        return components;
    }
      
+   private String subjectAltNameValue;
    // only last is returned 
    public String getSubjectAltNameValue() {
        int [] fielddata = null;
@@ -606,9 +628,9 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
        }
        if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) {
-           value = profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
+           subjectAltNameValue = profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
        }
-       return value;
+       return subjectAltNameValue;
    }
    
    //only sets the last subject alt name field to given value, need to keep track of current field 
@@ -679,7 +701,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        if (isSubjectAltNameValidation()) validationRegex = (String)getSubjectAltNameValidationString().get(RegexFieldValidator.class.getName());
        return validationRegex;
    }
-   
+     
    //
    public List<SelectItem> getSubjectDirectoryAttributes(){
        final List<SelectItem> subjectDirectoryAttributesReturned = new ArrayList<>();
