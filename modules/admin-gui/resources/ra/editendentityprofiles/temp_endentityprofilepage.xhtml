@@ -391,10 +391,11 @@
 	       		</h:panelGroup>
 	       		<h:panelGrid id="subjectAltNameTypeGrid" columns="2">
 					<h:selectOneMenu id="subjectAltNameType" value="#{endEntityProfileMBean.currentSubjectAltNameType}" disabled="#{endEntityProfilesMBean.viewOnly}">
+						<f:ajax/> <!-- SUBMITTING ITEM SELECTED -->
 						<f:selectItems id="subjectAltNameList" value="#{endEntityProfileMBean.subjectAltNameTypes}"/>
 					</h:selectOneMenu>
-				    <h:commandButton id="addSubjectAltNameButton" value="#{web.text.ADD}">
-					<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+				    <h:commandButton id="addSubjectAltNameButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectAltName}">
+					<f:ajax render=":eeProfiles:header_othersubjectattributes"/> <!-- CHANGE TO SOMETHING USEFUL --> 
 				</h:commandButton>
 				</h:panelGrid>
 				
