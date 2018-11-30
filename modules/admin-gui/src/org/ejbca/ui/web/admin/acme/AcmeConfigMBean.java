@@ -45,7 +45,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * @version $Id: AcmeConfigMBean.java 28125 2018-01-29 16:41:28Z bastianf $
  */
 
-@ManagedBean(name = "acmeConfigMBean")
+@ManagedBean
 @SessionScoped
 public class AcmeConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
