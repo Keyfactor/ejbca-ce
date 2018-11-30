@@ -74,7 +74,7 @@ public class CaHelper extends BaseHelper {
      *
      * @param caName the name of the CA
      */
-    public void addCa(String caName) {
+    public void addCa(final String caName) {
         fillInput(Page.INPUT_CANAME, caName);
         clickLink(Page.BUTTON_CREATE_CA);
     }
@@ -84,7 +84,7 @@ public class CaHelper extends BaseHelper {
      *
      * @param caName the name of the CA to edit
      */
-    public void edit(String caName) {
+    public void edit(final String caName) {
         try {
             Select caList = new Select(findElement(Page.SELECT_CA));
             caList.selectByVisibleText(caName + ", (Active)");
@@ -107,7 +107,7 @@ public class CaHelper extends BaseHelper {
      *
      * @param subjectDn the Subject DN to set
      */
-    public void setSubjectDn(String subjectDn) {
+    public void setSubjectDn(final String subjectDn) {
         WebElement dnInput = webDriver.findElement(Page.INPUT_SUBJECT_DN);
         dnInput.clear();
         dnInput.sendKeys(subjectDn);
@@ -119,7 +119,7 @@ public class CaHelper extends BaseHelper {
      *
      * @param validityString (*y *mo *d *h *m *s) or end date of the certificate. E.g. '1y'
      */
-    public void setValidity(String validityString) {
+    public void setValidity(final String validityString) {
         fillInput(Page.INPUT_VALIDITY, validityString);
     }
     
@@ -129,7 +129,7 @@ public class CaHelper extends BaseHelper {
      *
      * @param caName the name of the Certificate Profile
      */
-    public void assertExists(String caName) {
+    public void assertExists(final String caName) {
         try {
             Select caList = new Select(findElement(Page.SELECT_CA));
             caList.selectByVisibleText(caName + ", (Active)");

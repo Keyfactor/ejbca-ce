@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
+ * 'CA Structure & CRLs' helper class for EJBCA Web Tests.
  * @version $Id: CaStructureHelper.java 25797 2018-08-10 15:52:00Z jekaterina $
  */
 public class CaStructureHelper extends BaseHelper {
@@ -49,7 +50,7 @@ public class CaStructureHelper extends BaseHelper {
         }
     }
 
-    public CaStructureHelper(WebDriver webDriver) {
+    public CaStructureHelper(final WebDriver webDriver) {
         super(webDriver);
     }
 
@@ -67,17 +68,13 @@ public class CaStructureHelper extends BaseHelper {
      * Clicks to Crl url, opens Crl, checks opened crl contains CaName
      * @param caName
      */
-    public void assertCrlLinkWorks(String caName ){
-        String crlUrl = webDriver.findElement(Page.getCrlUrl(caName)).getAttribute("href");
+    public void assertCrlLinkWorks(final String caName ){
+        String crlUrl = getElementHref(Page.getCrlUrl(caName));
         webDriver.get("view-source:" + crlUrl);
-        try {
-            webDriver.findElement(Page.getPreContainsCaName(caName));
-        } catch (NoSuchElementException e) {
-            fail("The CRL didn't contain the CA's name.");
-        }
+        assertElementExists(Page.getPreContainsCaName(caName), "The CRL didn't contain the CA's name.");
     }
 
-    public void clickCrlLinkAndAssertNumberIncreased(String caName){
+    public void clickCrlLinkAndAssertNumberIncreased(final String caName){
         int crlNumber = getCrlNumber(caName);
         // Click 'Create CRL' button
         clickLink(Page.getCrlCreateButonByCaName(caName));
