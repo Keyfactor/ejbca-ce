@@ -37,7 +37,7 @@ public class IpAddressValidator implements Validator {
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) {
         if (!((String) value).matches(IP_ADDRESS_PATTERN)) {
-            throw new ValidatorException(new FacesMessage("Incorrectly formatter address!"));
+            throw new ValidatorException(new FacesMessage("Incorrectly formatted IP address!"));
         }
     }
 }
