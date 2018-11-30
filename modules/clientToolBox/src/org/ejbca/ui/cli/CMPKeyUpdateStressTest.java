@@ -807,8 +807,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			this.keystorePassword = args[3];
 			final String alias = args[4];
 			final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>5 ? args[5] : null);
-			this.numberOfThreads = notanot.threads;
-			this.numberOfTests = notanot.tests;
+			this.numberOfThreads = notanot.getThreads();
+			this.numberOfTests = notanot.getTests();
 			this.waitTime = args.length > 6 ? Integer.parseInt(args[6].trim()) : 0;
 			this.port = args.length > 7 ? Integer.parseInt(args[7].trim()) : 8080;
 			this.urlPath = (args.length > 8 && args[8].toLowerCase().indexOf("null") < 0 ? args[8].trim() : "/ejbca/publicweb/cmp") + '/' + alias;
@@ -828,8 +828,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 		}
 		@SuppressWarnings("synthetic-access")
 		@Override
-		public Command[] getCommands() throws Exception {
-			
+		public Command[] getCommands() {		
 			final SessionData sessionData;
 			try {
 				sessionData = new SessionData(this.cliArgs, this.performanceTest, this.keyStores[keyStoreIx++]);
