@@ -57,7 +57,7 @@ org.ejbca.util.HTMLTools
        final String ACMECONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/acmeconfiguration.xhtml";
        final String SCEPCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/scepconfiguration.xhtml";
        
-       final String ESTCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/estconfiguration.jsp";
+       final String ESTCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() + "/estconfiguration.xhtml";
        
 	   final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl();
 	   final String RAWEB_LINK          = ejbcawebbean.getBaseUrl() + "ra/";
