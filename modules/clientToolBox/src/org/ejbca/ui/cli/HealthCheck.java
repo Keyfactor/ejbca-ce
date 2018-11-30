@@ -59,7 +59,7 @@ public class HealthCheck extends ClientToolBox {
            }
            System.out.println("Response message was " + byteArrayOutputStream.toString());
         } catch (IOException e) {
-            System.err.println("Could not open connection to " + httpPath);
+            System.err.println("Could not open connection to " + httpPath + " . Error was: " + e.getMessage());
             System.exit(-1);
             return;
         }
@@ -69,11 +69,6 @@ public class HealthCheck extends ClientToolBox {
     @Override
     protected String getName() {
         return "healthCheck";
-    }
-
-    public static void main(String[] args) {
-        HealthCheck healthCheck = new HealthCheck();
-        healthCheck.execute(new String[]{"healthCheck",  "http://localhost:8080/ejbca/publicweb/healthcheck/ejbcahealth"});
     }
 
 }
