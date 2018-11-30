@@ -419,10 +419,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         flushCache();
     }
 
-    public void selectUpdate() {
-        // NOOP: Only for page reload
-    }
-
     /** @return a list of usable operational modes */
     public List<SelectItem> getAvailableModes() {
         final List<SelectItem> ret = new ArrayList<>();
