@@ -76,9 +76,14 @@
 	            		<f:selectItem itemLabel="#{web.text.CMPHMACSPECIFYSECRET}" itemValue="specified"/>
             			<f:ajax render=":editcmpaliasform:authmodule"/>
 	            	</h:selectOneRadio>
-	            	<h:inputText id="inputhmacsecret" value="#{editCmpConfigMBean.hmacSecret}" 
-	            			disabled="#{editCmpConfigMBean.caSharedSecret or !editCmpConfigMBean.hmacSelected or editCmpConfigMBean.viewOnly}"
-	            			rendered="#{editCmpConfigMBean.raMode}"/>
+	            	<h:inputSecret id="inputhmacsecret" value="#{editCmpConfigMBean.hmacSecret}" 
+	            			disabled="#{editCmpConfigMBean.caSharedSecret or !editCmpConfigMBean.hmacSelected}"
+	            			rendered="#{editCmpConfigMBean.raMode and not editCmpConfigMBean.viewOnly}"
+	            			redisplay="true"/>
+           			<h:inputSecret id="inputsecretviewonlydummy" value="******" 
+           					disabled="true" 
+           					rendered="#{editCmpConfigMBean.viewOnly}"
+           					redisplay="true"/>
 	            	<br/>
 	            	<h:panelGroup id="endentitycertificategroup" rendered="#{editCmpConfigMBean.responseProtection ne 'pbe'}">
 	            		<h:selectBooleanCheckbox value="#{editCmpConfigMBean.eeCertSelected}" disabled="#{editCmpConfigMBean.viewOnly}">
