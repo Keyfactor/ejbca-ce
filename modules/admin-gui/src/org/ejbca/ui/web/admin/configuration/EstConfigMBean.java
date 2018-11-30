@@ -40,6 +40,8 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
 
     private String selectedAlias;
     private String newAlias;
+    private boolean viewOnly = true;
+
     /**
      * Indicates a delete action in progress to render its view.
      */
@@ -123,7 +125,7 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isNotEmpty(selectedAlias)) {
             deleteInProgress = true;
         } else {
-            addErrorMessage("CMPNOTSELECTED");
+            addErrorMessage("ESTNOTSELECTED");
         }
     }
 
@@ -134,6 +136,26 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
         deleteInProgress = false;
         selectedAlias = null;
         newAlias = null;
+    }
+
+    /** @return the navigation outcome defined in faces-config.xml */
+    public String actionView() {
+        if (StringUtils.isNotEmpty(selectedAlias)) {
+            viewOnly = true;
+            return "view";
+        }
+        addErrorMessage("ESTNOTSELECTED");
+        return "";
+    }
+
+    /** @return the navigation outcome defined in faces-config.xml */
+    public String actionEdit() {
+        if (StringUtils.isNotEmpty(selectedAlias)) {
+            viewOnly = false;
+            return "edit";
+        }
+        addErrorMessage("ESTNOTSELECTED");
+        return "";
     }
 
     public boolean isAuthorizedToEdit() {
@@ -158,5 +180,9 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
 
     public void setNewAlias(String newAlias) {
         this.newAlias = newAlias.trim();
+    }
+
+    public boolean isViewOnly() {
+        return viewOnly;
     }
 }
