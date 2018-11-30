@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.EJB;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
@@ -38,13 +40,14 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * @version $Id$
  *
  */
+@ManagedBean
+@SessionScoped
 public class CmpConfigMBean extends BaseManagedBean implements Serializable {
 
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(CmpConfigMBean.class);
 
     private String selectedCmpAlias;
     private String newCmpAlias = "";
@@ -66,65 +69,57 @@ public class CmpConfigMBean extends BaseManagedBean implements Serializable {
         return (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
     
-    public List<SelectItem> getCmpAliasSeletItems() {
+    public List<SelectItem> getCmpAliasSelectItems() {
         final List<String> aliases = getCmpConfig().getSortedAliasList();
         final List<SelectItem> selectItems = new ArrayList<>();
-        for (String alias : aliases) {
-            selectItems.add(new SelectItem(alias));
-        }
+        aliases.forEach(alias -> selectItems.add(new SelectItem(alias)));
         return selectItems;
     }
     
-    
     /* Actions */
     
-    // Many of the following validations are redundant in CmpConfiguration. However,
-    // we need them to display proper error messages
     public void addCmpAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(newCmpAlias.trim())) {
-            if (!StringTools.checkFieldForLegalChars(newCmpAlias)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else if (getCmpConfig().aliasExists(newCmpAlias.trim())) {
-                addErrorMessage("CMPALIASEXISTS");
-            } else {
-                getEjbcaWebBean().addCmpAlias(newCmpAlias);
-                newCmpAlias = null;
-            }
+        if (validateNewAlias()) {
+            getEjbcaWebBean().addCmpAlias(newCmpAlias);
+            newCmpAlias = null;
         }
     }
 
     public void renameCmpAlias() throws AuthorizationDeniedException {
-        if (selectedCmpAlias != null && newCmpAlias != null) {
-            newCmpAlias = newCmpAlias.trim();
-            if (StringUtils.isNotEmpty(newCmpAlias) && StringUtils.isNotEmpty(selectedCmpAlias)) {
-                if (!StringTools.checkFieldForLegalChars(newCmpAlias)) {
-                    addErrorMessage("ONLYCHARACTERS");
-                } else if (getCmpConfig().aliasExists(newCmpAlias)) {
-                    addErrorMessage("CMPALIASEXISTS");
-                } else {
-                    getEjbcaWebBean().renameCmpAlias(selectedCmpAlias, newCmpAlias);
-                    newCmpAlias = null;
-                }
-            }
+        if (StringUtils.isEmpty(selectedCmpAlias)) {
+            addErrorMessage("CMPNOTSELECTED");
+        } else if (validateNewAlias()) {
+            getEjbcaWebBean().renameCmpAlias(selectedCmpAlias, newCmpAlias);
+            newCmpAlias = null;
         }
     }
 
     public void cloneCmpAlias() throws AuthorizationDeniedException {
-        if (selectedCmpAlias != null && newCmpAlias != null) {
-            newCmpAlias = newCmpAlias.trim();
-            if (StringUtils.isNotEmpty(newCmpAlias) && StringUtils.isNotEmpty(selectedCmpAlias)) {
-                if (!StringTools.checkFieldForLegalChars(newCmpAlias)) {
-                    addErrorMessage("ONLYCHARACTERS");
-                } else if(getCmpConfig().aliasExists(newCmpAlias)) {
-                    addErrorMessage("CMPALIASEXISTS");
-                } else {
-                    getEjbcaWebBean().cloneCmpAlias(selectedCmpAlias, newCmpAlias);
-                    newCmpAlias = null;
-                }
-            }
-        }
+        if (StringUtils.isEmpty(selectedCmpAlias)) {
+            addErrorMessage("CMPNOTSELECTED");
+        } else if (validateNewAlias()) {
+            getEjbcaWebBean().cloneCmpAlias(selectedCmpAlias, newCmpAlias);
+            newCmpAlias = null;
+        } 
     }
 
+    /**
+     * @return false if new alias already exists or contains illegal characters
+     */
+    private boolean validateNewAlias() {
+        // Following validations are redundant in CmpConfiguration. However,
+        // we need them to display proper error messages
+        newCmpAlias = newCmpAlias.trim();
+        if (StringUtils.isEmpty(newCmpAlias) || !StringTools.checkFieldForLegalChars(newCmpAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        } else if(getCmpConfig().aliasExists(newCmpAlias)) {
+            addErrorMessage("CMPALIASEXISTS");
+            return false;
+        }
+        return true;
+    }
+    
     public void deleteCmpAlias() throws AuthorizationDeniedException {
         if (StringUtils.isNotEmpty(selectedCmpAlias)) {
             getEjbcaWebBean().removeCmpAlias(selectedCmpAlias);
