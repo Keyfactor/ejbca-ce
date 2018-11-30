@@ -25,6 +25,9 @@ import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +50,8 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
  * @version $Id$
  *
  */
+@ManagedBean
+@ViewScoped
 public class EditCmpConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -59,6 +64,9 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
     
+    @ManagedProperty(value="#{cmpConfigMBean}")
+    private CmpConfigMBean cmpConfigMBean;
+
     private CAInterfaceBean caBean;
     
     @PostConstruct
@@ -89,7 +97,6 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
     
     private CmpConfiguration cmpConfiguration;
-    private CmpConfigMBean cmpConfigBean;
     
     private String selectedRaNameSchemeDnPart;
     private String selectedVendorCa;
@@ -241,19 +248,19 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     }
     
     public CmpConfigMBean getCmpConfigMBean() {
-        return cmpConfigBean;
+        return cmpConfigMBean;
     }
 
     public void setCmpConfigMBean(CmpConfigMBean cmpConfigBean) {
-        this.cmpConfigBean = cmpConfigBean;
+        this.cmpConfigMBean = cmpConfigBean;
     }
     
     public String getSelectedCmpAlias() {
-        return cmpConfigBean.getSelectedCmpAlias();
+        return cmpConfigMBean.getSelectedCmpAlias();
     }
 
     public boolean isViewOnly() {
-        return cmpConfigBean.isViewOnly();
+        return cmpConfigMBean.isViewOnly();
     }
     
     public boolean isRaMode() {

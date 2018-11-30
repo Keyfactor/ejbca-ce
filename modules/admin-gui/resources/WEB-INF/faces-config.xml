@@ -56,22 +56,7 @@
     	    <value>#{certProfilesBean}</value>
     	</managed-property>
   </managed-bean>
-  
-  <managed-bean>
-        <managed-bean-name>cmpConfigMBean</managed-bean-name>
-        <managed-bean-class>org.ejbca.ui.web.admin.cmp.CmpConfigMBean</managed-bean-class>
-        <managed-bean-scope>session</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
-		<managed-bean-name>editCmpConfigMBean</managed-bean-name>
-		<managed-bean-class>org.ejbca.ui.web.admin.cmp.EditCmpConfigMBean</managed-bean-class>
-		<managed-bean-scope>view</managed-bean-scope>
-		<managed-property>
-		    <property-name>cmpConfigMBean</property-name>
-		    <value>#{cmpConfigMBean}</value>
-		</managed-property>
-  </managed-bean>
-  
+ 
   <managed-bean>
     	<managed-bean-name>endEntityProfileMBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.endentityprofiles.EndEntityProfileMBean</managed-bean-class>
