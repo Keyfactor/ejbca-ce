@@ -243,7 +243,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.trace(">removeApprovalRequest: requestId="+requestId);
         }
         try {
-            ApprovalData ad = findById(Integer.valueOf(requestId));
+            ApprovalData ad = findById(requestId);
             if (ad != null) {
                 entityManager.remove(ad);
                 final String detailsMsg = intres.getLocalizedMessage("approval.removed", requestId);
@@ -733,11 +733,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private Integer findFreeRequestId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
-            public boolean isFree(int i) {
-                return findById(i) == null;
+            public boolean isFree(int id) {
+                return findById(id) == null;
             }
         };
-        return Integer.valueOf( ProfileID.getNotUsedID(db) );
+        return ProfileID.getNotUsedID(db);
     }
 
     /**
