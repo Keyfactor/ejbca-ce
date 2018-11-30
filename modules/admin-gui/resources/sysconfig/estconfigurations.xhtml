@@ -60,10 +60,10 @@
 
           <h:panelGrid columns="4">
             <h:commandButton id="buttonviewalias"
-                             action="#{cmpConfigMBean.actionView}"
+                             action="#{estConfigMBean.actionView}"
                              value="#{web.text.EST_VIEW_ALIAS}"/>
             <h:commandButton id="buttoneditalias"
-                             action="#{cmpConfigMBean.actionEdit}"
+                             action="#{estConfigMBean.actionEdit}"
                              value="#{web.text.ESTEDITALIAS}"
                              rendered="#{estConfigMBean.authorizedToEdit}"/>
             <h:commandButton id="buttondeletealias" action="#{estConfigMBean.actionDelete}"
