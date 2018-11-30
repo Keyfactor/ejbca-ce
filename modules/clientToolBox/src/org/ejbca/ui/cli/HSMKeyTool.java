@@ -662,7 +662,7 @@ public class HSMKeyTool extends ClientToolBox {
             final NrOfThreadsAndNrOfTests notanot = new NrOfThreadsAndNrOfTests(args.length>4 ? args[4] : null);
             KeyStoreContainerTest.test(
                     args[2], storeId, slotType,
-                    notanot.threads, notanot.tests,
+                    notanot.getThreads(), notanot.getTests(),
                     args.length>5 ? args[5].trim() : null,
                     args.length>6 ? args[6].trim() : null,
                     protectionParameter);
