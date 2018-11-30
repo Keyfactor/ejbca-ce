@@ -31,7 +31,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * @version $Id: EstConfigMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 @ManagedBean
 @SessionScoped
