@@ -521,7 +521,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			}
 			this.performanceTest.execute(new MyCommandFactory(
 			        caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN, subjectDN),
-			        notanot.threads, notanot.tests, waitTime, getPrintStream());
+			        notanot.getThreads(), notanot.getTests(), waitTime, getPrintStream());
 			getPrintStream().println("A test key for each thread is generated. This could take some time if you have specified many threads and long keys.");
 			synchronized(this) {
 				wait();
