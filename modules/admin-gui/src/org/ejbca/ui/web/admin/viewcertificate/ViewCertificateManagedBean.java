@@ -104,6 +104,9 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private CAInterfaceBean caBean;
     private RAInterfaceBean raBean;
     
+    private String caName;
+    private String formattedCertSn;
+    private String unescapedRdnValue;
     
     // Authentication check and audit log page access request
     public void initialize(final ComponentSystemEvent event) throws Exception {
@@ -130,6 +133,11 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             RequestHelper.setDefaultCharacterEncoding(request);
             
             parseRequest(request);
+            
+            caName = caBean.getName(caId);
+            formattedCertSn = raBean.getFormatedCertSN(certificateData);
+            unescapedRdnValue = certificateData.getUnescapedRdnValue(certificateData.getIssuerDN());
+            
             
             
             /* TODO:  
@@ -414,5 +422,39 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return certificateData;
     }
     
+    public String getCaName() {
+        return caName;
+    }
+    
+    public int getCaId() {
+        return caId;
+    }
+
+
+    public String getTokenSn() {
+        return tokenSn;
+    }
+    
+    public int getNumberOfCertificates() {
+        return numberOfCertificates;
+    }
+
+
+    public int getCurrentIndex() {
+        return currentIndex;
+    }    
+
+    public int getNextIndex() {
+        return currentIndex + 1;
+    }
+    
+    public String getFormattedCertSn() {
+        return formattedCertSn;
+    }
+    
+    public String getUnescapedRdnValue() {
+        return unescapedRdnValue;
+    }
+
     
 }

@@ -25,14 +25,14 @@
 </ui:remove>
 
 <f:metadata> 
-    <f:event type="preRenderView" listener="#{viewCAInfoMBean.initialize}"/> 
+    <f:event type="preRenderView" listener="#{viewCertificateMBean.initialize}"/> 
 </f:metadata>
 
 <ui:composition template="/WEB-INF/include/popup.xhtml">
     <ui:define name="content">
         <h2>
             <h:outputText value="#{web.text.VIEW_CACERTIFICATE_HEADING}" rendered="#{viewCertificateMBean.cacerts}" />
-            <h:outputText value="#{web.text.VIEW_CERTIFICATES_HEADING}" rendered="#{viewCertificateMBean.cacerts}" />
+            <h:outputText value="#{web.text.VIEW_CERTIFICATES_HEADING}" rendered="#{!viewCertificateMBean.cacerts}" />
         </h2>
         
         <h:form id="viewcertificate">
@@ -43,6 +43,58 @@
                 <h:panelGroup>
                     <strong><h:outputLabel value="#{viewCertificateMBean.certificateData.username}"/></strong>
                 </h:panelGroup>
+                
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{web.text.CANAME}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCertificateMBean.caName}"/></strong>
+                    <h:outputLabel value=" (#{viewCertificateMBean.caId})"/>
+                </h:panelGroup>
+  
+                <ui:remove>              
+                <!-- Index -->
+                </ui:remove>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.HARDTOKENSN}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.tokenSn}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CERTIFICATENR}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.nextIndex} #{web.text.OF} #{viewCertificateMBean.numberOfCertificates}"/>
+                </h:panelGroup>
+                
+                <ui:remove>
+                <!-- Certificate content -->
+                </ui:remove>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CERT_TYPEVERSION}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateData.type} #{web.text.VER} #{viewCertificateMBean.certificateData.version}"/>
+                </h:panelGroup>
+
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CERT_SERIALNUMBER}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.formattedCertSn}"/>
+                </h:panelGroup>
+
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CERT_ISSUERDN}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.unescapedRdnValue}"/>
+                </h:panelGroup>
+                
             </h:panelGrid>
         </h:form>
     </ui:define>
