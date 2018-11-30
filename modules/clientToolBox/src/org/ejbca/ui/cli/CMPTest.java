@@ -875,7 +875,7 @@ class CMPTest extends ClientToolBox {
         }
         private class MyCommandFactory implements CommandFactory {
             @Override
-            public Command[] getCommands() throws Exception {
+            public Command[] getCommands() {
                 final SessionData sessionData = new SessionData();
                 return new Command[]{new GetCertificate(sessionData), new SendConfirmMessageToCA(sessionData)};//, new Revoke(sessionData)};
             }
@@ -926,7 +926,7 @@ class CMPTest extends ClientToolBox {
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), notanot.threads, notanot.tests, waitTime, alias, urlPath, resultFilePrefix);
+            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), notanot.getThreads(), notanot.getTests(), waitTime, alias, urlPath, resultFilePrefix);
         } catch (SecurityException e) {
             throw e; // System.exit() called. Not thrown in normal operation but thrown by the custom SecurityManager when clientToolBoxTest is executed. Must not be caught.
         } catch (Exception e) {

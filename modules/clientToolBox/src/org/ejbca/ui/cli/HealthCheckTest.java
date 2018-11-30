@@ -29,16 +29,18 @@ import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
  * @version $Id$
  *
  */
-class HealthCheckTest extends ClientToolBox {
-    static private class StressTest {
+public class HealthCheckTest extends ClientToolBox {
+    private static class StressTest {
         final PerformanceTest performanceTest;
-        StressTest( final String httpPath,
+       
+        public StressTest( final String httpPath,
                     final int numberOfThreads,
                     final int nrOfTests,
                     final int waitTime) throws Exception {
             performanceTest = new PerformanceTest();
             performanceTest.execute(new MyCommandFactory(httpPath), numberOfThreads, nrOfTests, waitTime, System.out);
         }
+        
         private class GetStatus implements Command {
             
             final private URL url;
@@ -46,7 +48,7 @@ class HealthCheckTest extends ClientToolBox {
                 this.url = _url;
             }
             public boolean doIt() throws Exception {
-                final HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                final HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 if ( con.getResponseCode()!=HttpURLConnection.HTTP_OK ) {
                     performanceTest.getLog().error("Wrong response code: "+con.getResponseCode());
                     return false;
@@ -90,15 +92,12 @@ class HealthCheckTest extends ClientToolBox {
                 super();
                 url = new URL(httpPath);
             }
-            public Command[] getCommands() throws Exception {
+            public Command[] getCommands() {
                 return new Command[]{new GetStatus(url)};
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
-     */
     @Override
 	protected void execute(String[] args) {
         final String httpPath;
@@ -106,14 +105,14 @@ class HealthCheckTest extends ClientToolBox {
         final int waitTime;
         if ( args.length < 2 ) {
             System.out.println(args[0]+" <http URL> [<number of threads>] [<wait time (ms) between each thread is started>]");
-            System.out.println("Example: ");
+            System.out.println("Example: healthCheckTest http://localhost:8080/ejbca/publicweb/healthcheck/ejbcahealth 10 10");
             return;
         }
         httpPath = args[1];
         notanot = new NrOfThreadsAndNrOfTests(args.length>2 ? args[2] : null);
         waitTime = args.length>3 ? Integer.parseInt(args[3].trim()):0;
         try {
-            new StressTest(httpPath, notanot.threads, notanot.tests, waitTime);
+            new StressTest(httpPath, notanot.getThreads(), notanot.getTests(), waitTime);
         } catch( SecurityException e ) {
             throw e; // System.exit() called. Not thrown in normal operation but thrown by the custom SecurityManager when clientToolBoxTest is executed. Must not be caught.
         } catch (Exception e) {
@@ -121,9 +120,7 @@ class HealthCheckTest extends ClientToolBox {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.cli.ClientToolBox#getName()
-     */
+
     @Override
     protected String getName() {
         return "healthCheckTest";

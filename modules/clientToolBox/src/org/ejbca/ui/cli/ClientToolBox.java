@@ -49,6 +49,7 @@ public abstract class ClientToolBox {
     public static void main(String[] args) {
         // each new tool must be added to the array
         final ClientToolBox toolBox[] = {
+                new HealthCheck(),
         		new HealthCheckTest(),
         		new HSMKeyTool(),
         		new Ocsp(),

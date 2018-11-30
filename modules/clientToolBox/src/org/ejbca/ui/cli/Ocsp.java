@@ -206,7 +206,7 @@ public class Ocsp extends ClientToolBox {
                 this.keyStorePassword = null;
             }
             this.performanceTest = new PerformanceTest();
-            this.performanceTest.execute(new MyCommandFactory(), notanot.threads, notanot.tests, waitTime, System.out);
+            this.performanceTest.execute(new MyCommandFactory(), notanot.getThreads(), notanot.getTests(), waitTime, System.out);
         }
     }
 

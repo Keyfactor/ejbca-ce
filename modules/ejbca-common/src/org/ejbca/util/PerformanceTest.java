@@ -63,17 +63,21 @@ public class PerformanceTest {
     public Log getLog() {
         return this.log;
     }
+    
     public Random getRandom() {
         return this.random;
     }
+    
     public interface CommandFactory {
         Command[] getCommands() throws Exception;
     }
+    
     public interface Command {
         boolean doIt() throws Exception;
 
         String getJobTimeDescription();
     }
+    
     private class JobRunner implements Runnable { // NOPMD this is a standalone test, not run in jee app
         final private Command command;
         private boolean bIsFinished;
@@ -83,6 +87,7 @@ public class PerformanceTest {
             this.bIsFinished = false;
             this.command = _command;
         }
+        
         boolean execute() throws Exception {
             final Thread thread = new Thread(this); // NOPMD this is a standalone test, not run in jee app
             synchronized(this) {
@@ -97,6 +102,7 @@ public class PerformanceTest {
             }
             return this.isSuccess;
         }
+        
         @Override
         public void run() {
             try {
@@ -116,6 +122,7 @@ public class PerformanceTest {
             return this.time;
         }
     }
+    
     private class TestInstance implements Runnable { // NOPMD this is a standalone test, not run in jee app
         final private int nr;
         final private int maxWaitTime;
@@ -189,7 +196,6 @@ public class PerformanceTest {
     }
 
     public void execute(CommandFactory commandFactory, int numberOfThreads, int numberOfTests, int waitTime, PrintStream printStream) throws Exception {
-
         final Statistic statistic = new Statistic(numberOfThreads, numberOfTests, printStream);
         final Thread threads[] = new Thread[numberOfThreads]; // NOPMD this is a standalone test, not run in jee app
         for(int i=0; i < numberOfThreads;i++) {
@@ -202,13 +208,14 @@ public class PerformanceTest {
         printStream.println("Test client started, tail info and error files in this directory for output.");
         printStream.println("Statistic will be written to standard output each "+this.STATISTIC_UPDATE_PERIOD_IN_SECONDS+" second.");
         printStream.println("The test was started at "+ new Date());
-        printStream.format("%d number of threads will be started and %d number of tests will be performed. Each thread will wait between 0 and %d milliseconds between each test.%n", numberOfThreads, numberOfTests, waitTime);
+        printStream.format("%d threads will be started and %d number of tests will be performed. Each thread will wait between 0 and %d milliseconds between each test.%n", numberOfThreads, numberOfTests, waitTime);
         synchronized(this) {
             wait();
         }
         printStream.format("Test exited with %d number of failures.%n", statistic.getNrOfFailures());
         System.exit( statistic.getNrOfFailures() );
     }
+    
     private class Statistic implements Runnable { // NOPMD this is a standalone test, not run in jee app
         private final int nrOfThreads;
         private final int nrOfTests;
@@ -218,12 +225,14 @@ public class PerformanceTest {
         private int nrOfSuccessesLastTime = 0;
         private int nrOfFailures = 0;
         private final PrintStream printStream;
-        Statistic(int _nrOfThreads, int _nrOfTests, PrintStream _printStream) {
+        
+        public Statistic(int _nrOfThreads, int _nrOfTests, PrintStream _printStream) {
             this.nrOfThreads = _nrOfThreads;
             this.nrOfTests = _nrOfTests;
             this.jobs = new HashMap<String, Job>();
             this.printStream = _printStream;
         }
+        
         private class Job {
             private final String name;
             private long totalTime;
@@ -231,11 +240,13 @@ public class PerformanceTest {
             private long maxTime = Long.MIN_VALUE;
             private Date minTimeAt;
             private Date maxTimeAt;
+            
             private Job(String _name) {
                 this.name = _name;
                 this.totalTime = 0;
             }
-            void addTime(long duration) {
+            
+            private void addTime(long duration) {
                 this.totalTime += duration;
                 final Date now = new Date();
 
@@ -248,17 +259,21 @@ public class PerformanceTest {
                     this.maxTimeAt = now;
                 }
             }
-            long getTimeSpent() {
+            
+            private long getTimeSpent() {
                 return this.totalTime;
             }
-            void printRelativeTime(long allThreadsTime) {
+            
+            private void printRelativeTime(long allThreadsTime) {
                 printLine(this.name, new Float((float)this.totalTime / allThreadsTime));
             }
-            void printMinMaxTime() {
+            
+            private void printMinMaxTime() {
                 printLine("Min time for job '"+this.name+"' (ms)", Long.toString(this.minTime), this.minTimeAt);
                 printLine("Max time per job '"+this.name+"' (ms)", Long.toString(this.maxTime), this.maxTimeAt);
             }
         }
+        
         private Job getJob(String name) {
             Job job = this.jobs.get(name);
             if ( job!=null ) {
@@ -268,32 +283,40 @@ public class PerformanceTest {
             this.jobs.put(name, job);
             return job;
         }
+        
         private boolean isNotReady() {
             return this.nrOfTests<0 || (this.nrOfFailures+this.nrOfSuccesses)<this.nrOfTests;
         }
+        
         private void killMeIfReady() {
             if ( isNotReady() ) {
                 return;
             }
             this.notifyAll();
         }
-        synchronized void taskFailed() {
+        
+        private synchronized void taskFailed() {
             this.nrOfFailures++;
             killMeIfReady();
         }
-        synchronized void taskFinished() {
+        
+        private synchronized void taskFinished() {
             this.nrOfSuccesses++;
             killMeIfReady();
         }
-        synchronized boolean doMoreTests() {
+        
+        private synchronized boolean doMoreTests() {
             return this.nrOfTests<0 || this.nrOfStarted++<this.nrOfTests;
         }
-        void addTime(String timeName, long duration) {
+        
+        private void addTime(String timeName, long duration) {
             getJob(timeName).addTime(duration);
         }
+        
         private void printLine(String description, Object value) {
         	printLine(description, value, null);
         }
+        
         private void printLine(String description, Object value, Object value2) {
             String padding = new String();
             for ( int i=description.length(); i<50; i++ ) {
@@ -305,6 +328,7 @@ public class PerformanceTest {
                 this.printStream.println(description+": "+padding+value+" ("+value2+")");
             }
         }
+        
         private void printStatistics(final long startTime, final long periodStartTime, final long endTime) {
             final long time = (int)(endTime-startTime);
             final long allThreadsTime = this.nrOfThreads*time;
@@ -349,6 +373,7 @@ public class PerformanceTest {
             }
             this.printStream.flush();
         }
+        
         @Override
         public void run() {
             final long startTime = new Date().getTime();
@@ -367,17 +392,20 @@ public class PerformanceTest {
             }
             PerformanceTest.this.log.deActivate();
         }
+        
         public int getNrOfFailures() {
             return this.nrOfFailures;
         }
     }
+    
     public class Log {
         private final PrintWriter errorPrinter;
         private final PrintWriter infoPrinter;
         private final PrintWriter allPrinter;
         private final ObjectOutput resultObject;
         private final LogThread thread;
-        Log() {
+        
+        public Log() {
             try {
                 this.errorPrinter = new PrintWriter(new FileWriter("error.log"));
                 this.infoPrinter = new PrintWriter(new FileWriter("info.log"));
@@ -390,17 +418,20 @@ public class PerformanceTest {
             } catch (IOException e) {
                 System.out.println("Error opening log file. "+e.getMessage());
                 System.exit(-1); // NOPMD this is a test cli command
-                throw new Error(e);
+                throw new IllegalStateException(e);
             }
         }
+        
         public void close() {
             this.errorPrinter.close();
             this.infoPrinter.close();
             this.allPrinter.close();
         }
+        
         private class LogThread implements Runnable { // NOPMD this is a standalone test, not run in jee app
-            final List<Data> lData = new LinkedList<Data>();
-            boolean active = true;
+            private final List<Data> lData = new LinkedList<>();
+            private boolean active = true;
+            
             private class Data {
                 final Object msg;
                 final Throwable t;
@@ -415,20 +446,25 @@ public class PerformanceTest {
                     this.objectOutput = _objectOutput;                    
                 }
             }
-            synchronized private void log(Object msg,Throwable t, PrintWriter printer, ObjectOutput objectOutput, boolean doPrintDate) {
+            
+            private synchronized void log(Object msg,Throwable t, PrintWriter printer, ObjectOutput objectOutput, boolean doPrintDate) {
                 this.lData.add(new Data(msg, t, printer, objectOutput, doPrintDate));
                 this.notifyAll();
             }
-            synchronized void deActivate() {
+            
+            private synchronized void deActivate() {
                 this.active = false;
                 this.notifyAll();
             }
-            void log(String msg, Throwable t, PrintWriter printer, boolean doPrintDate) {
+            
+            private void log(String msg, Throwable t, PrintWriter printer, boolean doPrintDate) {
                 log(msg, t, printer, null, doPrintDate);
             }
-            void log(Object msg, ObjectOutput objectOutput) {
+            
+            private void log(Object msg, ObjectOutput objectOutput) {
                 log(msg, null, null, objectOutput, false);
             }
+            
             private void log() {
                 final Data data;
                 synchronized(this) {
@@ -507,23 +543,34 @@ public class PerformanceTest {
      *
      */
     public static class NrOfThreadsAndNrOfTests {
+
+        private final int threads;
+        private final int tests;
+
         public NrOfThreadsAndNrOfTests(final String _s) {
-            if ( _s==null ) {
+            if (_s == null) {
                 this.threads = 1;
                 this.tests = -1;
                 return;
             }
             final String s = _s.trim();
             final int sepPos = s.indexOf(':');
-            if ( sepPos<0 ) {
+            if (sepPos < 0) {
                 this.threads = Integer.parseInt(s);
                 this.tests = -1;
                 return;
             }
             this.threads = Integer.parseInt(s.substring(0, sepPos));
-            this.tests = Integer.parseInt(s.substring(sepPos+1));
+            this.tests = Integer.parseInt(s.substring(sepPos + 1));
         }
-        final public int threads;
-        final public int tests;
+
+        public int getThreads() {
+            return threads;
+        }
+
+        public int getTests() {
+            return tests;
+        }
+
     }
 }
