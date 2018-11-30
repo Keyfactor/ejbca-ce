@@ -439,6 +439,31 @@ public class BaseHelper {
     }
 
     /**
+     * Asserts a given element exists and returns its href (attribute 'href').
+     *
+     * @param elementId locator.
+     *
+     * @return element's value or null.
+     */
+    protected String getElementHref(final By elementId) {
+        return getElementHref(findElement(elementId));
+    }
+
+    /**
+     * Asserts a given element is not null and returns its href (attribute 'href').
+     *
+     * @param webElement non-null web element.
+     *
+     * @return element's value or null.
+     */
+    protected String getElementHref(final WebElement webElement) {
+        if(webElement != null) {
+            return webElement.getAttribute("href");
+        }
+        return null;
+    }
+
+    /**
      * Asserts a given element exists and returns its text.
      *
      * @param elementId locator.
