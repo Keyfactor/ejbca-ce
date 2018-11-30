@@ -28,16 +28,9 @@
 	static final String ACTION_VIEW_ALIAS                  		= "actionviewestalias";
 	static final String ACTION_EDIT_ALIASES						= "actioneditestaliases";
 
-	static final String TEXTFIELD_ALIAS                       	 	= "textfieldalias";
 	static final String TEXTFIELD_EST_REQUIREUSERNAME						= "textfieldrequireusername";
 	static final String TEXTFIELD_EST_REQUIREPASSWORD						= "textfieldrequirepassword";
-	
-	static final String BUTTON_ADD_ALIAS						= "buttonaliasadd";
-	static final String BUTTON_DELETE_ALIAS					 	= "buttondeletealias";
-	static final String BUTTON_EDIT_ALIAS					 	= "buttoneditalias";
-	static final String BUTTON_VIEW_ALIAS						= "buttonviewalias";
-	static final String BUTTON_RENAME_ALIAS					 	= "buttonaliasrename";
-	static final String BUTTON_CLONE_ALIAS						= "buttonaliasclone";
+
 	static final String BUTTON_SAVE							 	= "buttonsave";
 	static final String BUTTON_CANCEL							= "buttoncancel";
 	static final String BUTTON_RELOAD							= "buttonreload";
@@ -49,8 +42,7 @@
 	static final String LIST_ESTDEFAULTCA					   		= "listestdefaultca";
 	static final String LIST_ESTEEPROFILES					   		= "listesteeprofile";
 	static final String LIST_ESTCERTPROFILES				   		= "listestcertprofiles";
-		
-	static final String SELECT_ALIASES                       		= "selectaliases";
+
 	static final String HIDDEN_ALIAS                         		= "hiddenalias";
 	static final String CHECKBOX_VALUE								= "true"; 
 	 
@@ -61,10 +53,8 @@
   String alias = null;
   String includefile = "estaliasespage.jspf"; 
 
-  boolean  triedtoaddexistingalias    = false;
+
   boolean  aliasDeletionFailed = false;
-  boolean  triedrenametoexistingalias = false;
-  boolean  triedclonetoexistingalias = false;
   
   boolean pbe = false;
 
@@ -77,7 +67,6 @@
   EstConfiguration estconfig = ejbcawebbean.getEstConfiguration();
   EstConfiguration estConfigClone = null;
 
-  String THIS_FILENAME            = gc.getAdminWebPath() +  "/sysconfig/estconfiguration.jsp";
 %>
  
 <head>
@@ -100,94 +89,6 @@
   	if( request.getParameter(ACTION) != null){
     		if( request.getParameter(ACTION).equals(ACTION_EDIT_ALIASES)){			
     			ejbcawebbean.clearEstConfigClone();    			
-    				if( request.getParameter(BUTTON_VIEW_ALIAS) != null){
-      					// Display  estaliaspage.jsp
-     					alias = request.getParameter(SELECT_ALIASES);
-     					if(alias != null && !alias.trim().equals("")) {
-    	   					if(!estconfig.aliasExists(alias)) {
-    	   						estconfig.addAlias(alias);
-    	   					}
-    	   					estConfigClone = ejbcawebbean.getEstConfigForEdit(alias);
-           					includefile="estaliaspage.jspf"; 
-     					} else {
-      						includefile="estaliasespage.jspf";     
-     					}
-    				    authorizedToEdit = false;
-  					}
-    				
-      				if( request.getParameter(BUTTON_EDIT_ALIAS) != null){
-      				  authorizedToEdit = ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
-          					// Display  estaliaspage.jsp
-         					alias = request.getParameter(SELECT_ALIASES);
-         					if(alias != null){
-           							if(!alias.trim().equals("")){
-        	   								if(!estconfig.aliasExists(alias)) {
-        	   										estconfig.addAlias(alias);
-        	   								}
-        	   							   	estConfigClone = ejbcawebbean.getEstConfigForEdit(alias);
-               								includefile="estaliaspage.jspf"; 
-           							}
-         					}
-         					if(alias == null){   
-          							includefile="estaliasespage.jspf";     
-         					}
-      				}
-      			
-      				if( request.getParameter(BUTTON_DELETE_ALIAS) != null) {
-          					// Delete profile and display profilespage. 
-          					alias = request.getParameter(SELECT_ALIASES);
-          					if(alias != null && (!alias.trim().equals("")) ){
-                					ejbcawebbean.removeEstAlias(alias);
-                					estconfig = ejbcawebbean.getEstConfiguration();
-                					if(estconfig.aliasExists(alias)) {
-                						aliasDeletionFailed = true;
-                					}
-          					}
-          					includefile="estaliasespage.jspf";             
-      				}
-
-      				if( request.getParameter(BUTTON_RENAME_ALIAS) != null){ 
-      						// Rename selected profile and display profilespage.
-      					    String newalias = request.getParameter(TEXTFIELD_ALIAS);
-      					    String oldalias = request.getParameter(SELECT_ALIASES);
-      					    if(oldalias != null && newalias != null && !newalias.trim().equals("") && !oldalias.trim().equals("") ){
-      					    		if(estconfig.aliasExists(newalias)) {
-      					    			triedrenametoexistingalias = true;
-      					    		} else {
-      					    			ejbcawebbean.renameEstAlias(oldalias, newalias);
-      					    			estconfig = ejbcawebbean.getEstConfiguration();
-      					    		}
-      					    }
-      					    includefile="estaliasespage.jspf"; 
-      				}
-      				
-      				if( request.getParameter(BUTTON_ADD_ALIAS) != null){
-      						alias = request.getParameter(TEXTFIELD_ALIAS);
-      					    if(alias != null && (!alias.trim().equals("")) ) {
-      					    		if(estconfig.aliasExists(alias)) {
-      					    			triedtoaddexistingalias = true;
-      					    		} else {
-      					    			ejbcawebbean.addEstAlias(alias);
-      					    			estconfig = ejbcawebbean.getEstConfiguration();
-      					    		}
-      					    }
-      					    includefile="estaliasespage.jspf"; 
-      				}
-      				
-      				if( request.getParameter(BUTTON_CLONE_ALIAS) != null){
-      						// clone profile and display profilespage.
-      					    String newalias = request.getParameter(TEXTFIELD_ALIAS);
-      					    String oldalias = request.getParameter(SELECT_ALIASES);
-      					    if(oldalias != null && newalias != null && !newalias.trim().equals("") && !oldalias.trim().equals("")){
-      					    	if(estconfig.aliasExists(newalias)) {
-      					    		triedclonetoexistingalias = true;
-      					    	} else {
-					      		   ejbcawebbean.cloneEstAlias(oldalias, newalias);
-					      		 	estconfig = ejbcawebbean.getEstConfiguration();
-      					    	}
-      					    }
-      					    includefile="estaliasespage.jspf"; 
-      				}
 
     		}      				
       				
