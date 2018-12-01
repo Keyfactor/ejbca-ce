@@ -1877,18 +1877,26 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test57CertificateRequestWithDnOverrideFromEndEntityInformation() throws Exception {
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
         final long rnd = Math.abs(secureRandom.nextLong());
+        // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+        // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
+        // empty DN component is allowed (CN=) in the core API, but when using AllowDNOverrideByEndEntityInformation empties are remove in X509CA with DNFieldsUtil.removeAllEmpties
+        // equal signs must be escaped in order to work so ';C=SE' gets an escaped ; and the =SE part is truncated
         testCertificateRequestWithEeiDnOverride(true, true,
                 "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C=SE,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
-                "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C\\=SE,ST=Sthlm/,OU=OU2,O=PrimeKey,JurisdictionCountry=SE\\+SN\\=12345,BusinessCategory=Private Organization");
+                "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C,ST=Sthlm/,OU=OU2,O=PrimeKey,SN=12345+JurisdictionCountry=SE,BusinessCategory=Private Organization");
     }
 
     @Test
     public void test58SoftTokenRequestWithDnOverrideFromEndEntityInformation() throws Exception {
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, "\n\r;!\u0000%`?$~");
         final long rnd = Math.abs(secureRandom.nextLong());
+        // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+        // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
+        // empty DN component is allowed (CN=) in the core API, but when using AllowDNOverrideByEndEntityInformation empties are remove in X509CA with DNFieldsUtil.removeAllEmpties
+        // equal signs must be escaped in order to work so ';C=SE' gets an escaped ; and the =SE part is truncated
         testCertificateRequestWithEeiDnOverride(true, false,
                 "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C=SE,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
-                "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C\\=SE,ST=Sthlm/,OU=OU2,O=PrimeKey,JurisdictionCountry=SE\\+SN\\=12345,BusinessCategory=Private Organization");
+                "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C,ST=Sthlm/,OU=OU2,O=PrimeKey,SN=12345+JurisdictionCountry=SE,BusinessCategory=Private Organization");
     }
 
     /* This is apparently allowed but puts the system in a world of pain, since other functions are not adapted to handle an empty subjectDN

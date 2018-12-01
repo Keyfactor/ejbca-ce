@@ -997,8 +997,9 @@ public class X509CA extends CA implements Serializable {
         } else {
             if (certProfile.getAllowDNOverrideByEndEntityInformation() && ei!=null && ei.getRawSubjectDn()!=null) {
                 final String stripped = StringTools.strip(ei.getRawSubjectDn());
-                final String escapedPluses = CertTools.handleUnescapedPlus(stripped);
-                final String emptiesRemoved = DNFieldsUtil.removeAllEmpties(escapedPluses);
+                // Since support for multi-value RDNs in EJBCA 7.0.0, see ECA-3934, we don't automatically escape + signs anymore
+                //final String escapedPluses = CertTools.handleUnescapedPlus(stripped);
+                final String emptiesRemoved = DNFieldsUtil.removeAllEmpties(stripped);
                 final X500Name subjectDNNameFromEei = CertTools.stringToUnorderedX500Name(emptiesRemoved, CeSecoreNameStyle.INSTANCE);
                 if (subjectDNNameFromEei.toString().length()>0) {
                     subjectDNName = subjectDNNameFromEei;
