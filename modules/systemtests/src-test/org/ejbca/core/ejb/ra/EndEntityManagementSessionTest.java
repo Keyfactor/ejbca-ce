@@ -668,7 +668,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
 
             addUser.setDN("EMAIL=foo@bar.com, OU=hoho");
-            // Changing the user feeding in EMAIL=foo@bar.com,OU=hohoit will actuallybe merged with the existing end entity user DN into
+            // Changing the user feeding in EMAIL=foo@bar.com,OU=hohoit will actually be merged with the existing end entity user DN into
             // EMAIL:foo@bar.com,CN=username,OU=hoho,O=AnaTom,C=SE
             // Since there is an order EMAIL and OU gets in their proper order. Since we pass in OU=hoho, it override the profile default OU=FooOrgUnit
             endEntityManagementSession.changeUser(admin, addUser, false, true);
