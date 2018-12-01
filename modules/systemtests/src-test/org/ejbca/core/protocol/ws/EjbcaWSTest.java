@@ -1594,9 +1594,19 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test43CertificateRequestWithSpecialChars03() throws Exception {
         long rnd = secureRandom.nextLong();
+        // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+        // an unescaped + must now either be a multi-value RDN, or the string is considered illegal directory string
         testCertificateRequestWithSpecialChars(
-                "CN=test43CertificateRequestWithSpecialChars03" + rnd + ", O=foo+bar\\+123, C=SE",
+                "CN=test43CertificateRequestWithSpecialChars03" + rnd + ", O=foo\\+bar\\+123, C=SE",
                 "CN=test43CertificateRequestWithSpecialChars03" + rnd + ",O=foo\\+bar\\+123,C=SE");
+        try {
+            testCertificateRequestWithSpecialChars(
+                    "CN=test43CertificateRequestWithSpecialChars03" + rnd + ", O=foo+bar\\+123, C=SE",
+                    "CN=test43CertificateRequestWithSpecialChars03" + rnd + ",O=foo\\+bar\\+123,C=SE");
+            fail("Test should fail as badly formatted directory string due to non-escaped +");
+        } catch (EjbcaException_Exception e) {
+            assertTrue("Exception must be about badly formatted directory string", e.getMessage().contains("badly formatted directory string"));            
+        }
     }
 
     /**
@@ -1630,9 +1640,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test46CertificateRequestWithSpecialChars06() throws Exception {
         long rnd = secureRandom.nextLong();
+        // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+        // We now handle + signs "correctly
         testCertificateRequestWithSpecialChars(
                 "CN=test46CertificateRequestWithSpecialChars06" + rnd + ", O=\"foo+b\\+ar, C=SE\"",
-                "CN=test46CertificateRequestWithSpecialChars06" + rnd + ",O=foo\\+b\\+ar\\, C\\=SE");
+                "CN=test46CertificateRequestWithSpecialChars06" + rnd + ",O=foo\\+b\\\\\\+ar\\, C\\=SE");
     }
 
     /**
@@ -1642,9 +1654,24 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test47CertificateRequestWithSpecialChars07() throws Exception {
         long rnd = secureRandom.nextLong();
+        // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
+        // We now handle + signs "correctly, it's a multi-value RDN now an 'b' should be an OID, which it's not
+        // = signs must be escaped, or it's truncated
         testCertificateRequestWithSpecialChars(
-                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"",
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C=SE\\\"",
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C");
+        testCertificateRequestWithSpecialChars(
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"",
                 "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
+        try {
+            testCertificateRequestWithSpecialChars(
+                    "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"",
+                    "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
+            fail("Test should fail as unknown oid (b) passed as multi-value RDN");
+        } catch (EjbcaException_Exception e) {
+            assertTrue("Exception must be about Unknown object id", e.getMessage().contains("Unknown object id"));
+            
+        }
     }
 
     /**
