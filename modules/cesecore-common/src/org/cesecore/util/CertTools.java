@@ -485,34 +485,6 @@ public abstract class CertTools {
     }
 
     /**
-     * Check if the String contains any unescaped '+'. RFC 2253, section 2.2 states that '+' is used for multi-valued RelativeDistinguishedName.
-     * BC (version 1.45) did not support multi-valued RelativeDistinguishedName, and automatically escaped them instead.
-     * Even though it is now (BC 1.49b15) supported, we want to keep ecaping '+' chars and warn that this might not be supported in the future.
-     */
-    public static String handleUnescapedPlus(final String dn) {
-        if (dn == null) {
-            return dn;
-        }
-        final StringBuilder buf = new StringBuilder(dn);
-        int index = 0;
-        final int end = buf.length();
-        while (index < end) {
-            if (buf.charAt(index) == '+') {
-                // Found an unescaped '+' character.
-                log.warn("DN \"" + dn + "\" contains an unescaped '+'-character that will be automatically escaped. RFC 2253 reservs this "
-                        + "for multi-valued RelativeDistinguishedNames. Encourage clients to use '\\+' instead, since future behaviour might change.");
-                buf.insert(index, '\\');
-                index++;
-            } else if (buf.charAt(index) == '\\') {
-                // Found an escape character.
-                index++;
-            }
-            index++;
-        }
-        return buf.toString();
-    }
-
-    /**
      * Every DN-string should look the same. Creates a name string ordered and looking like we want it...
      * 
      * @param dn String containing DN
