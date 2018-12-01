@@ -15,6 +15,7 @@ package org.cesecore.util;
 
 import java.util.Hashtable;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERPrintableString;
@@ -253,8 +254,13 @@ public class CeSecoreNameStyle extends BCStyle {
     }
 
     @Override
-    public ASN1ObjectIdentifier attrNameToOID(String attrName) {
-        return IETFUtils.decodeAttrName(attrName, DefaultLookUp);
+    public ASN1ObjectIdentifier attrNameToOID(final String attrName) {
+        String attr = attrName;
+        // Legacy, Email has had a couple of different string representations during the years.
+        if (StringUtils.equals(attrName, "EMAIL") || StringUtils.equals(attrName, "EMAILADDRESS")) {
+            attr = "E";
+        }
+        return IETFUtils.decodeAttrName(attr, DefaultLookUp);
     }
 
 }
