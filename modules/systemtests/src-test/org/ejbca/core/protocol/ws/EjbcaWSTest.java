@@ -2260,9 +2260,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     /**
-     * Tests that the provided cardnumber is stored in the EndEntityInformation 
-     * and that when querying for EndEntityInformation the cardnumber is 
-     * returned.
+     * Tests a request without subjectDN.
      * @throws Exception in case of error
      */
     @Test
