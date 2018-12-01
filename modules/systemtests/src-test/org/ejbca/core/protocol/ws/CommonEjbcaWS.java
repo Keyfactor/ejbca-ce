@@ -1937,15 +1937,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void getHardTokenDatas() throws Exception {
 
         Collection<HardTokenDataWS> hardTokenDatas = ejbcaraws.getHardTokenDatas("WSTESTTOKENUSER1", true, true);
-        assertTrue(hardTokenDatas.size() == 1);
+        assertEquals("There shold be 1 hardTokenData", 1, hardTokenDatas.size());
         HardTokenDataWS hardTokenDataWS = hardTokenDatas.iterator().next();
         assertNotNull(hardTokenDataWS);
-        assertTrue("" + hardTokenDataWS.getTokenType(), hardTokenDataWS.getTokenType() == HardTokenConstants.TOKENTYPE_SWEDISHEID);
-        assertTrue(hardTokenDataWS.getHardTokenSN().equals("12345678"));
-        assertTrue(hardTokenDataWS.getCopyOfSN(), hardTokenDataWS.getCopyOfSN() == null);
-        assertTrue(hardTokenDataWS.getCopies().size() == 0);
-        assertTrue(hardTokenDataWS.getCertificates().size() == 2);
-        assertTrue(hardTokenDataWS.getPinDatas().size() == 2);
+        assertEquals("Hard token type should be SwedishEID but was: "+hardTokenDataWS.getTokenType(), HardTokenConstants.TOKENTYPE_SWEDISHEID, hardTokenDataWS.getTokenType());
+        assertEquals("Hard token serialNumber not what we expected", "12345678", hardTokenDataWS.getHardTokenSN());
+        assertNull("Copy of SN should be null but was: "+hardTokenDataWS.getCopyOfSN(), hardTokenDataWS.getCopyOfSN());
+        assertEquals("There should be 0 copied", 0, hardTokenDataWS.getCopies().size());
+        assertEquals("There should be 2 certificates tied to the hardToken", 2, hardTokenDataWS.getCertificates().size());
+        assertEquals("There should be 2 PINS tied to the hardToken", 2, hardTokenDataWS.getPinDatas().size());
 
         Iterator<PinDataWS> iter = hardTokenDataWS.getPinDatas().iterator();
         while (iter.hasNext()) {
@@ -1979,6 +1979,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getCertificate() throws Exception {
         List<Certificate> certs = ejbcaraws.findCerts("WSTESTTOKENUSER1", true);
+        assertTrue("findCerts for WSTESTTOKENUSER1 should return some certificates, but return 0", certs.size() > 0);
         Certificate cert = certs.get(0);
         X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
 
