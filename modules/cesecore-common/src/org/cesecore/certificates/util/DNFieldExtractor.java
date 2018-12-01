@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
@@ -219,7 +220,8 @@ public class DNFieldExtractor implements java.io.Serializable {
         }
 
         String dn = dninput;
-        if ((dn != null) && !dn.equalsIgnoreCase("null")) {
+        // An empty DN, or using the DN "null" is a "no DN", don't try to parse it 
+        if ((StringUtils.isNotEmpty(dn)) && !dn.equalsIgnoreCase("null")) {
             try {
                 if (type == TYPE_SUBJECTDN) {
                     // Check if there are multi value RDNs
