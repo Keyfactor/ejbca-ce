@@ -831,7 +831,12 @@ public class CertToolsTest {
         // We must escape plus signs
         String dn26 = "CN=user\\+name, C=CN";
         assertEquals("CN=user\\+name,C=CN", CertTools.stringToBCDNString(dn26));
-        
+        // We must escape equal signs
+        String dn26_1 = "CN=user;C=SE";
+        assertEquals("CN=user\\;C", CertTools.stringToBCDNString(dn26_1));
+        String dn26_2 = "CN=user;C\\=SE";
+        assertEquals("CN=user\\;C\\=SE", CertTools.stringToBCDNString(dn26_2));
+
         try {
             String dn27 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\\"";
             // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
@@ -2087,6 +2092,18 @@ public class CertToolsTest {
         X500Name result = CertTools.stringToBcX500Name("");
         assertNotNull(result);    
         assertEquals("Empty input should result in empty output", "", result.toString());
+
+        result = CertTools.stringToBcX500Name("CN=");
+        assertNotNull(result);    
+        assertEquals("Empty input should result in empty output", "CN=", result.toString());
+
+        // Empty, but with trailing comma is invalid however
+        try {
+            result = CertTools.stringToBcX500Name("CN=,");
+            fail("DN component with trailing comma should fail");
+        } catch (IllegalArgumentException e) {
+            // NOPMD: should throw
+        }
     }
  
     @Test
