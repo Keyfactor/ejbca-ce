@@ -129,13 +129,30 @@ public class EndEntityProfileTest {
     @Test
     public void testUserFulfillEndEntityProfile() {
         EndEntityProfile profile = new EndEntityProfile();
-        // CommonName is allowed by default in an end entity profile
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        
+        // First an end entity without subjectDN. It's uncommon, but the RFC supports certificates with only altName and no subjectDN
+        // we need to unset the default required DN component in order to pass with empty DN
+        profile.setRequired(DnComponents.COMMONNAME,0,false); 
+        EndEntityInformation userdata = new EndEntityInformation("foo", "", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
+                123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_PEM, 0, null);
+        userdata.setPassword("foo123");
+        try {
+            // Should pass
+            profile.doesUserFulfillEndEntityProfile(userdata, false);
+        } catch (EndEntityProfileValidationException e) {
+            e.printStackTrace();
+            fail("En empty subjectDN should be OK when nothing is required: " + e.getMessage());
+        }
+        profile.setRequired(DnComponents.COMMONNAME,0,true); // restore defaults
+
+        // CommonName is allowed, and required, by default in an end entity profile
         profile.addField(EndEntityProfile.CARDNUMBER);
         profile.setRequired(EndEntityProfile.CARDNUMBER, 0, true);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
 
         // Test generic that required fields are required
-        EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
+        userdata = new EndEntityInformation("foo", "CN=foo", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         userdata.setPassword("foo123");

@@ -104,6 +104,18 @@ public class DnFieldExtractorTest {
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
      	illegal = extractor.isIllegal();
     	assertTrue(illegal);
+    	
+        // An empty subject DN string is not an illegal string, we want to handle that because
+    	// certificates, CSRs etc can be without a subjectDN, usually only with an altName in that case 
+        extractor = new DNFieldExtractor("null", DNFieldExtractor.TYPE_SUBJECTDN);
+        illegal = extractor.isIllegal();
+        assertFalse(illegal);
+        extractor = new DNFieldExtractor(null, DNFieldExtractor.TYPE_SUBJECTDN);
+        illegal = extractor.isIllegal();
+        assertFalse(illegal);
+        extractor = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDN);
+        illegal = extractor.isIllegal();
+        assertFalse(illegal);
     }
 
     /**
