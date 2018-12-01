@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -429,10 +430,12 @@ public class CrmfRequestMessageTest {
             ASN1Encodable pp = algId.getParameters();
             assertNotNull(pp);
             assertEquals(DERNull.class.getName(), pp.getClass().getName());
+            // Get the public key from the request
+            PublicKey pubKey = msg.getRequestPublicKey();
+            assertNotNull("We should have a public key in the request", pubKey);
             // Try to verify message protection
             // Does not work for this Huawei message, is it signed by the same key as in the request at all?
             // We will wait for another huawei message to test
-            //PublicKey pubKey = msg.getRequestPublicKey();
             //assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
 
             // Read the CertConf (certificate confirmation) CMP message that the client sends to
@@ -453,12 +456,54 @@ public class CrmfRequestMessageTest {
             // Try to verify message protection
             // Does not work for this Huawei message, is it signed by the same key as in the request at all?
             // We will wait for another huawei message to test
-            //PublicKey pubKey = msg.getRequestPublicKey();
             //assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
         } finally {
             in.close();
         }
     }
+
+    @Test
+    public void testBlueXIR() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+        // Read an initialization request to see that we can process it
+        ASN1InputStream in = new ASN1InputStream(bluexir);
+        try {
+            ASN1Primitive derObject = in.readObject();
+            PKIMessage req = PKIMessage.getInstance(derObject);
+            //log.info(req.toString());
+            CrmfRequestMessage msg = new CrmfRequestMessage(req, null, false, "CN");
+            // This message does not have an issuerDN in the cert template
+            assertNull(msg.getIssuerDN());
+            // Use a default CA instead
+            msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+            // Verifying POP does not work on this very old BlueX request, check that it fails
+            assertFalse(msg.verify());
+            assertEquals("CN=AdminCA1", msg.getIssuerDN());
+            assertEquals("CN=Some Common Name", msg.getRequestDN());
+            assertEquals("Some Common Name", msg.getUsername());
+            // We would like a password here...
+            assertNull(msg.getPassword());
+            AlgorithmIdentifier algId = msg.getMessage().getHeader().getProtectionAlg();
+            String oid = algId.getAlgorithm().getId();
+            assertEquals("1.2.840.113533.7.66.13", oid); // HMAC password based protection
+            // Get the public key from the request, this does not work either on this message, there is something wrong with the public key
+            try {
+                msg.getRequestPublicKey();
+                fail("We expect public key to be invalid in this very old BlueX message");
+            } catch (InvalidKeyException e) {
+                assertEquals("The message should be that the public key is", "Error decoding public key.", e.getMessage());
+            }
+        } finally {
+            in.close();
+        }
+    }
+
+    static byte[] bluexir = Base64.decode(("MIICIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"
+            + "IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz" + "dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"
+            + "AhoFAAICA+gwDAYIKwYBBQUIAQIFAKILBAlzc2xjbGllbnSkEgQQpFpBsonfhnW8" + "ia1otGchraUSBBAyzd3nkKAzcJqGFrDw0jkYoIIBLjCCASowggEmMIIBIAIBADCC"
+            + "ARmkJqARGA8yMDA2MDkxOTE2MTEyNlqhERgPMjAwOTA2MTUxNjExMjZapR0wGzEZ" + "MBcGA1UEAwwQU29tZSBDb21tb24gTmFtZaaBoDANBgkqhkiG9w0BAQEFAAOBjgAw"
+            + "gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/" + "Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"
+            + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
+            + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
 
     /** CMP initial request message, created with Huawei eNode B, with signature POP (no POPOSigningKey) and signature protection */
     static byte[] huaweiir = Base64.decode(("MIIRmTCB8gIBAqRuMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdp" +
