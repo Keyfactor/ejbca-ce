@@ -228,7 +228,7 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test03CrmfHttpOkUser() throws Exception {
         log.trace(">test03CrmfHttpOkUser");
         // Create a new good USER
-        X500Name userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
+        X500Name userDN = createCmpUser("cmptest", "foo123", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -265,7 +265,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         //
         // Try again, this time setting implicitConfirm in the header, expecting the server to reply with implicitConfirm as well
-        userDN = createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
+        userDN = createCmpUser("cmptest", "foo123", "C=SE,O=PrimeKey,CN=cmptest", true, this.caid, -1, -1);
         nonce = CmpMessageHelper.createSenderNonce();
         transid = CmpMessageHelper.createSenderNonce();
         DEROctetString keyId = new DEROctetString("primekey".getBytes());
@@ -290,14 +290,27 @@ public class CrmfRequestTest extends CmpTestCase {
         // An EE with a matching subject and clear text password set to "foo123" must exist for HMAC validation in this test.
         // foo123 is not the correct password however, so we will fail HMAC verification
         final String username = "Some Common Name";
-        super.createCmpUser(username, "CN=Some Common Name", false, this.caid, -1, -1);
-        byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
-        assertNotNull(resp);
-        // We used to make POP verification before checking the HMAC verification, but this changed in ECA-6276, and since
-        // we don't know the correct HMAC password for this request, the error message changed
-        //checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null); // expecting a bad_pop
-        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badRequest, null); // expecting a bad_pop
-        endEntityManagementSession.deleteUser(ADMIN, username);
+        try {
+            super.createCmpUser(username, "password", "CN=Some Common Name", false, this.caid, -1, -1);
+            byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
+            assertNotNull(resp);
+            // In this very old BlueX message, POP verification fails. 
+            // The HMAC password used to protect the request is 'password', which is set on the CMP user "Some Common Name" above
+            checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null); // expecting a bad_pop
+        } finally {
+            endEntityManagementSession.deleteUser(ADMIN, username);        	
+        }
+
+        try {
+            super.createCmpUser(username, "foo123", "CN=Some Common Name", false, this.caid, -1, -1);
+            byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
+            assertNotNull(resp);
+            // If we don't know the HMAC password, the below error will be instead
+            checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badRequest, null); // expecting a bad_pop
+        } finally {
+            endEntityManagementSession.deleteUser(ADMIN, username);         
+        }
+
         log.trace("<test04BlueXCrmf");
     }
 
@@ -364,7 +377,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Create a new good USER
         String cmpsntestUsername = "cmpsntest";
         String cmpsntest2Username = "cmpsntest2";
-        final X500Name userDN1 = createCmpUser(cmpsntestUsername, "C=SE,SN=12234567,CN=cmpsntest", true, this.caid, -1, -1);
+        final X500Name userDN1 = createCmpUser(cmpsntestUsername, "foo123", "C=SE,SN=12234567,CN=cmpsntest", true, this.caid, -1, -1);
 
         try {
             byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -395,7 +408,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Create another USER with the subjectDN serialnumber spelled "SERIALNUMBER" instead of "SN"
             KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
-            final X500Name userDN2 = createCmpUser(cmpsntest2Username, "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2", true, this.caid, -1, -1);
+            final X500Name userDN2 = createCmpUser(cmpsntest2Username, "foo123", "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2", true, this.caid, -1, -1);
             req = genCertReq(ISSUER_DN, userDN2, keys2, this.cacert, nonce, transid, false, null, null, null, null, null, null);
             assertNotNull(req);
             ir = (CertReqMessages) req.getBody().getContent();
@@ -452,7 +465,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // --------------- Send a CRMF request with the whole DN as username with escapable characters --------------- //
         final String sRequestName = "CN=another\0nullguy%00<do>";
         // Create a new good USER
-        final X500Name requestName = createCmpUser(sRequestName, sRequestName, false, this.caid, -1, -1);
+        final X500Name requestName = createCmpUser(sRequestName, "foo123", sRequestName, false, this.caid, -1, -1);
 
         try {
             PKIMessage req = genCertReq(ISSUER_DN, requestName, this.keys, this.cacert, nonce, transid, false, null, null, null, null, null, null);
@@ -492,7 +505,7 @@ public class CrmfRequestTest extends CmpTestCase {
         KeyPair key2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
         // Create a new good USER
-        final X500Name dn = createCmpUser(username, sDN, false, this.caid, -1, -1);
+        final X500Name dn = createCmpUser(username, "foo123", sDN, false, this.caid, -1, -1);
 
         try {
             PKIMessage req = genCertReq(ISSUER_DN, dn, key2, this.cacert, nonce, transid, false, null, null, null, null, null, null);
@@ -636,7 +649,7 @@ public class CrmfRequestTest extends CmpTestCase {
         final int cpID = certProfileSession.getCertificateProfileId(CP_DN_OVERRIDE_NAME);
         final int eepID = endEntityProfileSession.getEndEntityProfileId(EEP_DN_OVERRIDE_NAME);
         log.info("Using Certificate Profile with ID: "+cpID);
-        final X500Name userDN1 = createCmpUser(cmptestUsername, "C=SE,O=MemyselfandI,CN="+cmptestUsername, false, this.caid, eepID, cpID);
+        final X500Name userDN1 = createCmpUser(cmptestUsername, "foo123", "C=SE,O=MemyselfandI,CN="+cmptestUsername, false, this.caid, eepID, cpID);
         String fingerprint1 = null;
         String fingerprint2 = null;
         String fingerprint3 = null;
