@@ -1327,7 +1327,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	// get a DNFieldExtractor used to validate DN fields. Multi-value RDNs are "converted" into non-multi-value RDNs 
     	// just to re-use standard validation mechanisms. 
-    	// DNFieldextractor validates (during contruction) that only components valid for multi-value use are used.
+    	// DNFieldextractor validates (during construction) that only components valid for multi-value use are used.
     	final DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	if (subjectdnfields.isIllegal()) {
     		throw new EndEntityProfileValidationException("Subject DN is illegal.");
@@ -1489,7 +1489,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			}
     		}
     		if (!hardtokentypefound) {
-    			throw new EndEntityProfileValidationException("Couldn't find hard token issuers among available hard token issuers.");
+    			throw new EndEntityProfileValidationException("Couldn't find hard token issuer '"+hardwaretokenissueridString+"' among available hard token issuers.");
     		}
     	}
     	// Check if ca id is among available ca ids.
