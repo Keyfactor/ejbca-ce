@@ -16,18 +16,17 @@ package org.ejbca.core.protocol.cmp;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -220,21 +219,17 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
     @Test
     public void test03BlueXCrmf() throws Exception {
-        PKIMessage req = null;
-        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(bluexir));
-        try {
-            req = PKIMessage.getInstance(asn1InputStream.readObject());
-        } finally {
-            asn1InputStream.close();
-        }
         byte[] resp = sendCmpTcp(bluexir, 5);
         assertNotNull(resp);
-        byte[] senderNonce = req.getHeader().getSenderNonce().getOctets();
-        byte[] transId = req.getHeader().getTransactionID().getOctets();
-        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, senderNonce, transId, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
+        // On this (very old) request we can not decode the public key, so we will get an unprotected badRequest message back
+        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badRequest, null);
+        // If the message was ok, we could have verified it with the code below
+//        byte[] senderNonce = req.getHeader().getSenderNonce().getOctets();
+//        byte[] transId = req.getHeader().getTransactionID().getOctets();
+//        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+//        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+//        checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, senderNonce, transId, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+//        checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
     }
 
     @Test
@@ -253,7 +248,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badMessageCheck, "PKI Message is not athenticated properly. No HMAC protection was found.");
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badRequest, "PKI Message is not authenticated properly. No HMAC protection was found.");
     }
 
     @Test
@@ -273,7 +268,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badMessageCheck, "Could not create CmpPbeVerifyer. Protection algorithm id expected '1.2.840.113533.7.66.13' (passwordBasedMac) but was '1.2.840.113533.7.66.13.7'.");
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badRequest, "Protection algorithm id expected '1.2.840.113533.7.66.13' (passwordBasedMac) but was '1.2.840.113533.7.66.13.7'.");
     }
 
     /**

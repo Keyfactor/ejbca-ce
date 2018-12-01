@@ -1232,7 +1232,7 @@ public abstract class CmpTestCase extends CaTestCase {
         return user;
     }
     
-    protected X500Name createCmpUser(String username, String dn, boolean useDnOverride, int caid, int eeProfileID, int certificateProfileID)
+    protected X500Name createCmpUser(String username, String password, String dn, boolean useDnOverride, int caid, int eeProfileID, int certificateProfileID)
             throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, ApprovalException, CustomFieldException {
         // Make USER that we know...
@@ -1253,7 +1253,7 @@ public abstract class CmpTestCase extends CaTestCase {
         }
         final EndEntityInformation user = new EndEntityInformation(username, dn, caid, null, username + "@primekey.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), eepID, cpID, SecConst.TOKEN_SOFT_PEM, 0, null);
-        user.setPassword("foo123");
+        user.setPassword(password);
         log.debug("Trying to add/edit USER: " + user.getUsername() + ", foo123, " + userDN+", ");
         try {
             this.endEntityManagementSession.addUser(ADMIN, user, true);

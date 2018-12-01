@@ -201,7 +201,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), this.cacert, resp, true);
         int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
-        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+        assertEquals("Revocation reason should be 'unspecified'", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, reason);
 
     }
 
