@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 /**
  * 
- * JSF MBean backing the edit ca page.
+ * JSF MBean backing the displayresult xhtml page.
  *
  * @version $Id$
  */
