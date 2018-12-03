@@ -21,6 +21,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -129,8 +130,9 @@ public class CaHelper extends BaseHelper {
      * @param caName the name of the Certificate Profile
      */
     public void assertExists(final String caName) {
-        List<String> selectNames = getSelectNames(Page.SELECT_CA);
+        final List<String> selectNames = getSelectNames(Page.SELECT_CA);
         assertNotNull(caName + " was not found in the List of Certificate Authorities", selectNames);
+        assertTrue(caName + " was not found in the List of Certificate Authorities", selectNames.contains(caName + ", (Active)"));
     }
 
     /**
