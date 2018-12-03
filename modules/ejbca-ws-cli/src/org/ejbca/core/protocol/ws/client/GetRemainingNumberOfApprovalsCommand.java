@@ -21,7 +21,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Checks how many approvals are remaining to approva on an approval request
  *
- * @version $Id: RevokeCertCommand.java 28395 2018-02-27 14:19:00Z anatom $
+ * @version $Id$
  */
 public class GetRemainingNumberOfApprovalsCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
