@@ -205,7 +205,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSTest.class);
 
-    public final static String WS_ADMIN_ROLENAME = "WsTEstRole";
     public final static String WS_TEST_ROLENAME = "WsTestRoleMgmt";
     private final static String WS_TEST_CERTIFICATE_PROFILE_NAME = "WSTESTPROFILE"; 
     private static final String KEY_RECOVERY_EEP = "KEYRECOVERY";
@@ -298,21 +297,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
     }
 
-    private void setAccessRulesForWsAdmin(final List<String> resourcesAllowed, final List<String> resourcesDenied) throws AuthorizationDeniedException {
-        final Role role = roleSession.getRole(intAdmin, null, WS_ADMIN_ROLENAME);
-        assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", role);
-        role.getAccessRules().clear();
-        if (resourcesAllowed!=null) {
-            for (final String resource : resourcesAllowed) {
-                role.getAccessRules().put(resource, Role.STATE_ALLOW);
-            }
-        }
-        if (resourcesDenied!=null) {
-            for (final String resource : resourcesDenied) {
-                role.getAccessRules().put(resource, Role.STATE_DENY);
-            }
-        }
-    }
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
      * EJBCA Admin Web and verify returned security headers.
@@ -408,10 +392,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         super.editUser();
     }
 
-    @Test
-    public void test02FindUser() throws Exception {
-        findUser();
-    }
+   
 
     @Test
     public void test03_1GeneratePkcs10() throws Exception {
@@ -2539,27 +2520,28 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalConfiguration.setEnableEndEntityProfileLimitations(false);
         globalConfigurationSession.saveConfiguration(intAdmin, globalConfiguration);
+        String userName = "eeiDnOverride" + secureRandom.nextLong();
+        final UserDataVOWS userData = new UserDataVOWS();
+        userData.setUsername(userName);
+        userData.setPassword(PASSWORD);
+        userData.setClearPwd(true);
+        userData.setSubjectDN(requestedSubjectDN);
+        userData.setCaName(getAdminCAName());
+        userData.setEmail(null);
+        userData.setSubjectAltName(null);
+        userData.setStatus(EndEntityConstants.STATUS_NEW);
+        userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+        userData.setEndEntityProfileName("EMPTY");
+        userData.setCertificateProfileName(WS_TEST_CERTIFICATE_PROFILE_NAME);
+        final X509Certificate cert;
         try {
-            String userName = "eeiDnOverride" + secureRandom.nextLong();
-            final UserDataVOWS userData = new UserDataVOWS();
-            userData.setUsername(userName);
-            userData.setPassword(PASSWORD);
-            userData.setClearPwd(true);
-            userData.setSubjectDN(requestedSubjectDN);
-            userData.setCaName(getAdminCAName());
-            userData.setEmail(null);
-            userData.setSubjectAltName(null);
-            userData.setStatus(EndEntityConstants.STATUS_NEW);
-            userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
-            userData.setEndEntityProfileName("EMPTY");
-            userData.setCertificateProfileName(WS_TEST_CERTIFICATE_PROFILE_NAME);
-            final X509Certificate cert;
             if (useCsr) {
                 KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-                PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
-                        keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+                PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
+                        CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
                 final String csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
-                CertificateResponse response = ejbcaraws.certificateRequest(userData, csr, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+                CertificateResponse response = ejbcaraws.certificateRequest(userData, csr, CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
+                        CertificateHelper.RESPONSETYPE_CERTIFICATE);
                 cert = response.getCertificate();
             } else {
                 KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -2567,23 +2549,23 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 assertNotNull(keyStore);
                 Enumeration<String> en = keyStore.aliases();
                 String alias = en.nextElement();
-                if(!keyStore.isKeyEntry(alias)) {
+                if (!keyStore.isKeyEntry(alias)) {
                     alias = en.nextElement();
                 }
                 cert = (X509Certificate) keyStore.getCertificate(alias);
             }
-            final List<Certificate> certificates = Arrays.asList(new Certificate[] {cert});
+            final List<Certificate> certificates = Arrays.asList(new Certificate[] { cert });
             log.info(certificates.size() + " certs.\n" + new String(CertTools.getPemFromCertificateChain(certificates)));
             X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
             String resultingSubjectDN = CeSecoreNameStyle.INSTANCE.toString(x500name);
             log.debug("x500name:           " + resultingSubjectDN);
-            assertEquals("Unexpected transformation.", expectedSubjectDN, resultingSubjectDN);
+            assertEquals("Unexpected transformation.", expectedSubjectDN, resultingSubjectDN);     
+        } finally {
             try {
                 endEntityManagementSession.deleteUser(intAdmin, userName);
             } catch (NoSuchEndEntityException e) {
                 // Ignore
             }
-        } finally {
             if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
                 certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
             }

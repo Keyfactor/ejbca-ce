@@ -235,6 +235,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected static final String TEST_NONADMIN_CN = "CN="+TEST_NONADMIN_USERNAME;
     protected static final String PASSWORD = "foo123";
 
+    protected final static String WS_ADMIN_ROLENAME = "WsTestRole";
+
+    
     protected EjbcaWS ejbcaraws;
     /** Either ManagementCA or AdminCA1 */
     protected static String managementCaName;
@@ -265,9 +268,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private static final String BADCANAME = "BadCaName";
 
-    protected static final String CA1_WSTESTUSER1 = "CA1_WSTESTUSER1";
-    private static final String CA1_WSTESTUSER2 = "CA1_WSTESTUSER2";
-    private static final String CA2_WSTESTUSER1 = "CA2_WSTESTUSER1";
+    protected static final String CA1_WSTESTUSER1 = "CA1_WSTestUser1";
+    protected static final String CA1_WSTESTUSER2 = "CA1_WSTestUser2";
+    protected static final String CA2_WSTESTUSER1 = "CA2_WSTESTUser1";
     protected static final String CA1_WSTESTUSER1CVCRSA = "TstCVCRSA";
     protected static final String CA2_WSTESTUSER1CVCEC = "TstCVCEC";
     protected static final String CA1 = "CA1";
@@ -290,6 +293,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -321,6 +325,21 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             managementCaName = "AdminCA1";
         } else if(canames.contains("ManagementCA")) {
             managementCaName = "ManagementCA";
+        }
+    }
+    protected void setAccessRulesForWsAdmin(final List<String> resourcesAllowed, final List<String> resourcesDenied) throws AuthorizationDeniedException {
+        final Role role = roleSession.getRole(intAdmin, null, WS_ADMIN_ROLENAME);
+        assertNotNull("Role " + WS_ADMIN_ROLENAME + " does not exist!", role);
+        role.getAccessRules().clear();
+        if (resourcesAllowed!=null) {
+            for (final String resource : resourcesAllowed) {
+                role.getAccessRules().put(resource, Role.STATE_ALLOW);
+            }
+        }
+        if (resourcesDenied!=null) {
+            for (final String resource : resourcesDenied) {
+                role.getAccessRules().put(resource, Role.STATE_DENY);
+            }
         }
     }
 
@@ -357,7 +376,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
         InvalidKeySpecException, IOException, NoSuchEndEntityException, EndEntityProfileValidationException {
 
-        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         final CAInfo caInfo = CaTestUtils.getClientCertCaInfo(intAdmin);
         assertNotNull("No CA with name " + getAdminCAName() + " was found.", caInfo);
@@ -541,33 +559,34 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         return con;
     }
 
-    private void editUser(String userName, String caName) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
-            CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
-            WaitingForApprovalException_Exception, IllegalQueryException_Exception, EndEntityProfileNotFoundException_Exception {
-
+    protected void createUser(final String username, final String subjectDn, final String caName, final String endEntityProfileName, final String certificateProfileName)
+            throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception,
+            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
         // Test to add a user.
         final UserDataVOWS user = new UserDataVOWS();
-        user.setUsername(userName);
+        user.setUsername(username);
         user.setPassword(PASSWORD);
         user.setClearPwd(false);
-        user.setSubjectDN("CN=" + userName);
+        user.setSubjectDN(subjectDn);
         user.setCaName(caName);
         user.setEmail(null);
         user.setSubjectAltName(null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-        user.setEndEntityProfileName(WS_EEPROF_EI);
-        user.setCertificateProfileName(WS_CERTPROF_EI);
-
+        user.setEndEntityProfileName(endEntityProfileName);
+        user.setCertificateProfileName(certificateProfileName);
         List<ExtendedInformationWS> ei = new ArrayList<ExtendedInformationWS>();
         ei.add(new ExtendedInformationWS(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer
                 .toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)));
         ei.add(new ExtendedInformationWS(ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
-
         user.setExtendedInformation(ei);
-
         ejbcaraws.editUser(user);
-
+    }
+    
+    private void editUser(String userName, String caName) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
+            CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
+            WaitingForApprovalException_Exception, IllegalQueryException_Exception, EndEntityProfileNotFoundException_Exception {
+        createUser(userName, "CN="+userName, caName, WS_EEPROF_EI, WS_CERTPROF_EI);
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
@@ -653,6 +672,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdata2.getSubjectDN().equals(subjectDN));
     }
 
+    
+    
     protected void editUser() throws CADoesntExistsException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException, ApprovalException_Exception,
             AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception,
@@ -660,7 +681,27 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             CertificateProfileExistsException, EndEntityProfileNotFoundException_Exception {
         createTestCA(CA1);
         createTestCA(CA2);
-        // Create suitable EE prof
+        int certificateProfileId = createCertificateProfile(WS_CERTPROF_EI);
+        createEndEndtityProfile(WS_EEPROF_EI, certificateProfileId);
+        editUser(CA1_WSTESTUSER1, CA1);
+        editUser(CA1_WSTESTUSER2, CA1);
+        editUser(CA2_WSTESTUSER1, CA2);
+    }
+    
+    protected int createCertificateProfile(String profileName) throws AuthorizationDeniedException {
+        if ( this.certificateProfileSession.getCertificateProfileId(profileName)==0 ) {
+            final CertificateProfile certProfile = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
+            try {
+                this.certificateProfileSession.addCertificateProfile(intAdmin, profileName, certProfile);
+            } catch (CertificateProfileExistsException e) {
+                //NOPMD: Ignore
+            }
+        }
+        return certificateProfileSession.getCertificateProfileId(profileName);
+    }
+    
+    protected void createEndEndtityProfile(String profileName, int certificateProfileId) throws  AuthorizationDeniedException {
+     // Create suitable EE prof
         try {
             EndEntityProfile profile = new EndEntityProfile();
             profile.addField(DnComponents.ORGANIZATION);
@@ -673,97 +714,14 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
             profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, false); // not allowing clear text password is the most common option
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
-            profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-            if ( this.certificateProfileSession.getCertificateProfileId(WS_CERTPROF_EI)==0 ) {
-                final CertificateProfile certProfile = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
-                this.certificateProfileSession.addCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
-            }
-            final int cpid = CommonEjbcaWS.this.certificateProfileSession.getCertificateProfileId(WS_CERTPROF_EI);
-            profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cpid));
-            if (this.endEntityProfileSession.getEndEntityProfile(WS_EEPROF_EI) == null) {
-                this.endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
+            profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);         
+            profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileId));
+            if (this.endEntityProfileSession.getEndEntityProfile(profileName) == null) {
+                this.endEntityProfileSession.addEndEntityProfile(intAdmin, profileName, profile);
             }
         } catch (EndEntityProfileExistsException pee) {
             log.error("Error creating end entity profile: ", pee);
-            fail("Can not create end entity profile");
-        }
-        editUser(CA1_WSTESTUSER1, CA1);
-        editUser(CA1_WSTESTUSER2, CA1);
-        editUser(CA2_WSTESTUSER1, CA2);
-    }
-
-    protected void findUser() throws Exception {
-
-        {// Nonexisting users should return null
-            final UserMatch usermatch = new UserMatch();
-            usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
-            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-            usermatch.setMatchvalue("noneExsisting");
-            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertNotNull(userdatas != null);
-            assertEquals(0, userdatas.size());
-        }
-        {// Find an exising user
-            final UserMatch usermatch = new UserMatch();
-            usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
-            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-            usermatch.setMatchvalue(CA1_WSTESTUSER1);
-
-            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertNotNull(userdatas);
-            assertEquals(1, userdatas.size());
-        }
-        {// Find by O
-            final UserMatch usermatch = new UserMatch();
-            usermatch.setMatchwith(UserMatch.MATCH_WITH_ORGANIZATION);
-            usermatch.setMatchtype(UserMatch.MATCH_TYPE_BEGINSWITH);
-            usermatch.setMatchvalue("2Te");
-            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertNotNull(userdatas);
-            assertEquals(1, userdatas.size());
-            assertTrue(userdatas.get(0).getSubjectDN().equals(getDN(CA1_WSTESTUSER2)));
-        }
-        {// Find by subjectDN pattern
-            final UserMatch usermatch = new UserMatch();
-            usermatch.setMatchwith(UserMatch.MATCH_WITH_DN);
-            usermatch.setMatchtype(UserMatch.MATCH_TYPE_CONTAINS);
-            usermatch.setMatchvalue(CA1_WSTESTUSER1);
-            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertNotNull(userdatas);
-            assertEquals(1, userdatas.size());
-            assertEquals(getDN(CA1_WSTESTUSER1), userdatas.get(0).getSubjectDN());
-        }{
-            final UserMatch usermatch = new UserMatch();
-            usermatch.setMatchwith(UserMatch.MATCH_WITH_ENDENTITYPROFILE);
-            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-            usermatch.setMatchvalue(WS_EEPROF_EI);
-            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertNotNull(userdatas);
-            assertEquals("not right number of users from end entity profile match.", 3, userdatas.size());
-        }{
-            final UserMatch usermatch = new UserMatch();
-            usermatch.setMatchwith(UserMatch.MATCH_WITH_CERTIFICATEPROFILE);
-            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-            usermatch.setMatchvalue(WS_CERTPROF_EI);
-            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertNotNull(userdatas);
-            assertEquals("not right number of users from certificate profile match.", 3, userdatas.size());
-        }{
-            final UserMatch usermatch = new UserMatch();
-            usermatch.setMatchwith(UserMatch.MATCH_WITH_CA);
-            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-            usermatch.setMatchvalue(CA1);
-            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertTrue(userdatas != null);
-            assertEquals("not right number of users from CA match.", 2, userdatas.size());
-        }{
-            final UserMatch usermatch = new UserMatch();
-            usermatch.setMatchwith(UserMatch.MATCH_WITH_TOKEN);
-            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-            usermatch.setMatchvalue(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-            assertTrue(userdatas != null);
-            assertTrue(userdatas.size() > 0);
+            throw new IllegalStateException("Can not create end entity profile");
         }
     }
 
