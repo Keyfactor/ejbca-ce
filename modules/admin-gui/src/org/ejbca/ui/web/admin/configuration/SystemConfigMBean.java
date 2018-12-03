@@ -36,6 +36,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
@@ -87,6 +89,8 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  *
  * @version $Id$
  */
+@ManagedBean
+@SessionScoped
 public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -6653610614851741905L;
