@@ -204,7 +204,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CAExistsException
      */
     public static boolean createTestCA(String caName) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
-            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         return createTestCA(caName, 1024);
     }
 
@@ -220,7 +220,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CAExistsException
      */
     public static boolean createTestCA(String caName, int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException,
-            CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+            CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         return createTestCA(caName, keyStrength, "CN=" + caName, CAInfo.SELFSIGNED, null);
     }
 
@@ -244,7 +244,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      */
     public static boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
-            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+            CryptoTokenAuthenticationFailedException {
         log.trace(">createTestCA("+caName+", "+dn+")");
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -283,7 +283,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                         : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "3650d", signedBy, certificateChain, catoken);
         cainfo.setDescription("JUnit RSA CA");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
-        caAdminSession.createCA(internalAdmin, cainfo);
+        try {
+            caAdminSession.createCA(internalAdmin, cainfo);
+        } catch (InvalidAlgorithmException e) {
+            throw new IllegalArgumentException("Could not create CA.", e);
+        }
         final CAInfo info = caSession.getCAInfo(internalAdmin, caName);
         final String normalizedDN = CertTools.stringToBCDNString(dn);
         final X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
