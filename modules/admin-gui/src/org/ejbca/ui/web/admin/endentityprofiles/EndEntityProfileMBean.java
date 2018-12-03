@@ -320,7 +320,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        profiledata.setUse(EndEntityProfile.EMAIL,0, use);
    }
    
-   // ugly... btw, use getEmail() OR emailDomain... 
+   // this is probably not correct... 
    public String getEmail() {
        String str = "";
        if (profiledata.getValue(EndEntityProfile.EMAIL,0) != null && isUseEmail()) {
@@ -717,23 +717,37 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            /*if (EndEntityProfile.isFieldImplemented(subjectAltName)) {
                setCurrentSubjectAltNameTypes(subjectAltName);
            } */   
-           subjectDirectoryAttributesReturned.add(new SelectItem(subjectDirectoryAttributeNr, subjectDirectoryAttributeReturned ));
+           //subjectDirectoryAttributesReturned.add(new SelectItem(subjectDirectoryAttributeNr, subjectDirectoryAttributeReturned ));
+           subjectDirectoryAttributesReturned.add(new SelectItem(subjectDirectoryAttributeReturned, subjectDirectoryAttributeReturned ));
        }
        return subjectDirectoryAttributesReturned;
    }
    
-   // temp
+   private String currentSubjectDirectoryAttribute;
+   private String addedSubjectDirectoryAttribute;
+   private boolean isSubjectDirectoryAttributeAdded = false;
+   
+   // Using a saved list of additions that is appended to existing components is temporary solution 
+   private List<String> subjectDirectoryAttributeAdditions = new ArrayList<String>();
+      
+   public String addSubjectDirectoryAttribute() {
+       addedSubjectDirectoryAttribute = new String(currentSubjectDirectoryAttribute); // I need to fetch the value from the selected component here instead...
+       subjectDirectoryAttributeAdditions.add(addedSubjectDirectoryAttribute);
+       isSubjectDirectoryAttributeAdded = true;
+       return "";// remove
+   }
+      
+   // 
    public String getCurrentSubjectDirectoryAttribute() {
-       return "TEMPVALUE";
+       return currentSubjectDirectoryAttribute;
    }
    
-   // temp...
-   public void setCurrentSubjectDirectoryAttribute(String sda) { 
-       String TEMPattribute = sda ;
-       TEMPattribute = TEMPattribute + "";
+   // 
+   public void setCurrentSubjectDirectoryAttribute(String subjectDirectoryAttribute) { 
+       currentSubjectDirectoryAttribute = subjectDirectoryAttribute;
    }
    
-   // ...
+   // 
    public String getSubjectDirectoryAttributeValue() {
        String value = "";
        int [] fielddata = null;
@@ -760,6 +774,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            int[] temp;
            temp = iterator.next();
            components.add(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE]))); 
+       }
+       if (isSubjectDirectoryAttributeAdded) {
+           Iterator<String> addedSubjectDirectoryAttributeComponentIterator = subjectDirectoryAttributeAdditions.iterator();
+           while(addedSubjectDirectoryAttributeComponentIterator.hasNext()) {
+               String temp = new String(addedSubjectDirectoryAttributeComponentIterator.next());
+               components.add(temp);
+           }
+           isSubjectDirectoryAttributeAdded = false;
        }
        return components;
    }
@@ -1244,7 +1266,29 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    }
    
    public List<UserNotification> getNotifications() {
-       return profiledata.getUserNotifications();
+       List<UserNotification> returnedNotifications = new ArrayList<UserNotification>();
+       returnedNotifications = profiledata.getUserNotifications();
+       if (notificationAdded) {
+           Iterator<UserNotification> notificationIterator = notificationAdditions.iterator() ;
+           while(notificationIterator.hasNext()) {
+               returnedNotifications.add(notificationIterator.next());
+           }
+           notificationAdded = false;
+       }
+       return returnedNotifications;
+       //return profiledata.getUserNotifications();
+   }
+   
+   private boolean notificationAdded = false;
+   
+// Using a saved notification list and appended to existing is temporary solution 
+   private List<UserNotification> notificationAdditions = new ArrayList<UserNotification>();
+   
+   public void addNotification() {
+       UserNotification newNotification = new UserNotification();
+       //profiledata.addUserNotification(newNotification);
+       notificationAdditions.add(newNotification);
+       notificationAdded = true;
    }
    
    // EXPERIMENTAL
@@ -1261,6 +1305,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        return allEvents;
    }
    
+   private Collection<SelectItem> currentUserNotificationEvents;
+   
    public Collection<String> getCurrentNotificationEvents() {
        Collection<String> userNotificationEventStrings = new ArrayList<String>();
        Iterator<String> eventIterator = notification.getNotificationEventsCollection().iterator();
@@ -1272,7 +1318,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        return userNotificationEventStrings;
     }
    
-   private Collection<SelectItem> currentUserNotificationEvents;
+   
    
    public void setCurrentNotificationEvents(Collection<SelectItem> currentEvents) {
        currentUserNotificationEvents = currentEvents;
@@ -1407,6 +1453,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        }else {
            return currentTemplate;
        }
+   }
+   
+   public void uploadTemplate() {
+       
    }
    
    
