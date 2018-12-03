@@ -569,6 +569,34 @@ public class BaseHelper {
     }
 
     /**
+     * Returns the list of possible names for the non-null select.
+     *
+     * @param selectId locator.
+     * @return the list of names or null.
+     */
+    protected List<String> getSelectNames(final By selectId) {
+        return getSelectNames(findElement(selectId));
+    }
+
+    /**
+     * Returns the list of possible names for the non-null select.
+     *
+     * @param webElement non-null web element.
+     * @return the list of names or null.
+     */
+    protected List<String> getSelectNames(final WebElement webElement) {
+        if (webElement != null) {
+            final List<String> selectNames = new ArrayList<>();
+            final Select select = new Select(webElement);
+            for (final WebElement selectOptionWebElement : select.getOptions()) {
+                selectNames.add(selectOptionWebElement.getText());
+            }
+            return selectNames;
+        }
+        return null;
+    }
+
+    /**
      * Returns the list of selected names for the non-null select.
      *
      * @param selectId locator.
