@@ -463,10 +463,11 @@
 				</h:panelGroup>
 				<h:panelGrid id="subjectDirectoryAttributeTypeGrid" columns="2">
 					<h:selectOneMenu id="subjectDirectoryAttributeType" value="#{endEntityProfileMBean.currentSubjectDirectoryAttribute}" disabled="#{endEntityProfilesMBean.viewOnly}">
+						<f:ajax/> <!-- SUBMITTING ITEM SELECTED -->
 						<f:selectItems id="subjectDirectoryAttributeTypeList" value="#{endEntityProfileMBean.subjectDirectoryAttributes}"/> 
 					</h:selectOneMenu>
-				    <h:commandButton id="addSubjectDirectoryAttributeTypeButton" value="#{web.text.ADD}">
-						<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+				    <h:commandButton id="addSubjectDirectoryAttributeTypeButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectDirectoryAttribute}">
+						<f:ajax render="@form"/> <!-- CHANGE TO SOMETHING USEFUL    :eeProfiles:header_othersubjectattributes maybe --> 
 					</h:commandButton>
 				</h:panelGrid>
 				
@@ -925,8 +926,8 @@
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.REQUIRED}"/>	
-					<h:commandButton id="addButton" value="#{web.text.ADD}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
-					<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+					<h:commandButton id="addButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addNotification}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
+						<f:ajax render="@form"/> <!-- CHANGE TO SOMETHING USEFUL --> 
 					</h:commandButton>
 				</h:panelGrid>
 				
@@ -989,6 +990,7 @@
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
 					 </h:inputTextarea>
 				</c:forEach>
+				
 				<!-- c:forEach -->
 				
 				<h:panelGrid id="printingGrid1" columns="1" width="100%" columnClasses="gridColumnBottom">
@@ -1039,6 +1041,7 @@
 				    <h:selectOneMenu id="printerMenu" value="#{endEntityProfileMBean.currentPrinter}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}">
 						<f:selectItems id="printerList" value="#{endEntityProfileMBean.printers}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}"/>
 					</h:selectOneMenu>
+					
 					<h:selectOneMenu id="printedCopiesMenu" value="#{endEntityProfileMBean.currentNumberCopies}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}">
 						<f:selectItems id="printedCopiesNumberList" value="#{endEntityProfileMBean.numberOfCopies}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}"/>
 					</h:selectOneMenu>
