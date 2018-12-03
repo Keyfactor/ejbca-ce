@@ -206,7 +206,6 @@ public class CrmfRequestMessageTest {
         try {
             ASN1Primitive derObject = in.readObject();
             PKIMessage req = PKIMessage.getInstance(derObject);
-            //log.info(req.toString());
             // Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
             CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
             assertFalse(msg.verify());
@@ -247,7 +246,6 @@ public class CrmfRequestMessageTest {
     		try {
     		ASN1Primitive derObject = in.readObject();
     		PKIMessage req = PKIMessage.getInstance(derObject);
-    		//log.info(req.toString());
     		// Verify should be ok if we do not allow RA verify POP here
     		CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
     		assertTrue(msg.verify());
@@ -336,7 +334,6 @@ public class CrmfRequestMessageTest {
         try {
             ASN1Primitive derObject = in.readObject();
             PKIMessage req = PKIMessage.getInstance(derObject);
-            //log.info(req.toString());
             // Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
             CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
             assertFalse(msg.verify());
@@ -378,7 +375,6 @@ public class CrmfRequestMessageTest {
         try {
             ASN1Primitive derObject = in.readObject();
             PKIMessage req = PKIMessage.getInstance(derObject);
-            //log.info(req.toString());
             // Verify should be ok if we do not allow RA verify POP here
             CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
             // BC messages in BC1.46 uses POPOSigningKeyInput for POPO, not the 3rd case in RFC4211 section 4.1, like everyone else...
@@ -411,7 +407,6 @@ public class CrmfRequestMessageTest {
         try {
             ASN1Primitive derObject = in.readObject();
             PKIMessage req = PKIMessage.getInstance(derObject);
-            //log.info(req.toString());
             CrmfRequestMessage msg = new CrmfRequestMessage(req, null, false, "CN");
             // This message does not have an issuerDN in the cert template
             assertNull(msg.getIssuerDN());
@@ -444,7 +439,6 @@ public class CrmfRequestMessageTest {
             in = new ASN1InputStream(huaweicertconf);
             derObject = in.readObject();
             PKIMessage certconf = PKIMessage.getInstance(derObject);
-            //log.info(certconf.toString());
             GeneralCmpMessage conf = new GeneralCmpMessage(certconf);
             algId = conf.getMessage().getHeader().getProtectionAlg();
             oid = algId.getAlgorithm().getId();
@@ -469,7 +463,6 @@ public class CrmfRequestMessageTest {
         try {
             ASN1Primitive derObject = in.readObject();
             PKIMessage req = PKIMessage.getInstance(derObject);
-            //log.info(req.toString());
             CrmfRequestMessage msg = new CrmfRequestMessage(req, null, false, "CN");
             // This message does not have an issuerDN in the cert template
             assertNull(msg.getIssuerDN());
