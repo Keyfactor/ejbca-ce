@@ -55,6 +55,7 @@ public class Role extends UpgradeableDataHashMap implements Comparable<Role> {
         this.roleId = role.roleId;
         this.nameSpace = role.nameSpace;
         this.roleName = role.roleName;
+        setStyleId(role.getStyleId());
         getAccessRules().putAll(role.getAccessRules());
     }
 
