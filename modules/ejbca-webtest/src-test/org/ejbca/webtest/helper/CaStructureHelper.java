@@ -22,7 +22,7 @@ import static org.junit.Assert.fail;
 
 /**
  * 'CA Structure & CRLs' helper class for EJBCA Web Tests.
- * @version $Id: CaStructureHelper.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id: CStructureHelper.java 25797 2018-08-10 15:52:00Z jekaterina $
  */
 public class CaStructureHelper extends BaseHelper {
 
