@@ -129,11 +129,15 @@ public class HttpMethodsTest {
         assertNotNull("Admin web error page should return content-security-policy header", csp);
         assertNotNull("Admin web error page should return x-content-security-policy header", xcsp);
         assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", xframe);
-        assertEquals("Admin web error page should return csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", csp);
-        assertEquals("Admin web error page should return x-csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", xcsp);
+        assertEquals("Admin web error page should return csp " + 
+            "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", 
+            "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", csp);
+        assertEquals("Admin web error page should return x-csp " + 
+            "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", 
+            "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block", xcsp);
     }
 
-    /** Test the ra-gui.war module that it returns X-FRAME-OPTIONS and CSP headers on the error page (unathenticated). */
+    /** Test the ra-gui.war module that it returns X-FRAME-OPTIONS and CSP headers on the error page (unauthenticated). */
     @Test
     public void testRAWebXFrameOptionsOnError() throws Exception {
         // Check for X-FRAME-OPTIONS headers
