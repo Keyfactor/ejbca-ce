@@ -151,15 +151,6 @@ public class CaErrorBean extends BaseManagedBean implements Serializable {
                     break;
             }
         }
-        addSecurityHeaders();
-    }
-    
-    private void addSecurityHeaders() {
-        final HttpServletResponse response = (HttpServletResponse) FacesContext
-                .getCurrentInstance().getExternalContext().getResponse();
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
-        response.addHeader("x-content-security-policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block" );
     }
 }
 
