@@ -20,6 +20,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -86,6 +87,7 @@ public class CaHelper extends BaseHelper {
      */
     public void edit(final String caName) {
         try {
+         //  TODO ECA-7343 Use BaseHelper.selectOptionByName(final By selectId, final String selectionOption)
             Select caList = new Select(findElement(Page.SELECT_CA));
             caList.selectByVisibleText(caName + ", (Active)");
         } catch (NoSuchElementException e) {
@@ -108,9 +110,6 @@ public class CaHelper extends BaseHelper {
      * @param subjectDn the Subject DN to set
      */
     public void setSubjectDn(final String subjectDn) {
-        WebElement dnInput = webDriver.findElement(Page.INPUT_SUBJECT_DN);
-        dnInput.clear();
-        dnInput.sendKeys(subjectDn);
         fillInput(Page.INPUT_SUBJECT_DN, subjectDn);
     }
     
@@ -130,12 +129,8 @@ public class CaHelper extends BaseHelper {
      * @param caName the name of the Certificate Profile
      */
     public void assertExists(final String caName) {
-        try {
-            Select caList = new Select(findElement(Page.SELECT_CA));
-            caList.selectByVisibleText(caName + ", (Active)");
-        } catch (NoSuchElementException e) {
-            fail(caName + " was not found in the List of Certificate Authorities");
-        }
+        List<String> selectNames = getSelectNames(Page.SELECT_CA);
+        assertNotNull(caName + " was not found in the List of Certificate Authorities", selectNames);
     }
 
     /**
