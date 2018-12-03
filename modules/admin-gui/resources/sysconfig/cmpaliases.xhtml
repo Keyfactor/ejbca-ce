@@ -36,7 +36,7 @@
 			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
 		</h1>
 		
-        <h:form>
+        <h:form id="cmpaliasesform">
             <h:panelGrid rendered="#{!cmpConfigMBean.deleteInProgress}">
                 <h:panelGrid styleClass="list" columns="1" columnClasses="listColumn1">
                     <h:panelGroup>
@@ -46,7 +46,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup>
-                        <h:selectOneListbox styleClass="select-list" name="selectcmpalias" value="#{cmpConfigMBean.selectedCmpAlias}" style="width: 55em" size="15">
+                        <h:selectOneListbox id="selectaliaslist" styleClass="select-list" name="selectcmpalias" value="#{cmpConfigMBean.selectedCmpAlias}" style="width: 55em" size="15">
                             <f:selectItems value="#{cmpConfigMBean.cmpAliasSelectItems}"/>
                         </h:selectOneListbox>
                     </h:panelGroup>
