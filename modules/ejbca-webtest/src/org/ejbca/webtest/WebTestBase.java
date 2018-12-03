@@ -23,11 +23,13 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -186,7 +188,7 @@ public abstract class WebTestBase {
     }
 
     /**
-     * Removes the CA EJB instance.
+     * Removes the CA using EJB instance.
      *
      * @param caName CA name.
      *
@@ -200,6 +202,20 @@ public abstract class WebTestBase {
         }
     }
 
+    /**
+     * Removes the CMP alias (configuration) using EJB instance.
+     * 
+     * @param alias CMP alias to remove
+     * 
+     * @throws AuthorizationDeniedException in case of authorization problem.
+     */
+    protected static void removeCmpAliasByName(final String alias) throws AuthorizationDeniedException {
+        final GlobalConfigurationSessionRemote globalConfigRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigRemote.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        cmpConfiguration.removeAlias(alias);
+        globalConfigRemote.saveConfiguration(ADMIN_TOKEN, cmpConfiguration);
+    }
+    
     /**
      * Removes the CryptoToken associated with CA using EJB instance.
      *

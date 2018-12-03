@@ -12,41 +12,47 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.fail;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.CmpConfigurationHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.Select;
 
 /**
+ * This test attempts renaming of a CMP alias in the AdminGUI
  * 
  * @version $Id: EcaQa24_RenameCmpAlias.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa24_RenameCmpAlias extends WebTestBase {
 
-    private static final String cmpAlias = "EcaQa24CmpAlias";
-    private static final String cmpAliasRenamed = "EcaQa24CmpAliasNew";
-    private static WebDriver webDriver;
+    // Helpers
+    private static CmpConfigurationHelper cmpConfigHelper;
     
+    public static class TestData {
+        static final String cmpAlias = "EcaQa24CmpAlias";
+        static final String cmpAliasRenamed = "EcaQa24CmpAliasNew";
+    }
     
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
-        webDriver = getWebDriver();
+        final WebDriver webDriver = getWebDriver();
+        cmpConfigHelper = new CmpConfigurationHelper(webDriver);
     }
     
     @AfterClass
-    public static void exit() {
-        webDriver.close();
+    public static void exit() throws AuthorizationDeniedException {
+        // Remove generated test data
+        removeCmpAliasByName(TestData.cmpAlias);
+        removeCmpAliasByName(TestData.cmpAliasRenamed);
+        // super
+        afterClass();
     }
     
     /**
@@ -54,29 +60,14 @@ public class EcaQa24_RenameCmpAlias extends WebTestBase {
      */
     @Test
     public void testA_createCmpAlias() {
-        webDriver.get(getAdminWebUrl());
-        webDriver.findElement(By.xpath("//li/a[contains(@href,'cmpconfiguration.jsp')]")).click();
-        webDriver.findElement(By.xpath("//input[@name='textfieldalias']")).sendKeys(cmpAlias);
-        webDriver.findElement(By.xpath("//input[@name='buttonaliasadd']")).click();
+        cmpConfigHelper.openPage(getAdminWebUrl());
+        cmpConfigHelper.addCmpAlias(TestData.cmpAlias);
     }
     
     @Test
     public void testB_renameCmpAlias() {
-        Select selectAliasFromList = new Select(webDriver.findElement(By.xpath("//select[@name='selectaliases']")));
-        selectAliasFromList.selectByVisibleText(cmpAlias);
-        webDriver.findElement(By.xpath("//input[@name='textfieldalias']")).sendKeys(cmpAliasRenamed);
-        webDriver.findElement(By.xpath("//input[@name='buttonaliasrename']")).click();
-        
-        selectAliasFromList = new Select(webDriver.findElement(By.xpath("//select[@name='selectaliases']")));
-        try {
-            selectAliasFromList.selectByVisibleText(cmpAliasRenamed);
-        } catch (NoSuchElementException e) {
-            fail("Could not find the renamed CMP Alias in the list of aliases");
-        } finally {
-            // Delete the alias
-            webDriver.findElement(By.xpath("//input[@name='buttondeletealias']")).click();
-            Alert alert = webDriver.switchTo().alert();
-            alert.accept();
-        }
+        cmpConfigHelper.assertCmpAliasExists(TestData.cmpAlias);
+        cmpConfigHelper.renameCmpAlias(TestData.cmpAlias, TestData.cmpAliasRenamed);
+        cmpConfigHelper.assertCmpAliasExists(TestData.cmpAliasRenamed);
     }
 }
