@@ -223,13 +223,6 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         assertNotNull(resp);
         // On this (very old) request we can not decode the public key, so we will get an unprotected badRequest message back
         checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badRequest, null);
-        // If the message was ok, we could have verified it with the code below
-//        byte[] senderNonce = req.getHeader().getSenderNonce().getOctets();
-//        byte[] transId = req.getHeader().getTransactionID().getOctets();
-//        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
-//        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-//        checkCmpResponseGeneral(resp, issuerDN, userDN, this.cacert, senderNonce, transId, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-//        checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
     }
 
     @Test
