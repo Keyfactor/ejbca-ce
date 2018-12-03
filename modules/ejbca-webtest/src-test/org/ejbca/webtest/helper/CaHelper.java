@@ -25,7 +25,7 @@ import static org.junit.Assert.fail;
 /**
  * 'Certificate Authorities' helper class for EJBCA Web Tests.
  * 
- * @version $Id: CaHelper.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 public class CaHelper extends BaseHelper {
 
