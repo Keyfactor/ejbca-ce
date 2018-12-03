@@ -25,6 +25,9 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.ListDataModel;
@@ -44,6 +47,8 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * @version $Id$
  *
  */
+@ManagedBean
+@SessionScoped
 public class CustomCertExtensionMBean extends BaseManagedBean implements Serializable {
     
     private static final long serialVersionUID = 1L;
@@ -201,8 +206,7 @@ public class CustomCertExtensionMBean extends BaseManagedBean implements Seriali
         
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     
-    // Declarations in faces-config.xml
-    //@javax.faces.bean.ManagedProperty(value="#{systemConfigMBean}")
+    @ManagedProperty(value="#{systemConfigMBean}")
     private SystemConfigMBean systemConfigMBean;
     
     private AvailableCustomCertificateExtensionsConfiguration availableExtensionsConfig = null;
