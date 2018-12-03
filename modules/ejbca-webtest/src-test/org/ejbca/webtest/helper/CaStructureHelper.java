@@ -14,15 +14,13 @@ package org.ejbca.webtest.helper;
 
 import org.apache.commons.lang.StringUtils;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * 'CA Structure & CRLs' helper class for EJBCA Web Tests.
- * @version $Id: CStructureHelper.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 public class CaStructureHelper extends BaseHelper {
 
