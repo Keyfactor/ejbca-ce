@@ -214,6 +214,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
 
     private void reset() {
         estAliasGui = null;
+        getEjbcaWebBean().clearEstConfigClone();
         estConfigMBean.actionCancel();
     }
 
