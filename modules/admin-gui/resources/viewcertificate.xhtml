@@ -117,17 +117,17 @@
                 </h:panelGroup>
                 
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_SUBJECTALTNAME}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.subjectAltName}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_SUBJECTDIRATTRS}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.subjectDirAttributes}"/>
                 </h:panelGroup>
                 
@@ -141,52 +141,52 @@
             </h:panelGrid>    
             <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 
-                <h:panelGroup>
-                    <h:outputLabel value="#{web.text.EXT_ABBR_BASICCONSTRAINTS}" styleClass="title"/>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
+                    <strong><h:outputLabel value="#{web.text.EXT_ABBR_BASICCONSTRAINTS}" styleClass="title"/></strong>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <strong><h:outputLabel value="#{viewCertificateMBean.basicConstraints}"/></strong>
                 </h:panelGroup>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_KEYUSAGE}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.keyUsage}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_EXTENDEDKEYUSAGE}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.extendedKeyUsage}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_NAMECONSTRAINTS}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.hasNameConstraints ? web.text.YES : web.text.NO}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_AUTHORITYINFOACCESS}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.authorityInfoAccess}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_QCSTATEMENTS}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.qcStatement ? web.text.YES : web.text.NO}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_CERTIFICATE_TRANSPARENCY_SCTS}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.certificateTransparencySCTs ? web.text.YES : web.text.NO}"/>
                 </h:panelGroup>
                 
