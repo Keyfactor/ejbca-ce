@@ -546,13 +546,13 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     private void assertRequestValid() {
         if (noparameter) {
-            ejbcaBean.getText("YOUMUSTSPECIFYCERT");
+            addErrorMessage("YOUMUSTSPECIFYCERT");
         } else if (notauthorized) {
-            ejbcaBean.getText("NOTAUTHORIZEDTOVIEWCERT");
+            addErrorMessage("NOTAUTHORIZEDTOVIEWCERT");
         } else if (certificateData == null) {
-            ejbcaBean.getText("CERTIFICATEDOESNTEXIST");
+            addErrorMessage("CERTIFICATEDOESNTEXIST");
         } else if (message != null) {
-            ejbcaBean.getText(message);
+            addErrorMessage(message);
         }
     }
     
@@ -572,6 +572,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return caId;
     }
     
+    public String getUserName() {
+        return userName;
+    }
+
     public String getTokenSn() {
         return tokenSn;
     }
