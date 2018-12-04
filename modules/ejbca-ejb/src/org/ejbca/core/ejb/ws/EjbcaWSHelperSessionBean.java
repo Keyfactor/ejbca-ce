@@ -140,13 +140,10 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    
-    private final String[] softtokennames = { UserDataVOWS.TOKEN_TYPE_USERGENERATED,UserDataVOWS.TOKEN_TYPE_P12,
-                                              UserDataVOWS.TOKEN_TYPE_JKS,UserDataVOWS.TOKEN_TYPE_PEM };
-    private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN,
-            SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM };
-    
-    
+    private final String[] softtokennames = { UserDataVOWS.TOKEN_TYPE_USERGENERATED, UserDataVOWS.TOKEN_TYPE_P12, UserDataVOWS.TOKEN_TYPE_JKS,
+            UserDataVOWS.TOKEN_TYPE_PEM };
+    private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM };
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert) throws AuthorizationDeniedException {
@@ -155,92 +152,106 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         final AuthenticationToken admin = authenticationSession.authenticate(subject);
         if ((admin != null) && (!allowNonAdmins)) {
-            if(!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+            if (!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
                 final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
                 throw new AuthorizationDeniedException(msg);
             }
         } else if (admin == null) {
-            final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " +CertTools.getSerialNumber(cert)+" and issuerDN '"+CertTools.getIssuerDN(cert)+"'.");
+            final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber "
+                    + CertTools.getSerialNumber(cert) + " and issuerDN '" + CertTools.getIssuerDN(cert) + "'.");
             throw new AuthorizationDeniedException(msg);
         }
         return admin;
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) // authentication failure should not force a rollback
-	@Override
-	public void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
-		if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
-            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
-	        throw new AuthorizationDeniedException(msg);
-		}
-		EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
-		if (userdata == null){
-		    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-			String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
-			throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
-		}
-		if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_END_ENTITY)) {
-            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_END_ENTITY, null);
-	        throw new AuthorizationDeniedException(msg);
-		}
-		if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid )){
+    @Override
+    public void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
+        if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+                    null);
+            throw new AuthorizationDeniedException(msg);
+        }
+        EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
+        if (userdata == null) {
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
+        }
+        if (!authorizationSession.isAuthorizedNoLogging(admin,
+                AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_END_ENTITY)) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource",
+                    AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_END_ENTITY, null);
+            throw new AuthorizationDeniedException(msg);
+        }
+        if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid)) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
-	        throw new AuthorizationDeniedException(msg);
-		}
-	}
-	
-	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) // authentication failure should not force a rollback
-	@Override
-	public void isAuthorizedToHardTokenData(final AuthenticationToken admin, final String username, final boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
-		try {
-			if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null);
-		        throw new AuthorizationDeniedException(msg);
-			}
-			EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
-			if (userdata == null){
-			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-				String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
-				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
-			}
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
 
-			if (viewPUKData){
-				if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWPUKS)) {
-		            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_VIEWPUKS, null);
-			        throw new AuthorizationDeniedException(msg);
-				}
-			}
-		    if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS, null);
-		        throw new AuthorizationDeniedException(msg);
-		    }
-			if (viewPUKData){
-			    if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {	
-		            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS, null);
-			        throw new AuthorizationDeniedException(msg);
-			    }
-			}
-		} catch (EJBException e) {
-			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
-		}		
-	}
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED) // authentication failure should not force a rollback
+    @Override
+    public void isAuthorizedToHardTokenData(final AuthenticationToken admin, final String username, final boolean viewPUKData)
+            throws AuthorizationDeniedException, EjbcaException {
+        try {
+            if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
+                final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_VIEWHARDTOKENS,
+                        null);
+                throw new AuthorizationDeniedException(msg);
+            }
+            EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
+            if (userdata == null) {
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+                throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
+            }
 
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@Override
-	public EndEntityInformation convertUserDataVOWSInternal(final UserDataVOWS userdata, final int caid, final int endentityprofileid, final int certificateprofileid, final int hardtokenissuerid, final int tokenid, final boolean useRawSubjectDN) throws EjbcaException {
+            if (viewPUKData) {
+                if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWPUKS)) {
+                    final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.REGULAR_VIEWPUKS,
+                            null);
+                    throw new AuthorizationDeniedException(msg);
+                }
+            }
+            if (!authorizationSession.isAuthorizedNoLogging(admin,
+                    AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS)) {
+                final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource",
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS, null);
+                throw new AuthorizationDeniedException(msg);
+            }
+            if (viewPUKData) {
+                if (!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId()
+                        + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {
+                    final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX
+                            + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS, null);
+                    throw new AuthorizationDeniedException(msg);
+                }
+            }
+        } catch (EJBException e) {
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
+        }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public EndEntityInformation convertUserDataVOWSInternal(final UserDataVOWS userdata, final int caid, final int endentityprofileid,
+            final int certificateprofileid, final int hardtokenissuerid, final int tokenid, final boolean useRawSubjectDN) throws EjbcaException {
         final ExtendedInformation ei = new ExtendedInformation();
         boolean useEI = false;
 
         if (userdata.getStartTime() != null) {
             String customStartTime = userdata.getStartTime();
             try {
-                if (customStartTime.length()>0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+                if (customStartTime.length() > 0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
                     customStartTime = customStartTime.replace("Z", "+00:00");
                     if (!customStartTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
                         // We use the old absolute time format, so we need to upgrade and log deprecation info
                         final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
-                        final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customStartTime), ValidityDate.TIMEZONE_UTC);
-                        log.info("WS client sent userdata with startTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
+                        final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customStartTime),
+                                ValidityDate.TIMEZONE_UTC);
+                        log.info(
+                                "WS client sent userdata with startTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
                         if (log.isDebugEnabled()) {
                             log.debug(" Changed startTime \"" + customStartTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
                         }
@@ -251,19 +262,21 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, customStartTime);
                 useEI = true;
             } catch (ParseException e) {
-                log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+                log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \""
+                        + userdata.getSubjectDN() + "\"");
                 throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime.");
             }
         }
-        if(userdata.getEndTime() != null) {
+        if (userdata.getEndTime() != null) {
             String customEndTime = userdata.getEndTime();
             try {
-                if (customEndTime.length()>0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$")){
+                if (customEndTime.length() > 0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
                     if (!customEndTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
                         // We use the old absolute time format, so we need to upgrade and log deprecation info
                         final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
                         final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customEndTime), ValidityDate.TIMEZONE_UTC);
-                        log.info("WS client sent userdata with endTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
+                        log.info(
+                                "WS client sent userdata with endTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
                         if (log.isDebugEnabled()) {
                             log.debug(" Changed endTime \"" + customEndTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
                         }
@@ -274,11 +287,12 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                 ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, customEndTime);
                 useEI = true;
             } catch (ParseException e) {
-                log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+                log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \""
+                        + userdata.getSubjectDN() + "\"");
                 throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime.");
             }
         }
-        if (userdata.getCertificateSerialNumber()!=null) {
+        if (userdata.getCertificateSerialNumber() != null) {
             ei.setCertificateSerialNumber(userdata.getCertificateSerialNumber());
             useEI = true;
         }
@@ -291,119 +305,108 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         }
         useEI = setExtendedInformationFromUserDataVOWS(userdata, ei) || useEI;
 
-        final EndEntityInformation endEntityInformation = new EndEntityInformation(userdata.getUsername(),
-                userdata.getSubjectDN(),
-                caid,
-                userdata.getSubjectAltName(),
-                userdata.getEmail(),
-                userdata.getStatus(),
-                userdata.getType(),
-                endentityprofileid,
-                certificateprofileid,
-                null,
-                null,
-                tokenid,
-                hardtokenissuerid,
-                useEI ? ei : null);
-        
+        final EndEntityInformation endEntityInformation = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), caid,
+                userdata.getSubjectAltName(), userdata.getEmail(), userdata.getStatus(), userdata.getType(), endentityprofileid, certificateprofileid,
+                null, null, tokenid, hardtokenissuerid, useEI ? ei : null);
+
         endEntityInformation.setPassword(userdata.getPassword());
         endEntityInformation.setCardNumber(userdata.getCardNumber());
         endEntityInformation.setSendNotification(userdata.isSendNotification());
         return endEntityInformation;
-	}
+    }
 
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-	public EndEntityInformation convertUserDataVOWS(final AuthenticationToken admin, final UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException {
+    public EndEntityInformation convertUserDataVOWS(final AuthenticationToken admin, final UserDataVOWS userdata)
+            throws CADoesntExistsException, EjbcaException {
         // No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
         // trying to add/edit the user
-		final CAInfo cainfo = caSession.getCAInfoInternal(-1,userdata.getCaName(), true);
-		if(cainfo == null) {
-		    throw new CADoesntExistsException("No CA found by name of " + userdata.getCaName());
-		}
-		final int caid = cainfo.getCAId();
-		if (caid == 0) {
-			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
-		}
-		
-		int endentityprofileid;
+        final CAInfo cainfo = caSession.getCAInfoInternal(-1, userdata.getCaName(), true);
+        if (cainfo == null) {
+            throw new CADoesntExistsException("No CA found by name of " + userdata.getCaName());
+        }
+        final int caid = cainfo.getCAId();
+        if (caid == 0) {
+            throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
+        }
+
+        int endentityprofileid;
         try {
             endentityprofileid = endEntityProfileSession.getEndEntityProfileId(userdata.getEndEntityProfileName());
         } catch (EndEntityProfileNotFoundException e) {
-            throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, 
+            throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS,
                     "Error End Entity profile " + userdata.getEndEntityProfileName() + " does not exist.", e);
         }
 
-		final int certificateprofileid = certificateProfileSession.getCertificateProfileId(userdata.getCertificateProfileName());
-		if (certificateprofileid == 0){
-			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
-                "Error Certificate profile " + userdata.getCertificateProfileName() + " does not exist.");
-		}
+        final int certificateprofileid = certificateProfileSession.getCertificateProfileId(userdata.getCertificateProfileName());
+        if (certificateprofileid == 0) {
+            throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
+                    "Error Certificate profile " + userdata.getCertificateProfileName() + " does not exist.");
+        }
         final CertificateProfile cp = certificateProfileSession.getCertificateProfile(certificateprofileid);
         final boolean useRawSubjectDN = cp.getAllowDNOverrideByEndEntityInformation();
-		
-		final int hardtokenissuerid;
-		if (userdata.getHardTokenIssuerName() != null){
-         hardtokenissuerid = hardTokenSession.getHardTokenIssuerId(userdata.getHardTokenIssuerName());
-		   if (hardtokenissuerid == 0){
-			  throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS,
-                  "Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " does not exist.");
-		   }
-		} else {
-			hardtokenissuerid = 0;
-		}
-		
-		final int tokenid = getTokenId(admin,userdata.getTokenType());
-		if (tokenid == 0){
-			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE,
-                "Error Token Type  " + userdata.getTokenType() + " does not exist.");
-		}
 
-		return convertUserDataVOWSInternal(userdata, caid, endentityprofileid, certificateprofileid, hardtokenissuerid, tokenid, useRawSubjectDN);
-	}
+        final int hardtokenissuerid;
+        if (userdata.getHardTokenIssuerName() != null) {
+            hardtokenissuerid = hardTokenSession.getHardTokenIssuerId(userdata.getHardTokenIssuerName());
+            if (hardtokenissuerid == 0) {
+                throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS,
+                        "Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " does not exist.");
+            }
+        } else {
+            hardtokenissuerid = 0;
+        }
 
-	/** Sets generic Custom ExtendedInformation from potential data in UserDataVOWS.
-	 * This is data from the field "Custom certificate extension data" in the EE profile.
-	 * @param userdata UserDataVOWS that we want to see if any ExtendedInformationWS is set
-	 * @param ei ExtendedInformation to populate with information.
-	 * @return true if some value was added, false if nothing was added
-	 */
-	private static boolean setExtendedInformationFromUserDataVOWS( UserDataVOWS userdata, ExtendedInformation ei ) {
-		// Set generic Custom ExtendedInformation from potential data in UserDataVOWS
-		final List<ExtendedInformationWS> userei = userdata.getExtendedInformation();
-		if ( userei==null ) {
-			return false;
-		}
-		boolean useEI = false;
-		for (ExtendedInformationWS item : userei) {
-			final String key = item.getName();
-			final String value = item.getValue ();
-			if ( value==null || key==null ) {
-				if (log.isDebugEnabled()) {
-					log.debug("Key or value is null when trying to set generic extended information.");
-				}
-				continue;
-			}
-			if ( OID.isStartingWithValidOID(key)  ) {
-				ei.setExtensionData(key, value);
-				if (log.isDebugEnabled()) {
-					log.debug("Set certificate extension: "+key+", "+value);
-				}
-			} else {
-				ei.setMapData(key, value);
-				if (log.isDebugEnabled()) {
-					log.debug("Set generic extended information: "+key+", "+value);
-				}
-			}
-			useEI = true;
-		}
-		return useEI;
-	}
+        final int tokenid = getTokenId(admin, userdata.getTokenType());
+        if (tokenid == 0) {
+            throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, "Error Token Type  " + userdata.getTokenType() + " does not exist.");
+        }
 
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@Override
-	public UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation, final String caname, final String endentityprofilename, 
-	        final String certificateprofilename, final String hardtokenissuername, final String tokenname) {
+        return convertUserDataVOWSInternal(userdata, caid, endentityprofileid, certificateprofileid, hardtokenissuerid, tokenid, useRawSubjectDN);
+    }
+
+    /** Sets generic Custom ExtendedInformation from potential data in UserDataVOWS.
+     * This is data from the field "Custom certificate extension data" in the EE profile.
+     * @param userdata UserDataVOWS that we want to see if any ExtendedInformationWS is set
+     * @param ei ExtendedInformation to populate with information.
+     * @return true if some value was added, false if nothing was added
+     */
+    private static boolean setExtendedInformationFromUserDataVOWS(UserDataVOWS userdata, ExtendedInformation ei) {
+        // Set generic Custom ExtendedInformation from potential data in UserDataVOWS
+        final List<ExtendedInformationWS> userei = userdata.getExtendedInformation();
+        if (userei == null) {
+            return false;
+        }
+        boolean useEI = false;
+        for (ExtendedInformationWS item : userei) {
+            final String key = item.getName();
+            final String value = item.getValue();
+            if (value == null || key == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Key or value is null when trying to set generic extended information.");
+                }
+                continue;
+            }
+            if (OID.isStartingWithValidOID(key)) {
+                ei.setExtensionData(key, value);
+                if (log.isDebugEnabled()) {
+                    log.debug("Set certificate extension: " + key + ", " + value);
+                }
+            } else {
+                ei.setMapData(key, value);
+                if (log.isDebugEnabled()) {
+                    log.debug("Set generic extended information: " + key + ", " + value);
+                }
+            }
+            useEI = true;
+        }
+        return useEI;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation, final String caname,
+            final String endentityprofilename, final String certificateprofilename, final String hardtokenissuername, final String tokenname) {
         final UserDataVOWS dataWS = new UserDataVOWS();
         dataWS.setUsername(endEntityInformation.getUsername());
         dataWS.setCaName(caname);
@@ -420,11 +423,11 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         dataWS.setStatus(endEntityInformation.getStatus());
         dataWS.setCardNumber(endEntityInformation.getCardNumber());
         dataWS.setSendNotification(endEntityInformation.getSendNotification());
-        
+
         final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
         if (ei != null) {
             String startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-            if (startTime!=null && startTime.length()>0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+            if (startTime != null && startTime.length() > 0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
                 try {
                     // Always respond with the time formatted in a neutral time zone
                     startTime = ValidityDate.getISO8601FromImpliedUTC(startTime, ValidityDate.TIMEZONE_UTC);
@@ -434,7 +437,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             }
             dataWS.setStartTime(startTime);
             String endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
-            if (endTime!=null && endTime.length()>0 && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+            if (endTime != null && endTime.length() > 0 && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
                 try {
                     // Always respond with the time formatted in a neutral time zone
                     endTime = ValidityDate.getISO8601FromImpliedUTC(endTime, ValidityDate.TIMEZONE_UTC);
@@ -445,7 +448,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
             dataWS.setEndTime(endTime);
             // Fill custom data in extended information
             @SuppressWarnings("unchecked")
-            final HashMap<String, ?> data = (HashMap<String,?>)ei.getData();
+            final HashMap<String, ?> data = (HashMap<String, ?>) ei.getData();
             if (data != null) {
                 final List<ExtendedInformationWS> extendedInfo = new ArrayList<>();
                 final Set<String> set = data.keySet();
@@ -453,7 +456,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
                     final String key = iterator.next();
                     final String value = ei.getMapData(key);
                     if (value != null) {
-                        extendedInfo.add(new ExtendedInformationWS (key, value));               
+                        extendedInfo.add(new ExtendedInformationWS(key, value));
                     }
                 }
                 dataWS.setExtendedInformation(extendedInfo);
@@ -461,329 +464,336 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
         }
 
         return dataWS;
-	}
-	
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@Override
-	public UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation) throws EjbcaException, CADoesntExistsException {
-        final String username = endEntityInformation.getUsername();
-		// No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
-		// trying to add/edit the user
-		final String caname = caSession.getCAInfoInternal(endEntityInformation.getCAId(), null, true).getName();	
+    }
 
-		final String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(endEntityInformation.getEndEntityProfileId());
-		if (endentityprofilename == null){
-			final String message = "Error End Entity profile id " + endEntityInformation.getEndEntityProfileId() + " does not exist. User: "+username;
-			log.error(message);
-			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, message);
-		}
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation) throws EjbcaException, CADoesntExistsException {
+        final String username = endEntityInformation.getUsername();
+        // No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
+        // trying to add/edit the user
+        final String caname = caSession.getCAInfoInternal(endEntityInformation.getCAId(), null, true).getName();
+
+        final String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(endEntityInformation.getEndEntityProfileId());
+        if (endentityprofilename == null) {
+            final String message = "Error End Entity profile id " + endEntityInformation.getEndEntityProfileId() + " does not exist. User: "
+                    + username;
+            log.error(message);
+            throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, message);
+        }
 
         final String certificateprofilename = certificateProfileSession.getCertificateProfileName(endEntityInformation.getCertificateProfileId());
-		if (certificateprofilename == null){
-		    final String message = "Error Certificate profile id " + endEntityInformation.getCertificateProfileId() + " does not exist. User: "+username;
-			log.error(message);
-			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, message);
-		}
-		
-		final String hardtokenissuername;
-		if (endEntityInformation.getHardTokenIssuerId() != 0){
-		   hardtokenissuername = hardTokenSession.getHardTokenIssuerAlias(endEntityInformation.getHardTokenIssuerId());
-		   if (hardtokenissuername == null){
-		       final String message = "Error Hard Token Issuer id " + endEntityInformation.getHardTokenIssuerId() + " does not exist. User: "+username;
-			   log.error(message);
-			   throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS, message);
-		   }
-		} else {
-		    hardtokenissuername = null;
-		}
-		
-		final String tokenname = getTokenName(endEntityInformation.getTokenType());
-		if (tokenname == null){
-		    final String message = "Error Token Type id " + endEntityInformation.getTokenType() + " does not exist. User: "+username;
-			log.error(message);
-			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, message);
-		}
-		return convertEndEntityInformation(endEntityInformation, caname, endentityprofilename, certificateprofilename, hardtokenissuername, tokenname);
-	}
+        if (certificateprofilename == null) {
+            final String message = "Error Certificate profile id " + endEntityInformation.getCertificateProfileId() + " does not exist. User: "
+                    + username;
+            log.error(message);
+            throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, message);
+        }
 
-	private XMLGregorianCalendar dateToXMKGregorianCalendar (Date date) throws DatatypeConfigurationException {
-		GregorianCalendar cal = new GregorianCalendar ();
-		cal.setTime(date);
-		return DatatypeFactory.newInstance ().newXMLGregorianCalendar(cal);
-	}
+        final String hardtokenissuername;
+        if (endEntityInformation.getHardTokenIssuerId() != 0) {
+            hardtokenissuername = hardTokenSession.getHardTokenIssuerAlias(endEntityInformation.getHardTokenIssuerId());
+            if (hardtokenissuername == null) {
+                final String message = "Error Hard Token Issuer id " + endEntityInformation.getHardTokenIssuerId() + " does not exist. User: "
+                        + username;
+                log.error(message);
+                throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS, message);
+            }
+        } else {
+            hardtokenissuername = null;
+        }
 
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@Override
-	public HardTokenDataWS convertHardTokenToWS(HardTokenInformation data, Collection<java.security.cert.Certificate> certificates, boolean includePUK) throws EjbcaException {
-		HardTokenDataWS retval = new HardTokenDataWS();
-		retval.setHardTokenSN(data.getTokenSN());
-		retval.setLabel(data.getHardToken().getLabel());
-		retval.setCopyOfSN(data.getCopyOf());
-		ArrayList<String> copies = new ArrayList<>();
-		if (data.getCopies() != null){
-			Iterator<String> iter = data.getCopies().iterator();
-			while (iter.hasNext()){
-				copies.add(iter.next());
+        final String tokenname = getTokenName(endEntityInformation.getTokenType());
+        if (tokenname == null) {
+            final String message = "Error Token Type id " + endEntityInformation.getTokenType() + " does not exist. User: " + username;
+            log.error(message);
+            throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, message);
+        }
+        return convertEndEntityInformation(endEntityInformation, caname, endentityprofilename, certificateprofilename, hardtokenissuername,
+                tokenname);
+    }
 
-			}
-		}
-		retval.setCopies(copies);
-		try {
-			retval.setModifyTime(dateToXMKGregorianCalendar(data.getModifyTime()));
-			retval.setCreateTime(dateToXMKGregorianCalendar(data.getCreateTime()));
-			retval.setEncKeyKeyRecoverable(false);
+    private XMLGregorianCalendar dateToXMKGregorianCalendar(Date date) throws DatatypeConfigurationException {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(date);
+        return DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+    }
 
-			Iterator<java.security.cert.Certificate> iter = certificates.iterator();
-			while (iter.hasNext()){
-				retval.getCertificates().add(new Certificate(iter.next()));
-			}
-		} catch (DatatypeConfigurationException e) {
-			log.error("EJBCA WebService error, getHardToken: ",e);
-			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
-		} catch (CertificateEncodingException e) {
-			log.error("EJBCA WebService error, getHardToken: ",e);
-			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
-		}
-
-
-		if (data.getHardToken() instanceof SwedishEIDHardToken){
-			SwedishEIDHardToken ht = (SwedishEIDHardToken) data.getHardToken();
-			if(includePUK){
-			  retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
-			  retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthEncPIN(),ht.getAuthEncPUK()));
-			}
-			retval.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
-			return retval;
-		}
-		if (data.getHardToken() instanceof EnhancedEIDHardToken){
-			EnhancedEIDHardToken ht = (EnhancedEIDHardToken) data.getHardToken();
-			retval.setEncKeyKeyRecoverable(ht.getEncKeyRecoverable());
-			if(includePUK){
-				retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
-				retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthPIN(),ht.getAuthPUK()));
-			}
-			retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
-			return retval;
-		}
-		if (data.getHardToken() instanceof TurkishEIDHardToken){
-			TurkishEIDHardToken ht = (TurkishEIDHardToken) data.getHardToken();
-			if(includePUK){
-			  retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialPIN(),ht.getPUK()));
-			}
-			retval.setTokenType(HardTokenConstants.TOKENTYPE_TURKISHEID);
-			return retval;
-		}
-		throw new EjbcaException(ErrorCode.INTERNAL_ERROR,
-		                         "Error: only SwedishEIDHardToken, EnhancedEIDHardToken, TurkishEIDHardToken supported.");
-	}
-	
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Query convertUserMatch(AuthenticationToken admin, UserMatch usermatch) throws CADoesntExistsException,
-            AuthorizationDeniedException, EndEntityProfileNotFoundException {
-        Query retval = new Query(Query.TYPE_USERQUERY);		  		
-		switch (usermatch.getMatchwith()){
-		  case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
-			  String endentityprofilename = Integer.toString(endEntityProfileSession.getEndEntityProfileId(usermatch.getMatchvalue()));
-			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),endentityprofilename);
-			  break;
-		  case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
-			  String certificateprofilename = Integer.toString(certificateProfileSession.getCertificateProfileId(usermatch.getMatchvalue()));
-			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),certificateprofilename);
-			  break;			  
-		  case UserMatch.MATCH_WITH_CA:
-			  String caname = Integer.toString(caSession.getCAInfo(admin,usermatch.getMatchvalue()).getCAId());
-			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),caname);
-			  break;	
-		  case UserMatch.MATCH_WITH_TOKEN:
-			  String tokenname = Integer.toString(getTokenId(admin,usermatch.getMatchvalue()));
-			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),tokenname);
-			  break;
-		  default:		
-			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),usermatch.getMatchvalue());
-			  break;
-		}
-		return retval;
-	}
-	
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@Override
-	public Collection<java.security.cert.Certificate> returnOnlyValidCertificates(final AuthenticationToken admin, final Collection<java.security.cert.Certificate> certs) {
+    public HardTokenDataWS convertHardTokenToWS(HardTokenInformation data, Collection<java.security.cert.Certificate> certificates,
+            boolean includePUK) throws EjbcaException {
+        HardTokenDataWS retval = new HardTokenDataWS();
+        retval.setHardTokenSN(data.getTokenSN());
+        retval.setLabel(data.getHardToken().getLabel());
+        retval.setCopyOfSN(data.getCopyOf());
+        ArrayList<String> copies = new ArrayList<>();
+        if (data.getCopies() != null) {
+            Iterator<String> iter = data.getCopies().iterator();
+            while (iter.hasNext()) {
+                copies.add(iter.next());
+
+            }
+        }
+        retval.setCopies(copies);
+        try {
+            retval.setModifyTime(dateToXMKGregorianCalendar(data.getModifyTime()));
+            retval.setCreateTime(dateToXMKGregorianCalendar(data.getCreateTime()));
+            retval.setEncKeyKeyRecoverable(false);
+
+            Iterator<java.security.cert.Certificate> iter = certificates.iterator();
+            while (iter.hasNext()) {
+                retval.getCertificates().add(new Certificate(iter.next()));
+            }
+        } catch (DatatypeConfigurationException e) {
+            log.error("EJBCA WebService error, getHardToken: ", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        } catch (CertificateEncodingException e) {
+            log.error("EJBCA WebService error, getHardToken: ", e);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+        }
+
+        if (data.getHardToken() instanceof SwedishEIDHardToken) {
+            SwedishEIDHardToken ht = (SwedishEIDHardToken) data.getHardToken();
+            if (includePUK) {
+                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE, ht.getInitialSignaturePIN(), ht.getSignaturePUK()));
+                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC, ht.getInitialAuthEncPIN(), ht.getAuthEncPUK()));
+            }
+            retval.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
+            return retval;
+        }
+        if (data.getHardToken() instanceof EnhancedEIDHardToken) {
+            EnhancedEIDHardToken ht = (EnhancedEIDHardToken) data.getHardToken();
+            retval.setEncKeyKeyRecoverable(ht.getEncKeyRecoverable());
+            if (includePUK) {
+                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_SIGNATURE, ht.getInitialSignaturePIN(), ht.getSignaturePUK()));
+                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC, ht.getInitialAuthPIN(), ht.getAuthPUK()));
+            }
+            retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
+            return retval;
+        }
+        if (data.getHardToken() instanceof TurkishEIDHardToken) {
+            TurkishEIDHardToken ht = (TurkishEIDHardToken) data.getHardToken();
+            if (includePUK) {
+                retval.getPinDatas().add(new PinDataWS(HardTokenConstants.PINTYPE_BASIC, ht.getInitialPIN(), ht.getPUK()));
+            }
+            retval.setTokenType(HardTokenConstants.TOKENTYPE_TURKISHEID);
+            return retval;
+        }
+        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, "Error: only SwedishEIDHardToken, EnhancedEIDHardToken, TurkishEIDHardToken supported.");
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Query convertUserMatch(AuthenticationToken admin, UserMatch usermatch)
+            throws CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException {
+        Query retval = new Query(Query.TYPE_USERQUERY);
+        switch (usermatch.getMatchwith()) {
+        case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
+            String endentityprofilename = Integer.toString(endEntityProfileSession.getEndEntityProfileId(usermatch.getMatchvalue()));
+            retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), endentityprofilename);
+            break;
+        case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
+            String certificateprofilename = Integer.toString(certificateProfileSession.getCertificateProfileId(usermatch.getMatchvalue()));
+            retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), certificateprofilename);
+            break;
+        case UserMatch.MATCH_WITH_CA:
+            String caname = Integer.toString(caSession.getCAInfo(admin, usermatch.getMatchvalue()).getCAId());
+            retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), caname);
+            break;
+        case UserMatch.MATCH_WITH_TOKEN:
+            String tokenname = Integer.toString(getTokenId(admin, usermatch.getMatchvalue()));
+            retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), tokenname);
+            break;
+        default:
+            retval.add(usermatch.getMatchwith(), usermatch.getMatchtype(), usermatch.getMatchvalue());
+            break;
+        }
+        return retval;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Collection<java.security.cert.Certificate> returnOnlyValidCertificates(final AuthenticationToken admin,
+            final Collection<java.security.cert.Certificate> certs) {
         final ArrayList<java.security.cert.Certificate> retval = new ArrayList<>();
         for (java.security.cert.Certificate cert : certs) {
-            boolean isrevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert),CertTools.getSerialNumber(cert));
+            boolean isrevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
             if (!isrevoked) {
                 try {
                     CertTools.checkValidity(cert, new Date());
                     retval.add(cert);
                 } catch (CertificateExpiredException e) {
-                } catch (CertificateNotYetValidException e) {			   
+                } catch (CertificateNotYetValidException e) {
                 }
             }
         }
         return retval;
     }
-	
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@Override
-	public List<Certificate> returnAuthorizedCertificates(final AuthenticationToken admin, final Collection<java.security.cert.Certificate> certs,
-	        final boolean validate, final long nowMillis) {
-		final List<Certificate> retval = new ArrayList<>();
-		final Map<Integer, Boolean> authorizationCache = new HashMap<>();
-		final Date now = new Date(nowMillis);
-		for (final java.security.cert.Certificate next : certs) {
-			try {
-				if (validate) {
-					// Check validity
-					CertTools.checkValidity(next, now);
-				}
-				// Check authorization
-				final int caid = CertTools.getIssuerDN(next).hashCode();
-				Boolean authorized = authorizationCache.get(caid);
-				if (authorized == null) {
-					authorized = authorizationSession.isAuthorizedNoLogging(admin,StandardRules.CAACCESS.resource() +caid);
-					authorizationCache.put(caid, authorized);
-				}
-				if (authorized.booleanValue()) {
-					retval.add(new Certificate(next));
-				}
-			} catch (CertificateExpiredException | CertificateNotYetValidException e) {
-			    // Drop invalid cert
-			} catch (CertificateEncodingException e) { 
-			    // Drop invalid cert
-				log.error("A defect certificate was detected.");
-			} 
-		}
-		return retval;
-	}
-	
-	private int getTokenId(AuthenticationToken admin, String tokenname) {
-      int returnval = 0;
-      
-      // First check for soft token type
-      for(int i=0;i< softtokennames.length;i++){
-      	if(softtokennames[i].equals(tokenname)){
-      		returnval = softtokenids[i];
-      		break;
-      	}        	
-      }
-      if (returnval == 0) {
-           returnval = hardTokenSession.getHardTokenProfileId(tokenname);
-      }
 
-      return returnval;
-	}
-	
-	private String getTokenName(int tokenid) {
-      String returnval = null;
-      
-      // First check for soft token type
-      for(int i=0;i< softtokenids.length;i++){
-      	if(softtokenids[i] == tokenid){
-      		returnval = softtokennames[i];
-      		break;
-      	}        	
-      }
-      if (returnval == null) {
-           returnval = hardTokenSession.getHardTokenProfileName(tokenid);
-      }
-
-      return returnval;
-	}
-
-	@Override
-	public void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status) {
-		try {
-			endEntityManagementSession.setPassword(admin, username, null);
-			endEntityManagementSession.setUserStatus(admin, username, status);	
-			log.debug("Reset user password to null and status to "+status);
-		} catch (Exception e) {
-			// Catch all because this reset method will be called from within other catch clauses
-			log.error(e);
-		}
-	}
-
-	@Override
-	public void checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password) 
-            throws CertificateNotYetValidException, CertificateExpiredException, EndEntityProfileValidationException,
-            AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException {
-		try {
-			// Check validity of the certificate after verifying the signature
-			CertTools.checkValidity(cert, new Date());
-			log.debug("The verifying certificate was valid");
-			// Verification succeeded, lets set user status to new, the password as passed in and proceed
-			String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
-			log.info(msg);
-			endEntityManagementSession.setPassword(admin, username, password);
-			endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
-			// If we managed to verify the certificate we will break out of the loop									
-		} catch (CertificateNotYetValidException e) {
-			// If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request
-			if (log.isDebugEnabled()) {
-			    log.debug("Certificate we try to verify outer signature with is not yet valid. SubjectDN: "+CertTools.getSubjectDN(cert));
-			}
-			throw e;
-		} catch (CertificateExpiredException e) {									
-            if (log.isDebugEnabled()) {
-                log.debug("Certificate we try to verify outer signature with has expired. SubjectDN: "+CertTools.getSubjectDN(cert));
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<Certificate> returnAuthorizedCertificates(final AuthenticationToken admin, final Collection<java.security.cert.Certificate> certs,
+            final boolean validate, final long nowMillis) {
+        final List<Certificate> retval = new ArrayList<>();
+        final Map<Integer, Boolean> authorizationCache = new HashMap<>();
+        final Date now = new Date(nowMillis);
+        for (final java.security.cert.Certificate next : certs) {
+            try {
+                if (validate) {
+                    // Check validity
+                    CertTools.checkValidity(next, now);
+                }
+                // Check authorization
+                final int caid = CertTools.getIssuerDN(next).hashCode();
+                Boolean authorized = authorizationCache.get(caid);
+                if (authorized == null) {
+                    authorized = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid);
+                    authorizationCache.put(caid, authorized);
+                }
+                if (authorized.booleanValue()) {
+                    retval.add(new Certificate(next));
+                }
+            } catch (CertificateExpiredException | CertificateNotYetValidException e) {
+                // Drop invalid cert
+            } catch (CertificateEncodingException e) {
+                // Drop invalid cert
+                log.error("A defect certificate was detected.");
             }
-			throw e;
-		}
-	}
+        }
+        return retval;
+    }
 
-	@Override
-	public void caCertResponse(AuthenticationToken admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd, boolean futureRollover) 
-	    throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CesecoreException, CertificateParsingException {
+    private int getTokenId(AuthenticationToken admin, String tokenname) {
+        int returnval = 0;
+
+        // First check for soft token type
+        for (int i = 0; i < softtokennames.length; i++) {
+            if (softtokennames[i].equals(tokenname)) {
+                returnval = softtokenids[i];
+                break;
+            }
+        }
+        if (returnval == 0) {
+            returnval = hardTokenSession.getHardTokenProfileId(tokenname);
+        }
+
+        return returnval;
+    }
+
+    private String getTokenName(int tokenid) {
+        String returnval = null;
+
+        // First check for soft token type
+        for (int i = 0; i < softtokenids.length; i++) {
+            if (softtokenids[i] == tokenid) {
+                returnval = softtokennames[i];
+                break;
+            }
+        }
+        if (returnval == null) {
+            returnval = hardTokenSession.getHardTokenProfileName(tokenid);
+        }
+
+        return returnval;
+    }
+
+    @Override
+    public void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status) {
+        try {
+            endEntityManagementSession.setPassword(admin, username, null);
+            endEntityManagementSession.setUserStatus(admin, username, status);
+            log.debug("Reset user password to null and status to " + status);
+        } catch (Exception e) {
+            // Catch all because this reset method will be called from within other catch clauses
+            log.error(e);
+        }
+    }
+
+    @Override
+    public void checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password)
+            throws CertificateNotYetValidException, CertificateExpiredException, EndEntityProfileValidationException, AuthorizationDeniedException,
+            NoSuchEndEntityException, ApprovalException, WaitingForApprovalException {
+        try {
+            // Check validity of the certificate after verifying the signature
+            CertTools.checkValidity(cert, new Date());
+            log.debug("The verifying certificate was valid");
+            // Verification succeeded, lets set user status to new, the password as passed in and proceed
+            String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);
+            log.info(msg);
+            endEntityManagementSession.setPassword(admin, username, password);
+            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            // If we managed to verify the certificate we will break out of the loop									
+        } catch (CertificateNotYetValidException e) {
+            // If verification of outer signature fails because the old certificate is not valid, we don't really care, continue as if it was an initial request
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate we try to verify outer signature with is not yet valid. SubjectDN: " + CertTools.getSubjectDN(cert));
+            }
+            throw e;
+        } catch (CertificateExpiredException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate we try to verify outer signature with has expired. SubjectDN: " + CertTools.getSubjectDN(cert));
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public void caCertResponse(AuthenticationToken admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd,
+            boolean futureRollover) throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException,
+            CertPathValidatorException, CesecoreException, CertificateParsingException {
         CAInfo cainfo = caSession.getCAInfo(admin, caname);
         // create response messages, for CVC certificates we use a regular X509ResponseMessage
         X509ResponseMessage msg = new X509ResponseMessage();
         msg.setCertificate(CertTools.getCertfromByteArray(cert, java.security.cert.Certificate.class));
-        if(cainfo == null) {
+        if (cainfo == null) {
             throw new CADoesntExistsException("CA by name '" + caname + "' not found.");
         }
         // Activate the CA's token using the provided keystorepwd if any
-        if (keystorepwd!=null) {
+        if (keystorepwd != null) {
             cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
         }
         caAdminSession.receiveResponse(admin, cainfo.getCAId(), msg, cachain, null, futureRollover);
-	}
+    }
 
-	@Override
-	public byte[] caRenewCertRequest(AuthenticationToken admin, String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) 
-		throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
-		CAInfo cainfo = caSession.getCAInfo(admin, caname);
-		String nextSignKeyAlias = null;   // null means generate new keypair
-		if (!regenerateKeys) {
-		    nextSignKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-	        if (usenextkey) {
-	            nextSignKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
-	        }
-		}
-		// Activate used to mean "move nextsignkeyalias to currentsignkeyalias", we changed the meaning here to be activate the CA's CryptoToken
-		if (activatekey) {
-	        cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
-		}
+    @Override
+    public byte[] caRenewCertRequest(AuthenticationToken admin, String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey,
+            boolean activatekey, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
+        CAInfo cainfo = caSession.getCAInfo(admin, caname);
+        String nextSignKeyAlias = null; // null means generate new keypair
+        if (!regenerateKeys) {
+            nextSignKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            if (usenextkey) {
+                nextSignKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+            }
+        }
+        // Activate used to mean "move nextsignkeyalias to currentsignkeyalias", we changed the meaning here to be activate the CA's CryptoToken
+        if (activatekey) {
+            cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
+        }
         return caAdminSession.makeRequest(admin, cainfo.getCAId(), cachain, nextSignKeyAlias);
-	}
-	
-	@Override
-	public void importCaCert(AuthenticationToken admin, String caname, byte[] certbytes) throws AuthorizationDeniedException, 
-	        CAExistsException, IllegalCryptoTokenException, CertificateImportException, EjbcaException, CertificateParsingException {
-	    final Collection<CertificateWrapper> cachain = CertTools.bytesToListOfCertificateWrapperOrThrow(certbytes);
+    }
+
+    @Override
+    public void importCaCert(AuthenticationToken admin, String caname, byte[] certbytes) throws AuthorizationDeniedException, CAExistsException,
+            IllegalCryptoTokenException, CertificateImportException, EjbcaException, CertificateParsingException {
+        final Collection<CertificateWrapper> cachain = CertTools.bytesToListOfCertificateWrapperOrThrow(certbytes);
         caAdminSession.importCACertificate(admin, caname, cachain);
-	}
-	
-	@Override
-	public void updateCaCert(AuthenticationToken admin, String caname, byte[] certbytes) throws AuthorizationDeniedException, 
-	        CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException {
+    }
+
+    @Override
+    public void updateCaCert(AuthenticationToken admin, String caname, byte[] certbytes)
+            throws AuthorizationDeniedException, CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException {
         final Collection<CertificateWrapper> cachain = CertTools.bytesToListOfCertificateWrapperOrThrow(certbytes);
         final int caid = caSession.getCA(admin, caname).getCAId();
         caAdminSession.updateCACertificate(admin, caid, cachain);
-	}	    
-	
-	@Override
-	public void rolloverCACert(AuthenticationToken admin, String caname) throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException {
-	    int caid = caSession.getCAInfo(admin, caname).getCAId();
+    }
+
+    @Override
+    public void rolloverCACert(AuthenticationToken admin, String caname)
+            throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException {
+        int caid = caSession.getCAInfo(admin, caname).getCAId();
         caAdminSession.rolloverCA(admin, caid);
     }
 
