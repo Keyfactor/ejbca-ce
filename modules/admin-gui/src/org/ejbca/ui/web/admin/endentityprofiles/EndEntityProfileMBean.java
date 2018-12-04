@@ -34,6 +34,7 @@ import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -1454,6 +1455,17 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            return currentTemplate;
        }
    }
+   
+   private UploadedFile uploadFile;
+   
+   public void setUploadFile(UploadedFile uploadFile) {
+       this.uploadFile = uploadFile;
+   }
+   
+   public UploadedFile getUploadFile() {
+       return uploadFile;
+   }
+   
    
    public void uploadTemplate() {
        
