@@ -147,11 +147,13 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             
             raBean.initialize(request, ejbcaBean);
             caBean.initialize(ejbcaBean);
-
+            
             useKeyRecovery = globalconfiguration.getEnableKeyRecovery() && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY);
             RequestHelper.setDefaultCharacterEncoding(request);
             
             parseRequest(request);
+            
+            assertRequestValid();
             
             caName = caBean.getName(caId);
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
@@ -176,30 +178,8 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             hasNameConstraints = certificateData.hasNameConstraints();
             qcStatement = certificateData.hasQcStatement();
             certificateTransparencySCTs = certificateData.hasCertificateTransparencySCTs();
-            
-            
-            /* TODO:  
-  <%if(noparameter){%>
-  <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") %></div> 
-  <% } 
-     else{
-      if(notauthorized){%>
-  <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWCERT") %></div> 
-  <%   } 
-       else{
-         if(certificatedata == null){%>
-  <div class="message alert"><%=ejbcawebbean.getText("CERTIFICATEDOESNTEXIST") %></div> 
-    <%   }
-         else{           
-   if(message != null){ %>
-      <div class="message alert"><%=ejbcawebbean.getText(message) %></div> 
-  <% } %>
- 
- */
-             
         }
     }
-
 
     private String composeRevokedText() {
         String revokedText = "";
@@ -352,213 +332,228 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     }
 
     private void parseRequest(final HttpServletRequest request) throws AuthorizationDeniedException, CADoesntExistsException, UnsupportedEncodingException {
-        if(request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER ) != null) {
+        if (request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER) != null) {
             noparameter = false;
             if (ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
                 notauthorized = false;
-                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
-                tokenSn  = request.getParameter(HARDTOKENSN_PARAMETER);
+                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
+                tokenSn = request.getParameter(HARDTOKENSN_PARAMETER);
                 raBean.loadTokenCertificates(tokenSn);
             }
-         }
+        }
 
-         if(request.getParameter(USER_PARAMETER ) != null && request.getParameter(HARDTOKENSN_PARAMETER) == null) {
+        if (request.getParameter(USER_PARAMETER) != null && request.getParameter(HARDTOKENSN_PARAMETER) == null) {
             noparameter = false;
             if (ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
                 notauthorized = false;
-                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
+                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
                 raBean.loadCertificates(userName);
             }
-         }
+        }
 
-         if(request.getParameter(CERTSERNO_PARAMETER ) != null){     
-               final String certSernoParam = java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER), "UTF-8");
-               if (certSernoParam != null) {
-                   final String[] certdata = ejbcaBean.getCertSernoAndIssuerdn(certSernoParam);
-                   if (certdata != null && certdata.length > 0) {
-                       raBean.loadCertificates(new BigInteger(certdata[0], 16),certdata[1]);
-                   }
-               }
+        if (request.getParameter(CERTSERNO_PARAMETER) != null) {
+            final String certSernoParam = java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER), "UTF-8");
+            if (certSernoParam != null) {
+                final String[] certdata = ejbcaBean.getCertSernoAndIssuerdn(certSernoParam);
+                if (certdata != null && certdata.length > 0) {
+                    raBean.loadCertificates(new BigInteger(certdata[0], 16), certdata[1]);
+                }
+            }
             notauthorized = false;
             noparameter = false;
-         }
-         
-         if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(CACERT_PARAMETER) != null) {
-                certificateSerNo = request.getParameter(SERNO_PARAMETER);
-                caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
-                notauthorized = false;
-                noparameter = false;
-                raBean.loadCertificates(new BigInteger(certificateSerNo,16), caId);
-         } else if (request.getParameter(CACERT_PARAMETER ) != null) {
+        }
+
+        if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(CACERT_PARAMETER) != null) {
+            certificateSerNo = request.getParameter(SERNO_PARAMETER);
+            caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
+            notauthorized = false;
+            noparameter = false;
+            raBean.loadCertificates(new BigInteger(certificateSerNo, 16), caId);
+        } else if (request.getParameter(CACERT_PARAMETER) != null) {
             caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
             if (request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null) {
-                raBean.loadCACertificates(caBean.getCACertificates(caId)); 
+                raBean.loadCACertificates(caBean.getCACertificates(caId));
                 numberOfCertificates = raBean.getNumberOfCertificates();
-                if(numberOfCertificates > 0) {
+                if (numberOfCertificates > 0) {
                     currentIndex = 0;
                 }
                 notauthorized = false;
-              noparameter = false;
+                noparameter = false;
             }
             cacerts = true;
-         }
-         if(!noparameter){  
-            if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null && 
-               request.getParameter(BUTTON_REVOKE) == null && request.getParameter(BUTTON_RECOVERKEY) == null &&
-               request.getParameter(BUTTON_REPUBLISH) == null ){
-               numberOfCertificates = raBean.getNumberOfCertificates();
-               if(numberOfCertificates > 0)
-                 certificateData = raBean.getCertificate(currentIndex);
-           }
-          }
-          if(request.getParameter(BUTTON_REVOKE) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts){
+        }
+        if (!noparameter) {
+            if (request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null
+                    && request.getParameter(BUTTON_REVOKE) == null && request.getParameter(BUTTON_RECOVERKEY) == null
+                    && request.getParameter(BUTTON_REPUBLISH) == null) {
+                numberOfCertificates = raBean.getNumberOfCertificates();
+                if (numberOfCertificates > 0)
+                    certificateData = raBean.getCertificate(currentIndex);
+            }
+        }
+
+        if (request.getParameter(BUTTON_REVOKE) != null && request.getParameter(HIDDEN_INDEX) != null && !cacerts) {
             currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
-            noparameter=false;
+            noparameter = false;
             final int reason = Integer.parseInt(request.getParameter(SELECT_REVOKE_REASON));
             certificateData = raBean.getCertificate(currentIndex);
-            if(!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername()) && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY) 
-               && (!certificateData.isRevoked() || certificateData.isRevokedAndOnHold()) ) {
-               try {
-                   raBean.revokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(), certificateData.getUsername(),reason);
-               } catch (final org.ejbca.core.model.approval.ApprovalException e) {
-                   message = "THEREALREADYEXISTSAPPOBJ";
-               } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
-                   message = "REQHAVEBEENADDEDFORAPPR";
-               }
+            if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
+                    && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)
+                    && (!certificateData.isRevoked() || certificateData.isRevokedAndOnHold())) {
+                try {
+                    raBean.revokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(), certificateData.getUsername(), reason);
+                } catch (final org.ejbca.core.model.approval.ApprovalException e) {
+                    message = "THEREALREADYEXISTSAPPOBJ";
+                } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
+                    message = "REQHAVEBEENADDEDFORAPPR";
+                }
             }
             try {
-              if (tokenSn !=null) {
-                raBean.loadTokenCertificates(tokenSn);
-              } else {
-                if(userName != null) {
-                  raBean.loadCertificates(userName);
+                if (tokenSn != null) {
+                    raBean.loadTokenCertificates(tokenSn);
                 } else {
-                  raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                    if (userName != null) {
+                        raBean.loadCertificates(userName);
+                    } else {
+                        raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                    }
                 }
-              }
-              notauthorized = false;
-            } catch(final AuthorizationDeniedException e) {
+                notauthorized = false;
+            } catch (final AuthorizationDeniedException e) {
                 
             }
             numberOfCertificates = raBean.getNumberOfCertificates();
             certificateData = raBean.getCertificate(currentIndex);
-          }
-            //-- Pushed unrevoke button
-           if (request.getParameter(BUTTON_UNREVOKE) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts) {
-           
-               currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
-               noparameter = false;
-               certificateData = raBean.getCertificate(currentIndex);
+        }
+        //-- Pushed unrevoke button
+        if (request.getParameter(BUTTON_UNREVOKE) != null && request.getParameter(HIDDEN_INDEX) != null && !cacerts) {
 
-               if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername()) 
-                   && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY) && certificateData.isRevokedAndOnHold()) {
-                       //-- call to unrevoke method
-                       try {
-                           raBean.unrevokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(), certificateData.getUsername());
-                       } catch (final org.ejbca.core.model.approval.ApprovalException e) {
-                           message = "THEREALREADYEXISTSAPPOBJ";
-                       } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
-                           message = "REQHAVEBEENADDEDFORAPPR";
-                       }
-               }
-               
-               try {
-                   if (tokenSn != null) {
-                       raBean.loadTokenCertificates(tokenSn);
-                   } else {
-                       if (userName != null) {
-                           raBean.loadCertificates(userName);
-                       } else {
-                           raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                       }
-                   }
-                   notauthorized = false;
-               } catch (final AuthorizationDeniedException e) {
-                   
-               }
-               
-               numberOfCertificates = raBean.getNumberOfCertificates();
-               certificateData = raBean.getCertificate(currentIndex);
-           }
-          
-          if (request.getParameter(BUTTON_RECOVERKEY) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts) {
+            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
+            noparameter = false;
+            certificateData = raBean.getCertificate(currentIndex);
+
+            if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
+                    && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY) && certificateData.isRevokedAndOnHold()) {
+                //-- call to unrevoke method
+                try {
+                    raBean.unrevokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(),
+                            certificateData.getUsername());
+                } catch (final org.ejbca.core.model.approval.ApprovalException e) {
+                    message = "THEREALREADYEXISTSAPPOBJ";
+                } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
+                    message = "REQHAVEBEENADDEDFORAPPR";
+                }
+            }
+
+            try {
+                if (tokenSn != null) {
+                    raBean.loadTokenCertificates(tokenSn);
+                } else {
+                    if (userName != null) {
+                        raBean.loadCertificates(userName);
+                    } else {
+                        raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                    }
+                }
+                notauthorized = false;
+            } catch (final AuthorizationDeniedException e) {
+
+            }
+
+            numberOfCertificates = raBean.getNumberOfCertificates();
+            certificateData = raBean.getCertificate(currentIndex);
+        }
+
+        if (request.getParameter(BUTTON_RECOVERKEY) != null && request.getParameter(HIDDEN_INDEX) != null && !cacerts) {
             // Mark certificate for key recovery.
             currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
             noparameter = false;
             certificateData = raBean.getCertificate(currentIndex);
             if (!cacerts && raBean.keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername()) && useKeyRecovery) {
                 try {
-                    raBean.markForRecovery(certificateData.getUsername(), certificateData.getCertificate()); 
-                  } catch (final org.ejbca.core.model.approval.ApprovalException e){
-                      message = "THEREALREADYEXISTSAPPROVAL";
-                  } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
-                      message = "REQHAVEBEENADDEDFORAPPR";
-                  }
+                    raBean.markForRecovery(certificateData.getUsername(), certificateData.getCertificate());
+                } catch (final org.ejbca.core.model.approval.ApprovalException e) {
+                    message = "THEREALREADYEXISTSAPPROVAL";
+                } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
+                    message = "REQHAVEBEENADDEDFORAPPR";
+                }
             }
             try {
-              if (tokenSn !=null) {
-               raBean.loadTokenCertificates(tokenSn);
-              } else { 
-                if(userName != null) {
-                  raBean.loadCertificates(userName);
+                if (tokenSn != null) {
+                    raBean.loadTokenCertificates(tokenSn);
                 } else {
-                  raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                    if (userName != null) {
+                        raBean.loadCertificates(userName);
+                    } else {
+                        raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                    }
                 }
-              }
-              notauthorized = false;
-            } catch(final AuthorizationDeniedException e) {
-                
+                notauthorized = false;
+            } catch (final AuthorizationDeniedException e) {
+
             }
             numberOfCertificates = raBean.getNumberOfCertificates();
             certificateData = raBean.getCertificate(currentIndex);
-          }
-          if (request.getParameter(BUTTON_REPUBLISH) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts) {
+        }
+        if (request.getParameter(BUTTON_REPUBLISH) != null && request.getParameter(HIDDEN_INDEX) != null && !cacerts) {
             // Mark certificate for key recovery.
             currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
             noparameter = false;
             certificateData = raBean.getCertificate(currentIndex);
-            message = caBean.republish(certificateData); 
-            try{
-              if (tokenSn !=null) {
-                raBean.loadTokenCertificates(tokenSn);
-              } else { 
-                if(userName != null) {
-                  raBean.loadCertificates(userName);
+            message = caBean.republish(certificateData);
+            try {
+                if (tokenSn != null) {
+                    raBean.loadTokenCertificates(tokenSn);
                 } else {
-                  raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                    if (userName != null) {
+                        raBean.loadCertificates(userName);
+                    } else {
+                        raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                    }
                 }
-              }
-              notauthorized = false;
-            } catch(final AuthorizationDeniedException e) {
-                
+                notauthorized = false;
+            } catch (final AuthorizationDeniedException e) {
+
             }
             numberOfCertificates = raBean.getNumberOfCertificates();
-          }
-           
-           if(request.getParameter(BUTTON_VIEW_NEWER) != null){
-              numberOfCertificates = raBean.getNumberOfCertificates();
-              noparameter=false;
-              if(request.getParameter(HIDDEN_INDEX)!= null){
-                currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) -1;
-                if(currentIndex < 0){
-                  currentIndex = 0;
+        }
+
+        if (request.getParameter(BUTTON_VIEW_NEWER) != null) {
+            numberOfCertificates = raBean.getNumberOfCertificates();
+            noparameter = false;
+            if (request.getParameter(HIDDEN_INDEX) != null) {
+                currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) - 1;
+                if (currentIndex < 0) {
+                    currentIndex = 0;
                 }
                 certificateData = raBean.getCertificate(currentIndex);
                 notauthorized = false;
-              }
-           }
-           if(request.getParameter(BUTTON_VIEW_OLDER) != null){
-              numberOfCertificates = raBean.getNumberOfCertificates();
-              noparameter=false;
-              if(request.getParameter(HIDDEN_INDEX)!= null){
+            }
+        }
+        if (request.getParameter(BUTTON_VIEW_OLDER) != null) {
+            numberOfCertificates = raBean.getNumberOfCertificates();
+            noparameter = false;
+            if (request.getParameter(HIDDEN_INDEX) != null) {
                 currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) + 1;
-                if(currentIndex > numberOfCertificates -1){
-                  currentIndex = numberOfCertificates;
+                if (currentIndex > numberOfCertificates - 1) {
+                    currentIndex = numberOfCertificates;
                 }
                 certificateData = raBean.getCertificate(currentIndex);
                 notauthorized = false;
-              }
-           }
+            }
+        }
+    }
+    
+    private void assertRequestValid() {
+        if (noparameter) {
+            ejbcaBean.getText("YOUMUSTSPECIFYCERT");
+        } else if (notauthorized) {
+            ejbcaBean.getText("NOTAUTHORIZEDTOVIEWCERT");
+        } else if (certificateData == null) {
+            ejbcaBean.getText("CERTIFICATEDOESNTEXIST");
+        } else if (message != null) {
+            ejbcaBean.getText(message);
+        }
     }
     
     public boolean isCacerts() {
