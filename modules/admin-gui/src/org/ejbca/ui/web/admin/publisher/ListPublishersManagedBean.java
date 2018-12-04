@@ -88,7 +88,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     
     // Actions //
     public String editPublisher() {
-        return null;
+        return "editpublisher?faces-redirect=true";
     }
     
     public String deletePublisher() throws AuthorizationDeniedException {
