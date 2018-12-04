@@ -51,7 +51,7 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
     @Before
     public void checkPkcs11DriverAvailable() {
         // Skip test if no PKCS11 driver is installed
-        assumeTrue(CryptoTokenTestUtils.getHSMLibrary() != null);
+        assumeTrue(SystemTestsConfiguration.getPkcs11Library() != null);
     }
 
     @AfterClass

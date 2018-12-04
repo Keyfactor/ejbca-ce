@@ -15,7 +15,7 @@ package org.cesecore.junit.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.SystemTestsConfiguration;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.Runner;
@@ -44,7 +44,7 @@ public class CryptoTokenTestRunner extends Suite {
     private static List<Runner> getRunners(Class<?> klass) {
         List<Runner> runners = new ArrayList<Runner>();
         try {
-            if (CryptoTokenTestUtils.getHSMLibrary() != null) {
+            if (SystemTestsConfiguration.getPkcs11Library() != null) {
                 runners.add(new PKCS11TestRunner(klass));
             }
             
