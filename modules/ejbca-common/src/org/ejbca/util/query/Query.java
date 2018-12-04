@@ -47,7 +47,7 @@ public class Query implements Serializable {
     static final String[] CONNECTOR_SQL_NAMES = { " AND ", " OR ", " AND NOT ", " OR NOT " };
 
     private final List<BasicMatch> matches = new ArrayList<>();
-    private final List<Integer> connectors = new ArrayList<Integer>();
+    private final List<Integer> connectors = new ArrayList<>();
     protected final int type;
     private boolean hasIllegalSqlChars = false;
     
