@@ -13,12 +13,8 @@
 
 package org.ejbca.webtest.helper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -28,37 +24,44 @@ import org.openqa.selenium.WebDriver;
  * @version $Id: CryptoTokenHelper.java 28852 2018-05-04 14:35:13Z oskareriksson $
  *
  */
-public final class CryptoTokenHelper {
-
-    private CryptoTokenHelper() {
-        throw new AssertionError("Cannot instantiate class");
-    }
+public class CryptoTokenHelper extends BaseHelper {
 
     /**
-     * Opens the 'Crypto Tokens' page.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param adminWebUrl the URL of the AdminWeb
+     * Contains constants and references of the 'Crypto Tokens' page.
      */
-    public static void goTo(WebDriver webDriver, String adminWebUrl) {
-        webDriver.get(adminWebUrl);
-        webDriver.findElement(By.xpath("//li/a[contains(@href, 'cryptotokens.jsf')]")).click();
-        assertEquals("Clicking 'Crypto Tokens' link did not redirect to expected page",
-                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
-                "/ejbca/adminweb/cryptotoken/cryptotokens.jsf");
-    }
-
-    /**
-     * Checks that a given Crypto Token exists in the table.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param cryptoTokenName the name of the Crypto Token
-     */
-    public static void assertExists(WebDriver webDriver, String cryptoTokenName) {
-        try {
-            webDriver.findElement(By.xpath("//td/a/span[text()='" + cryptoTokenName + "']"));
-        } catch (NoSuchElementException e) {
-            fail(cryptoTokenName + " was not found in the Crypto Token table");
+    public static class Page {
+        // General
+        static final String PAGE_URI = "/ejbca/adminweb/cryptotoken/cryptotokens.xhtml";
+        static final By PAGE_LINK = By.id("caCryptotokens");
+        
+        // Dynamic references
+        static By getTokenOptionContainingText(final String text) {
+            return By.xpath("//td/a/span[text()='" + text + "']");
         }
+    }
+    
+    public CryptoTokenHelper(WebDriver webDriver) {
+        super(webDriver);
+    }
+
+    /**
+     * Opens the page 'Crypto Tokens' by clicking menu link on home page and asserts the correctness of resulting URI.
+     *
+     * @param webUrl home page URL.
+     */
+    public void openPage(final String webUrl) {
+        openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);
+    }
+
+    /**
+     * Checks that a given Crypto Token exists in the table of available tokens.
+     * 
+     * @param cryptoTokenName the name of the Crypto Token to check for.
+     */
+    public void assertTokenExists(String cryptoTokenName) {
+        assertElementExists(
+                Page.getTokenOptionContainingText(cryptoTokenName),
+                cryptoTokenName + " was not found on 'Crypto Tokens' page."
+        );
     }
 }
