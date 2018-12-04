@@ -146,10 +146,9 @@
 	                   		disabled="#{endEntityProfilesMBean.viewOnly}">
 				    		<f:ajax render=":eeProfiles:passwordfailedattemptsgrid"/>
 				    	</h:selectBooleanCheckbox>
-				    	<h:outputLabel for="passwordFailedAttemptsGrid" value="#{web.text.USE}" />
-				    	:&nbsp;
-				    	<h:outputLabel for="passwordFailedAttemptsGrid" value="#{web.text.DEFAULT}" />
-				    	=
+				    	<h:outputLabel for="passwordFailedAttemptsGrid" value="#{web.text.USE} : " />
+				    	&nbsp;
+				    	<h:outputLabel for="passwordFailedAttemptsGrid" value="#{web.text.DEFAULT} = " />
 				    	<h:panelGrid columns="6" >
 				    		<h:inputText 
 				    			id="maxFailLoginsDefaultValue" 
@@ -187,10 +186,9 @@
 						disabled="#{endEntityProfilesMBean.viewOnly}">
 				    	<f:ajax render=":eeProfiles:batchGenerationGrid"/>
 				    </h:selectBooleanCheckbox>
-				    <h:outputLabel for="batchGenerationGrid" value="#{web.text.USE}" />
-				    :&nbsp;
-				    <h:outputLabel for="batchGenerationGrid" value="#{web.text.DEFAULT}" />
-				    =
+				    <h:outputLabel for="batchGenerationGrid" value="#{web.text.USE} : " />
+				    &nbsp;
+				    <h:outputLabel for="batchGenerationGrid" value="#{web.text.DEFAULT} = " />
 				    <h:selectBooleanCheckbox 
 				    	id="batchDefaultCheckBox" 
 				    	value="#{endEntityProfileMBean.batchGenerationDefault}" 
@@ -572,7 +570,6 @@
 					<h:panelGroup>
 	       	    		<h:selectManyListbox id="availableCA" size="7" value="#{endEntityProfileMBean.currentDefaultCA}">
 	       	    			<f:selectItems id="availableCAList" value="#{endEntityProfileMBean.defaultCAs}"/>
-	       	    			<!-- ABOVE MIGHT NOT WORK, IT'S A SELECT MANY... -->
 	       	    		</h:selectManyListbox>
 	       	    	</h:panelGroup>
 				</h:panelGrid>
@@ -595,7 +592,6 @@
 					<h:panelGroup>
 	       	    		<h:selectManyListbox id="availableToken" size="7" value="#{endEntityProfileMBean.currentDefaultToken}">
 	       	    			<f:selectItems id="availableTokenList" value="#{endEntityProfileMBean.defaultTokens}"/>
-	       	    			<!-- ABOVE MIGHT NOT WORK, IT'S A SELECT MANY... -->
 	       	    		</h:selectManyListbox>
 	       	    	</h:panelGroup>
 				</h:panelGrid>
@@ -630,7 +626,7 @@
 				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
 	       	    		<h:selectManyListbox id="availableHardTokens" size="7" value="#{endEntityProfileMBean.currentHardTokenIssuer}">
 	       	    			<f:selectItems id="availableHardTokensList" value="#{endEntityProfileMBean.hardTokenIssuers}"/>
-	       	    			<!-- CHANGE ABOVE METHODS FROM TOKENS TO HARDTOKENS !!! -->
+	       	    			<!-- CHANGE ABOVE METHODS FROM TOKENS TO HARDTOKENS -->
 	       	    		</h:selectManyListbox>
 	       	    </h:panelGroup>
 			</h:panelGrid>
@@ -673,8 +669,7 @@
 							disabled="#{endEntityProfilesMBean.viewOnly}">
 							<f:ajax render=":eeProfiles:header_othercertificatedata"/>
 						</h:selectBooleanCheckbox>
-				    	<h:outputLabel for="header_othercertificatedata"  value="#{web.text.USE}"/>
-						:
+				    	<h:outputLabel for="header_othercertificatedata"  value="#{web.text.USE} : "/>
 						<h:outputLabel for="header_othercertificatedata"  value="#{web.text.VALUE}"/>
 						<h:inputText 
 							id="textFieldCertValidityStartTime" 
@@ -706,8 +701,7 @@
 							disabled="#{endEntityProfilesMBean.viewOnly}">
 							<f:ajax render=":eeProfiles:header_othercertificatedata"/>
 						</h:selectBooleanCheckbox>
-				    	<h:outputLabel for="header_othercertificatedata"  value="#{web.text.USE}"/>
-						:
+				    	<h:outputLabel for="header_othercertificatedata"  value="#{web.text.USE} : "/>
 						<h:outputLabel for="header_othercertificatedata"  value="#{web.text.VALUE}"/>
 						<h:inputText 
 							id="textFieldCertValidityEndTime" 
@@ -845,10 +839,8 @@
 						value="#{endEntityProfileMBean.useKeyRecoverable}" 
 						disabled="#{endEntityProfilesMBean.viewOnly}">
 					</h:selectBooleanCheckbox>
-					<h:outputLabel for="header_otherdata"  value="#{web.text.USE}" />
-					:
-					<h:outputLabel for="header_otherdata"  value="#{web.text.DEFAULT}"/>
-					=
+					<h:outputLabel for="header_otherdata"  value="#{web.text.USE} : " />
+					<h:outputLabel for="header_otherdata"  value="#{web.text.DEFAULT} = "/>
 					<h:selectBooleanCheckbox 
 						id="keyRecoverableDefaultCheckBox" 
 						value="#{endEntityProfileMBean.keyRecoverableDefault}" 
@@ -881,10 +873,8 @@
 							disabled="#{endEntityProfilesMBean.viewOnly}">
 							<f:ajax render=":eeProfiles:header_otherdata"/>
 						</h:selectBooleanCheckbox>
-				    	<h:outputLabel for="header_otherdata"  value="#{web.text.USE}"/>
-						:
-						<h:outputLabel for="header_otherdata"  value="#{web.text.VALUE}"/>
-						=
+				    	<h:outputLabel for="header_otherdata"  value="#{web.text.USE} : "/>
+						<h:outputLabel for="header_otherdata"  value="#{web.text.VALUE} = "/>
 						<h:selectOneMenu id="revocationReasonMenu" value="#{endEntityProfileMBean.currentRevocationReason}" disabled="#{endEntityProfilesMBean.viewOnly}">
 							<f:selectItems id="revocationReasonList" value="#{endEntityProfileMBean.revocationReasons}"/>
 					    </h:selectOneMenu>
@@ -910,10 +900,8 @@
 						disabled="#{endEntityProfilesMBean.viewOnly}">
 						<f:ajax render=":eeProfiles:header_otherdata"/>
 					</h:selectBooleanCheckbox>
-					<h:outputLabel for="header_otherdata"  value="#{web.text.USE}" />
-					:
-					<h:outputLabel for="header_otherdata"  value="#{web.text.DEFAULT}"/>
-					=
+					<h:outputLabel for="header_otherdata"  value="#{web.text.USE} : " />
+					<h:outputLabel for="header_otherdata"  value="#{web.text.DEFAULT} = "/>
 					<h:selectBooleanCheckbox 
 						id="sendNotificationDefaultCheckBox" 
 						value="#{endEntityProfileMBean.sendNotificationDefault}" 
@@ -993,30 +981,25 @@
 				
 				<!-- c:forEach -->
 				
-				<h:panelGrid id="printingGrid1" columns="1" width="100%" columnClasses="gridColumnBottom">
 				<h:outputLabel>&nbsp;</h:outputLabel>
-				<h:outputLabel>&nbsp;</h:outputLabel>
-				<h:commandButton id="uploadTemplateButton" value="#{web.text.UPLOADTEMPLATE}">
-					<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL -->
-				</h:commandButton>
+				<h:panelGrid id="printingGrid1" width="100%" columns="1">
+					<h:panelGroup>
+						<h:outputLabel for="printingGrid1" style="font-weight: bold;" value="#{web.text.PRINTING}"/>
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:outputLabel for="printingGrid1" value="#{web.text.PRINTERNAME}"/>
+					</h:panelGroup>
+					&nbsp;
+					<h:panelGroup>
+						<h:outputLabel for="printingGrid1" value="#{web.text.PRINTEDCOPIES}"/>
+					</h:panelGroup>
+					&nbsp;
+					<h:panelGroup>
+						<h:outputLabel for="printingGrid1" value="#{web.text.CURRENTTEMPLATE}"/>			
+					</h:panelGroup>
+					<br />
 				</h:panelGrid>
 				<h:panelGrid id="printingGrid2" width="100%" columns="1">
-					<h:panelGroup>
-						<h:outputLabel for="printingGrid2" style="font-weight: bold;" value="#{web.text.PRINTING}"/>
-					</h:panelGroup>
-					<h:panelGroup>
-						<h:outputLabel for="printingGrid2" value="#{web.text.PRINTERNAME}"/>
-					</h:panelGroup>
-					&nbsp;
-					<h:panelGroup>
-						<h:outputLabel for="printingGrid2" value="#{web.text.PRINTEDCOPIES}"/>
-					</h:panelGroup>
-					&nbsp;
-					<h:panelGroup>
-						<h:outputLabel for="printingGrid2" value="#{web.text.CURRENTTEMPLATE}"/>			
-					</h:panelGroup>
-				</h:panelGrid>
-				<h:panelGrid id="printingGrid3" width="100%" columns="1">
 				    <h:panelGroup>
 				    	<h:selectBooleanCheckbox 
 				    		id="printUserDataCheckBox" 
@@ -1024,10 +1007,8 @@
 				    		disabled="#{endEntityProfilesMBean.viewOnly}">
 							<f:ajax render=":eeProfiles:header_otherdata"/>
 						</h:selectBooleanCheckbox>
-						<h:outputLabel for="printingGrid3"  value="#{web.text.USE}" />
-						:
-						<h:outputLabel for="printingGrid3"  value="#{web.text.DEFAULT}"/>
-						=
+						<h:outputLabel for="printingGrid2"  value="#{web.text.USE} : " />
+						<h:outputLabel for="printingGrid2"  value="#{web.text.DEFAULT} = "/>
 						<h:selectBooleanCheckbox 
 							id="printUserDataDefaultCheckBox" 
 							value="#{endEntityProfileMBean.printUserDataDefault}" 
@@ -1036,19 +1017,36 @@
 						&nbsp;
 						<h:selectBooleanCheckbox id="printUserDataRequiredCheckBox" value="#{endEntityProfileMBean.printUserDataRequired}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}">
 						</h:selectBooleanCheckbox>
-						<h:outputLabel for="printingGrid3" value="#{web.text.REQUIRED}"/>
+						<h:outputLabel for="printingGrid2" value="#{web.text.REQUIRED}"/>
 				    </h:panelGroup>
 				    <h:selectOneMenu id="printerMenu" value="#{endEntityProfileMBean.currentPrinter}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}">
 						<f:selectItems id="printerList" value="#{endEntityProfileMBean.printers}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}"/>
 					</h:selectOneMenu>
-					
 					<h:selectOneMenu id="printedCopiesMenu" value="#{endEntityProfileMBean.currentNumberCopies}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}">
 						<f:selectItems id="printedCopiesNumberList" value="#{endEntityProfileMBean.numberOfCopies}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfilesMBean.viewOnly}"/>
 					</h:selectOneMenu>
 					&nbsp;
-					<h:outputLabel for="printingGrid3" value="#{endEntityProfileMBean.currentTemplate}"/>
+					<h:outputLabel for="printingGrid2" value="#{endEntityProfileMBean.currentTemplate}"/>
 				</h:panelGrid>
+			</h:panelGrid>	
+			<h:panelGrid id="uploadGrid" columns="3" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
+				<h:panelGroup>&nbsp;</h:panelGroup>
+				<h:panelGroup>
+					<h:outputLabel for="uploadGrid" value="#{web.text.PATHTOTEMPLATE}"/>			
+				</h:panelGroup>
+				<h:panelGroup>
+					<t:inputFileUpload 
+						id="templateUploadInput" 
+						value="#{endEntityProfileMBean.uploadFile}" 
+						size="20" 
+						rendered="#{endEntityProfilesMBean.authorizedToEdit}">
+					</t:inputFileUpload >
+					<h:commandButton id="uploadTemplateButton" value="#{web.text.UPLOADTEMPLATE}">
+						<f:ajax render="@this"/> 
+					</h:commandButton>
+				</h:panelGroup>
 			</h:panelGrid>
+						
 			<h:panelGrid id="header_saveorcancel" columns="3" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">		
 	       		<h:panelGroup>&nbsp;</h:panelGroup>
 	       		<h:panelGroup>&nbsp;</h:panelGroup>
