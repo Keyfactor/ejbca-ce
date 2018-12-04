@@ -92,9 +92,140 @@
                     <h:outputLabel value="#{web.text.CERT_ISSUERDN}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCertificateMBean.unescapedRdnValue}"/>
+                    <h:outputLabel value="#{viewCertificateMBean.issuerDnUnescaped}"/>
                 </h:panelGroup>
                 
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CERT_VALIDFROM}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateData.validFromString}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CERT_VALIDTO}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateData.validToString}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{web.text.CERT_SUBJECTDN}"/></strong>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCertificateMBean.subjectDnUnescaped}"/></strong>
+                </h:panelGroup>
+                
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_ABBR_SUBJECTALTNAME}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.subjectAltName}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_ABBR_SUBJECTDIRATTRS}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.subjectDirAttributes}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CERT_PUBLICKEY}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.publicKey}"/>
+                </h:panelGroup>
+            
+            </h:panelGrid>    
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_ABBR_BASICCONSTRAINTS}" styleClass="title"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <strong><h:outputLabel value="#{viewCertificateMBean.basicConstraints}"/></strong>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_ABBR_KEYUSAGE}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.keyUsage}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_ABBR_EXTENDEDKEYUSAGE}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.extendedKeyUsage}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_ABBR_NAMECONSTRAINTS}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.hasNameConstraints ? web.text.YES : web.text.NO}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_ABBR_AUTHORITYINFOACCESS}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.authorityInfoAccess}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_ABBR_QCSTATEMENTS}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.qcStatement ? web.text.YES : web.text.NO}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.EXT_CERTIFICATE_TRANSPARENCY_SCTS}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateTransparencySCTs ? web.text.YES : web.text.NO}"/>
+                </h:panelGroup>
+                
+                
+                <ui:remove>
+                    <!-- TODO:  !certificatedata.getType().equalsIgnoreCase("CVC")  condition ends here. implement!-->
+                </ui:remove>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.SIGNATUREALGORITHM}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateData.signatureAlgoritm}"/>
+                </h:panelGroup>
+                
+                <ui:remove>
+                    <!-- Certificate information -->
+                </ui:remove>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.FINGERPRINT_SHA256}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.fingerPrint}" styleClass="fingerprint"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.FINGERPRINT_SHA1}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel styleClass="fingerprint" value="#{viewCertificateMBean.certificateData.SHA1Fingerprint}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.REVOKED}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateData.revoked}"/>
+                </h:panelGroup>
             </h:panelGrid>
         </h:form>
     </ui:define>
