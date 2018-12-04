@@ -39,7 +39,7 @@ public class CaHelper extends BaseHelper {
         static final String PAGE_URI = "/ejbca/adminweb/ca/editcas/managecas.xhtml";
         static final By PAGE_LINK = By.id("caEditcas");
 
-        //
+        // Buttons
         static final By BUTTON_CREATE_CA = By.id("managecas:buttoncreateca");
         static final By BUTTON_SAVE = By.id("editcapage:buttoncreate");
         static final By BUTTON_EDIT = By.xpath("//input[@name='buttoneditca']");
@@ -47,10 +47,13 @@ public class CaHelper extends BaseHelper {
         static final By BUTTON_DELETE_CA = By.xpath("//input[@name='buttondeleteca']");
 
         static final By SELECT_CA = By.id("managecas:selectcas");
+        static final By SELECT_CRYPTO_TOKEN = By.id("editcapage:selectcryptotoken");
+        static final By SELECT_SIGNED_BY = By.id("editcapage:cadatasignedby");
+        static final By SELECT_CERT_PROFILE = By.id("editcapage:selectcertificateprofile");
 
         static final By INPUT_CANAME = By.id("managecas:textfieldcaname");
         static final By INPUT_VALIDITY = By.id("editcapage:textfieldvalidity");
-        static final By INPUT_SUBJECT_DN = By.id("textfieldsubjectdn");
+        static final By INPUT_SUBJECT_DN = By.id("editcapage:textfieldsubjectdn");
 
         // Dynamic references
         static By getCaTableRowContainingText(final String text) {
@@ -58,10 +61,30 @@ public class CaHelper extends BaseHelper {
         }
     }
 
+    /**
+     * Enum of available CaType with corresponding locator
+     */
+    public enum CaType {
+
+        X509(By.id("editcapage:catypex509")),
+        CVC(By.id("editcapage:catypecvc"));
+        
+        private final By typeLocator;
+        
+        private CaType(By name) {
+            this.typeLocator = name;
+        }
+
+        public By getLocatorId() {
+            return this.typeLocator;
+        }
+    }
+    
     public CaHelper(final WebDriver webDriver) {
         super(webDriver);
     }
 
+    
     /**
      * Opens the page 'Certificate Authorities' by clicking menu link on home page and asserts the correctness of resulting URI.
      *
@@ -105,6 +128,42 @@ public class CaHelper extends BaseHelper {
         clickLink(Page.BUTTON_SAVE);
     }
 
+    /**
+     * Selects the type of CA by clicking the specified CaType button.
+     * 
+     * @param type of CA to set. CaType.X509 or CaType.CVC
+     */
+    public void setCaType(final CaType type) {
+        clickLink(type.getLocatorId());
+    }
+    
+    /**
+     * Selects the specified certificate profile for the CA being edited.
+     * 
+     * @param profileName of the certificate profile to select.
+     */
+    public void setCertificateProfile(final String profileName) {
+        selectOptionByName(Page.SELECT_CERT_PROFILE, profileName);
+    }
+    
+    /**
+     * Selects Crypto Token from the drop down in the edit CA page
+     * 
+     * @param tokenName of the token to select
+     */
+    public void setCryptoToken(final String tokenName) {
+        selectOptionByName(Page.SELECT_CRYPTO_TOKEN, tokenName);
+    }
+    
+    /**
+     * Selects the specified CA from the "Signed By" drop down menu.
+     * 
+     * @param caName of the CA to select
+     */
+    public void setSignedBy(final String caName) {
+        selectOptionByName(Page.SELECT_SIGNED_BY, caName);
+    }
+    
     /**
      * Sets the CA's Subject DN.
      *

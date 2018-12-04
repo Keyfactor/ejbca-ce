@@ -15,15 +15,14 @@ package org.ejbca.webtest.scenario;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.helper.CaHelper.CaType;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * Creates a self signed CVC CA using a dedicated Crypto Token.
@@ -36,6 +35,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
     private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
+    private static CryptoTokenHelper cryptoTokenHelper;
 
     private static final String rootName = "ECAQA3";
     private static final String subName = "subCA ECAQA3";
@@ -49,6 +49,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
         webDriver = getWebDriver();
         // Init helpers
         caHelper = new CaHelper(webDriver);
+        cryptoTokenHelper = new CryptoTokenHelper(webDriver);
     }
 
     @AfterClass
@@ -66,7 +67,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
         caHelper.addCa(rootName);
 
         // Set CA Type, Subject DN and Validity
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selectcatype']")))).selectByVisibleText("CVC");
+        caHelper.setCaType(CaType.CVC);
         caHelper.setSubjectDn(rootDn);
         caHelper.setValidity("1y");
 
@@ -77,8 +78,8 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
 
     @Test
     public void b_checkCryptoToken() {
-        CryptoTokenHelper.goTo(webDriver, getAdminWebUrl());
-        CryptoTokenHelper.assertExists(webDriver, rootName);
+        cryptoTokenHelper.openPage(getAdminWebUrl());
+        cryptoTokenHelper.assertTokenExists(rootName);
     }
 
     @Test
@@ -87,12 +88,12 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
         caHelper.addCa(subName);
 
         // Set CA Type, Crypto Token, Subject DN, Signed By, Validity and Certificate Profile
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selectcatype']")))).selectByVisibleText("CVC");
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selectcryptotoken']")))).selectByVisibleText(rootName);
+        caHelper.setCaType(CaType.CVC);
+        caHelper.setCryptoToken(rootName);
         caHelper.setSubjectDn(subDn);
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selectsignedby']")))).selectByVisibleText(rootName);
+        caHelper.setSignedBy(rootName);
         caHelper.setValidity("2y");
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selectcertificateprofile']")))).selectByVisibleText("SUBCA");
+        caHelper.setCertificateProfile("SUBCA");
 
         // Save the CA and check that save was successful
         caHelper.saveCa();

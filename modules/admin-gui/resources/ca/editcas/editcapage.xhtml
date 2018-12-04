@@ -76,12 +76,14 @@
 				<h:panelGroup id="changecatype"
 					rendered="#{not editCAsMBean.editCA}">
 					<h:commandButton
+						id="catypex509"
 						styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeX509?'selected':'notSelected'}"
 						action="#{editCAsMBean.setCaTypeX509()}"
 						value="#{editCAsMBean.caTypeX509?'✓':' '}#{web.text.X509}">
 						<f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form" />
 					</h:commandButton>
 					<h:commandButton
+						id="catypecvc"
 						styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeCVC?'selected':''}"
 						action="#{editCAsMBean.setCaTypeCVC()}"
 						value="#{editCAsMBean.caTypeCVC?'✓':' '}#{web.text.CVCCA}">
@@ -152,6 +154,7 @@
 					<h:outputText value="#{web.text.CRYPTOTOKEN_NOSUITABLE}"
 						rendered="#{not editCAsMBean.cryptoTokenSuitable}" />
 					<h:selectOneMenu name="selectcryptotoken"
+						id="selectcryptotoken"
 						rendered="#{editCAsMBean.cryptoTokenSuitable}"
 						value="#{editCAsMBean.cryptoTokenIdParam}">
 						<f:selectItems value="#{editCAsMBean.availableCryptoTokenList}" />
@@ -638,7 +641,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.editCA}">
-					<h:selectOneMenu value="#{editCAsMBean.signedByString}"
+					<h:selectOneMenu id="cadatasignedby" value="#{editCAsMBean.signedByString}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:selectItems value="#{editCAsMBean.signedByCreateCAList}" />
 						<f:ajax event="change"
