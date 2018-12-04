@@ -37,11 +37,11 @@
         
         <h:form id="viewcertificate">
             <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not empty viewCertificateMBean.userName}">
                     <strong><h:outputLabel value="#{web.text.USERNAME}"/></strong>
                 </h:panelGroup>
-                <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCertificateMBean.certificateData.username}"/></strong>
+                <h:panelGroup rendered="#{not empty viewCertificateMBean.userName}">
+                    <strong><h:outputLabel value="#{viewCertificateMBean.userName}"/></strong>
                 </h:panelGroup>
                 
                 <h:panelGroup>
@@ -56,18 +56,28 @@
                 <!-- Index -->
                 </ui:remove>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not empty viewCertificateMBean.userName and not empty viewCertificateMBean.tokenSn}">
                     <h:outputLabel value="#{web.text.HARDTOKENSN}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not empty viewCertificateMBean.userName and not empty viewCertificateMBean.tokenSn}">
                     <h:outputLabel value="#{viewCertificateMBean.tokenSn}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not empty viewCertificateMBean.userName}">
                     <h:outputLabel value="#{web.text.CERTIFICATENR}"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not empty viewCertificateMBean.userName}">
                     <h:outputLabel value="#{viewCertificateMBean.nextIndex} #{web.text.OF} #{viewCertificateMBean.numberOfCertificates}"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+	                <h:button rendered="#{!viewCertificateMBean.cacerts and viewCertificateMBean.currentIndex lt viewCertificateMBean.numberOfCertificates -1}" value="#{web.text.VIEWOLDER}" tabindex="1"/>
+	                <h:button rendered="#{viewCertificateMBean.cacerts and viewCertificateMBean.currentIndex lt viewCertificateMBean.numberOfCertificates -1}" value="#{web.text.VIEWISSUING}" tabindex="1"/>
+                </h:panelGroup>
+                
+                <h:panelGroup>
+	                <h:commandButton rendered="#{!viewCertificateMBean.cacerts and (viewCertificateMBean.currentIndex > 0)}" value="#{web.text.VIEWNEWER}" tabindex="2"/>
+	                <h:commandButton rendered="#{viewCertificateMBean.cacerts and (viewCertificateMBean.currentIndex > 0)}" value="#{web.text.VIEWSUBORDINATE}" tabindex="2"/>
                 </h:panelGroup>
                 
                 <ui:remove>
@@ -108,14 +118,15 @@
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.certificateData.validToString}"/>
                 </h:panelGroup>
-                
+            </h:panelGrid>
+            
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     <strong><h:outputLabel value="#{web.text.CERT_SUBJECTDN}"/></strong>
                 </h:panelGroup>
                 <h:panelGroup>
                     <strong><h:outputLabel value="#{viewCertificateMBean.subjectDnUnescaped}"/></strong>
                 </h:panelGroup>
-                
                 
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_SUBJECTALTNAME}"/>
@@ -137,10 +148,9 @@
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.publicKey}"/>
                 </h:panelGroup>
-            
-            </h:panelGrid>    
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+            </h:panelGrid>
                 
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <strong><h:outputLabel value="#{web.text.EXT_ABBR_BASICCONSTRAINTS}" styleClass="title"/></strong>
                 </h:panelGroup>
@@ -226,6 +236,11 @@
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.certificateData.revoked}"/>
                 </h:panelGroup>
+                
+                <ui:remove>
+                    <!-- Actions -->
+                </ui:remove>
+                
             </h:panelGrid>
         </h:form>
     </ui:define>
