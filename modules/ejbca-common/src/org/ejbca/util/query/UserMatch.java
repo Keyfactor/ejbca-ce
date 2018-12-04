@@ -66,6 +66,7 @@ public class UserMatch extends BasicMatch {
     // Represents the column names in ra userdata table.
     private static final String MATCH_WITH_USERNAMESTRING = "UPPER(username)";
     private static final String MATCH_WITH_SUBJECTDN = "UPPER(subjectDN)";
+    private static final String MATCH_WITH_EMAILSTRING = "UPPER(subjectEmail)";
     private static final String[] MATCH_WITH_SUBJECTDN_NAMES = {
         "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=",
         "DC", "C="
@@ -127,6 +128,14 @@ public class UserMatch extends BasicMatch {
                 returnval = MATCH_WITH_USERNAMESTRING + " LIKE '" + matchvalue + "%'";
             } else if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
                 returnval = MATCH_WITH_USERNAMESTRING + " LIKE '%" + matchvalue + "%'";
+            }
+        } else if (matchwith == MATCH_WITH_EMAIL) {
+            if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+                returnval = MATCH_WITH_EMAILSTRING + " = '" + matchvalue.trim() + "'";
+            } else if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                returnval = MATCH_WITH_EMAILSTRING + " LIKE '" + matchvalue + "%'";
+            } else if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+                returnval = MATCH_WITH_EMAILSTRING + " LIKE '%" + matchvalue + "%'";
             }
         } else if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
             // Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression

@@ -558,18 +558,23 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         con.connect();
         return con;
     }
-
+    
     protected void createUser(final String username, final String subjectDn, final String caName, final String endEntityProfileName, final String certificateProfileName)
             throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception,
             UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
-        // Test to add a user.
+        createUser(username, subjectDn, null, caName, endEntityProfileName, certificateProfileName);
+    }
+
+    protected void createUser(final String username, final String subjectDn, final String email, final String caName, final String endEntityProfileName, final String certificateProfileName)
+            throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception,
+            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
         final UserDataVOWS user = new UserDataVOWS();
         user.setUsername(username);
         user.setPassword(PASSWORD);
         user.setClearPwd(false);
         user.setSubjectDN(subjectDn);
         user.setCaName(caName);
-        user.setEmail(null);
+        user.setEmail(email);
         user.setSubjectAltName(null);
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);

@@ -207,6 +207,37 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWS {
     }
     
     @Test
+    public void testFindUserByEmail() throws Exception {
+        String prefix = "testFindUserByEmail";
+        final String endEntityProfileName = prefix + "EEP";
+        final String certificateProfileName = prefix + "CP";
+        int certificateProfileId = createCertificateProfile(certificateProfileName);
+        createEndEndtityProfile(endEntityProfileName, certificateProfileId);
+        final String username = prefix + "User1";
+        final String caname = prefix + "TestCa";
+        createTestCA(caname);
+        final String subjectDn = "CN="+username+",C=SE";
+        final String email = prefix+"@"+prefix+".com";
+        createUser(username, subjectDn, email, caname, endEntityProfileName, certificateProfileName);
+        try {
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_EMAIL);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+            usermatch.setMatchvalue(email);
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertNotNull("No users were returned.", userdatas);
+            assertEquals("Incorrect number of users from e-mail match.", 1, userdatas.size());
+            assertEquals("Wrong user was returned.", email, userdatas.get(0).getEmail());
+        } finally {
+            endEntityManagementSession.deleteUser(intAdmin, username);
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            CaTestUtils.removeCa(intAdmin, caname, caname);
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, endEntityProfileName);
+            certificateProfileSession.removeCertificateProfile(intAdmin, certificateProfileName);
+        }
+    }
+    
+    @Test
     public void testFindUserByEndEntityProfile() throws Exception {
         String prefix = "testFindUserByEndEntityProfile";
         final String endEntityProfileName = prefix + "EEP";
