@@ -654,7 +654,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return certificateTransparencySCTs;
     }
     
-    public boolean isCvc() {
+    public boolean getIsCvc() {
         return isCvc;
     }
     
