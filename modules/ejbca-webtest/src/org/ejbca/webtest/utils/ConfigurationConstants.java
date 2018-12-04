@@ -42,5 +42,6 @@ public final class ConfigurationConstants {
     public static final String EJBCA_NAMESPACE  = "ejbca.namespace";
 
     // Browser Constants
+    public static final String BROWSER_BINARY  = "browser.firefox.binary";
     public static final String BROWSER_DOWNLOADDIR  = "browser.downloaddir";
 }

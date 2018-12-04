@@ -59,6 +59,7 @@ public abstract class WebTestBase {
     private static String ejbcaSslPort;
     private static String ejbcaPort;
     private static String downloadDir;
+    private static String browserBinary; // null = don't override default
 
     private static WebDriver webDriver;
     private static WebDriverWait webDriverWait;
@@ -76,30 +77,35 @@ public abstract class WebTestBase {
      * @param requireCert if certificate is required
      * @param profile browser profile to use. Defined in ConfigurationConstants, null will use default profile.
      */
-    public static void beforeClass(final boolean requireCert, final String profile) {
+    public static void beforeClass(final boolean requireCert, final String profileConfigProperty) {
         // Init properties
         setGlobalConstants();
         // Init gecko driver
         config.setGeckoDriver();
+        FirefoxOptions firefoxOptions = new FirefoxOptions();
         if (requireCert) {
-            ProfilesIni allProfiles = new ProfilesIni();
-            FirefoxProfile firefoxProfile;
-            if (profile != null) {
-                firefoxProfile = allProfiles.getProfile(config.getProperty(profile));
-            } else {
-                firefoxProfile = allProfiles.getProfile(config.getProperty(ConfigurationConstants.PROFILE_FIREFOX_DEFAULT));
+            final ProfilesIni allProfiles = new ProfilesIni();
+            final FirefoxProfile firefoxProfile;
+            final String configProperty = profileConfigProperty != null ? profileConfigProperty : ConfigurationConstants.PROFILE_FIREFOX_DEFAULT;
+            final String profileName = config.getProperty(configProperty);
+            if (StringUtils.isEmpty(profileName)) {
+                throw new IllegalStateException("Property '" + configProperty + "' must be defined in modules/ejbca-webtest/conf/profiles.properties");
+            }
+            firefoxProfile = allProfiles.getProfile(profileName);
+            if (firefoxProfile == null) {
+                throw new IllegalStateException("Profile '" + profileName + "' was not found (defined by property '" + configProperty + "').");
             }
             firefoxProfile.setPreference("security.default_personal_cert", "Select Automatically");
             firefoxProfile.setPreference("browser.download.folderList", 2);
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
             firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream");
-            FirefoxOptions firefoxOptions = new FirefoxOptions();
             firefoxOptions.setProfile(firefoxProfile);
             firefoxOptions.setAcceptInsecureCerts(true);
-            webDriver = new FirefoxDriver(firefoxOptions);
-        } else {
-            webDriver = new FirefoxDriver();
         }
+        if (browserBinary != null) {
+            firefoxOptions.setBinary(browserBinary);
+        }
+        webDriver = new FirefoxDriver(firefoxOptions);
 
         webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         webDriverWait = new WebDriverWait(webDriver, 5, 50);
@@ -122,6 +128,7 @@ public abstract class WebTestBase {
         ejbcaPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT);
         ejbcaSslPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT_SSL);
         downloadDir = config.getProperty(ConfigurationConstants.BROWSER_DOWNLOADDIR);
+        browserBinary = config.getProperty(ConfigurationConstants.BROWSER_BINARY);
     }
 
     public String getCaName() {
