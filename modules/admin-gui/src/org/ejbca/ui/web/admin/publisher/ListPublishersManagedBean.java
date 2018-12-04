@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -24,12 +25,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.common.exception.ReferencesToItemExistException;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 
@@ -46,7 +48,11 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ListPublishersManagedBean.class);
     
-    private final EjbLocalHelper ejb = new EjbLocalHelper();
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
+    
     private String selectedPublisherName;
     private String newPublisherName = StringUtils.EMPTY;
     
@@ -80,9 +86,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
         return availablePublishers;
     }
     
-    
     // Actions //
-    
     public String editPublisher() {
         return null;
     }
@@ -90,7 +94,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     public String deletePublisher() throws AuthorizationDeniedException {
         if (StringUtils.isNotEmpty(selectedPublisherName)) {
             try {
-                ejb.getPublisherSession().removePublisher(getAdmin(), selectedPublisherName);
+                publisherSession.removePublisher(getAdmin(), selectedPublisherName);
             } catch (ReferencesToItemExistException e) {
                 log.info("Error while deleting the publisher " + selectedPublisherName + e);
                 addErrorMessage("COULDNTDELETEPUBLISHERDUETOEXISTINGREF");
@@ -109,7 +113,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             addErrorMessage("YOUHAVETOENTERAPUBLISHER");
         } else {
             try {
-                ejb.getPublisherSession().renamePublisher(getAdmin(), selectedPublisherName, newPublisherName);
+                publisherSession.renamePublisher(getAdmin(), selectedPublisherName, newPublisherName);
             } catch (PublisherExistsException e) {
                 log.info("Publisher " + newPublisherName + " already exists!", e);
                 addErrorMessage("PUBLISHERALREADYEXISTS", newPublisherName);
@@ -124,7 +128,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             addErrorMessage("YOUHAVETOENTERAPUBLISHER");
         } else {
             try {
-                ejb.getPublisherSession().addPublisher(getAdmin(), newPublisherName, new LdapPublisher());
+                publisherSession.addPublisher(getAdmin(), newPublisherName, new LdapPublisher());
             } catch (PublisherExistsException e) {
                 log.info("Publisher " + newPublisherName + " already exists!", e);
                 addErrorMessage("PUBLISHERALREADYEXISTS", newPublisherName);
@@ -141,7 +145,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
             addErrorMessage("YOUHAVETOENTERAPUBLISHER");
         } else {            
                 try {
-                    ejb.getPublisherSession().clonePublisher(getAdmin(), selectedPublisherName, newPublisherName);
+                    publisherSession.clonePublisher(getAdmin(), selectedPublisherName, newPublisherName);
                 } catch (PublisherDoesntExistsException e) {
                     log.info("Publisher " + selectedPublisherName + " does not exists!", e);
                     addErrorMessage("PUBLISHERDOESNOTEXISTS", selectedPublisherName);
@@ -158,7 +162,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
      * @return true if admin has access to /ca_functionality/edit_publisher/
      */
     public boolean getHasEditRights() {
-        return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITPUBLISHER);
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITPUBLISHER);
     }
 
 }
