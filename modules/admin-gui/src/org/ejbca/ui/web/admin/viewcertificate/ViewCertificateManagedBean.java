@@ -16,6 +16,8 @@ import java.beans.Beans;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -25,8 +27,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.CertificateView;
@@ -106,7 +111,21 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     private String caName;
     private String formattedCertSn;
-    private String unescapedRdnValue;
+    private String issuerDnUnescaped;
+    private String subjectDnUnescaped;
+    private String subjectAltName;
+    private String subjectDirAttributes;
+    private String publicKey;
+    private String basicConstraints;
+    private String keyUsage;
+    private String extendedKeyUsage;
+    private String authorityInfoAccess;
+    private String fingerPrint;
+    private String revoked;
+    private boolean hasNameConstraints;
+    private boolean qcStatement;
+    private boolean certificateTransparencySCTs;
+    private boolean isCvc;
     
     // Authentication check and audit log page access request
     public void initialize(final ComponentSystemEvent event) throws Exception {
@@ -136,8 +155,27 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             
             caName = caBean.getName(caId);
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
-            unescapedRdnValue = certificateData.getUnescapedRdnValue(certificateData.getIssuerDN());
+            issuerDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getIssuerDN());
+            subjectDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getSubjectDN());
+            subjectAltName = (certificateData.getSubjectAltName() == null) ? ejbcaBean.getText("ALT_NONE") : certificateData.getSubjectAltName().replace( ",", "</br>");
+            subjectDirAttributes = (certificateData.getSubjectDirAttr() == null) ? ejbcaBean.getText("SDA_NONE") : certificateData.getSubjectDirAttr();
+            publicKey = composePublicKeyValue();
             
+            basicConstraints = certificateData.getBasicConstraints(ejbcaBean.getText("EXT_UNUSED"), 
+                    ejbcaBean.getText("EXT_PKIX_BC_CANOLIMIT"), 
+                    ejbcaBean.getText("EXT_PKIX_BC_ENDENTITY"), 
+                    ejbcaBean.getText("EXT_PKIX_BC_CAPATHLENGTH"));
+            
+            keyUsage = composeKeyUsage();
+            extendedKeyUsage = composeExtendedKeyUsage();
+            authorityInfoAccess = composeAuthorityInfoAccess();
+            fingerPrint = composeFingerPrint();
+            revoked = composeRevokedText();
+            
+            isCvc = certificateData.getType().equalsIgnoreCase("CVC");
+            hasNameConstraints = certificateData.hasNameConstraints();
+            qcStatement = certificateData.hasQcStatement();
+            certificateTransparencySCTs = certificateData.hasCertificateTransparencySCTs();
             
             
             /* TODO:  
@@ -160,6 +198,115 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
  */
              
         }
+    }
+
+
+    private String composeRevokedText() {
+        String revokedText = "";
+        if (certificateData.isRevoked()) {
+            revokedText += ejbcaBean.getText("YES") 
+                    + "<br/>"
+                    + ejbcaBean.getText("CRL_ENTRY_REVOCATIONDATE") + " "
+                    + ejbcaBean.formatAsISO8601(certificateData.getRevocationDate()) 
+                    + "<br/>"
+                    + ejbcaBean.getText("REVOCATIONREASONS") + " ";
+            final String reason = certificateData.getRevocationReason();
+            if (reason != null) {
+                revokedText += ejbcaBean.getText(reason);
+            }
+          } else {
+              revokedText += ejbcaBean.getText("NO");
+          }
+        return revokedText;
+    }
+
+
+    private String composeFingerPrint() {
+        final String fingerprint = certificateData.getSHA256Fingerprint();
+        
+         if (fingerprint.length()>32) {
+            return fingerprint.substring(0,32) + "\r\n" + fingerprint.substring(32);
+        } else {
+            return fingerprint;
+        }
+    }
+
+
+    private String composeAuthorityInfoAccess() {
+        final StringBuilder builder = new StringBuilder();
+        
+        final List<String> aiaOcspServiceLocators = certificateData.getAuthorityInformationAccessOcspUrls();
+        if (null != aiaOcspServiceLocators && aiaOcspServiceLocators.size() > 0) {
+            builder.append(ejbcaBean.getText("EXT_PKIX_AIA_OCSP_URI"))
+                .append(":")
+                .append("<br/>&nbsp;")
+                .append(StringUtils.join(aiaOcspServiceLocators, "<br/>&nbsp;"))
+                .append("<br/>");
+        }
+        
+        final List<String> aiaCaIssuerUris = certificateData.getAuthorityInformationAccessCaIssuerUris();
+        if (null != aiaCaIssuerUris && aiaCaIssuerUris.size() > 0) {
+            builder.append(ejbcaBean.getText("EXT_PKIX_AIA_CAISSUERS_URI"))
+                .append(":")
+                .append("<br/>&nbsp;")
+                .append(StringUtils.join(aiaCaIssuerUris, "<br/>&nbsp;"));
+        }
+        
+        return (builder.length() > 0) ? builder.toString() : ejbcaBean.getText("NO");
+    }
+
+
+    private String composeExtendedKeyUsage() {
+        final List<String> texts = new ArrayList<>();
+        final AvailableExtendedKeyUsagesConfiguration configuration = ejbcaBean.getAvailableExtendedKeyUsagesConfiguration();
+        final String[] extendedkeyusage = certificateData.getExtendedKeyUsageAsTexts(configuration);
+        for (int i=0; i<extendedkeyusage.length; i++) {
+          texts.add(ejbcaBean.getText(extendedkeyusage[i]));
+        }                
+        
+        return (texts.isEmpty()) ? ejbcaBean.getText("EKU_NONE") : StringUtils.join(texts, ',');
+    }
+    
+    private String composeKeyUsage() {
+        final List<String> keyUsageTexts = new ArrayList<>();
+        
+        if (certificateData.getKeyUsage(CertificateConstants.DIGITALSIGNATURE)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_DIGITALSIGNATURE"));
+        }
+        if (certificateData.getKeyUsage(CertificateConstants.NONREPUDIATION)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_NONREPUDIATION"));
+        }
+        if (certificateData.getKeyUsage(CertificateConstants.KEYENCIPHERMENT)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_KEYENCIPHERMENT"));
+        }
+        if (certificateData.getKeyUsage(CertificateConstants.DATAENCIPHERMENT)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_DATAENCIPHERMENT"));
+        }
+        if (certificateData.getKeyUsage(CertificateConstants.KEYAGREEMENT)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_KEYAGREEMENT"));
+        }
+        if (certificateData.getKeyUsage(CertificateConstants.KEYCERTSIGN)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_KEYCERTSIGN"));
+        }
+        if (certificateData.getKeyUsage(CertificateConstants.CRLSIGN)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_CRLSIGN"));
+        }
+        if (certificateData.getKeyUsage(CertificateConstants.ENCIPHERONLY)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_ENCIPHERONLY"));
+        }
+        if (certificateData.getKeyUsage(CertificateConstants.DECIPHERONLY)) {
+            keyUsageTexts.add(ejbcaBean.getText("KU_DECIPHERONLY"));
+        }
+        return (keyUsageTexts.isEmpty()) ? ejbcaBean.getText("KU_NONE") : StringUtils.join(keyUsageTexts, ',');
+    }
+
+
+    private String composePublicKeyValue() {
+        String publicKeyValue = certificateData.getPublicKeyAlgorithm() + " (" + certificateData.getKeySpec(ejbcaBean.getText("BITS")) + ")";
+        if (certificateData.getPublicKeyModulus() != null) {
+            publicKeyValue += ": " + certificateData.getPublicKeyModulus();  
+        }
+        return publicKeyValue;
     }
     
 
@@ -429,8 +576,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     public int getCaId() {
         return caId;
     }
-
-
+    
     public String getTokenSn() {
         return tokenSn;
     }
@@ -452,9 +598,64 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return formattedCertSn;
     }
     
-    public String getUnescapedRdnValue() {
-        return unescapedRdnValue;
+    public String getIssuerDnUnescaped() {
+        return issuerDnUnescaped;
     }
-
+    
+    public String getSubjectDnUnescaped() {
+        return subjectDnUnescaped;
+    }
+    
+    public String getSubjectAltName() {
+        return subjectAltName;
+    }
+    
+    public String getSubjectDirAttributes() {
+        return subjectDirAttributes;
+    }
+    
+    public String getPublicKey() {
+        return publicKey;
+    }
+    
+    public String getBasicConstraints() {
+        return basicConstraints;
+    }
+    
+    public String getKeyUsage() {
+        return keyUsage;
+    }
+    
+    public String getExtendedKeyUsage() {
+        return extendedKeyUsage;
+    }
+    
+    public String getAuthorityInfoAccess() {
+        return authorityInfoAccess;
+    }
+    
+    public String getFingerPrint() {
+        return fingerPrint;
+    }
+    
+    public String getRevoked() {
+        return revoked;
+    }
+    
+    public boolean getHasNameConstraints() {
+        return hasNameConstraints;
+    }
+    
+    public boolean isQcStatement() {
+        return qcStatement;
+    }
+    
+    public boolean isCertificateTransparencySCTs() {
+        return certificateTransparencySCTs;
+    }
+    
+    public boolean isCvc() {
+        return isCvc;
+    }
     
 }
