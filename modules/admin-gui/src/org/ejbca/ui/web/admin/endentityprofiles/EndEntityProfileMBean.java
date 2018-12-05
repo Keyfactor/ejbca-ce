@@ -891,22 +891,29 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    }
    
    //
-   public List<SelectItem> getDefaultTokens(){
+   //public List<SelectItem> getDefaultTokens(){
+   public List<SelectItem> getAvailableTokens(){
        String[] tokenString = RAInterfaceBean.tokentexts;
-       final List<SelectItem> defaultTokensReturned = new ArrayList<>();
-       String defaultTokenNr;
-       String defaultToken;
-       String defaultTokenReturned = "";//remove init empty?
+       final List<SelectItem> availableTokensReturned = new ArrayList<>();
+       String availableTokenNr;
+       String availableToken;
+       String availableTokenReturned = "";//remove init empty?
        Integer stringElement;
        for(stringElement = 0; stringElement < tokenString.length; stringElement++) {
-           defaultTokenNr = stringElement.toString();
-           defaultToken = tokenString[stringElement.intValue()];
-           defaultTokenReturned = ejbcaWebBean.getText(defaultToken);
+           availableTokenNr = stringElement.toString();
+           availableToken = tokenString[stringElement.intValue()];
+           availableTokenReturned = ejbcaWebBean.getText(availableToken);
            //defaultTokensReturned.add(new SelectItem(defaultTokenNr, defaultTokenReturned ));
-           defaultTokensReturned.add(new SelectItem(defaultTokenReturned, defaultTokenReturned ));
+           availableTokensReturned.add(new SelectItem(availableTokenReturned, availableTokenReturned ));
        }
-       System.out.println("DEFTOKENRETURNED= " + defaultTokenReturned);//testing
-       return defaultTokensReturned;
+       System.out.println("DEFTOKENRETURNED= " + availableTokenReturned);//testing
+       if(getHardTokenIssuers() != null) {
+          Iterator<SelectItem> hardTokenIterator = getHardTokenIssuers().iterator();
+          while(hardTokenIterator.hasNext()) {
+              availableTokensReturned.add(hardTokenIterator.next());
+          }
+       }
+       return availableTokensReturned;
    }
    
    // verify...
