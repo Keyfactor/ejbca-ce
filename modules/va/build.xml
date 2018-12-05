@@ -40,6 +40,7 @@
 		<path location="${build-va-publisher.dir}"/>
 		<path location="${build-test.dir}"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.systemtest-common.lib}"/>
 		<path location="${mod.systemtest-interface.lib}"/>
 		<path location="${mod.systemtest-ejb.lib}"/>
 		<path refid="lib.cert-cvc.classpath" />
