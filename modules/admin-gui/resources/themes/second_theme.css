@@ -515,6 +515,21 @@ table.edit tr td {
 	line-height: 1.60em;
 }
 /* Columns */
+.editColumn-eeProfile1 {
+	width: 10%;
+	text-align: center;
+	vertical-align: middle;
+} 
+
+.editColumn-eeProfile2 {
+	width: 40%;
+	text-align: right;
+}
+
+.editColumn-eeProfile3 {
+	width: 50%;
+	text-align: left;
+}
 .editColumn1 {
 	width: 35%;
 	text-align: right;
