@@ -618,11 +618,11 @@
 				</h:panelGrid>
 				<h:panelGrid id="PGc2" columns="1">
 				    <h:selectOneMenu id="defaultTokenMenu" value="#{endEntityProfileMBean.currentDefaultToken}" disabled="#{endEntityProfilesMBean.viewOnly}">
-						<f:selectItems id="defaultTokenList" value="#{endEntityProfileMBean.defaultTokens}"/>
+						<f:selectItems id="defaultTokenList" value="#{endEntityProfileMBean.availableTokens}"/>
 					</h:selectOneMenu>
 					<h:panelGroup>
 	       	    		<h:selectManyListbox id="availableToken" size="7" value="#{endEntityProfileMBean.currentDefaultToken}">
-	       	    			<f:selectItems id="availableTokenList" value="#{endEntityProfileMBean.defaultTokens}"/>
+	       	    			<f:selectItems id="availableTokenList" value="#{endEntityProfileMBean.availableTokens}"/>
 	       	    		</h:selectManyListbox>
 	       	    	</h:panelGroup>
 				</h:panelGrid>
