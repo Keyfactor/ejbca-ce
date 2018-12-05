@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.servlet.ServletException;
@@ -48,7 +48,7 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
  *
  * @version $Id: ViewCertificateManagedBean.java 30605 2018-11-23 10:01:15Z tarmo_r_helmes $
  */
-@SessionScoped
+@ViewScoped
 @ManagedBean(name="viewCertificateMBean")
 public class ViewCertificateManagedBean extends BaseManagedBean implements Serializable {
 
@@ -127,7 +127,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private boolean qcStatement;
     private boolean certificateTransparencySCTs;
     private boolean isCvc;
-    
+    private String downloadCertificateLink;
     
     private String revokeReason;
     private List<String> revokeReasons;
@@ -186,6 +186,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             qcStatement = certificateData.hasQcStatement();
             certificateTransparencySCTs = certificateData.hasCertificateTransparencySCTs();
             
+            downloadCertificateLink = ejbcaBean.getBaseUrl() + globalconfiguration.getCaPath() + "/endentitycert";
         }
     }
 
@@ -720,5 +721,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     public String actionRevoke() {
         return "confirmrevocation";
     }
+    
+    public String getDownloadCertificateLink() {
+        return downloadCertificateLink;
+    }
+    
     
 }
