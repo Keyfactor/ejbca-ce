@@ -33,6 +33,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
@@ -127,6 +128,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private boolean certificateTransparencySCTs;
     private boolean isCvc;
     
+    
+    private String revokeReason;
+    private List<String> revokeReasons;
+    
     // Authentication check and audit log page access request
     public void initialize(final ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
@@ -174,11 +179,22 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             fingerPrint = composeFingerPrint();
             revoked = composeRevokedText();
             
+            revokeReasons = fetchTexts(SecConst.reasontexts);
+            
             isCvc = certificateData.getType().equalsIgnoreCase("CVC");
             hasNameConstraints = certificateData.hasNameConstraints();
             qcStatement = certificateData.hasQcStatement();
             certificateTransparencySCTs = certificateData.hasCertificateTransparencySCTs();
+            
         }
+    }
+
+    private List<String> fetchTexts(final String[] keys) {
+        final List<String> texts= new ArrayList<>();
+        for (final String key : keys) {
+            texts.add(ejbcaBean.getText(key));
+        }
+        return texts;
     }
 
     private String composeRevokedText() {
@@ -655,6 +671,54 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     public boolean getIsCvc() {
         return isCvc;
+    }
+
+    public boolean isKeyRecoveryPossible() throws AuthorizationDeniedException {
+        return !cacerts &&  raBean.keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername()) && useKeyRecovery;
+    }
+
+    public boolean isRepublishPossible() throws AuthorizationDeniedException, Exception {
+        return !cacerts &&  raBean.userExist(certificateData.getUsername()) && raBean.isAuthorizedToEditUser(certificateData.getUsername());
+    }
+    
+    public boolean isAuthorizedToRevoke() throws AuthorizationDeniedException {
+        return !cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername()) && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_REVOKEENDENTITY);
+    }
+    
+    public boolean isRevokedOrSuspended() {
+        return !certificateData.isRevoked() || certificateData.isRevokedAndOnHold();
+    }
+    
+    public boolean getCanBeUnrevoked() {
+        return certificateData.isRevokedAndOnHold();
+    }
+    
+    public String getRevokeReason() {
+        return revokeReason;
+    }
+    
+    public void setRevokeReason(final String revokeReason) {
+        this.revokeReason = revokeReason;
+    }
+
+    public List<String> getRevokeReasons() {
+        return revokeReasons;
+    }
+    
+    public String actionKeyRecovery() {
+        return "confirmkeyrecovery";
+    }
+    
+    public String actionRepublish() {
+        return "confirmrepublish";
+    }
+    
+    public String actionUnrevoke() {
+        return "confirmunrevocation";
+    }
+    
+    public String actionRevoke() {
+        return "confirmrevocation";
     }
     
 }

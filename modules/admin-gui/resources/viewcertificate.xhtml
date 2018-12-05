@@ -70,14 +70,14 @@
                     <h:outputLabel value="#{viewCertificateMBean.nextIndex} #{web.text.OF} #{viewCertificateMBean.numberOfCertificates}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
-	                <h:button rendered="#{!viewCertificateMBean.cacerts and viewCertificateMBean.currentIndex lt viewCertificateMBean.numberOfCertificates -1}" value="#{web.text.VIEWOLDER}" tabindex="1"/>
-	                <h:button rendered="#{viewCertificateMBean.cacerts and viewCertificateMBean.currentIndex lt viewCertificateMBean.numberOfCertificates -1}" value="#{web.text.VIEWISSUING}" tabindex="1"/>
+                <h:panelGroup rendered="#{viewCertificateMBean.currentIndex lt viewCertificateMBean.numberOfCertificates -1}">
+	                <h:button rendered="#{!viewCertificateMBean.cacerts}" value="&lt; #{web.text.VIEWOLDER}" tabindex="1"/>
+	                <h:button rendered="#{viewCertificateMBean.cacerts}" value="&lt; #{web.text.VIEWISSUING}" tabindex="1"/>
                 </h:panelGroup>
                 
-                <h:panelGroup>
-	                <h:commandButton rendered="#{!viewCertificateMBean.cacerts and (viewCertificateMBean.currentIndex > 0)}" value="#{web.text.VIEWNEWER}" tabindex="2"/>
-	                <h:commandButton rendered="#{viewCertificateMBean.cacerts and (viewCertificateMBean.currentIndex > 0)}" value="#{web.text.VIEWSUBORDINATE}" tabindex="2"/>
+                <h:panelGroup rendered="viewCertificateMBean.currentIndex > 0">
+	                <h:button rendered="#{!viewCertificateMBean.cacerts}" value="#{web.text.VIEWNEWER} &gt;" tabindex="2"/>
+	                <h:button rendered="#{viewCertificateMBean.cacerts}" value="#{web.text.VIEWSUBORDINATE} &gt;" tabindex="2"/>
                 </h:panelGroup>
                 
                 <ui:remove>
@@ -151,10 +151,10 @@
             </h:panelGrid>
                 
             <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
-                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
+                <h:panelGroup>
                     <strong><h:outputLabel value="#{web.text.EXT_ABBR_BASICCONSTRAINTS}" styleClass="title"/></strong>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
+                <h:panelGroup>
                     <strong><h:outputLabel value="#{viewCertificateMBean.basicConstraints}"/></strong>
                 </h:panelGroup>
                 
@@ -237,10 +237,25 @@
                     <h:outputLabel value="#{viewCertificateMBean.certificateData.revoked}"/>
                 </h:panelGroup>
                 
+                
                 <ui:remove>
                     <!-- Actions -->
                 </ui:remove>
                 
+                
+                <h:commandButton rendered="#{viewCertificateMBean.keyRecoveryPossible}" value="#{web.text.RECOVERKEY}" action="viewCertificateMBean.actionKeyRecovery"/>
+                <h:commandButton rendered="#{viewCertificateMBean.republishPossible}" value="#{web.text.REPUBLISH}" action="viewCertificateMBean.actionRepublich"/>
+                
+                <h:selectOneMenu id="selectRevokeReason" value="#{viewCertificateMBean.revokeReason}" 
+                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.revokedOrSuspended}">
+                    <f:selectItems value="#{viewCertificateMBean.revokeReasons}"/>
+                </h:selectOneMenu>
+                
+                <h:commandButton value="#{web.text.REVOKE}" action="viewCertificateMBean.actionRevoke" 
+                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.revokedOrSuspended}"/>
+                
+                <h:commandButton value="#{web.text.UNREVOKE}" action="viewCertificateMBean.actionUnrevoke"
+                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.canBeUnrevoked}"/>
             </h:panelGrid>
         </h:form>
     </ui:define>
