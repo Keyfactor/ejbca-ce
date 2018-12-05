@@ -87,7 +87,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     
     //POST CONSTRUCT
     @PostConstruct
-    private void postConstruct() throws Exception {
+    private void postConstruct() throws Exception {// Replace ...
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
         caBean.initialize(ejbcaWebBean);
@@ -448,8 +448,39 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        return ""; // remove
    }
    
-   public List<String> getSubjectDnComponent() {
-       List<String> components = new ArrayList<String>();
+   // New SDN component object, currently testing only
+   public class SubjectDnComponent implements Serializable{
+       private static final long serialVersionUID = 1L;
+       private String componentName;
+       private int component_Some_Test_Number;
+       private boolean component_Some_Test_Value;
+       
+       public SubjectDnComponent(String string, boolean value, int number) {
+           componentName = string;
+           component_Some_Test_Number = number;
+           component_Some_Test_Value = value;
+       }
+       
+       public String getName() {
+           return componentName;
+       }
+       
+       public void setName(String componentName) {
+           this.componentName = componentName;
+       }
+       
+       public int getNumber() {
+           return component_Some_Test_Number;
+       }
+       
+       public boolean getValue() {
+           return component_Some_Test_Value;
+       }
+   }
+   
+      
+   public List<SubjectDnComponent> getSubjectDnComponent() {
+       List<SubjectDnComponent> componentObjectList = new ArrayList<SubjectDnComponent>();
        List<int[]> fielddatalist = new ArrayList<int[]>();
        int numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
        for(int i=0; i < numberofsubjectdnfields; i++){
@@ -459,15 +490,15 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        while (iterator.hasNext()) {
            int[] temp;
            temp = iterator.next();
-           components.add(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])));
+           componentObjectList.add(new SubjectDnComponent(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])), true, 0));
        } 
        if (isSubjectDNAdded) {
            Iterator<String> addedAttributeIterator = subjectDnAdditions.iterator();
            while(addedAttributeIterator.hasNext()) {
-               components.add(addedAttributeIterator.next());
+               componentObjectList.add(new SubjectDnComponent(addedAttributeIterator.next(), true, 0));
            }
        }
-       return components;
+       return componentObjectList;
    }
    
    // but only last is returned and only if it has a value
