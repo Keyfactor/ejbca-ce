@@ -1411,11 +1411,6 @@ SHA-256 checksum: ${cesecorebinSHA256}
 		<ant dir="modules" target="statedump" />
     </target>
 	
-	<!-- Secret build command for statedump to make Jocke happy -->
-	<target name="poop" >
-		<antcall target="statedump" />
-	</target>
-	
 	<target name="configdump" depends="deprecated:check" description="Build EJBCA ConfigDump tool">
 		<ant dir="modules" target="configdump" />
     </target>
