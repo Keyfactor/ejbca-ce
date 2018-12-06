@@ -2609,6 +2609,8 @@ public class CertToolsTest {
         assertEquals("1.2.3.4", CertTools.getOidFromString("1.2.3.4.value2"));
         assertEquals("1.12.123.1234", CertTools.getOidFromString("1.12.123.1234.value3"));
         assertEquals("1.2.3.4", CertTools.getOidFromString("1.2.3.4.foobar"));
+        assertEquals("1.2.3.4", CertTools.getOidFromString("1.2.3.4"));
+        assertEquals(null, CertTools.getOidFromString("aaaaaaaaaaaaaa"));
     }
     
     @Test
