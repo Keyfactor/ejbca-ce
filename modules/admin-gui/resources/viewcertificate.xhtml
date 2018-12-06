@@ -52,11 +52,11 @@
                     <h:outputLabel value=" (#{viewCertificateMBean.caId})"/>
                 </h:panelGroup>
   
-                <h:panelGroup rendered="#{viewCertificateMBean.caId eq 0}">
-                    <h:outputLabel value=" "/>
+                <h:panelGroup rendered="#{viewCertificateMBean.caId eq 0 and empty viewCertificateMBean.userName}">
+                    <h:outputLabel value="&nbsp;"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{viewCertificateMBean.caId eq 0}">
-                    <h:outputLabel value=" "/>
+                <h:panelGroup rendered="#{viewCertificateMBean.caId eq 0 and empty viewCertificateMBean.userName}">
+                    <h:outputLabel value="&nbsp;"/>
                 </h:panelGroup>
   
                 <ui:remove>              
@@ -77,14 +77,21 @@
                     <h:outputLabel value="#{viewCertificateMBean.nextIndex} #{web.text.OF} #{viewCertificateMBean.numberOfCertificates}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup rendered="#{viewCertificateMBean.currentIndex lt viewCertificateMBean.numberOfCertificates -1}">
+                <h:panelGroup rendered="#{viewCertificateMBean.displayShowOlderButton}">
 	                <h:button rendered="#{!viewCertificateMBean.cacerts}" value="&lt; #{web.text.VIEWOLDER}" tabindex="1"/>
 	                <h:button rendered="#{viewCertificateMBean.cacerts}" value="&lt; #{web.text.VIEWISSUING}" tabindex="1"/>
                 </h:panelGroup>
+                <h:panelGroup rendered="#{!viewCertificateMBean.displayShowOlderButton and viewCertificateMBean.displayShowNewerButton}">
+                    <h:outputLabel value="&nbsp;"/>
+                </h:panelGroup>
                 
-                <h:panelGroup rendered="viewCertificateMBean.currentIndex > 0">
+                <h:panelGroup rendered="#{viewCertificateMBean.displayShowNewerButton}">
 	                <h:button rendered="#{!viewCertificateMBean.cacerts}" value="#{web.text.VIEWNEWER} &gt;" tabindex="2"/>
 	                <h:button rendered="#{viewCertificateMBean.cacerts}" value="#{web.text.VIEWSUBORDINATE} &gt;" tabindex="2"/>
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{viewCertificateMBean.displayShowOlderButton and !viewCertificateMBean.displayShowNewerButton}">
+                    <h:outputLabel value="&nbsp;"/>
                 </h:panelGroup>
                 
                 <ui:remove>
