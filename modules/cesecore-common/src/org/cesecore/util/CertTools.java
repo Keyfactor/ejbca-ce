@@ -3880,7 +3880,7 @@ public abstract class CertTools {
      * EJBCA accepts extension OIDs on different formats, e.g. "1.2.3.4" and "1.2.3.4.value".
      * Method returns the OID only given any OID string
      * @param oidString to parse
-     * @return String containing OID only
+     * @return String containing OID only or null if no OID was found in the input string
      */
     public static String getOidFromString(final String oidString) {
         String retval = oidString;
@@ -3889,6 +3889,9 @@ public abstract class CertTools {
         final Matcher matcher = pattern.matcher(oidString);
         if (matcher.find()) {
             int endIndex = matcher.start();
+            if (endIndex == 0) {
+                return null;
+            }
             retval = oidString.substring(0, endIndex-1);
         }
         return retval;
