@@ -28,7 +28,7 @@ import static org.junit.Assert.fail;
 /**
  * Helper class for handling 'Approval Profiles' page in automated web tests.
  *
- * @version $Id: ApprovalProfilesHelper.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
+ * @version $Id: ApprovalProfilesHelper.java 30766 2018-12-06 07:58:19Z andrey_s_helmes $
  */
 public class ApprovalProfilesHelper extends BaseHelper {
 
@@ -282,6 +282,7 @@ public class ApprovalProfilesHelper extends BaseHelper {
         assertEquals("Unexpected Request Expiration Period", "7h 43m 20s", webDriver.findElement(By.id("approvalProfilesForm:reqExpPeriod")).getAttribute("value"));
         assertEquals("Unexpected Approval Expiration Period", "8h 16m 40s", webDriver.findElement(By.id("approvalProfilesForm:approvalExpPeriod")).getAttribute("value"));
 
+        // TODO ECA-7356 Note!!! This try-catch block contains inconsistent logic, as it succeed if one of elements is not found, however, we should check that none of elements exist.
         //Verify present elements
         try {
             webDriver.findElement(By.xpath("//input[@value='Add Step']"));
