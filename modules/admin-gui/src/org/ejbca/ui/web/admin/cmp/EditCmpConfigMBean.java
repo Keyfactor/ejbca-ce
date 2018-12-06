@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.web.admin.cmp;
 
-import java.beans.Beans;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,12 +36,12 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 /**
  * JavaServer Faces Managed Bean for editing CMP alias.
@@ -62,26 +60,15 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
             "telephoneNumber", "pseudonym", "streetAddress", "name", "CIF", "NIF");
     
     @EJB
+    private CaSessionLocal caSession;
+    @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
     
     @ManagedProperty(value="#{cmpConfigMBean}")
     private CmpConfigMBean cmpConfigMBean;
 
-    private CAInterfaceBean caBean;
-    
     @PostConstruct
     public void initialize() {
-        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        caBean = (CAInterfaceBean) request.getSession().getAttribute("caBean");
-        if (caBean == null) {
-            try {
-                caBean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
-            } catch (ClassNotFoundException | IOException e) {
-                log.error("Error while initializing ca bean!", e);
-            }
-        }
-        caBean.initialize(getEjbcaWebBean());
-        
         getEjbcaWebBean().clearCmpConfigClone();
         cmpConfiguration = getEjbcaWebBean().getCmpConfigForEdit(getSelectedCmpAlias());
         initAuthModule();
@@ -673,7 +660,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     public String getResponseConfigDefaultCa() {
         String current = cmpConfiguration.getCMPDefaultCA(getSelectedCmpAlias());
         for (String caName : getEjbcaWebBean().getCANames().keySet()) {
-            if (caBean.getCASubjectDNNoAuth(caName).equals(current)) {
+            if (caSession.getCaSubjectDn(caName).equals(current)) {
                 return caName;
             }
         }
@@ -684,7 +671,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         if (ca.equals(getEjbcaWebBean().getText("CMPDEFAULTCA_DISABLED")) || StringUtils.isEmpty(ca)) {
             cmpConfiguration.setCMPDefaultCA(getSelectedCmpAlias(), "");
         } else {
-            cmpConfiguration.setCMPDefaultCA(getSelectedCmpAlias(), caBean.getCASubjectDNNoAuth(ca));
+            cmpConfiguration.setCMPDefaultCA(getSelectedCmpAlias(), caSession.getCaSubjectDn(ca));
         }
     }
     

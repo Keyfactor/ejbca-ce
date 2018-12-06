@@ -31,6 +31,7 @@ import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
@@ -72,6 +73,8 @@ public class CACertReqServlet extends HttpServlet {
     private static final String COMMAND_CERTLINK = "linkcert";
     private static final String FORMAT_PROPERTY_NAME = "format";
 
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
     @EJB
     private SignSessionLocal signSession;
     
@@ -245,7 +248,7 @@ public class CACertReqServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_CERTLINK)) {
             try {
                 final int caId = Integer.parseInt(req.getParameter(COMMAND_PROPERTY_CAID));
-                final byte[] rawCert = cabean.getLinkCertificate(caId);
+                final byte[] rawCert = caAdminSession.getLatestLinkCertificate(caId);
                 if (rawCert!=null) {
                     if (!"binary".equals(format)) {
                         final byte[] b64cert = Base64.encode(rawCert);  

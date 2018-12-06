@@ -129,9 +129,9 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             String certProfileID = estConfiguration.getCertProfileID(aliasName);
             // If we had the old type, EJBCA 6.11 of CP, which is the name, convert it to ID
             if (!NumberUtils.isNumber(certProfileID)) {
-                Map<String, String> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
+                Map<String, Integer> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
                 if (certificateProfiles.get(certProfileID) != null) {
-                    certProfileID = certificateProfiles.get(certProfileID);
+                    certProfileID = String.valueOf(certificateProfiles.get(certProfileID));
                 }
             }
             estAliasGui.setCertificateProfileId(certProfileID);
@@ -175,9 +175,9 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     public List<SelectItem> getCertificateProfileItemList() {
         final List<SelectItem> ret = new ArrayList<>();
         if (estAliasGui.getEndEntityProfileId() != null) {
-            Map<String, String> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
+            Map<String, Integer> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
             for (String certificateProfileName : certificateProfiles.keySet()) {
-                String certificateProfileId = certificateProfiles.get(certificateProfileName);
+                int certificateProfileId = certificateProfiles.get(certificateProfileName);
                 ret.add(new SelectItem(certificateProfileId, certificateProfileName));
             }
         }

@@ -643,7 +643,7 @@ public interface CAAdminSession {
     void flushCACache();
 
     /** @return the latest link certificate (if any) */
-    byte[] getLatestLinkCertificate(int caId) throws CADoesntExistsException;
+    byte[] getLatestLinkCertificate(int caId);
 
     /**
      * Updates all references to the given CAId/SubjectDN in the database.

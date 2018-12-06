@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -31,6 +32,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.cainterface.CADataHandler;
@@ -49,7 +51,10 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ManageCAsMBean.class);
-    
+
+    @EJB
+    private CaSessionLocal caSession;
+
     private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;
     private int selectedCaId;
@@ -88,7 +93,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         caBean.initialize(getEjbcaWebBean());
         cadatahandler = caBean.getCADataHandler();
-        caidtonamemap = caBean.getCAIdToNameMap();
+        caidtonamemap = caSession.getCAIdToNameMap();
     }
     
     public Map<Integer, String> getListOfCas() {
@@ -98,7 +103,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             int caStatus = caBean.getCAStatusNoAuth(caId);
 
             String nameandstatus = nameofca + ", (" + getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus)) + ")";
-            if (caBean.isAuthorizedToCa(caId)) {
+            if (caSession.authorizedToCANoLogging(getAdmin(), caId)) {
                 caMap.put(caId, nameandstatus);
             }
         }

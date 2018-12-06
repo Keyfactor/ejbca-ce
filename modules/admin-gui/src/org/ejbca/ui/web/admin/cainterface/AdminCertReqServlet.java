@@ -40,6 +40,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -49,6 +50,8 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -127,6 +130,12 @@ public class AdminCertReqServlet extends HttpServlet {
     private final static byte[] NL = "\n".getBytes();
     private final static int NL_LENGTH = NL.length;
 
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private SignSessionLocal signSession;
     @EJB
@@ -212,7 +221,7 @@ public class AdminCertReqServlet extends HttpServlet {
         username = StringTools.stripUsername(username);
         // need null check here?
         // Before doing anything else, check if the user name is unique and ok.
-        username = checkUsername(rabean, username);
+        username = checkUsername(username);
 
         UserView newuser = new UserView();
         newuser.setUsername(username);
@@ -233,7 +242,7 @@ public class AdminCertReqServlet extends HttpServlet {
         if ((tmp = request.getParameter("entityprofile")) != null) {
             int reqId;
             try {
-                reqId = rabean.getEndEntityProfileId(tmp);
+                reqId = endEntityProfileSession.getEndEntityProfileId(tmp);
             } catch (EndEntityProfileNotFoundException e) {
                 throw new ServletException("No such end entity profile: " + tmp, e);
             }
@@ -243,8 +252,7 @@ public class AdminCertReqServlet extends HttpServlet {
 
         int cProfileId = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
         if ((tmp = request.getParameter("certificateprofile")) != null) {
-            CAInterfaceBean cabean = getCaBean(request);
-            int reqId = cabean.getCertificateProfileId(tmp);
+            int reqId = certificateProfileSession.getCertificateProfileId(tmp);
             if (reqId == 0) {
                 throw new ServletException("No such certificate profile: " + tmp);
             }
@@ -401,32 +409,7 @@ public class AdminCertReqServlet extends HttpServlet {
     /**
      *
      */
-    private final CAInterfaceBean getCaBean(HttpServletRequest req) throws ServletException {
-        HttpSession session = req.getSession();
-        CAInterfaceBean cabean = (CAInterfaceBean) session.getAttribute("cabean");
-        if (cabean == null) {
-            try {
-                cabean = (CAInterfaceBean) Beans.instantiate(Thread.currentThread().getContextClassLoader(),
-                        org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
-            } catch (ClassNotFoundException e) {
-                throw new ServletException(e);
-            } catch (Exception e) {
-                throw new ServletException("Unable to instantiate CAInterfaceBean", e);
-            }
-            try {
-                cabean.initialize(getEjbcaWebBean(req));
-            } catch (Exception e) {
-                throw new ServletException("Cannot initialize CAInterfaceBean", e);
-            }
-            session.setAttribute("cabean", cabean);
-        }
-        return cabean;
-    }
-
-    /**
-     *
-     */
-    private final String checkUsername(RAInterfaceBean rabean, String username) throws ServletException {
+    private final String checkUsername(String username) throws ServletException {
         if (username != null) {
             username = username.trim();
         }
@@ -436,7 +419,7 @@ public class AdminCertReqServlet extends HttpServlet {
 
         String msg = null;
         try {
-            if (rabean.userExist(username)) {
+            if (endEntityManagementSession.existsUser(username)) {
                 msg = "User '" + username + "' already exists.";
             }
         } catch (Exception e) {

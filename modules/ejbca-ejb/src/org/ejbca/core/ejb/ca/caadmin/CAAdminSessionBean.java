@@ -2221,7 +2221,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public byte[] getLatestLinkCertificate(final int caId) throws CADoesntExistsException {
+    public byte[] getLatestLinkCertificate(final int caId) {
         try {
             CA ca = caSession.getCANoLog(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Fetching link certificate user.")), caId);
             return ca.getLatestLinkCertificate();

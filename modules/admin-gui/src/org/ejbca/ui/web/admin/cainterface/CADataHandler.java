@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -38,11 +37,9 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -63,14 +60,14 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 /**
- * A class help administrating CAs. 
+ * A class help administrating CAs.
+ * <p>
+ * Semi-deprecated, we should try to move the methods here into session beans.
  *
  * @version $Id$
  */
@@ -108,13 +105,6 @@ public class CADataHandler implements Serializable {
        this.administrator = authenticationToken;
        this.ejbcawebbean = ejbcawebbean;
     }
-    
-  /**
-   * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
-   */    
-  public void createCA(CAInfo cainfo) throws CAExistsException, CryptoTokenOfflineException, AuthorizationDeniedException, InvalidAlgorithmException{
-    caadminsession.createCA(administrator, cainfo);
-  }
 
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
@@ -240,7 +230,7 @@ public class CADataHandler implements Serializable {
   public boolean renameCA(int caId, String newname) throws AuthorizationDeniedException, CADoesntExistsException {
       if (caId!=0 && newname != null && newname.length()>0) {
           try {
-              final String oldname = getCAIdToNameMap().get(Integer.valueOf(caId));
+              final String oldname = caSession.getCAIdToNameMap().get(Integer.valueOf(caId));
               caSession.renameCA(administrator, oldname, newname);
           } catch (CAExistsException e) {
               return true;
@@ -278,13 +268,6 @@ public class CADataHandler implements Serializable {
     return new CAInfoView(cainfo, ejbcawebbean, publisherSession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
   }
 
-  /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
-   */  
-  public Map<Integer, String> getCAIdToNameMap(){
-    return caSession.getCAIdToNameMap();
-  }
-  
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
   public byte[] makeRequest(int caid, byte[] caChainBytes, String nextSignKeyAlias) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
       List<Certificate> certChain = null;
@@ -312,11 +295,6 @@ public class CADataHandler implements Serializable {
           throw new RuntimeException("Unexpected outcome.", e);
       }
   }
-
-  /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
-  public byte[] createAuthCertSignRequest(int caid, byte[] request) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException{
-      return caadminsession.createAuthCertSignRequest(administrator, caid, request);
-  }     
   
   /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean#receiveResponse */  
   public void receiveResponse(int caid, byte[] certBytes, String nextSignKeyAlias, boolean futureRollover) throws Exception{
@@ -390,11 +368,6 @@ public class CADataHandler implements Serializable {
       }
   }
 
-  /** @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean */
-  public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {
-      caadminsession.revokeCA(administrator, caid, reason);
-  }
-      
   /**
    *  @throws CADoesntExistsException 
    */  
@@ -423,29 +396,7 @@ public class CADataHandler implements Serializable {
     caadminsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
     caadminsession.publishCRL(administrator, cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
  }
- 
- /**
-  * Performs a rollover from the current certificate to the next certificate. 
-  * @throws AuthorizationDeniedException 
-  * @throws CryptoTokenOfflineException
-  * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSession#rolloverCA
-  * */
- public void rolloverCA(int caid) throws CryptoTokenOfflineException, AuthorizationDeniedException {
-     caadminsession.rolloverCA(administrator, caid);
- }
- 
- public void renewAndRevokeCmsCertificate(int caid) throws CADoesntExistsException, CAOfflineException, CertificateRevokeException, AuthorizationDeniedException {
-    caadminsession.renewAndRevokeCmsCertificate(administrator, caid);
- }
- 
- public void activateCAToken(int caid) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, CADoesntExistsException {
-   caadminsession.activateCAService(administrator, caid);
- }
- 
- public void deactivateCAToken(int caid) throws AuthorizationDeniedException, CADoesntExistsException {
-    caadminsession.deactivateCAService(administrator, caid);	
- }
- 
+
  public boolean isCARevoked(CAInfo cainfo){
 	 boolean retval = false;
 	 
