@@ -82,7 +82,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     
     public List<SortableSelectItem> getAvailablePublishers() {
         List<SortableSelectItem> availablePublishers = new ArrayList<>();
-        getEjbcaWebBean().getAuthorizedPublisherNames().keySet().forEach(publisher -> availablePublishers.add(new SortableSelectItem(publisher, publisher)));
+        getEjbcaWebBean().getAuthorizedPublisherNames().forEach(publisher -> availablePublishers.add(new SortableSelectItem(publisher, publisher)));
         return availablePublishers;
     }
     
