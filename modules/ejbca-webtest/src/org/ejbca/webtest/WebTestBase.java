@@ -47,7 +47,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
  *
- * @version $Id: WebTestBase.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
+ * @version $Id: WebTestBase.java 30763 2018-12-06 07:06:41Z andrey_s_helmes $
  */
 public abstract class WebTestBase {
 
@@ -75,7 +75,7 @@ public abstract class WebTestBase {
      * Corresponds to @BeforeClass annotation in a Test scenario.
      *
      * @param requireCert if certificate is required
-     * @param profile browser profile to use. Defined in ConfigurationConstants, null will use default profile.
+     * @param profileConfigProperty browser profile to use. Defined in ConfigurationConstants, null will use default profile.
      */
     public static void beforeClass(final boolean requireCert, final String profileConfigProperty) {
         // Init properties
@@ -232,7 +232,11 @@ public abstract class WebTestBase {
      */
     protected static void removeCryptoTokenByCaName(final String caName) throws AuthorizationDeniedException {
         final CryptoTokenManagementSessionRemote cryptoTokenManagementSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        int cryptoTokenId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
+        final Integer cryptoTokenId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
+        if(cryptoTokenId == null) {
+            log.error("Cannot remove a crypto token for CA [" + caName + "]");
+            assert false;
+        }
         cryptoTokenManagementSessionRemote.deleteCryptoToken(ADMIN_TOKEN, cryptoTokenId);
     }
 
