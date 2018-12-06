@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.FacesException;
 import javax.faces.bean.ManagedBean;
@@ -52,6 +53,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -68,6 +70,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
@@ -93,6 +96,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     private String CRYPTO_TOKEN_LINK = StringUtils.EMPTY;
 
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    
     private CAInterfaceBean caBean;
     private String editCaName;
     private int caid = 0;
@@ -265,7 +273,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             throw new FacesException("Error while initializing the global configuration!", e);
         }
         cadatahandler = caBean.getCADataHandler();
-        caidtonamemap = caBean.getCAIdToNameMap();
+        caidtonamemap = caSession.getCAIdToNameMap();
 
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         initPageVariables(requestMap);
@@ -1288,7 +1296,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isRenderLinkCertificate() {
-        return caBean.getLinkCertificate(caid) != null;
+        return caAdminSession.getLatestLinkCertificate(caid) != null;
     }
 
     public boolean isRollOverDate() {
@@ -1863,7 +1871,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      */
     public String renewAndRevokeCmsCertificate() {
         try {
-            cadatahandler.renewAndRevokeCmsCertificate(caid);
+            caAdminSession.renewAndRevokeCmsCertificate(getAdmin(), caid);
             addInfoMessage(getEjbcaWebBean().getText("CMSCERTIFICATERENEWED"));
         } catch (CADoesntExistsException | CAOfflineException | CertificateRevokeException | AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
@@ -1898,7 +1906,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      */
     public String revokeCa() {
         try {
-            cadatahandler.revokeCA(caid, caRevokeReason);
+            caAdminSession.revokeCA(getAdmin(), caid, caRevokeReason);
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
         }
@@ -1971,7 +1979,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      */
     public String rolloverCA() {
         try {
-            cadatahandler.rolloverCA(caid);
+            caAdminSession.rolloverCA(getAdmin(), caid);
         } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
         }
@@ -2515,7 +2523,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             // Create already in use key map
             try {
                 for (final String alias : caBean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
-                    final String alreadyInUse = caBean.isKeyInUse(caBean.getAuthorizedCAs(), alias, currentCryptoTokenId) ? " (Already in use)"
+                    final String alreadyInUse = caBean.isKeyInUse(caSession.getAuthorizedCaIds(getAdmin()), alias, currentCryptoTokenId) ? " (Already in use)"
                             : StringUtils.EMPTY;
                     aliasUsedMap.put(alias, alreadyInUse);
                 }
