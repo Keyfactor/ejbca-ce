@@ -15,6 +15,8 @@ package org.ejbca.ra;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -32,6 +34,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
@@ -90,6 +94,7 @@ import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
+import org.ejbca.util.cert.OID;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page.
@@ -162,6 +167,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String sha256Fingerprint;
     private String signature;
     private String csrFileName;
+    private String extensionData;
     private SubjectDn subjectDn;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
@@ -541,6 +547,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return renderCsrDetailedInfo;
     }
 
+    public boolean isRenderOtherCertificateData() {
+        return getEndEntityProfile().getUseExtensiondata();
+    }
+    
     public void setRenderCsrDetailedInfo(boolean renderCsrDetailedInfo) {
         this.renderCsrDetailedInfo = renderCsrDetailedInfo;
     }
@@ -703,7 +713,35 @@ public class EnrollMakeNewRequestBean implements Serializable {
         byte[] token = addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_SOFT_PEM, null);
         downloadToken(token, "application/octet-stream", ".pem");
     }
-
+    
+    private ExtendedInformation getProcessedExtendedInformation() {
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        final Properties properties = new Properties();
+        
+        if (getUserDefinedValidityIfSpecified() != null) {
+            extendedInformation.setCertificateEndTime(getUserDefinedValidityIfSpecified());
+        }
+        
+        // Add extension data
+        if (extensionData != null) {
+            try {
+                properties.load(new StringReader(extensionData));
+            } catch (IOException ex) {
+                // Should not happen as we are only reading from a String.
+                throw new RuntimeException(ex);
+            }
+            for (Object o : properties.keySet()) {
+                if (o instanceof String) {
+                    String key = (String) o;
+                    if (OID.isStartingWithValidOID(key)) {
+                        extendedInformation.setExtensionData(key, properties.getProperty(key));
+                    }
+                }
+            }
+        }
+        return extendedInformation;
+    }
+    
     /**
      * Adds end entity and creates its token that will be downloaded. This method is responsible for deleting the end entity if something goes wrong with token creation.
      * @param tokenType the type of the token that will be created (one of: TOKEN_USERGEN, TOKEN_SOFT_P12, TOKEN_SOFT_JKS from EndEntityConstants)
@@ -718,14 +756,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         //Fill End Entity information
         final EndEntityInformation endEntityInformation = getEndEntityInformation();
-        final ExtendedInformation extendedInformation = new ExtendedInformation();
-        extendedInformation.setCertificateEndTime(getUserDefinedValidityIfSpecified());
+
         endEntityInformation.setCAId(getCAInfo().getCAId());
         endEntityInformation.setCardNumber(""); //TODO Card Number
         endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile())).getId());
         endEntityInformation.setDN(getSubjectDn().toString());
         endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile())).getId());
-        endEntityInformation.setExtendedInformation(extendedInformation);
+        endEntityInformation.setExtendedInformation(getProcessedExtendedInformation());
         endEntityInformation.setHardTokenIssuerId(0); //TODO not sure....
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
@@ -1559,6 +1596,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.endEntityInformation = endEntityInformation;
     }
 
+    
+    /**
+     * @return The extension data read from the extended information.
+     */
+    public String getExtensionData() {
+        return this.extensionData;
+    }
+    
+    public void setExtensionData(String extensionData) {
+        this.extensionData = extensionData;
+    }
+ 
     /** @return the confirmPassword */
     public String getConfirmPassword() {
         return confirmPassword;

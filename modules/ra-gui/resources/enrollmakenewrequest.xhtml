@@ -399,6 +399,20 @@
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
+						<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.renderOtherCertificateData}">
+							<h3>
+								<h:outputText value="#{msg.enroll_other_cert_data}" />
+							</h3>
+							<h:panelGroup layout="block" styleClass="pure-control-group">
+								<h:outputLabel for="certExtensionDataField" value="#{msg.enroll_cert_extension_data}"/>
+								<h:inputTextarea id="certExtensionDataField" value="#{enrollMakeNewRequestBean.extensionData}">
+                                	<f:validator validatorId="oidValidator"/>
+                                	<f:attribute name="beginsWith" value="true"/>	
+								</h:inputTextarea>
+								<h:message for="certExtensionDataField" id="certExtensionDataFieldMessage" styleClass="showErrorMessage"/>
+							</h:panelGroup>
+						</h:panelGroup>
+						
                         <fieldset>
     						<h:commandButton id="updateRequestPreview"
     							value="#{msg.enroll_update_request_preview}"
