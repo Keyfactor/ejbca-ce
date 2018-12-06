@@ -535,7 +535,7 @@ public class AdminRolesHelper extends BaseHelper {
     }
 
     /**
-     * Asserts
+     * Asserts that radio buttons by given range in array of radio buttons have the value.
      *
      * @param startIndex start index in array of checked radio buttons.
      * @param endIndex end index (inclusive) in array of checked radio buttons.
@@ -545,16 +545,13 @@ public class AdminRolesHelper extends BaseHelper {
         if(viewContext == ViewMode.VIEW_MODE_ADVANCED) {
             final List<WebElement> radioButtonContainers = findElements(Page.TABLES_ACCESS_RULE_RADIO_BUTTONS);
             if(!radioButtonContainers.isEmpty()) {
-                for (int index = 0; index < radioButtonContainers.size(); index++) {
-                    if(index >= startIndex && index <= endIndex) {
-                        final WebElement rootContainer = radioButtonContainers.get(index);
-                        final WebElement checkedRadioButton = findElement(rootContainer, Page.INPUT_ACCESS_RULE_RADIO_BUTTON_CHECKED);
-                        assertNotNull("Cannot find checked radio button for group [" + index + "]", checkedRadioButton);
-                        assertEquals("Value mismatch for checked radio button at [" + index + "]", value, getElementValue(checkedRadioButton));
-                    }
-                    else {
-                        break;
-                    }
+                int rangeMaximum = Math.min(radioButtonContainers.size()-1, endIndex);
+                assertTrue("startIndex ["+ startIndex +"] has to be less or equal to possible maximum [" + rangeMaximum + "]", startIndex <= rangeMaximum);
+                for (int index = startIndex; index <= rangeMaximum; index++) {
+                    final WebElement rootContainer = radioButtonContainers.get(index);
+                    final WebElement checkedRadioButton = findElement(rootContainer, Page.INPUT_ACCESS_RULE_RADIO_BUTTON_CHECKED);
+                    assertNotNull("Cannot find checked radio button for group [" + index + "]", checkedRadioButton);
+                    assertEquals("Value mismatch for checked radio button at [" + index + "]", value, getElementValue(checkedRadioButton));
                 }
             }
         }
@@ -563,13 +560,12 @@ public class AdminRolesHelper extends BaseHelper {
         }
     }
 
+    /**
+     * Asserts that the members row with a given text exists.
+     *
+     * @param matchWith a text of a row.
+     */
     public void assertMemberMatchWithRowExists(final String matchWith) {
-
-        final By b = By.xpath(Page.TABLE_MEMBERS);
-        final WebElement webElement = findElement(b);
-        System.out.println(webElement.getTagName());
-        System.out.println(webElement.getText());
-
         assertElementExists(
                 Page.getMatchWithFromMembersTableRowContainingText(matchWith),
                 "'" + matchWith + "' was not found on 'Members' page."
