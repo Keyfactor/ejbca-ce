@@ -127,6 +127,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private boolean qcStatement;
     private boolean certificateTransparencySCTs;
     private boolean isCvc;
+    
     private String downloadCertificateLink;
     
     private String revokeReason;
@@ -193,7 +194,9 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private List<String> fetchTexts(final String[] keys) {
         final List<String> texts= new ArrayList<>();
         for (final String key : keys) {
-            texts.add(ejbcaBean.getText(key));
+            if (!key.equals("REV_UNUSED")) {
+                texts.add(ejbcaBean.getText(key));
+            }
         }
         return texts;
     }
@@ -202,10 +205,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         String revokedText = "";
         if (certificateData.isRevoked()) {
             revokedText += ejbcaBean.getText("YES") 
-                    + "<br/>"
+                    + "\r\n"
                     + ejbcaBean.getText("CRL_ENTRY_REVOCATIONDATE") + " "
                     + ejbcaBean.formatAsISO8601(certificateData.getRevocationDate()) 
-                    + "<br/>"
+                    + "\r\n"
                     + ejbcaBean.getText("REVOCATIONREASONS") + " ";
             final String reason = certificateData.getRevocationReason();
             if (reason != null) {
@@ -236,17 +239,17 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         if (null != aiaOcspServiceLocators && aiaOcspServiceLocators.size() > 0) {
             builder.append(ejbcaBean.getText("EXT_PKIX_AIA_OCSP_URI"))
                 .append(":")
-                .append("<br/>&nbsp;")
-                .append(StringUtils.join(aiaOcspServiceLocators, "<br/>&nbsp;"))
-                .append("<br/>");
+                .append("\r\n&nbsp;")
+                .append(StringUtils.join(aiaOcspServiceLocators, "\r\n&nbsp;"))
+                .append("\r\n");
         }
         
         final List<String> aiaCaIssuerUris = certificateData.getAuthorityInformationAccessCaIssuerUris();
         if (null != aiaCaIssuerUris && aiaCaIssuerUris.size() > 0) {
             builder.append(ejbcaBean.getText("EXT_PKIX_AIA_CAISSUERS_URI"))
                 .append(":")
-                .append("<br/>&nbsp;")
-                .append(StringUtils.join(aiaCaIssuerUris, "<br/>&nbsp;"));
+                .append("\r\n&nbsp;")
+                .append(StringUtils.join(aiaCaIssuerUris, "\r\n&nbsp;"));
         }
         
         return (builder.length() > 0) ? builder.toString() : ejbcaBean.getText("NO");
@@ -725,6 +728,12 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     public String getDownloadCertificateLink() {
         return downloadCertificateLink;
     }
+
+    public boolean isDisplayShowOlderButton() {
+        return currentIndex < numberOfCertificates - 1;
+    }
     
-    
+    public boolean isDisplayShowNewerButton() {
+        return currentIndex > 0;
+    }
 }
