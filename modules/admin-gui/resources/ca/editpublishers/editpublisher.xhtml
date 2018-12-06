@@ -36,7 +36,6 @@
 
 		<ui:define name="content">
 
-
 			<h2>
 				<h:outputText value="#{web.text.EDITPUBLISHER}"
 					rendered="#{editPublisher.hasEditRights}" />
@@ -83,12 +82,80 @@
 
 						</h:selectOneMenu>
 					</h:panelGroup>
+					
+				</h:panelGrid>	
+				<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
+					<h:panelGroup>
+					<h:outputText value="#{web.text.PUBLISHERQUEUE}" style="font-weight:bold;"/>
+					<h:outputText
+							value="#{web.ejbcaWebBean.getHelpReference('/Publishers.html')}"
+							escape="false" styleClass="helpReference"/>
+					</h:panelGroup>		
+					<h:panelGroup/>	
+					
+					<h:panelGroup>
+						<h:outputText value="#{web.text.CURRENTQUEUELENGTH}"/>
+					</h:panelGroup>
+					
+					<h:panelGroup>
+						<h:outputText value="#{editPublisher.getPublisherQueue()}"/>
+					</h:panelGroup>
 
-
+					<h:panelGroup>					
+						<h:outputText value="#{web.text.ONLYUSEQUEUE}"/>
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:selectBooleanCheckbox id="onlyusequeue" value="#{editPublisher.getOnlyUseQueue()}" disabled="#{editPublisher.readOnly}"/>
+						<h:outputLabel for="onlyusequeue" value="#{web.text.USE}"/>
+					</h:panelGroup>
+					
+					<h:panelGroup>					
+						<h:outputText value="#{web.text.KEEPPUBLISHEDINQUEUE}"/>
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:selectBooleanCheckbox id="keeppublishedinqueue" value="#{editPublisher.getKeepPublishedInQueue()}" disabled="#{editPublisher.readOnly}"/>
+						<h:outputLabel for="keeppublishedinqueue" value="#{web.text.USE}"/>
+					</h:panelGroup>
+					
+					<h:panelGroup>					
+						<h:outputText value="#{web.text.USEQUEUEFORCRLS}"/>
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:selectBooleanCheckbox id="usequeueforcrls" value="#{editPublisher.getUseQueueForCrls()}" disabled="#{editPublisher.readOnly}"/>
+						<h:outputLabel for="usequeueforcrls" value="#{web.text.USE}"/>
+					</h:panelGroup>
+					
+					<h:panelGroup>					
+						<h:outputText value="#{web.text.USEQUEUEFORCERTIFICATES}"/>
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:selectBooleanCheckbox id="usequeueforcertificates" value="#{editPublisher.getUseQueueForCertificates()}" disabled="#{editPublisher.readOnly}"/>
+						<h:outputLabel for="usequeueforcertificates" value="#{web.text.USE}"/>
+					</h:panelGroup>
 				</h:panelGrid>
 
-			</h:form>
+				<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
+					<h:outputText value="#{web.text.GENERALSETTINGS}" style="font-weight:bold;"/>
+					<h:panelGroup />
+					
+					<h:panelGroup> 
+						<h:outputText value="#{web.text.DESCRIPTION}"/>
+					</h:panelGroup>
+					<h:panelGroup>
+						<h:inputTextarea cols="45" rows="2" value="#{editPublisher.getDescription()}" disabled="#{editPublisher.readOnly}"/>
+					</h:panelGroup>
+				</h:panelGrid>
 
+				<h:panelGrid styleClass="edit-top" width="100%" columns="2"
+					rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+					<h:panelGroup />
+					<h:panelGroup>
+						<h:commandButton value="#{web.text.SAVEANDTESTCONNECTION}" style="margin-right:3px;"/>
+						<h:commandButton value="#{web.text.SAVE}" style="margin-right:3px;"/>
+						<h:button value="#{web.text.CANCEL}" outcome="listpublishers?faces-redirect=true" />
+					</h:panelGroup>
+				</h:panelGrid>
+			</h:form>
 		</ui:define>
 	</ui:composition>
 </body>
