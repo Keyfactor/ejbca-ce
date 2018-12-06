@@ -1383,21 +1383,12 @@ public class EjbcaWebBean implements Serializable {
         return addKeyIdAndSort(certificateProfiles);
     }
 
-    private Collection<String> getAvailableCertProfileIDsOfEEProfileNoKeyID(final String endEntityProfileId) {
-        if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
-            final List<Integer> allCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, 0);
-            final List<String> allCertificateProfiles = new ArrayList<>(allCertificateProfileIds.size());
-            for (final int id : allCertificateProfileIds) {
-                allCertificateProfiles.add(certificateProfileSession.getCertificateProfileName(id));
-            }
-            return allCertificateProfiles;
-        }
+    private Collection<Integer> getAvailableCertProfileIDsOfEEProfile(final String endEntityProfileId) {
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(Integer.valueOf(endEntityProfileId));
         if (profile == null) {
             return Collections.emptyList();
         }
-        final Collection<String> certificateProfileIds = profile.getAvailableCertificateProfileIdsAsStrings();
-        return certificateProfileIds;
+        return profile.getAvailableCertificateProfileIds();
     }
 
     /**
@@ -1405,12 +1396,17 @@ public class EjbcaWebBean implements Serializable {
      * @param endEntityProfileId the the end entity profile in which we want to find certificate profiles
      * @return a map (TreeMap so it's sorted by key) {certificate profile name, certificate profile id} with authorized certificate profiles
      */
-    public Map<String, String> getCertificateProfilesNoKeyId(final String endEntityProfileId) {
+    public Map<String, Integer> getCertificateProfilesNoKeyId(final String endEntityProfileId) {
         final Map<Integer, String> map = certificateProfileSession.getCertificateProfileIdToNameMap();
-        final TreeMap<String, String> certificateProfiles = new TreeMap<>();
-        final Collection<String> ids = getAvailableCertProfileIDsOfEEProfileNoKeyID(endEntityProfileId);
-        for (String idstr : ids) {
-            certificateProfiles.put(map.get(Integer.valueOf(idstr)), idstr);
+        final TreeMap<String, Integer> certificateProfiles = new TreeMap<>();
+        final Collection<Integer> ids = getAvailableCertProfileIDsOfEEProfile(endEntityProfileId);
+        for (int id : ids) {
+            final String name = map.get(id);
+            if (name == null) {
+                log.warn("Missing Certificate Profile " + id + " referenced from End Entity Profile with ID " + endEntityProfileId);
+                continue;
+            }
+            certificateProfiles.put(name, id);
         }
         return certificateProfiles;
     }

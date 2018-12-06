@@ -109,6 +109,8 @@ import org.ejbca.util.query.Query;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
+ * <p>
+ * Semi-deprecated, we should try to move the methods here into session beans.
  *
  * @version $Id$
  */
@@ -207,7 +209,7 @@ public class RAInterfaceBean implements Serializable {
             EndEntityInformation uservo = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(),
         		userdata.getEmail(), EndEntityConstants.STATUS_NEW, userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
         		null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
-            EndEntityProfile endEntityProfile = getEndEntityProfile(userdata.getEndEntityProfileId());
+            EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
             if(StringUtils.isEmpty(userdata.getPassword()) && endEntityProfile.isPasswordPreDefined()) {
                 uservo.setPassword(endEntityProfile.getPredefinedPassword());
             } else {
@@ -576,15 +578,6 @@ public class RAInterfaceBean implements Serializable {
         return endEntityProfileSession.getEndEntityProfileId(profilename);
     }
 
-
-    public String getUserDataSourceName(int sourceid) {
-    	return this.userdatasourcesession.getUserDataSourceName(administrator, sourceid);
-    }
-
-    public int getUserDataSourceId(String sourcename) {
-    	return this.userdatasourcesession.getUserDataSourceId(administrator, sourcename);
-    }
-
     public EndEntityProfile getEndEntityProfile(String name) {
     	return endEntityProfileSession.getEndEntityProfile(name);
     }
@@ -892,10 +885,6 @@ public class RAInterfaceBean implements Serializable {
         return certprofilenames.toArray(dummy);
     }
 
-    public int getCertificateProfileId(String certificateprofilename) {
-    	return certificateProfileSession.getCertificateProfileId(certificateprofilename);
-    }
-
     public String getCertificateProfileName(int certificateprofileid) {
     	return certificateProfileSession.getCertificateProfileName(certificateprofileid);
     }
@@ -930,10 +919,6 @@ public class RAInterfaceBean implements Serializable {
 
     public void setTemporaryEndEntityProfile(EndEntityProfile profile){
     	this.temporaryEndEntityProfile = profile;
-    }
-
-    UserDataSourceSession getUserDataSourceSession(){
-    	return userdatasourcesession;
     }
 
     public String[] listPrinters(){

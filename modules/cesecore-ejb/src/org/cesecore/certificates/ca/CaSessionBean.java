@@ -469,6 +469,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }         
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public String getCaSubjectDn(final String caName) {
+        final CAInfo caInfo = getCAInfoInternal(-1, caName, true);
+        return (caInfo != null ? caInfo.getSubjectDN() : "");
+    }
+
     @Override
     public void removeCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         // check authorization

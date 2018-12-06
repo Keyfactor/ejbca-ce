@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -31,14 +32,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
@@ -53,6 +58,10 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     //private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
 
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private PublishingCrlSessionLocal publishingCrlSession;
 
     private GlobalConfiguration globalConfiguration;
     private CAInterfaceBean caBean;
@@ -200,10 +209,6 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public CAInterfaceBean getCaBean(){
-        return caBean;
-    }
-
     public List<CAGuiInfo> getCaInfos(){
         if (caGuiInfos == null) {
             refreshCaGuiInfos();
@@ -223,12 +228,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         });
         for (String caname : caNameList) {
             int caid = canames.get(caname).intValue();
-            CAInfo cainfo = getCaBean().getCAInfoFastNoAuth(caid);
+            CAInfo cainfo = caSession.getCAInfoInternal(caid);
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?
             }
-            CRLInfo crlinfo = getCaBean().getLastCRLInfo(cainfo, false);
-            CRLInfo deltacrlinfo = getCaBean().getLastCRLInfo(cainfo, true);
+            CRLInfo crlinfo = caBean.getLastCRLInfo(cainfo, false);
+            CRLInfo deltacrlinfo = caBean.getLastCRLInfo(cainfo, true);
 
             CAGuiInfo caGuiInfo = new CAGuiInfo(caname, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
                     cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE);
@@ -286,14 +291,24 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     public void createNewCrl(int caid) throws CAOfflineException {
         try {
-            getCaBean().createCRL(caid);
+            publishingCrlSession.forceCRL(getAdmin(), caid);
             refreshCaGuiInfos();
+        } catch (CADoesntExistsException e) {
+            throw new IllegalStateException(e);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
         } catch (CryptoTokenOfflineException e) {
             addErrorMessage("CATOKENISOFFLINE");
         }
     }
     public void createNewDeltaCrl(int caid) throws CAOfflineException, CryptoTokenOfflineException {
-        getCaBean().createDeltaCRL(caid);
+        try {
+            publishingCrlSession.forceDeltaCRL(getAdmin(), caid);
+        } catch (CADoesntExistsException e) {
+            throw new IllegalStateException(e);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
         refreshCaGuiInfos();
     }
 
