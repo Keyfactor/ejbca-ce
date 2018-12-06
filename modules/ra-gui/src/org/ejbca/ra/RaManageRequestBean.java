@@ -86,6 +86,7 @@ public class RaManageRequestBean implements Serializable {
 
     private ApprovalRequestGUIInfo requestInfo;
     private RaApprovalRequestInfo requestData;
+    private CertificateProfile certificateProfile;
     private boolean editing = false;
     private String extendDays;
     private Map<Integer, List<DynamicUiProperty<? extends Serializable>> > currentPartitionsProperties = null;
@@ -271,6 +272,14 @@ public class RaManageRequestBean implements Serializable {
     public boolean isPropertyReadOnly(String propertyName) {
         return requestInfo.request.getApprovalProfile().getReadOnlyProperties().contains(propertyName);
     }
+    
+    private CertificateProfile getCertificateProfile() {
+        if (certificateProfile == null) {
+            certificateProfile = raMasterApiProxyBean.getCertificateProfile(requestInfo.getEndEntityInformation().getCertificateProfileId());
+        }
+        return certificateProfile;
+    }
+    
     /** @return true if subject DN override by CSR is allowed */
     public boolean isDnOverrideRendered() {
         // In case of another request type than user generated enrollment, we do not want to show warning.
@@ -278,10 +287,27 @@ public class RaManageRequestBean implements Serializable {
             requestInfo.getEndEntityInformation().getTokenType() != EndEntityConstants.TOKEN_USERGEN) {
             return false;
         }
-        CertificateProfile certificateProfile = raMasterApiProxyBean.getCertificateProfile(requestInfo.getEndEntityInformation().getCertificateProfileId());
-        return certificateProfile.getAllowDNOverride();
+        return getCertificateProfile().getAllowDNOverride();
     }
-
+    
+    /**
+     * @return true if the default validity specified in the certificate profile has been changed during enrollment request.
+     */
+    public boolean isValidityModified() {
+        if (requestInfo.getEndEntityInformation().getExtendedInformation() != null) {
+            final String specifiedEndTime = requestInfo.getEndEntityInformation().getExtendedInformation().getCertificateEndTime();
+            final String defaultValidity = getCertificateProfile().getEncodedValidity();
+            return specifiedEndTime != null && !defaultValidity.equals(specifiedEndTime);
+        }
+        return false;
+    }
+    
+    public String getValidityModifiedMessage() {
+        return raLocaleBean.getMessage("view_request_page_note_validityoverride", 
+                getCertificateProfile().getEncodedValidity(), 
+                requestInfo.getEndEntityInformation().getExtendedInformation().getCertificateEndTime());
+    }
+    
     /**
      * Extract the partition properties, and fill in all and any placeholders. Also cull any properties set to be hidden.
      *
