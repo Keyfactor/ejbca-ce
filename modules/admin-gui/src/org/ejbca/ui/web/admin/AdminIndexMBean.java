@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
-import org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper;
 
 /**
  *  JSF Managed Bean or the index page in the Admin GUI.
@@ -38,7 +37,6 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
     //private static final Logger log = Logger.getLogger(AdminIndexMBean.class);
 
     private CAInterfaceBean caBean;
-    private EditPublisherJSPHelper editPublisherJSPHelper;
 
     public void initialize(ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
@@ -58,22 +56,6 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
             }
             try{
                 caBean.initialize(getEjbcaWebBean());
-            } catch(Exception e){
-                throw new java.io.IOException("Error initializing AdminIndexMBean");
-            }
-            editPublisherJSPHelper = (EditPublisherJSPHelper) req.getSession().getAttribute("editPublisherJSPHelper");
-            if ( editPublisherJSPHelper == null ){
-                try {
-                    editPublisherJSPHelper = (EditPublisherJSPHelper) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), EditPublisherJSPHelper.class.getName());
-                } catch (ClassNotFoundException exc) {
-                    throw new ServletException(exc.getMessage());
-                }catch (Exception exc) {
-                    throw new ServletException (" Cannot create bean of class "+EditPublisherJSPHelper.class.getName(), exc);
-                }
-                req.getSession().setAttribute("editPublisherJSPHelper", editPublisherJSPHelper);
-            }
-            try{
-                editPublisherJSPHelper.initialize(req, getEjbcaWebBean(), caBean);
             } catch(Exception e){
                 throw new java.io.IOException("Error initializing AdminIndexMBean");
             }

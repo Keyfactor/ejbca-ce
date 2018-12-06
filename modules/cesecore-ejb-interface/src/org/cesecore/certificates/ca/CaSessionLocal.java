@@ -212,6 +212,13 @@ public interface CaSessionLocal extends CaSession {
     CAInfo getCAInfoInternal(final int caid);
 
     /**
+     * Returns the Subject DN of the CA with the given name.
+     * @param caName Name of CA.
+     * @return Subject DN, or empty string if CA is absent.
+     */
+    String getCaSubjectDn(String caName);
+
+    /**
      * Internal (local only) method to get the CA object without logging the authorization check.
      * (the auth check is performed though)
      * 
@@ -244,4 +251,5 @@ public interface CaSessionLocal extends CaSession {
      * @throws AuthorizationDeniedException if not authorized.
      */
     boolean existsKeyValidatorInCAs(int keyValidatorId) throws AuthorizationDeniedException;
+
 }
