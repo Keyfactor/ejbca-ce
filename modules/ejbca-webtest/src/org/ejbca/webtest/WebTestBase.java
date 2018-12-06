@@ -47,7 +47,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
  *
- * @version $Id: WebTestBase.java 30763 2018-12-06 07:06:41Z andrey_s_helmes $
+ * @version $Id: WebTestBase.java 30768 2018-12-06 08:06:23Z andrey_s_helmes $
  */
 public abstract class WebTestBase {
 
@@ -235,7 +235,7 @@ public abstract class WebTestBase {
         final Integer cryptoTokenId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
         if(cryptoTokenId == null) {
             log.error("Cannot remove a crypto token for CA [" + caName + "]");
-            assert false;
+            return;
         }
         cryptoTokenManagementSessionRemote.deleteCryptoToken(ADMIN_TOKEN, cryptoTokenId);
     }
