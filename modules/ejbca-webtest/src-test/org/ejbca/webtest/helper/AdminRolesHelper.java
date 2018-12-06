@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Helper class for handling 'Administrator Roles' page in automated web tests.
  *
- * @version $Id: AdminRolesHelper.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
+ * @version $Id: AdminRolesHelper.java 30768 2018-12-06 08:21:29Z andrey_s_helmes $
  */
 public class AdminRolesHelper extends BaseHelper {
 
@@ -191,11 +191,17 @@ public class AdminRolesHelper extends BaseHelper {
         if(viewContext == ViewMode.VIEW_MODE_BASIC) {
             selectOptionByName(Page.SELECT_ROLE_TEMPLATE, roleTemplateName);
         }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
+        }
     }
 
     public void selectMatchWith(final String matchWith) {
         if(viewContext == ViewMode.VIEW_MODE_MEMBERS) {
             selectOptionByName(Page.SELECT_MATCH_WITH, matchWith);
+        }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
         }
     }
 
@@ -203,17 +209,26 @@ public class AdminRolesHelper extends BaseHelper {
         if(viewContext == ViewMode.VIEW_MODE_MEMBERS) {
             selectOptionByName(Page.SELECT_CA, ca);
         }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
+        }
     }
 
     public void setMatchValue(final String matchValue) {
         if(viewContext == ViewMode.VIEW_MODE_MEMBERS) {
             fillInput(Page.INPUT_MATCH_VALUE, matchValue);
         }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
+        }
     }
 
     public void clickAddMember() {
         if(viewContext == ViewMode.VIEW_MODE_MEMBERS) {
             clickLink(Page.BUTTON_MEMBER_ADD);
+        }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
         }
     }
 
@@ -236,8 +251,11 @@ public class AdminRolesHelper extends BaseHelper {
         if(viewContext == ViewMode.VIEW_MODE_BASIC) {
             clickLink(Page.BUTTON_SAVE_VIEW_MODE_BASIC);
         }
-        if(viewContext == ViewMode.VIEW_MODE_ADVANCED) {
+        else if(viewContext == ViewMode.VIEW_MODE_ADVANCED) {
             clickLink(Page.BUTTON_SAVE_VIEW_MODE_ADVANCED);
+        }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
         }
         assertRoleUpdated();
     }
@@ -340,8 +358,11 @@ public class AdminRolesHelper extends BaseHelper {
         if(viewContext == ViewMode.VIEW_MODE_BASIC) {
             assertElementExists(Page.BUTTON_SAVE_VIEW_MODE_BASIC, "Button 'Save' does not exist.");
         }
-        if(viewContext == ViewMode.VIEW_MODE_ADVANCED) {
+        else if(viewContext == ViewMode.VIEW_MODE_ADVANCED) {
             assertElementExists(Page.BUTTON_SAVE_VIEW_MODE_ADVANCED, "Button 'Save' does not exist.");
+        }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
         }
     }
 
@@ -536,6 +557,9 @@ public class AdminRolesHelper extends BaseHelper {
                     }
                 }
             }
+        }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
         }
     }
 
