@@ -23,13 +23,13 @@ pipeline {
 	stages {
 		stage('debug output (temporary)') {
 			steps {
-				sh echo "JENKINS_JOB_FOLDER ${params.JENKINS_JOB_FOLDER}"
-				sh echo "DOCKER_NAME_BASE ${params.DOCKER_NAME_BASE}"
-				sh echo "DOCKER_NAME_NET ${params.DOCKER_NAME_NET}"
-				sh echo "DOCKER_NAME_DB ${params.DOCKER_NAME_DB}"
-				sh echo "DB2_VERSION ${params.DB2_VERSION}"
-				sh echo "DB2_PORTS ${params.DB2_PORTS}"
-				sh echo "DB2_PASSWORD ${params.DB2_PASSWORD}"
+				sh "echo JENKINS_JOB_FOLDER ${params.JENKINS_JOB_FOLDER}"
+				sh "echo DOCKER_NAME_BASE ${params.DOCKER_NAME_BASE}"
+				sh "echo DOCKER_NAME_NET ${params.DOCKER_NAME_NET}"
+				sh "echo DOCKER_NAME_DB ${params.DOCKER_NAME_DB}"
+				sh "echo DB2_VERSION ${params.DB2_VERSION}"
+				sh "echo DB2_PORTS ${params.DB2_PORTS}"
+				sh "echo DB2_PASSWORD ${params.DB2_PASSWORD}"
 			}
 		}
 		stage('verify that space is clean') {
