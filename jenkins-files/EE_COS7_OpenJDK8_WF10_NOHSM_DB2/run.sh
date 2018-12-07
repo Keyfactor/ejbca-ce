@@ -50,10 +50,6 @@ cp /opt/conf/* /app/ejbca/conf/
 echo '=================== Starting WildFly ======================================='
 $JBOSS_BIN/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
-sleep 60
-
-exit 0
-
 #echo '=================== Installing DB2 JDBC Driver and Datasource =============='
 #`$JBOSS_CLI data-source add --name=EjbcaDS \
 #                            --driver-name="com.ibm.db2.jcc.DB2Driver" \
