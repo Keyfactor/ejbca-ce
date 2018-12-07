@@ -1,7 +1,5 @@
 #!/bin/sh
 
-echo $DOCKER_NAME_DB
-
 docker exec -i $DOCKER_NAME_DB bash<<EOF
 su - db2inst1 
 db2 create database ejbca
