@@ -18,8 +18,12 @@ import java.util.Date;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -39,6 +43,8 @@ import org.ejbca.util.query.TimeMatch;
  * 
  * @version $Id$
  */
+@ManagedBean
+@SessionScoped
 public class ListApproveActionManagedBean extends BaseManagedBean {
 
 	private static final long serialVersionUID = 1L;
@@ -55,6 +61,21 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 	
 	private ApprovalDataVOViewList listData;
 
+    // Authentication check and audit log page access request
+    public void initialize(ComponentSystemEvent event) throws Exception {
+        // Invoke on initial request only
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            final boolean approveendentity = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+            final boolean approvecaaction = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
+            
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR);
+            if (!approveendentity && !approvecaaction) {
+                throw new AuthorizationDeniedException("Not authorized to view approval pages");
+            }
+        }
+    }
+	
 	public ListApproveActionManagedBean() {		      			 			 	 	
 		setSelectedStatus("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
 		setSelectedTimeSpan(TIME_30MIN);

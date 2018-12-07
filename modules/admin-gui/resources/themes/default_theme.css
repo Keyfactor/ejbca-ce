@@ -774,6 +774,14 @@ table.results table.actions tbody tr:active {
 	background-color: #BFB !important;
 }
 
+.approveationlist-select {
+	margin: 1em 0.5em 0 0.5em;
+}
+
+.scroller-table {
+	margin: 0 auto;
+}
+
 .section-label {
     margin-bottom: 1em;
     margin-top: 1em;
