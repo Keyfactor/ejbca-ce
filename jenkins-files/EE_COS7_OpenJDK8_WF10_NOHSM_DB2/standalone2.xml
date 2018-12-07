@@ -185,7 +185,7 @@
                         <password>db2inst1</password>
                     </security>
                     <validation>
-                        <check-valid-connection-sql>select 1;</check-valid-connection-sql>
+                        <check-valid-connection-sql>SELECT current date FROM sysibm.sysdummy1</check-valid-connection-sql>
                         <validate-on-match>true</validate-on-match>
                         <background-validation>false</background-validation>
                     </validation>
