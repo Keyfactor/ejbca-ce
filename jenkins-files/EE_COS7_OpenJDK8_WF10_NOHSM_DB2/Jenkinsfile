@@ -50,6 +50,7 @@ pipeline {
 				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
 					sh "pwd"
 					sh "ls -la"
+					sh "chmod +x init_db2_ejbca.sh"
 	                                sh "./init_db2_ejbca.sh"
 				}
 			}
