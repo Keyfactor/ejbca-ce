@@ -150,7 +150,6 @@
                 </datasource>
                 <datasource jndi-name="java:/EjbcaDS" pool-name="ejbcads" use-ccm="true">
                     <connection-url>jdbc:db2://db_ee_cos7_openjdk8_wf10_nohsm_db2:50000/ejbca</connection-url>
-                    <driver-class>com.ibm.db2.jcc.DB2Driver</driver-class>
                     <driver>db2</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
