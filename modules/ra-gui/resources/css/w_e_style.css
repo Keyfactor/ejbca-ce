@@ -1020,7 +1020,7 @@ span.approvalStep {
       div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(2):before {
         content: "Profile"; }
       div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(3):before {
-        content: "Serial number"; }
+        content: "Serial Number"; }
       div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(4):before {
         content: "Subject"; }
       div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(5):before {
@@ -1030,7 +1030,7 @@ span.approvalStep {
       div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(7):before {
         content: "Status"; }
       div.content-body #contentForm\:searchCertTable > tbody > tr > td:nth-of-type(8):before {
-        content: "End entity"; }
+        content: "End Entity"; }
   div.content-body #contentForm\:searchEntityTable > tbody > tr > td:nth-of-type(3) > span {
     display: inline-block;
     width: 54%;
