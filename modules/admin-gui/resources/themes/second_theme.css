@@ -1221,7 +1221,7 @@ body.popup {
 
 /*--------------------------------------------------------------------------*/
 
-.alert { color: red; font-size: 11pt; font-weight: bold; background-color: white; }
+.alert, .errorMessage { color: red; font-size: 11pt; font-weight: bold; background-color: white; }
 .info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
 
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }

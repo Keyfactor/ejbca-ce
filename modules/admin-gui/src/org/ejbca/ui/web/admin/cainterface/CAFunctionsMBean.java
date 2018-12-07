@@ -14,7 +14,9 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,9 +30,10 @@ import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -40,9 +43,13 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.certificates.crl.CrlImportException;
+import org.cesecore.certificates.crl.CrlStoreException;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -56,21 +63,22 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 @ViewScoped
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
+    private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
 
     @EJB
     private CaSessionLocal caSession;
     @EJB
+    private CrlStoreSessionLocal crlStoreSession;
+    @EJB
+    private ImportCrlSessionLocal importCrlSession;
+    @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
 
     private GlobalConfiguration globalConfiguration;
-    private CAInterfaceBean caBean;
     List<CAGuiInfo> caGuiInfos = null;
     private UploadedFile uploadFile;
     List<String> extCaNameList;
     private String crlImportCaName;
-    private String message;
-    private String errorMessage;
 
     public void initialize(ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
@@ -78,30 +86,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             globalConfiguration = getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
 
-            caBean = (CAInterfaceBean) req.getSession().getAttribute("caBean");
-            if ( caBean == null ){
-                try {
-                    caBean = (CAInterfaceBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
-                } catch (ClassNotFoundException exc) {
-                    throw new ServletException(exc.getMessage());
-                }catch (Exception exc) {
-                    throw new ServletException (" Cannot create bean of class "+CAInterfaceBean.class.getName(), exc);
-                }
-                req.getSession().setAttribute("cabean", caBean);
-            }
-            try{
-                caBean.initialize(getEjbcaWebBean());
-            } catch(Exception e){
-                throw new java.io.IOException("Error initializing AdminIndexMBean");
-            }
             TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
             extCaNameList = new ArrayList<String>(externalCANames.keySet());
         }
-    }
-
-    public void clearMessages(){
-        message = null;
-        errorMessage = null;
     }
 
 
@@ -232,8 +219,8 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?
             }
-            CRLInfo crlinfo = caBean.getLastCRLInfo(cainfo, false);
-            CRLInfo deltacrlinfo = caBean.getLastCRLInfo(cainfo, true);
+            CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), false);
+            CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), true);
 
             CAGuiInfo caGuiInfo = new CAGuiInfo(caname, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
                     cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE);
@@ -277,16 +264,34 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     }
 
     public void uploadCrlFile() throws IOException {
-        clearMessages();
-        byte[] bytes = uploadFile.getBytes();
-        String responseMessage = caBean.importCRL(crlImportCaName, bytes);
-        refreshCaGuiInfos();
-        if(responseMessage.startsWith("Error")) {
-            errorMessage = responseMessage;
-        } else {
-            message = responseMessage;
+        if (uploadFile == null) {
+            addNonTranslatedErrorMessage("No CRL file uploaded");
+            return;
         }
-
+        byte[] bytes = uploadFile.getBytes();
+        if (bytes == null || bytes.length == 0) {
+            addNonTranslatedErrorMessage("No CRL file uploaded, or file is empty");
+            return;
+        }
+        try {
+            final CAInfo cainfo = caSession.getCAInfo(getAdmin(), crlImportCaName);
+            final X509CRL x509crl = CertTools.getCRLfromByteArray(bytes);
+            if (x509crl == null) {
+                addNonTranslatedErrorMessage("Could not parse CRL. It must be in DER format.");
+            } else if (!StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
+                addNonTranslatedErrorMessage("Error: The CRL in the file in not issued by " + crlImportCaName);
+            } else {
+                importCrlSession.importCrl(getAdmin(), cainfo, bytes);
+                addNonTranslatedInfoMessage("CRL imported successfully or a newer version is already in the database");
+                refreshCaGuiInfos();
+            }
+        } catch (CRLException e) {
+            log.info("Could not parse CRL", e);
+            addNonTranslatedErrorMessage("Could not parse CRL");
+        } catch (AuthorizationDeniedException | CrlImportException | CrlStoreException e) {
+            log.info("Error importing CRL", e);
+            addNonTranslatedErrorMessage("Error: " + e.getLocalizedMessage());
+        }
     }
 
     public void createNewCrl(int caid) throws CAOfflineException {
@@ -343,13 +348,5 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     public List<String> getExtCaNameList() {
         return extCaNameList;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
     }
 }

@@ -13,17 +13,27 @@
 package org.ejbca.ui.web.admin;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 
 /**
  *  JSF Managed Bean or the index page in the Admin GUI.
@@ -34,34 +44,74 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 @ViewScoped
 public class AdminIndexMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(AdminIndexMBean.class);
+    private static final Logger log = Logger.getLogger(AdminIndexMBean.class);
 
-    private CAInterfaceBean caBean;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+
+    /** Backing object for main page list of CA and CRL statuses. */
+    public class CaCrlStatusInfo {
+        final private String caName;
+        final private boolean caService;
+        final private boolean crlStatus;
+        private CaCrlStatusInfo(final String caName, final boolean caService, final boolean crlStatus) {
+            this.caName = caName;
+            this.caService = caService;
+            this.crlStatus = crlStatus;
+        }
+        public String getCaName() { return caName; }
+        public boolean isCaService() { return caService; }
+        public boolean isCrlStatus() { return crlStatus; }
+    }
 
     public void initialize(ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
             final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-            caBean = (CAInterfaceBean) req.getSession().getAttribute("caBean");
-            if ( caBean == null ){
-                try {
-                    caBean = (CAInterfaceBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
-                } catch (ClassNotFoundException exc) {
-                    throw new ServletException(exc.getMessage());
-                }catch (Exception exc) {
-                    throw new ServletException (" Cannot create bean of class "+CAInterfaceBean.class.getName(), exc);
-                }
-                req.getSession().setAttribute("cabean", caBean);
-            }
-            try{
-                caBean.initialize(getEjbcaWebBean());
-            } catch(Exception e){
-                throw new java.io.IOException("Error initializing AdminIndexMBean");
-            }
         }
     }
-    public CAInterfaceBean getCaBean(){
-        return caBean;
+
+    public List<CaCrlStatusInfo> getAuthorizedInternalCaCrlStatusInfos() throws Exception {
+        final List<CaCrlStatusInfo> ret = new ArrayList<>();
+        final Collection<Integer> caIds = caSession.getAuthorizedCaIds(getAdmin());
+        for (final Integer caId : caIds) {
+            final CAInfo cainfo = caSession.getCAInfoInternal(caId.intValue());
+            if (cainfo == null || cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                continue;
+            }
+            final String caName = cainfo.getName();
+            boolean caTokenStatus = false;
+            final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
+            try {
+                caTokenStatus = cryptoTokenManagementSession.isCryptoTokenStatusActive(cryptoTokenId);
+            } catch (Exception e) {
+                final String msg = getAdmin().toString() + " failed to load CryptoToken status for " + cryptoTokenId;
+                if (log.isDebugEnabled()) {
+                    log.debug(msg, e);
+                } else {
+                    log.info(msg);
+                }
+            }
+            final boolean caService = (cainfo.getStatus() == CAConstants.CA_ACTIVE) && caTokenStatus;
+            boolean crlStatus = true;
+            final Date now = new Date();
+            final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), false);
+            if ((crlinfo != null) && (now.after(crlinfo.getExpireDate()))) {
+                crlStatus = false;
+            }
+            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), true);
+            if ((deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate()))) {
+                crlStatus = false;
+            }
+            ret.add(new CaCrlStatusInfo(caName, caService, crlStatus));
+        }
+
+        return ret;
     }
+
 }

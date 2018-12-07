@@ -36,8 +36,6 @@
 		<h1><h:outputText value="#{web.text.CASTRUCTUREANDCRL}"/></h1>
 		<h:panelGroup rendered="#{cAFunctionsMBean.extCaNameList.size()>0}">
 			<h2><h:outputText value="#{web.text.IMPORTCRL_TITLE}"/></h2>
-			<h:outputText value="#{cAFunctionsMBean.message}"/>
-			<h:outputText value="#{cAFunctionsMBean.errorMessage}" style="color: #FF0000;"/>
 			<h:form id="importCrl" enctype='multipart/form-data'>
 
 				<h:outputText value="#{web.text.IMPORTCRL_FUNCTION}"/>
