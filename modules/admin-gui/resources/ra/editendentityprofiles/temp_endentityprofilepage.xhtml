@@ -311,7 +311,7 @@
 			</h:panelGrid>	
 				<h:dataTable 
 					var="componentName" 
-					value="#{endEntityProfileMBean.subjectDnComponent}"
+					value="#{endEntityProfileMBean.subjectDnComponentList}"
 					cellspacing="1" 
 					cellpadding="3" 
 					border="0"
@@ -326,13 +326,13 @@
 						</h:selectBooleanCheckbox>
 					</h:column>
 					<h:column>
-						<h:outputLabel for="header_subjectdnattributes"  value="#{componentName.getName()}"/>
+						<h:outputLabel for="header_subjectdnattributes"  value="#{componentName.getComponentName()}"/>
 					</h:column>
 					<h:column>
 					<h:panelGrid id="subjectDNTextFieldGrid" column="1">
 						<h:inputText 
 							id="subjectDNTextField" 
-							value="#{endEntityProfileMBean.subjectDNAttributeValue}" 
+							value="#{componentName.componentValue}" 
 					   		size="45" 
 					   		maxlength="1024"
 							disabled="#{endEntityProfilesMBean.viewOnly}">
@@ -340,28 +340,29 @@
 						<h:panelGrid id="subjectDNCheckBoxesGrid" columns="7">
 							<h:selectBooleanCheckbox 
 								id="dNAttributeRequiredCheckBox" 
-								value="#{endEntityProfileMBean.subjectDNAttributeRequired}" 
+								value="#{componentName.componentIsRequired}" 
 								disabled="#{endEntityProfilesMBean.viewOnly}">
 				    		</h:selectBooleanCheckbox>
 				    		<h:outputLabel for="subjectDNCheckBoxesGrid"  value="#{web.text.REQUIRED}"/>
 				    		<h:selectBooleanCheckbox 
 				    			id="dNAttributeModifyableCheckBox" 
-				    			value="#{endEntityProfileMBean.subjectDNAttributeModifyable}" 
+				    			value="#{componentName.componentIsModifyable}" 
 				    			disabled="#{endEntityProfilesMBean.viewOnly}">
 				    			<f:ajax render=":eeProfiles"/>
 				    		</h:selectBooleanCheckbox>
 				    		<h:outputLabel for="subjectDNCheckBoxesGrid"  value="#{web.text.MODIFYABLE}"/>
 				    		<h:selectBooleanCheckbox 
 				    			id="dNAttributeValidationCheckBox" 
-				    			value="#{endEntityProfileMBean.subjectDNAttributeValidation}" 
-				    			disabled="#{endEntityProfileMBean.subjectDNAttributeModifyable or endEntityProfilesMBean.viewOnly}">
+				    			value="#{componentName.componentValueValidation}" 
+				    			disabled="#{not componentName.componentIsModifyable or endEntityProfilesMBean.viewOnly}">
+                                <f:ajax render=":eeProfiles"/>				    		
 				    		</h:selectBooleanCheckbox>
 				    		<h:outputLabel for="subjectDNCheckBoxesGrid"  value="#{web.text.VALIDATION}"/>
 				    		<h:inputText 
 				    			id="subjectDNValidationTextField" 
 				    			style="font-size: 9pt" 
-				    			value="#{endEntityProfileMBean.validationRegEx}" 
-					   			disabled="#{endEntityProfileMBean.subjectDNAttributeModifyable or endEntityProfilesMBean.viewOnly}">
+				    			value="#{componentName.componentValidationString}" 
+					   			disabled="#{not componentName.componentValueValidation or endEntityProfilesMBean.viewOnly}">
 							</h:inputText>
 						</h:panelGrid>
 					</h:panelGrid>
@@ -1032,7 +1033,7 @@
 				    		id="printUserDataCheckBox" 
 				    		value="#{endEntityProfileMBean.usePrintUserData}" 
 				    		disabled="#{endEntityProfilesMBean.viewOnly}">
-							<f:ajax render=":eeProfiles:header_otherdata"/>
+							<f:ajax render=":eeProfiles:header_otherdata2"/>
 						</h:selectBooleanCheckbox>
 						<h:outputLabel for="printingGrid2"  value="#{web.text.USE} : " />
 						<h:outputLabel for="printingGrid2"  value="#{web.text.DEFAULT} = "/>
