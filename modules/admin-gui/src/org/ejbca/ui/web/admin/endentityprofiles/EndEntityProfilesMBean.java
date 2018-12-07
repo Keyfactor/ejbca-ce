@@ -29,6 +29,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileUploadException;
@@ -37,6 +38,7 @@ import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
@@ -73,12 +75,16 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private HardTokenInterfaceBean tokenBean = new HardTokenInterfaceBean();
        
     @PostConstruct
-    private void postConstruct() throws Exception {
+    private void postConstruct() {
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
-        caBean.initialize(ejbcaWebBean);
-        raBean.initialize(req, ejbcaWebBean);
-        tokenBean.initialize(req, ejbcaWebBean);
+        try {
+            ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
+            caBean.initialize(ejbcaWebBean);
+            raBean.initialize(req, ejbcaWebBean);
+            tokenBean.initialize(req, ejbcaWebBean);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
     }
     
     private Integer selectedEndEntityProfileId = null;
