@@ -15,19 +15,16 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.security.KeyStore;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -107,31 +104,6 @@ public class CADataHandler implements Serializable {
     }
 
   /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
-   */
-  public void importCAFromKeyStore(String caname, byte[] p12file, String keystorepass, String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
-      final KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
-      ks.load(new ByteArrayInputStream(p12file), keystorepass.toCharArray());
-      if (privateSignatureKeyAlias.equals("")) {
-          Enumeration<String> aliases = ks.aliases();
-          if (aliases == null || !aliases.hasMoreElements()) {
-              throw new Exception("This file does not contain any aliases.");
-          }
-          privateSignatureKeyAlias = aliases.nextElement();
-          if (aliases.hasMoreElements()) {
-              while (aliases.hasMoreElements()) {
-                  privateSignatureKeyAlias += " " + aliases.nextElement();
-              }
-              throw new Exception("You have to specify any of the following aliases: " + privateSignatureKeyAlias);
-          }
-      }
-      if ( privateEncryptionKeyAlias.equals("") ) {
-          privateEncryptionKeyAlias = null;
-      }
-      caadminsession.importCAFromKeyStore(administrator, caname, p12file, keystorepass, keystorepass, privateSignatureKeyAlias, privateEncryptionKeyAlias);  
-  }
-
-  /**
    * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
   public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
@@ -145,23 +117,6 @@ public class CADataHandler implements Serializable {
           certs.add(CertTools.getCertfromByteArray(certbytes, Certificate.class));
       }
       caadminsession.updateCACertificate(administrator, caId, EJBTools.wrapCertCollection(certs));
-  }
-
-  /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
-   */
-  public void importCACert(String caname, byte[] certbytes) throws Exception {
-	  Collection<Certificate> certs = null;
-	  try {
-		  certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
-	  } catch (CertificateException e) {
-		  log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
-		  // See if it is a single binary certificate
-		  Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
-		  certs = new ArrayList<>();
-		  certs.add(cert);
-	  }
-	  caadminsession.importCACertificate(administrator, caname, EJBTools.wrapCertCollection(certs));
   }
 
   /**

@@ -122,12 +122,25 @@ public abstract class CAInfo implements Serializable {
     protected boolean useCertificateStorage;
     protected boolean acceptRevocationNonExistingEntry;
 
+    /**
+     * Returns the Subject DN of the CA, that will be used for issuing the CA certificate.
+     * To get the Subject DN of the latest issued CA certificate, use {@link getLatestSubjectDN}
+     */
     public String getSubjectDN() {
         return subjectdn;
     }
 
     public void setSubjectDN(final String subjectDn) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectDn));
+    }
+    
+    /**
+     * Use issuer DN from the latest CA certificate. Might differ from the value from {@link getSubjectDN}.
+     */
+    public String getLatestSubjectDN() {
+        final Collection<Certificate> certs = getCertificateChain();
+        final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
+        return cacert!=null ? CertTools.getSubjectDN(cacert) : null;
     }
 
     public int getCAId() {
