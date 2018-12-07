@@ -21,17 +21,6 @@ pipeline {
 		string(name: 'DB2_PASSWORD', defaultValue: env.DB2_PASSWORD, description: 'IBM DB2 Database password.')
 	}
 	stages {
-		stage('debug output (temporary)') {
-			steps {
-				sh "echo JENKINS_JOB_FOLDER ${JENKINS_JOB_FOLDER}"
-				sh "echo DOCKER_NAME_BASE ${DOCKER_NAME_BASE}"
-				sh "echo DOCKER_NAME_NET ${DOCKER_NAME_NET}"
-				sh "echo DOCKER_NAME_DB ${DOCKER_NAME_DB}"
-				sh "echo DB2_VERSION ${DB2_VERSION}"
-				sh "echo DB2_PORTS ${DB2_PORTS}"
-				sh "echo DB2_PASSWORD ${DB2_PASSWORD}"
-			}
-		}
 		stage('verify that space is clean') {
 			steps {
 				sh "docker container rm ${params.DOCKER_NAME_DB} -f || true"
@@ -64,10 +53,14 @@ pipeline {
 				}
 			}
 		}
+		stage('save test results') {
+			steps {
+				junit "ejbca/**/reports/**/TEST-*.xml"
+			}
+		}
 	}
 	post {
 		always {
-			junit "ejbca/**/reports/**/TEST-*.xml"
 			sh "docker stop --time=1 `${params.DOCKER_NAME_BASE}` || true"
 			sh "docker rm -f `${params.DOCKER_NAME_BASE}` || true"
 			sh "docker stop --time=1 `${params.DOCKER_NAME_DB}` || true"
