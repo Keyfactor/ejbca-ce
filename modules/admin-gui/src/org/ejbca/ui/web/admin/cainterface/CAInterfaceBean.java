@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.security.cert.CRLException;
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -77,10 +75,6 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.cesecore.certificates.crl.CRLInfo;
-import org.cesecore.certificates.crl.CrlImportException;
-import org.cesecore.certificates.crl.CrlStoreException;
-import org.cesecore.certificates.crl.CrlStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -95,7 +89,6 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
@@ -107,7 +100,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -128,21 +120,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  */
 public class CAInterfaceBean implements Serializable {
 
-    /** Backing object for main page list of CA and CRL statuses. */
-    public class CaCrlStatusInfo {
-        final private String caName;
-        final private boolean caService;
-        final private boolean crlStatus;
-        private CaCrlStatusInfo(final String caName, final boolean caService, final boolean crlStatus) {
-            this.caName = caName;
-            this.caService = caService;
-            this.crlStatus = crlStatus;
-        }
-        public String getCaName() { return caName; }
-        public boolean isCaService() { return caService; }
-        public boolean isCrlStatus() { return crlStatus; }
-    }
-
 	private static final long serialVersionUID = 3L;
 	private static final Logger log = Logger.getLogger(CAInterfaceBean.class);
 	private static final String LIST_SEPARATOR = ";";
@@ -159,12 +136,9 @@ public class CAInterfaceBean implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSessionLocal certificatesession;
     private CertReqHistorySessionLocal certreqhistorysession;
-    private CrlStoreSession crlStoreSession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-    private PublishingCrlSessionLocal publishingCrlSession;
     private PublisherQueueSessionLocal publisherqueuesession;
     private PublisherSessionLocal publishersession;
-    private KeyValidatorSessionLocal keyValidatorSession;
     
     private SignSession signsession; 
    
@@ -188,7 +162,6 @@ public class CAInterfaceBean implements Serializable {
         if (!initialized) {
           certificatesession = ejbLocalHelper.getCertificateStoreSession();
           certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
-          crlStoreSession = ejbLocalHelper.getCrlStoreSession();
           cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
           caadminsession = ejbLocalHelper.getCaAdminSession();
           casession = ejbLocalHelper.getCaSession();
@@ -197,9 +170,7 @@ public class CAInterfaceBean implements Serializable {
           certcreatesession = ejbLocalHelper.getCertificateCreateSession();
           publishersession = ejbLocalHelper.getPublisherSession();               
           publisherqueuesession = ejbLocalHelper.getPublisherQueueSession();
-          keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-          publishingCrlSession = ejbLocalHelper.getPublishingCrlSession();
           authenticationToken = ejbcawebbean.getAdminObject();
           this.ejbcawebbean = ejbcawebbean;
 
@@ -240,44 +211,6 @@ public class CAInterfaceBean implements Serializable {
     public String getName(Integer caId) {
         return casession.getCAIdToNameMap().get(caId);
     }
-    
-    public List<CaCrlStatusInfo> getAuthorizedInternalCaCrlStatusInfos() throws Exception {
-        final List<CaCrlStatusInfo> ret = new ArrayList<>();
-        final Collection<Integer> caIds = casession.getAuthorizedCaIds(authenticationToken);
-        for (final Integer caId : caIds) {
-            final CAInfo cainfo = casession.getCAInfoInternal(caId.intValue());
-            if (cainfo == null || cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
-                continue;
-            }
-            final String caName = cainfo.getName();
-            boolean caTokenStatus = false;
-            final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
-            try {
-                caTokenStatus = cryptoTokenManagementSession.isCryptoTokenStatusActive(cryptoTokenId);
-            } catch (Exception e) {
-                final String msg = authenticationToken.toString() + " failed to load CryptoToken status for " + cryptoTokenId;
-                if (log.isDebugEnabled()) {
-                    log.debug(msg, e);
-                } else {
-                    log.info(msg);
-                }
-            }
-            final boolean caService = (cainfo.getStatus() == CAConstants.CA_ACTIVE) && caTokenStatus;
-            boolean crlStatus = true;
-            final Date now = new Date();
-            final CRLInfo crlinfo = getLastCRLInfo(cainfo, false);
-            if ((crlinfo != null) && (now.after(crlinfo.getExpireDate()))) {
-                crlStatus = false;
-            }
-            final CRLInfo deltacrlinfo = getLastCRLInfo(cainfo, true);
-            if ((deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate()))) {
-                crlStatus = false;
-            }
-            ret.add(new CaCrlStatusInfo(caName, caService, crlStatus));
-        }
-
-        return ret;
-    }
 
     public CertificateProfile getCertificateProfile(final String name) throws AuthorizationDeniedException {
         final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(name);
@@ -299,21 +232,6 @@ public class CAInterfaceBean implements Serializable {
     private boolean authorizedToViewProfile(CertificateProfile profile, final int id) {
         return certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, profile.getType()).contains(Integer.valueOf(id));
     }
-
-    /**
-     * @param caInfo of the CA that has issued the CRL.
-     * @param deltaCRL false for complete CRL info, true for delta CRLInfo
-     * @return CRLInfo of last CRL by CA or null if no CRL exists.
-     */
-	public CRLInfo getLastCRLInfo(CAInfo caInfo, boolean deltaCRL) {
-		final String issuerdn;// use issuer DN from CA certificate. Might differ from DN in CAInfo.
-		{
-			final Collection<Certificate> certs = caInfo.getCertificateChain();
-			final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
-			issuerdn = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
-		}
-		return crlStoreSession.getLastCRLInfo(issuerdn, deltaCRL);          
-	}
     
     public int getPublisherQueueLength(int publisherId) {
     	return publisherqueuesession.getPendingEntriesCountForPublisher(publisherId);
@@ -889,7 +807,7 @@ public class CAInterfaceBean implements Serializable {
                 byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                 saveRequestData(certreq);
             } catch (CryptoTokenOfflineException e) {
-                cadatahandler.removeCA(caid);
+                casession.removeCA(authenticationToken, caid);
             }
         }
 	    return illegaldnoraltname;
@@ -1007,8 +925,8 @@ public class CAInterfaceBean implements Serializable {
 	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL
 	        ) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
-        CAInfoView infoView = cadatahandler.getCAInfo(caid);  
-        CAToken catoken = infoView.getCAToken();
+        CAInfo caInfo = casession.getCAInfo(authenticationToken, caid);
+        CAToken catoken = caInfo.getCAToken();
         if (catoken == null) {
             catoken = new CAToken(caid, new Properties());
         }
@@ -1104,7 +1022,7 @@ public class CAInterfaceBean implements Serializable {
                        acceptRevocationNonExistingEntry, defaultCertprofileId);
            }
             cainfo.setSubjectDN(subjectDn);
-            cainfo.setStatus(infoView.getCAInfo().getStatus());
+            cainfo.setStatus(caInfo.getStatus());
             return cainfo;
         }
         return null;
@@ -1381,37 +1299,6 @@ public class CAInterfaceBean implements Serializable {
     public Date getRolloverNotAfter(int caid) throws CADoesntExistsException, AuthorizationDeniedException {
         final Collection<Certificate> chain = casession.getCAInfo(authenticationToken, caid).getCertificateChain();
         return CertTools.getNotAfter(chain.iterator().next());
-    }
-    
-    
-    //-----------------------------------------
-    //               Import CRL
-    //-----------------------------------------
-    
-    public String importCRL(final String caname, final byte[] crlBytes) {
-        
-        if(crlBytes==null || crlBytes.length==0) {
-            if(log.isDebugEnabled()) {
-                log.debug("No CRL file to import");
-            }
-            return "";
-        }
-        
-        String retMsg = "";
-        try {
-            final CAInfo cainfo = getCAInfo(caname).getCAInfo();
-            X509CRL x509crl = CertTools.getCRLfromByteArray(crlBytes);
-            
-            if(StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
-                ejbLocalHelper.getImportCrlSession().importCrl(authenticationToken, cainfo, crlBytes);
-                retMsg = "CRL imported successfully or a newer version is already in the database";
-            } else {
-                retMsg = "Error: The CRL in the file in not issued by " + caname;
-            }
-        } catch (AuthorizationDeniedException | CRLException | CrlImportException | CrlStoreException e) {
-            retMsg = "Error: " + e.getLocalizedMessage();
-        }
-        return retMsg;
     }
 
     /**
