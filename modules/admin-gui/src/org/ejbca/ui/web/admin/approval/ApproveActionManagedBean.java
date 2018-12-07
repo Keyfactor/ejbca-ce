@@ -28,8 +28,10 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.renderkit.html.util.AddResource;
@@ -135,6 +137,20 @@ public class ApproveActionManagedBean extends BaseManagedBean {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
+    // Authentication check and audit log page access request
+    public void initialize(ComponentSystemEvent event) throws Exception {
+        // Invoke on initial request only
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            final boolean approveendentity = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+            final boolean approvecaaction = getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
+            
+            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR);
+            if (!approveendentity && !approvecaaction) {
+                throw new AuthorizationDeniedException("Not authorized to view approval pages");
+            }
+        }
+    }
 
 	private String comment = "";
 	private ApprovalDataVOView approvalDataVOView = new ApprovalDataVOView();

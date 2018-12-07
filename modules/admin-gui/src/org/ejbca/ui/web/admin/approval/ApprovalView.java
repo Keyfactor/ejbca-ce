@@ -72,7 +72,7 @@ public class ApprovalView {
 				link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
 				            + "viewcertificate.jsp?certsernoparameter=" + java.net.URLEncoder.encode(certificateSerialNumber + "," + adminIssuerDN,"UTF-8");				
 			}
-			return "viewcert('" + link + "')";
+			return "window.open('" + link + "', 'ViewApproverCertAction', 'width=800,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
 		} catch (UnsupportedEncodingException e) {
 			throw new EJBException(e);
 		}

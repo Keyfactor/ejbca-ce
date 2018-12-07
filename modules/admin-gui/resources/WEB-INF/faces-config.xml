@@ -191,17 +191,10 @@
   </converter>
 
   <navigation-rule>
-    <from-view-id>/approval/approveactionlist.jsp</from-view-id>
-    <navigation-case>
-      <from-outcome>viewApproveAction</from-outcome>
-      <to-view-id>/approval/approveaction.jsp</to-view-id>
-    </navigation-case>
-  </navigation-rule>
-  <navigation-rule>
-  	<from-view-id>/approval/approveaction.jsp</from-view-id>
+  	<from-view-id>/approval/approvalaction.xhtml</from-view-id>
   	<navigation-case>
   		<from-outcome>approveaction</from-outcome>
-  		<to-view-id>/approval/approveaction.jsp</to-view-id>
+  		<to-view-id>/approval/approvalaction.xhtml</to-view-id>
   	</navigation-case>
   </navigation-rule>
   <navigation-rule>
