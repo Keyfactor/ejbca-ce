@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:t="http://myfaces.apache.org/tomahawk">
+<ui:remove>
+	<!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     $Id$
+     -->
+</ui:remove>
+
+<f:metadata>
+    <f:event type="preRenderView" listener="#{listApproveActionManagedBean.initialize}"/>
+</f:metadata>
+
+<ui:composition template="/WEB-INF/include/popup.xhtml">
+	<ui:define name="content">
+
+	<h2 align="center"><h:outputText value="#{web.text.APPROVEACTION}"/></h2>
+	<h:form id="approveActionForm">
+		<h:inputHidden id="approveActionID" value="#{approvalActionRequest.uniqueId}"/>
+	  	<f:attribute name="windowWidth" value="#{approvalActionManagedBean.windowWidth}"/>
+	
+	   	<h3 align="center">
+	   		<h:outputText value="#{approvalActionManagedBean.approveRequestData.approveActionName}"/>
+	    	<br/><h:messages  layout="table" errorClass="alert"/><br/>
+	     	<h:outputText value="#{web.text.CURRENTSTATUS}"/> <h:outputText value=" : "/> <h:outputText value="#{approvalActionManagedBean.approveRequestData.status}"/><br />     
+	   	</h3>
+	   	
+	   	<h:panelGrid columns="2" styleClass="view-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+   			<h:panelGroup>&nbsp;</h:panelGroup><h:panelGroup>&nbsp;</h:panelGroup>
+   			<h:outputText value="#{web.text.REQUESTDATE}"/>
+   			<h:outputText value="#{approvalActionManagedBean.approveRequestData.requestDate}"/>
+   			<h:outputText value="#{web.text.EXPIREDATE}"/>
+   			<h:outputText value="#{approvalActionManagedBean.approveRequestData.expireDate}"/>
+   			<h:outputText value="#{web.text.REQUESTINGADMIN}"/>
+   			<h:outputText value="#{approvalActionManagedBean.approveRequestData.requestAdminName}"/>
+   			<h:outputText value="#{web.text.RELATEDCA}"/>
+   			<h:outputText value="#{approvalActionManagedBean.approveRequestData.caName}"/>
+   			<h:outputText value="#{web.text.RELATEDEEPROFILE}"/>
+   			<h:outputText value="#{approvalActionManagedBean.approveRequestData.endEntityProfileName}"/>
+   			<h:outputText value="#{web.text.APPROVALPROFILE}"/>
+   			<h:outputText value="#{approvalActionManagedBean.approveRequestData.approvalProfile.profileName}"/>
+   			<h:outputText value="#{web.text.REMAININGAPPROVALS}"/>
+ 			<h:outputText value="#{approvalActionManagedBean.approveRequestData.remainingApprovals}" 
+				rendered="#{approvalActionManagedBean.approveRequestData.remainingApprovals > 0}"/>
+			<h:outputText value="#{web.text.REMAINING_APPROVALS_NONE}" 
+ 				rendered="#{approvalActionManagedBean.approveRequestData.remainingApprovals le 0}"/>
+	   	</h:panelGrid>
+				
+		<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="textCompareRow"  width="100%" 
+			rendered="#{approvalActionManagedBean.approvalRequestComparable}">
+			<h:column>
+				<f:facet name="header">
+					<h:outputText value="#{web.text.ORIGINALACTIONDATA}"/>
+				</f:facet>
+				<h:outputText value="#{textCompareRow.orgvalue}"   styleClass="#{textCompareRow.textComparisonColor}"/>
+			</h:column>
+			<h:column>
+				<f:facet name="header">
+					<h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
+				</f:facet>
+				<h:outputText value="#{textCompareRow.newvalue}" styleClass="#{textCompareRow.textComparisonColor}"/>
+			</h:column>
+		</h:dataTable>
+		<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%" 
+			rendered="#{!approvalActionManagedBean.approvalRequestComparable and !approvalActionManagedBean.approveRequestData.containingLink}"
+			style="font-size: 0.7em;">
+			<h:column>
+				<f:facet name="header">
+					<h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
+				</f:facet>
+				<h:outputText value="#{singleTextCompareRow.newvalue}"/>
+			</h:column>
+		</h:dataTable>
+		<h:dataTable value="#{approvalActionManagedBean.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%"
+			rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}"
+			style="font-size: 0.7em;">
+			<h:column>
+				<f:facet name="header">
+					<h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
+				</f:facet>
+				<h:outputText value="#{singleTextCompareRow.newvalue}"/>
+			</h:column>
+		</h:dataTable>
+		<h:dataTable value="#{approvalActionManagedBean.approveRequestData.approvalDataLinks}" var="link"  width="100%"
+			rendered="#{!approvalActionManagedBean.approvalRequestComparable and approvalActionManagedBean.approveRequestData.containingLink}"
+			style="font-size: 0.7em;">
+			<h:column>
+				<h:outputText value="#{link.preDescription}"/>
+				<h:outputLink value="#{link.URI}" target="Viewinfo" onclick="#{approvalView.viewApproverCertLink}">
+					<h:outputText value="#{link.description}"/>
+				</h:outputLink>
+				<h:outputText value="#{link.postDescription}"/>
+			</h:column>
+		</h:dataTable>
+	
+	    <h3><h:outputText value="#{web.text.APPROVEDBY}"/></h3>
+	    <h:outputText value="#{web.text.NONE}" rendered="#{!approvalActionManagedBean.existsApprovals}"/>
+	  	<h:dataTable id="approvalTable" value="#{approvalActionManagedBean.approvalViews}" var="approvalView" width="100%" rendered="#{approvalActionManagedBean.existsApprovals}"
+	  		style="font-size: 0.7em;">
+		    <h:column>
+		      <f:facet name="header">
+		        <h:panelGroup>
+		          <h:outputText value="#{web.text.ACTION}"/>
+		        </h:panelGroup>
+		      </f:facet>
+		      <h:outputText value="#{approvalView.adminAction}"/>
+		    </h:column>
+		    <h:column>
+		      <f:facet name="header">
+		        <h:outputText value="#{web.text.DATE}"/>
+		      </f:facet>
+		      <h:outputText value="#{approvalView.approvalDate}"/>
+		    </h:column>
+		    <h:column>
+		      <f:facet name="header">
+		        <h:outputText value="#{web.text.ADMINISTRATOR}"/>
+		      </f:facet>
+		      	<h:commandLink value="" onmousedown="#{approvalView.viewApproverCertLink}">
+		        	<h:outputText  value="#{approvalView.approvalAdmin}"/>            
+		      	</h:commandLink>         
+		    </h:column>
+		    <h:column>
+		      <f:facet name="header">
+		        <h:panelGroup>
+		          <h:outputText value="#{web.text.APCOMMENT}"/>
+		        </h:panelGroup>
+		      </f:facet>
+		      <h:outputText value="#{approvalView.comment}"/>
+		    </h:column>
+		</h:dataTable>   
+		<h:panelGroup layout="block" style="padding: 5px 10px" rendered="#{not empty approvalActionManagedBean.previousPartitions}">
+			<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_PREVIOUS }"/></h3>
+			<h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_HIDDEN }"  style="font-size: 0.7em;"/>
+			<h:dataTable styleClass="superTable" value="#{approvalActionManagedBean.previousPartitions}" var="partition" style="width: 100%"  rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+				<h:column>	
+					<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader" columnClasses="editColumn1,editColumn2"
+						 style="width: 100%" rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">
+						<h:column>								
+							<h:outputText value="#{partition.propertyNameLocalized}:"/>
+						</h:column>
+						<h:column>										
+				   			<h:panelGroup rendered="#{!property.multiValued}">
+					   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}">
+					   				<f:converter converterId="stringConverter"/>
+					   			</h:inputText>
+					   			<h:inputTextarea disabled="true" rendered="#{property.type.simpleName eq 'MultiLineString'}" 
+	                                value="#{property.value}">
+	                            	<f:converter converterId="stringConverter"/>
+	                            </h:inputTextarea>
+					   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
+				                   <f:converter converterId="javax.faces.Long"/>
+					   			</h:inputText>
+					   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
+				                   <f:converter converterId="javax.faces.Integer"/>
+					   			</h:inputText>
+				   				<h:selectBooleanCheckbox disabled="true" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
+				   			</h:panelGroup>
+							<h:selectOneMenu disabled="true"  rendered="#{property.multiValued and !property.hasMultipleValues and property.type.simpleName != 'RadioButton'}" 
+								value="#{property.encodedValue}">
+								<f:selectItems value="#{partition.propertyPossibleValues}"/>
+							</h:selectOneMenu>
+							<h:selectManyListbox disabled="true" rendered="#{property.multiValued and property.hasMultipleValues and property.type.simpleName != 'RadioButton'}" 
+								value="#{property.encodedValues}" >
+								<f:selectItems value="#{partition.propertyPossibleValues}"/>
+							</h:selectManyListbox>
+							<h:selectOneRadio disabled="true"
+									rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued  and !property.hasMultipleValues}" 
+									value="#{property.encodedValue}" layout="pageDirection">
+									<f:selectItems value="#{partition.propertyPossibleValues}" var="radioButton" itemLabel="#{radioButton.label}" />
+									<f:converter converterId="radioButtonConverter"/>
+								</h:selectOneRadio>
+						</h:column>
+					</h:dataTable>
+				</h:column>
+		</h:dataTable>
+		</h:panelGroup>
+	
+		<h:panelGroup layout="block" rendered="#{approvalActionManagedBean.currentStepOrdinal > 0}">
+			<h3><h:outputText value="#{web.text.APPROVAL_PROFILE_PARTITION_ACTION }"/></h3>
+			<h:outputText style="font-size: 0.7em;" 
+				value="#{web.text.APPROVAL_PROFILE_CURRENT_STEP}: #{approvalActionManagedBean.currentStepOrdinal} 
+					of #{approvalActionManagedBean.approveRequestData.approvalProfile.numberOfSteps}"/>
+				
+			<h:dataTable value="#{approvalActionManagedBean.approvalPartitions}" var="partition" style="width: 100%"  
+					rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2" footerClass="tableFooter">
+					<h:column>	
+						<h:outputText value="#{partition.partitionName}"/>
+						<h:dataTable value="#{partition.profilePropertyList}" var="property" headerClass="subheader" columnClasses="editColumn1,editColumn2"
+							 style="width: 100%" rendered="#{not empty partition.profilePropertyList}" styleClass="subTable">
+							<h:column>								
+								<h:outputText value="#{partition.propertyNameLocalized}:"/>
+							</h:column>
+							<h:column>										
+					   			<h:panelGroup rendered="#{!property.multiValued}">
+						   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
+						   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
+						   				rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}">
+						   				<f:converter converterId="stringConverter"/>
+						   			</h:inputText>
+						   			<h:inputTextarea disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
+						   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
+						   				rendered="#{property.type.simpleName eq 'MultiLineString'}" 
+		                                value="#{property.value.value}">
+		                            	<f:converter converterId="stringConverter"/>
+		                            </h:inputTextarea>
+						   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
+						   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
+						   				rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
+					                   <f:converter converterId="javax.faces.Long"/>
+						   			</h:inputText>
+						   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
+						   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
+						   				rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
+					                   <f:converter converterId="javax.faces.Integer"/>
+						   			</h:inputText>
+					   				<h:selectBooleanCheckbox disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
+					   					|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
+					   					rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
+					   			</h:panelGroup>
+								<h:selectOneMenu disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
+									|| approvalActionManagedBean.isPropertyReadOnly(property.name)}"
+								    rendered="#{property.multiValued and !property.hasMultipleValues and property.type.simpleName != 'RadioButton'}" 
+									value="#{property.encodedValue}">
+									<f:selectItems value="#{partition.propertyPossibleValues}"/>
+								</h:selectOneMenu>
+								<h:selectManyListbox disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
+									|| approvalActionManagedBean.isPropertyReadOnly(property.name)}"
+									 rendered="#{property.multiValued and property.hasMultipleValues and property.type.simpleName != 'RadioButton'}" 
+									value="#{property.encodedValues}" >
+									<f:selectItems value="#{partition.propertyPossibleValues}"/>
+								</h:selectManyListbox>
+								<h:selectOneRadio disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
+									|| approvalActionManagedBean.isPropertyReadOnly(property.name)}"
+									rendered="#{property.type.simpleName eq 'RadioButton' and property.multiValued and !property.hasMultipleValues}" 
+									value="#{property.encodedValue}" layout="pageDirection">
+									<f:selectItems value="#{partition.propertyPossibleValues}" var="radioButton" itemLabel="#{radioButton.label}" />
+									<f:converter converterId="radioButtonConverter"/>
+								</h:selectOneRadio>
+							</h:column>
+						</h:dataTable>
+						
+						<h:panelGroup layout="block" style="padding: 5px 10px" rendered="#{approvalActionManagedBean.approvable}">
+							<h:selectOneMenu id="selectAction" value="#{approvalActionManagedBean.actionForPartition}" 
+								disabled="#{!approvalActionManagedBean.canApprovePartition(partition)}">
+								<f:selectItems value="#{approvalActionManagedBean.actionsAvailable}"/>
+							</h:selectOneMenu>  					
+						</h:panelGroup>
+						
+					</h:column>
+			</h:dataTable>
+		</h:panelGroup>
+		<h:panelGroup layout="block" style="padding: 5px 10px" 
+				rendered="#{approvalActionManagedBean.numberOfPartitionsInStep > approvalActionManagedBean.approvalPartitions.rowCount}" >
+			<h:outputText style="font-size: 0.7em;" value="#{web.text.PARTITIONS_HIDDEN}" />
+		</h:panelGroup>	
+	
+	     <h:panelGroup layout="block" style="padding: 5px 10px">
+		 </h:panelGroup>
+	    <h:panelGroup style="padding: 5px 10px" layout="block">
+	    	<h:commandButton id="buttonSave" value="#{web.text.APPROVAL_SAVE_STATE}" actionListener="#{approvalActionManagedBean.saveState}"
+		    	rendered="#{approvalActionManagedBean.currentStepOrdinal > -1 and approvalActionManagedBean.approvable}" 
+		    	disabled="#{!approvalActionManagedBean.canApproveAnyPartitions()}"/>
+	    	<h:commandButton id="buttonCancel" value="#{web.text.CANCEL}" onclick="self.close()"/>
+	    </h:panelGroup>
+	 </h:form>
+
+	</ui:define>
+</ui:composition>
+</html>
