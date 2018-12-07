@@ -868,12 +868,12 @@ public class EjbcaWebBean implements Serializable {
      * Returns all authorized publishers names as a treemap of name (String) -> id (Integer).
      */
     public TreeMap<String,Integer> getAuthorizedPublisherNamesAndIds() {
-        final TreeMap<String,Integer> ret = new TreeMap<>();
-        final Map<Integer, String> idtonamemap = publisherSession.getPublisherIdToNameMap();
-        for(Integer id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
-            ret.put(idtonamemap.get(id), id);
+        final TreeMap<String,Integer> result = new TreeMap<>();
+        final Map<Integer, String> idToNameMap = publisherSession.getPublisherIdToNameMap();
+        for(final int id : caAdminSession.getAuthorizedPublisherIds(administrator)) {
+            result.put(idToNameMap.get(id), id);
         }
-        return ret;
+        return result;
     }
 
     /**
