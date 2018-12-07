@@ -47,7 +47,7 @@ pipeline {
 		stage('database') {
 			steps {
                                 sh "docker run --name ${params.DOCKER_NAME_DB} --net=${params.DOCKER_NAME_NET} -p ${params.DB2_PORTS} -e DB2INST1_PASSWORD=${params.DB2_PASSWORD} -e LICENSE=accept -d ibmcom/db2express-c:${params.DB2_VERSION} db2start"
-				dir ('ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}') {
+				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
 	                                sh "./init_db2_ejbca.sh"
 				}
 			}
@@ -55,7 +55,7 @@ pipeline {
 		stage('deploy and run system tests') {
 			steps {
 				sh "mkdir ear || true"
-				dir ('ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}') {
+				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
 					sh "docker build -t `${params.DOCKER_NAME_BASE}` -m 2GB ."
 					sh "docker run --name `${params.DOCKER_NAME_BASE}` --net=`${params.DOCKER_NAME_NET}` -v `$env.WORKSPACE`:/app `${params.DOCKER_NAME_BASE}`"
 				}
