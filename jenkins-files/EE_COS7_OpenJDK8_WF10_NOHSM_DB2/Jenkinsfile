@@ -47,8 +47,11 @@ pipeline {
 		stage('database') {
 			steps {
                                 sh "docker run --name ${params.DOCKER_NAME_DB} --net=${params.DOCKER_NAME_NET} -p ${params.DB2_PORTS} -e DB2INST1_PASSWORD=${params.DB2_PASSWORD} -e LICENSE=accept -d ibmcom/db2express-c:${params.DB2_VERSION} db2start"
-				sh "ls -la"
-                                sh "./init_db2_ejbca.sh"
+				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
+					sh "pwd"
+					sh "ls -la"
+	                                sh "./init_db2_ejbca.sh"
+				}
 			}
 		}
 		stage('deploy and run system tests') {
