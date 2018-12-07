@@ -1,0 +1,72 @@
+pipeline {
+	agent {
+		label "docker"
+	}
+	environment {
+		JENKINS_JOB_FOLDER = 'EE_COS7_OpenJDK8_WF10_NOHSM_DB2'
+		DOCKER_NAME_BASE = 'ee_cos7_openjdk8_wf10_nohsm_db2'
+		DOCKER_NAME_NET = 'net_ee_cos7_openjdk8_wf10_nohsm_db2'
+		DOCKER_NAME_DB = 'db_ee_cos7_openjdk8_wf10_nohsm_db2'
+		DB2_VERSION = '10.5.0.5-3.10.0'
+		DB2_PORTS = '50000:50000'
+		DB2_PASSWORD = 'db2inst1'
+	}
+	parameters {
+		string(name: 'JENKINS_JOB_FOLDER', defaultValue: env.JENKINS_JOB_FOLDER, description: 'The name of the folder containing the jenkins job\'s artifacts.')
+		string(name: 'DOCKER_NAME_BASE', defaultValue: env.DOCKER_NAME_BASE, description: 'The name of the base docker describing the environment setup.')
+		string(name: 'DOCKER_NAME_NET', defaultValue: env.DOCKER_NAME_NET, description: 'The name of the network for these dockers.')
+		string(name: 'DOCKER_NAME_DB', defaultValue: env.DOCKER_NAME_DB, description: 'The name of the database docker.')
+		string(name: 'DB2_VERSION', defaultValue: env.DB2_VERSION, description: 'IBM DB2 Database Docker version.')
+		string(name: 'DB2_PORTS', defaultValue: env.DB2_PORTS, description: 'IBM DB2 Database Internal/External ports.')
+		string(name: 'DB2_PASSWORD', defaultValue: env.DB2_PASSWORD, description: 'IBM DB2 Database password.')
+	}
+	stages {
+		stage('debug output (temporary)') {
+			echo "JENKINS_JOB_FOLDER ${params.JENKINS_JOB_FOLDER}"
+			echo "DOCKER_NAME_BASE ${params.DOCKER_NAME_BASE}"
+			echo "DOCKER_NAME_NET ${params.DOCKER_NAME_NET}"
+			echo "DOCKER_NAME_DB ${params.DOCKER_NAME_DB}"
+			echo "DB2_VERSION ${params.DB2_VERSION}"
+			echo "DB2_PORTS ${params.DB2_PORTS}"
+			echo "DB2_PASSWORD ${params.DB2_PASSWORD}"
+		}
+		stage('verify that space is clean') {
+			steps {
+				sh "docker container rm ${params.DOCKER_NAME_DB} -f || true"
+				sh "docker container rm ${params.DOCKER_NAME_BASE} -f || true"
+				sh "rm -rf ear"
+			}
+		}
+		stage('network') {
+			steps {
+				sh "docker network create --driver bridge ${params.DOCKER_NAME_NET} || true"
+			}
+		}
+		stage('database') {
+			steps {
+                                sh "docker run --name ${params.DOCKER_NAME_DB} --net=${params.DOCKER_NAME_NET} -p ${params.DB2_PORTS} -e DB2INST1_PASSWORD=${params.DB2_PASSWORD} -e LICENSE=accept -d ibmcom/db2express-c:${params.DB2_VERSION} db2start"
+                                sh "./init_db2.sh"
+			}
+		}
+		stage('deploy and run system tests') {
+			steps {
+				sh "mkdir ear || true"
+				dir ('ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}') {
+					sh "docker build -t `${params.DOCKER_NAME_BASE}` -m 2GB ."
+					sh "docker run --name `${params.DOCKER_NAME_BASE}` --net=`${params.DOCKER_NAME_NET}` -v `$env.WORKSPACE`:/app `${params.DOCKER_NAME_BASE}`"
+				}
+			}
+		}
+	}
+	post {
+		always {
+			junit "ejbca/**/reports/**/TEST-*.xml"
+			sh "docker stop --time=1 `${params.DOCKER_NAME_BASE}` || true"
+			sh "docker rm -f `${params.DOCKER_NAME_BASE}` || true"
+			sh "docker stop --time=1 `${params.DOCKER_NAME_DB}` || true"
+			sh "docker rm -f `${params.DOCKER_NAME_DB}` || true"
+			sh "docker network rm -f `${params.DOCKER_NAME_NET}` || true"
+			cleanWs()
+		}
+	}
+}
