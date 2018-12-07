@@ -452,35 +452,97 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    public class SubjectDnComponent implements Serializable{
        private static final long serialVersionUID = 1L;
        private String componentName;
-       private int component_Some_Test_Number;
-       private boolean component_Some_Test_Value;
+       private String componentValue;
+       private String componentValidationString;
+       private int [] componentField;//It is not profile number anymore
+       private boolean componentIsRequired;
+       private boolean componentIsModifyable;
+       private boolean componentValueValidation;
+       private boolean useValidationField;
        
-       public SubjectDnComponent(String string, boolean value, int number) {
-           componentName = string;
-           component_Some_Test_Number = number;
-           component_Some_Test_Value = value;
+       public SubjectDnComponent(String componentName, boolean componentIsRequired, boolean componentIsModifyable, boolean componentValueValidation, 
+               int [] componentField, String componentValue, String componentValidationString) {
+           this.componentName = componentName;
+           this.componentField = componentField;
+           this.componentIsRequired = componentIsRequired;
+           this.componentIsModifyable = componentIsModifyable;
+           this.componentValue = componentValue;
+           this.componentValueValidation = componentValueValidation;
+           this.componentValidationString = componentValidationString;
        }
        
-       public String getName() {
+       public String getComponentName() {
            return componentName;
        }
        
-       public void setName(String componentName) {
+       public void setComponentName(String componentName) {
            this.componentName = componentName;
        }
        
-       public int getNumber() {
-           return component_Some_Test_Number;
+       public String getComponentValue() {
+           return componentValue;
        }
        
-       public boolean getValue() {
-           return component_Some_Test_Value;
+       public void setComponentValue(String componentValue) {
+           this.componentValue = componentValue;
+           profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentValue);
        }
+       
+       public int[] getComponentField() {
+           return componentField;
+       }
+       
+       public void getComponentField(int[] componentField) {
+           this.componentField = componentField;
+       }
+       
+       public boolean getComponentIsRequired() {
+           return componentIsRequired;
+       }
+       
+       public void setComponentIsRequired(boolean componentIsRequired) {
+           this.componentIsRequired = componentIsRequired;
+           profiledata.setModifyable(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsRequired);
+       }
+       
+       public boolean getComponentIsModifyable() {
+           return componentIsModifyable;
+       }
+       
+       public void setComponentIsModifyable(boolean componentIsModifyable) {
+           this.componentIsModifyable = componentIsModifyable;
+           profiledata.setModifyable(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsModifyable);
+           
+       }
+       
+       public boolean getComponentValueValidation() {
+           return null != profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]);
+       }
+       
+       public void setComponentValueValidation(boolean componentValueValidation) {
+           this.componentValueValidation = componentValueValidation;
+       }
+       
+       public String getComponentValidationString() {
+           if (getComponentValueValidation()) {
+               return (String)profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
+           }else {
+               return "";
+           }
+       }
+       
+       public void setComponentValidationString(String componentValidationString) {
+           this.componentValidationString = componentValidationString;
+           final LinkedHashMap<String,Serializable> validation = raBean.getValidationFromRegexp(componentValidationString);
+           profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE],componentField[EndEntityProfile.NUMBER], validation);
+       }
+       
    }
    
+   public List<SubjectDnComponent> subjectDnComponentList;
       
-   public List<SubjectDnComponent> getSubjectDnComponent() {
-       List<SubjectDnComponent> componentObjectList = new ArrayList<SubjectDnComponent>();
+   public List<SubjectDnComponent> getSubjectDnComponentList() {
+       subjectDnComponentList = new ArrayList<SubjectDnComponent>();
        List<int[]> fielddatalist = new ArrayList<int[]>();
        int numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
        for(int i=0; i < numberofsubjectdnfields; i++){
@@ -490,16 +552,32 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        while (iterator.hasNext()) {
            int[] temp;
            temp = iterator.next();
-           componentObjectList.add(new SubjectDnComponent(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])), true, 0));
+           boolean required = profiledata.isRequired(temp[EndEntityProfile.FIELDTYPE],temp[EndEntityProfile.NUMBER]);
+           boolean modifyable = profiledata.isModifyable(temp[EndEntityProfile.FIELDTYPE],temp[EndEntityProfile.NUMBER]);
+           // this need to be replaced
+           boolean validation = null != profiledata.getValidation(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
+           String value = profiledata.getValue(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
+           String validationString;
+           if(validation) {
+               validationString = (String) profiledata.getValidation(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
+           }else {
+               validationString = "";
+           }
+           subjectDnComponentList.add(new SubjectDnComponent(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])), required, 
+                   modifyable, validation, temp, value, validationString));
        } 
        if (isSubjectDNAdded) {
            Iterator<String> addedAttributeIterator = subjectDnAdditions.iterator();
            while(addedAttributeIterator.hasNext()) {
-               componentObjectList.add(new SubjectDnComponent(addedAttributeIterator.next(), true, 0));
+               subjectDnComponentList.add(new SubjectDnComponent(addedAttributeIterator.next(), false, true, false, new int[]{0, 0}, new String(), new String()));
            }
        }
-       return componentObjectList;
+       return subjectDnComponentList;
    }
+   
+   /*public void setSubjectDnComponentList(List<SubjectDnComponent> subjectDnComponentList) {
+       this.subjectDnComponentList = subjectDnComponentList;
+   }*/
    
    // but only last is returned and only if it has a value
    public String getSubjectDNAttributeValue() {
@@ -559,8 +637,17 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        for(int i=0; i < numberofsubjectdnfields; i++){
            fielddata =  profiledata.getSubjectDNFieldsInOrder(i);
        }
+       //remove below line setting only field 0...
+       fielddata =  profiledata.getSubjectDNFieldsInOrder(0);
        return null != profiledata.getValidation(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
    }
+   
+   /*public void setSubjectDNAttributeValidation(boolean validation) {
+       int numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
+       int [] fielddata =  profiledata.getSubjectDNFieldsInOrder(numberofsubjectdnfields);
+       
+       profiledata.setValidation(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER], validation);
+   }*/
    
    //
    public LinkedHashMap<String, Serializable> getSubjectDNAttributeValidationString() {
@@ -570,6 +657,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        for(int i=0; i < numberofsubjectdnfields; i++){
            fielddata =  profiledata.getSubjectDNFieldsInOrder(i);
        }
+     //remove below line setting only field 0...
+       fielddata =  profiledata.getSubjectDNFieldsInOrder(0);
        validation = profiledata.getValidation(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
        return validation;
    }
