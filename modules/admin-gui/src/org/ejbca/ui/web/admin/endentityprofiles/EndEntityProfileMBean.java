@@ -87,12 +87,16 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     
     //POST CONSTRUCT
     @PostConstruct
-    private void postConstruct() throws Exception {// Replace ...
+    private void postConstruct() {
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
-        caBean.initialize(ejbcaWebBean);
-        raBean.initialize(req, ejbcaWebBean);
-        tokenBean.initialize(req, ejbcaWebBean);
+        try {
+            ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
+            caBean.initialize(ejbcaWebBean);
+            raBean.initialize(req, ejbcaWebBean);
+            tokenBean.initialize(req, ejbcaWebBean);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
         int profileId = endEntityProfilesMBean.getSelectedEndEntityProfileId().intValue();
         profiledata = endEntityProfileSession.getEndEntityProfile(profileId);
     }
