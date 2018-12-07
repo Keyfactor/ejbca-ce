@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -36,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -45,6 +47,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
@@ -68,24 +71,26 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private static final Logger log = Logger.getLogger(EditPublisherManagedBean.class);
 
 
-    private static final Map<Integer, String> AVAILABLEPUBLISHERS = new HashMap<>();
-    private static final Map<Integer, String> AVAILABLESAMACCOUNTS = new HashMap<>();
+    private static final Map<Integer, String> AVAILABLEPUBLISHERS;
+    private static final Map<Integer, String> AVAILABLESAMACCOUNTS;
+    private final Map<String, String> LDAPPUBLISHERSECURITYITEMS = new LinkedHashMap<>();
     private final Map<Class <? extends BasePublisher>, Runnable> PUBLISHERINIT = new HashMap<>();
 
     static {
+        AVAILABLEPUBLISHERS = new HashMap<>();
         AVAILABLEPUBLISHERS.put(PublisherConst.TYPE_LDAPPUBLISHER, "LDAPPUBLISHER");
         AVAILABLEPUBLISHERS.put(PublisherConst.TYPE_LDAPSEARCHPUBLISHER, "LDAPSEARCHPUBLISHER");
         AVAILABLEPUBLISHERS.put(PublisherConst.TYPE_ADPUBLISHER, "ACTIVEDIRECTORYPUBLISHER");
         AVAILABLEPUBLISHERS.put(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER, "CUSTOMPUBLISHER");
         AVAILABLEPUBLISHERS.put(PublisherConst.TYPE_MULTIGROUPPUBLISHER, "MULTIGROUPPUBLISHER");
         
+        AVAILABLESAMACCOUNTS = new HashMap<>();
         AVAILABLESAMACCOUNTS.put(DNFieldExtractor.UPN, "MATCHUPN");
         AVAILABLESAMACCOUNTS.put(DNFieldExtractor.CN, "MATCHCOMMONNAME");
         AVAILABLESAMACCOUNTS.put(DNFieldExtractor.UID, "MATCHUID");
         AVAILABLESAMACCOUNTS.put(DNFieldExtractor.SN, "MATCHDNSERIALNUMBER");
         AVAILABLESAMACCOUNTS.put(DNFieldExtractor.GIVENNAME, "MATCHGIVENNAME");
         AVAILABLESAMACCOUNTS.put(DNFieldExtractor.SURNAME, "MATCHSURNAME");
-        
     }
     
     private String selectedPublisherType;
@@ -102,7 +107,38 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private String userDescription;
     private String searchBaseDN;
     private String searchFilter;
-
+    private String currentCustomClass;
+    private String customPublisherPropertySelectOneMenuValue;
+    private String customPublisherPropertyInputText;
+    private String customPublisherPropertyInputPassword;
+    private String customPublisherPropertyOutputTextArea;
+    private String ldapPublisherHostName;
+    private String ldapPublisherPort;
+    private String ldapPublisherSecurity;
+    private String ldapPublisherBaseDN;
+    private String ldapPublisherLoginDN;
+    private String ldapPublisherLoginPWD;
+    private String ldapPublisherConfirmPWD;
+    private String ldapPublisherConnectionTimeout;
+    private String ldapPublisherReadTimeout;
+    private String ldapPublisherStoreTimeout;
+    private boolean ldapPublisherCreateNonExistingUsers;
+    private boolean ldapPublisherModifyExistingUsers;
+    private boolean ldapPublisherModifyExistingAttributes;
+    private boolean ldapPublisherAddNonExistingAttributes;
+    private boolean ldapPublisherCreateImmidiateNodes;
+    private boolean ldapPublisherAddMultipleCertificates;
+    private boolean ldapPublisherRemoveRevokedCertificates;
+    private boolean ldapPublisherRemoveUserOnCertRevoke;
+    private boolean ldapPublisherSetUserPassword;
+    private String ldapPublisherUserObjectClass;
+    private String ldapPublisherCaObjectClass;
+    private String ldapPublisherUserCertificateAttr;
+    private String ldapPublisherCaCertificateAttr;
+    private String ldapPublisherCrlAttribute;
+    private String ldapPublisherDeltaCrlAttribute;
+    private String ldapPublisherArlAttribute;
+    private String[] ldapPublisherUseFieldsInDN;
 
     @ManagedProperty(value = "#{listPublishersManagedBean}")
     private ListPublishersManagedBean listPublishersManagedBean;
@@ -125,11 +161,19 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private void fillPublisherInitMap() {
         this.PUBLISHERINIT.put(ActiveDirectoryPublisher.class, () -> initActiveDirectoryPublisher());
         this.PUBLISHERINIT.put(LdapSearchPublisher.class, () -> initLdapSearchPublisher());
-        this.PUBLISHERINIT.put(LdapPublisher.class, () -> initLdapPublisher());    
+        this.PUBLISHERINIT.put(LdapPublisher.class, () -> initLdapPublisher()); 
+        this.PUBLISHERINIT.put(CustomPublisherContainer.class, () -> initCustomPublisher());
+    }
+
+    private Object initCustomPublisher() {
+        this.currentCustomClass = ((CustomPublisherContainer) publisher).getClassPath();
+        return null;
     }
 
     private Void initLdapPublisher() {
-        // TODO Auto-generated method stub
+        LDAPPUBLISHERSECURITYITEMS.put(getEjbcaWebBean().getText("PLAIN"), "PLAIN");
+        LDAPPUBLISHERSECURITYITEMS.put(getEjbcaWebBean().getText("STARTTLS"), "STARTTLS");
+        LDAPPUBLISHERSECURITYITEMS.put(getEjbcaWebBean().getText("SSL"), "SSL");
         return null;
     }
 
@@ -392,6 +436,105 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.searchFilter = searchFilter;
     }
     
+    public String getCurrentPublisherName() {
+        if (publisher instanceof CustomPublisherContainer) {
+            ICustomPublisher iCustomPublisher = ((CustomPublisherContainer) publisher).getCustomPublisher();
+            if(iCustomPublisher != null) {
+                return getPublisherName(iCustomPublisher.getClass().getName());
+            }
+        }
+        return getPublisherName(publisher.getClass().getName());
+    }
+    
+    public boolean isCustomClassChoice() {
+        CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisher;
+        final String currentClass = custompublisher.getClassPath();
+        return !getCustomClasses().stream().anyMatch(customClass -> customClass.equals(currentClass));
+    }
+    
+    public String getCustomPublisherSettingText() {
+        return getEjbcaWebBean().getText("PUBLISHERSETTINGS") + " : " + getCurrentClassText();
+    }
+    
+    public boolean isManualClassPathsEnabledOrIsCustomClassChoice() {
+        return WebConfiguration.isManualClassPathsEnabled() || isCustomClassChoice();
+    }
+
+    public boolean isManualClassPathsEnabledAndIsCustomClassChoice() {
+        return WebConfiguration.isManualClassPathsEnabled() && isCustomClassChoice();
+    }
+    
+    public boolean isCustomUiRenderingSupported() {
+        return ((CustomPublisherContainer)publisher).isCustomUiRenderingSupported();
+    }
+    
+    public String getPropertyData() {
+        return ((CustomPublisherContainer)publisher).getPropertyData();
+    }
+    
+    public List<CustomPublisherProperty> getCustomUiPropertyList() {
+        return ((CustomPublisherContainer)publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject());
+    }
+    
+    public String getCustomPublisherPropertyText(final CustomPublisherProperty customPublisherProperty) {
+        return getEjbcaWebBean().getText(getCurrentClassSimple().toUpperCase()+"_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase());
+    }
+    
+    public List<SelectItem> getCustomPublisherPropertySelectOneMenuList(final CustomPublisherProperty customPublisherProperty) {
+        final List<SelectItem> customPublisherPropertySelectOneMenuList = new ArrayList<>();
+        for (int i=0; i < customPublisherProperty.getOptions().size(); i++) {
+            final String option = customPublisherProperty.getOptions().get(i);
+            final String optionText = customPublisherProperty.getOptionTexts().get(i);
+            customPublisherPropertySelectOneMenuList.add(new SelectItem(option, optionText));
+        }
+        return customPublisherPropertySelectOneMenuList;
+    }
+    
+    public boolean renderCustomSelectOneMenu(final CustomPublisherProperty customPublisherProperty) {
+        return customPublisherProperty.getType() == CustomPublisherProperty.UI_SELECTONE;
+    }
+    
+    public boolean renderCustomInputPassword(final CustomPublisherProperty customPublisherProperty) {
+        return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD;
+    }
+    
+    public boolean renderCustomCheckbox(final CustomPublisherProperty customPublisherProperty) {
+        return customPublisherProperty.getType() == CustomPublisherProperty.UI_BOOLEAN;
+    }
+    
+    public boolean renderCustomOutputTextArea(final CustomPublisherProperty customPublisherProperty) {
+        return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTOUTPUT;
+    }
+    
+    public boolean renderCustomHelp(final CustomPublisherProperty customPublisherProperty) {
+        return !getEjbcaWebBean()
+                .getText(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase()
+                        + "_HELP")
+                .equals(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase()
+                        + "_HELP");
+    }
+    
+    public String getCustomHelpText(final CustomPublisherProperty customPublisherProperty) {
+        return getEjbcaWebBean().getText(
+                getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase() + "_HELP");
+    }
+    
+    private String getCurrentClassSimple() {
+        return this.currentCustomClass.substring(currentCustomClass.lastIndexOf('.')+1);
+    }
+    
+    private String getCurrentClassText() {
+        CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisher;
+        final String currentClass = custompublisher.getClassPath();
+        final String currentClassSimple = currentClass.substring(currentClass.lastIndexOf('.') + 1);
+        String currentClassText = getEjbcaWebBean().getText(currentClassSimple.toUpperCase());
+        if (currentClassText.equals(currentClassSimple.toUpperCase())) {
+            currentClassText = currentClassSimple;
+        }
+        return currentClassText;
+    }
+    
+    
     private Void initActiveDirectoryPublisher() {
         userDescription = ((ActiveDirectoryPublisher) publisher).getUserDescription();
         return null;
@@ -401,6 +544,276 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         searchBaseDN = ((LdapSearchPublisher) publisher).getSearchBaseDN();
         searchFilter = ((LdapSearchPublisher) publisher).getSearchFilter();
         return null;
+    }
+
+    public String getCurrentClass() {
+        return currentCustomClass;
+    }
+
+    public void setCurrentClass(final String currentClass) {
+        this.currentCustomClass = currentClass;
+    }
+
+    public String getCustomPublisherPropertySelectOneMenuValue() {
+        return customPublisherPropertySelectOneMenuValue;
+    }
+
+    public void setCustomPublisherPropertySelectOneMenuValue(final String customPublisherPropertySelectOneMenuValue) {
+        this.customPublisherPropertySelectOneMenuValue = customPublisherPropertySelectOneMenuValue;
+    }
+
+    public String getCustomPublisherPropertyInputText() {
+        return customPublisherPropertyInputText;
+    }
+
+    public void setCustomPublisherPropertyInputText(final String customPublisherPropertyInputText) {
+        this.customPublisherPropertyInputText = customPublisherPropertyInputText;
+    }
+
+    public String getCustomPublisherPropertyInputPassword() {
+        return customPublisherPropertyInputPassword;
+    }
+
+    public void setCustomPublisherPropertyInputPassword(final String customPublisherPropertyInputPassword) {
+        this.customPublisherPropertyInputPassword = customPublisherPropertyInputPassword;
+    }
+
+    public String getCustomPublisherPropertyOutputTextArea() {
+        return customPublisherPropertyOutputTextArea;
+    }
+
+    public void setCustomPublisherPropertyOutputTextArea(final String customPublisherPropertyOutputTextArea) {
+        this.customPublisherPropertyOutputTextArea = customPublisherPropertyOutputTextArea;
+    }
+
+    public String getLdapPublisherHostName() {
+        return ldapPublisherHostName;
+    }
+
+    public void setLdapPublisherHostName(final String ldapPublisherHostName) {
+        this.ldapPublisherHostName = ldapPublisherHostName;
+    }
+
+    public String getLdapPublisherPort() {
+        return ldapPublisherPort;
+    }
+
+    public void setLdapPublisherPort(final String ldapPublisherPort) {
+        this.ldapPublisherPort = ldapPublisherPort;
+    }
+    
+    public Map<String, String> getLdapPublisherSecurityItems() {
+        return this.LDAPPUBLISHERSECURITYITEMS;
+    }
+
+    public String getLdapPublisherSecurity() {
+        return ldapPublisherSecurity;
+    }
+
+    public void setLdapPublisherSecurity(final String ldapPublisherSecurity) {
+        this.ldapPublisherSecurity = ldapPublisherSecurity;
+    }
+
+    public String getLdapPublisherBaseDN() {
+        return ldapPublisherBaseDN;
+    }
+
+    public void setLdapPublisherBaseDN(final String ldapPublisherBaseDN) {
+        this.ldapPublisherBaseDN = ldapPublisherBaseDN;
+    }
+
+    public String getLdapPublisherLoginDN() {
+        return ldapPublisherLoginDN;
+    }
+
+    public void setLdapPublisherLoginDN(final String ldapPublisherLoginDN) {
+        this.ldapPublisherLoginDN = ldapPublisherLoginDN;
+    }
+
+    public String getLdapPublisherLoginPWD() {
+        return ldapPublisherLoginPWD;
+    }
+
+    public void setLdapPublisherLoginPWD(final String ldapPublisherLoginPWD) {
+        this.ldapPublisherLoginPWD = ldapPublisherLoginPWD;
+    }
+
+    public String getLdapPublisherConfirmPWD() {
+        return ldapPublisherConfirmPWD;
+    }
+
+    public void setLdapPublisherConfirmPWD(final String ldapPublisherConfirmPWD) {
+        this.ldapPublisherConfirmPWD = ldapPublisherConfirmPWD;
+    }
+
+    public String getLdapPublisherConnectionTimeout() {
+        return ldapPublisherConnectionTimeout;
+    }
+
+    public void setLdapPublisherConnectionTimeout(final String ldapPublisherConnectionTimeout) {
+        this.ldapPublisherConnectionTimeout = ldapPublisherConnectionTimeout;
+    }
+
+    public String getLdapPublisherReadTimeout() {
+        return ldapPublisherReadTimeout;
+    }
+
+    public void setLdapPublisherReadTimeout(final String ldapPublisherReadTimeout) {
+        this.ldapPublisherReadTimeout = ldapPublisherReadTimeout;
+    }
+
+    public String getLdapPublisherStoreTimeout() {
+        return ldapPublisherStoreTimeout;
+    }
+
+    public void setLdapPublisherStoreTimeout(final String ldapPublisherStoreTimeout) {
+        this.ldapPublisherStoreTimeout = ldapPublisherStoreTimeout;
+    }
+
+    public boolean isLdapPublisherCreateNonExistingUsers() {
+        return ldapPublisherCreateNonExistingUsers;
+    }
+
+    public void setLdapPublisherCreateNonExistingUsers(final boolean ldapPublisherCreateNonExistingUsers) {
+        this.ldapPublisherCreateNonExistingUsers = ldapPublisherCreateNonExistingUsers;
+    }
+
+    public boolean isLdapPublisherModifyExistingUsers() {
+        return ldapPublisherModifyExistingUsers;
+    }
+
+    public void setLdapPublisherModifyExistingUsers(final boolean ldapPublisherModifyExistingUsers) {
+        this.ldapPublisherModifyExistingUsers = ldapPublisherModifyExistingUsers;
+    }
+
+    public boolean isLdapPublisherModifyExistingAttributes() {
+        return ldapPublisherModifyExistingAttributes;
+    }
+
+    public void setLdapPublisherModifyExistingAttributes(final boolean ldapPublisherModifyExistingAttributes) {
+        this.ldapPublisherModifyExistingAttributes = ldapPublisherModifyExistingAttributes;
+    }
+
+    public boolean isLdapPublisherAddNonExistingAttributes() {
+        return ldapPublisherAddNonExistingAttributes;
+    }
+
+    public void setLdapPublisherAddNonExistingAttributes(final boolean ldapPublisherAddNonExistingAttributes) {
+        this.ldapPublisherAddNonExistingAttributes = ldapPublisherAddNonExistingAttributes;
+    }
+
+    public boolean isLdapPublisherCreateImmidiateNodes() {
+        return ldapPublisherCreateImmidiateNodes;
+    }
+
+    public void setLdapPublisherCreateImmidiateNodes(final boolean ldapPublisherCreateImmidiateNodes) {
+        this.ldapPublisherCreateImmidiateNodes = ldapPublisherCreateImmidiateNodes;
+    }
+
+    public boolean isLdapPublisherAddMultipleCertificate() {
+        return ldapPublisherAddMultipleCertificates;
+    }
+
+    public void setLdapPublisherAddMultipleCertificate(final boolean ldapPublisherAddMultipleCertificate) {
+        this.ldapPublisherAddMultipleCertificates = ldapPublisherAddMultipleCertificate;
+    }
+
+    public boolean isLdapPublisherRemoveRevokedCertificates() {
+        return ldapPublisherRemoveRevokedCertificates;
+    }
+
+    public void setLdapPublisherRemoveRevokedCertificates(final boolean ldapPublisherRemoveRevokedCertificates) {
+        this.ldapPublisherRemoveRevokedCertificates = ldapPublisherRemoveRevokedCertificates;
+    }
+
+    public boolean isLdapPublisherRemoveUserOnCertRevoke() {
+        return ldapPublisherRemoveUserOnCertRevoke;
+    }
+
+    public void setLdapPublisherRemoveUserOnCertRevoke(final boolean ldapPublisherRemoveUserOnCertRevoke) {
+        this.ldapPublisherRemoveUserOnCertRevoke = ldapPublisherRemoveUserOnCertRevoke;
+    }
+
+    public boolean isLdapPublisherSetUserPassword() {
+        return ldapPublisherSetUserPassword;
+    }
+
+    public void setLdapPublisherSetUserPassword(final boolean ldapPublisherSetUserPassword) {
+        this.ldapPublisherSetUserPassword = ldapPublisherSetUserPassword;
+    }
+
+    public String getLdapPublisherUserObjectClass() {
+        return ldapPublisherUserObjectClass;
+    }
+
+    public void setLdapPublisherUserObjectClass(final String ldapPublisherUserObjectClass) {
+        this.ldapPublisherUserObjectClass = ldapPublisherUserObjectClass;
+    }
+
+    public String getLdapPublisherCaObjectClass() {
+        return ldapPublisherCaObjectClass;
+    }
+
+    public void setLdapPublisherCaObjectClass(final String ldapPublisherCaObjectClass) {
+        this.ldapPublisherCaObjectClass = ldapPublisherCaObjectClass;
+    }
+
+    public String getLdapPublisherUserCertificateAttr() {
+        return ldapPublisherUserCertificateAttr;
+    }
+
+    public void setLdapPublisherUserCertificateAttr(final String ldapPublisherUserCertificateAttr) {
+        this.ldapPublisherUserCertificateAttr = ldapPublisherUserCertificateAttr;
+    }
+
+    public String getLdapPublisherCaCertificateAttr() {
+        return ldapPublisherCaCertificateAttr;
+    }
+
+    public void setLdapPublisherCaCertificateAttr(final String ldapPublisherCaCertificateAttr) {
+        this.ldapPublisherCaCertificateAttr = ldapPublisherCaCertificateAttr;
+    }
+
+    public String getLdapPublisherCrlAttribute() {
+        return ldapPublisherCrlAttribute;
+    }
+
+    public void setLdapPublisherCrlAttribute(final String ldapPublisherCrlAttribute) {
+        this.ldapPublisherCrlAttribute = ldapPublisherCrlAttribute;
+    }
+
+    public String getLdapPublisherDeltaCrlAttribute() {
+        return ldapPublisherDeltaCrlAttribute;
+    }
+
+    public void setLdapPublisherDeltaCrlAttribute(final String ldapPublisherDeltaCrlAttribute) {
+        this.ldapPublisherDeltaCrlAttribute = ldapPublisherDeltaCrlAttribute;
+    }
+
+    public String getLdapPublisherArlAttribute() {
+        return ldapPublisherArlAttribute;
+    }
+
+    public void setLdapPublisherArlAttribute(final String ldapPublisherArlAttribute) {
+        this.ldapPublisherArlAttribute = ldapPublisherArlAttribute;
+    }
+
+    public String[] getLdapPublisherUseFieldsInDN() {
+        return ldapPublisherUseFieldsInDN;
+    }
+
+    public void setLdapPublisherUseFieldsInDN(final String[] ldapPublisherUseFieldsInDN) {
+        this.ldapPublisherUseFieldsInDN = ldapPublisherUseFieldsInDN;
+    }
+    
+    public List<SelectItem> getLdapPublisherLocationFieldsFromCertificateDN() {
+        final List<SelectItem> result = new ArrayList<>();
+        List<Integer> usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
+        String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);
+        for(int i=0;i < usefieldsindn.size(); i++){ 
+            result.add(new SelectItem(usefieldsindn.get(i), getEjbcaWebBean().getText(usefieldsindntexts[i])));
+        }
+        return result;
     }
     
 }
