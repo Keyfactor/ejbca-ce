@@ -181,9 +181,9 @@ public class ApprovalDataVOView implements Serializable {
      */
     public String getApproveActionWindowLink() {
         String link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
-                + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "approval/approveaction.jsf?uniqueId="
+                + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "approval/approvalaction.xhtml?uniqueId="
                 + data.getId();
-        return "window.open('" + link + "', 'ViewApproveAction', 'width=1000,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
+        return "window.open('" + link + "', 'ViewApproveAction', 'width=650,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
     }
 
     public boolean getShowViewRequestorCertLink() {
@@ -203,7 +203,7 @@ public class ApprovalDataVOView implements Serializable {
             } catch (UnsupportedEncodingException e) {
                 throw new EJBException(e);
             }
-            retval = "viewcert('" + link + "')";
+            retval = "window.open('" + link + "', 'ViewRequestorCertAction', 'width=800,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
         }
         return retval;
     }

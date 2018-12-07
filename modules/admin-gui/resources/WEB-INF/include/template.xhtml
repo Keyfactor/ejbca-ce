@@ -97,7 +97,7 @@
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_SUPERVISIONFUNCTIONS}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
           <h:outputLink id="supervisionEditapprovalprofiles" value="#{adminMenuBean.adminWebUrl}/approval/editapprovalprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewApprovalProfiles}"><h:outputText value="#{web.text.NAV_APPROVALPROFILES}"/></h:outputLink>
-          <h:outputLink id="supervisionApproveactionlist" value="#{adminMenuBean.adminWebUrl}/approval/approveactionlist.jsf" rendered="#{adminMenuBean.authorizedToApproveActions}"><h:outputText value="#{web.text.NAV_APPROVEACTIONS}"/></h:outputLink>
+          <h:outputLink id="supervisionApproveactionlist" value="#{adminMenuBean.adminWebUrl}/approval/approvalactions.xhtml" rendered="#{adminMenuBean.authorizedToApproveActions}"><h:outputText value="#{web.text.NAV_APPROVEACTIONS}"/></h:outputLink>
           <h:outputLink id="supervisionAuditsearch" value="#{adminMenuBean.adminWebUrl}/audit/search.xhtml" rendered="#{adminMenuBean.authorizedToViewLog}"><h:outputText value="#{web.text.NAV_AUDIT}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>

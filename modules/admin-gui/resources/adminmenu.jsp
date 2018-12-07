@@ -20,7 +20,7 @@ org.ejbca.util.HTMLTools
 
        final String MAIN_LINK                =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath();
 
-       final String APPROVAL_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/approveactionlist.jsf";
+       final String APPROVAL_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/approvalactions.xhtml";
        
        final String APPROVAL_PROFILES_LINK	 =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/editapprovalprofiles.xhtml";
        
