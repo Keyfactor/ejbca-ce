@@ -86,7 +86,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -136,7 +135,6 @@ public class RAInterfaceBean implements Serializable {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     private HardTokenSessionLocal hardtokensession;
     private KeyRecoverySession keyrecoverysession;
-    private UserDataSourceSession userdatasourcesession;
 
     private UsersView usersView;
     private CertificateView[]                  certificates;
@@ -174,7 +172,6 @@ public class RAInterfaceBean implements Serializable {
     		endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
     		hardtokensession = ejbLocalHelper.getHardTokenSession();
     		keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
-    		userdatasourcesession = ejbLocalHelper.getUserDataSourceSession();
     		certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
     		this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
     		globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
