@@ -20,12 +20,12 @@ wait_for_deployment() {
 	DEPLOY_SUCCESSFUL=0
 	# Wait for up to 180 seconds for app to start up
 	for i in {1..90} ; do
-		if [ -e `$JBOSS_STANDALONE_DEPLOYMENTS/ejbca.ear.deployed` ] ; then
+		if [ -e "$JBOSS_STANDALONE_DEPLOYMENTS/ejbca.ear.deployed" ] ; then
 			echo "EJBCA successfully started."
 			DEPLOY_SUCCESSFUL=1
 			break
 		fi
-		if [ -e `$JBOSS_STANDALONE_DEPLOYMENTS/ejbca.ear.failed` ] ; then
+		if [ -e "$JBOSS_STANDALONE_DEPLOYMENTS/ejbca.ear.failed" ] ; then
 			echo "EJBCA deploy failed."
 			exit 1;
 		fi
