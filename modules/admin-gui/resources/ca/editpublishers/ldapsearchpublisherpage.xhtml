@@ -35,7 +35,7 @@
 		</h:panelGroup>
 		
 		<h:panelGroup>
-			<h:inputText value="#{editPublisher.searchBaseDN}"  size="45" maxlength="255" title="#{web.text.FORMAT_DN}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputText value="#{editPublisher.ldapSearchPublisherMBData.searchBaseDN}"  size="45" maxlength="255" title="#{web.text.FORMAT_DN}" disabled="#{editPublisher.readOnly}"/>
 			<br />
 			<h:outputText styleClass="smallHelp" value="#{web.text.SEARCHBASEDN_HELP}"/>
 		</h:panelGroup>
@@ -45,7 +45,7 @@
 		</h:panelGroup>
 		
 		<h:panelGroup>
-			<h:inputText value="#{editPublisher.searchFilter}"  size="45" maxlength="255" disabled="#{editPublisher.readOnly}"/>
+			<h:inputText value="#{editPublisher.ldapSearchPublisherMBData.searchFilter}"  size="45" maxlength="255" disabled="#{editPublisher.readOnly}"/>
 			<br />
 			<h:outputText styleClass="smallHelp" value="#{web.text.SEARCHFILTER_HELP}"/>
 		</h:panelGroup>
