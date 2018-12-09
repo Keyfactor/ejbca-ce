@@ -38,8 +38,8 @@
 			<h:outputText value="#{web.text.SAMACCOUNTNAME}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectOneMenu value="#{editPublisher.getSAMAccountName()}" disabled="#{editPublisher.readOnly}"> 
-			
+			<h:selectOneMenu value="#{editPublisher.activeDirectoryPublisherMBData.samAccountName}" disabled="#{editPublisher.readOnly}"> 
+				<f:selectItems value="#{editPublisher.getAvailableSamAccountNames()}"/>
 			</h:selectOneMenu>
 		</h:panelGroup>
 		<h:panelGroup>
@@ -47,7 +47,7 @@
 		</h:panelGroup>
 		
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" value="#{editPublisher.userDescription}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputText size="45" maxlength="255" value="#{editPublisher.activeDirectoryPublisherMBData.userDescription}" disabled="#{editPublisher.readOnly}"/>
 		</h:panelGroup>
 
 	</h:panelGrid>

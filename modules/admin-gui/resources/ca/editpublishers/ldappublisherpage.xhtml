@@ -40,7 +40,7 @@
 			<h:outputText value="#{web.text.HOSTNAMES}" style="font-weight:bold;"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" title="#{web.text.FORMAT_HOSTNAMES}" disabled="#{editPublisher.readOnly}" value="#{editPublisher.ldapPublisherHostName}"/>
+			<h:inputText size="45" maxlength="255" title="#{web.text.FORMAT_HOSTNAMES}" disabled="#{editPublisher.readOnly}" value="#{editPublisher.ldapPublisherMBData.ldapPublisherHostName}"/>
 		</h:panelGroup>
 		
 		<h:panelGroup>
@@ -48,9 +48,9 @@
 		</h:panelGroup>
 		
 		<h:panelGroup>
-			<h:inputText value="#{editPublisher.ldapPublisherPort}" size="5" maxlength="255" disabled="#{editPublisher.readOnly}" />
-			<h:selectOneRadio value="#{editPublisher.ldapPublisherSecurity}" disabled="#{editPublisher.readOnly}">
-				<f:selectItems value="#{editPublisher.getLdapPublisherSecurityItems()}" /> 
+			<h:inputText value="#{editPublisher.ldapPublisherMBData.ldapPublisherPort}" size="5" maxlength="255" disabled="#{editPublisher.readOnly}" />
+			<h:selectOneRadio value="#{editPublisher.ldapPublisherMBData.ldapPublisherSecurity}" disabled="#{editPublisher.readOnly}">
+				<f:selectItems value="#{editPublisher.ldapPublisherMBData.getLdapPublisherSecurityItems()}" /> 
 				<!-- TODO: add the port updater here -->
 			</h:selectOneRadio>
 		</h:panelGroup>
@@ -59,7 +59,7 @@
 			<h:outputText value="#{web.text.BASEDN}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" title="#{web.text.FORMAT_DN}" value="#{editPublisher.ldapPublisherBaseDN}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputText size="45" maxlength="255" title="#{web.text.FORMAT_DN}" value="#{editPublisher.ldapPublisherMBData.ldapPublisherBaseDN}" disabled="#{editPublisher.readOnly}"/>
 			<br />
 			<h:outputText value="#{web.text.BASEDN_HELP}" styleClass="smallHelp" />
 		</h:panelGroup>
@@ -68,42 +68,42 @@
 			<h:outputText value="#{web.text.LOGINDN}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" title="#{web.text.FORMAT_DN}" value="#{editPublisher.ldapPublisherLoginDN}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputText size="45" maxlength="255" title="#{web.text.FORMAT_DN}" value="#{editPublisher.ldapPublisherMBData.ldapPublisherLoginDN}" disabled="#{editPublisher.readOnly}"/>
 		</h:panelGroup>
 		
 		<h:panelGroup>
 			<h:outputText value="#{web.text.LOGINPWD}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputSecret autocomplete="off" size="20" maxlength="255" redisplay="false" value="#{editPublisher.ldapPublisherLoginPWD}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputSecret autocomplete="off" size="20" maxlength="255" redisplay="false" value="#{editPublisher.ldapPublisherMBData.ldapPublisherLoginPWD}" disabled="#{editPublisher.readOnly}"/>
 		</h:panelGroup>
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.CONFIRMPASSWORD}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputSecret autocomplete="off" size="20" maxlength="255" redisplay="false" value="#{editPublisher.ldapPublisherConfirmPWD}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputSecret autocomplete="off" size="20" maxlength="255" redisplay="false" value="#{editPublisher.ldapPublisherMBData.ldapPublisherConfirmPWD}" disabled="#{editPublisher.readOnly}"/>
 		</h:panelGroup>
 		
 		<h:panelGroup>
 			<h:outputText value="#{web.text.CONNECTIONTIMEOUT}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="10" maxlength="255" title="#{web.text.UNIT_MSEC}" value="#{editPublisher.ldapPublisherConnectionTimeout}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputText size="10" maxlength="255" title="#{web.text.UNIT_MSEC}" value="#{editPublisher.ldapPublisherMBData.ldapPublisherConnectionTimeout}" disabled="#{editPublisher.readOnly}"/>
 		</h:panelGroup>
 		
 		<h:panelGroup>
 			<h:outputText value="#{web.text.READTIMEOUT}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="10" maxlength="255" title="#{web.text.UNIT_MSEC}" value="#{editPublisher.ldapPublisherReadTimeout}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputText size="10" maxlength="255" title="#{web.text.UNIT_MSEC}" value="#{editPublisher.ldapPublisherMBData.ldapPublisherReadTimeout}" disabled="#{editPublisher.readOnly}"/>
 		</h:panelGroup>
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.STORETIMEOUT}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="10" maxlength="255" title="#{web.text.UNIT_MSEC}" value="#{editPublisher.ldapPublisherStoreTimeout}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputText size="10" maxlength="255" title="#{web.text.UNIT_MSEC}" value="#{editPublisher.ldapPublisherMBData.ldapPublisherStoreTimeout}" disabled="#{editPublisher.readOnly}"/>
 		</h:panelGroup>
 	</h:panelGrid>
 	
@@ -117,7 +117,7 @@
 			<h:outputText value="#{web.text.CREATENONEXISTINGUSERS}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherCreateNonExistingUsers}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherCreateNonExistingUsers}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -125,7 +125,7 @@
 			<h:outputText value="#{web.text.MODIFYEXISTINGUSERS}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherModifyExistingUsers}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherModifyExistingUsers}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -133,7 +133,7 @@
 			<h:outputText value="#{web.text.MODIFYEXISTINGATTRIBUTES}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherModifyExistingAttributes}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherModifyExistingAttributes}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -141,7 +141,7 @@
 			<h:outputText value="#{web.text.ADDNONEXISTINGATTRIBUTES}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherAddNonExistingAttributes}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherAddNonExistingAttributes}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -149,7 +149,7 @@
 			<h:outputText value="#{web.text.CREATEINTERMEDIATENODES}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherCreateImmidiateNodes}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherCreateImmidiateNodes}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -157,7 +157,7 @@
 			<h:outputText value="#{web.text.ADDMULTIPLECERTIFICATES}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherAddMultipleCertificates}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherAddMultipleCertificates}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -165,7 +165,7 @@
 			<h:outputText value="#{web.text.REMOVEREVOKEDCERTIFICATES}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherRemoveRevokedCertificates}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherRemoveRevokedCertificates}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -173,7 +173,7 @@
 			<h:outputText value="#{web.text.REMOVEUSERONCERTREVOKE}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherRemoveUserOnCertRevoke}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherRemoveUserOnCertRevoke}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -181,7 +181,7 @@
 			<h:outputText value="#{web.text.LDAPSETUSERPASSWORD}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherSetUserPassword}" disabled="#{editPublisher.readOnly}"/>
+			<h:selectBooleanCheckbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherSetUserPassword}" disabled="#{editPublisher.readOnly}"/>
 			<h:outputLabel value="#{web.text.ACTIVATE}"/>
 		</h:panelGroup>
 
@@ -197,56 +197,56 @@
 			<h:outputText value="#{web.text.USEROBJECTCLASS}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherUserObjectClass}" disabled="#{editPublisher.readOnly}" />
+			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherMBData.ldapPublisherUserObjectClass}" disabled="#{editPublisher.readOnly}" />
 		</h:panelGroup>		
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.CAOBJECTCLASS}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherCaObjectClass}" disabled="#{editPublisher.readOnly}" />
+			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherMBData.ldapPublisherCaObjectClass}" disabled="#{editPublisher.readOnly}" />
 		</h:panelGroup>	
 		
 		<h:panelGroup>
 			<h:outputText value="#{web.text.USERCERTIFICATEATTR}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherUserCertificateAttr}" disabled="#{editPublisher.readOnly}" />
+			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherMBData.ldapPublisherUserCertificateAttr}" disabled="#{editPublisher.readOnly}" />
 		</h:panelGroup>	
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.CACERTIFICATEATTR}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherCaCertificateAttr}" disabled="#{editPublisher.readOnly}" />
+			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherMBData.ldapPublisherCaCertificateAttr}" disabled="#{editPublisher.readOnly}" />
 		</h:panelGroup>	
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.CRLATTRIBUTE}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherCrlAttribute}" disabled="#{editPublisher.readOnly}" />
+			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherMBData.ldapPublisherCrlAttribute}" disabled="#{editPublisher.readOnly}" />
 		</h:panelGroup>	
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.DELTACRLATTRIBUTE}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherDeltaCrlAttribute}" disabled="#{editPublisher.readOnly}" />
+			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherMBData.ldapPublisherDeltaCrlAttribute}" disabled="#{editPublisher.readOnly}" />
 		</h:panelGroup>	
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.ARLATTRIBUTE}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherArlAttribute}" disabled="#{editPublisher.readOnly}" />
+			<h:inputText size="45" maxlength="255" value="#{editPublisher.ldapPublisherMBData.ldapPublisherArlAttribute}" disabled="#{editPublisher.readOnly}" />
 		</h:panelGroup>	
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.USEFIELDSINDN}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:selectManyListbox value="#{editPublisher.ldapPublisherUseFieldsInDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list">
+			<h:selectManyListbox value="#{editPublisher.ldapPublisherMBData.ldapPublisherUseFieldsInDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list">
 				<f:selectItems value="#{editPublisher.getLdapPublisherLocationFieldsFromCertificateDN()}" />
 			</h:selectManyListbox>
 			<br />
