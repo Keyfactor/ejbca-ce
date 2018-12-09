@@ -132,11 +132,12 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return publisherId;
     }
 
-    private String currentCustomClass;
+    private String customPublisherCurrentClass;
     private String customPublisherPropertySelectOneMenuValue;
     private String customPublisherPropertyInputText;
     private String customPublisherPropertyInputPassword;
     private String customPublisherPropertyOutputTextArea;
+    private boolean customPublisherPropertySelectBooleanCheckbox;
 
     @ManagedProperty(value = "#{listPublishersManagedBean}")
     private ListPublishersManagedBean listPublishersManagedBean;
@@ -438,19 +439,29 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
     
     public boolean isCustomUiRenderingSupported() {
-        return ((CustomPublisherContainer)publisher).isCustomUiRenderingSupported();
+        if (publisher instanceof CustomPublisherContainer) {
+            return ((CustomPublisherContainer) publisher).isCustomUiRenderingSupported();
+        } else
+            return false;
     }
     
     public String getPropertyData() {
-        return ((CustomPublisherContainer)publisher).getPropertyData();
+        if (publisher instanceof CustomPublisherContainer) {
+            return ((CustomPublisherContainer) publisher).getPropertyData();
+        } else
+            return StringUtils.EMPTY;
     }
     
     public List<CustomPublisherProperty> getCustomUiPropertyList() {
-        return ((CustomPublisherContainer)publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject());
+        if (publisher instanceof CustomPublisherContainer) {
+            return ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject());
+        } else
+            return Collections.emptyList();
     }
     
     public String getCustomPublisherPropertyText(final CustomPublisherProperty customPublisherProperty) {
-        return getEjbcaWebBean().getText(getCurrentClassSimple().toUpperCase()+"_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase());
+        return getEjbcaWebBean()
+                .getText(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase());
     }
     
     public List<SelectItem> getCustomPublisherPropertySelectOneMenuList(final CustomPublisherProperty customPublisherProperty) {
@@ -461,6 +472,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             customPublisherPropertySelectOneMenuList.add(new SelectItem(option, optionText));
         }
         return customPublisherPropertySelectOneMenuList;
+    }
+    
+    public boolean renderCustomTextInput(final CustomPublisherProperty customPublisherProperty) {
+        return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT;
     }
     
     public boolean renderCustomSelectOneMenu(final CustomPublisherProperty customPublisherProperty) {
@@ -490,14 +505,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public String getCustomHelpText(final CustomPublisherProperty customPublisherProperty) {
         return getEjbcaWebBean().getText(
                 getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase() + "_HELP");
-    }
-
-    public String getCurrentClass() {
-        return currentCustomClass;
-    }
-
-    public void setCurrentClass(final String currentClass) {
-        this.currentCustomClass = currentClass;
     }
 
     public String getCustomPublisherPropertySelectOneMenuValue() {
@@ -621,7 +628,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     private Object initCustomPublisher() {
-        currentCustomClass = ((CustomPublisherContainer) publisher).getClassPath();
+        customPublisherCurrentClass = ((CustomPublisherContainer) publisher).getClassPath();
         return null;
     }
 
@@ -633,18 +640,41 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
     
     private String getCurrentClassSimple() {
-        return this.currentCustomClass.substring(currentCustomClass.lastIndexOf('.')+1);
+        if (publisher instanceof CustomPublisherContainer) {
+            final String currentCustomClass = ((CustomPublisherContainer) publisher).getClassPath();
+            return currentCustomClass.substring(currentCustomClass.lastIndexOf('.') + 1);
+        }
+        return StringUtils.EMPTY;
     }
     
     private String getCurrentClassText() {
-        CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisher;
-        final String currentClass = custompublisher.getClassPath();
-        final String currentClassSimple = currentClass.substring(currentClass.lastIndexOf('.') + 1);
-        String currentClassText = getEjbcaWebBean().getText(currentClassSimple.toUpperCase());
-        if (currentClassText.equals(currentClassSimple.toUpperCase())) {
-            currentClassText = currentClassSimple;
+        if (publisher instanceof CustomPublisherContainer) {
+            CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisher;
+            final String currentClass = custompublisher.getClassPath();
+            final String currentClassSimple = currentClass.substring(currentClass.lastIndexOf('.') + 1);
+            String currentClassText = getEjbcaWebBean().getText(currentClassSimple.toUpperCase());
+            if (currentClassText.equals(currentClassSimple.toUpperCase())) {
+                currentClassText = currentClassSimple;
+            }
+            return currentClassText;
         }
-        return currentClassText;
+        return StringUtils.EMPTY;
+    }
+
+    public String getCustomPublisherCurrentClass() {
+        return customPublisherCurrentClass;
+    }
+
+    public void setCustomPublisherCurrentClass(final String customPublisherCurrentClass) {
+        this.customPublisherCurrentClass = customPublisherCurrentClass;
+    }
+
+    public boolean isCustomPublisherPropertySelectBooleanCheckbox() {
+        return customPublisherPropertySelectBooleanCheckbox;
+    }
+
+    public void setCustomPublisherPropertySelectBooleanCheckbox(final boolean customPublisherPropertySelectBooleanCheckbox) {
+        this.customPublisherPropertySelectBooleanCheckbox = customPublisherPropertySelectBooleanCheckbox;
     }
     
 }
