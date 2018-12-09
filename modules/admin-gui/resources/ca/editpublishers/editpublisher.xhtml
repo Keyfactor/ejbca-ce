@@ -4,6 +4,7 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
 	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 <ui:remove>
 	<!--
@@ -74,15 +75,35 @@
 					<h:panelGroup>
 						<h:outputText value="#{editPublisher.getCurrentPublisherName()}"
 							rendered="#{editPublisher.readOnly or editPublisher.deprecated}" />
-						<h:selectOneMenu value="#{editPublisher.selectedPublisherType}" rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}">
-						<f:selectItems value="#{editPublisher.availablePublisherTypes}" >
-						
-						</f:selectItems>
-
+						<h:selectOneMenu value="#{editPublisher.selectedPublisherType}" 
+										 rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}"
+										 valueChangeListener="#{editPublisher.changePublisherType}">
+							<f:selectItems value="#{editPublisher.availablePublisherTypes}" />
+							<f:ajax render=":selectPublisher"/>
 						</h:selectOneMenu>
 					</h:panelGroup>
-					
-				</h:panelGrid>	
+				</h:panelGrid>
+
+				<f:subview id="ldappublisherpage" rendered="#{editPublisher.renderLdapPublisherPage()}">
+					<ui:include src="ldappublisherpage.xhtml"></ui:include>
+				</f:subview>
+
+				<f:subview id="ldapsearchpublisherpage" rendered="#{editPublisher.renderLdapSearchPublisherPage()}">
+					<ui:include src="ldapsearchpublisherpage.xhtml"></ui:include>
+				</f:subview>
+				
+				<f:subview id="activedirectorypublisherpage" rendered="#{editPublisher.renderActiveDirectoryPublisherPage()}">
+					<ui:include src="adpublisherpage.xhtml"></ui:include>
+				</f:subview>
+				
+<!-- 				<f:subview id="custompublisherpage" rendered="#{editPublisher.renderCustomPublisherPage()}">
+					<ui:include src="custompublisherpage.xhtml"></ui:include>
+				</f:subview> -->
+
+				<f:subview id="multigrouppublisherpage" rendered="#{editPublisher.renderMultiGroupPublisherPage()}">
+					<ui:include src="multigrouppublisherpage.xhtml"></ui:include>
+				</f:subview>				
+				
 				<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">	
 					<h:panelGroup>
 					<h:outputText value="#{web.text.PUBLISHERQUEUE}" style="font-weight:bold;"/>
