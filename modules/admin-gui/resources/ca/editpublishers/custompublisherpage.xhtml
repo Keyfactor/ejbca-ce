@@ -29,7 +29,6 @@
 <ui:composition>
 
 	<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
-	
 		<h:panelGroup>
 			<h:outputText value="#{web.text.CUSTOMPUBLISHERSETTINGS}" rendered="#{editPublisher.isCustomClassChoice()}"/> 
 			<h:outputText value="#{editPublisher.getCustomPublisherSettingText()}" rendered="#{!editPublisher.isCustomClassChoice()}"/> 
@@ -43,22 +42,21 @@
 		
 		<h:panelGroup rendered="#{editPublisher.isManualClassPathsEnabledOrIsCustomClassChoice()}">
 			<h:inputText size="60" maxlength="255" rendered="#{editPublisher.isManualClassPathsEnabledAndIsCustomClassChoice()}"
-						disabled="#{editPublisher.readOnly}" id="textfieldcustomclasspath" value="#{editPublisher.currentClass}"/> 
+						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherCurrentClass}"/> 
 							
 			<h:inputText size="60" maxlength="255" rendered="#{!editPublisher.isManualClassPathsEnabledAndIsCustomClassChoice()}"
-						disabled="#{editPublisher.readOnly}" id="textfieldcustomclasspath" value="#{editPublisher.currentClass}"/>
+						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherCurrentClass}" readonly="readonly"/>
 						
 			<h:outputText value="#{web.text.OLDMANUALCLASSPATHELP}" 
 						  rendered="#{!editPublisher.isManualClassPathsEnabledAndIsCustomClassChoice() and editPublisher.isCustomClassChoice()}"/>							
 		</h:panelGroup>
-	
-		<h:panelGrid rendered="#{editPublisher.isCustomUiRenderingSupported()}">
-			<c:forEach items="#{editPublisher.getCustomUiPropertyList()}" var="item">
-			<h:panelGroup>
+
+		<c:forEach items="#{editPublisher.getCustomUiPropertyList()}" var="item">
+ 			<h:panelGroup>
 				<h:outputText value="#{editPublisher.getCustomPublisherPropertyText(item)}"/>
 			</h:panelGroup>
 			<h:panelGroup rendered="#{editPublisher.renderCustomSelectOneMenu(item)}">
-				<h:selectOneMenu id="#{item.getName()}" value="#{editPublisher.customPublisherPropertySelectOneMenuValue}" 
+				<h:selectOneMenu  value="#{editPublisher.customPublisherPropertySelectOneMenuValue}" 
 								 disabled="#{editPublisher.readOnly}">
 					<f:selectItems value="#{editPublisher.getCustomPublisherPropertySelectOneMenuList(item)}"/>
 				</h:selectOneMenu>
@@ -73,8 +71,8 @@
 			</h:panelGroup>
 			
 			<h:panelGroup rendered="#{editPublisher.renderCustomCheckbox(item)}">
-				<h:selectBooleanCheckbox id="#{item.getName()}" value="#{editPublisher.customPublisherPropertySelectBooleanCheckbox}" disabled="#{editPublisher.readOnly}"/> 
-				<h:outputLabel for="#{item.getName()}" value="#{web.text.USE}" />
+				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherPropertySelectBooleanCheckbox}" disabled="#{editPublisher.readOnly}"/> 
+				<h:outputLabel value="#{web.text.USE}" />
 			</h:panelGroup>
 			
 			<h:panelGroup rendered="#{editPublisher.renderCustomOutputTextArea(item)}">
@@ -83,9 +81,8 @@
 			<h:panelGroup rendered="#{editPublisher.renderCustomHelp(item)}">
 				<h:outputText value="#{editPublisher.getCustomHelpText(item)}" styleClass="smallHelp" />
 			</h:panelGroup>
-			</c:forEach>
-		</h:panelGrid>
-	
+		</c:forEach>
+
 		<h:panelGrid rendered="#{!editPublisher.isCustomUiRenderingSupported()}">
 			<h:panelGroup>
 				<h:outputText value="#{web.text.PROPERTIESOFCUSTOM}"/>
