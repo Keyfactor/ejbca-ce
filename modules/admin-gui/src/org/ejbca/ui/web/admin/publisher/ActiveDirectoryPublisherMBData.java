@@ -1,6 +1,8 @@
 package org.ejbca.ui.web.admin.publisher;
 
-public final class ActiveDirectoryPublisherMBData {
+import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
+
+public final class ActiveDirectoryPublisherMBData extends LdapPublisherMBData {
 
     private int samAccountName;
     private String userDescription;
@@ -20,6 +22,18 @@ public final class ActiveDirectoryPublisherMBData {
 
     public void setSamAccountName(final int samAccountName) {
         this.samAccountName = samAccountName;
+    }
+    
+    public ActiveDirectoryPublisher getPublisherInstance(final ActiveDirectoryPublisher publisher) {
+        publisher.setSAMAccountName(samAccountName);
+        publisher.setUserDescription(userDescription);
+        return publisher;
+    }
+    
+    public void initializeData(final ActiveDirectoryPublisher publisher) {
+        super.initializeData(publisher);
+        this.userDescription = publisher.getUserDescription();
+        this.samAccountName = publisher.getSAMAccountName();
     }
     
 }

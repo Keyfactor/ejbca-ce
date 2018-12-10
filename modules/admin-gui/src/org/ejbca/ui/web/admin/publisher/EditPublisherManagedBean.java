@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -72,7 +73,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
     private static final Map<Integer, String> AVAILABLE_SAM_ACCOUNTS;
-    private static final Map<String, String> AVAILABLE_PUBLISHER_PAGES;
     private final Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = new HashMap<>();
 
     static {
@@ -90,13 +90,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.SN, "MATCHDNSERIALNUMBER");
         AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.GIVENNAME, "MATCHGIVENNAME");
         AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.SURNAME, "MATCHSURNAME");
-        
-        AVAILABLE_PUBLISHER_PAGES = new LinkedHashMap<>();
-        AVAILABLE_PUBLISHER_PAGES.put(LdapPublisher.class.getSimpleName(), "ldappublisherpage.xhtml");
-        AVAILABLE_PUBLISHER_PAGES.put(LdapSearchPublisher.class.getSimpleName(), "ldapsearchpublisherpage.xhtml");
-        AVAILABLE_PUBLISHER_PAGES.put(ActiveDirectoryPublisher.class.getSimpleName(), "adpublisherpage.xhtml");
-        AVAILABLE_PUBLISHER_PAGES.put(CustomPublisherContainer.class.getSimpleName(), "custompublisherpage.xhtml");
-        AVAILABLE_PUBLISHER_PAGES.put(MultiGroupPublisher.class.getSimpleName(), "multigrouppublisherpage.xhtml");
     }
     
     private String selectedPublisherType;
@@ -543,18 +536,23 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             switch (Integer.valueOf(newPublisherType)) {
             case PublisherConst.TYPE_ADPUBLISHER:
                 publisher = new ActiveDirectoryPublisher();
+                initActiveDirectoryPublisher();
                 break;
             case PublisherConst.TYPE_LDAPPUBLISHER:
                 publisher = new LdapPublisher();
+                initLdapPublisher();
                 break;
             case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
                 publisher = new CustomPublisherContainer();
+                initCustomPublisher();
                 break;
             case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
                 publisher = new LdapSearchPublisher();
+                initLdapSearchPublisher();
                 break;
             case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
                 publisher = new MultiGroupPublisher();
+                initMultiGroupPublisher();
                 break;
             default:
                 break;
@@ -565,6 +563,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             if (getCustomClasses().contains(customClassName)) {
                 ((CustomPublisherContainer) publisher).setClassPath(customClassName);
             }
+            initCustomPublisher();
         }
         return "editpublisher";
     }
@@ -598,8 +597,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
     
     private Void initActiveDirectoryPublisher() {
-        activeDirectoryPublisherMBData.setUserDescription(((ActiveDirectoryPublisher) publisher).getUserDescription());
-        activeDirectoryPublisherMBData.setSamAccountName(((ActiveDirectoryPublisher) publisher).getSAMAccountName());
+        activeDirectoryPublisherMBData.initializeData((ActiveDirectoryPublisher) publisher);
         return null;
     }
     
@@ -619,9 +617,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     private Void initLdapPublisher() {
-
         ldapPublisherMBData.initializeData((LdapPublisher) publisher);
-        
         return null;
     }
     
@@ -701,6 +697,20 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     public void setOnlyUseQueue(boolean onlyUseQueue) {
         this.onlyUseQueue = onlyUseQueue;
+    }
+    
+    //Actions
+    public String savePublisher() throws AuthorizationDeniedException {
+        if (publisher instanceof LdapPublisher) {
+            publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(),
+                    ldapPublisherMBData.getLdapPublisherInstance());
+        } 
+        
+        if (publisher instanceof ActiveDirectoryPublisher) {
+            publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), 
+                    activeDirectoryPublisherMBData.getPublisherInstance((ActiveDirectoryPublisher) publisher));
+        }
+        return "listpublishers?faces-redirect=true";
     }
     
 }
