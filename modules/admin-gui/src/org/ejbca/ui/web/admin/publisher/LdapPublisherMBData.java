@@ -305,15 +305,10 @@ public class LdapPublisherMBData {
         
     }
     
-    public LdapPublisher getLdapPublisherInstance() {
-        final LdapPublisher publisher = new LdapPublisher();
-        publisher.setPort(this.port);
-        publisher.setConnectionSecurity(this.connectionSecurity);
-        publisher.setConnectionTimeOut(this.connectionTimeout);
-        
-        return publisher;
-        
-        
+    public void setLdapPublisherParameters(final LdapPublisher ldapPublisher) {
+        ldapPublisher.setPort(this.port);
+        ldapPublisher.setConnectionSecurity(this.connectionSecurity);
+        ldapPublisher.setConnectionTimeOut(this.connectionTimeout);
     }
     
 }
