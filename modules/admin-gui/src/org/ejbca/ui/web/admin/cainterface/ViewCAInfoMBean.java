@@ -21,12 +21,15 @@ import javax.faces.context.FacesContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 
 /**
  * JSF backing bean for CA info popup view.
+ * View scoped
  * 
  * @version $Id: ViewCAInfoMBean.java 30423 2018-11-07 09:11:23Z tarmo_r_helmes $
  */
@@ -36,49 +39,46 @@ public class ViewCAInfoMBean extends BaseManagedBean implements Serializable {
 		 
 	private static final long serialVersionUID = 109073226626366410L;
 
-    public static final String CA_PARAMETER             = "caid";
-/*
-	public static final String CERTSERNO_PARAMETER      = "certsernoparameter"; 
-	  
-	public static final String PASSWORD_AUTHENTICATIONCODE  = "passwordactivationcode";
-	
-    public static final String CHECKBOX_VALUE                = BasePublisher.TRUE;
-	  
-	public static final String BUTTON_ACTIVATE          = "buttonactivate";
-	public static final String BUTTON_MAKEOFFLINE       = "buttonmakeoffline";
-	public static final String BUTTON_CLOSE             = "buttonclose"; 
-	public static final String CHECKBOX_INCLUDEINHEALTHCHECK = "includeinhealthcheck";
-	public static final String SUBMITHS					= "submiths";
-*/
+    public static final String CA_PARAMETER = "caid";
     
-    //@ManagedProperty(value = "#{cAInterfaceBean}") //<- CAInterfaceBean doesn't seem to be managed
     private CAInterfaceBean caBean;
-    
-    int caId = 0;
+    private int caId = 0;
 	private CAInfoView caInfo = null;
     
-    /** Creates new LogInterfaceBean */
-    public ViewCAInfoMBean() {
-        
-    }
 
     /**
-     * Method that initialized the bean.
+     * Method that initializes the bean.
      *
-     * @param request is a reference to the http request.
+     * @throws Exception 
      */
     public void initialize() throws Exception {
         // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR);
             
-            initCaBean(request);
-            
-            final String caIdParameter = request.getParameter(CA_PARAMETER);
-            if (caIdParameter != null) {
-                caId = Integer.parseInt(caIdParameter);
-                caInfo = caBean.getCAInfo(caId);
+            try {
+                final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+                
+                RequestHelper.setDefaultCharacterEncoding(request);
+                
+                getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR);
+                
+                initCaBean(request);
+                
+                final String caIdParameter = request.getParameter(CA_PARAMETER);
+                if (caIdParameter != null) {
+                    try {
+                        caId = Integer.parseInt(caIdParameter);
+                    } catch (final NumberFormatException e) {
+                        addErrorMessage("YOUMUSTSPECIFYCAID");
+                    }
+                    
+                    caInfo = caBean.getCAInfo(caId);
+                    if (caInfo == null) {
+                        addErrorMessage("CADOESNTEXIST");  
+                    }
+                }
+            } catch (final AuthorizationDeniedException e) {
+                addErrorMessage("NOTAUTHORIZEDTOVIEWCA");
             }
         }
     }
@@ -105,37 +105,4 @@ public class ViewCAInfoMBean extends BaseManagedBean implements Serializable {
     public CAInfoView getCaInfo() {
         return caInfo;
     }
-
-    
-    /**
-     * Method that parses the request and take appropriate actions.
-     * @param request the http request
-     * @throws Exception
-     */
-    /*
-    public void parseRequest(final HttpServletRequest request) throws Exception {
-        generalerrormessage = null;
-        activationerrormessage = null;   
-        activationmessage = null;
-        RequestHelper.setDefaultCharacterEncoding(request);
-        if (request.getParameter(CA_PARAMETER) != null){
-            caid = Integer.parseInt(request.getParameter(CA_PARAMETER));
-            // Get currentstate
-            status = CAConstants.CA_OFFLINE;
-            try {
-                cainfo = cabean.getCAInfo(caid);
-                if (cainfo==null) {
-                    generalerrormessage = "CADOESNTEXIST";  
-                } else {
-                    status = cainfo.getCAInfo().getStatus();
-                }
-            } catch(final AuthorizationDeniedException e) {
-                generalerrormessage = "NOTAUTHORIZEDTOVIEWCA";
-                return;
-            } 
-        } else {
-            generalerrormessage = "YOUMUSTSPECIFYCAID";
-        }
-    }
-    */
 }
