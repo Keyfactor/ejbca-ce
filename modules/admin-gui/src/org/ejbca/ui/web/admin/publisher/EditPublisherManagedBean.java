@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -138,6 +137,12 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private String customPublisherPropertyInputPassword;
     private String customPublisherPropertyOutputTextArea;
     private boolean customPublisherPropertySelectBooleanCheckbox;
+    
+    private String publisherDescription;
+    private boolean useQueueForCertificates;
+    private boolean useQueueForCRLs;
+    private boolean keepPublishedInQueue;
+    private boolean onlyUseQueue;
 
     @ManagedProperty(value = "#{listPublishersManagedBean}")
     private ListPublishersManagedBean listPublishersManagedBean;
@@ -152,11 +157,20 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     @PostConstruct
     public void init() {
+        initCommonParts();
+        initDataClasses();
+        fillPublisherInitMapAndInitPublisherData();
+    }
+
+    private void initCommonParts() {
         publisher = publisherSession.getPublisher(listPublishersManagedBean.getSelectedPublisherName());
         selectedPublisherType = String.valueOf(getPublisherType());
         publisherId = publisher.getPublisherId();
-        initDataClasses();
-        fillPublisherInitMapAndInitPublisherData();
+        publisherDescription = publisher.getDescription();
+        useQueueForCertificates = publisher.getUseQueueForCertificates();
+        useQueueForCRLs = publisher.getUseQueueForCRLs();
+        keepPublishedInQueue = publisher.getKeepPublishedInQueue();
+        onlyUseQueue = publisher.getOnlyUseQueue();
     }
 
     private void initDataClasses() {
@@ -322,26 +336,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     public void setSelectedPublisherType(final String selectedPublisherType) {
         this.selectedPublisherType = selectedPublisherType;
-    }
-    
-    public String getDescription() {
-        return publisher.getDescription();
-    }
-    
-    public boolean getOnlyUseQueue() {
-        return publisher.getOnlyUseQueue();
-    }
-
-    public boolean getKeepPublishedInQueue() {
-        return publisher.getKeepPublishedInQueue();
-    }
-    
-    public boolean getUseQueueForCrls() {
-        return publisher.getUseQueueForCRLs();
-    }
-    
-    public boolean getUseQueueForCertificates() {
-        return publisher.getUseQueueForCertificates();
     }
     
     public String getPublisherQueue() {
@@ -540,15 +534,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     
-    public List<SelectItem> getLdapPublisherLocationFieldsFromCertificateDN() {
-        final List<SelectItem> result = new ArrayList<>();
-        List<Integer> usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
-        String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);
-        for(int i=0;i < usefieldsindn.size(); i++){ 
-            result.add(new SelectItem(usefieldsindn.get(i), getEjbcaWebBean().getText(usefieldsindntexts[i])));
-        }
-        return result;
-    }
+
 
     public String changePublisherType(ValueChangeEvent event) {
         String newPublisherType = (String) event.getNewValue();
@@ -633,9 +619,9 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     private Void initLdapPublisher() {
-        ldapPublisherMBData.ldaptPublisherSecurityItems.put(getEjbcaWebBean().getText("PLAIN"), "PLAIN");
-        ldapPublisherMBData.ldaptPublisherSecurityItems.put(getEjbcaWebBean().getText("STARTTLS"), "STARTTLS");
-        ldapPublisherMBData.ldaptPublisherSecurityItems.put(getEjbcaWebBean().getText("SSL"), "SSL");
+
+        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
+        
         return null;
     }
     
@@ -675,6 +661,46 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     public void setCustomPublisherPropertySelectBooleanCheckbox(final boolean customPublisherPropertySelectBooleanCheckbox) {
         this.customPublisherPropertySelectBooleanCheckbox = customPublisherPropertySelectBooleanCheckbox;
+    }
+
+    public String getPublisherDescription() {
+        return publisherDescription;
+    }
+
+    public void setPublisherDescription(String publisherDescription) {
+        this.publisherDescription = publisherDescription;
+    }
+
+    public boolean isUseQueueForCertificates() {
+        return useQueueForCertificates;
+    }
+
+    public void setUseQueueForCertificates(boolean useQueueForCertificates) {
+        this.useQueueForCertificates = useQueueForCertificates;
+    }
+
+    public boolean isUseQueueForCRLs() {
+        return useQueueForCRLs;
+    }
+
+    public void setUseQueueForCRLs(boolean useQueueForCRLs) {
+        this.useQueueForCRLs = useQueueForCRLs;
+    }
+
+    public boolean isKeepPublishedInQueue() {
+        return keepPublishedInQueue;
+    }
+
+    public void setKeepPublishedInQueue(boolean keepPublishedInQueue) {
+        this.keepPublishedInQueue = keepPublishedInQueue;
+    }
+
+    public boolean isOnlyUseQueue() {
+        return onlyUseQueue;
+    }
+
+    public void setOnlyUseQueue(boolean onlyUseQueue) {
+        this.onlyUseQueue = onlyUseQueue;
     }
     
 }
