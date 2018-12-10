@@ -129,12 +129,12 @@
 		<h:outputLabel for="certificateId" value="#{web.text.INTERNALKEYBINDING_FIELD_BOUNDCERT}"
 			rendered="#{internalKeyBindingMBean.boundToCertificate}"/>
 		<h:panelGroup id="certificateId" rendered="#{internalKeyBindingMBean.boundToCertificate}">
-			<h:outputLink target="_blank" value="/ejbca/adminweb/viewcertificate.jsp?certsernoparameter=#{internalKeyBindingMBean.boundCaCertificateSerialNumber},#{internalKeyBindingMBean.boundCaCertificateIssuerDn}&amp;ref=keybindings">
+			<h:outputLink target="_blank" value="/ejbca/adminweb/viewcertificate.xhtml?certsernoparameter=#{internalKeyBindingMBean.boundCaCertificateSerialNumber},#{internalKeyBindingMBean.boundCaCertificateIssuerDn}&amp;ref=keybindings">
 				<h:outputText value="#{internalKeyBindingMBean.boundCertificateInternalCaName}" rendered="#{internalKeyBindingMBean.boundCertificateInternalCaName != null}"/>
 				<h:outputText value="#{internalKeyBindingMBean.boundCertificateIssuerDn}" rendered="#{internalKeyBindingMBean.boundCertificateInternalCaName == null}"/>
 			</h:outputLink>
 			<h:outputText value="  "/>
-			<h:outputLink target="_blank" value="/ejbca/adminweb/viewcertificate.jsp?certsernoparameter=#{internalKeyBindingMBean.boundCertificateSerialNumber},#{internalKeyBindingMBean.boundCertificateIssuerDn}&amp;ref=keybindings">
+			<h:outputLink target="_blank" value="/ejbca/adminweb/viewcertificate.xhtml?certsernoparameter=#{internalKeyBindingMBean.boundCertificateSerialNumber},#{internalKeyBindingMBean.boundCertificateIssuerDn}&amp;ref=keybindings">
 				<h:outputText style="font-family: monospace; text-align: right;" value="#{internalKeyBindingMBean.boundCertificateSerialNumber}"/>
 			</h:outputLink>
 		</h:panelGroup>

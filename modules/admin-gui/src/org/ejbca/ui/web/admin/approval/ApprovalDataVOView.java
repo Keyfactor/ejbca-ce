@@ -61,7 +61,7 @@ public class ApprovalDataVOView implements Serializable {
     private static final String ISSUERDN = "ISSUERDN";
     private static final String USERNAME = "USERNAME";
 
-    public ApprovalDataVOView(ApprovalDataVO data) {
+    public ApprovalDataVOView(final ApprovalDataVO data) {
         this.data = data;
     }
 
@@ -84,25 +84,25 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public String getCaName() {
-        EjbcaJSFHelper helpBean = EjbcaJSFHelper.getBean();
+        final EjbcaJSFHelper helpBean = EjbcaJSFHelper.getBean();
         if (data.getCAId() == ApprovalDataVO.ANY_CA) {
             return helpBean.getEjbcaWebBean().getText("ANYCA", true);
         }
         try {
-            CAInfo caInfo = ejbLocalHelper.getCaSession().getCAInfo(helpBean.getAdmin(), data.getCAId());
+            final CAInfo caInfo = ejbLocalHelper.getCaSession().getCAInfo(helpBean.getAdmin(), data.getCAId());
             if(caInfo != null) {
                 return caInfo.getName();
             } else {
                 log.error("Can not get CA with id: "+data.getCAId());
             }
-		} catch (AuthorizationDeniedException e) {
+		} catch (final AuthorizationDeniedException e) {
 			log.error("Can not get CA with id: "+data.getCAId(), e);
 		}
 		return "Error";
     }
 
     public String getEndEntityProfileName() {
-        EjbcaJSFHelper helpBean = EjbcaJSFHelper.getBean();
+        final EjbcaJSFHelper helpBean = EjbcaJSFHelper.getBean();
         if (data.getEndEntityProfileId() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
             return helpBean.getEjbcaWebBean().getText("ANYENDENTITYPROFILE", true);
         }
@@ -127,7 +127,7 @@ public class ApprovalDataVOView implements Serializable {
         final Certificate cert = data.getApprovalRequest().getRequestAdminCert();
         final AuthenticationToken reqAdmin = data.getApprovalRequest().getRequestAdmin();
         if (cert != null) {
-            String dn = CertTools.getSubjectDN(cert);
+            final String dn = CertTools.getSubjectDN(cert);
             String o = CertTools.getPartFromDN(dn, "O");
             if (o == null) {
                 o = "";
@@ -138,7 +138,7 @@ public class ApprovalDataVOView implements Serializable {
         } else {
             retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL", true); // Assume CLI if not match
             if (reqAdmin != null) {
-                for (Principal principal : reqAdmin.getPrincipals()) {
+                for (final Principal principal : reqAdmin.getPrincipals()) {
                     if (principal instanceof PublicAccessAuthenticationToken.PublicAccessPrincipal) {
                         // Unauthenticated users accessing the RA
                         retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("RAWEB", true);
@@ -161,9 +161,9 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public String getStatus() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        Application app = context.getApplication();
-        ApproveActionManagedBean value = app.evaluateExpressionGet(context, "#{approvalActionManagedBean}", ApproveActionManagedBean.class);
+        final FacesContext context = FacesContext.getCurrentInstance();
+        final Application app = context.getApplication();
+        final ApproveActionManagedBean value = app.evaluateExpressionGet(context, "#{approvalActionManagedBean}", ApproveActionManagedBean.class);
         return value.getStatusText().get(Integer.valueOf(data.getStatus()));
     }
 
@@ -180,7 +180,7 @@ public class ApprovalDataVOView implements Serializable {
      * there
      */
     public String getApproveActionWindowLink() {
-        String link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
+        final String link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
                 + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "approval/approvalaction.xhtml?uniqueId="
                 + data.getId();
         return "window.open('" + link + "', 'ViewApproveAction', 'width=650,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
@@ -198,9 +198,9 @@ public class ApprovalDataVOView implements Serializable {
             try {
                 link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
                         + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
-                        + "viewcertificate.jsp?certsernoparameter="
+                        + "viewcertificate.xhtml?certsernoparameter="
                         + java.net.URLEncoder.encode(data.getReqadmincertsn() + "," + data.getReqadmincertissuerdn(), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
+            } catch (final UnsupportedEncodingException e) {
                 throw new EJBException(e);
             }
             retval = "window.open('" + link + "', 'ViewRequestorCertAction', 'width=800,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
@@ -231,10 +231,10 @@ public class ApprovalDataVOView implements Serializable {
      * @return An array of Link-objects
      */
     public List<LinkView> getApprovalDataLinks() {
-        List<LinkView> certificateLinks = new ArrayList<>();
-        List<String> certificateSerialNumbers = new ArrayList<>();
-        List<String> certificateIssuerDN = new ArrayList<>();
-        List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
+        final List<LinkView> certificateLinks = new ArrayList<>();
+        final List<String> certificateSerialNumbers = new ArrayList<>();
+        final List<String> certificateIssuerDN = new ArrayList<>();
+        final List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
 
         for (final ApprovalDataText row : newTextRows) {
             if (row.getHeader().equals(CERTSERIALNUMBER)) {
@@ -253,9 +253,9 @@ public class ApprovalDataVOView implements Serializable {
             try {
                 link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()
                         + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
-                        + "viewcertificate.jsp?certsernoparameter="
+                        + "viewcertificate.xhtml?certsernoparameter="
                         + java.net.URLEncoder.encode(certificateSerialNumbers.get(i) + "," + certificateIssuerDN.get(i), "UTF-8");
-            } catch (UnsupportedEncodingException e) {
+            } catch (final UnsupportedEncodingException e) {
                 log.warn("UnsupportedEncoding creating approval data link. ", e);
             }
             certificateLinks.add(new LinkView(link, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(CERTSERIALNUMBER) + ": ",
@@ -265,8 +265,8 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public List<TextComparisonView> getTextListExceptLinks() {
-        ArrayList<TextComparisonView> textComparisonList = new ArrayList<>();
-        List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
+        final ArrayList<TextComparisonView> textComparisonList = new ArrayList<>();
+        final List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
         for (final ApprovalDataText row : newTextRows) {
             if (row.getHeader().equals(CERTSERIALNUMBER)
                     || row.getHeader().equals(ISSUERDN)) {
@@ -275,7 +275,7 @@ public class ApprovalDataVOView implements Serializable {
             String newString = "";
             try {
                 newString = translateApprovalDataText(row);
-            } catch (ArrayIndexOutOfBoundsException e) {
+            } catch (final ArrayIndexOutOfBoundsException e) {
                 // Do nothing orgstring should be "";
             }
             textComparisonList.add(new TextComparisonView(null, newString));
@@ -284,10 +284,10 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public List<TextComparisonView> getTextComparisonList() {
-        ArrayList<TextComparisonView> textComparisonList = new ArrayList<>();
+        final ArrayList<TextComparisonView> textComparisonList = new ArrayList<>();
         if (data.getApprovalRequest().getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_COMPARING) {
-            List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
-            List<ApprovalDataText> orgTextRows = getOldRequestDataAsText();
+            final List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
+            final List<ApprovalDataText> orgTextRows = getOldRequestDataAsText();
             int size = newTextRows.size();
             if (orgTextRows.size() > size) {
                 size = orgTextRows.size();
@@ -296,26 +296,26 @@ public class ApprovalDataVOView implements Serializable {
                 String orgString = "";
                 try {
                     orgString = translateApprovalDataText(orgTextRows.get(i));
-                } catch (IndexOutOfBoundsException e) {
+                } catch (final IndexOutOfBoundsException e) {
                     // Do nothing orgstring should be "";
                 }
                 String newString = "";
                 try {
                     newString = translateApprovalDataText(newTextRows.get(i));
-                } catch (IndexOutOfBoundsException e) {
+                } catch (final IndexOutOfBoundsException e) {
                     // Do nothing orgstring should be "";
                 }
                 textComparisonList.add(new TextComparisonView(orgString, newString));
             }
         } else {
-            for(ApprovalDataText approvalDataText : getNewRequestDataAsText()) {
+            for(final ApprovalDataText approvalDataText : getNewRequestDataAsText()) {
                 textComparisonList.add(new TextComparisonView(null, translateApprovalDataText(approvalDataText)));
             }
         }
         return textComparisonList;
     }
 
-    private String translateApprovalDataText(ApprovalDataText data) {
+    private String translateApprovalDataText(final ApprovalDataText data) {
         String retval = "";
         if (data.isHeaderTranslateable()) {
             retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(data.getHeader(), true);
@@ -331,8 +331,8 @@ public class ApprovalDataVOView implements Serializable {
     }
     
     private List<ApprovalDataText> getNewRequestDataAsText() {
-    	ApprovalRequest approvalRequest = data.getApprovalRequest();
-    	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
+    	final ApprovalRequest approvalRequest = data.getApprovalRequest();
+    	final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
     		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(ejbLocalHelper.getCaSession(),
     				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
@@ -345,8 +345,8 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     private List<ApprovalDataText> getOldRequestDataAsText() {
-    	ApprovalRequest approvalRequest = data.getApprovalRequest();
-    	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
+    	final ApprovalRequest approvalRequest = data.getApprovalRequest();
+    	final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
     		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, ejbLocalHelper.getCaSession(),
     				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
