@@ -148,7 +148,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.listPublishersManagedBean = listPublishersManagedBean;
     }
 
-
     @PostConstruct
     public void init() {
         initializePage();
@@ -697,15 +696,23 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     //Actions
     public String savePublisher() throws AuthorizationDeniedException {
+        
+        //Set General Settings
+        publisher.setDescription(publisherDescription);
+        publisher.setOnlyUseQueue(onlyUseQueue);
+        publisher.setKeepPublishedInQueue(keepPublishedInQueue);
+        publisher.setUseQueueForCRLs(useQueueForCRLs);
+        publisher.setUseQueueForCertificates(useQueueForCertificates);
+        
         if (publisher instanceof LdapPublisher) {
-            publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(),
-                    ldapPublisherMBData.getLdapPublisherInstance());
+            ldapPublisherMBData.setLdapPublisherParameters((LdapPublisher) publisher);
         } 
         
         if (publisher instanceof ActiveDirectoryPublisher) {
-            publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), 
-                    activeDirectoryPublisherMBData.getPublisherInstance((ActiveDirectoryPublisher) publisher));
+            activeDirectoryPublisherMBData.setActiveDirectoryPublisherParameters((ActiveDirectoryPublisher) publisher);
         }
+        
+        publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), publisher);
         return "listpublishers?faces-redirect=true";
     }
     
