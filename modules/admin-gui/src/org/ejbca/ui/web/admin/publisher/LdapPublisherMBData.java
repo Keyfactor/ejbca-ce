@@ -1,259 +1,313 @@
 package org.ejbca.ui.web.admin.publisher;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.faces.model.SelectItem;
+
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.DnComponents;
+import org.ejbca.core.model.ca.publisher.LdapPublisher;
+import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
+import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 public final class LdapPublisherMBData {
     
-    public final Map<String, String> ldaptPublisherSecurityItems = new LinkedHashMap<>();
+    public final Map<String, ConnectionSecurity> securityItems = new LinkedHashMap<>();
 
-    private String ldapPublisherHostName;
-    private String ldapPublisherPort;
-    private String ldapPublisherSecurity;
-    private String ldapPublisherBaseDN;
-    private String ldapPublisherLoginDN;
-    private String ldapPublisherLoginPWD;
-    private String ldapPublisherConfirmPWD;
-    private String ldapPublisherConnectionTimeout;
-    private String ldapPublisherReadTimeout;
-    private String ldapPublisherStoreTimeout;
-    private boolean ldapPublisherCreateNonExistingUsers;
-    private boolean ldapPublisherModifyExistingUsers;
-    private boolean ldapPublisherModifyExistingAttributes;
-    private boolean ldapPublisherAddNonExistingAttributes;
-    private boolean ldapPublisherCreateImmidiateNodes;
-    private boolean ldapPublisherAddMultipleCertificates;
-    private boolean ldapPublisherRemoveRevokedCertificates;
-    private boolean ldapPublisherRemoveUserOnCertRevoke;
-    private boolean ldapPublisherSetUserPassword;
-    private String ldapPublisherUserObjectClass;
-    private String ldapPublisherCaObjectClass;
-    private String ldapPublisherUserCertificateAttr;
-    private String ldapPublisherCaCertificateAttr;
-    private String ldapPublisherCrlAttribute;
-    private String ldapPublisherDeltaCrlAttribute;
-    private String ldapPublisherArlAttribute;
-    private String[] ldapPublisherUseFieldsInDN;
+    private String hostName;
+    private String port;
+    private ConnectionSecurity connectionSecurity;
+    private String baseDN;
+    private String loginDN;
+    private String loginPWD;
+    private String confirmPWD;
+    private long connectionTimeout;
+    private long readTimeout;
+    private long storeTimeout;
+    private boolean createNonExistingUsers;
+    private boolean modifyExistingUsers;
+    private boolean modifyExistingAttributes;
+    private boolean addNonExistingAttributes;
+    private boolean createImmidiateNodes;
+    private boolean addMultipleCertificates;
+    private boolean removeRevokedCertificates;
+    private boolean removeUserOnCertRevoke;
+    private boolean setUserPassword;
+    private String userObjectClass;
+    private String caObjectClass;
+    private String userCertificateAttr;
+    private String caCertificateAttr;
+    private String crlAttribute;
+    private String deltaCrlAttribute;
+    private String arlAttribute;
+    private ArrayList<Integer> useFieldInLdapDN;
     
-    public String getLdapPublisherHostName() {
-        return ldapPublisherHostName;
+    public String getHostName() {
+        return hostName;
     }
 
-    public void setLdapPublisherHostName(final String ldapPublisherHostName) {
-        this.ldapPublisherHostName = ldapPublisherHostName;
+    public void setHostName(final String ldapPublisherHostName) {
+        this.hostName = ldapPublisherHostName;
     }
 
-    public String getLdapPublisherPort() {
-        return ldapPublisherPort;
+    public String getPort() {
+        switch (this.connectionSecurity) {
+        case SSL:
+            return LdapPublisher.DEFAULT_SSLPORT;
+        default:
+            return LdapPublisher.DEFAULT_PORT;
+        }
     }
 
-    public void setLdapPublisherPort(final String ldapPublisherPort) {
-        this.ldapPublisherPort = ldapPublisherPort;
+    public void setPort(final String ldapPublisherPort) {
+        this.port = ldapPublisherPort;
     }
     
-    public Map<String, String> getLdapPublisherSecurityItems() {
-        return this.ldaptPublisherSecurityItems;
+    public Map<String, ConnectionSecurity> getSecurityItems() {
+        return securityItems;
     }
 
-    public String getLdapPublisherSecurity() {
-        return ldapPublisherSecurity;
+    public ConnectionSecurity getConnectionSecurity() {
+        return connectionSecurity;
     }
 
-    public void setLdapPublisherSecurity(final String ldapPublisherSecurity) {
-        this.ldapPublisherSecurity = ldapPublisherSecurity;
+    public void setConnectionSecurity(final ConnectionSecurity ldapPublisherSecurity) {
+        this.connectionSecurity = ldapPublisherSecurity;
     }
 
-    public String getLdapPublisherBaseDN() {
-        return ldapPublisherBaseDN;
+    public String getBaseDN() {
+        return baseDN;
     }
 
-    public void setLdapPublisherBaseDN(final String ldapPublisherBaseDN) {
-        this.ldapPublisherBaseDN = ldapPublisherBaseDN;
+    public void setBaseDN(final String ldapPublisherBaseDN) {
+        this.baseDN = ldapPublisherBaseDN;
     }
 
-    public String getLdapPublisherLoginDN() {
-        return ldapPublisherLoginDN;
+    public String getLoginDN() {
+        return loginDN;
     }
 
-    public void setLdapPublisherLoginDN(final String ldapPublisherLoginDN) {
-        this.ldapPublisherLoginDN = ldapPublisherLoginDN;
+    public void setLoginDN(final String ldapPublisherLoginDN) {
+        this.loginDN = ldapPublisherLoginDN;
     }
 
-    public String getLdapPublisherLoginPWD() {
-        return ldapPublisherLoginPWD;
+    public String getLoginPWD() {
+        return loginPWD;
     }
 
-    public void setLdapPublisherLoginPWD(final String ldapPublisherLoginPWD) {
-        this.ldapPublisherLoginPWD = ldapPublisherLoginPWD;
+    public void setLoginPWD(final String ldapPublisherLoginPWD) {
+        this.loginPWD = ldapPublisherLoginPWD;
     }
 
-    public String getLdapPublisherConfirmPWD() {
-        return ldapPublisherConfirmPWD;
+    public String getConfirmPWD() {
+        return confirmPWD;
     }
 
-    public void setLdapPublisherConfirmPWD(final String ldapPublisherConfirmPWD) {
-        this.ldapPublisherConfirmPWD = ldapPublisherConfirmPWD;
+    public void setConfirmPWD(final String ldapPublisherConfirmPWD) {
+        this.confirmPWD = ldapPublisherConfirmPWD;
     }
 
-    public String getLdapPublisherConnectionTimeout() {
-        return ldapPublisherConnectionTimeout;
+    public long getConnectionTimeout() {
+        return connectionTimeout;
     }
 
-    public void setLdapPublisherConnectionTimeout(final String ldapPublisherConnectionTimeout) {
-        this.ldapPublisherConnectionTimeout = ldapPublisherConnectionTimeout;
+    public void setConnectionTimeout(final long ldapPublisherConnectionTimeout) {
+        this.connectionTimeout = ldapPublisherConnectionTimeout;
     }
 
-    public String getLdapPublisherReadTimeout() {
-        return ldapPublisherReadTimeout;
+    public long getReadTimeout() {
+        return readTimeout;
     }
 
-    public void setLdapPublisherReadTimeout(final String ldapPublisherReadTimeout) {
-        this.ldapPublisherReadTimeout = ldapPublisherReadTimeout;
+    public void setReadTimeout(final long ldapPublisherReadTimeout) {
+        this.readTimeout = ldapPublisherReadTimeout;
     }
 
-    public String getLdapPublisherStoreTimeout() {
-        return ldapPublisherStoreTimeout;
+    public long getStoreTimeout() {
+        return storeTimeout;
     }
 
-    public void setLdapPublisherStoreTimeout(final String ldapPublisherStoreTimeout) {
-        this.ldapPublisherStoreTimeout = ldapPublisherStoreTimeout;
+    public void setStoreTimeout(final long ldapPublisherStoreTimeout) {
+        this.storeTimeout = ldapPublisherStoreTimeout;
     }
 
-    public boolean isLdapPublisherCreateNonExistingUsers() {
-        return ldapPublisherCreateNonExistingUsers;
+    public boolean isCreateNonExistingUsers() {
+        return createNonExistingUsers;
     }
 
-    public void setLdapPublisherCreateNonExistingUsers(final boolean ldapPublisherCreateNonExistingUsers) {
-        this.ldapPublisherCreateNonExistingUsers = ldapPublisherCreateNonExistingUsers;
+    public void setCreateNonExistingUsers(final boolean ldapPublisherCreateNonExistingUsers) {
+        this.createNonExistingUsers = ldapPublisherCreateNonExistingUsers;
     }
 
-    public boolean isLdapPublisherModifyExistingUsers() {
-        return ldapPublisherModifyExistingUsers;
+    public boolean isModifyExistingUsers() {
+        return modifyExistingUsers;
     }
 
-    public void setLdapPublisherModifyExistingUsers(final boolean ldapPublisherModifyExistingUsers) {
-        this.ldapPublisherModifyExistingUsers = ldapPublisherModifyExistingUsers;
+    public void setModifyExistingUsers(final boolean ldapPublisherModifyExistingUsers) {
+        this.modifyExistingUsers = ldapPublisherModifyExistingUsers;
     }
 
-    public boolean isLdapPublisherModifyExistingAttributes() {
-        return ldapPublisherModifyExistingAttributes;
+    public boolean isModifyExistingAttributes() {
+        return modifyExistingAttributes;
     }
 
-    public void setLdapPublisherModifyExistingAttributes(final boolean ldapPublisherModifyExistingAttributes) {
-        this.ldapPublisherModifyExistingAttributes = ldapPublisherModifyExistingAttributes;
+    public void setModifyExistingAttributes(final boolean ldapPublisherModifyExistingAttributes) {
+        this.modifyExistingAttributes = ldapPublisherModifyExistingAttributes;
     }
 
-    public boolean isLdapPublisherAddNonExistingAttributes() {
-        return ldapPublisherAddNonExistingAttributes;
+    public boolean isAddNonExistingAttributes() {
+        return addNonExistingAttributes;
     }
 
-    public void setLdapPublisherAddNonExistingAttributes(final boolean ldapPublisherAddNonExistingAttributes) {
-        this.ldapPublisherAddNonExistingAttributes = ldapPublisherAddNonExistingAttributes;
+    public void setAddNonExistingAttributes(final boolean ldapPublisherAddNonExistingAttributes) {
+        this.addNonExistingAttributes = ldapPublisherAddNonExistingAttributes;
     }
 
-    public boolean isLdapPublisherCreateImmidiateNodes() {
-        return ldapPublisherCreateImmidiateNodes;
+    public boolean isCreateImmidiateNodes() {
+        return createImmidiateNodes;
     }
 
-    public void setLdapPublisherCreateImmidiateNodes(final boolean ldapPublisherCreateImmidiateNodes) {
-        this.ldapPublisherCreateImmidiateNodes = ldapPublisherCreateImmidiateNodes;
+    public void setCreateImmidiateNodes(final boolean ldapPublisherCreateImmidiateNodes) {
+        this.createImmidiateNodes = ldapPublisherCreateImmidiateNodes;
     }
 
-    public boolean isLdapPublisherAddMultipleCertificates() {
-        return ldapPublisherAddMultipleCertificates;
+    public boolean isAddMultipleCertificates() {
+        return addMultipleCertificates;
     }
 
-    public void setLdapPublisherAddMultipleCertificates(final boolean ldapPublisherAddMultipleCertificates) {
-        this.ldapPublisherAddMultipleCertificates = ldapPublisherAddMultipleCertificates;
+    public void setAddMultipleCertificates(final boolean ldapPublisherAddMultipleCertificates) {
+        this.addMultipleCertificates = ldapPublisherAddMultipleCertificates;
     }
 
-    public boolean isLdapPublisherRemoveRevokedCertificates() {
-        return ldapPublisherRemoveRevokedCertificates;
+    public boolean isRemoveRevokedCertificates() {
+        return removeRevokedCertificates;
     }
 
-    public void setLdapPublisherRemoveRevokedCertificates(final boolean ldapPublisherRemoveRevokedCertificates) {
-        this.ldapPublisherRemoveRevokedCertificates = ldapPublisherRemoveRevokedCertificates;
+    public void setRemoveRevokedCertificates(final boolean ldapPublisherRemoveRevokedCertificates) {
+        this.removeRevokedCertificates = ldapPublisherRemoveRevokedCertificates;
     }
 
-    public boolean isLdapPublisherRemoveUserOnCertRevoke() {
-        return ldapPublisherRemoveUserOnCertRevoke;
+    public boolean isRemoveUserOnCertRevoke() {
+        return removeUserOnCertRevoke;
     }
 
-    public void setLdapPublisherRemoveUserOnCertRevoke(final boolean ldapPublisherRemoveUserOnCertRevoke) {
-        this.ldapPublisherRemoveUserOnCertRevoke = ldapPublisherRemoveUserOnCertRevoke;
+    public void setRemoveUserOnCertRevoke(final boolean ldapPublisherRemoveUserOnCertRevoke) {
+        this.removeUserOnCertRevoke = ldapPublisherRemoveUserOnCertRevoke;
     }
 
-    public boolean isLdapPublisherSetUserPassword() {
-        return ldapPublisherSetUserPassword;
+    public boolean isSetUserPassword() {
+        return setUserPassword;
     }
 
-    public void setLdapPublisherSetUserPassword(final boolean ldapPublisherSetUserPassword) {
-        this.ldapPublisherSetUserPassword = ldapPublisherSetUserPassword;
+    public void setSetUserPassword(final boolean ldapPublisherSetUserPassword) {
+        this.setUserPassword = ldapPublisherSetUserPassword;
     }
 
-    public String getLdapPublisherUserObjectClass() {
-        return ldapPublisherUserObjectClass;
+    public String getUserObjectClass() {
+        return userObjectClass;
     }
 
-    public void setLdapPublisherUserObjectClass(final String ldapPublisherUserObjectClass) {
-        this.ldapPublisherUserObjectClass = ldapPublisherUserObjectClass;
+    public void setUserObjectClass(final String ldapPublisherUserObjectClass) {
+        this.userObjectClass = ldapPublisherUserObjectClass;
     }
 
-    public String getLdapPublisherCaObjectClass() {
-        return ldapPublisherCaObjectClass;
+    public String getCaObjectClass() {
+        return caObjectClass;
     }
 
-    public void setLdapPublisherCaObjectClass(final String ldapPublisherCaObjectClass) {
-        this.ldapPublisherCaObjectClass = ldapPublisherCaObjectClass;
+    public void setCaObjectClass(final String ldapPublisherCaObjectClass) {
+        this.caObjectClass = ldapPublisherCaObjectClass;
     }
 
-    public String getLdapPublisherUserCertificateAttr() {
-        return ldapPublisherUserCertificateAttr;
+    public String getUserCertificateAttr() {
+        return userCertificateAttr;
     }
 
-    public void setLdapPublisherUserCertificateAttr(final String ldapPublisherUserCertificateAttr) {
-        this.ldapPublisherUserCertificateAttr = ldapPublisherUserCertificateAttr;
+    public void setUserCertificateAttr(final String ldapPublisherUserCertificateAttr) {
+        this.userCertificateAttr = ldapPublisherUserCertificateAttr;
     }
 
-    public String getLdapPublisherCaCertificateAttr() {
-        return ldapPublisherCaCertificateAttr;
+    public String getCaCertificateAttr() {
+        return caCertificateAttr;
     }
 
-    public void setLdapPublisherCaCertificateAttr(final String ldapPublisherCaCertificateAttr) {
-        this.ldapPublisherCaCertificateAttr = ldapPublisherCaCertificateAttr;
+    public void setCaCertificateAttr(final String ldapPublisherCaCertificateAttr) {
+        this.caCertificateAttr = ldapPublisherCaCertificateAttr;
     }
 
-    public String getLdapPublisherCrlAttribute() {
-        return ldapPublisherCrlAttribute;
+    public String getCrlAttribute() {
+        return crlAttribute;
     }
 
-    public void setLdapPublisherCrlAttribute(final String ldapPublisherCrlAttribute) {
-        this.ldapPublisherCrlAttribute = ldapPublisherCrlAttribute;
+    public void setCrlAttribute(final String ldapPublisherCrlAttribute) {
+        this.crlAttribute = ldapPublisherCrlAttribute;
     }
 
-    public String getLdapPublisherDeltaCrlAttribute() {
-        return ldapPublisherDeltaCrlAttribute;
+    public String getDeltaCrlAttribute() {
+        return deltaCrlAttribute;
     }
 
-    public void setLdapPublisherDeltaCrlAttribute(final String ldapPublisherDeltaCrlAttribute) {
-        this.ldapPublisherDeltaCrlAttribute = ldapPublisherDeltaCrlAttribute;
+    public void setDeltaCrlAttribute(final String ldapPublisherDeltaCrlAttribute) {
+        this.deltaCrlAttribute = ldapPublisherDeltaCrlAttribute;
     }
 
-    public String getLdapPublisherArlAttribute() {
-        return ldapPublisherArlAttribute;
+    public String getArlAttribute() {
+        return arlAttribute;
     }
 
-    public void setLdapPublisherArlAttribute(final String ldapPublisherArlAttribute) {
-        this.ldapPublisherArlAttribute = ldapPublisherArlAttribute;
+    public void setArlAttribute(final String ldapPublisherArlAttribute) {
+        this.arlAttribute = ldapPublisherArlAttribute;
     }
 
-    public String[] getLdapPublisherUseFieldsInDN() {
-        return ldapPublisherUseFieldsInDN;
+    public ArrayList<Integer> getUseFieldInLdapDN() {
+        return useFieldInLdapDN;
     }
 
-    public void setLdapPublisherUseFieldsInDN(final String[] ldapPublisherUseFieldsInDN) {
-        this.ldapPublisherUseFieldsInDN = ldapPublisherUseFieldsInDN;
+    public void setUseFieldInLdapDN(final ArrayList<Integer> ldapPublisherUseFieldsInDN) {
+        this.useFieldInLdapDN = ldapPublisherUseFieldsInDN;
+    }
+    
+    public List<SelectItem> getLdapPublisherLocationFieldsFromCertificateDN() {
+        final List<SelectItem> result = new ArrayList<>();
+        List<Integer> usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
+        String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);
+        for(int i=0;i < usefieldsindn.size(); i++){ 
+            result.add(new SelectItem(usefieldsindn.get(i), EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(usefieldsindntexts[i])));
+        }
+        return result;
     }
 
+    public void initializeData(final LdapPublisher publisher) {
+        this.port = publisher.getPort();
+        this.connectionSecurity = publisher.getConnectionSecurity();
+        this.connectionTimeout = publisher.getConnectionTimeOut();
+        this.readTimeout = publisher.getReadTimeOut();
+        this.storeTimeout = publisher.getStoreTimeOut();
+        this.createNonExistingUsers = publisher.getCreateNonExistingUsers();
+        this.modifyExistingUsers = publisher.getModifyExistingUsers();
+        this.modifyExistingAttributes = publisher.getModifyExistingAttributes();
+        this.addNonExistingAttributes = publisher.getAddNonExistingAttributes();
+        this.createImmidiateNodes = publisher.getCreateIntermediateNodes();
+        this.addMultipleCertificates = publisher.getAddMultipleCertificates();
+        this.removeRevokedCertificates = publisher.getRemoveRevokedCertificates();
+        this.removeUserOnCertRevoke = publisher.getRemoveUsersWhenCertRevoked();
+        this.setUserPassword = publisher.getSetUserPassword();
+        this.userObjectClass = publisher.getUserObjectClass();
+        this.caObjectClass = publisher.getCAObjectClass();
+        this.userCertificateAttr = publisher.getUserCertAttribute();
+        this.caCertificateAttr = publisher.getCACertAttribute();
+        this.crlAttribute = publisher.getCRLAttribute();
+        this.deltaCrlAttribute = publisher.getDeltaCRLAttribute();
+        this.arlAttribute = publisher.getARLAttribute();
+        this.useFieldInLdapDN = new ArrayList<Integer>(publisher.getUseFieldInLdapDN());
+        
+        this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PLAIN"), ConnectionSecurity.PLAIN);
+        this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("STARTTLS"), ConnectionSecurity.STARTTLS);
+        this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("SSL"), ConnectionSecurity.SSL);
+        
+    }
     
 }
