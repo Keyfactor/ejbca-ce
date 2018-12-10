@@ -32,6 +32,9 @@
 	        <script type="text/javascript" src="#{adminMenuBean.adminWebUrl}/ejbcajslib.js"></script>
 	    </h:head>
 	    <h:body styleClass="popup">
+	        <h:panelGroup layout="block" id="messagesBlock">
+                <h:messages id="messages" styleClass="globalMessages" errorClass="errorMessage" warnClass="warnMessage" infoClass="infoMessage" layout="list" globalOnly="false"/>
+            </h:panelGroup>
             <h:panelGroup layout="block" id="contentBlock" styleClass="contentBlock">
                 <ui:insert name="content">
                     <h:outputText value="If you see this then whatever you're looking at couldn't be rendered."/>

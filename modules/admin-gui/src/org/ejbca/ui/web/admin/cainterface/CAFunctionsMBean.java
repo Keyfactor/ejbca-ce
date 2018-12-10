@@ -80,13 +80,13 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     List<String> extCaNameList;
     private String crlImportCaName;
 
-    public void initialize(ComponentSystemEvent event) throws Exception {
+    public void initialize(final ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
             final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
             globalConfiguration = getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
 
-            TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
+            final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
             extCaNameList = new ArrayList<String>(externalCANames.keySet());
         }
     }
@@ -102,9 +102,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         private final CRLInfo deltacrlinfo;
         private final Boolean deltaPeriodEnabled;
         private final Boolean caStatusActive;
-        private boolean showJksDownloadForm[];
+        private final boolean showJksDownloadForm[];
 
-        public CAGuiInfo(String name, int caId, String subjectdn, List<Certificate> certificatechain, CRLInfo crlinfo, CRLInfo deltacrlinfo, Boolean deltaPeriodEnabled, Boolean caStatusActive) {
+        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<Certificate> certificatechain, final CRLInfo crlinfo, final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive) {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
@@ -137,11 +137,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return crlinfo;
         }
 
-        public boolean isShowJksDownloadForm(int index) {
+        public boolean isShowJksDownloadForm(final int index) {
             return showJksDownloadForm[index];
         }
 
-        public void showJksDownloadForm(int index){
+        public void showJksDownloadForm(final int index){
             showJksDownloadForm[index] = true;
         }
 
@@ -205,59 +205,59 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     private void refreshCaGuiInfos() {
         caGuiInfos = new ArrayList<>();
-        TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
-        List<String> caNameList = new ArrayList<String>(canames.keySet());
+        final TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
+        final List<String> caNameList = new ArrayList<String>(canames.keySet());
         Collections.sort(caNameList, new Comparator<String>() {
             @Override
-            public int compare(String o1, String o2) {
+            public int compare(final String o1, final String o2) {
                 return o1.compareToIgnoreCase(o2);
             }
         });
-        for (String caname : caNameList) {
-            int caid = canames.get(caname).intValue();
-            CAInfo cainfo = caSession.getCAInfoInternal(caid);
+        for (final String caname : caNameList) {
+            final int caid = canames.get(caname).intValue();
+            final CAInfo cainfo = caSession.getCAInfoInternal(caid);
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?
             }
-            CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), false);
-            CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), true);
+            final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), false);
+            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), true);
 
-            CAGuiInfo caGuiInfo = new CAGuiInfo(caname, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
+            final CAGuiInfo caGuiInfo = new CAGuiInfo(caname, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
                     cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE);
             caGuiInfos.add(caGuiInfo);
         }
     }
 
-    public String getUnescapedRdnValue(Certificate certificate){
+    public String getUnescapedRdnValue(final Certificate certificate){
         return CertTools.getUnescapedRdnValue(CertTools.getSubjectDN(certificate));
     }
 
-    public String getCertificatePopupLink(int caid) {
-        StringBuilder link = new StringBuilder();
-        link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getAdminWebPath()).append("viewcertificate.jsp?caid=").append(caid);
+    public String getCertificatePopupLink(final int caid) {
+        final StringBuilder link = new StringBuilder();
+        link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getAdminWebPath()).append("viewcertificate.xhtml?caid=").append(caid);
         return link.toString();
     }
 
-    public String openCertificateInfoPopup(int caid){
-        StringBuilder link = new StringBuilder();
-        link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/viewcainfo.jsp?caid=").append(caid);
+    public String openCertificateInfoPopup(final int caid) {
+        final StringBuilder link = new StringBuilder();
+        link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/viewcainfo.xhtml?caid=").append(caid);
         return link.toString();
     }
 
     public String getDownloadCertificateLink(){
-        StringBuilder link = new StringBuilder();
+        final StringBuilder link = new StringBuilder();
         link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/cacert");
         return link.toString();
     }
 
     public String getDownloadCrlLink(){
-        StringBuilder link = new StringBuilder();
+        final StringBuilder link = new StringBuilder();
         link.append(getEjbcaWebBean().getBaseUrl()).append(globalConfiguration.getCaPath()).append("/getcrl/getcrl");
         return link.toString();
     }
 
-    public void showJksDownloadForm(CAGuiInfo caGuiInfo, int index) {
-        for (CAGuiInfo info : caGuiInfos) {
+    public void showJksDownloadForm(final CAGuiInfo caGuiInfo, final int index) {
+        for (final CAGuiInfo info : caGuiInfos) {
             info.hideJksDownloadForm();
         }
         caGuiInfo.showJksDownloadForm(index);
@@ -268,7 +268,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("No CRL file uploaded");
             return;
         }
-        byte[] bytes = uploadFile.getBytes();
+        final byte[] bytes = uploadFile.getBytes();
         if (bytes == null || bytes.length == 0) {
             addNonTranslatedErrorMessage("No CRL file uploaded, or file is empty");
             return;
@@ -285,7 +285,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
                 addNonTranslatedInfoMessage("CRL imported successfully or a newer version is already in the database");
                 refreshCaGuiInfos();
             }
-        } catch (CRLException e) {
+        } catch (final CRLException e) {
             log.info("Could not parse CRL", e);
             addNonTranslatedErrorMessage("Could not parse CRL");
         } catch (AuthorizationDeniedException | CrlImportException | CrlStoreException e) {
@@ -294,24 +294,24 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    public void createNewCrl(int caid) throws CAOfflineException {
+    public void createNewCrl(final int caid) throws CAOfflineException {
         try {
             publishingCrlSession.forceCRL(getAdmin(), caid);
             refreshCaGuiInfos();
-        } catch (CADoesntExistsException e) {
+        } catch (final CADoesntExistsException e) {
             throw new IllegalStateException(e);
-        } catch (AuthorizationDeniedException e) {
+        } catch (final AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
-        } catch (CryptoTokenOfflineException e) {
+        } catch (final CryptoTokenOfflineException e) {
             addErrorMessage("CATOKENISOFFLINE");
         }
     }
-    public void createNewDeltaCrl(int caid) throws CAOfflineException, CryptoTokenOfflineException {
+    public void createNewDeltaCrl(final int caid) throws CAOfflineException, CryptoTokenOfflineException {
         try {
             publishingCrlSession.forceDeltaCRL(getAdmin(), caid);
-        } catch (CADoesntExistsException e) {
+        } catch (final CADoesntExistsException e) {
             throw new IllegalStateException(e);
-        } catch (AuthorizationDeniedException e) {
+        } catch (final AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
         refreshCaGuiInfos();
@@ -320,7 +320,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getExtCaNameSeletItemList() {
         final List<SelectItem> ret = new ArrayList<>();
-        for (String alias : extCaNameList) {
+        for (final String alias : extCaNameList) {
             ret.add(new SelectItem(alias, alias));
         }
         return ret;
@@ -334,7 +334,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return crlImportCaName;
     }
 
-    public void setCrlImportCaName(String crlImportCaName) {
+    public void setCrlImportCaName(final String crlImportCaName) {
         this.crlImportCaName = crlImportCaName;
     }
 
@@ -342,7 +342,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return uploadFile;
     }
 
-    public void setUploadFile(UploadedFile uploadFile) {
+    public void setUploadFile(final UploadedFile uploadFile) {
         this.uploadFile = uploadFile;
     }
 
