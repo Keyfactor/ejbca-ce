@@ -1640,15 +1640,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
-    EjbcaException, WaitingForApprovalException{
-        //Authorization
-        if (!endEntityManagementSession.isAuthorizedToEndEntityProfile(admin, endEntity.getEndEntityProfileId(),
-                AccessRulesConstants.DELETE_END_ENTITY)) {
-            log.warn("Missing *" + AccessRulesConstants.DELETE_END_ENTITY + " rights for user '" + admin
-                    + "' to be able to add an end entity (Delete is only needed for clean-up if something goes wrong after an end-entity has been added)");
-            return false;
-        }
-
+            EjbcaException, WaitingForApprovalException{
         try {
             endEntityManagementSession.addUser(admin, endEntity, clearpwd);
         } catch (CesecoreException e) {
