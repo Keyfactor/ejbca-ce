@@ -125,7 +125,7 @@
 						<h:outputText value="#{web.text.ONLYUSEQUEUE}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:selectBooleanCheckbox id="onlyusequeue" value="#{editPublisher.getOnlyUseQueue()}" disabled="#{editPublisher.readOnly}"/>
+						<h:selectBooleanCheckbox id="onlyusequeue" value="#{editPublisher.onlyUseQueue}" disabled="#{editPublisher.readOnly}"/>
 						<h:outputLabel for="onlyusequeue" value="#{web.text.USE}"/>
 					</h:panelGroup>
 					
@@ -133,7 +133,7 @@
 						<h:outputText value="#{web.text.KEEPPUBLISHEDINQUEUE}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:selectBooleanCheckbox id="keeppublishedinqueue" value="#{editPublisher.getKeepPublishedInQueue()}" disabled="#{editPublisher.readOnly}"/>
+						<h:selectBooleanCheckbox id="keeppublishedinqueue" value="#{editPublisher.keepPublishedInQueue}" disabled="#{editPublisher.readOnly}"/>
 						<h:outputLabel for="keeppublishedinqueue" value="#{web.text.USE}"/>
 					</h:panelGroup>
 					
@@ -141,7 +141,7 @@
 						<h:outputText value="#{web.text.USEQUEUEFORCRLS}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:selectBooleanCheckbox id="usequeueforcrls" value="#{editPublisher.getUseQueueForCrls()}" disabled="#{editPublisher.readOnly}"/>
+						<h:selectBooleanCheckbox id="usequeueforcrls" value="#{editPublisher.useQueueForCRLs}" disabled="#{editPublisher.readOnly}"/>
 						<h:outputLabel for="usequeueforcrls" value="#{web.text.USE}"/>
 					</h:panelGroup>
 					
@@ -149,7 +149,7 @@
 						<h:outputText value="#{web.text.USEQUEUEFORCERTIFICATES}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:selectBooleanCheckbox id="usequeueforcertificates" value="#{editPublisher.getUseQueueForCertificates()}" disabled="#{editPublisher.readOnly}"/>
+						<h:selectBooleanCheckbox id="usequeueforcertificates" value="#{editPublisher.useQueueForCertificates}" disabled="#{editPublisher.readOnly}"/>
 						<h:outputLabel for="usequeueforcertificates" value="#{web.text.USE}"/>
 					</h:panelGroup>
 				</h:panelGrid>
@@ -162,7 +162,7 @@
 						<h:outputText value="#{web.text.DESCRIPTION}"/>
 					</h:panelGroup>
 					<h:panelGroup>
-						<h:inputTextarea cols="45" rows="2" value="#{editPublisher.getDescription()}" disabled="#{editPublisher.readOnly}"/>
+						<h:inputTextarea cols="45" rows="2" value="#{editPublisher.publisherDescription}" disabled="#{editPublisher.readOnly}"/>
 					</h:panelGroup>
 				</h:panelGrid>
 
