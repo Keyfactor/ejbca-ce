@@ -31,7 +31,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * JSF backing bean for CA info popup view.
  * View scoped
  * 
- * @version $Id: ViewCAInfoMBean.java 30423 2018-11-07 09:11:23Z tarmo_r_helmes $
+ * @version $Id$
  */
 @ViewScoped
 @ManagedBean(name="viewCAInfoMBean")
