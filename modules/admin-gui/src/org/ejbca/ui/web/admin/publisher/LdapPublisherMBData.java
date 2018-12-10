@@ -13,7 +13,7 @@ import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
-public final class LdapPublisherMBData {
+public class LdapPublisherMBData {
     
     public final Map<String, ConnectionSecurity> securityItems = new LinkedHashMap<>();
 
@@ -24,9 +24,9 @@ public final class LdapPublisherMBData {
     private String loginDN;
     private String loginPWD;
     private String confirmPWD;
-    private long connectionTimeout;
-    private long readTimeout;
-    private long storeTimeout;
+    private int connectionTimeout;
+    private int readTimeout;
+    private int storeTimeout;
     private boolean createNonExistingUsers;
     private boolean modifyExistingUsers;
     private boolean modifyExistingAttributes;
@@ -54,12 +54,7 @@ public final class LdapPublisherMBData {
     }
 
     public String getPort() {
-        switch (this.connectionSecurity) {
-        case SSL:
-            return LdapPublisher.DEFAULT_SSLPORT;
-        default:
-            return LdapPublisher.DEFAULT_PORT;
-        }
+        return this.port;
     }
 
     public void setPort(final String ldapPublisherPort) {
@@ -110,27 +105,27 @@ public final class LdapPublisherMBData {
         this.confirmPWD = ldapPublisherConfirmPWD;
     }
 
-    public long getConnectionTimeout() {
+    public int getConnectionTimeout() {
         return connectionTimeout;
     }
 
-    public void setConnectionTimeout(final long ldapPublisherConnectionTimeout) {
+    public void setConnectionTimeout(final int ldapPublisherConnectionTimeout) {
         this.connectionTimeout = ldapPublisherConnectionTimeout;
     }
 
-    public long getReadTimeout() {
+    public int getReadTimeout() {
         return readTimeout;
     }
 
-    public void setReadTimeout(final long ldapPublisherReadTimeout) {
+    public void setReadTimeout(final int ldapPublisherReadTimeout) {
         this.readTimeout = ldapPublisherReadTimeout;
     }
 
-    public long getStoreTimeout() {
+    public int getStoreTimeout() {
         return storeTimeout;
     }
 
-    public void setStoreTimeout(final long ldapPublisherStoreTimeout) {
+    public void setStoreTimeout(final int ldapPublisherStoreTimeout) {
         this.storeTimeout = ldapPublisherStoreTimeout;
     }
 
@@ -307,6 +302,17 @@ public final class LdapPublisherMBData {
         this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PLAIN"), ConnectionSecurity.PLAIN);
         this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("STARTTLS"), ConnectionSecurity.STARTTLS);
         this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("SSL"), ConnectionSecurity.SSL);
+        
+    }
+    
+    public LdapPublisher getLdapPublisherInstance() {
+        final LdapPublisher publisher = new LdapPublisher();
+        publisher.setPort(this.port);
+        publisher.setConnectionSecurity(this.connectionSecurity);
+        publisher.setConnectionTimeOut(this.connectionTimeout);
+        
+        return publisher;
+        
         
     }
     
