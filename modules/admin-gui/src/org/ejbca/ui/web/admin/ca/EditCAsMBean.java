@@ -1950,11 +1950,16 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      */
     public String saveCa() {
         try {
-            return saveCaInternal(getCaInfo());
+            final CAInfo caInfo = getCaInfo();
+            if (caInfo == null) {
+                // Error already added by getCaInfo
+                return "";
+            }
+            return saveCaInternal(caInfo);
         } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
             addErrorMessage(e.getMessage());
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     /**
@@ -2090,6 +2095,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl);
         } catch (final Exception e) {
             addErrorMessage(e.getMessage());
+            return null;
         }
 
         if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {

@@ -29,6 +29,7 @@ import javax.faces.context.Flash;
 import javax.faces.context.PartialViewContext;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -67,11 +68,17 @@ public abstract class BaseManagedBean implements Serializable {
     }
 
 	protected void addErrorMessage(String messageResource, Object... params) {
+	    if (log.isDebugEnabled()) {
+	        log.debug("Adding error message: " + messageResource + ": " + StringUtils.join(params, "; "));
+	    }
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,getEjbcaWebBean().getText(messageResource, true, params),getEjbcaWebBean().getText(messageResource, true, params)));
 	}
 
 	protected void addNonTranslatedErrorMessage(String messageResource){
+	    if (log.isDebugEnabled()) {
+            log.debug("Adding error message: " + messageResource);
+        }
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,messageResource,messageResource));
 	}
