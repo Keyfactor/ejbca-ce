@@ -43,8 +43,8 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 
 /**
- * JavaServer Faces Managed Bean for managing viewcertificate view.
- * Session scoped and will cache the user preferences.
+ * JavaServer Faces Managed Bean for managing viewcertificate popup view.
+ * View scoped
  *
  * @version $Id: ViewCertificateManagedBean.java 30605 2018-11-23 10:01:15Z tarmo_r_helmes $
  */
@@ -125,6 +125,11 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         }
     }
     
+    /**
+     * Method that initializes the bean.
+     *
+     * @throws Exception 
+     */
     public void initialize() throws Exception {
         
         final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
