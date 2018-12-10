@@ -342,6 +342,7 @@
 								id="dNAttributeRequiredCheckBox" 
 								value="#{componentName.componentIsRequired}" 
 								disabled="#{endEntityProfilesMBean.viewOnly}">
+								<f:ajax render=":eeProfiles"/>
 				    		</h:selectBooleanCheckbox>
 				    		<h:outputLabel for="subjectDNCheckBoxesGrid"  value="#{web.text.REQUIRED}"/>
 				    		<h:selectBooleanCheckbox 
@@ -364,7 +365,7 @@
 				    			value="#{componentName.componentValidationString}" 
 					   			disabled="#{not componentName.componentValueValidation or endEntityProfilesMBean.viewOnly}">
 							</h:inputText>
-						</h:panelGrid>
+							</h:panelGrid>
 					</h:panelGrid>
 				</h:column>	
 			</h:dataTable>	
@@ -440,6 +441,7 @@
 									id="altNameRequiredCheckBox#{components.index}" 
 									value="#{endEntityProfileMBean.subjectAltNameRequired}" 
 									disabled="#{endEntityProfilesMBean.viewOnly}">
+									<f:ajax render=":eeProfiles"/>
 				    			</h:selectBooleanCheckbox>
 				    			<h:outputLabel for="subjectAltNameCheckBoxesGrid#{components.index}"  value="#{web.text.REQUIRED}"/>
 				    			<h:selectBooleanCheckbox 
@@ -452,14 +454,15 @@
 				    			<h:selectBooleanCheckbox 
 				    				id="altNameValidationCheckBox#{components.index}" 
 				    				value="#{endEntityProfileMBean.subjectAltNameValidation}" 
-				    				disabled="#{endEntityProfileMBean.subjectAltNameModifyable or endEntityProfilesMBean.viewOnly}">
+				    				disabled="#{not endEntityProfileMBean.subjectAltNameModifyable or endEntityProfilesMBean.viewOnly}">
+				    				<f:ajax render=":eeProfiles"/>
 				    			</h:selectBooleanCheckbox>
 				    			<h:outputLabel for="subjectAltNameCheckBoxesGrid#{components.index}"  value="#{web.text.VALIDATION}"/>
 				    			<h:inputText 
 				    				id="subjectAltNameValidationTextField#{components.index}" 
 				    				style="font-size: 9pt" 
 				    				value="#{endEntityProfileMBean.subjectAltNameValidationRegEx}" 
-					   				disabled="#{endEntityProfileMBean.subjectAltNameModifyable or endEntityProfilesMBean.viewOnly}">
+					   				disabled="#{not endEntityProfileMBean.subjectAltNameModifyable or endEntityProfilesMBean.viewOnly}">
 								</h:inputText>
 							</h:panelGrid>
 						</h:panelGrid>
@@ -486,7 +489,7 @@
 							<f:selectItems id="subjectDirectoryAttributeTypeList" value="#{endEntityProfileMBean.subjectDirectoryAttributes}"/> 
 						</h:selectOneMenu>
 				    	<h:commandButton id="addSubjectDirectoryAttributeTypeButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectDirectoryAttribute}">
-							<f:ajax render="@form"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+							<f:ajax render=":eeProfiles"/> <!-- CHANGE TO SOMETHING USEFUL --> 
 						</h:commandButton>
 					</h:panelGrid>
 				</h:panelGrid>
@@ -945,7 +948,7 @@
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.REQUIRED}"/>	
 					<h:commandButton id="addButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addNotification}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
-						<f:ajax render="@form"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+						<f:ajax render=":eeProfiles"/> <!-- CHANGE TO SOMETHING USEFUL --> 
 					</h:commandButton>
 				</h:panelGrid>			
 			</h:panelGrid> <!-- Ending before dataTable or ui_repeat -->	
