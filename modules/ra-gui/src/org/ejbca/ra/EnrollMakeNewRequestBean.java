@@ -825,6 +825,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
                     ret = raMasterApiProxyBean.addUserAndGenerateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
+                    if (ret == null) {
+                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), "Check server log");
+                        log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername());
+                    }
                 } catch (AuthorizationDeniedException e) {
                     raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
                     log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
@@ -863,8 +867,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     final byte[] certificateDataToDownload = raMasterApiProxyBean.addUserAndCreateCertificate(raAuthenticationBean.getAuthenticationToken(),
                             endEntityInformation, false);
                     if (certificateDataToDownload == null) {
-                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), "null");
-                        log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername() + ": null");
+                        raLocaleBean.addMessageError("enroll_certificate_could_not_be_generated", endEntityInformation.getUsername(), "Check server log");
+                        log.info("Certificate could not be generated for end entity with username " + endEntityInformation.getUsername());
                     } else if (tokenDownloadType == TokenDownloadType.PEM_FULL_CHAIN) {
                         X509Certificate certificate = CertTools.getCertfromByteArray(certificateDataToDownload, X509Certificate.class);
                         LinkedList<Certificate> chain = new LinkedList<Certificate>(getCAInfo().getCertificateChain());
