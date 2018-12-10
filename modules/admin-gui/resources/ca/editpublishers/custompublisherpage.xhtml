@@ -55,42 +55,36 @@
  			<h:panelGroup>
 				<h:outputText value="#{editPublisher.getCustomPublisherPropertyText(item)}"/>
 			</h:panelGroup>
-			<h:panelGroup rendered="#{editPublisher.renderCustomSelectOneMenu(item)}">
-				<h:selectOneMenu  value="#{editPublisher.customPublisherPropertySelectOneMenuValue}" 
-								 disabled="#{editPublisher.readOnly}">
+			<h:panelGroup >
+				<h:selectOneMenu value="#{editPublisher.customPublisherPropertySelectOneMenuValue}" 
+								 disabled="#{editPublisher.readOnly}"
+								 rendered="#{editPublisher.renderCustomSelectOneMenu(item)}">
 					<f:selectItems value="#{editPublisher.getCustomPublisherPropertySelectOneMenuList(item)}"/>
 				</h:selectOneMenu>
-			</h:panelGroup>
-			
-			<h:panelGroup rendered="#{editPublisher.renderCustomTextInput(item)}">
-				<h:inputText value="#{editPublisher.customPublisherPropertyInputText}" size="45" maxlength="255" disabled="#{editPublisher.readOnly}"/>
-			</h:panelGroup>
-
-			<h:panelGroup rendered="#{editPublisher.renderCustomInputPassword(item)}">
-				<h:inputSecret value="#{editPublisher.customPublisherPropertyInputPassword}" autocomplete="off" size="45" maxlength="255" disabled="#{editPublisher.readOnly}"/>
-			</h:panelGroup>
-			
-			<h:panelGroup rendered="#{editPublisher.renderCustomCheckbox(item)}">
-				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherPropertySelectBooleanCheckbox}" disabled="#{editPublisher.readOnly}"/> 
-				<h:outputLabel value="#{web.text.USE}" />
-			</h:panelGroup>
-			
-			<h:panelGroup rendered="#{editPublisher.renderCustomOutputTextArea(item)}">
-				<h:inputTextarea cols="60" rows="12" value="#{editPublisher.customPublisherPropertyOutputTextArea}" disabled="#{editPublisher.readOnly}"/>
-			</h:panelGroup>
-			<h:panelGroup rendered="#{editPublisher.renderCustomHelp(item)}">
-				<h:outputText value="#{editPublisher.getCustomHelpText(item)}" styleClass="smallHelp" />
+				<h:inputText value="#{editPublisher.customPublisherPropertyInputText}" 
+							 size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
+							 rendered="#{editPublisher.renderCustomTextInput(item)}"/>
+				<h:inputSecret value="#{editPublisher.customPublisherPropertyInputPassword}" 
+							   autocomplete="off" size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
+							   rendered="#{editPublisher.renderCustomInputPassword(item)}"/>
+				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherPropertySelectBooleanCheckbox}" 
+										  disabled="#{editPublisher.readOnly}" rendered="#{editPublisher.renderCustomCheckbox(item)}"/> 
+				<h:outputLabel value="#{web.text.USE}" rendered="#{editPublisher.renderCustomCheckbox(item)}"/>
+				<h:inputTextarea cols="60" rows="12" value="#{editPublisher.customPublisherPropertyOutputTextArea}" disabled="#{editPublisher.readOnly}"
+								 rendered="#{editPublisher.renderCustomOutputTextArea(item)}"/>
+			<f:verbatim rendered="#{editPublisher.renderCustomHelp(item)}">
+				<br />
+			</f:verbatim>					 
+			<h:outputText value="#{editPublisher.getCustomHelpText(item)}" styleClass="smallHelp" rendered="#{editPublisher.renderCustomHelp(item)}"/>
 			</h:panelGroup>
 		</c:forEach>
 
-		<h:panelGrid rendered="#{!editPublisher.isCustomUiRenderingSupported()}">
-			<h:panelGroup>
-				<h:outputText value="#{web.text.PROPERTIESOFCUSTOM}"/>
-			</h:panelGroup>	
-			<h:panelGroup>
-				<h:inputTextarea cols="45" rows="8" disabled="#{editPublisher.readOnly}" value="#{editPublisher.getPropertyData()}"/>
-			</h:panelGroup>
-		</h:panelGrid>
+		<h:panelGroup rendered="#{!editPublisher.isCustomUiRenderingSupported()}">
+			<h:outputText value="#{web.text.PROPERTIESOFCUSTOM}"/>
+		</h:panelGroup>	
+		<h:panelGroup rendered="#{!editPublisher.isCustomUiRenderingSupported()}">
+			<h:inputTextarea cols="45" rows="8" disabled="#{editPublisher.readOnly}" value="#{editPublisher.getPropertyData()}"/>
+		</h:panelGroup>
 	
 	</h:panelGrid>
 
