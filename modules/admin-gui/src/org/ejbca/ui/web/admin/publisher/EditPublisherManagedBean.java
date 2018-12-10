@@ -148,8 +148,13 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.listPublishersManagedBean = listPublishersManagedBean;
     }
 
+
     @PostConstruct
     public void init() {
+        initializePage();
+    }
+
+    private void initializePage() {
         initCommonParts();
         initDataClasses();
         fillPublisherInitMapAndInitPublisherData();
@@ -526,9 +531,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.customPublisherPropertyOutputTextArea = customPublisherPropertyOutputTextArea;
     }
 
-    
-
-
     public String changePublisherType(ValueChangeEvent event) {
         String newPublisherType = (String) event.getNewValue();
         int dashPos = newPublisherType.indexOf('-');
@@ -536,23 +538,18 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             switch (Integer.valueOf(newPublisherType)) {
             case PublisherConst.TYPE_ADPUBLISHER:
                 publisher = new ActiveDirectoryPublisher();
-                initActiveDirectoryPublisher();
                 break;
             case PublisherConst.TYPE_LDAPPUBLISHER:
                 publisher = new LdapPublisher();
-                initLdapPublisher();
                 break;
             case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
                 publisher = new CustomPublisherContainer();
-                initCustomPublisher();
                 break;
             case PublisherConst.TYPE_LDAPSEARCHPUBLISHER:
                 publisher = new LdapSearchPublisher();
-                initLdapSearchPublisher();
                 break;
             case PublisherConst.TYPE_MULTIGROUPPUBLISHER:
                 publisher = new MultiGroupPublisher();
-                initMultiGroupPublisher();
                 break;
             default:
                 break;
@@ -563,7 +560,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             if (getCustomClasses().contains(customClassName)) {
                 ((CustomPublisherContainer) publisher).setClassPath(customClassName);
             }
-            initCustomPublisher();
         }
         return "editpublisher";
     }
