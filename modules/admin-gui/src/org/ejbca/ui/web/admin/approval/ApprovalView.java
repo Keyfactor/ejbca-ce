@@ -32,9 +32,9 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  */
 public class ApprovalView {
 	
-	private Approval approval;
+	private final Approval approval;
 	
-	public ApprovalView(Approval approval){
+	public ApprovalView(final Approval approval){
 		this.approval=approval; 
 	}
 
@@ -52,7 +52,7 @@ public class ApprovalView {
 	}
 	
 	public String getAdminAction(){
-		EjbcaWebBean ejbcawebbean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
+		final EjbcaWebBean ejbcawebbean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
 		
 		if(approval.isApproved()){
 			return ejbcawebbean.getText("APPROVED");
@@ -63,17 +63,17 @@ public class ApprovalView {
 	public String getViewApproverCertLink(){
 		String link="";
 		try {
-			AuthenticationToken token = approval.getAdmin();
+			final AuthenticationToken token = approval.getAdmin();
 			if (token instanceof X509CertificateAuthenticationToken) {
-				X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) token;
-				X509Certificate adminCertificate = xtok.getCertificate();
-				String certificateSerialNumber = CertTools.getSerialNumberAsString(adminCertificate);
-				String adminIssuerDN = CertTools.getIssuerDN(adminCertificate);
+				final X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) token;
+				final X509Certificate adminCertificate = xtok.getCertificate();
+				final String certificateSerialNumber = CertTools.getSerialNumberAsString(adminCertificate);
+				final String adminIssuerDN = CertTools.getIssuerDN(adminCertificate);
 				link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
-				            + "viewcertificate.jsp?certsernoparameter=" + java.net.URLEncoder.encode(certificateSerialNumber + "," + adminIssuerDN,"UTF-8");				
+				            + "viewcertificate.xhtml?certsernoparameter=" + java.net.URLEncoder.encode(certificateSerialNumber + "," + adminIssuerDN,"UTF-8");				
 			}
 			return "window.open('" + link + "', 'ViewApproverCertAction', 'width=800,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			throw new EJBException(e);
 		}
 		

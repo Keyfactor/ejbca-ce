@@ -57,17 +57,13 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     private static final long serialVersionUID = 1L;
     
-    private static final String CA_ID_PARAMETER = "caid";
-    
+    private static final String CA_ID_PARAMETER            = "caid";
     private static final String USER_PARAMETER             = "username";
     private static final String CERTSERNO_PARAMETER        = "certsernoparameter";
     private static final String CACERT_PARAMETER           = "caid";
     private static final String HARDTOKENSN_PARAMETER      = "tokensn";
     private static final String SERNO_PARAMETER            = "serno";
-    private static final String ISSUER_PARAMETER           = "issuer";
-    private static final String CADN_PARAMETER             = "cadn";
-
-    private static final String BUTTON_CLOSE               = "buttonclose"; 
+ 
     private static final String BUTTON_VIEW_NEWER          = "buttonviewnewer"; 
     private static final String BUTTON_VIEW_OLDER          = "buttonviewolder";
     private static final String BUTTON_REVOKE              = "buttonrevoke";
@@ -75,19 +71,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private static final String BUTTON_RECOVERKEY          = "buttonrekoverkey";
     private static final String BUTTON_REPUBLISH           = "buttonrepublish";
 
-    private static final String CHECKBOX_DIGITALSIGNATURE  = "checkboxdigitalsignature";
-    private static final String CHECKBOX_NONREPUDIATION    = "checkboxnonrepudiation";
-    private static final String CHECKBOX_KEYENCIPHERMENT   = "checkboxkeyencipherment";
-    private static final String CHECKBOX_DATAENCIPHERMENT  = "checkboxdataencipherment";
-    private static final String CHECKBOX_KEYAGREEMENT      = "checkboxkeyagreement";
-    private static final String CHECKBOX_KEYCERTSIGN       = "checkboxkeycertsign";
-    private static final String CHECKBOX_CRLSIGN           = "checkboxcrlsign";
-    private static final String CHECKBOX_ENCIPHERONLY      = "checkboxencipheronly";
-    private static final String CHECKBOX_DECIPHERONLY      = "checkboxdecipheronly";
-
     private static final String SELECT_REVOKE_REASON       = "selectrevocationreason";
-
-    private static final String CHECKBOX_VALUE             = "true";
 
     private static final String HIDDEN_INDEX               = "hiddenindex";
     
@@ -102,8 +86,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private String message = null;
     private int numberOfCertificates = 0;
     private int currentIndex = 0;
-    private final int row = 0; 
-    private final int columnwidth = 150;
     private int caId = 0;
     
     private EjbcaWebBean ejbcaBean;
@@ -133,34 +115,43 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private String revokeReason;
     private List<String> revokeReasons;
     
+    private String returnToLink = null;
+    
     // Authentication check and audit log page access request
     public void initialize(final ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
-            final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            initialize();
+        }
+    }
+    
+    public void initialize() throws Exception {
+        
+        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        
+        ejbcaBean = getEjbcaWebBean();
+        initCaBean(request);
+        initRaBean(request);
+        
+        final GlobalConfiguration globalconfiguration = ejbcaBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); 
+        
+        final String caIdParameter = request.getParameter(CA_ID_PARAMETER);
+        if (caIdParameter != null) {
+            caId = Integer.parseInt(caIdParameter);
             
-            ejbcaBean = getEjbcaWebBean();
-            initCaBean(request);
-            initRaBean(request);
-            
-            final GlobalConfiguration globalconfiguration = ejbcaBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); 
-            
-            final String caIdParameter = request.getParameter(CA_ID_PARAMETER);
-            if (caIdParameter != null) {
-                caId = Integer.parseInt(caIdParameter);
-                
-            }
-            
-            raBean.initialize(request, ejbcaBean);
-            caBean.initialize(ejbcaBean);
-            
-            useKeyRecovery = globalconfiguration.getEnableKeyRecovery() && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY);
-            RequestHelper.setDefaultCharacterEncoding(request);
-            
-            parseRequest(request);
-            
-            assertRequestValid();
-            
+        }
+        
+        raBean.initialize(request, ejbcaBean);
+        caBean.initialize(ejbcaBean);
+        
+        useKeyRecovery = globalconfiguration.getEnableKeyRecovery() && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY);
+        RequestHelper.setDefaultCharacterEncoding(request);
+        
+        parseRequest(request);
+        
+        assertRequestValid();
+        
+        if (certificateData != null) {
             caName = caBean.getName(caId);
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
             issuerDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getIssuerDN());
@@ -188,7 +179,35 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             certificateTransparencySCTs = certificateData.hasCertificateTransparencySCTs();
             
             downloadCertificateLink = ejbcaBean.getBaseUrl() + globalconfiguration.getCaPath() + "/endentitycert";
+            
+            returnToLink = composeReturnToLink(request, globalconfiguration);
         }
+    }
+
+    private String composeReturnToLink(final HttpServletRequest request, final GlobalConfiguration globalconfiguration) {
+        String returnToLink = null;
+        final String RETURNTO_PARAMETER = "returnTo";
+        final String returnToParameter = request.getParameter(RETURNTO_PARAMETER);
+        try {
+            final int returnToId = Integer.parseInt(returnToParameter);
+            switch (returnToId) {
+            case 0: // 0 = send user to the audit log page
+                returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.xhtml";
+                break;
+            case 1: // 1 = send user to the peer overview page
+                returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "peerconnector/peerconnectors.xhtml";
+                break;
+            case 2: // 2 = send user to the IKB AKB page
+                returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=OcspKeyBinding";
+                break;
+            case 3: // 3 = send user to the IKB OCSP page
+                returnToLink = ejbcaBean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.xhtml?type=AuthenticationKeyBinding";
+                break;
+            }
+        } catch (final NumberFormatException e) {
+            // do nothing. null will be returned, if 'return-to' was not specified
+        }
+        return returnToLink;
     }
 
     private List<String> fetchTexts(final String[] keys) {
@@ -205,10 +224,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         String revokedText = "";
         if (certificateData.isRevoked()) {
             revokedText += ejbcaBean.getText("YES") 
-                    + "\r\n"
+                    + "<br/>"
                     + ejbcaBean.getText("CRL_ENTRY_REVOCATIONDATE") + " "
                     + ejbcaBean.formatAsISO8601(certificateData.getRevocationDate()) 
-                    + "\r\n"
+                    + "<br/>"
                     + ejbcaBean.getText("REVOCATIONREASONS") + " ";
             final String reason = certificateData.getRevocationReason();
             if (reason != null) {
@@ -225,7 +244,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         final String fingerprint = certificateData.getSHA256Fingerprint();
         
          if (fingerprint.length()>32) {
-            return fingerprint.substring(0,32) + "\r\n" + fingerprint.substring(32);
+            return fingerprint.substring(0,32) + "<br/>" + fingerprint.substring(32);
         } else {
             return fingerprint;
         }
@@ -239,17 +258,17 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         if (null != aiaOcspServiceLocators && aiaOcspServiceLocators.size() > 0) {
             builder.append(ejbcaBean.getText("EXT_PKIX_AIA_OCSP_URI"))
                 .append(":")
-                .append("\r\n&nbsp;")
-                .append(StringUtils.join(aiaOcspServiceLocators, "\r\n&nbsp;"))
-                .append("\r\n");
+                .append("<br/>&nbsp;")
+                .append(StringUtils.join(aiaOcspServiceLocators, "<br/>&nbsp;"))
+                .append("<br/>");
         }
         
         final List<String> aiaCaIssuerUris = certificateData.getAuthorityInformationAccessCaIssuerUris();
         if (null != aiaCaIssuerUris && aiaCaIssuerUris.size() > 0) {
             builder.append(ejbcaBean.getText("EXT_PKIX_AIA_CAISSUERS_URI"))
                 .append(":")
-                .append("\r\n&nbsp;")
-                .append(StringUtils.join(aiaCaIssuerUris, "\r\n&nbsp;"));
+                .append("<br/>&nbsp;")
+                .append(StringUtils.join(aiaCaIssuerUris, "<br/>&nbsp;"));
         }
         
         return (builder.length() > 0) ? builder.toString() : ejbcaBean.getText("NO");
@@ -736,4 +755,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     public boolean isDisplayShowNewerButton() {
         return currentIndex > 0;
     }
+    
+    public String getReturnToLink() {
+        return returnToLink;
+    }
+    
+    
 }

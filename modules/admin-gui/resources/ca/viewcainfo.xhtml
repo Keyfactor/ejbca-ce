@@ -152,6 +152,14 @@
                 </h:panelGroup>
             </h:panelGrid>
             
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+                <h:panelGroup>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:commandButton ajax="false" value="#{web.text.CLOSE}" onclick="self.close()"/>
+                </h:panelGroup>
+            </h:panelGrid>
+            
         </h:form>
     </ui:define>
 </ui:composition>

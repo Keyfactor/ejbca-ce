@@ -192,7 +192,7 @@
 					<h:commandButton action="#{auditor.reorderDescByCustomId}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?caid=#{auditLogEntry.customId}&amp;returnTo=0" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml?caid=#{auditLogEntry.customId}&amp;returnTo=0" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
 		    <h:outputText value="#{auditLogEntry.customId}" title="#{web.text.UNKNOWNCAID}" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] == null}"/>
 		</h:column>
 		<h:column>
@@ -203,7 +203,7 @@
 					<h:commandButton action="#{auditor.reorderDescBySearchDetail1}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?serno=#{auditLogEntry.searchDetail1}&amp;caid=#{auditLogEntry.customId}&amp;returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml?serno=#{auditLogEntry.searchDetail1}&amp;caid=#{auditLogEntry.customId}&amp;returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
@@ -213,7 +213,7 @@
 					<h:commandButton action="#{auditor.reorderDescBySearchDetail2}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?username=#{auditLogEntry.searchDetail2}&amp;returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml?username=#{auditLogEntry.searchDetail2}&amp;returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
