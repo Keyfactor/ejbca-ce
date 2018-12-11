@@ -58,7 +58,8 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     }
     
     private void editNameChangeGlobalConfig(boolean saveAsEnabled) {
-        webDriver.findElement(By.xpath("//li/a[contains(@href,'systemconfiguration.xhtml')]")).click();
+        // TODO refactor  ECA-7360
+        webDriver.findElement(By.xpath("//div/a[contains(@href,'systemconfiguration.xhtml')]")).click();
         WebElement checkboxEnableNameChange = webDriver.findElement(By.id("systemconfiguration:enableicaocanamechange"));
         if ((!checkboxEnableNameChange.isSelected() && saveAsEnabled) || (checkboxEnableNameChange.isSelected() && !saveAsEnabled)) {
             checkboxEnableNameChange.click();
@@ -72,7 +73,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
         caHelper.addCa(caName);
         // Set validity (required)
         caHelper.setValidity("1y");
-        caHelper.saveCa();
+        caHelper.createCa();
         caHelper.assertExists(caName);
     }
     
@@ -81,18 +82,13 @@ public class EcaQa72_CaNameChange extends WebTestBase {
         editNameChangeGlobalConfig(false);
         assertFalse("Failed to disable 'Enable CA Name Change'", webDriver.findElement(By.id("systemconfiguration:enableicaocanamechange")).isSelected());
     }
-    
+
     @Test
     public void testC_editCaExpectNoNameChangeAvailable() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(caName);
-        try {
-            webDriver.findElement(By.id("idcheckboxcanamechange"));
-            webDriver.findElement(By.id("idnewsubjectdn"));
-            fail("'Use CA Name Change' was available while editing the CA even though it was globally disabled");
-        } catch (NoSuchElementException e) {
-            // Expected
-        }
+        caHelper.assertCheckboxcaNameChangeNotPresent();
+        caHelper.assertNewSubjectDnNotPresent();
     }
     
     @Test
@@ -106,9 +102,8 @@ public class EcaQa72_CaNameChange extends WebTestBase {
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(caName);
         try {
-            webDriver.findElement(By.id("idcheckboxcanamechange"));
-            WebElement newDn = webDriver.findElement(By.id("idnewsubjectdn"));
-            assertFalse("'New Subject DN' was enabled by default", newDn.isEnabled());
+            caHelper.assertCheckboxcaNameChangePresent();
+            caHelper.assertNewSubjectDnIsEnabled(false);
         } catch (NoSuchElementException e) {
             fail("'Use CA Name Change' was not available while editing the CA even though it was globally enabled");
         }
@@ -116,8 +111,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     
     @Test
     public void testF_changeCaDn() {
-        webDriver.findElement(By.id("idcheckboxcanamechange")).click();
-        WebElement newDn = webDriver.findElement(By.id("idnewsubjectdn"));
-        assertTrue("'New Subject DN' was enabled by default", newDn.isEnabled());
+        caHelper.checkUseCaNameChange();
+        caHelper.assertNewSubjectDnIsEnabled(true);
     }
 }
