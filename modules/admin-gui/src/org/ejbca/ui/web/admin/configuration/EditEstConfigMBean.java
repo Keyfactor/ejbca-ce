@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Backing bean for edit EST alias view.
  *
- * @version $Id: EditEstConfigMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 @ManagedBean
 @ViewScoped

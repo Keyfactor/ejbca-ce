@@ -72,7 +72,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
         caHelper.setValidity("1y");
 
         // Save the CA and check that save was successful
-        caHelper.saveCa();
+        caHelper.createCa();
         caHelper.assertExists(rootName);
     }
 
@@ -96,7 +96,7 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
         caHelper.setCertificateProfile("SUBCA");
 
         // Save the CA and check that save was successful
-        caHelper.saveCa();
+        caHelper.createCa();
         caHelper.assertExists(subName);
     }
 }
