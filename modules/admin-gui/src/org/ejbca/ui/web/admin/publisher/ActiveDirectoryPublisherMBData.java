@@ -25,7 +25,6 @@ public final class ActiveDirectoryPublisherMBData extends LdapPublisherMBData {
     }
     
     public void initializeData(final ActiveDirectoryPublisher publisher) {
-        super.initializeData(publisher);
         this.userDescription = publisher.getUserDescription();
         this.samAccountName = publisher.getSAMAccountName();
     }

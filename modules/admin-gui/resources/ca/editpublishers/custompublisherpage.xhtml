@@ -31,7 +31,7 @@
 	<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 		<h:panelGroup>
 			<h:outputText value="#{web.text.CUSTOMPUBLISHERSETTINGS}" rendered="#{editPublisher.isCustomClassChoice()}"/> 
-			<h:outputText value="#{editPublisher.getCustomPublisherSettingText()}" rendered="#{!editPublisher.isCustomClassChoice()}"/> 
+			<h:outputText value="#{editPublisher.getCustomPublisherSettingText()}" rendered="#{editPublisher.isCustomClassChoice() == false}"/> 
 		</h:panelGroup>
 		
 		<h:panelGroup/>
@@ -44,18 +44,18 @@
 			<h:inputText size="60" maxlength="255" rendered="#{editPublisher.isManualClassPathsEnabledAndIsCustomClassChoice()}"
 						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherCurrentClass}"/> 
 							
-			<h:inputText size="60" maxlength="255" rendered="#{!editPublisher.isManualClassPathsEnabledAndIsCustomClassChoice()}"
+			<h:inputText size="60" maxlength="255" rendered="#{editPublisher.isManualClassPathsEnabledAndIsCustomClassChoice() == false}"
 						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherCurrentClass}" readonly="readonly"/>
 						
 			<h:outputText value="#{web.text.OLDMANUALCLASSPATHELP}" 
-						  rendered="#{!editPublisher.isManualClassPathsEnabledAndIsCustomClassChoice() and editPublisher.isCustomClassChoice()}"/>							
+						  rendered="#{editPublisher.isManualClassPathsEnabledAndIsCustomClassChoice() == false and editPublisher.isCustomClassChoice()}"/>							
 		</h:panelGroup>
 
 		<c:forEach items="#{editPublisher.getCustomUiPropertyList()}" var="item">
- 			<h:panelGroup>
+ 			<h:panelGroup rendered="#{editPublisher.isCustomUiRenderingSupported() == true}">
 				<h:outputText value="#{editPublisher.getCustomPublisherPropertyText(item)}"/>
-			</h:panelGroup>
-			<h:panelGroup >
+			</h:panelGroup >
+			<h:panelGroup rendered="#{editPublisher.isCustomUiRenderingSupported() == true}">
 				<h:selectOneMenu value="#{editPublisher.customPublisherPropertySelectOneMenuValue}" 
 								 disabled="#{editPublisher.readOnly}"
 								 rendered="#{editPublisher.renderCustomSelectOneMenu(item)}">
@@ -79,10 +79,10 @@
 			</h:panelGroup>
 		</c:forEach>
 
-		<h:panelGroup rendered="#{!editPublisher.isCustomUiRenderingSupported()}">
+		<h:panelGroup rendered="#{editPublisher.isCustomUiRenderingSupported() == false}">
 			<h:outputText value="#{web.text.PROPERTIESOFCUSTOM}"/>
 		</h:panelGroup>	
-		<h:panelGroup rendered="#{!editPublisher.isCustomUiRenderingSupported()}">
+		<h:panelGroup rendered="#{editPublisher.isCustomUiRenderingSupported() == false}">
 			<h:inputTextarea cols="45" rows="8" disabled="#{editPublisher.readOnly}" value="#{editPublisher.getPropertyData()}"/>
 		</h:panelGroup>
 	
