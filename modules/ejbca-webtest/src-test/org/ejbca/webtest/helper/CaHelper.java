@@ -176,11 +176,7 @@ public class CaHelper extends BaseHelper {
      * @param caName the name of the CA to edit
      */
     public void edit(final String caName) {
-        try {
-            selectOptionByName(Page.SELECT_CA, caName + ", (Active)");
-        } catch (NoSuchElementException e) {
-            fail("Could not edit ca: " + caName + ". Was not found in list of CAs");
-        }
+        selectOptionByName(Page.SELECT_CA, caName + ", (Active)");
         clickLink(Page.BUTTON_EDIT);
     }
 
@@ -262,7 +258,7 @@ public class CaHelper extends BaseHelper {
     }
 
     /**
-     * Sets the CA's CRL Expire Period(.
+     * Sets the CA's CRL Expire Period.
      *
      * @param crlPeriodString CRL Expire Period(*y *mo *d *h *m)
      */
@@ -282,7 +278,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Sets the CA's CRL Overlap Time.
      *
-     * @param crlOverlapTime CRL Overlap Time(*y *mo *d *h *m)[?]
+     * @param crlOverlapTime CRL Overlap Time(*y *mo *d *h *m)
      */
     public void setCrlOverlapTime(final String crlOverlapTime) {
         fillInput(Page.INPUT_CRLOVERLAPTIME, crlOverlapTime);
@@ -298,7 +294,7 @@ public class CaHelper extends BaseHelper {
     /**
      * Asserts the element 'Use CA Name Change' is not shown on page.
      */
-    public void assertCheckboxcaNameChangeNotPresent() {
+    public void assertCheckboxCaNameChangeNotPresent() {
         assertNull(findElementWithoutWait(Page.INPUT_CHECKBOXCANAMECHANGE));
     }
 

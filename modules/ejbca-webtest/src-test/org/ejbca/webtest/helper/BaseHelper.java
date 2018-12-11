@@ -240,10 +240,10 @@ public class BaseHelper {
      *
      * @param selectId locator.
      * @param selectionOption option's names.
-     * @param dependentElement  a dependent element, wich apears, after option is selected. Used to check visibility after option is selected to avoid StaleElementReferenceException
+     * @param dependentElementId  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
-    protected void selectOptionByName(final By selectId, final String selectionOption, final By dependentElement) {
-        selectOptionsByName(selectId, Collections.singletonList(selectionOption), false, dependentElement);
+    protected void selectOptionByName(final By selectId, final String selectionOption, final By dependentElementId) {
+        selectOptionsByName(selectId, Collections.singletonList(selectionOption), false, dependentElementId);
     }
 
     /**
@@ -292,7 +292,7 @@ public class BaseHelper {
      * @param selectId locator.
      * @param selectionOptions  a list of option names to select.
      * @param useDeselectAll    deselection flag for the already selected options.
-     * @param dependentElement  a dependent element, wich apears, after option is selected. Used to check visibility after option is selected to avoid StaleElementReferenceException
+     * @param dependentElement  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
     protected void selectOptionsByName(final By selectId, final List<String> selectionOptions, final boolean useDeselectAll, final By dependentElement) {
         final WebElement selectWebElement = findElement(selectId);
@@ -641,7 +641,7 @@ public class BaseHelper {
         return null;
     }
     /**
-     * Returns the first of selecte element for the non-null select.
+     * Returns the first selected text of select element.
      *
      * @param selectId locator.
      *
@@ -652,7 +652,7 @@ public class BaseHelper {
     }
 
     /**
-     * Returns the first of selecte element for the non-null select.
+     * Returns the first selected text of select element..
      *
      * @param webElement non-null web element.
      * @return the first selected element of a select or null.

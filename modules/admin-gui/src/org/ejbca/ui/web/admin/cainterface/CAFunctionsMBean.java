@@ -57,7 +57,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * JSF Managed Bean or the ca functions page in the Admin GUI.
  *
- * @version $Id: CAFunctionsMBean.java 25797 2018-08-10 15:52:00Z jekaterina $
+ * @version $Id$
  */
 @ManagedBean
 @ViewScoped
