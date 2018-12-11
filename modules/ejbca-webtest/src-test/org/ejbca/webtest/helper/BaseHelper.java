@@ -240,9 +240,20 @@ public class BaseHelper {
      *
      * @param selectId locator.
      * @param selectionOption option's names.
+     * @param dependentElement  a dependent element, wich apears, after option is selected. Used to check visibility after option is selected to avoid StaleElementReferenceException
+     */
+    protected void selectOptionByName(final By selectId, final String selectionOption, final By dependentElement) {
+        selectOptionsByName(selectId, Collections.singletonList(selectionOption), false, dependentElement);
+    }
+
+    /**
+     * Selects a single option in the 'select' HTML element by name and asserts that the option is selected.
+     *
+     * @param selectId locator.
+     * @param selectionOption option's names.
      */
     protected void selectOptionByName(final By selectId, final String selectionOption) {
-        selectOptionsByName(selectId, Collections.singletonList(selectionOption), false);
+        selectOptionsByName(selectId, Collections.singletonList(selectionOption), false, null);
     }
 
     /**
@@ -272,7 +283,7 @@ public class BaseHelper {
      * @param selectionOptions  a list of option names to select.
      */
     protected void selectOptionsByName(final By selectId, final List<String> selectionOptions) {
-        selectOptionsByName(selectId, selectionOptions, true);
+        selectOptionsByName(selectId, selectionOptions, true, null);
     }
 
     /**
@@ -281,13 +292,17 @@ public class BaseHelper {
      * @param selectId locator.
      * @param selectionOptions  a list of option names to select.
      * @param useDeselectAll    deselection flag for the already selected options.
+     * @param dependentElement  a dependent element, wich apears, after option is selected. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
-    protected void selectOptionsByName(final By selectId, final List<String> selectionOptions, final boolean useDeselectAll) {
+    protected void selectOptionsByName(final By selectId, final List<String> selectionOptions, final boolean useDeselectAll, final By dependentElement) {
         final WebElement selectWebElement = findElement(selectId);
         assertNotNull("Page select was not found", selectWebElement);
         selectOptions(new Select(selectWebElement), selectionOptions, useDeselectAll, SELECT_BY.TEXT);
         // For assertion, reload the object as a selection may trigger the refresh/reload event and modify the DOM
         // which causes the org.openqa.selenium.StaleElementReferenceException
+        if (dependentElement != null) {
+            findElement(dependentElement);
+        }
         final WebElement selectedWebElement = findElement(selectId);
         assertSelectionOfAllOptions(new Select(selectedWebElement), selectionOptions, SELECT_BY.TEXT);
     }
@@ -622,6 +637,30 @@ public class BaseHelper {
                 selectedNames.add(selected.getText());
             }
             return selectedNames;
+        }
+        return null;
+    }
+    /**
+     * Returns the first of selecte element for the non-null select.
+     *
+     * @param selectId locator.
+     *
+     * @return the first selected element of a select or null.
+     */
+    protected String getFirstSelectedOption(final By selectId) {
+        return getFirstSelectedOption(findElement(selectId));
+    }
+
+    /**
+     * Returns the first of selecte element for the non-null select.
+     *
+     * @param webElement non-null web element.
+     * @return the first selected element of a select or null.
+     */
+    protected String getFirstSelectedOption(final WebElement webElement) {
+        if (webElement != null) {
+            final Select select = new Select(webElement);
+            return getElementText(select.getFirstSelectedOption());
         }
         return null;
     }
