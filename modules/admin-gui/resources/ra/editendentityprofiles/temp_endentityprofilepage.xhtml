@@ -506,33 +506,33 @@
 					columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"	>
 				    <h:column>
 						<h:selectBooleanCheckbox 
-							id="removeComponent#{components.index}DirectoryAttributeCheckBox" 
+							id="removeComponentDirectoryAttributeCheckBox" 
 							value="#{endEntityProfileMBean.checkBoxValue}" 
 							disabled="#{endEntityProfilesMBean.viewOnly}">
 						</h:selectBooleanCheckbox>
 					</h:column>
 					<h:column>	
-						<h:outputLabel for="header_othersubjectattributes"  value="#{subjectDirectoryAttributesComponent}"/>
+						<h:outputLabel for="header_othersubjectattributes"  value="#{subjectDirectoryAttributesComponent.componentName}"/>
                     </h:column>
                     <h:column>
-                    	<h:panelGrid id="subjectDirectoryAttributesTextFieldGrid#{components.index}" column="1">
+                    	<h:panelGrid id="subjectDirectoryAttributesTextFieldGrid" column="1">
 							<h:inputText 
-								id="subjectDirectoryAttributesTextField#{components.index}" 
-								value="#{endEntityProfileMBean.subjectDirectoryAttributeValue}" 
+								id="subjectDirectoryAttributesTextField" 
+								value="#{subjectDirectoryAttributesComponent.componentValue}" 
 					   			size="45" 
 					   			maxlength="1024"
 								disabled="#{endEntityProfilesMBean.viewOnly}">
 							</h:inputText>
-							<h:panelGrid id="subjectDirectoryAttributesCheckBoxesGrid#{components.index}" columns="7">
+							<h:panelGrid id="subjectDirectoryAttributesCheckBoxesGrid" columns="7">
 								<h:selectBooleanCheckbox 
-									id="directoryAttributesRequiredCheckBox#{components.index}" 
-									value="#{endEntityProfileMBean.subjectDirectoryAttributeRequired}" 
+									id="directoryAttributesRequiredCheckBox" 
+									value="#{subjectDirectoryAttributesComponent.componentIsRequired}" 
 									disabled="#{endEntityProfilesMBean.viewOnly}">
 								</h:selectBooleanCheckbox>
 				    			<h:outputLabel for="header_othersubjectattributes"  value="#{web.text.REQUIRED}"/>
 				    			<h:selectBooleanCheckbox 
-				    				id="directoryAttributesModifyableCheckBox#{components.index}" 
-				    				value="#{endEntityProfileMBean.subjectDirectoryAttributeModifyable}" 
+				    				id="directoryAttributesModifyableCheckBox" 
+				    				value="#{subjectDirectoryAttributesComponent.componentIsModifyable}" 
 				    				disabled="#{endEntityProfilesMBean.viewOnly}">
 				    			</h:selectBooleanCheckbox>
 				    			<h:outputLabel for="header_othersubjectattributes"  value="#{web.text.MODIFYABLE}"/>

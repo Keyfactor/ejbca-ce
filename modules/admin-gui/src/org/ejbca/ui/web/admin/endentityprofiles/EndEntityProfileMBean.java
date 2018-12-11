@@ -710,14 +710,76 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
                    modifyable, validation, temp, value, validationString));
        }
        if (isSubjectAltNameAdded) {
-           Iterator<String> addedAltNameComponentIterator = subjectAltNameAdditions.iterator();
-           while(addedAltNameComponentIterator.hasNext()) {
-               subjectAltNameComponentList.add(new SubjectAltNameComponent(addedAltNameComponentIterator.next(), false, true, false, new int[]{0, 0}, new String(), new String()));
+           for(String newSubjectAltName : subjectAltNameAdditions) {
+               subjectAltNameComponentList.add(new SubjectAltNameComponent(new String(newSubjectAltName), false, true, false, new int[]{0, 0}, new String(), new String()));
            }
        }
        return subjectAltNameComponentList;
    }
-        
+   
+   //
+   public class SubjectDirectoryAttributesComponent implements Serializable{
+       private static final long serialVersionUID = 1L;
+       private int [] componentField;
+       private String componentName;
+       private String componentValue;
+       private boolean componentIsRequired;
+       private boolean componentIsModifyable;
+       
+       public SubjectDirectoryAttributesComponent(String componentName, boolean componentIsRequired, boolean componentIsModifyable, 
+               int [] componentField, String componentValue) {
+           this.componentName = componentName;
+           this.componentField = componentField;
+           this.componentIsRequired = componentIsRequired;
+           this.componentIsModifyable = componentIsModifyable;
+           this.componentValue = componentValue;
+       }
+       
+       public String getComponentName() {
+           return componentName;
+       }
+       
+       public void setComponentName(String componentName) {
+           this.componentName = componentName;
+       }
+       
+       public String getComponentValue() {
+           return componentValue;
+       }
+       
+       public void setComponentValue(String componentValue) {
+           this.componentValue = componentValue;
+           profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentValue);
+       }
+       
+       public int[] getComponentField() {
+           return componentField;
+       }
+       
+       public void getComponentField(int[] componentField) {
+           this.componentField = componentField;
+       }
+       
+       public boolean getComponentIsRequired() {
+           return componentIsRequired;
+       }
+       
+       public void setComponentIsRequired(boolean componentIsRequired) {
+           this.componentIsRequired = componentIsRequired;
+           profiledata.setRequired(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsRequired);
+       }
+       
+       public boolean getComponentIsModifyable() {
+           return componentIsModifyable;
+       }
+       
+       public void setComponentIsModifyable(boolean componentIsModifyable) {
+           this.componentIsModifyable = componentIsModifyable;
+           profiledata.setModifyable(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsModifyable);
+           
+       }
+   }
+   
    //
    public List<SelectItem> getSubjectDirectoryAttributes(){
        final List<SelectItem> subjectDirectoryAttributesReturned = new ArrayList<>();
@@ -730,9 +792,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            //subjectDirectoryAttributeNr = stringElement.toString();
            subjectDirectoryAttribute = attributeString[stringElement.intValue()];
            subjectDirectoryAttributeReturned = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileName(subjectDirectoryAttribute));
-           /*if (EndEntityProfile.isFieldImplemented(subjectAltName)) {
-               setCurrentSubjectAltNameTypes(subjectAltName);
-           } */   
            //subjectDirectoryAttributesReturned.add(new SelectItem(subjectDirectoryAttributeNr, subjectDirectoryAttributeReturned ));
            subjectDirectoryAttributesReturned.add(new SelectItem(subjectDirectoryAttributeReturned, subjectDirectoryAttributeReturned ));
        }
@@ -763,58 +822,28 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        currentSubjectDirectoryAttribute = subjectDirectoryAttribute;
    }
    
-   // 
-   public String getSubjectDirectoryAttributeValue() {
-       String value = "";
-       int [] fielddata = null;
-       int numberOfSubjectDirectoryAttributeFields = profiledata.getSubjectDirAttrFieldOrderLength();
-       for(int i=0; i < numberOfSubjectDirectoryAttributeFields; i++){
-           fielddata =  profiledata.getSubjectDirAttrFieldsInOrder(i);
-       }
-       if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) {
-           value = profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-       }
-       return value;
-   }
-   
    //
-   public List<String> getSubjectDirectoryAttributeComponent() {
-       List<String> components = new ArrayList<String>();
+   public List<SubjectDirectoryAttributesComponent> getSubjectDirectoryAttributeComponent() {
+       List<SubjectDirectoryAttributesComponent> components = new ArrayList<SubjectDirectoryAttributesComponent>();
        List<int[]> fielddatalist = new ArrayList<int[]>();
        int numberOfSubjectDirectoryAttributeFields = profiledata.getSubjectDirAttrFieldOrderLength();
        for(int i=0; i < numberOfSubjectDirectoryAttributeFields; i++){
            fielddatalist.add(profiledata.getSubjectDirAttrFieldsInOrder(i));
        }
        for(int[] temp : fielddatalist) {
-           components.add(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE]))); 
+           boolean required = profiledata.isRequired(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
+           boolean modifyable = profiledata.isModifyable(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
+           String value = profiledata.getValue(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
+           components.add(new SubjectDirectoryAttributesComponent(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])), required, 
+                   modifyable, temp, value )); 
        }
        if (isSubjectDirectoryAttributeAdded) {
            for(String subjectDirectoryAttribute :  subjectDirectoryAttributeAdditions) {
                String temp = new String(subjectDirectoryAttribute);
-               components.add(temp);
+               components.add(new SubjectDirectoryAttributesComponent(temp, false, false, new int[]{0,0}, new String()));
            }
        }
        return components;
-   }
-   
-   // but only returns the last attribute value
-   public boolean isSubjectDirectoryAttributeRequired() {
-       int numberOfSubjectAltNameFields = profiledata.getSubjectDirAttrFieldOrderLength();
-       int [] fielddata = null;
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectDirAttrFieldsInOrder(i);
-       }
-       return profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-   }
-   
-   // only returns the last attribute value
-   public boolean isSubjectDirectoryAttributeModifyable() {
-       int numberOfSubjectAltNameFields = profiledata.getSubjectDirAttrFieldOrderLength();
-       int [] fielddata = null;
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectDirAttrFieldsInOrder(i);
-       }
-       return profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
    }
    
    // MAIN CERTIFICATE DATA
