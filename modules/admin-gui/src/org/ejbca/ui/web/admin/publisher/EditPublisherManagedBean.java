@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -55,7 +54,10 @@ import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.LegacyValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
 
@@ -104,6 +106,11 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private LdapPublisherMBData ldapPublisherMBData;
     private LdapSearchPublisherMBData ldapSearchPublisherMBData;
     private ActiveDirectoryPublisherMBData activeDirectoryPublisherMBData;
+    private MultiGroupPublisherMBData multiGroupPublisherMBData;
+    
+    public MultiGroupPublisherMBData getMultiGroupPublisherMBData() {
+        return multiGroupPublisherMBData;
+    }
 
     public ActiveDirectoryPublisherMBData getActiveDirectoryPublisherMBData() {
         return activeDirectoryPublisherMBData;
@@ -131,6 +138,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private String customPublisherPropertyOutputTextArea;
     private boolean customPublisherPropertySelectBooleanCheckbox;
     
+
     private String publisherDescription;
     private boolean useQueueForCertificates;
     private boolean useQueueForCRLs;
@@ -155,27 +163,21 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     private void initializePage() {
         initCommonParts();
-        initDataClasses();
-        fillPublisherInitMapAndInitPublisherData();
+        publisherInitMap.get(publisher.getClass()).run();
     }
 
     private void initCommonParts() {
-        if (publisher == null) {
+        if (publisher == null) { // Loading from database
             publisher = publisherSession.getPublisher(listPublishersManagedBean.getSelectedPublisherName());
+            publisherId = publisher.getPublisherId();
+            fillPublisherInitMapAndInitPublisherData();
         }
-        selectedPublisherType = String.valueOf(getPublisherType());
-        publisherId = publisher.getPublisherId();
+        selectedPublisherType = getSelectedPublisherValue();
         publisherDescription = publisher.getDescription();
-        useQueueForCertificates = publisher.getUseQueueForCertificates();
-        useQueueForCRLs = publisher.getUseQueueForCRLs();
-        keepPublishedInQueue = publisher.getKeepPublishedInQueue();
         onlyUseQueue = publisher.getOnlyUseQueue();
-    }
-
-    private void initDataClasses() {
-        ldapPublisherMBData = new LdapPublisherMBData();
-        ldapSearchPublisherMBData = new LdapSearchPublisherMBData();
-        activeDirectoryPublisherMBData = new ActiveDirectoryPublisherMBData();
+        keepPublishedInQueue = publisher.getKeepPublishedInQueue();
+        useQueueForCRLs = publisher.getUseQueueForCRLs();
+        useQueueForCertificates = publisher.getUseQueueForCertificates();
     }
 
     private void fillPublisherInitMapAndInitPublisherData() {
@@ -184,7 +186,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         publisherInitMap.put(LdapPublisher.class, () -> initLdapPublisher()); 
         publisherInitMap.put(CustomPublisherContainer.class, () -> initCustomPublisher());
         publisherInitMap.put(MultiGroupPublisher.class, () -> initMultiGroupPublisher());
-        publisherInitMap.get(publisher.getClass()).run();
     }
 
     public void initAccess() throws Exception {
@@ -359,40 +360,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return availablePublisherList;
     }
     
-    public String getMultiPublishersDataAsString(){
-        MultiGroupPublisher multiGroupPublisher = (MultiGroupPublisher) this.publisher;
-        final List<TreeSet<Integer>> publisherGroups = multiGroupPublisher.getPublisherGroups();
-        final Map<Integer, String> publisherIdToNameMap = publisherSession.getPublisherIdToNameMap();
-        return convertMultiPublishersDataToString(publisherIdToNameMap, publisherGroups);
-    }
-    
-    private String convertMultiPublishersDataToString(final Map<Integer,String> publisherIdToNameMap, final List<TreeSet<Integer>> data){
-        StringBuffer multiPublishersDataAsString = new StringBuffer();
-        String prefix = "";
-        for (final TreeSet<Integer> group : data) {
-            List<String> publisherNames = new ArrayList<>();
-            for (Integer publisherId : group) {
-                String name = publisherIdToNameMap.get(publisherId);
-                if (StringUtils.isNotEmpty(name)) {
-                    publisherNames.add(name);
-                } else {
-                    log.info("No name found for publisher with id " + publisherId);
-                }
-            }
-            Collections.sort(publisherNames);
-            for (final String publisherName : publisherNames) {
-                multiPublishersDataAsString.append(prefix);
-                multiPublishersDataAsString.append(publisherName);
-                prefix = "\n";
-            }
-            if (!publisherNames.isEmpty()) {
-                multiPublishersDataAsString.append("\n");
-            }
-        }
-        multiPublishersDataAsString.setLength(Math.max(multiPublishersDataAsString.length() - 1, 0));
-        return multiPublishersDataAsString.toString();
-    }
-    
     public List<SelectItem> getSAMAccountName() {
         final List<SelectItem> samAccountName = new ArrayList<>();
         for (final int accountName : AVAILABLE_SAM_ACCOUNTS.keySet()) {
@@ -400,8 +367,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
         return samAccountName;
     }
-
-
     
     public String getCurrentPublisherName() {
         if (publisher instanceof CustomPublisherContainer) {
@@ -594,17 +559,23 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
     
     private Void initActiveDirectoryPublisher() {
-        activeDirectoryPublisherMBData.initializeData((ActiveDirectoryPublisher) publisher);
+        ldapPublisherMBData = new LdapPublisherMBData();
+        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
+        activeDirectoryPublisherMBData = new ActiveDirectoryPublisherMBData();
+        activeDirectoryPublisherMBData.initializeData((ActiveDirectoryPublisher)publisher);
         return null;
     }
     
     private Void initLdapSearchPublisher() {
+        ldapSearchPublisherMBData = new LdapSearchPublisherMBData();
         ldapSearchPublisherMBData.setSearchBaseDN(((LdapSearchPublisher) publisher).getSearchBaseDN());
         ldapSearchPublisherMBData.setSearchFilter(((LdapSearchPublisher) publisher).getSearchFilter());
         return null;
     }
     
     private Object initMultiGroupPublisher() {
+        multiGroupPublisherMBData = new MultiGroupPublisherMBData();
+        multiGroupPublisherMBData.initializeData((MultiGroupPublisher) publisher);
         return null;
     }
 
@@ -614,6 +585,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     private Void initLdapPublisher() {
+        ldapPublisherMBData = new LdapPublisherMBData();
         ldapPublisherMBData.initializeData((LdapPublisher) publisher);
         return null;
     }
@@ -698,13 +670,27 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     //Actions
     public String savePublisher() throws AuthorizationDeniedException {
-        
+        prepareForSave();
+        publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), publisher);
+        return "listpublishers?faces-redirect=true";
+    }
+    
+    public String savePublisherAndTestConnection() throws AuthorizationDeniedException {
+        prepareForSave();
+        publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), publisher);
+        try {
+            publisherSession.testConnection(publisherId);
+            addInfoMessage(getEjbcaWebBean().getText("CONTESTEDSUCESSFULLY"));
+        } catch (PublisherConnectionException pce) {
+            log.error("Error connecting to publisher " + listPublishersManagedBean.getSelectedPublisherName(), pce);
+            addErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB"), listPublishersManagedBean.getSelectedPublisherName());
+        }
+        return "listpublishers?faces-redirect=true";
+    }
+
+    private void prepareForSave() {
         //Set General Settings
-        publisher.setDescription(publisherDescription);
-        publisher.setOnlyUseQueue(onlyUseQueue);
-        publisher.setKeepPublishedInQueue(keepPublishedInQueue);
-        publisher.setUseQueueForCRLs(useQueueForCRLs);
-        publisher.setUseQueueForCertificates(useQueueForCertificates);
+        setPublisherQueueAndGeneralSettings();
         
         if (publisher instanceof LdapPublisher) {
             ldapPublisherMBData.setLdapPublisherParameters((LdapPublisher) publisher);
@@ -714,8 +700,26 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             activeDirectoryPublisherMBData.setActiveDirectoryPublisherParameters((ActiveDirectoryPublisher) publisher);
         }
         
-        publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), publisher);
-        return "listpublishers?faces-redirect=true";
+        if (publisher instanceof LdapSearchPublisher) {
+            ldapSearchPublisherMBData.setLdapSearchPublisherParameters((LdapSearchPublisher) publisher);
+        }
+        
+        if (publisher instanceof MultiGroupPublisher) {
+            try {
+                multiGroupPublisherMBData.setMultiGroupPublisherParameters((MultiGroupPublisher) publisher);
+            } catch (PublisherDoesntExistsException | PublisherExistsException e) {
+                addErrorMessage(e.getMessage());
+            }
+        }
+         
+    }
+
+    private void setPublisherQueueAndGeneralSettings() {
+        publisher.setOnlyUseQueue(onlyUseQueue);
+        publisher.setKeepPublishedInQueue(keepPublishedInQueue);
+        publisher.setUseQueueForCRLs(useQueueForCRLs);
+        publisher.setUseQueueForCertificates(useQueueForCertificates);
+        publisher.setDescription(publisherDescription);        
     }
     
 }
