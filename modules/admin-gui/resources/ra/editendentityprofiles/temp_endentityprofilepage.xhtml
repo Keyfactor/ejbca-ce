@@ -363,7 +363,7 @@
 				    			id="subjectDNValidationTextField" 
 				    			style="font-size: 9pt" 
 				    			value="#{componentName.componentValidationString}" 
-					   			disabled="#{not componentName.componentValueValidation or endEntityProfilesMBean.viewOnly}">
+					   			disabled="#{not componentName.componentValueValidation or not componentName.componentIsModifyable or endEntityProfilesMBean.viewOnly}">
 							</h:inputText>
 							</h:panelGrid>
 					</h:panelGrid>
@@ -419,50 +419,51 @@
 					columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3"	>
 				    <h:column> 
 						<h:selectBooleanCheckbox 
-							id="removeComponent#{components.index}AltNameCheckBox" 
+							id="removeComponentAltNameCheckBox" 
 							value="#{endEntityProfileMBean.checkBoxValue}" 
 							disabled="#{endEntityProfilesMBean.viewOnly}">
 						</h:selectBooleanCheckbox>
 					</h:column>
 					<h:column>
-						<h:outputLabel for="header_othersubjectattributes"  value="#{subjectAltNameComponent}"/>
+						<!--h:outputLabel for="header_othersubjectattributes"  value="#{subjectAltNameComponent}"/-->
+						<h:outputLabel for="header_othersubjectattributes"  value="#{subjectAltNameComponent.componentName}"/>
                     </h:column>
                     <h:column>
-                    	<h:panelGrid id="subjectAltNameTextFieldGrid#{components.index}" column="1">
+                    	<h:panelGrid id="subjectAltNameTextFieldGrid" column="1">
 							<h:inputText 
-								id="subjectAltNameTextField#{components.index}" 
-								value="#{endEntityProfileMBean.subjectAltNameValue}" 
+								id="subjectAltNameTextField" 
+								value="#{subjectAltNameComponent.componentValue}" 
 					   			size="45" 
 					   			maxlength="1024"
 								disabled="#{endEntityProfilesMBean.viewOnly}">
 							</h:inputText>
-							<h:panelGrid id="subjectAltNameCheckBoxesGrid#{components.index}" columns="7">
+							<h:panelGrid id="subjectAltNameCheckBoxesGrid" columns="7">
 								<h:selectBooleanCheckbox 
-									id="altNameRequiredCheckBox#{components.index}" 
-									value="#{endEntityProfileMBean.subjectAltNameRequired}" 
+									id="altNameRequiredCheckBox" 
+									value="#{subjectAltNameComponent.componentIsRequired}" 
 									disabled="#{endEntityProfilesMBean.viewOnly}">
 									<f:ajax render=":eeProfiles"/>
 				    			</h:selectBooleanCheckbox>
-				    			<h:outputLabel for="subjectAltNameCheckBoxesGrid#{components.index}"  value="#{web.text.REQUIRED}"/>
+				    			<h:outputLabel for="subjectAltNameCheckBoxesGrid}"  value="#{web.text.REQUIRED}"/>
 				    			<h:selectBooleanCheckbox 
-				    				id="altNameModifyableCheckBox#{components.index}" 
-				    				value="#{endEntityProfileMBean.subjectAltNameModifyable}" 
+				    				id="altNameModifyableCheckBox" 
+				    				value="#{subjectAltNameComponent.componentIsModifyable}" 
 				    				disabled="#{endEntityProfilesMBean.viewOnly}">
 				    				<f:ajax render=":eeProfiles"/>
 				    			</h:selectBooleanCheckbox>
-				    			<h:outputLabel for="subjectAltNameCheckBoxesGrid#{components.index}"  value="#{web.text.MODIFYABLE}"/>
+				    			<h:outputLabel for="subjectAltNameCheckBoxesGrid}"  value="#{web.text.MODIFYABLE}"/>
 				    			<h:selectBooleanCheckbox 
-				    				id="altNameValidationCheckBox#{components.index}" 
-				    				value="#{endEntityProfileMBean.subjectAltNameValidation}" 
-				    				disabled="#{not endEntityProfileMBean.subjectAltNameModifyable or endEntityProfilesMBean.viewOnly}">
+				    				id="altNameValidationCheckBox" 
+				    				value="#{subjectAltNameComponent.componentValueValidation}" 
+				    				disabled="#{not subjectAltNameComponent.componentIsModifyable or endEntityProfilesMBean.viewOnly}">
 				    				<f:ajax render=":eeProfiles"/>
 				    			</h:selectBooleanCheckbox>
-				    			<h:outputLabel for="subjectAltNameCheckBoxesGrid#{components.index}"  value="#{web.text.VALIDATION}"/>
+				    			<h:outputLabel for="subjectAltNameCheckBoxesGrid"  value="#{web.text.VALIDATION}"/>
 				    			<h:inputText 
-				    				id="subjectAltNameValidationTextField#{components.index}" 
+				    				id="subjectAltNameValidationTextField" 
 				    				style="font-size: 9pt" 
-				    				value="#{endEntityProfileMBean.subjectAltNameValidationRegEx}" 
-					   				disabled="#{not endEntityProfileMBean.subjectAltNameModifyable or endEntityProfilesMBean.viewOnly}">
+				    				value="#{subjectAltNameComponent.componentValidationString}" 
+					   				disabled="#{not subjectAltNameComponent.componentValueValidation or not subjectAltNameComponent.componentIsModifyable or endEntityProfilesMBean.viewOnly}">
 								</h:inputText>
 							</h:panelGrid>
 						</h:panelGrid>
