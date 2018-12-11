@@ -39,20 +39,29 @@ import org.ejbca.util.query.Query;
 import org.ejbca.util.query.TimeMatch;
 
 /**
- * Managed bean in the actionapprovallist page.
+ * Managed bean in the approvalactions.xhtml page.
  * 
  * @version $Id$
  */
 @ManagedBean
 @SessionScoped
 public class ListApproveActionManagedBean extends BaseManagedBean {
+  
 
 	private static final long serialVersionUID = 1L;
-	public static int QUERY_MAX_NUM_ROWS = 300;
-	private static String TIME_5MIN = Integer.toString(5 * 60 * 1000);
-	private static String TIME_30MIN = Integer.toString(30 * 60 * 1000);
-	private static String TIME_8HOURS = Integer.toString(8 * 60 * 60 * 1000);
-	private static String ALL_STATUSES = Integer.toString(-9);
+	public static final int QUERY_MAX_NUM_ROWS = 300;
+	public static final int TABLE_BEGIN_INDEX = 0;
+	
+	private static final String TIME_5MIN = Integer.toString(5 * 60 * 1000);
+	private static final String TIME_30MIN = Integer.toString(30 * 60 * 1000);
+	private static final String TIME_8HOURS = Integer.toString(8 * 60 * 60 * 1000);
+	private static final String ALL_STATUSES = Integer.toString(-9);
+	
+	private static final String SORT_BY_REQUESTDATE = "requestDate";
+	private static final String SORT_BY_APPROVEACTIONNAME = "approveActionName";
+	private static final String SORT_BY_REQUESTINGADMIN = "requestUsername";
+	private static final String SORT_BY_STATUS = "status";
+	
 	private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
 	private List<SelectItem> availableStatus;
 	private String selectedStatus;	
@@ -60,6 +69,8 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 	private String selectedTimeSpan;
 	
 	private ApprovalDataVOViewList listData;
+    private int startIndex = 0;
+    private int entriesPerPage;
 
     // Authentication check and audit log page access request
     public void initialize(ComponentSystemEvent event) throws Exception {
@@ -73,6 +84,7 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
             if (!approveendentity && !approvecaaction) {
                 throw new AuthorizationDeniedException("Not authorized to view approval pages");
             }
+            entriesPerPage = getEjbcaWebBean().getEntriesPerPage();
         }
     }
 	
@@ -154,25 +166,86 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
 		return null;		
 	}
 	
+	public void setStartIndex(final int startIndex) {
+	    // Don't go outside of the dataset scope.
+	    if (startIndex >= getListData().size()) {
+	        this.startIndex = Math.max(0, getListData().size() - entriesPerPage);
+	    } else {
+	        this.startIndex = Math.max(0, startIndex);
+	    }
+    }
+	
+	public int getStartIndex() {
+	    return startIndex;
+	}
+
+	public void nextPage() {
+        setStartIndex(startIndex + entriesPerPage);
+    }
+
+    public void previousPage() {
+        setStartIndex(startIndex - entriesPerPage);
+    }
+    
+    public void firstPage() {
+        setStartIndex(TABLE_BEGIN_INDEX);
+    }
+    
+    public void lastPage() {
+        setStartIndex(getListData().size() - entriesPerPage);
+    }
+    
+    public void fastForwardPage() {
+        setStartIndex(startIndex + (entriesPerPage * 10));
+    }
+    
+    public void fastRewindPage() {
+        setStartIndex(startIndex - (entriesPerPage * 10));
+    }
+    
+    public int getEntriesPerPage() {
+        return entriesPerPage;
+    }
+	
 	/** @return true if approval data is sorted by request date*/
 	public boolean isSortedByRequestDate() {
 	    //ApprovalDataVOViewList.sort treats null (initial value on page load) as requestDate
-	    return getSort() == null || getSort().equals("requestDate");
+	    return getSort() == null || getSort().equals(SORT_BY_REQUESTDATE);
 	}
 
    /** @return true if approval data is sorted by approve action name*/
 	public boolean isSortedByApproveActionName() {
-	    return getSort() != null && getSort().equals("approveActionName");
+	    return getSort() != null && getSort().equals(SORT_BY_APPROVEACTIONNAME);
 	}
 	
     /** @return true if approval data is sorted by requesting administrator*/
 	public boolean isSortedByRequestUsername() {
-	    return getSort() != null && getSort().equals("requestUsername");
+	    return getSort() != null && getSort().equals(SORT_BY_REQUESTINGADMIN);
 	}
 	
     /** @return true if approval data is sorted by request status*/	
 	public boolean isSortedByStatus() {
-	    return getSort() != null && getSort().equals("status");
+	    return getSort() != null && getSort().equals(SORT_BY_STATUS);
+	}
+	
+	public void sortByRequestDate() {
+	    setSort(SORT_BY_REQUESTDATE);
+	    toggleAscending();
+	}
+	
+	public void sortByApprovalActionName() {
+	    setSort(SORT_BY_APPROVEACTIONNAME);
+	    toggleAscending();
+	}
+	
+	public void sortByRequestUserName() {
+        setSort(SORT_BY_REQUESTINGADMIN);
+        toggleAscending(); 
+	}
+	
+	public void sortByStatus() {
+        setSort(SORT_BY_STATUS);
+        toggleAscending();
 	}
 	
 	/**
@@ -207,6 +280,10 @@ public class ListApproveActionManagedBean extends BaseManagedBean {
     	listData.setSort(sort);
     }
 
+    public void toggleAscending() {
+        setAscending(!isAscending());
+    }
+    
     public boolean isAscending() {
         return listData.isAscending();
     }
