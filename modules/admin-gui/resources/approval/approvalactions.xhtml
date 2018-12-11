@@ -53,33 +53,32 @@
 		<hr/>
 		<h:form id="approvalslistform">
 		<h:panelGroup id="body">
-			<t:dataTable id="data" styleClass="Table"
+			<h:dataTable id="data" styleClass="Table"
 				headerClass="listHeader"
 				footerClass="standardTable_Header"
 				rowClasses="#{listApproveActionManagedBean.rowClasses}"
 				var="approveActionDataVOView"
 				value="#{listApproveActionManagedBean.listData}"
-				sortColumn="#{listApproveActionManagedBean.sort}"
-				sortAscending="#{listApproveActionManagedBean.ascending}"
-				preserveDataModel="false" rows="#{web.entriesPerPage}"
-				width="100%">
+				width="100%"
+				rows="#{listApproveActionManagedBean.entriesPerPage}"
+				first="#{listApproveActionManagedBean.startIndex}">
 				<h:column>
 					<f:facet name="header">
-						<t:commandSortHeader columnName="requestDate">
+						<h:commandLink columnName="requestDate" action="#{listApproveActionManagedBean.sortByRequestDate}">
 						    <h:outputText value="#{web.text.REQUESTDATE}" />
 					    	<h:outputText styleClass="sortButton tiny-padding" rendered="#{listApproveActionManagedBean.sortedByRequestDate}" 
 					    		value="#{listApproveActionManagedBean.ascending ? '&#9650;' : '&#9660;'}" escape="false"/>
-						</t:commandSortHeader>
+						</h:commandLink>
 					</f:facet>
 					<h:outputText value="#{approveActionDataVOView.requestDate}" />
 				</h:column>
 				<h:column>
 					<f:facet name="header">
-						<t:commandSortHeader columnName="approveActionName">
+						<h:commandLink columnName="requestDate" action="#{listApproveActionManagedBean.sortByApprovalActionName}">
 						    <h:outputText value="#{web.text.APPROVEACTIONNAME}" />
 						    <h:outputText styleClass="sortButton tiny-padding" rendered="#{listApproveActionManagedBean.sortedByApproveActionName}" 
 						    	value="#{listApproveActionManagedBean.ascending ? '&#9650;' : '&#9660;'}" escape="false"/>
-						</t:commandSortHeader>
+						</h:commandLink>
 					</f:facet>
 					<h:commandLink immediate="true"
 						onmousedown='#{approveActionDataVOView.approveActionWindowLink}'>
@@ -89,11 +88,11 @@
 				</h:column>
 				<h:column>
 					<f:facet name="header">
-						<t:commandSortHeader columnName="requestUsername">
+						<h:commandLink columnName="requestDate" action="#{listApproveActionManagedBean.sortByRequestUserName}">
 						    <h:outputText value="#{web.text.REQUESTINGADMIN}" />
 						    <h:outputText styleClass="sortButton tiny-padding" rendered="#{listApproveActionManagedBean.sortedByRequestUsername}" 
 						    	value="#{listApproveActionManagedBean.ascending ? '&#9650;' : '&#9660;'}" escape="false"/>
-						</t:commandSortHeader>
+						</h:commandLink>
 					</f:facet>
 					<h:commandLink immediate="true"
 						onmousedown='#{approveActionDataVOView.viewRequestorCertLink}'
@@ -104,20 +103,29 @@
 					<h:outputText value="#{approveActionDataVOView.requestAdminName}"
 						rendered="#{!approveActionDataVOView.showViewRequestorCertLink}" />
 				</h:column>
-				<t:column>
+				<h:column>
 					<f:facet name="header">
-						<t:commandSortHeader columnName="status">
+						<h:commandLink columnName="requestDate" action="#{listApproveActionManagedBean.sortByStatus}">
 							<h:outputText value="#{web.text.STATUS}" />
 							<h:outputText styleClass="sortButton tiny-padding" rendered="#{listApproveActionManagedBean.sortedByStatus}" 
 								value="#{listApproveActionManagedBean.ascending ? '&#9650;' : '&#9660;'}" escape="false"/>
-						</t:commandSortHeader>
+						</h:commandLink>
 					</f:facet>
 					<h:outputText value="#{approveActionDataVOView.status}" />
-				</t:column>
-			</t:dataTable>
+				</h:column>
+			</h:dataTable>
 
 			<h:panelGrid columns="1" styleClass="scroller-table">
-				<t:dataScroller id="scroll_1" for="data" fastStep="10"
+				<h:panelGroup>
+					<h:commandButton action="#{listApproveActionManagedBean.firstPage}" styleClass="commandLinkAudit" value="&nbsp;&#9646;&#9664;&nbsp;"/>
+					<h:commandButton action="#{listApproveActionManagedBean.fastRewindPage}" styleClass="commandLinkAudit" value="&nbsp;&#9664;&#9664;&nbsp;"/>
+					<h:commandButton action="#{listApproveActionManagedBean.previousPage}" styleClass="commandLinkAudit" value="&nbsp;&#9664;&nbsp;"/>
+					<h:commandButton action="#{listApproveActionManagedBean.nextPage}" styleClass="commandLinkAudit" value="&nbsp;&#9654;&nbsp;"/>
+					<h:commandButton action="#{listApproveActionManagedBean.fastForwardPage}" styleClass="commandLinkAudit" value="&nbsp;&#9654;&#9654;&nbsp;"/>
+					<h:commandButton action="#{listApproveActionManagedBean.lastPage}" styleClass="commandLinkAudit" value="&nbsp;&#9654;&#9646;&nbsp;"/>
+				</h:panelGroup>
+				<!--
+			 	<t:dataScroller id="scroll_1" for="data" fastStep="10"
 					pageCountVar="pageCount" pageIndexVar="pageIndex"
 					styleClass="scroller" paginator="true" paginatorMaxPages="9"
 					paginatorTableClass="paginator"
@@ -137,6 +145,7 @@
 					&nbsp;
 					<h:outputText value="#{web.text.APPROVALREQUESTSFOUND}" />
 				</t:dataScroller>
+				 -->
 			</h:panelGrid>
 		</h:panelGroup>
 		</h:form>
