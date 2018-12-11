@@ -276,39 +276,58 @@ public class LdapPublisherMBData {
     }
 
     public void initializeData(final LdapPublisher publisher) {
-        this.port = publisher.getPort();
-        this.connectionSecurity = publisher.getConnectionSecurity();
-        this.connectionTimeout = publisher.getConnectionTimeOut();
-        this.readTimeout = publisher.getReadTimeOut();
-        this.storeTimeout = publisher.getStoreTimeOut();
-        this.createNonExistingUsers = publisher.getCreateNonExistingUsers();
-        this.modifyExistingUsers = publisher.getModifyExistingUsers();
-        this.modifyExistingAttributes = publisher.getModifyExistingAttributes();
-        this.addNonExistingAttributes = publisher.getAddNonExistingAttributes();
-        this.createImmidiateNodes = publisher.getCreateIntermediateNodes();
-        this.addMultipleCertificates = publisher.getAddMultipleCertificates();
-        this.removeRevokedCertificates = publisher.getRemoveRevokedCertificates();
-        this.removeUserOnCertRevoke = publisher.getRemoveUsersWhenCertRevoked();
-        this.setUserPassword = publisher.getSetUserPassword();
-        this.userObjectClass = publisher.getUserObjectClass();
-        this.caObjectClass = publisher.getCAObjectClass();
-        this.userCertificateAttr = publisher.getUserCertAttribute();
-        this.caCertificateAttr = publisher.getCACertAttribute();
-        this.crlAttribute = publisher.getCRLAttribute();
-        this.deltaCrlAttribute = publisher.getDeltaCRLAttribute();
-        this.arlAttribute = publisher.getARLAttribute();
-        this.useFieldInLdapDN = new ArrayList<Integer>(publisher.getUseFieldInLdapDN());
-        
-        this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PLAIN"), ConnectionSecurity.PLAIN);
-        this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("STARTTLS"), ConnectionSecurity.STARTTLS);
-        this.securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("SSL"), ConnectionSecurity.SSL);
+       port = publisher.getPort();
+       connectionSecurity = publisher.getConnectionSecurity();
+       connectionTimeout = publisher.getConnectionTimeOut();
+       readTimeout = publisher.getReadTimeOut();
+       storeTimeout = publisher.getStoreTimeOut();
+       createNonExistingUsers = publisher.getCreateNonExistingUsers();
+       modifyExistingUsers = publisher.getModifyExistingUsers();
+       modifyExistingAttributes = publisher.getModifyExistingAttributes();
+       addNonExistingAttributes = publisher.getAddNonExistingAttributes();
+       createImmidiateNodes = publisher.getCreateIntermediateNodes();
+       addMultipleCertificates = publisher.getAddMultipleCertificates();
+       removeRevokedCertificates = publisher.getRemoveRevokedCertificates();
+       removeUserOnCertRevoke = publisher.getRemoveUsersWhenCertRevoked();
+       setUserPassword = publisher.getSetUserPassword();
+       userObjectClass = publisher.getUserObjectClass();
+       caObjectClass = publisher.getCAObjectClass();
+       userCertificateAttr = publisher.getUserCertAttribute();
+       caCertificateAttr = publisher.getCACertAttribute();
+       crlAttribute = publisher.getCRLAttribute();
+       deltaCrlAttribute = publisher.getDeltaCRLAttribute();
+       arlAttribute = publisher.getARLAttribute();
+       useFieldInLdapDN = new ArrayList<Integer>(publisher.getUseFieldInLdapDN());
+       
+       securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PLAIN"), ConnectionSecurity.PLAIN);
+       securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("STARTTLS"), ConnectionSecurity.STARTTLS);
+       securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("SSL"), ConnectionSecurity.SSL);
         
     }
     
     public void setLdapPublisherParameters(final LdapPublisher ldapPublisher) {
-        ldapPublisher.setPort(this.port);
-        ldapPublisher.setConnectionSecurity(this.connectionSecurity);
-        ldapPublisher.setConnectionTimeOut(this.connectionTimeout);
+        ldapPublisher.setPort(port);
+        ldapPublisher.setConnectionSecurity(connectionSecurity);
+        ldapPublisher.setConnectionTimeOut(connectionTimeout);
+        ldapPublisher.setReadTimeOut(readTimeout);
+        ldapPublisher.setStoreTimeOut(storeTimeout);
+        ldapPublisher.setCreateNonExistingUsers(createNonExistingUsers);
+        ldapPublisher.setModifyExistingUsers(modifyExistingUsers);
+        ldapPublisher.setModifyExistingAttributes(modifyExistingAttributes);
+        ldapPublisher.setAddNonExistingAttributes(addNonExistingAttributes);
+        ldapPublisher.setCreateIntermediateNodes(createImmidiateNodes);
+        ldapPublisher.setAddMultipleCertificates(addMultipleCertificates);
+        ldapPublisher.setRemoveRevokedCertificates(removeRevokedCertificates);
+        ldapPublisher.setRemoveUsersWhenCertRevoked(removeUserOnCertRevoke);
+        ldapPublisher.setUserPassword(setUserPassword);
+        ldapPublisher.setUserObjectClass(userObjectClass);
+        ldapPublisher.setCAObjectClass(caObjectClass);
+        ldapPublisher.setUserCertAttribute(userCertificateAttr);
+        ldapPublisher.setCACertAttribute(caCertificateAttr);
+        ldapPublisher.setCRLAttribute(crlAttribute);
+        ldapPublisher.setDeltaCRLAttribute(deltaCrlAttribute);
+        ldapPublisher.setARLAttribute(arlAttribute);
+        ldapPublisher.setUseFieldInLdapDN(useFieldInLdapDN);
     }
     
 }
