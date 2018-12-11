@@ -403,7 +403,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    }
    
    // testing...
-   // doesn't set value yet
    private String currentSubjectDNAttribute;
    private String addedSubjectDNAttribute;
    private boolean isSubjectDNAdded = false;
@@ -493,10 +492,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        // this is temporary
        public void setComponentValueValidation(boolean componentValueValidation) {
            if(componentValueValidation) {
-               //this.componentValueValidation = componentValueValidation;
-               profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE],componentField[EndEntityProfile.NUMBER], new LinkedHashMap<String,Serializable>());
+               if (profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]) == null) {
+                   profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE],componentField[EndEntityProfile.NUMBER], new LinkedHashMap<String,Serializable>());
+               }
            } else {
-               //this.componentValueValidation = componentValueValidation;
                profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE],componentField[EndEntityProfile.NUMBER], null);
            }
        }
@@ -510,20 +509,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        }
        
        public void setComponentValidationString(String componentValidationString) {
-           //this.componentValidationString = componentValidationString;
            final LinkedHashMap<String,Serializable> validation = raBean.getValidationFromRegexp(componentValidationString);
            profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE],componentField[EndEntityProfile.NUMBER], validation);
        }
        
-       /*
-       public void setUseValidationLocal(boolean validation) {
-           useValidationField = validation;
-       }
-       
-       public boolean getUseValidationLocal() {
-           return useValidationField;
-       }
-       */
    }
    
    public List<SubjectDnComponent> subjectDnComponentList;
@@ -554,25 +543,114 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
            Iterator<String> addedAttributeIterator = subjectDnAdditions.iterator();
            while(addedAttributeIterator.hasNext()) {
                // here we need to actually add to profiledata in order for this to be correct even after rendering the form or table
+               // every time we render, we will get the settings that are hard coded below unless we save to profiledata...
                subjectDnComponentList.add(new SubjectDnComponent(addedAttributeIterator.next(), false, true, false, new int[]{0, 0}, new String(), new String()));
            }
        }
        return subjectDnComponentList;
    }
      
-   
    // OTHER SUBJECT ATTRIBUTES
+   
+   //
+   public class SubjectAltNameComponent implements Serializable{
+       private static final long serialVersionUID = 1L;
+       private int [] componentField;
+       private String componentName;
+       private String componentValue;
+       private boolean componentIsRequired;
+       private boolean componentIsModifyable;
+       
+       public SubjectAltNameComponent(String componentName, boolean componentIsRequired, boolean componentIsModifyable, boolean componentValueValidation, 
+               int [] componentField, String componentValue, String componentValidationString) {
+           this.componentName = componentName;
+           this.componentField = componentField;
+           this.componentIsRequired = componentIsRequired;
+           this.componentIsModifyable = componentIsModifyable;
+           this.componentValue = componentValue;
+       }
+       
+       public String getComponentName() {
+           return componentName;
+       }
+       
+       public void setComponentName(String componentName) {
+           this.componentName = componentName;
+       }
+       
+       public String getComponentValue() {
+           return componentValue;
+       }
+       
+       public void setComponentValue(String componentValue) {
+           this.componentValue = componentValue;
+           profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentValue);
+       }
+       
+       public int[] getComponentField() {
+           return componentField;
+       }
+       
+       public void getComponentField(int[] componentField) {
+           this.componentField = componentField;
+       }
+       
+       public boolean getComponentIsRequired() {
+           return componentIsRequired;
+       }
+       
+       public void setComponentIsRequired(boolean componentIsRequired) {
+           this.componentIsRequired = componentIsRequired;
+           profiledata.setRequired(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsRequired);
+       }
+       
+       public boolean getComponentIsModifyable() {
+           return componentIsModifyable;
+       }
+       
+       public void setComponentIsModifyable(boolean componentIsModifyable) {
+           this.componentIsModifyable = componentIsModifyable;
+           profiledata.setModifyable(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsModifyable);
+           
+       }
+       
+       public boolean getComponentValueValidation() {
+           return null != profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]);
+       }
+       
+       // this is temporary
+       public void setComponentValueValidation(boolean componentValueValidation) {
+           if(componentValueValidation) {
+               if (profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]) == null) {
+                   profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE],componentField[EndEntityProfile.NUMBER], new LinkedHashMap<String,Serializable>());
+               }
+           } else {
+               profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE],componentField[EndEntityProfile.NUMBER], null);
+           }
+       }
+       
+       public String getComponentValidationString() {
+           if (getComponentValueValidation()) {
+               return (String)profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
+           }else {
+               return "";
+           }
+       }
+       
+       public void setComponentValidationString(String componentValidationString) {
+           final LinkedHashMap<String,Serializable> validation = raBean.getValidationFromRegexp(componentValidationString);
+           profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE],componentField[EndEntityProfile.NUMBER], validation);
+       }
+   }
    
    //
    public List<SelectItem> getSubjectAltNameTypes(){
        final List<SelectItem> subjectAltNamesReturned = new ArrayList<>();
-       //String subjectAltNameNr;
        String subjectAltName;
        String subjectAltNameReturned;
        String[] attributeString = EndEntityProfile.getSubjectAltnameProfileFields();
        Integer stringElement;
        for(stringElement = 0; stringElement < attributeString.length; stringElement++) {
-           //subjectAltNameNr = stringElement.toString();
            subjectAltName = attributeString[stringElement.intValue()];
            if (EndEntityProfile.isFieldImplemented(subjectAltName)) {
                subjectAltNameReturned = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileName(subjectAltName));
@@ -609,121 +687,37 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    }
    
    //
-   public List<String> getSubjectAltNameComponent() {
-       List<String> components = new ArrayList<String>();
+   public List<SubjectAltNameComponent> getSubjectAltNameComponent() {
+       List<SubjectAltNameComponent> subjectAltNameComponentList = new ArrayList<SubjectAltNameComponent>();
        List<int[]> fielddatalist = new ArrayList<int[]>();
        int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
        for(int i=0; i < numberOfSubjectAltNameFields; i++){
            fielddatalist.add(profiledata.getSubjectAltNameFieldsInOrder(i));
        }
-       Iterator<int[]> iterator = fielddatalist.iterator();
-       while (iterator.hasNext()) {
-           int[] temp;
-           temp = iterator.next();
-           components.add(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE]))); 
+       for(int[] temp : fielddatalist) {
+           boolean required = profiledata.isRequired(temp[EndEntityProfile.FIELDTYPE],temp[EndEntityProfile.NUMBER]);
+           boolean modifyable = profiledata.isModifyable(temp[EndEntityProfile.FIELDTYPE],temp[EndEntityProfile.NUMBER]);
+           // this needs to be replaced
+           boolean validation = null != profiledata.getValidation(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
+           String value = profiledata.getValue(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
+           String validationString;
+           if(validation) {
+               validationString = (String) profiledata.getValidation(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
+           }else {
+               validationString = "";
+           }
+           subjectAltNameComponentList.add(new SubjectAltNameComponent(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])), required, 
+                   modifyable, validation, temp, value, validationString));
        }
        if (isSubjectAltNameAdded) {
            Iterator<String> addedAltNameComponentIterator = subjectAltNameAdditions.iterator();
            while(addedAltNameComponentIterator.hasNext()) {
-               components.add(addedAltNameComponentIterator.next());
+               subjectAltNameComponentList.add(new SubjectAltNameComponent(addedAltNameComponentIterator.next(), false, true, false, new int[]{0, 0}, new String(), new String()));
            }
        }
-       return components;
+       return subjectAltNameComponentList;
    }
-     
-   private String subjectAltNameValue;
-   // only last is returned 
-   public String getSubjectAltNameValue() {
-       int [] fielddata = null;
-       int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
-       }
-       if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) {
-           subjectAltNameValue = profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-       }
-       return subjectAltNameValue;
-   }
-   
-   //only sets the last subject alt name field to given value, need to keep track of current field 
-   public void setSubjectAltNameValue(String value) {
-       int [] fielddata = null;
-       int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
-       }
-       profiledata.setValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER], value);
-   }
-     
-   // only returns the last attribute value
-   public boolean isSubjectAltNameRequired() {
-       int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-       int [] fielddata = null;
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
-       }
-       return profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-   }
-   
-   // sets the last field only, need to keep track of current field
-   public void setSubjectAltNameRequired(boolean changeable) {
-       int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-       int [] fielddata = null;
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
-       }
-       profiledata.setRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER], changeable);//Sets the last field, change!!
-   }
-   
-   // but only returns the last attribute value
-   public boolean isSubjectAltNameModifyable() {
-       int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-       int [] fielddata = null;
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
-       }
-       return profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-   }
-   
-   // sets the last field only, need to keep track of current field
-   public void setSubjectAltNameModifyable(boolean changeable) {
-       int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-       int [] fielddata = null;
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
-       }
-       profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER], changeable);//Sets the last field, change!!
-   }
-   
-   // but only returns the last attribute value
-   public boolean isSubjectAltNameValidation() {
-       int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-       int [] fielddata = null;
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
-       }
-       return null != profiledata.getValidation(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-   }
-   
-   //..
-   public LinkedHashMap<String, Serializable> getSubjectAltNameValidationString() {
-       int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-       int [] fielddata = null;
-       LinkedHashMap<String, Serializable> validation = null;
-       for(int i=0; i < numberOfSubjectAltNameFields; i++){
-           fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
-       }
-       validation = profiledata.getValidation(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
-       return validation;
-   }
-   
-   //...
-   public String getSubjectAltNameValidationRegEx() {
-       String validationRegex = "";
-       if (isSubjectAltNameValidation()) validationRegex = (String)getSubjectAltNameValidationString().get(RegexFieldValidator.class.getName());
-       return validationRegex;
-   }
-     
+        
    //
    public List<SelectItem> getSubjectDirectoryAttributes(){
        final List<SelectItem> subjectDirectoryAttributesReturned = new ArrayList<>();
