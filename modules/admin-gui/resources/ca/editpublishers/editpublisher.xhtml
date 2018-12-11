@@ -76,14 +76,13 @@
 						<h:outputText value="#{editPublisher.getCurrentPublisherName()}"
 							rendered="#{editPublisher.readOnly or editPublisher.deprecated}" />
 						<h:selectOneMenu value="#{editPublisher.selectedPublisherType}" 
-										 rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}"
-										 valueChangeListener="#{editPublisher.changePublisherType}">
+										 rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}">
 							<f:selectItems value="#{editPublisher.availablePublisherTypes}" />
-							<f:ajax render=":selectPublisher"/>
+							<f:ajax render="@form" listener="#{editPublisher.changePublisherType}"/>
 						</h:selectOneMenu>
 					</h:panelGroup>
 				</h:panelGrid>
-
+				
 				<f:subview id="ldappublisherpage" rendered="#{editPublisher.renderLdapPublisherPage()}">
 					<ui:include src="ldappublisherpage.xhtml" />
 				</f:subview>
