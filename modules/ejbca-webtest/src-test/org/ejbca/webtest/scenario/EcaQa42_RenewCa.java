@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertEquals;
-
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
@@ -23,9 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * CAs can be renewed in different ways, only the CA certificate can be renewed
@@ -71,7 +67,7 @@ public class EcaQa42_RenewCa extends WebTestBase {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
         caHelper.setValidity("1y");
-        caHelper.saveCa();
+        caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
     }
 
@@ -81,7 +77,7 @@ public class EcaQa42_RenewCa extends WebTestBase {
         auditLogHelper.initFilterTime();
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(TestData.CA_NAME);
-        assertEquals("", "signKey", new Select(webDriver.findElement(By.xpath("//select[@name='selectcertsignkeyrenew']"))).getFirstSelectedOption().getText());
+        caHelper.assertSelectCertsignKeyRenew("signKey");
         caHelper.renewCaAndAssert(TestData.TEXT_CA_RENEWAL_ALERT_MESSAGE, true, TestData.TEXT_CA_RENEWAL_SUCCESS_MESSAGE, TestData.CA_NAME);
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());
@@ -94,7 +90,7 @@ public class EcaQa42_RenewCa extends WebTestBase {
         auditLogHelper.initFilterTime();
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(TestData.CA_NAME);
-        new Select(webDriver.findElement(By.xpath("//select[@name='selectcertsignkeyrenew']"))).selectByVisibleText("– Generate new key using KeySequence –");
+        caHelper.setNextCaKey("– Generate new key using KeySequence –");
         caHelper.renewCaAndAssert(TestData.TEXT_CA_RENEWAL_ALERT_MESSAGE, true, TestData.TEXT_CA_RENEWAL_SUCCESS_MESSAGE, TestData.CA_NAME);
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());
@@ -106,9 +102,9 @@ public class EcaQa42_RenewCa extends WebTestBase {
     public void stepD_checkNewKeys() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(TestData.CA_NAME);
-        assertEquals("Unexpected value for certSignKey", "signKey00001", webDriver.findElement(By.xpath("//td[text()='certSignKey']//following-sibling::td")).getText());
-        assertEquals("Unexpected value for crlSignKey", "signKey00001", webDriver.findElement(By.xpath("//td[text()='crlSignKey']//following-sibling::td")).getText());
-        assertEquals("Unexpected value for Key sequence", "00001", webDriver.findElement(By.xpath("//input[@name='textfieldkeysequence']")).getAttribute("value"));
+        caHelper.assertCertSignKeyValue("signKey00001");
+        caHelper.assertCrlSignKeyValue("signKey00001");
+        caHelper.assertKeysequence("00001");
     }
 
 }

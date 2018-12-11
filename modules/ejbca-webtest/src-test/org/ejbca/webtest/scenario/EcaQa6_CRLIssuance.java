@@ -74,7 +74,7 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
         caHelper.setValidity("1y");
-        caHelper.saveCa();
+        caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());

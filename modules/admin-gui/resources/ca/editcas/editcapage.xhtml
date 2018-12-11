@@ -260,7 +260,7 @@
 
 				<h:panelGroup
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
-					<h:selectOneMenu
+					<h:selectOneMenu id="selectDefaultKey"
 						value="#{editCAsMBean.selectedCryptoTokenDefaultKey}">
 						<f:selectItems value="#{editCAsMBean.cryptotokenDefaultKeyList}" />
 					</h:selectOneMenu>
@@ -1004,7 +1004,7 @@
 					<h:outputText value="#{editCAsMBean.crlCaIssueInterval}"
 						rendered="#{editCAsMBean.caExternal}" />
 					<h:inputText size="20" maxlength="255"
-						name="textfieldcrlissueinterval"
+						id="textfieldcrlissueinterval"
 						value="#{editCAsMBean.crlCaIssueInterval}"
 						disabled="#{not editCAsMBean.hasEditRight}" >
 					<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator"/>
@@ -1027,7 +1027,7 @@
 					<h:outputText value="#{editCAsMBean.crlCaOverlapTime}"
 						rendered="#{editCAsMBean.caExternal}" />
 					<h:inputText size="20" maxlength="255"
-						name="textfieldcrloverlaptime"
+						id="textfieldcrloverlaptime"
 						value="#{editCAsMBean.crlCaOverlapTime}"
 						disabled="#{not editCAsMBean.hasEditRight}" >
 					<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator"/>
@@ -1390,7 +1390,7 @@
 								value="#{web.text.RENEWCA_NEXTCAKEY}" />
 						</h:panelGroup>
 						<h:panelGroup>
-							<h:selectOneMenu name="selectcertsignkeyrenew"
+							<h:selectOneMenu id="selectcertsignkeyrenew"
 								value="#{editCAsMBean.certSignKeyReNewValue}"
 								disabled="#{not editCAsMBean.hasEditRight}">
 								<f:selectItems value="#{editCAsMBean.extrAndCertSignKeyReNewList}" />
@@ -1440,7 +1440,7 @@
 
 						<h:panelGroup/>
 						<h:panelGroup>
-							<h:commandButton name="buttonrenewca" value="#{web.text.RENEWCA}"
+							<h:commandButton id="buttonrenewca" value="#{web.text.RENEWCA}"
 								onclick="return confirmcaaction('#{web.text.AREYOUSURERENEWCA}')"
 								action="#{editCAsMBean.renewCa()}"
 								disabled="#{!editCAsMBean.hasEditRight}" />
@@ -1639,7 +1639,7 @@
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 
-					<h:commandButton name="buttonsave"
+					<h:commandButton id="buttonsave"
 						onclick='return checkallfields()' value="#{web.text.SAVE}"
 						action="#{editCAsMBean.saveCa}"
 						rendered="#{editCAsMBean.editCaNotUninitializedHasEditRights}" />

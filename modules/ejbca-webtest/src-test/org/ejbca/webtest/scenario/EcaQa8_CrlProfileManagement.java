@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+import java.util.Arrays;
+
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AuditLogHelper;
@@ -21,11 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
-import java.util.Arrays;
 
 /**
  * CRL profiles don't exist as independent entities, but are instead an inherent
@@ -76,17 +74,11 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
         caHelper.setValidity("1y");
 
         // CRL settings
-        WebElement crlExpirePeriod = webDriver.findElement(By.xpath("//input[@name='textfieldcrlperiod']"));
-        WebElement crlIssueInterval = webDriver.findElement(By.xpath("//input[@name='textfieldcrlissueinterval']"));
-        WebElement crlOverlapTime = webDriver.findElement(By.xpath("//input[@name='textfieldcrloverlaptime']"));
-        crlExpirePeriod.clear();
-        crlIssueInterval.clear();
-        crlOverlapTime.clear();
-        crlExpirePeriod.sendKeys("1d");
-        crlIssueInterval.sendKeys("22h");
-        crlOverlapTime.sendKeys("30m");
+        caHelper.setCrlPeriod("1d");
+        caHelper.setCrlIssueInterval("22h");
+        caHelper.setCrlOverlapTime("30m");
 
-        caHelper.saveCa();
+        caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
 
         // Verify Audit Log
@@ -106,9 +98,7 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
         caHelper.edit(TestData.CA_NAME);
 
         // Change 'CRL Issue Interval'
-        WebElement crlIssueInterval = webDriver.findElement(By.xpath("//input[@name='textfieldcrlissueinterval']"));
-        crlIssueInterval.clear();
-        crlIssueInterval.sendKeys("20h");
+        caHelper.setCrlIssueInterval("20h");
 
         caHelper.saveCa();
         caHelper.assertExists(TestData.CA_NAME);

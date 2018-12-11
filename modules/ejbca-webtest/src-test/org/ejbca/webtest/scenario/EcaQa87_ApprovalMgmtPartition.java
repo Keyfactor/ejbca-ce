@@ -145,9 +145,8 @@ public class EcaQa87_ApprovalMgmtPartition extends WebTestBase {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
         caHelper.setValidity(TestData.CA_VALIDITY);
-        // TODO Refactor ECA-7343
         caHelper.selectApprovalProfileName(TestData.APPROVAL_PROFILE_NAME);
-        caHelper.saveCa();
+        caHelper.createCa();
     }
 
     @Test
