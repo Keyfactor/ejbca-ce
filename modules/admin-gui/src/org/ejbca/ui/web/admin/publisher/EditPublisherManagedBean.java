@@ -31,7 +31,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
@@ -117,8 +117,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return ldapPublisherMBData;
     }
 
-    private BasePublisher publisher;
-    private int publisherId;
+    private BasePublisher publisher = null;
+    private Integer publisherId = null;
     
     public int getPublisherId(){
         return publisherId;
@@ -160,7 +160,9 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     private void initCommonParts() {
-        publisher = publisherSession.getPublisher(listPublishersManagedBean.getSelectedPublisherName());
+        if (publisher == null) {
+            publisher = publisherSession.getPublisher(listPublishersManagedBean.getSelectedPublisherName());
+        }
         selectedPublisherType = String.valueOf(getPublisherType());
         publisherId = publisher.getPublisherId();
         publisherDescription = publisher.getDescription();
@@ -530,11 +532,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.customPublisherPropertyOutputTextArea = customPublisherPropertyOutputTextArea;
     }
 
-    public String changePublisherType(ValueChangeEvent event) {
-        String newPublisherType = (String) event.getNewValue();
-        int dashPos = newPublisherType.indexOf('-');
+    public String changePublisherType(AjaxBehaviorEvent event) {
+        int dashPos = selectedPublisherType.indexOf('-');
         if (dashPos == -1) {
-            switch (Integer.valueOf(newPublisherType)) {
+            switch (Integer.valueOf(selectedPublisherType)) {
             case PublisherConst.TYPE_ADPUBLISHER:
                 publisher = new ActiveDirectoryPublisher();
                 break;
@@ -555,11 +556,12 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             }
         } else {
             publisher = new CustomPublisherContainer();
-            final String customClassName = newPublisherType.substring(dashPos + 1);
+            final String customClassName = selectedPublisherType.substring(dashPos + 1);
             if (getCustomClasses().contains(customClassName)) {
                 ((CustomPublisherContainer) publisher).setClassPath(customClassName);
             }
         }
+        initializePage();
         return "editpublisher";
     }
     
