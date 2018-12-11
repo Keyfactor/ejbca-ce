@@ -103,7 +103,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(caName);
         caHelper.setValidity("40y");
-        caHelper.saveCa();
+        caHelper.createCa();
         caHelper.assertExists(caName);
         // Select the CA, click 'Delete CA' and then 'Cancel'
         caHelper.deleteCaAndAssert(deleteAlert, false, null, caName);
