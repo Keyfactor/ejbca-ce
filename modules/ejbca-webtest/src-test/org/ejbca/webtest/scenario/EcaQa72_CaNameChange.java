@@ -25,7 +25,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -87,7 +86,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     public void testC_editCaExpectNoNameChangeAvailable() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(caName);
-        caHelper.assertCheckboxcaNameChangeNotPresent();
+        caHelper.assertCheckboxCaNameChangeNotPresent();
         caHelper.assertNewSubjectDnNotPresent();
     }
     
@@ -101,12 +100,8 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     public void testE_editCaExpectNameChangeAvailable() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(caName);
-        try {
-            caHelper.assertCheckboxcaNameChangePresent();
-            caHelper.assertNewSubjectDnIsEnabled(false);
-        } catch (NoSuchElementException e) {
-            fail("'Use CA Name Change' was not available while editing the CA even though it was globally enabled");
-        }
+        caHelper.assertCheckboxcaNameChangePresent();
+        caHelper.assertNewSubjectDnIsEnabled(false);
     }
     
     @Test
