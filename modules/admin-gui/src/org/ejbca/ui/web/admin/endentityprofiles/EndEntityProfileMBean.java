@@ -1250,7 +1250,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    
    private UserNotification notification;
    
-   //This one will probably be reoved, since most likely not needed when we use the UN object and it's internal methods
+   //This one will probably be removed, since most likely not needed when we use the UN object and it's internal methods
    public void setCurrentNotification(UserNotification notification) {
        this.notification = notification;
    }
@@ -1272,28 +1272,28 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        String[] statustexts = ViewEndEntityHelper.statustexts;
        List<SelectItem> allEvents = new ArrayList<>();
        for (int i=0; i < statuses.length; i++) {
-           System.out.println(" ALL  @@ " + new Integer(statuses[i]).toString() + " @@ " + statustexts[i]); //testing
            allEvents.add(new SelectItem( new Integer( statuses[i]).toString(), statustexts[i]) );
        }
        return allEvents;
    }
    
-   private Collection<SelectItem> currentUserNotificationEvents;
-   
+   //private Collection<SelectItem> currentUserNotificationEvents;
+   private Collection<String> currentUserNotificationEvents;
+      
+   /*
+    * Since getNotificationEventsCollection() doesn't have a setter, atm I can't use it in the SelectManyListbox
+    * There is a get/set NotificationEvents() in EndEntityProfile, but it's just a String (events separated by ";")
+    * How save Notification Events for a given User Notification?
+    * */
+      
    public Collection<String> getCurrentNotificationEvents() {
-       Collection<String> userNotificationEventStrings = new ArrayList<String>();
-       Iterator<String> eventIterator = notification.getNotificationEventsCollection().iterator();
-       while(eventIterator.hasNext()) {
-           //String temp = new String(EndEntityConstants.getTranslatableStatusText(new Integer(eventIterator.next()).intValue()));
-           String temp = new String(new Integer(eventIterator.next()).toString());
-           userNotificationEventStrings.add(temp);
-           System.out.println("Current : " + temp);
-       }
-       return userNotificationEventStrings;
+       return notification.getNotificationEventsCollection();
     }
    
-   public void setCurrentNotificationEvents(Collection<SelectItem> currentEvents) {
+   //public void setCurrentNotificationEvents(Collection<SelectItem> currentEvents) {
+   public void setCurrentNotificationEvents(Collection<String> currentEvents) {
        currentUserNotificationEvents = currentEvents;
+       //  we don't currently keep track of the current notification (it's always the last one)
    }
    
    //
