@@ -12,7 +12,6 @@ import org.openqa.selenium.WebElement;
 
 import java.util.List;
 
-// TODO JavaDoc
 /**
  * Services helper class for EJBCA Web Tests.
  *
@@ -28,18 +27,17 @@ public class ServicesHelper extends BaseHelper {
         static final String PAGE_URI = "/ejbca/adminweb/services/listservices.xhtml";
         static final By PAGE_LINK = By.id("sysFuncsServices");
         // Services Form
-        static final By INPUT_NAME = By.xpath("//input[contains(@name, 'newServiceName')]");
-        static final By BUTTON_ADD = By.xpath("//input[contains(@name, 'addButton')]");
-        static final By BUTTON_EDIT = By.xpath("//input[contains(@name, 'editButton')]");
-        static final By BUTTON_DELETE = By.xpath("//input[contains(@name, 'deleteButton')]");
-        static final By BUTTON_RENAME = By.xpath("//input[contains(@name, 'renameButton')]");
-        static final By BUTTON_CLONE = By.xpath("//input[contains(@name, 'cloneButton')]");
-        static final By SELECT_SERVICES_LIST = By.xpath("//select[@class='select-list']");
-        static final By TEXT_ALERT = By.xpath("//table[@class='alert']");
+        static final By INPUT_NAME = By.id("services:newServiceName");
+        static final By BUTTON_ADD = By.id("services:addButton");
+        static final By BUTTON_EDIT = By.id("services:editButton");
+        static final By BUTTON_DELETE = By.id("services:deleteButton");
+        static final By BUTTON_RENAME = By.id("services:renameButton");
+        static final By BUTTON_CLONE = By.id("services:cloneButton");
+        static final By SELECT_SERVICES_LIST = By.id("services:listServices");
         // Service Form
         static final By TEXT_SERVICE_TITLE = By.id("serviceTitle");
-        static final By SELECT_WORKER = By.xpath("//select[contains(@name, 'selectWorker')]");
-        static final By BUTTON_EDIT_SAVE = By.id("edit:saveButton");
+        static final By SELECT_WORKER = By.id("selectWorkerForm:selectWorker");
+        static final By BUTTON_EDIT_SAVE = By.id("editForm:saveButton");
     }
 
     public ServicesHelper(final WebDriver webDriver) {
@@ -64,7 +62,7 @@ public class ServicesHelper extends BaseHelper {
     }
 
     public void editService(final String selectedWorker) {
-        if(selectedWorker != null) {
+        if (selectedWorker != null) {
             selectOptionByName(Page.SELECT_WORKER, selectedWorker);
         }
     }
@@ -114,15 +112,13 @@ public class ServicesHelper extends BaseHelper {
         assertTrue("CRL Updater was not selected", selectedNames.contains(name));
     }
 
-    public void assertHasAlert(final String alertText) {
-        final WebElement alertWebElement = findElement(Page.TEXT_ALERT);
-        assertNotNull("Alert was not found", alertWebElement);
-        assertEquals("No warning was given the service name already exists", alertText, alertWebElement.getText());
+    public void assertHasErrorMessage(final String errorMessageText) {
+        assertErrorMessageApears(errorMessageText, "Service save error message was not found", "Expected service error message was not displayed");
     }
 
     private void assertServiceTitleExists(final By textTitleId, final String prefixString, final String serviceName) {
         final WebElement serviceTitle = findElement(textTitleId);
-        if(serviceName == null) {
+        if (serviceName == null) {
             fail("Service title was not found.");
         }
         assertEquals(
