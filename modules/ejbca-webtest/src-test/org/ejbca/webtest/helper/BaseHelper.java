@@ -292,16 +292,16 @@ public class BaseHelper {
      * @param selectId locator.
      * @param selectionOptions  a list of option names to select.
      * @param useDeselectAll    deselection flag for the already selected options.
-     * @param dependentElement  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
+     * @param dependentElementId  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
-    protected void selectOptionsByName(final By selectId, final List<String> selectionOptions, final boolean useDeselectAll, final By dependentElement) {
+    protected void selectOptionsByName(final By selectId, final List<String> selectionOptions, final boolean useDeselectAll, final By dependentElementId) {
         final WebElement selectWebElement = findElement(selectId);
         assertNotNull("Page select was not found", selectWebElement);
         selectOptions(new Select(selectWebElement), selectionOptions, useDeselectAll, SELECT_BY.TEXT);
         // For assertion, reload the object as a selection may trigger the refresh/reload event and modify the DOM
         // which causes the org.openqa.selenium.StaleElementReferenceException
-        if (dependentElement != null) {
-            findElement(dependentElement);
+        if (dependentElementId != null) {
+            findElement(dependentElementId);
         }
         final WebElement selectedWebElement = findElement(selectId);
         assertSelectionOfAllOptions(new Select(selectedWebElement), selectionOptions, SELECT_BY.TEXT);
@@ -652,7 +652,7 @@ public class BaseHelper {
     }
 
     /**
-     * Returns the first selected text of select element..
+     * Returns the first selected text of select element.
      *
      * @param webElement non-null web element.
      * @return the first selected element of a select or null.
