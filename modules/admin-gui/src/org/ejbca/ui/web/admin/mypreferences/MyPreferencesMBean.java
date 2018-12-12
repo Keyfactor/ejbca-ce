@@ -117,9 +117,9 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
                 getEjbcaWebBean().changeAdminPreference(adminPreference);
             }
         } catch (final AdminExistsException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
         } catch (final AdminDoesntExistException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
         }
         redirectToAdminweb();
     }
