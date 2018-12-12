@@ -76,6 +76,12 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
     private static final Map<Integer, String> AVAILABLE_SAM_ACCOUNTS;
     private final Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = new HashMap<>();
+    private final Map<String, Object> customPublisherPropertyValues = new HashMap<>();
+    private List<CustomPublisherProperty> availableCustomPublisherPropertyList;
+
+    public List<CustomPublisherProperty> getAvailableCustomPublisherPropertyList() {
+        return availableCustomPublisherPropertyList;
+    }
 
     static {
         AVAILABLE_PUBLISHERS = new LinkedHashMap<>();
@@ -131,13 +137,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return publisherId;
     }
 
+    private String customPublisherPropertyData;
     private String customPublisherCurrentClass;
-    private String customPublisherPropertySelectOneMenuValue;
-    private String customPublisherPropertyInputText;
-    private String customPublisherPropertyInputPassword;
-    private String customPublisherPropertyOutputTextArea;
-    private boolean customPublisherPropertySelectBooleanCheckbox;
-    
 
     private String publisherDescription;
     private boolean useQueueForCertificates;
@@ -171,6 +172,9 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             publisher = publisherSession.getPublisher(listPublishersManagedBean.getSelectedPublisherName());
             publisherId = publisher.getPublisherId();
             fillPublisherInitMapAndInitPublisherData();
+        }
+        if (publisher instanceof CustomPublisherContainer) {
+            availableCustomPublisherPropertyList = ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject());
         }
         selectedPublisherType = getSelectedPublisherValue();
         publisherDescription = publisher.getDescription();
@@ -330,6 +334,14 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return text;
     }
 
+    public String getCustomPublisherPropertyData() {
+        return customPublisherPropertyData;
+    }
+
+    public void setCustomPublisherPropertyData(final String customPublisherPropertyData) {
+        this.customPublisherPropertyData = customPublisherPropertyData;
+    }
+    
     public String getSelectedPublisherType() {
         return selectedPublisherType;
     }
@@ -338,6 +350,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.selectedPublisherType = selectedPublisherType;
     }
     
+    public Map<String, Object> getCustomPublisherPropertyValues() {
+        return customPublisherPropertyValues;
+    }
+
     public String getPublisherQueue() {
         int[] times = getPublisherQueueLength(new int[]{0, 1*60, 10*60, 60*60}, new int[]{1*60, 10*60, 60*60, -1});
         return Arrays.stream(times).mapToObj(Integer::toString).collect(Collectors.joining(", "));
@@ -403,13 +419,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             return false;
     }
     
-    public String getPropertyData() {
-        if (publisher instanceof CustomPublisherContainer) {
-            return ((CustomPublisherContainer) publisher).getPropertyData();
-        } else
-            return StringUtils.EMPTY;
-    }
-    
     public List<CustomPublisherProperty> getCustomUiPropertyList() {
         if (publisher instanceof CustomPublisherContainer) {
             return ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject());
@@ -463,38 +472,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public String getCustomHelpText(final CustomPublisherProperty customPublisherProperty) {
         return getEjbcaWebBean().getText(
                 getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase() + "_HELP");
-    }
-
-    public String getCustomPublisherPropertySelectOneMenuValue() {
-        return customPublisherPropertySelectOneMenuValue;
-    }
-
-    public void setCustomPublisherPropertySelectOneMenuValue(final String customPublisherPropertySelectOneMenuValue) {
-        this.customPublisherPropertySelectOneMenuValue = customPublisherPropertySelectOneMenuValue;
-    }
-
-    public String getCustomPublisherPropertyInputText() {
-        return customPublisherPropertyInputText;
-    }
-
-    public void setCustomPublisherPropertyInputText(final String customPublisherPropertyInputText) {
-        this.customPublisherPropertyInputText = customPublisherPropertyInputText;
-    }
-
-    public String getCustomPublisherPropertyInputPassword() {
-        return customPublisherPropertyInputPassword;
-    }
-
-    public void setCustomPublisherPropertyInputPassword(final String customPublisherPropertyInputPassword) {
-        this.customPublisherPropertyInputPassword = customPublisherPropertyInputPassword;
-    }
-
-    public String getCustomPublisherPropertyOutputTextArea() {
-        return customPublisherPropertyOutputTextArea;
-    }
-
-    public void setCustomPublisherPropertyOutputTextArea(final String customPublisherPropertyOutputTextArea) {
-        this.customPublisherPropertyOutputTextArea = customPublisherPropertyOutputTextArea;
     }
 
     public String changePublisherType(AjaxBehaviorEvent event) {
@@ -573,14 +550,38 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return null;
     }
     
-    private Object initMultiGroupPublisher() {
+    private Void initMultiGroupPublisher() {
         multiGroupPublisherMBData = new MultiGroupPublisherMBData();
         multiGroupPublisherMBData.initializeData((MultiGroupPublisher) publisher);
         return null;
     }
 
-    private Object initCustomPublisher() {
+    private Void initCustomPublisher() {
         customPublisherCurrentClass = ((CustomPublisherContainer) publisher).getClassPath();
+        customPublisherPropertyData = ((CustomPublisherContainer) publisher).getPropertyData();
+        
+/*        
+        for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
+            switch (customPublisherProperty.getType()) {
+            case CustomPublisherProperty.UI_SELECTONE:
+                this.customPublisherPropertySelectOneMenuValue = customPublisherProperty.getValue();
+                break;
+            case CustomPublisherProperty.UI_BOOLEAN:
+                this.customPublisherPropertySelectBooleanCheckbox = customPublisherProperty.getValue().equals("true");
+                break;
+            case CustomPublisherProperty.UI_TEXTINPUT:
+                this.customPublisherPropertyInputText = customPublisherProperty.getValue();
+                break;
+            case CustomPublisherProperty.UI_TEXTINPUT_PASSWORD:
+                this.customPublisherPropertyInputPassword = customPublisherProperty.getValue();
+                break;
+            case CustomPublisherProperty.UI_TEXTOUTPUT:
+                this.customPublisherPropertyOutputTextArea = customPublisherProperty.getValue();
+            default:
+                break;
+            }
+        }
+        */
         return null;
     }
 
@@ -620,13 +621,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.customPublisherCurrentClass = customPublisherCurrentClass;
     }
 
-    public boolean isCustomPublisherPropertySelectBooleanCheckbox() {
-        return customPublisherPropertySelectBooleanCheckbox;
-    }
 
-    public void setCustomPublisherPropertySelectBooleanCheckbox(final boolean customPublisherPropertySelectBooleanCheckbox) {
-        this.customPublisherPropertySelectBooleanCheckbox = customPublisherPropertySelectBooleanCheckbox;
-    }
 
     public String getPublisherDescription() {
         return publisherDescription;
@@ -711,7 +706,27 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
                 addErrorMessage(e.getMessage());
             }
         }
+        
+        if (publisher instanceof CustomPublisherContainer) {
+            setCustomPublisherData();
+        }
          
+    }
+
+    private void setCustomPublisherData() {
+        final CustomPublisherContainer customPublisherContainer = ((CustomPublisherContainer) publisher);
+        customPublisherContainer.setClassPath(customPublisherCurrentClass);
+
+        if (customPublisherContainer.isCustomUiRenderingSupported()) {
+            final StringBuilder sb = new StringBuilder();
+            for (final CustomPublisherProperty customPublisherProperty : customPublisherContainer
+                    .getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
+                sb.append(customPublisherProperty.getName()).append('=').append(customPublisherPropertyValues.get(customPublisherProperty.getName())).append('\n');
+            }
+            customPublisherContainer.setPropertyData(sb.toString());
+        } else {
+            customPublisherContainer.setPropertyData(customPublisherPropertyData);
+        }
     }
 
     private void setPublisherQueueAndGeneralSettings() {
@@ -721,5 +736,4 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         publisher.setUseQueueForCertificates(useQueueForCertificates);
         publisher.setDescription(publisherDescription);        
     }
-    
 }
