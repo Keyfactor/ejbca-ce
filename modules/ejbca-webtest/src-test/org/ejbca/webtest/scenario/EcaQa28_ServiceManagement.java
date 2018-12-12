@@ -101,7 +101,7 @@ public class EcaQa28_ServiceManagement extends WebTestBase {
     public void stepE_duplicateNameExpectFailure() {
         servicesHelper.openPage(getAdminWebUrl());
         servicesHelper.renameService(TestData.SERVICE_NAME_CLONED, TestData.SERVICE_NAME_RENAMED);
-        servicesHelper.assertHasAlert("Service name already exists");
+        servicesHelper.assertHasErrorMessage("Service name already exists");
     }
     
     @Test

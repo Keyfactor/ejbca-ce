@@ -44,6 +44,11 @@ public class BaseHelper {
 
     protected WebDriver webDriver;
 
+    public static class Page {
+        static final By TEXT_MESSAGE = By.xpath("//*[@id='messages']//li[@class='infoMessage']");
+        static final By TEXT_ERROR_MESSAGE = By.xpath("//*[@id='messages']//li[@class='errorMessage']");
+    }
+
     /**
      * Built-in timeout for WebElement find.
      */
@@ -753,4 +758,41 @@ public class BaseHelper {
         wait.until(ExpectedConditions.visibilityOf(webElement));
     }
 
+    /**
+     * Asserts error Message appears with correct message text
+     *
+     * @param expectedInfoMessage
+     * @param noElementMessage
+     * @param assertMessage
+     */
+    protected void assertInfoMessageApears(String expectedInfoMessage, String noElementMessage, String assertMessage) {
+        final WebElement errorMessage = findElement(Page.TEXT_MESSAGE);
+        if(errorMessage == null) {
+            fail(noElementMessage);
+        }
+        assertEquals(
+                assertMessage,
+                expectedInfoMessage,
+                errorMessage.getText()
+        );
+    }
+
+    /**
+     * Asserts error Message appears with correct message text
+     *
+     * @param expectedErrorMessage
+     * @param noElementMessage
+     * @param assertMessage
+     */
+    protected void assertErrorMessageApears(String expectedErrorMessage, String noElementMessage, String assertMessage) {
+        final WebElement errorMessage = findElement(Page.TEXT_ERROR_MESSAGE);
+        if(errorMessage == null) {
+            fail(noElementMessage);
+        }
+        assertEquals(
+                assertMessage,
+                expectedErrorMessage,
+                errorMessage.getText()
+        );
+    }
 }

@@ -73,7 +73,6 @@ public class CertificateProfileHelper extends BaseHelper {
         static final String PAGE_URI = "/ejbca/adminweb/ca/editcertificateprofiles/editcertificateprofiles.xhtml";
         static final By PAGE_LINK = By.id("caEditcertificateprofiles");
         // Certificate Profiles Form
-        static final By TEXT_MESSAGE = By.xpath("//*[@id='messages']//li[@class='infoMessage']");
         static final By INPUT_NAME = By.id("editcertificateprofilesForm:editcertificateprofilesTable:profileNameInputField");
         static final By INPUT_RENAME_NEW_NAME = By.id("editcertificateprofilesForm:renameProfileNew");
         static final By INPUT_CLONE_NEW_NAME = By.id("editcertificateprofilesForm:addFromTemplateProfileNew");
@@ -1463,15 +1462,9 @@ public class CertificateProfileHelper extends BaseHelper {
 
     // Asserts the 'Certificate Profile' save title exists.
     private void assertCertificateProfileSaved() {
-        final WebElement certificateProfileSaveMessage = findElement(Page.TEXT_MESSAGE);
-        if(certificateProfileSaveMessage == null) {
-            fail("Certificate Profile save message was not found.");
-        }
-        assertEquals(
-                "Expected profile save message was not displayed",
-                "Certificate Profile saved.",
-                certificateProfileSaveMessage.getText()
-        );
+        assertInfoMessageApears("Certificate Profile saved.",
+                "Certificate Profile save message was not found.",
+                "Expected profile save message was not displayed");
     }
 
     private List<WebElement> getListOfApprovalSettingElements() {

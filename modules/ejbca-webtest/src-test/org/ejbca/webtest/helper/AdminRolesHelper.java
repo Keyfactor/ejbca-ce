@@ -48,7 +48,6 @@ public class AdminRolesHelper extends BaseHelper {
         static final By PAGE_LINK = By.id("sysFuncsRoles");
         // Manage Administrator Roles
         static final By BUTTON_ADD = By.id("roles:list:addRoleButton");
-        static final By TEXT_MESSAGE = By.xpath("//*[@id='messages']//li[@class='infoMessage']");
         static final By INPUT_MODAL_ROLE_NAME = By.id("modal:roleNameInputField");
         static final By BUTTON_MODAL_ADD = By.id("modal:confirmAddRoleButton");
         // Form Access Rules
@@ -574,28 +573,16 @@ public class AdminRolesHelper extends BaseHelper {
 
     // Asserts the 'Manage Administrator Roles' add title exists.
     private void assertRoleAdded() {
-        final WebElement roleAddMessage = findElement(Page.TEXT_MESSAGE);
-        if(roleAddMessage == null) {
-            fail("Role add message was not found.");
-        }
-        assertEquals(
+        assertInfoMessageApears("Role added.",
                 "Expected role add message was not displayed.",
-                "Role added.",
-                roleAddMessage.getText()
-        );
+                "Role add message was not found.");
     }
 
     // Asserts the 'Manage Administrator Roles' update title exists.
     private void assertRoleUpdated() {
-        final WebElement roleUpdateMessage = findElement(Page.TEXT_MESSAGE);
-        if(roleUpdateMessage == null) {
-            fail("Role update message was not found.");
-        }
-        assertEquals(
+        assertInfoMessageApears("Role updated successfully.",
                 "Expected role update message was not displayed.",
-                "Role updated successfully.",
-                roleUpdateMessage.getText()
-        );
+                "Role update message was not found.");
     }
 
     // Asserts the 'Manage Administrator Roles' name exists.

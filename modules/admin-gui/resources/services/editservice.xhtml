@@ -39,7 +39,7 @@
 
 	<h3 id="serviceTitle"><h:outputText value="#{editService.getEditServiceTitle()}" /></h3>
 	
-	<h:form id="selectWorker" style="margin-bottom: 3px;">
+	<h:form id="selectWorkerForm" style="margin-bottom: 3px;">
 		<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 		<h:panelGroup>
 			&#xA0;
@@ -54,7 +54,9 @@
 			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Services.html')}" escape="false"/>
 		</h:panelGroup>
 		<h:panelGroup style="white-space: nowrap;">
-			<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}"
+			<h:selectOneMenu
+					id="selectWorker"
+					value="#{editService.serviceConfigurationView.selectedWorker}"
 		    	             disabled="#{not editService.hasEditRights}">
 				<f:selectItems value="#{editService.serviceConfigurationView.availableWorkers}"/>
 				<f:ajax render=":editForm"/>             
