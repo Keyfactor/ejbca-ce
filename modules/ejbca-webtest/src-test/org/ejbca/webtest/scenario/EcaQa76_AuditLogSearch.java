@@ -49,7 +49,7 @@ import org.openqa.selenium.WebElement;
 /**
  * Creates a CA and an End Entity and checks that the actions are logged properly.
  * 
- * @version $Id: EcaQa76_AuditLogSearch.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa76_AuditLogSearch extends WebTestBase {

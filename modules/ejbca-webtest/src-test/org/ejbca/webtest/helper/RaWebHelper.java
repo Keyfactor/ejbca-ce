@@ -26,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * RA Web helper class for EJBCA Web Tests.
  *
- * @version $Id: RaWebHelper.java 28908 2018-05-10 07:51:54Z andrey_s_helmes $
+ * @version $Id$
  */
 public class RaWebHelper extends BaseHelper {
 

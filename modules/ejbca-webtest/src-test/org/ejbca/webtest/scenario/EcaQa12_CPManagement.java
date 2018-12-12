@@ -32,7 +32,7 @@ import java.util.Collections;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-12">ECAQA-12</a>
  * 
- * @version $Id: EcaQa12_CPManagement.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa12_CPManagement extends WebTestBase {
