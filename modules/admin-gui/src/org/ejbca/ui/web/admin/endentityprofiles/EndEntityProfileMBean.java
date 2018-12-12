@@ -921,7 +921,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    //...
    public void setCurrentDefaultToken(String defaultToken) {
        String token = defaultToken;
-       
        profiledata.setValue(EndEntityProfile.DEFKEYSTORE,0, token);
    }
    
@@ -1220,9 +1219,9 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        final List<SelectItem> revocationReasonsReturned = new ArrayList<>();
        String humanRead;
        int dbValue;
-       for (RevocationReasons revocatinReason : RevocationReasons.values() ) {
-          humanRead = revocatinReason.getHumanReadable();
-          dbValue = revocatinReason.getDatabaseValue();
+       for (RevocationReasons revocationReason : RevocationReasons.values() ) {
+          humanRead = revocationReason.getHumanReadable();
+          dbValue = revocationReason.getDatabaseValue();
           if (dbValue == -1) {// Not revoked
               revocationReasonsReturned.add(0, new SelectItem(dbValue, ejbcaWebBean.getText("ACTIVE")));
           }else if (dbValue == 6){// Certificate on hold    
@@ -1250,7 +1249,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    }
    
    private UserNotification notification;
-      
+   
+   //This one will probably be reoved, since most likely not needed when we use the UN object and it's internal methods
    public void setCurrentNotification(UserNotification notification) {
        this.notification = notification;
    }
@@ -1258,25 +1258,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    public List<UserNotification> getNotifications() {
        List<UserNotification> returnedNotifications = new ArrayList<UserNotification>();
        returnedNotifications = profiledata.getUserNotifications();
-       if (notificationAdded) {
-           Iterator<UserNotification> notificationIterator = notificationAdditions.iterator() ;
-           while(notificationIterator.hasNext()) {
-               returnedNotifications.add(notificationIterator.next());
-           }
-       }
        return returnedNotifications;
    }
    
-   private boolean notificationAdded = false;
-   
-   // Using a saved notification list and appended to existing is temporary solution 
-   private List<UserNotification> notificationAdditions = new ArrayList<UserNotification>();
-   
    public void addNotification() {
        UserNotification newNotification = new UserNotification();
-       //profiledata.addUserNotification(newNotification);
-       notificationAdditions.add(newNotification);
-       notificationAdded = true;
+       profiledata.addUserNotification(newNotification);
    }
    
    // EXPERIMENTAL
@@ -1287,8 +1274,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        for (int i=0; i < statuses.length; i++) {
            System.out.println(" ALL  @@ " + new Integer(statuses[i]).toString() + " @@ " + statustexts[i]); //testing
            allEvents.add(new SelectItem( new Integer( statuses[i]).toString(), statustexts[i]) );
-           //allEvents.add(new SelectItem( new Integer(statuses[i]).toString(), new Integer(statuses[i]).toString()));
-           //allEvents.add(new SelectItem(statuses[i], statuses[i]));
        }
        return allEvents;
    }
@@ -1299,7 +1284,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        Collection<String> userNotificationEventStrings = new ArrayList<String>();
        Iterator<String> eventIterator = notification.getNotificationEventsCollection().iterator();
        while(eventIterator.hasNext()) {
-           String temp = new String(EndEntityConstants.getTranslatableStatusText(new Integer(eventIterator.next()).intValue()));
+           //String temp = new String(EndEntityConstants.getTranslatableStatusText(new Integer(eventIterator.next()).intValue()));
+           String temp = new String(new Integer(eventIterator.next()).toString());
            userNotificationEventStrings.add(temp);
            System.out.println("Current : " + temp);
        }
@@ -1308,33 +1294,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    
    public void setCurrentNotificationEvents(Collection<SelectItem> currentEvents) {
        currentUserNotificationEvents = currentEvents;
-   }
-   
-   /*public Collection<SelectItem> getCurrentNotificationEvents() {
-       Collection<SelectItem> userNotificationEvents = new ArrayList<SelectItem>();
-       //userNotificationEvents = new ArrayList<SelectItem>();
-       Iterator<String> eventIterator = notification.getNotificationEventsCollection().iterator();
-       while(eventIterator.hasNext()) {
-           String tempId = new String(eventIterator.next()); 
-           String tempName = new String(EndEntityConstants.getTranslatableStatusText(new Integer(tempId).intValue()));
-           System.out.println(" CURRENT  @@ " + tempId + " @@ " + tempName);
-           userNotificationEvents.add(new SelectItem(tempName, tempId));
-       }
-       return userNotificationEvents;
-    }*/
-   
-   // 
-   public String getNotificationSender() {
-       List<UserNotification> unList;
-       unList = profiledata.getUserNotifications();
-       return unList.get(0).getNotificationSender();
-   }
-   
-   //
-   public String getNotificationRecipient() {
-       List<UserNotification> unList;
-       unList = profiledata.getUserNotifications();
-       return unList.get(0).getNotificationRecipient();
    }
    
    //
