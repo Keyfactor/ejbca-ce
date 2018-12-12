@@ -75,12 +75,28 @@ public abstract class BaseManagedBean implements Serializable {
 		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,getEjbcaWebBean().getText(messageResource, true, params),getEjbcaWebBean().getText(messageResource, true, params)));
 	}
 
-	protected void addNonTranslatedErrorMessage(String messageResource){
+	protected void addNonTranslatedErrorMessage(String message) {
 	    if (log.isDebugEnabled()) {
-            log.debug("Adding error message: " + messageResource);
+            log.debug("Adding error message: " + message);
         }
 		FacesContext ctx = FacesContext.getCurrentInstance();
-		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,messageResource,messageResource));
+		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message));
+	}
+
+	/**
+	 * Adds the message from an exception, or a general error message refering to the logs if the exception lacks a message.
+	 * @param exception Exception. Intentionally takes an Exception and rather than a Throwable, since you shouldn't catch Throwable anyway.
+	 */
+	protected void addNonTranslatedErrorMessage(final Exception exception) {
+	    String msg = exception.getMessage();
+	    if (msg == null) {
+	        msg = "An error occurred. The server log may contain more details.";
+	        log.info("Exception occurred in Admin Web interface", exception);
+	    } else {
+	        msg = "Error: " + msg;
+	        log.debug("Exception occurred in Admin Web interface, adding error message", exception);
+	    }
+	    addNonTranslatedErrorMessage(msg);
 	}
 
 	protected void addInfoMessage(String messageResource, Object... params) {

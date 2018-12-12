@@ -99,10 +99,11 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
                 FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("filemode", EditCaUtil.CERTREQGENMODE);
                 return EditCaUtil.DISPLAY_RESULT_NAV;
             }
+            return "";
         } catch (Exception e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
 
 }

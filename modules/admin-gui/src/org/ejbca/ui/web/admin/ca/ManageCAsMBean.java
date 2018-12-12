@@ -189,7 +189,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         
         if (canames.containsKey(createCaName)) {
-            addErrorMessage(getEjbcaWebBean().getText("CAALREADYEXISTS", false, createCaName));
+            addErrorMessage("CAALREADYEXISTS", createCaName);
             return EditCaUtil.MANAGE_CA_NAV;
         }
         
@@ -201,27 +201,27 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     public String deleteCA() {
         try {
             if (!cadatahandler.removeCA(selectedCaId)) {
-                addErrorMessage(getEjbcaWebBean().getText("COULDNTDELETECA"));
+                addErrorMessage("COULDNTDELETECA");
             }
         } catch (AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e.getMessage());
         }
         return EditCaUtil.MANAGE_CA_NAV;
     }
     
     public String renameCA() {
         if (canames.containsKey(createCaName)) {
-            addErrorMessage(getEjbcaWebBean().getText("CAALREADYEXISTS", false, createCaName));
+            addErrorMessage("CAALREADYEXISTS", createCaName);
             return EditCaUtil.MANAGE_CA_NAV;
         } else if (selectedCaId == 0) {
-            addErrorMessage(getEjbcaWebBean().getText("SELECTCATORENAME"));
+            addErrorMessage("SELECTCATORENAME");
             return EditCaUtil.MANAGE_CA_NAV;
         }
         
         try {
             cadatahandler.renameCA(selectedCaId, createCaName);
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
         } 
         return EditCaUtil.MANAGE_CA_NAV;
     }
@@ -232,7 +232,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
             return EditCaUtil.SIGN_CERT_REQ_NAV;
         } else {
-            addErrorMessage(getEjbcaWebBean().getText("SELECTCAFIRST"));
+            addErrorMessage("SELECTCAFIRST");
             return EditCaUtil.MANAGE_CA_NAV;
         }
     }

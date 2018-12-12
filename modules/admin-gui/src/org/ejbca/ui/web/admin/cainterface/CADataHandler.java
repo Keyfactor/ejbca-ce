@@ -289,37 +289,27 @@ public class CADataHandler implements Serializable {
       return returnval;      
   }
 
-  public boolean renewCA(int caid, String nextSignKeyAlias, boolean createLinkCertificate) throws Exception {
-      if (getCAInfo(caid).getCAInfo().getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
-          return false;
+  public void renewCA(int caid, String nextSignKeyAlias, boolean createLinkCertificate) throws Exception {
+      if (getCAInfo(caid).getCAInfo().getCAType()==CAInfo.CATYPE_CVC) {
+          // Force generation of link certificate for CVC CAs
+          createLinkCertificate = true;
+      }
+      if (nextSignKeyAlias == null || nextSignKeyAlias.length()==0) {
+          // Generate new keys
+          caadminsession.renewCA(administrator, caid, true, null, createLinkCertificate);
       } else {
-          if (getCAInfo(caid).getCAInfo().getCAType()==CAInfo.CATYPE_CVC) {
-              // Force generation of link certificate for CVC CAs
-              createLinkCertificate = true;
-          }
-          if (nextSignKeyAlias == null || nextSignKeyAlias.length()==0) {
-              // Generate new keys
-              caadminsession.renewCA(administrator, caid, true, null, createLinkCertificate);
-          } else {
-              // Use existing keys
-              caadminsession.renewCA(administrator, caid, nextSignKeyAlias, null, createLinkCertificate);
-          }
-          return true;
+          // Use existing keys
+          caadminsession.renewCA(administrator, caid, nextSignKeyAlias, null, createLinkCertificate);
       }
   }
   
-  public boolean renewAndRenameCA(int caid, String nextSignKeyAlias, boolean createLinkCertificate, String newSubjectDn) throws Exception {
-      if (getCAInfo(caid).getCAInfo().getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
-          return false;
+  public void renewAndRenameCA(int caid, String nextSignKeyAlias, boolean createLinkCertificate, String newSubjectDn) throws Exception {
+      if (nextSignKeyAlias == null || nextSignKeyAlias.length()==0) {
+          // Generate new keys
+          caadminsession.renewCANewSubjectDn(administrator, caid, true, null, createLinkCertificate, newSubjectDn);
       } else {
-          if (nextSignKeyAlias == null || nextSignKeyAlias.length()==0) {
-              // Generate new keys
-              caadminsession.renewCANewSubjectDn(administrator, caid, true, null, createLinkCertificate, newSubjectDn);
-          } else {
-              // Use existing keys
-              caadminsession.renewCANewSubjectDn(administrator, caid, nextSignKeyAlias, null, createLinkCertificate, newSubjectDn);
-          }
-          return true;
+          // Use existing keys
+          caadminsession.renewCANewSubjectDn(administrator, caid, nextSignKeyAlias, null, createLinkCertificate, newSubjectDn);
       }
   }
 

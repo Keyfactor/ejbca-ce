@@ -91,7 +91,7 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
             try {
                 resultString = caBean.getProcessedCertificateAsString();
             } catch (Exception e) {
-                addErrorMessage(e.getMessage());
+                addNonTranslatedErrorMessage(e);
             }
         } else {
             try {
@@ -99,9 +99,9 @@ public class DisplayResultMBean extends BaseManagedBean implements Serializable 
             } catch (Exception e) {
                 if (e.getMessage() == null) {
                     // For some reason e doesn't provide a message for example in CVC certificate parser case
-                    addErrorMessage("An unknown exception happened while getting request data as string!");
+                    addNonTranslatedErrorMessage("An unknown exception happened while getting request data as string!");
                 } else {
-                    addErrorMessage(e.getMessage());
+                    addNonTranslatedErrorMessage(e);
                 }
             }
         }
