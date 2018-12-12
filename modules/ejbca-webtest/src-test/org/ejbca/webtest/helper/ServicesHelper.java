@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Services helper class for EJBCA Web Tests.
  *
- * @version $Id: ServicesHelper.java 30069 2018-10-08 17:45:09Z andrey_s_helmes $
+ * @version $Id$
  */
 public class ServicesHelper extends BaseHelper {
 

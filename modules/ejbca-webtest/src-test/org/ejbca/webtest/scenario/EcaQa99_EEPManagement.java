@@ -30,7 +30,7 @@ import java.util.Collections;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-99>ECAQA-99</a>
  * 
- * @version $Id: EcaQa99_EEPManagement.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa99_EEPManagement extends WebTestBase {
