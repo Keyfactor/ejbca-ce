@@ -27,7 +27,7 @@ import static org.junit.Assert.fail;
 /**
  * Certificate Profile helper class for EJBCA Web Tests.
  *
- * @version $Id: CertificateProfileHelper.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 public class CertificateProfileHelper extends BaseHelper {
 
