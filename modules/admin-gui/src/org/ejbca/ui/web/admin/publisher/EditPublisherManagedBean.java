@@ -76,7 +76,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
     private static final Map<Integer, String> AVAILABLE_SAM_ACCOUNTS;
     private final Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = new HashMap<>();
-    private final Map<String, Object> customPublisherPropertyValues = new HashMap<>();
+    private final Map<Object, String> customPublisherPropertyValues = new HashMap<>();
     private List<CustomPublisherProperty> availableCustomPublisherPropertyList;
 
     public List<CustomPublisherProperty> getAvailableCustomPublisherPropertyList() {
@@ -350,7 +350,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.selectedPublisherType = selectedPublisherType;
     }
     
-    public Map<String, Object> getCustomPublisherPropertyValues() {
+    public Map<Object, String> getCustomPublisherPropertyValues() {
         return customPublisherPropertyValues;
     }
 
@@ -559,6 +559,11 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private Void initCustomPublisher() {
         customPublisherCurrentClass = ((CustomPublisherContainer) publisher).getClassPath();
         customPublisherPropertyData = ((CustomPublisherContainer) publisher).getPropertyData();
+        
+        for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher)
+                .getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
+            customPublisherPropertyValues.put(customPublisherProperty, customPublisherProperty.getValue());
+        }
         
 /*        
         for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
