@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
 
 /**
  * 
- * @version $Id: EcaQa81_PublicWebListUserCert.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 public class EcaQa81_PublicWebListUserCert extends WebTestBase {
 

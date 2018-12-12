@@ -29,7 +29,7 @@ import org.openqa.selenium.support.ui.Select;
  * 
  * Add End Entity helper class for EJBCA Web Tests.
  * 
- * @version $Id: AddEndEntityHelper.java 28852 2018-05-04 14:35:13Z oskareriksson $
+ * @version $Id$
  *
  */
 public final class AddEndEntityHelper {

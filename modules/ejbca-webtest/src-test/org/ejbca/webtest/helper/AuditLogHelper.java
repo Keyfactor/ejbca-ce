@@ -31,7 +31,7 @@ import org.openqa.selenium.WebElement;
  * Always reset filterTime before using the methods in this class, which makes sure
  * there only exists entries in the Audit Log for the test step currently executing.
  * 
- * @version $Id: AuditLogHelper.java 30035 2018-10-05 08:35:05Z andrey_s_helmes $
+ * @version $Id$
  */
 public class AuditLogHelper extends BaseHelper {
 

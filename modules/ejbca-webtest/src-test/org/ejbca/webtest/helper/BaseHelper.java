@@ -36,7 +36,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 /**
  * A base helper class for page operations of a web helper extensions.
  *
- * @version $Id: BaseHelper.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
+ * @version $Id$
  */
 public class BaseHelper {
 
