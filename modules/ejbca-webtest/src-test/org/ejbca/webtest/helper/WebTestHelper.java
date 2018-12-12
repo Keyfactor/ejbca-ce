@@ -27,7 +27,7 @@ import org.openqa.selenium.support.ui.Select;
 /**
  * Helper class containing miscellaneous operations for EJBCA Web Tests.
  * 
- * @version $Id: WebTestHelper.java 28852 2018-05-04 14:35:13Z oskareriksson $
+ * @version $Id$
  */
 public final class WebTestHelper {
 

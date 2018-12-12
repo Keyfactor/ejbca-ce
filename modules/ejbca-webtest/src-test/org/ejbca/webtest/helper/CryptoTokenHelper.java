@@ -21,7 +21,7 @@ import org.openqa.selenium.WebDriver;
  * 
  * Crypto Token helper class for EJBCA Web Tests.
  * 
- * @version $Id: CryptoTokenHelper.java 28852 2018-05-04 14:35:13Z oskareriksson $
+ * @version $Id$
  *
  */
 public class CryptoTokenHelper extends BaseHelper {

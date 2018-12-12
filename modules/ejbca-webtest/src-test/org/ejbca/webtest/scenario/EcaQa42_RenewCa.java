@@ -28,7 +28,7 @@ import org.openqa.selenium.WebDriver;
  * using the same keys or both the CA keys and the certificate can be renewed.
  * In this test case both scenarios are tested.
  * 
- * @version $Id: EcaQa42_RenewCa.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa42_RenewCa extends WebTestBase {
