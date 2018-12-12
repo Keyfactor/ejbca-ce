@@ -980,17 +980,13 @@
 					</h:inputText>
 					<h:inputHidden id="hidden" value="#{endEntityProfileMBean.setCurrentNotification(notification)}" />
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONEVENTS}"/>
-					<!-- <h:selectManyListbox id="notificationEventsListbox" value="#{endEntityProfileMBean.currentNotificationEvents(notification)}"> -->
-					<!-- <h:selectManyListbox id="notificationEventsListbox" value="#{notification.notificationEventsCollection}"> -->
-					<!-- <h:selectManyListbox id="notificationEventsListbox" value="#{notification.notificationEventsItemsList}" size="7"> -->
-	       	       	<h:selectManyListbox id="notificationEventsListbox"  value="#{endEntityProfileMBean.currentNotificationEvents}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
-	       	    			<!-- <f:selectItems id="notificationEventsList" value="#{endEntityProfileMBean.notificationEventCollection}">  -->
+					<!--h:selectManyListbox id="notificationEventsListbox" value="#{notification.notificationEventsCollection}"-->
+					<h:selectManyListbox id="notificationEventsListbox"  value="#{endEntityProfileMBean.currentNotificationEvents}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
 	       	    		<f:selectItems 
 	       	    			id="notificationEventsList" 
-	       	    			value="#{endEntityProfileMBean.allNotificationEvents}" 
+	       	    			value="#{endEntityProfileMBean.getAllNotificationEvents()}" 
 	       	    			disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
 	       	    		</f:selectItems>
-	       	    		<!-- ABOVE MIGHT NOT WORK, IT'S A SELECT MANY... -->
 	       	    	</h:selectManyListbox>
 	       	    	&nbsp;
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONSUBJECT}"/>
