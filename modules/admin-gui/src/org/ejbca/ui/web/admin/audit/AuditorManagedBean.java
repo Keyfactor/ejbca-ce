@@ -391,7 +391,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 		    if (log.isDebugEnabled()) {
 		        log.debug(e.getMessage(), e);
 		    }
-            addErrorMessage("Invalid search conditions: " + e.getMessage());
+            addNonTranslatedErrorMessage("Invalid search conditions: " + e.getMessage());
 		}
 		renderNext = results!=null && !results.isEmpty() && results.size()==maxResults;
 	}
@@ -638,12 +638,12 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
                     downloadResults(resp.getCmsDocument(), "application/octet-stream", "export-"+results.get(0).getTimeStamp()+".p7m");
                 } catch (IOException e) {
                     log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-                    addErrorMessage(e.getMessage());
+                    addNonTranslatedErrorMessage(e);
                 }
             }
         } catch (Exception e) {
             log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
         }
 	}
 
@@ -653,7 +653,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
             downloadResults(exportToByteArray(), "application/octet-stream", "export-"+results.get(0).getTimeStamp()+".xml"); // "application/force-download" is an alternative here..
         } catch (IOException e) {
             log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
         }
     }
     

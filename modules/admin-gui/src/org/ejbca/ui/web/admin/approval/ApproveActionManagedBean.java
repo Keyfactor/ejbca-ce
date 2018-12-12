@@ -293,7 +293,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                         addErrorMessage("ERRORHAPPENDWHENAPPROVING");
                         closeWindow = false;
                     } catch (AdminAlreadyApprovedRequestException | SelfApprovalException e) {
-                        addErrorMessage(e.getMessage());
+                        addNonTranslatedErrorMessage(e);
                         closeWindow = false;
                     }
                 }
@@ -320,7 +320,7 @@ public class ApproveActionManagedBean extends BaseManagedBean {
                     break;
                 }
             } catch (ApprovalException e) {
-                addErrorMessage(e.getMessage());
+                addNonTranslatedErrorMessage(e);
             }
             closeWindow = false;
         }

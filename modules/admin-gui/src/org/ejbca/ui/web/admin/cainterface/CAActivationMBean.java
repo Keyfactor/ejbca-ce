@@ -265,7 +265,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                try {
 	                    caAdminSession.activateCAService(authenticationToken, ca.getCaId());
 	                } catch (Exception e) {
-	                    super.addNonTranslatedErrorMessage(e.getMessage());
+	                    super.addNonTranslatedErrorMessage(e);
 	                }
 	            } 
 	            // Valid transition 2: Currently online, become offline
@@ -273,7 +273,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                try {
 	                    caAdminSession.deactivateCAService(authenticationToken, ca.getCaId());
 	                } catch (Exception e) {
-	                    super.addNonTranslatedErrorMessage(e.getMessage());
+	                    super.addNonTranslatedErrorMessage(e);
 	                }
 	            }
 	        }

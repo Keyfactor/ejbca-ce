@@ -167,7 +167,6 @@ public class EditServiceManagedBean extends BaseManagedBean {
     }
 
     public String save() {
-        String retval = "listservices";
         ArrayList<String> errorMessages = new ArrayList<>();
         try {
             serviceConfigurationView.getServiceConfiguration(errorMessages);
@@ -175,17 +174,18 @@ public class EditServiceManagedBean extends BaseManagedBean {
                 ejb.getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages),
                         false);
                 ejb.getServiceSession().activateServiceTimer(getAdmin(), serviceName);
+                return "listservices";
             } else {
                 Iterator<String> iter = errorMessages.iterator();
                 while (iter.hasNext()) {
                     addErrorMessage(iter.next());
                 }
-                retval = null;
+                return "";
             }
         } catch (IOException e) {
-            addErrorMessage(EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());
+            addNonTranslatedErrorMessage(EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());
+            return "";
         }
-        return retval;
     }
 
     public String cancel() {

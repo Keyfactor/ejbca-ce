@@ -124,7 +124,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 			try {
 				ejb.getServiceSession().renameService(getAdmin(), selectedServiceName, newServiceName);
 			} catch (ServiceExistsException e) {
-				addNonTranslatedErrorMessage(EjbcaJSFHelper.getBean().getText().get("SERVICENAMEALREADYEXISTS"));
+				addErrorMessage("SERVICENAMEALREADYEXISTS");
 			}			
 		}
 		newServiceName = "";
@@ -143,7 +143,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 				getEditServiceBean().setServiceConfiguration(serviceConfig);
 				getEditServiceBean().setServiceName(newServiceName);
 			} catch (ServiceExistsException e) {
-				addNonTranslatedErrorMessage(EjbcaJSFHelper.getBean().getText().get("SERVICENAMEALREADYEXISTS"));
+				addErrorMessage("SERVICENAMEALREADYEXISTS");
 			} 
 		}
 		newServiceName = "";

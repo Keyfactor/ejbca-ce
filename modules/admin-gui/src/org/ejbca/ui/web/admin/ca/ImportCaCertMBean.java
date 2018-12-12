@@ -99,8 +99,8 @@ public class ImportCaCertMBean extends BaseManagedBean implements Serializable {
             caAdminSession.importCACertificate(getAdmin(), importCaCertName, EJBTools.wrapCertCollection(certs));
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (Exception e) {
-            addNonTranslatedErrorMessage(e.getMessage());
-            log.error("Error happened while importing ca cert!", e);
+            addNonTranslatedErrorMessage(e);
+            log.info("Error happened while importing ca cert!", e);
             return "";
         }
     }
