@@ -652,6 +652,7 @@
 					<h:outputLabel for="header_maincertificatedata"  value="#{web.text.DEFAULTHARDTOKENISSUER}"/>
 				</h:panelGroup>
 				<h:selectOneMenu id="defaultHardTokenTokenMenu" value="#{endEntityProfileMBean.currentHardTokenIssuer}" disabled="#{not endEntityProfileMBean.useHardTokenIssuer or endEntityProfilesMBean.viewOnly}" rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
+						<f:ajax/>
 						<f:selectItems id="defaultHardTokensList" value="#{endEntityProfileMBean.hardTokenIssuers}"/> 
 				<!-- THIS NEEDS TO BE CHANGED FROM DEFAULT TOKEN TO LIST OF HARD TOKEN ISSUERS -->
 				</h:selectOneMenu>
@@ -661,6 +662,7 @@
 				</h:panelGroup>
 				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
 	       	    		<h:selectManyListbox id="availableHardTokens" size="7" value="#{endEntityProfileMBean.currentHardTokenIssuer}">
+	       	    			<f:ajax/>
 	       	    			<f:selectItems id="availableHardTokensList" value="#{endEntityProfileMBean.hardTokenIssuers}"/>
 	       	    			<!-- CHANGE ABOVE METHODS FROM TOKENS TO HARDTOKENS -->
 	       	    		</h:selectManyListbox>
@@ -910,6 +912,7 @@
 				    	<h:outputLabel for="header_otherdata"  value="#{web.text.USE} : "/>
 						<h:outputLabel for="header_otherdata"  value="#{web.text.VALUE} = "/>
 						<h:selectOneMenu id="revocationReasonMenu" value="#{endEntityProfileMBean.currentRevocationReason}" disabled="#{endEntityProfilesMBean.viewOnly}">
+							<f:ajax/>
 							<f:selectItems id="revocationReasonList" value="#{endEntityProfileMBean.revocationReasons}"/>
 					    </h:selectOneMenu>
 					    <h:selectBooleanCheckbox 
@@ -982,6 +985,7 @@
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONEVENTS}"/>
 					<!--h:selectManyListbox id="notificationEventsListbox" value="#{notification.notificationEventsCollection}"-->
 					<h:selectManyListbox id="notificationEventsListbox"  value="#{endEntityProfileMBean.currentNotificationEvents}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
+	       	    		<f:ajax/>
 	       	    		<f:selectItems 
 	       	    			id="notificationEventsList" 
 	       	    			value="#{endEntityProfileMBean.getAllNotificationEvents()}" 
