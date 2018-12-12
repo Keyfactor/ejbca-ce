@@ -136,7 +136,7 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
         } catch (IOException | CertificateException e) {
             // These errors tend to have a human readable text, so they are shown as is.
             // For example: "PKCS12 key store mac invalid - wrong password or corrupted file."
-            addNonTranslatedErrorMessage("Error: " + e.getMessage());
+            addNonTranslatedErrorMessage(e);
             log.info(e.getMessage(), e);
         }
         return "";

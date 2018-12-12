@@ -366,7 +366,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             caType = cadatahandler.getCAInfo(caid).getCAInfo().getCAType();
         } catch (final AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e.getMessage());
         }
         switch (caType) {
         case CAInfo.CATYPE_X509:
@@ -688,7 +688,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 issuerDN = CertTools.getIssuerDN(cacert);
             }
         } catch (final Exception e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
             issuerDN = e.getMessage();
         }
         return issuerDN;
@@ -1802,21 +1802,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
                 if (illegaldnoraltname) {
-                    addErrorMessage(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
+                    addErrorMessage("INVALIDSUBJECTDN");
                 }
             } catch (final Exception e) {
-                addErrorMessage(e.getMessage());
-                return EditCaUtil.MANAGE_CA_NAV;
+                addNonTranslatedErrorMessage(e);
+                return "";
             }
         } else {
             try {
                 illegaldnoraltname = saveOrCreateCaInternal(createCa, makeRequest, null);
                 if (illegaldnoraltname) {
-                    addErrorMessage(getEjbcaWebBean().getText("INVALIDSUBJECTDN"));
+                    addErrorMessage("INVALIDSUBJECTDN");
                 }
             } catch (final Exception e) {
-                addErrorMessage(e.getMessage());
-                return EditCaUtil.MANAGE_CA_NAV;
+                addNonTranslatedErrorMessage(e);
+                return "";
             } 
         }
         
@@ -1867,37 +1867,40 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     /**
      * Renew and revoke a CMS certificate
      * 
-     * @return Navigates back to manage ca page
+     * @return Navigates back to manage ca page if successful
      */
     public String renewAndRevokeCmsCertificate() {
         try {
             caAdminSession.renewAndRevokeCmsCertificate(getAdmin(), caid);
             addInfoMessage(getEjbcaWebBean().getText("CMSCERTIFICATERENEWED"));
+            return EditCaUtil.MANAGE_CA_NAV;
         } catch (CADoesntExistsException | CAOfflineException | CertificateRevokeException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     /**
      * Renews a ca 
-     * @return navigates back to manage ca page.
+     * @return navigates back to manage ca page if successful.
      */
     public String renewCa() {
-        boolean carenewed = false;
         try {
-            if (cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()) {
-                carenewed = cadatahandler.renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, newSubjectDn);
-            } else {
-                carenewed = cadatahandler.renewCA(caid, certSignKeyReNewValue, createLinkCertificate);
+            if (caSession.getCAInfo(getAdmin(), caid).getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+                addNonTranslatedErrorMessage("Cannot renew an externally signed CA."); // Button should not even be available in this case
+                return "";
             }
-        } catch (final Exception e) {
-            addErrorMessage(e.getMessage());
-        }
-        if (carenewed) {
+            if (cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()) {
+                cadatahandler.renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, newSubjectDn);
+            } else {
+                cadatahandler.renewCA(caid, certSignKeyReNewValue, createLinkCertificate);
+            }
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
+            return EditCaUtil.MANAGE_CA_NAV;
+        } catch (final Exception e) {
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     /**
@@ -1907,10 +1910,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public String revokeCa() {
         try {
             caAdminSession.revokeCA(getAdmin(), caid, caRevokeReason);
+            return EditCaUtil.MANAGE_CA_NAV;
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     /**
@@ -1923,29 +1927,30 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 final X509CAInfo x509caInfo = (X509CAInfo)cadatahandler.getCAInfo(caid).getCAInfo();
                 x509caInfo.setExternalCdp(crlCaCRLDPExternal.trim());
                 cadatahandler.editCA(x509caInfo);
+                return EditCaUtil.MANAGE_CA_NAV;
             }
+            return "";
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     /**
-     * Initialize a ca (in editca page) and navigates back to managecas.xhtml
+     * Initialize a ca (in editca page) and navigates back to managecas.xhtml if successful.
      * @return
      */
     public String initializeCa() {
         try {
             return initializeCaInternal(getCaInfo(), signedByString, getDefaultCertProfileId());
         } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
 
     /**
-     * Save changes in the ca (in editca page) and navigates back to managecas.xhtml
+     * Save changes in the ca (in editca page) and navigates back to managecas.xhtml if successful.
      * @return
      */
     public String saveCa() {
@@ -1957,13 +1962,13 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
             return saveCaInternal(caInfo);
         } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
             return "";
         }
     }
     
     /**
-     * Republishs a ca and navigates back to manageca page with the result.
+     * Republishs a ca and navigates back to manageca page with the result if successful.
      * 
      * @return
      */
@@ -1971,24 +1976,26 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             cadatahandler.publishCA(caid);
             addInfoMessage(getEjbcaWebBean().getText("CACERTPUBLISHINGQUEUED"));
+            return EditCaUtil.MANAGE_CA_NAV;
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
 
     /**
-     * Rollovers a ca and navigates back to manageca page.
+     * Rollovers a ca and navigates back to manageca page if successful.
      * 
      * @return
      */
     public String rolloverCA() {
         try {
             caAdminSession.rolloverCA(getAdmin(), caid);
+            return EditCaUtil.MANAGE_CA_NAV;
         } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     /**
@@ -2007,10 +2014,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             } else {
                 addInfoMessage(getEjbcaWebBean().getText("CAACTIVATED"));
             }
+            return EditCaUtil.MANAGE_CA_NAV;
         } catch (final Exception e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     /**
@@ -2023,10 +2031,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             cadatahandler.importCACertUpdate(caid, fileBuffer);
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
+            return EditCaUtil.MANAGE_CA_NAV;
         } catch (final Exception e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     // ======================================= Helpers ===================================================================//
@@ -2035,7 +2044,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             getCaInfo();
         } catch (NumberFormatException | ParameterException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileMakeRequest);
 
@@ -2043,7 +2053,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             certreq = cadatahandler.makeRequest(caid, fileBuffer, this.certExtrSignKeyReNewValue);
         } catch (CADoesntExistsException | CryptoTokenOfflineException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
         caBean.saveRequestData(certreq);
 
@@ -2063,19 +2074,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         cainfo.setUseNoConflictCertificateData(useNoConflictCertificateData);
         try {
             cadatahandler.initializeCA(cainfo);
+            return EditCaUtil.MANAGE_CA_NAV;
         } catch (CryptoTokenOfflineException | CADoesntExistsException | InvalidAlgorithmException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
 
     private String saveCaInternal(final CAInfo cainfo) {
         try {
             cadatahandler.editCA(cainfo);
+            return EditCaUtil.MANAGE_CA_NAV;
         } catch (CADoesntExistsException | AuthorizationDeniedException e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
+            return "";
         }
-        return EditCaUtil.MANAGE_CA_NAV;
     }
     
     private CAInfo getCaInfo() throws ParameterException, NumberFormatException, AuthorizationDeniedException {
@@ -2094,11 +2107,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     usePrintableStringSubjectDN, useLdapDNOrder, useCrlDistributiOnPointOnCrl, crlDistributionPointOnCrlCritical,
                     includeInHealthCheck, false, serviceCmsActive, sharedCmpRaSecret, keepExpiredOnCrl);
         } catch (final Exception e) {
-            addErrorMessage(e.getMessage());
+            addNonTranslatedErrorMessage(e);
             return null;
         }
 
-        if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
+        if (caSession.getCAInfo(getAdmin(), caid).getStatus() == CAConstants.CA_UNINITIALIZED) {
             // Allow changing of subjectDN etc. for uninitialized CAs
             cainfo.setSubjectDN(getSubjectDn());
 
@@ -2226,7 +2239,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 subjectdn = cadatahandler.getCAInfo(caid).getCAInfo().getSubjectDN();
             }
         } catch (final AuthorizationDeniedException e) {
-            log.error("Error while accessing the ca data handler!", e);
+            log.info("Error while getting the Subject DN from the CA data handler!", e);
         }
 
         return subjectdn;
