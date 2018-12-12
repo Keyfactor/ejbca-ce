@@ -76,12 +76,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
     private static final Map<Integer, String> AVAILABLE_SAM_ACCOUNTS;
     private final Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = new HashMap<>();
-    private final Map<Object, String> customPublisherPropertyValues = new HashMap<>();
+    private Map<String, Object> customPublisherPropertyValues;
     private List<CustomPublisherProperty> availableCustomPublisherPropertyList;
-
-    public List<CustomPublisherProperty> getAvailableCustomPublisherPropertyList() {
-        return availableCustomPublisherPropertyList;
-    }
 
     static {
         AVAILABLE_PUBLISHERS = new LinkedHashMap<>();
@@ -173,9 +169,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             publisherId = publisher.getPublisherId();
             fillPublisherInitMapAndInitPublisherData();
         }
-        if (publisher instanceof CustomPublisherContainer) {
-            availableCustomPublisherPropertyList = ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject());
-        }
+
         selectedPublisherType = getSelectedPublisherValue();
         publisherDescription = publisher.getDescription();
         onlyUseQueue = publisher.getOnlyUseQueue();
@@ -350,7 +344,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         this.selectedPublisherType = selectedPublisherType;
     }
     
-    public Map<Object, String> getCustomPublisherPropertyValues() {
+    public Map<String, Object> getCustomPublisherPropertyValues() {
         return customPublisherPropertyValues;
     }
 
@@ -421,9 +415,13 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     public List<CustomPublisherProperty> getCustomUiPropertyList() {
         if (publisher instanceof CustomPublisherContainer) {
-            return ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject());
+            availableCustomPublisherPropertyList = new ArrayList<>();
+            for (CustomPublisherProperty property : ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getAdmin())) {
+                availableCustomPublisherPropertyList.add(property);
+            }
+            return this.availableCustomPublisherPropertyList;
         } else
-            return Collections.emptyList();
+            return Collections.<CustomPublisherProperty> emptyList();
     }
     
     public String getCustomPublisherPropertyText(final CustomPublisherProperty customPublisherProperty) {
@@ -560,33 +558,12 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         customPublisherCurrentClass = ((CustomPublisherContainer) publisher).getClassPath();
         customPublisherPropertyData = ((CustomPublisherContainer) publisher).getPropertyData();
         
+        customPublisherPropertyValues = new HashMap<>();
+        
         for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher)
                 .getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
-            customPublisherPropertyValues.put(customPublisherProperty, customPublisherProperty.getValue());
+            customPublisherPropertyValues.put(customPublisherProperty.getValue(), customPublisherProperty.getValue());
         }
-        
-/*        
-        for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
-            switch (customPublisherProperty.getType()) {
-            case CustomPublisherProperty.UI_SELECTONE:
-                this.customPublisherPropertySelectOneMenuValue = customPublisherProperty.getValue();
-                break;
-            case CustomPublisherProperty.UI_BOOLEAN:
-                this.customPublisherPropertySelectBooleanCheckbox = customPublisherProperty.getValue().equals("true");
-                break;
-            case CustomPublisherProperty.UI_TEXTINPUT:
-                this.customPublisherPropertyInputText = customPublisherProperty.getValue();
-                break;
-            case CustomPublisherProperty.UI_TEXTINPUT_PASSWORD:
-                this.customPublisherPropertyInputPassword = customPublisherProperty.getValue();
-                break;
-            case CustomPublisherProperty.UI_TEXTOUTPUT:
-                this.customPublisherPropertyOutputTextArea = customPublisherProperty.getValue();
-            default:
-                break;
-            }
-        }
-        */
         return null;
     }
 
