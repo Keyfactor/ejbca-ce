@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Helper class for handling 'Administrator Roles' page in automated web tests.
  *
- * @version $Id: AdminRolesHelper.java 30768 2018-12-06 08:21:29Z andrey_s_helmes $
+ * @version $Id$
  */
 public class AdminRolesHelper extends BaseHelper {
 

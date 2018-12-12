@@ -26,7 +26,7 @@ import org.openqa.selenium.WebDriver;
 /**
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-153">ECAQA-153</a>
  *
- * @version $Id: EcaQa153_ApprovalRoleSettings.java 30766 2018-12-06 07:58:19Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa153_ApprovalRoleSettings extends WebTestBase {

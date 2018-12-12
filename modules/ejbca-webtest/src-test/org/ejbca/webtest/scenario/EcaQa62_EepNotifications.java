@@ -26,7 +26,7 @@ import org.openqa.selenium.WebDriver;
 /**
  * This test checks the behavior of EEP Notifications in the edit view.
  * 
- * @version $Id: EcaQa62_EepNotifications.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa62_EepNotifications extends WebTestBase {

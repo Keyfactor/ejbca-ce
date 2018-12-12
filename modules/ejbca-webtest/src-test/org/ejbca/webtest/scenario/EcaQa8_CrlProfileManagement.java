@@ -33,7 +33,7 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-8">ECAQA-8</a>
  * 
- * @version $Id: EcaQa8_CrlProfileManagement.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa8_CrlProfileManagement extends WebTestBase {

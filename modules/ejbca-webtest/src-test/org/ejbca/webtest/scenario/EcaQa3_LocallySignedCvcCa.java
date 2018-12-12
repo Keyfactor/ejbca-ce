@@ -27,7 +27,7 @@ import org.openqa.selenium.WebDriver;
 /**
  * Creates a self signed CVC CA using a dedicated Crypto Token.
  * 
- * @version $Id: EcaQa3_LocallySignedCvcCa.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa3_LocallySignedCvcCa extends WebTestBase {

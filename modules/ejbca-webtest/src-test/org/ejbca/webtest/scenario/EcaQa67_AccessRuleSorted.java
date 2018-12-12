@@ -28,7 +28,7 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-67">ECAQA-67</a>
  *
- * @version $Id: EcaQa67_AccessRuleSorted.java 30446 2018-11-09 10:16:38Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa67_AccessRuleSorted extends WebTestBase {

@@ -28,7 +28,7 @@ import static org.junit.Assert.fail;
 /**
  * Helper class for handling 'Approval Profiles' page in automated web tests.
  *
- * @version $Id: ApprovalProfilesHelper.java 30766 2018-12-06 07:58:19Z andrey_s_helmes $
+ * @version $Id$
  */
 public class ApprovalProfilesHelper extends BaseHelper {
 

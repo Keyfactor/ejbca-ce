@@ -29,7 +29,7 @@ import org.openqa.selenium.WebDriver;
  * <br/>
  * Reference: <a href="https://jira.primekey.se/browse/ECAQA-78">ECAQA-78</a>
  * 
- * @version $Id: EcaQa78_SuperAdminAccess.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa78_SuperAdminAccess extends WebTestBase {

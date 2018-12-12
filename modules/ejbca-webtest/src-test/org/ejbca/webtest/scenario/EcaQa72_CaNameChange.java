@@ -30,7 +30,7 @@ import org.openqa.selenium.WebElement;
 
 /**
  * 
- * @version $Id: EcaQa72_CaNameChange.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa72_CaNameChange extends WebTestBase {

@@ -37,7 +37,7 @@ import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
- * @version $Id: EcaQa59_EEPHidden.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa59_EEPHidden extends WebTestBase {

@@ -34,7 +34,7 @@ import org.openqa.selenium.support.ui.Select;
  * In this test case all possible fields of ENDUSER End Entity with End Entity Profile
  * 'OnHold' are filled in to verify that they work.
  *
- * @version $Id: EcaQa60_EEPOnHold.java 30091 2018-10-12 14:47:14Z andrey_s_helmes $
+ * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa60_EEPOnHold extends WebTestBase {
