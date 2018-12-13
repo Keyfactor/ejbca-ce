@@ -766,14 +766,14 @@ public class BaseHelper {
      * @param assertMessage
      */
     protected void assertInfoMessageApears(String expectedInfoMessage, String noElementMessage, String assertMessage) {
-        final WebElement errorMessage = findElement(Page.TEXT_MESSAGE);
-        if(errorMessage == null) {
+        final WebElement message = findElement(Page.TEXT_MESSAGE);
+        if(message == null) {
             fail(noElementMessage);
         }
         assertEquals(
                 assertMessage,
                 expectedInfoMessage,
-                errorMessage.getText()
+                message.getText()
         );
     }
 
