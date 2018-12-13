@@ -158,7 +158,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     private int currentCryptoTokenId = 0;
 
-    private final Map<String, String> aliasUsedMap = new HashMap<String, String>();
+    private final Map<String, String> aliasUsedMap = new HashMap<>();
     private String policyId;
     private boolean useUtf8Policy;
     
@@ -704,7 +704,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     return getEjbcaWebBean().getText("SIGNEDBYEXTERNALCA");
                 }
             } else {
-                return caidtonamemap.get(Integer.valueOf(cainfo.getSignedBy()));
+                return caidtonamemap.get(cainfo.getSignedBy());
             }
         }
         return StringUtils.EMPTY;
@@ -1717,7 +1717,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> resultList = new ArrayList<>();
         while(iter.hasNext()){
             final String nextprofilename = iter.next();
-            final int certprofid = allp.get(nextprofilename).intValue();
+            final int certprofid = allp.get(nextprofilename);
             resultList.add(new SelectItem(certprofid, nextprofilename, "", isCertificateProfileForNonExistingDisabled() ? true : false));
         }
         return resultList;
@@ -2184,7 +2184,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     // ===================================================== Other helpers   ============================================= //
     
     private Map<ApprovalRequestType, Integer> getApprovals() {
-        final Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<ApprovalRequestType, Integer>();
+        final Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();
         if (approvalRequestItems != null || !approvalRequestItems.isEmpty()) {
             for (final ApprovalRequestItem approvalRequestItem : approvalRequestItems) {
                 approvals.put(approvalRequestItem.getRequestType(), approvalRequestItem.getApprovalProfileId());
@@ -2328,13 +2328,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 && !cadatahandler.isCARevoked(cainfo);
         waitingresponse = cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
         isCaUninitialized = cainfo.getStatus() == CAConstants.CA_UNINITIALIZED;
-
-        try {
-            catype = cadatahandler.getCAInfo(caid).getCAInfo().getCAType();
-            keySequenceFormat = cadatahandler.getCAInfo(caid).getCAToken().getKeySequenceFormat();
-        } catch (final AuthorizationDeniedException e) {
-            log.error("Error while trying to get ca info!", e);
-        }
+        catype = cainfo.getCAType();
+        keySequenceFormat = cainfo.getCAToken().getKeySequenceFormat();
 
         if (!isCaexternal) {
             for (final ExtendedCAServiceInfo extendedCAServiceInfo : cainfo.getExtendedCAServiceInfos()) {
@@ -2440,13 +2435,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             useCrlDistributiOnPointOnCrl = x509cainfo.getUseCrlDistributionPointOnCrl();
             crlDistributionPointOnCrlCritical = x509cainfo.getCrlDistributionPointOnCrlCritical();
 
-            if (x509cainfo != null) {
-                final List<String> urisAuthorityInformationAccess = x509cainfo.getAuthorityInformationAccess();
-                final List<String> urisCertificateAiaDefaultCaIssuerUri = x509cainfo.getCertificateAiaDefaultCaIssuerUri();
-                authorityInformationAccess = null != urisAuthorityInformationAccess ? StringUtils.join(urisAuthorityInformationAccess, ";") : "";
-                certificateAiaDefaultCaIssuerUri = null != urisCertificateAiaDefaultCaIssuerUri ? StringUtils.join(urisCertificateAiaDefaultCaIssuerUri, ";") : "";
-            }
-            
+            final List<String> urisAuthorityInformationAccess = x509cainfo.getAuthorityInformationAccess();
+            final List<String> urisCertificateAiaDefaultCaIssuerUri = x509cainfo.getCertificateAiaDefaultCaIssuerUri();
+            authorityInformationAccess = null != urisAuthorityInformationAccess ? StringUtils.join(urisAuthorityInformationAccess, ";") : "";
+            certificateAiaDefaultCaIssuerUri = null != urisCertificateAiaDefaultCaIssuerUri ? StringUtils.join(urisCertificateAiaDefaultCaIssuerUri, ";") : "";
             keepExpiredOnCrl = x509cainfo.getKeepExpiredCertsOnCRL();
             
             if (isCaexternal) {
@@ -2469,7 +2461,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
         finishUser = cainfo.getFinishUser();
         
-        if (cainfo != null && catype == CAInfo.CATYPE_X509) {
+        if (catype == CAInfo.CATYPE_X509) {
             sharedCmpRaSecret = ((X509CAInfo) cainfo).getCmpRaAuthSecret();
         }
         
