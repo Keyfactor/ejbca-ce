@@ -37,8 +37,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -64,10 +62,12 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 /**
  * A class help administrating CAs.
  * <p>
- * Semi-deprecated, we should try to move the methods here into session beans.
+ * Deprecated, we should move the methods here into managed beans or session beans (ECA-7588)
  *
  * @version $Id$
+ * @deprecated since EJBCA 7.0.0
  */
+@Deprecated
 public class CADataHandler implements Serializable {
   
     private static final long serialVersionUID = 2132603037548273013L;
@@ -185,7 +185,7 @@ public class CADataHandler implements Serializable {
   public boolean renameCA(int caId, String newname) throws AuthorizationDeniedException, CADoesntExistsException {
       if (caId!=0 && newname != null && newname.length()>0) {
           try {
-              final String oldname = caSession.getCAIdToNameMap().get(Integer.valueOf(caId));
+              final String oldname = caSession.getCAIdToNameMap().get(caId);
               caSession.renameCA(administrator, oldname, newname);
           } catch (CAExistsException e) {
               return true;
@@ -193,30 +193,6 @@ public class CADataHandler implements Serializable {
       }
       return false;
   }
-
-  public CAInfoView getCAInfo(String name) throws AuthorizationDeniedException {
-    CAInfoView cainfoview = null; 
-    CAInfo cainfo = caSession.getCAInfo(administrator, name);
-    if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, publisherSession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
-    } 
-    return cainfoview;
-  }
-  
-  public CAInfoView getCAInfoNoAuth(String name) {
-    CAInfoView cainfoview = null; 
-    CAInfo cainfo = caSession.getCAInfoInternal(-1, name, true);
-    if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, publisherSession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
-    } 
-    return cainfoview;
-  }
-  
-  public CAInfoView getCAInfoNoAuth(final int caid) {
-      final CAInfo cainfo = caSession.getCAInfoInternal(caid);
-      return new CAInfoView(cainfo, ejbcawebbean, publisherSession.getPublisherIdToNameMap(), keyValidatorSession.getKeyValidatorIdToNameMap());
-    }
-  
 
   public CAInfoView getCAInfo(final int caid) throws AuthorizationDeniedException {
     final CAInfo cainfo = caSession.getCAInfo(administrator, caid);
@@ -276,21 +252,8 @@ public class CADataHandler implements Serializable {
 	  }
   }
 
-  /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
-   */  
-  public Certificate processRequest(CAInfo cainfo, RequestMessage requestmessage) throws Exception {      
-      Certificate returnval = null;
-      ResponseMessage result = caadminsession.processRequest(administrator, cainfo, requestmessage);
-      if(result instanceof X509ResponseMessage){
-         returnval = ((X509ResponseMessage) result).getCertificate();      
-      }            
-      
-      return returnval;      
-  }
-
   public void renewCA(int caid, String nextSignKeyAlias, boolean createLinkCertificate) throws Exception {
-      if (getCAInfo(caid).getCAInfo().getCAType()==CAInfo.CATYPE_CVC) {
+      if (caSession.getCAInfo(administrator, caid).getCAType() == CAInfo.CATYPE_CVC) {
           // Force generation of link certificate for CVC CAs
           createLinkCertificate = true;
       }
