@@ -159,6 +159,11 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     	}
     	return ret;
     }
+    
+    public void setNotificationEventsCollection(Collection<String> notificationEventsCollection){
+        String notificationEvents = String.join(";", notificationEventsCollection);
+        data.put(NOTIFICATIONEVENTS, notificationEvents);
+    }
 
     /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
      * example 'String.valueOf(EndEntityConstants.STATUS_NEW)+";"+String.valueOf(EndEntityConstants.STATUS_KEYRECOVERY)'

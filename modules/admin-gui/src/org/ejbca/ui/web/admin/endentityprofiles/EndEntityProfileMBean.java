@@ -1250,16 +1250,28 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    
    private UserNotification notification;
    
+   /*public UserNotification getNotification() {
+       return notification;
+   }
+   
+   public void setNotification(UserNotification un) {
+       notification = un;
+   }*/
+   
    //This one will probably be removed, since most likely not needed when we use the UN object and it's internal methods
    public void setCurrentNotification(UserNotification notification) {
        this.notification = notification;
    }
    
-   public List<UserNotification> getNotifications() {
+   /*public List<UserNotification> getNotifications() {
        List<UserNotification> returnedNotifications = new ArrayList<UserNotification>();
        returnedNotifications = profiledata.getUserNotifications();
        return returnedNotifications;
-   }
+   }*/
+   
+   /*public void setNotifications(List<UserNotification> userNotifications) {//REMOVE
+       profiledata.setUserNotifications(userNotifications);
+   }*/
    
    public void addNotification() {
        UserNotification newNotification = new UserNotification();
@@ -1278,7 +1290,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    }
    
    //private Collection<SelectItem> currentUserNotificationEvents;
-   private Collection<String> currentUserNotificationEvents;
+   private Collection<String> currentUserNotificationEvents = new ArrayList<String>();
       
    /*
     * Since getNotificationEventsCollection() doesn't have a setter, atm I can't use it in the SelectManyListbox
@@ -1287,13 +1299,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     * */
       
    public Collection<String> getCurrentNotificationEvents() {
-       return notification.getNotificationEventsCollection();
+       currentUserNotificationEvents = notification.getNotificationEventsCollection();
+       return currentUserNotificationEvents;
     }
    
-   //public void setCurrentNotificationEvents(Collection<SelectItem> currentEvents) {
    public void setCurrentNotificationEvents(Collection<String> currentEvents) {
-       currentUserNotificationEvents = currentEvents;
-       //  we don't currently keep track of the current notification (it's always the last one)
+       notification.setNotificationEventsCollection(currentEvents);
+       //  don't currently keep track of the current notification (it's always the last one)
    }
    
    //

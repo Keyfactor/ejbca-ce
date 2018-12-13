@@ -956,7 +956,8 @@
 					</h:commandButton>
 				</h:panelGrid>			
 			</h:panelGrid> <!-- Ending before dataTable or ui_repeat -->	
-			<ui:repeat var="notification" value="#{endEntityProfileMBean.notifications}">
+			<!--ui:repeat var="notification" value="#{endEntityProfileMBean.notifications}"-->
+			<ui:repeat var="notification" value="#{endEntityProfileMBean.profiledata.userNotifications}">
 				<h:panelGrid columns="3" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
 					<h:commandButton 
 						id="removeSendNotificationButton" 
@@ -967,7 +968,7 @@
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONSENDER}"/>
 					<h:inputText 
 						id="textFieldNotificationSender" 
-						value="#{notification.getNotificationSender()}" 
+						value="#{notification.notificationSender}" 
 				   		size="25" 
 				   		maxlength="40"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
@@ -976,19 +977,20 @@
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONRECIPIENT}"/>
 					<h:inputText 
 						id="textFieldNotificationRecipient" 
-						value="#{notification.getNotificationRecipient()}" 
+						value="#{notification.notificationRecipient}" 
 					   	size="25" 
 					   	maxlength="40"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
 					</h:inputText>
-					<h:inputHidden id="hidden" value="#{endEntityProfileMBean.setCurrentNotification(notification)}" />
+					&nbsp;
+					<!--h:inputHidden id="hidden" value="#{endEntityProfileMBean.setCurrentNotification(notification)}"/-->
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONEVENTS}"/>
-					<!--h:selectManyListbox id="notificationEventsListbox" value="#{notification.notificationEventsCollection}"-->
-					<h:selectManyListbox id="notificationEventsListbox"  value="#{endEntityProfileMBean.currentNotificationEvents}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
-	       	    		<f:ajax/>
+					<h:selectManyListbox id="notificationEventsListbox" value="#{notification.notificationEventsCollection}">
+					<!--h:selectManyListbox id="notificationEventsListbox"  value="#{endEntityProfileMBean.currentNotificationEvents}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}"-->
+	       	    		<!--f:ajax/-->
 	       	    		<f:selectItems 
 	       	    			id="notificationEventsList" 
-	       	    			value="#{endEntityProfileMBean.getAllNotificationEvents()}" 
+	       	    			value="#{endEntityProfileMBean.allNotificationEvents}" 
 	       	    			disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
 	       	    		</f:selectItems>
 	       	    	</h:selectManyListbox>
@@ -996,7 +998,7 @@
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONSUBJECT}"/>
 					<h:inputText 
 							id="textFieldNotificationSubject" 
-							value="#{notification.getNotificationSubject()}" 
+							value="#{notification.notificationSubject}" 
 					   		size="25" 
 					   		maxlength="40"
 							disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
@@ -1005,7 +1007,7 @@
 				    <h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONMESSAGE}"/>
 	                <h:inputTextarea 
 							id="textAreaNotificationMessage" 
-							value="#{notification.getNotificationMessage()}" 
+							value="#{notification.notificationMessage}" 
 							cols="45" 
 							rows="8" 
 							disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
