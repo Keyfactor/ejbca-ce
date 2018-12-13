@@ -140,7 +140,7 @@ public abstract class CAInfo implements Serializable {
     public String getLatestSubjectDN() { 
         final Collection<Certificate> certs = getCertificateChain();
         final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
-        return cacert!=null ? CertTools.getSubjectDN(cacert) : null;
+        return cacert != null ? CertTools.getSubjectDN(cacert) : null;
     }
 
     public int getCAId() {

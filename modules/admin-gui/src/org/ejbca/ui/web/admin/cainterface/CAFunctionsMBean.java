@@ -214,7 +214,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             }
         });
         for (final String caname : caNameList) {
-            final int caid = canames.get(caname).intValue();
+            final int caid = canames.get(caname);
             final CAInfo cainfo = caSession.getCAInfoInternal(caid);
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?
@@ -298,9 +298,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         try {
             publishingCrlSession.forceCRL(getAdmin(), caid);
             refreshCaGuiInfos();
-        } catch (final CADoesntExistsException e) {
-            throw new IllegalStateException(e);
-        } catch (final AuthorizationDeniedException e) {
+        } catch (final CADoesntExistsException | AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         } catch (final CryptoTokenOfflineException e) {
             addErrorMessage("CATOKENISOFFLINE");
@@ -309,9 +307,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     public void createNewDeltaCrl(final int caid) throws CAOfflineException, CryptoTokenOfflineException {
         try {
             publishingCrlSession.forceDeltaCRL(getAdmin(), caid);
-        } catch (final CADoesntExistsException e) {
-            throw new IllegalStateException(e);
-        } catch (final AuthorizationDeniedException e) {
+        } catch (final CADoesntExistsException | AuthorizationDeniedException e) {
             throw new IllegalStateException(e);
         }
         refreshCaGuiInfos();
