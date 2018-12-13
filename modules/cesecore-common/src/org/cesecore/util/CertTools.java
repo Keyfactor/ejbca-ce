@@ -1664,17 +1664,17 @@ public abstract class CertTools {
      * @param signerCert the certificate to be tested
      * @return true if the certificate is valid
      */
-    public static boolean isCertificateValid(final X509Certificate signerCert, final boolean warnIfAboutToExpire) {
+    public static boolean isCertificateValid(final X509Certificate certificate, final boolean warnIfAboutToExpire) {
         try {
-            signerCert.checkValidity();
+            certificate.checkValidity();
         } catch (CertificateExpiredException e) {
             if (log.isDebugEnabled()) {
-                log.debug(intres.getLocalizedMessage("ocsp.errorcerthasexpired", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN()));
+                log.debug(intres.getLocalizedMessage("certificate.errorcerthasexpired", certificate.getSerialNumber().toString(16), certificate.getIssuerDN()));
             }
             return false;
         } catch (CertificateNotYetValidException e) {
             if (log.isDebugEnabled()) {
-                log.debug(intres.getLocalizedMessage("ocsp.errornotyetvalid", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN()));
+                log.debug(intres.getLocalizedMessage("certificate.errornotyetvalid", certificate.getSerialNumber().toString(16), certificate.getIssuerDN()));
             }
             return false;
         }
@@ -1684,19 +1684,19 @@ public abstract class CertTools {
         }
         final Date warnDate = new Date(new Date().getTime() + warnBeforeExpirationTime);
         try {
-            signerCert.checkValidity(warnDate);
+            certificate.checkValidity(warnDate);
         } catch (CertificateExpiredException e) {
             if (warnIfAboutToExpire || log.isDebugEnabled()) {
                 final Level logLevel = warnIfAboutToExpire ? Level.WARN : Level.DEBUG;
-                log.log(logLevel, intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber().toString(16), signerCert.getIssuerDN(),
-                        signerCert.getNotAfter()));
+                log.log(logLevel, intres.getLocalizedMessage("certificate.warncertwillexpire", certificate.getSerialNumber().toString(16), certificate.getIssuerDN(),
+                        certificate.getNotAfter()));
             }
         } catch (CertificateNotYetValidException e) {
             throw new IllegalStateException("This should never happen.", e);
         }
         if (log.isDebugEnabled()) {
             log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "
-                    + new Date(signerCert.getNotAfter().getTime() - warnBeforeExpirationTime));
+                    + new Date(certificate.getNotAfter().getTime() - warnBeforeExpirationTime));
         }
         return true;
     }
