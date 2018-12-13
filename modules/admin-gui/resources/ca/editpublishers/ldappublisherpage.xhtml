@@ -52,7 +52,7 @@
 			<h:selectOneRadio value="#{editPublisher.ldapPublisherMBData.connectionSecurity}" disabled="#{editPublisher.readOnly}">
 				<f:selectItems value="#{editPublisher.ldapPublisherMBData.getSecurityItems()}" /> 
 				<f:ajax render=":selectPublisher:ldappublisherpage:ldapconnectionport 
-								:selectPublisher:ldapsearchpublisherpage:ldapconnectionport"/>
+								:selectPublisher:ldapsearchpublisherpage:ldapconnectionport" listener="#{editPublisher.ldapPublisherMBData.portAjaxListener}"/>
 			</h:selectOneRadio>
 		</h:panelGroup>
 		

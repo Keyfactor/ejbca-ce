@@ -38,6 +38,7 @@
 		<h:panelGroup>
 			<ui:repeat value="#{editPublisher.getAvailablePublisherList()}" var="publisher">
 				<h:outputText value="#{publisher}"/>
+				<f:verbatim><br /></f:verbatim>
 			</ui:repeat>
 		</h:panelGroup>
 		

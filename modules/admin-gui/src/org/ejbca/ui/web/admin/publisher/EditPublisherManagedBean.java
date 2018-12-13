@@ -563,7 +563,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return "listpublishers?faces-redirect=true";
     }
     
-    public String savePublisherAndTestConnection() throws AuthorizationDeniedException {
+    public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
         prepareForSave();
         publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), publisher);
         try {
@@ -573,7 +573,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             log.error("Error connecting to publisher " + listPublishersManagedBean.getSelectedPublisherName(), pce);
             addErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB"), listPublishersManagedBean.getSelectedPublisherName());
         }
-        return "listpublishers?faces-redirect=true";
     }
 
     private void prepareForSave() {
@@ -648,6 +647,8 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
     
     private Void initLdapSearchPublisher() {
+        ldapPublisherMBData = new LdapPublisherMBData();
+        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
         ldapSearchPublisherMBData = new LdapSearchPublisherMBData();
         ldapSearchPublisherMBData.setSearchBaseDN(((LdapSearchPublisher) publisher).getSearchBaseDN());
         ldapSearchPublisherMBData.setSearchFilter(((LdapSearchPublisher) publisher).getSearchFilter());
