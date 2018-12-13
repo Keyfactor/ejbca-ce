@@ -80,7 +80,7 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
         final List<CaCrlStatusInfo> ret = new ArrayList<>();
         final Collection<Integer> caIds = caSession.getAuthorizedCaIds(getAdmin());
         for (final Integer caId : caIds) {
-            final CAInfo cainfo = caSession.getCAInfoInternal(caId.intValue());
+            final CAInfo cainfo = caSession.getCAInfoInternal(caId);
             if (cainfo == null || cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
                 continue;
             }

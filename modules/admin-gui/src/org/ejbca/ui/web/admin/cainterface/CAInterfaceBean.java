@@ -65,7 +65,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -132,7 +131,6 @@ public class CAInterfaceBean implements Serializable {
     private AuthorizationSessionLocal authorizationSession;
     private CAAdminSessionLocal caadminsession;
     private CaSessionLocal casession;
-    private CertificateCreateSessionLocal certcreatesession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSessionLocal certificatesession;
     private CertReqHistorySessionLocal certreqhistorysession;
@@ -152,7 +150,6 @@ public class CAInterfaceBean implements Serializable {
     /** The certification request in binary format */
     transient private byte[] request;
     private Certificate processedcert;
-    private boolean isUniqueIndex;
 	
 	/** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() { }
@@ -167,7 +164,6 @@ public class CAInterfaceBean implements Serializable {
           casession = ejbLocalHelper.getCaSession();
           authorizationSession = ejbLocalHelper.getAuthorizationSession();
           signsession = ejbLocalHelper.getSignSession();
-          certcreatesession = ejbLocalHelper.getCertificateCreateSession();
           publishersession = ejbLocalHelper.getPublisherSession();               
           publisherqueuesession = ejbLocalHelper.getPublisherQueueSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
@@ -176,7 +172,6 @@ public class CAInterfaceBean implements Serializable {
 
           cadatahandler = new CADataHandler(authenticationToken, ejbLocalHelper, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(authenticationToken, publishersession);
-          isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
         }
     }
@@ -212,27 +207,6 @@ public class CAInterfaceBean implements Serializable {
         return casession.getCAIdToNameMap().get(caId);
     }
 
-    public CertificateProfile getCertificateProfile(final String name) throws AuthorizationDeniedException {
-        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(name);
-        if (!authorizedToViewProfile(certificateProfile, certificateProfileSession.getCertificateProfileId(name))) {
-            throw new AuthorizationDeniedException("Not authorized to certificate profile");
-        }
-        return certificateProfile;
-    }
-
-    public CertificateProfile getCertificateProfile(final int id) throws AuthorizationDeniedException {
-        final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(id);
-        if (!authorizedToViewProfile(certificateProfile, id)) {
-            throw new AuthorizationDeniedException("Not authorized to certificate profile");
-        }
-        return certificateProfile;
-    }
-
-    /** Help function that checks if administrator is authorized to view profile. */
-    private boolean authorizedToViewProfile(CertificateProfile profile, final int id) {
-        return certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, profile.getType()).contains(Integer.valueOf(id));
-    }
-    
     public int getPublisherQueueLength(int publisherId) {
     	return publisherqueuesession.getPendingEntriesCountForPublisher(publisherId);
     }
@@ -249,25 +223,10 @@ public class CAInterfaceBean implements Serializable {
     public CADataHandler getCADataHandler(){
       return cadatahandler;
     }
-    
-    /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
-    public CAInfoView getCAInfo(String name) throws AuthorizationDeniedException {
-      return cadatahandler.getCAInfo(name);   
-    }
-    
-    /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
-    public CAInfoView getCAInfoNoAuth(String name) {
-        return cadatahandler.getCAInfoNoAuth(name);   
-     }
 
     /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
     public CAInfoView getCAInfo(int caid) throws AuthorizationDeniedException {
       return cadatahandler.getCAInfo(caid);   
-    }  
-    
-    /** Slow method to get CAInfo. The returned object has id-to-name maps of publishers and validators. */
-    public CAInfoView getCAInfoNoAuth(int caid) {
-        return cadatahandler.getCAInfoNoAuth(caid);   
     }
     
     public int getCAStatusNoAuth(int caid) {
@@ -310,10 +269,6 @@ public class CAInterfaceBean implements Serializable {
 	public Certificate getProcessedCertificate(){
 		return this.processedcert;
 	}    
-
-    public byte[] getLinkCertificate(final int caId) {
-        return caadminsession.getLatestLinkCertificate(caId);
-    }    
 
 	public String getProcessedCertificateAsString() throws Exception{
 		String returnval = null;	
@@ -390,11 +345,6 @@ public class CAInterfaceBean implements Serializable {
 		// Sort it by timestamp, newest first;
 		Collections.sort(history, new CertReqUserCreateComparator());
 		return history;
-	}
-
-	/** @return true if serial number unique indexing is supported by DB. */
-	public boolean isUniqueIndexForSerialNumber() {
-		return this.isUniqueIndex;
 	}
 
 	//
