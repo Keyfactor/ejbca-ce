@@ -158,33 +158,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         initializePage();
     }
 
-    private void initializePage() {
-        initCommonParts();
-        publisherInitMap.get(publisher.getClass()).run();
-    }
 
-    private void initCommonParts() {
-        if (publisher == null) { // Loading from database
-            publisher = publisherSession.getPublisher(listPublishersManagedBean.getSelectedPublisherName());
-            publisherId = publisher.getPublisherId();
-            fillPublisherInitMapAndInitPublisherData();
-        }
-
-        selectedPublisherType = getSelectedPublisherValue();
-        publisherDescription = publisher.getDescription();
-        onlyUseQueue = publisher.getOnlyUseQueue();
-        keepPublishedInQueue = publisher.getKeepPublishedInQueue();
-        useQueueForCRLs = publisher.getUseQueueForCRLs();
-        useQueueForCertificates = publisher.getUseQueueForCertificates();
-    }
-
-    private void fillPublisherInitMapAndInitPublisherData() {
-        publisherInitMap.put(ActiveDirectoryPublisher.class, () -> initActiveDirectoryPublisher());
-        publisherInitMap.put(LdapSearchPublisher.class, () -> initLdapSearchPublisher());
-        publisherInitMap.put(LdapPublisher.class, () -> initLdapPublisher()); 
-        publisherInitMap.put(CustomPublisherContainer.class, () -> initCustomPublisher());
-        publisherInitMap.put(MultiGroupPublisher.class, () -> initMultiGroupPublisher());
-    }
 
     public void initAccess() throws Exception {
         // To check access 
@@ -232,10 +206,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     private String getSelectedPublisherValue() {
-        if (getPublisherType()==PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
+        if (getPublisherType() == PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
             final CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisher;
             final String currentClass = custompublisher.getClassPath();
-            if (currentClass==null || currentClass.isEmpty()) {
+            if (currentClass == null || currentClass.isEmpty()) {
                 return Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString();
             } else {
                 return Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER).toString() + "-" + currentClass;
@@ -349,7 +323,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     public String getPublisherQueue() {
-        int[] times = getPublisherQueueLength(new int[]{0, 1*60, 10*60, 60*60}, new int[]{1*60, 10*60, 60*60, -1});
+        final int[] times = getPublisherQueueLength(new int[]{0, 1*60, 10*60, 60*60}, new int[]{1*60, 10*60, 60*60, -1});
         return Arrays.stream(times).mapToObj(Integer::toString).collect(Collectors.joining(", "));
     }
     
@@ -420,10 +394,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
                 availableCustomPublisherPropertyList.add(property);
             }
             return this.availableCustomPublisherPropertyList;
-        } else
-            return Collections.<CustomPublisherProperty> emptyList();
+        }
+        return Collections.<CustomPublisherProperty> emptyList();
     }
-    
+   
     public String getCustomPublisherPropertyText(final CustomPublisherProperty customPublisherProperty) {
         return getEjbcaWebBean()
                 .getText(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase());
@@ -533,67 +507,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return result;
     }
     
-    private Void initActiveDirectoryPublisher() {
-        ldapPublisherMBData = new LdapPublisherMBData();
-        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
-        activeDirectoryPublisherMBData = new ActiveDirectoryPublisherMBData();
-        activeDirectoryPublisherMBData.initializeData((ActiveDirectoryPublisher)publisher);
-        return null;
-    }
-    
-    private Void initLdapSearchPublisher() {
-        ldapSearchPublisherMBData = new LdapSearchPublisherMBData();
-        ldapSearchPublisherMBData.setSearchBaseDN(((LdapSearchPublisher) publisher).getSearchBaseDN());
-        ldapSearchPublisherMBData.setSearchFilter(((LdapSearchPublisher) publisher).getSearchFilter());
-        return null;
-    }
-    
-    private Void initMultiGroupPublisher() {
-        multiGroupPublisherMBData = new MultiGroupPublisherMBData();
-        multiGroupPublisherMBData.initializeData((MultiGroupPublisher) publisher);
-        return null;
-    }
-
-    private Void initCustomPublisher() {
-        customPublisherCurrentClass = ((CustomPublisherContainer) publisher).getClassPath();
-        customPublisherPropertyData = ((CustomPublisherContainer) publisher).getPropertyData();
-        
-        customPublisherPropertyValues = new HashMap<>();
-        
-        for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher)
-                .getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
-            customPublisherPropertyValues.put(customPublisherProperty.getValue(), customPublisherProperty.getValue());
-        }
-        return null;
-    }
-
-    private Void initLdapPublisher() {
-        ldapPublisherMBData = new LdapPublisherMBData();
-        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
-        return null;
-    }
-    
-    private String getCurrentClassSimple() {
-        if (publisher instanceof CustomPublisherContainer) {
-            final String currentCustomClass = ((CustomPublisherContainer) publisher).getClassPath();
-            return currentCustomClass.substring(currentCustomClass.lastIndexOf('.') + 1);
-        }
-        return StringUtils.EMPTY;
-    }
-    
-    private String getCurrentClassText() {
-        if (publisher instanceof CustomPublisherContainer) {
-            CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisher;
-            final String currentClass = custompublisher.getClassPath();
-            final String currentClassSimple = currentClass.substring(currentClass.lastIndexOf('.') + 1);
-            String currentClassText = getEjbcaWebBean().getText(currentClassSimple.toUpperCase());
-            if (currentClassText.equals(currentClassSimple.toUpperCase())) {
-                currentClassText = currentClassSimple;
-            }
-            return currentClassText;
-        }
-        return StringUtils.EMPTY;
-    }
 
     public String getCustomPublisherCurrentClass() {
         return customPublisherCurrentClass;
@@ -602,8 +515,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public void setCustomPublisherCurrentClass(final String customPublisherCurrentClass) {
         this.customPublisherCurrentClass = customPublisherCurrentClass;
     }
-
-
 
     public String getPublisherDescription() {
         return publisherDescription;
@@ -698,12 +609,21 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private void setCustomPublisherData() {
         final CustomPublisherContainer customPublisherContainer = ((CustomPublisherContainer) publisher);
         customPublisherContainer.setClassPath(customPublisherCurrentClass);
-
         if (customPublisherContainer.isCustomUiRenderingSupported()) {
             final StringBuilder sb = new StringBuilder();
-            for (final CustomPublisherProperty customPublisherProperty : customPublisherContainer
-                    .getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
-                sb.append(customPublisherProperty.getName()).append('=').append(customPublisherPropertyValues.get(customPublisherProperty.getName())).append('\n');
+            for (final CustomPublisherProperty customPublisherProperty : customPublisherContainer.getCustomUiPropertyList(getAdmin())) { 
+                if (customPublisherProperty.getType() == CustomPublisherProperty.UI_BOOLEAN) {
+                    if (((Boolean)customPublisherPropertyValues.get(customPublisherProperty.getName()))) {
+                        sb.append(customPublisherProperty.getName()).append('=').append("true").append('\n');
+                    } else {
+                        sb.append(customPublisherProperty.getName()).append('=').append("false").append('\n');
+                    }
+                } else {
+                    if (customPublisherPropertyValues.get(customPublisherProperty.getName()) != null) {
+                        sb.append(customPublisherProperty.getName()).append('=')
+                                .append(customPublisherPropertyValues.get(customPublisherProperty.getName())).append('\n');
+                    }
+                }
             }
             customPublisherContainer.setPropertyData(sb.toString());
         } else {
@@ -718,4 +638,95 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         publisher.setUseQueueForCertificates(useQueueForCertificates);
         publisher.setDescription(publisherDescription);        
     }
+    
+    private Void initActiveDirectoryPublisher() {
+        ldapPublisherMBData = new LdapPublisherMBData();
+        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
+        activeDirectoryPublisherMBData = new ActiveDirectoryPublisherMBData();
+        activeDirectoryPublisherMBData.initializeData((ActiveDirectoryPublisher)publisher);
+        return null;
+    }
+    
+    private Void initLdapSearchPublisher() {
+        ldapSearchPublisherMBData = new LdapSearchPublisherMBData();
+        ldapSearchPublisherMBData.setSearchBaseDN(((LdapSearchPublisher) publisher).getSearchBaseDN());
+        ldapSearchPublisherMBData.setSearchFilter(((LdapSearchPublisher) publisher).getSearchFilter());
+        return null;
+    }
+    
+    private Void initMultiGroupPublisher() {
+        multiGroupPublisherMBData = new MultiGroupPublisherMBData();
+        multiGroupPublisherMBData.initializeData((MultiGroupPublisher) publisher);
+        return null;
+    }
+
+    private Void initCustomPublisher() {
+        customPublisherCurrentClass = ((CustomPublisherContainer) publisher).getClassPath();
+        customPublisherPropertyData = ((CustomPublisherContainer) publisher).getPropertyData();
+
+        customPublisherPropertyValues = new HashMap<>();
+
+        for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
+                customPublisherPropertyValues.put(customPublisherProperty.getName(), customPublisherProperty.getValue());
+        }
+        return null;
+    }
+
+    private Void initLdapPublisher() {
+        ldapPublisherMBData = new LdapPublisherMBData();
+        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
+        return null;
+    }
+    
+    private String getCurrentClassSimple() {
+        if (publisher instanceof CustomPublisherContainer) {
+            final String currentCustomClass = ((CustomPublisherContainer) publisher).getClassPath();
+            return currentCustomClass.substring(currentCustomClass.lastIndexOf('.') + 1);
+        }
+        return StringUtils.EMPTY;
+    }
+    
+    private String getCurrentClassText() {
+        if (publisher instanceof CustomPublisherContainer) {
+            CustomPublisherContainer custompublisher = (CustomPublisherContainer) publisher;
+            final String currentClass = custompublisher.getClassPath();
+            final String currentClassSimple = currentClass.substring(currentClass.lastIndexOf('.') + 1);
+            String currentClassText = getEjbcaWebBean().getText(currentClassSimple.toUpperCase());
+            if (currentClassText.equals(currentClassSimple.toUpperCase())) {
+                currentClassText = currentClassSimple;
+            }
+            return currentClassText;
+        }
+        return StringUtils.EMPTY;
+    }
+
+    
+    private void initializePage() {
+        initCommonParts();
+        publisherInitMap.get(publisher.getClass()).run();
+    }
+
+    private void initCommonParts() {
+        if (publisher == null) { // Loading from database
+            publisher = publisherSession.getPublisher(listPublishersManagedBean.getSelectedPublisherName());
+            publisherId = publisher.getPublisherId();
+            fillPublisherInitMapAndInitPublisherData();
+        }
+
+        selectedPublisherType = getSelectedPublisherValue();
+        publisherDescription = publisher.getDescription();
+        onlyUseQueue = publisher.getOnlyUseQueue();
+        keepPublishedInQueue = publisher.getKeepPublishedInQueue();
+        useQueueForCRLs = publisher.getUseQueueForCRLs();
+        useQueueForCertificates = publisher.getUseQueueForCertificates();
+    }
+
+    private void fillPublisherInitMapAndInitPublisherData() {
+        publisherInitMap.put(ActiveDirectoryPublisher.class, () -> initActiveDirectoryPublisher());
+        publisherInitMap.put(LdapSearchPublisher.class, () -> initLdapSearchPublisher());
+        publisherInitMap.put(LdapPublisher.class, () -> initLdapPublisher()); 
+        publisherInitMap.put(CustomPublisherContainer.class, () -> initCustomPublisher());
+        publisherInitMap.put(MultiGroupPublisher.class, () -> initMultiGroupPublisher());
+    }
+    
 }
