@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -55,6 +56,17 @@ public class LdapPublisherMBData {
 
     public String getPort() {
         return this.port;
+    }
+
+    public void portAjaxListener(AjaxBehaviorEvent event) {
+        switch (this.connectionSecurity) {
+        case SSL:
+            setPort(LdapPublisher.DEFAULT_SSLPORT);
+            return;
+        default:
+            setPort(LdapPublisher.DEFAULT_PORT);
+            return;
+        }
     }
 
     public void setPort(final String ldapPublisherPort) {
