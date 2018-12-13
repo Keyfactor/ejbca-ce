@@ -137,7 +137,7 @@ public abstract class CAInfo implements Serializable {
     /**
      * Use issuer DN from the latest CA certificate. Might differ from the value from {@link getSubjectDN}.
      */
-    public String getLatestSubjectDN() {
+    public String getLatestSubjectDN() { 
         final Collection<Certificate> certs = getCertificateChain();
         final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
         return cacert!=null ? CertTools.getSubjectDN(cacert) : null;
