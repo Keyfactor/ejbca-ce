@@ -116,7 +116,17 @@ public interface PublisherQueueSessionLocal {
 	boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, CertificateDataWrapper cert,
 	        String password, String userDN, ExtendedInformation extendedinformation) throws PublisherException;
 
-    /** Publishers do not run as part of regular transactions and expect to run in auto-commit mode. */
+    /** Publishers do not run as part of regular transactions and expect to run in auto-commit mode. 
+	 * 
+	 * @param publisher the publisher to store the CRL to
+	 * @param admin the administrator publishing the CRL, it's up to the publisher to decide if authorization is needed or not
+     * @param incrl The DER coded CRL to be stored.
+     * @param cafp Fingerprint (hex) of the CAs certificate.
+     * @param number CRL number.
+     * @param userDN if an DN object is not found in the certificate use object from user data instead, can be null.
+     * @return true if storage (to publisher or queue) was successful.
+     * @throws PublisherException if a communication or other error occurs (storing in the queue due to publisher downtime is not an error).
+	 */
 	boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
 
     /**

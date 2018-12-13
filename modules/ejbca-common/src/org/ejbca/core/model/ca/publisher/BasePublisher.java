@@ -174,6 +174,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * To revoke a certificate (already revoked by the CA) call with status=CertificateDataBean.CERT_ACTIVE, the Publisher decides what to do, if
      * anything.
      * 
+     * @param admin the administrator publishing the Certificate, it's up to the publisher to decide if authorization is needed or not
      * @param incert The certificate to be stored.
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param username Username of end entity owning the certificate.
@@ -205,7 +206,6 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @return true if storage was successful.
      * @throws PublisherException if a communication or other error occurs.
      */
-    @SuppressWarnings("unused")
     public boolean storeCertificate(final AuthenticationToken authenticationToken, final CertificateData certificateData, final Base64CertData base64CertData, final String password, final String userDN, final ExtendedInformation extendedinformation) throws PublisherException {
         return storeCertificate(authenticationToken, certificateData, base64CertData);
     }
@@ -218,6 +218,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     /**
      * Published a CRL to a CRL store.
      *
+     * @param admin the administrator publishing the CRL, it's up to the publisher to decide if authorization is needed or not
      * @param incrl The DER coded CRL to be stored.
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param number CRL number.
