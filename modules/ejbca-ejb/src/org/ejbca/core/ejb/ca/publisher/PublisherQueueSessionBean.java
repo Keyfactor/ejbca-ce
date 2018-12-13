@@ -516,7 +516,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     }
 
     private PublisherException getAsPublisherException(final Exception e) {
-        log.debug("Publisher threw exception", e);
+        if (log.isDebugEnabled()) {
+            log.debug("Publisher threw exception", e);
+        }
         if (e instanceof PublisherException) {
             return (PublisherException) e;
         }

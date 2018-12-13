@@ -173,7 +173,14 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             final int id = publ.getPublisherId();
             final String name = getPublisherName(id);
             if (!(publisherResult instanceof PublisherException)) {
-                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getSubjectDnNeverNull(), name);
+                // If it wasn't an exception, it's a Boolean, but check it anyhow to avoid any chance of exception
+                Boolean result = false;
+                if (publisherResult instanceof Boolean) {
+                    result = (Boolean)publisherResult;
+                } else {
+                    log.error("Return type from storeCertificateNonTransactionalInternal was not a Boolean but a "+result.getClass().getName()+", this is an API error.");
+                }
+                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getSubjectDnNeverNull(), name, result);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
@@ -265,7 +272,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                                 throw e;
                             }
                         }
-                        final String msg = intres.getLocalizedMessage("publisher.store", "CRL", name);
+                        final String msg = intres.getLocalizedMessage("publisher.store", "CRL", name, publishStatus);
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", msg);
                         auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
@@ -283,6 +290,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     returnval = false;
                 }
                 if (log.isDebugEnabled()) {
+                    log.debug("Publisher status: " + publishStatus);
                     log.debug("KeepPublishedInQueue: " + publ.getKeepPublishedInQueue());
                     log.debug("UseQueueForCRLs: " + publ.getUseQueueForCRLs());
                 }
