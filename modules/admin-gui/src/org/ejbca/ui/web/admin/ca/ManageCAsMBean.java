@@ -99,7 +99,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     public Map<Integer, String> getListOfCas() {
         final Map<Integer, String> caMap = new LinkedHashMap<>();
         for (final String nameofca : canames.keySet()) {
-            int caId = canames.get(nameofca).intValue();
+            int caId = canames.get(nameofca);
             int caStatus = caBean.getCAStatusNoAuth(caId);
 
             String nameandstatus = nameofca + ", (" + getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus)) + ")";
