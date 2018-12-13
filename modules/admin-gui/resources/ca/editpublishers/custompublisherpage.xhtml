@@ -53,21 +53,21 @@
 				<h:outputText value="#{editPublisher.getCustomPublisherPropertyText(property)}"/>
 			</h:panelGroup >
 			<h:panelGroup rendered="#{editPublisher.customUiRenderingSupported}">
-				<h:selectOneMenu value="#{editPublisher.customPublisherPropertyValues[property.value]}" 
+				<h:selectOneMenu value="#{editPublisher.customPublisherPropertyValues[property.name]}" 
 								 disabled="#{editPublisher.readOnly}"
 								 rendered="#{editPublisher.renderCustomSelectOneMenu(property)}">
 					<f:selectItems value="#{editPublisher.getCustomPublisherPropertySelectOneMenuList(property)}"/>
 				</h:selectOneMenu>
-				<h:inputText value="#{editPublisher.customPublisherPropertyValues[property.value]}" 
+				<h:inputText value="#{editPublisher.customPublisherPropertyValues[property.name]}" 
 							 size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
 							 rendered="#{editPublisher.renderCustomTextInput(property)}"/>
-				<h:inputSecret value="#{editPublisher.customPublisherPropertyValues[property.value]}" 
+				<h:inputSecret value="#{editPublisher.customPublisherPropertyValues[property.name]}" 
 							   autocomplete="off" size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
 							   rendered="#{editPublisher.renderCustomInputPassword(property)}"/>
-				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherPropertyValues[property.value]}" 
+				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherPropertyValues[property.name]}" 
 										  disabled="#{editPublisher.readOnly}" rendered="#{editPublisher.renderCustomCheckbox(property)}"/> 
 				<h:outputLabel value="#{web.text.USE}" rendered="#{editPublisher.renderCustomCheckbox(property)}"/>
-				<h:inputTextarea cols="60" rows="12" value="#{editPublisher.customPublisherPropertyValues[property.value]}" disabled="#{editPublisher.readOnly}"
+				<h:inputTextarea cols="60" rows="12" value="#{editPublisher.customPublisherPropertyValues[property.name]}" disabled="#{editPublisher.readOnly}"
 								 rendered="#{editPublisher.renderCustomOutputTextArea(property)}"/>
 			<f:verbatim rendered="#{editPublisher.renderCustomHelp(property)}">
 				<br />
