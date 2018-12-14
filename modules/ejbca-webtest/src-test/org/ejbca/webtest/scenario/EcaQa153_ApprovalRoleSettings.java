@@ -77,6 +77,10 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
     @Test
     public void stepB_addApprovalProfile() {
         // TODO Refactor ECA-7356
+        approvalProfilesHelper.openPage(getAdminWebUrl());
+        approvalProfilesHelper.addApprovalProfile((TestData.APPROVAL_PROFILE_NAME));
+        approvalProfilesHelper.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
+        approvalProfilesHelper.setApprovalProfileType("PARTITIONED_APPROVAL");
         approvalProfilesHelper.addApprovalProfile(getAdminWebUrl(), TestData.APPROVAL_PROFILE_NAME, TestData.ROLE_NAME);
     }
     
@@ -89,7 +93,7 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
         adminRolesHelper.setMatchValue(TestData.MATCH_VALUE);
         adminRolesHelper.clickAddMember();
         adminRolesHelper.assertMemberMatchWithRowExists(TestData.MATCH_WITH);
-        // TODO Refactor ECA-7356
+        approvalProfilesHelper.openPage(getAdminWebUrl());
         approvalProfilesHelper.verifyApprovalsViewMode(getAdminWebUrl(), TestData.APPROVAL_PROFILE_NAME, TestData.ROLE_NAME);
     }
     
