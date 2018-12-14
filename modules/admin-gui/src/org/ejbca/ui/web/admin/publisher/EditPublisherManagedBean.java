@@ -158,8 +158,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         initializePage();
     }
 
-
-
     public void initAccess() throws Exception {
         // To check access 
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -195,11 +193,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
                 break;
             }
         }
-/*        if (customNoLongerAvailable) {
-            log.error("Amin the selected publisher value is " + selectedPublisherValue);
-            
-            availablePublisherTypes.add(new SelectItem(selectedPublisherValue, selectedPublisherValue.split("-")[1]));
-        }*/
+        
+        if (customNoLongerAvailable) {
+            availablePublisherTypes.add(new SortableSelectItem(selectedPublisherValue, selectedPublisherValue.split("-")[1]));
+        }
         
         Collections.sort(availablePublisherTypes);
         return availablePublisherTypes;
