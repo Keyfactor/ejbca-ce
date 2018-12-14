@@ -178,7 +178,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 if (publisherResult instanceof Boolean) {
                     result = (Boolean)publisherResult;
                 } else {
-                    log.error("Return type from storeCertificateNonTransactionalInternal was not a Boolean but a "+result.getClass().getName()+", this is an API error.");
+                    log.error("Return type from storeCertificateNonTransactionalInternal was not a Boolean but a " + result.getClass().getName() + ", this is an API error.");
                 }
                 final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getSubjectDnNeverNull(), name, result);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
