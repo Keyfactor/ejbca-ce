@@ -32,18 +32,19 @@
 		<h1>
 			<h:outputText value="#{web.text.MANAGEAPPROVALPROFILES}"/>
 		</h1>
-		<h:form id="editapprovalprofiles">
+		<h:form id="editapprovalprofilesForm">
 			<h:panelGroup rendered="#{!approvalProfilesMBean.operationInProgress}">
 			<h3>
 				<h:outputText value="#{web.text.LISTOFAPPROVALPROFILES}"/>
 			</h3>
 			<h:outputText value="#{approvalProfilesMBean.resetApprovalProfilesTrigger}"/>
-			<h:dataTable value="#{approvalProfilesMBean.approvalProfiles}" var="approvalProfile" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+			<h:dataTable id="approvalTable" value="#{approvalProfilesMBean.approvalProfiles}" var="approvalProfile" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
 				<h:column headerClass="gridColumn1">
 					<f:facet name="header"><h:outputText value="#{web.text.APPROVALPROFILE_NAME}"/></f:facet>
 					<h:outputText value="#{approvalProfile.name}"/>
 					<f:facet name="footer">
-			  			<h:inputText value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255" 
+			  			<h:inputText value="#{approvalProfilesMBean.approvalProfileName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255"
+									 id="approvalProfileName"
 			  				disabled="#{!(approvalProfilesMBean.authorizedToEdit)}"/>
 					</f:facet>
 				</h:column>
@@ -57,7 +58,7 @@
 						<h:commandButton value="#{web.text.CLONE}" action="#{approvalProfilesMBean.actionAddFromTemplate}" rendered="#{approvalProfilesMBean.authorizedToEdit}"/>
 					</div>
 					<f:facet name="footer">
-						<h:commandButton value="#{web.text.ADD}" action="#{approvalProfilesMBean.actionAdd}" disabled="#{!(approvalProfilesMBean.authorizedToEdit)}"/>
+						<h:commandButton id="addButton" value="#{web.text.ADD}" action="#{approvalProfilesMBean.actionAdd}" disabled="#{!(approvalProfilesMBean.authorizedToEdit)}"/>
 					</f:facet>
 				</h:column>
 			</h:dataTable>
