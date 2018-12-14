@@ -44,9 +44,11 @@ public class ApprovalProfilesHelper extends BaseHelper {
         static final By INPUT_APPROVAL_EXPPERIOD =By.id("approvalProfilesForm:approvalExpPeriod");
 
         static final By BUTTON_ADD = By.id("editapprovalprofilesForm:approvalTable:addButton");
-        static final By BUTTON_ADD_STEP = By.xpath("//input[@value='Add Step']");
-        static final By BUTTON_SAVE = By.xpath("//input[@value='Save']");
-        static final By BUTTON_CANCEL = By.xpath("//input[@value='Cancel']");
+        static final By BUTTON_ADD_STEP = By.id("approvalProfilesForm:addStepButton");
+        static final By BUTTON_SAVE = By.id("approvalProfilesForm:saveButton");
+        static final By BUTTON_CANCEL = By.id("approvalProfilesForm:cancelButton']");
+        static final By BUTTON_ADD_PARTITION = By.xpath(".//input[@value='Add Partition']");
+        static final By BUTTON_DELETE_STEP = By.xpath(".//input[@value='Delete Step']");
 
         static final By SELECT_PROFILETYPE = By.id("approvalProfilesForm:selectOneMenuApprovalType");
 
@@ -134,22 +136,7 @@ public class ApprovalProfilesHelper extends BaseHelper {
 
     // TODO Refactor ECA-7356 - EcaQa153_ApprovalRoleSettings
     public void addApprovalProfile(final String adminWebUrl, final String approvalProfileName, final String roleName) {
-        webDriver.get(adminWebUrl);
-        // By.xpath("//a[contains(@href,'/ejbca/adminweb/approval/editapprovalprofiles.xhtml')]")
-        WebElement approvalProfilesLink = webDriver.findElement(By.id("supervisionEditapprovalprofiles"));
-        approvalProfilesLink.click();
-        // Dynamically rendered items require some special handling...
-        WebElement inputName = webDriver.findElement(Page.INPUT_APPROVALPROFILE_NAME);
-        inputName.sendKeys(approvalProfileName);
-        WebElement addProfile = webDriver.findElement(Page.BUTTON_ADD);
-        addProfile.sendKeys(Keys.RETURN);
 
-        WebElement addedItemRow = webDriver.findElement(By.xpath("//tbody/tr/td[contains(text(), '" + approvalProfileName + "')]"));
-        WebElement addedItemEditButton = addedItemRow.findElement(By.xpath("../td[@class='gridColumn2']/div/input[@value='Edit']"));
-        addedItemEditButton.sendKeys(Keys.RETURN);
-
-        Select dropDownProfileType =  new Select(webDriver.findElement(By.id("approvalProfilesForm:selectOneMenuApprovalType")));
-        dropDownProfileType.selectByValue("PARTITIONED_APPROVAL");
         List<WebElement> stepAdmins = webDriver.findElements(By.xpath("//td[@class='editColumn2-Approval-steps']/select[contains(@name,'approvalProfilesForm:j_id')]"));
         for (WebElement box : stepAdmins) {
             Select selectAdmin = new Select(box);
@@ -157,9 +144,12 @@ public class ApprovalProfilesHelper extends BaseHelper {
             selectAdmin.selectByVisibleText(roleName);
 //            selectOptionByName(box, roleName);
         }
-        WebElement saveButton =  webDriver.findElement(By.xpath("//td[@class='editColumn2']/span/input[contains(@name,'approvalProfilesForm:j_id') and //input[@value='Save']]"));
-        saveButton.sendKeys(Keys.RETURN);
+        saveApprovalProfile();
         verifyApprovalsViewMode(adminWebUrl, approvalProfileName, roleName);
+    }
+
+    public void saveApprovalProfile() {
+        clickLink(Page.BUTTON_SAVE);
     }
 
     // TODO Refactor ECA-7356 - EcaQa87_ApprovalMgmtPartition
@@ -168,8 +158,8 @@ public class ApprovalProfilesHelper extends BaseHelper {
         for (WebElement step : steps) {
             //Verify present elements
             try {
-                step.findElement(By.xpath(".//input[@value='Add Partition']"));
-                step.findElement(By.xpath(".//input[@value='Delete Step']"));
+                step.findElement(Page.BUTTON_ADD_PARTITION);
+                step.findElement(Page.BUTTON_DELETE_STEP);
             } catch (NoSuchElementException e) {
                 fail("Could not locate expected element: " + e.getMessage());
             }
@@ -320,7 +310,6 @@ public class ApprovalProfilesHelper extends BaseHelper {
 
     // TODO Refactor ECA-7356 - EcaQa87_ApprovalMgmtPartition
     public void saveAndVerify(final String roleName, final String roleName2) {
-        webDriver.findElement(By.xpath("//input[@value='Save']")).click();
         WebElement editedItemRow = webDriver.findElement(By.xpath("//tbody/tr/td[contains(text(), 'Partitioned Profile')]"));
         WebElement addedItemViewButton = editedItemRow.findElement(By.xpath("../td[@class='gridColumn2']/div/input[@value='View']"));
         addedItemViewButton.sendKeys(Keys.RETURN);
@@ -330,14 +319,7 @@ public class ApprovalProfilesHelper extends BaseHelper {
         assertEquals("Unexpected Request Expiration Period", "7h 43m 20s", webDriver.findElement(By.id("approvalProfilesForm:reqExpPeriod")).getAttribute("value"));
         assertEquals("Unexpected Approval Expiration Period", "8h 16m 40s", webDriver.findElement(By.id("approvalProfilesForm:approvalExpPeriod")).getAttribute("value"));
 
-        // TODO ECA-7356 Note!!! This try-catch block contains inconsistent logic, as it succeed if one of elements is not found, however, we should check that none of elements exist.
-        //Verify present elements
-        try {
-            webDriver.findElement(By.xpath("//input[@value='Add Step']"));
-            webDriver.findElement(By.xpath("//input[@value='Save']"));
-            webDriver.findElement(By.xpath("//input[@value='Cancel']"));
-            fail("'Add Step', 'Save' or 'Cancel button was present in view mode'");
-        } catch (NoSuchElementException e) {} //Expected
+        assertButtonsPresent();
 
         try {
             webDriver.findElement(By.xpath("//input[@value='Back']"));
@@ -392,11 +374,6 @@ public class ApprovalProfilesHelper extends BaseHelper {
 
     // TODO Refactor ECA-7356 - EcaQa153_ApprovalRoleSettings
     public void verifyApprovalsViewMode(final String adminWebUrl, final String approvalProfileName, final String roleName) {
-        webDriver.get(adminWebUrl);
-        // By.xpath("//a[contains(@href,'/ejbca/adminweb/approval/editapprovalprofiles.xhtml')]")
-        WebElement approvalProfilesLink = webDriver.findElement(By.id("supervisionEditapprovalprofiles"));
-        approvalProfilesLink.click();
-
         WebElement addedItemRowPostEdit = webDriver.findElement(By.xpath("//tbody/tr/td[contains(text(), '" + approvalProfileName + "')]"));
         WebElement addedItemViewButton = addedItemRowPostEdit.findElement(By.xpath("../td[@class='gridColumn2']/div/input[@value='View']"));
         addedItemViewButton.sendKeys(Keys.RETURN);

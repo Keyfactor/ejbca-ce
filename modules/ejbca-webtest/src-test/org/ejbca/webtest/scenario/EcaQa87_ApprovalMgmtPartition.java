@@ -143,6 +143,7 @@ public class EcaQa87_ApprovalMgmtPartition extends WebTestBase {
     @Test
     public void stepG_saveAndVerify() {
         // TODO Refactor ECA-7356
+        approvalProfilesHelper.saveApprovalProfile();
         approvalProfilesHelper.saveAndVerify(TestData.ROLE_NAME, TestData.ROLE_NAME2);
     }
 
