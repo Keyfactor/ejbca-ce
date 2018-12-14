@@ -105,7 +105,14 @@ public class EcaQa87_ApprovalMgmtPartition extends WebTestBase {
     @Test
     public void stepB_addApprovalProfile() {
         // TODO Refactor ECA-7356
-        approvalProfilesHelper.addApprovalProfile(getAdminWebUrl(), TestData.APPROVAL_PROFILE_NAME, TestData.ROLE_NAME, TestData.ROLE_NAME2);
+        approvalProfilesHelper.openPage(getAdminWebUrl());
+        approvalProfilesHelper.addApprovalProfile(TestData.APPROVAL_PROFILE_NAME);
+        approvalProfilesHelper.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
+        approvalProfilesHelper.setApprovalProfileType("PARTITIONED_APPROVAL");
+        approvalProfilesHelper.setRequestExpirationPeriod("7h 43m 20s");
+        approvalProfilesHelper.setApprovalExpirationPeriod("8h 16m 40s");
+        approvalProfilesHelper.assertButtonsPresent();
+        approvalProfilesHelper.assertStepsNumber(1, TestData.ROLE_NAME, TestData.ROLE_NAME2);
     }
 
     @Test
