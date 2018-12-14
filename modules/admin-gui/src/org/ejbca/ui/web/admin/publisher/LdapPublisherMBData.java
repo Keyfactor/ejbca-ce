@@ -1,5 +1,18 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.admin.publisher;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,15 +21,24 @@ import java.util.Map;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
-public class LdapPublisherMBData {
+/**
+ * Class keeping the logic and data for ldap publisher used by EditPublisher managed bean.
+ * 
+ * @version $Id$
+ *
+ */
+public class LdapPublisherMBData implements Serializable {
     
+    private static final long serialVersionUID = 1L;
     public final Map<String, ConnectionSecurity> securityItems = new LinkedHashMap<>();
+    public static final String PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER = "placeholder";
 
     private String hostName;
     private String port;
@@ -288,38 +310,48 @@ public class LdapPublisherMBData {
     }
 
     public void initializeData(final LdapPublisher publisher) {
-       port = publisher.getPort();
-       connectionSecurity = publisher.getConnectionSecurity();
-       connectionTimeout = publisher.getConnectionTimeOut();
-       readTimeout = publisher.getReadTimeOut();
-       storeTimeout = publisher.getStoreTimeOut();
-       createNonExistingUsers = publisher.getCreateNonExistingUsers();
-       modifyExistingUsers = publisher.getModifyExistingUsers();
-       modifyExistingAttributes = publisher.getModifyExistingAttributes();
-       addNonExistingAttributes = publisher.getAddNonExistingAttributes();
-       createImmidiateNodes = publisher.getCreateIntermediateNodes();
-       addMultipleCertificates = publisher.getAddMultipleCertificates();
-       removeRevokedCertificates = publisher.getRemoveRevokedCertificates();
-       removeUserOnCertRevoke = publisher.getRemoveUsersWhenCertRevoked();
-       setUserPassword = publisher.getSetUserPassword();
-       userObjectClass = publisher.getUserObjectClass();
-       caObjectClass = publisher.getCAObjectClass();
-       userCertificateAttr = publisher.getUserCertAttribute();
-       caCertificateAttr = publisher.getCACertAttribute();
-       crlAttribute = publisher.getCRLAttribute();
-       deltaCrlAttribute = publisher.getDeltaCRLAttribute();
-       arlAttribute = publisher.getARLAttribute();
-       useFieldInLdapDN = new ArrayList<Integer>(publisher.getUseFieldInLdapDN());
-       
-       securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PLAIN"), ConnectionSecurity.PLAIN);
-       securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("STARTTLS"), ConnectionSecurity.STARTTLS);
-       securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("SSL"), ConnectionSecurity.SSL);
-        
+        hostName = publisher.getHostnames();
+        port = publisher.getPort();
+        connectionSecurity = publisher.getConnectionSecurity();
+        baseDN = publisher.getBaseDN();
+        loginDN = publisher.getLoginDN();
+        loginPWD = getPasswordPlaceholder(publisher);
+        confirmPWD = getPasswordPlaceholder(publisher);
+        connectionTimeout = publisher.getConnectionTimeOut();
+        readTimeout = publisher.getReadTimeOut();
+        storeTimeout = publisher.getStoreTimeOut();
+        createNonExistingUsers = publisher.getCreateNonExistingUsers();
+        modifyExistingUsers = publisher.getModifyExistingUsers();
+        modifyExistingAttributes = publisher.getModifyExistingAttributes();
+        addNonExistingAttributes = publisher.getAddNonExistingAttributes();
+        createImmidiateNodes = publisher.getCreateIntermediateNodes();
+        addMultipleCertificates = publisher.getAddMultipleCertificates();
+        removeRevokedCertificates = publisher.getRemoveRevokedCertificates();
+        removeUserOnCertRevoke = publisher.getRemoveUsersWhenCertRevoked();
+        setUserPassword = publisher.getSetUserPassword();
+        userObjectClass = publisher.getUserObjectClass();
+        caObjectClass = publisher.getCAObjectClass();
+        userCertificateAttr = publisher.getUserCertAttribute();
+        caCertificateAttr = publisher.getCACertAttribute();
+        crlAttribute = publisher.getCRLAttribute();
+        deltaCrlAttribute = publisher.getDeltaCRLAttribute();
+        arlAttribute = publisher.getARLAttribute();
+        useFieldInLdapDN = new ArrayList<Integer>(publisher.getUseFieldInLdapDN());
+
+        securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PLAIN"), ConnectionSecurity.PLAIN);
+        securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("STARTTLS"), ConnectionSecurity.STARTTLS);
+        securityItems.put(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("SSL"), ConnectionSecurity.SSL);
     }
     
     public void setLdapPublisherParameters(final LdapPublisher ldapPublisher) {
+        ldapPublisher.setHostnames(hostName);
         ldapPublisher.setPort(port);
         ldapPublisher.setConnectionSecurity(connectionSecurity);
+        ldapPublisher.setBaseDN(baseDN);
+        ldapPublisher.setLoginDN(loginDN);
+        if (!PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER.equals(loginPWD)) {
+            ldapPublisher.setLoginPassword(loginPWD);
+        }
         ldapPublisher.setConnectionTimeOut(connectionTimeout);
         ldapPublisher.setReadTimeOut(readTimeout);
         ldapPublisher.setStoreTimeOut(storeTimeout);
@@ -340,6 +372,19 @@ public class LdapPublisherMBData {
         ldapPublisher.setDeltaCRLAttribute(deltaCrlAttribute);
         ldapPublisher.setARLAttribute(arlAttribute);
         ldapPublisher.setUseFieldInLdapDN(useFieldInLdapDN);
+    }
+    
+    
+    /**
+     * @return password placeholder instead of real password in order to not send clear text password to browser, 
+     *         or empty string in case there is no ldap password (i.e. new publisher).
+     */
+    private String getPasswordPlaceholder(final LdapPublisher publisher) {
+        final String currentPassword = (String) publisher.getRawData().get(LdapPublisher.LOGINPASSWORD);
+        if (StringUtils.isNotEmpty(currentPassword)) {
+            return PASSWORD_LDAPLOGINPASSWORDPLACEHOLDER;
+        }
+        return StringUtils.EMPTY;
     }
     
 }

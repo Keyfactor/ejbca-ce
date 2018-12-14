@@ -1,5 +1,18 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.admin.publisher;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,7 +30,16 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
-public class MultiGroupPublisherMBData {
+/**
+ * 
+ * Class holding data and logic for multigroup publisher used in edit publisher bean.
+ * 
+ * @version $Id$
+ *
+ */
+public class MultiGroupPublisherMBData implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(MultiGroupPublisherMBData.class);
 

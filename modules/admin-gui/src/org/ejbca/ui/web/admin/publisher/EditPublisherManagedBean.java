@@ -571,7 +571,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             addErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB"), listPublishersManagedBean.getSelectedPublisherName());
         }
     }
-
+    
     private void prepareForSave() {
         //Set General Settings
         setPublisherQueueAndGeneralSettings();
