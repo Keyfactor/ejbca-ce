@@ -765,7 +765,7 @@ public class BaseHelper {
      * @param noElementMessage
      * @param assertMessage
      */
-    protected void assertInfoMessageApears(String expectedInfoMessage, String noElementMessage, String assertMessage) {
+    protected void assertInfoMessageAppears(String expectedInfoMessage, String noElementMessage, String assertMessage) {
         final WebElement message = findElement(Page.TEXT_MESSAGE);
         if(message == null) {
             fail(noElementMessage);
@@ -784,7 +784,7 @@ public class BaseHelper {
      * @param noElementMessage
      * @param assertMessage
      */
-    protected void assertErrorMessageApears(String expectedErrorMessage, String noElementMessage, String assertMessage) {
+    protected void assertErrorMessageAppears(String expectedErrorMessage, String noElementMessage, String assertMessage) {
         final WebElement errorMessage = findElement(Page.TEXT_ERROR_MESSAGE);
         if(errorMessage == null) {
             fail(noElementMessage);
