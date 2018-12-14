@@ -37,7 +37,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @version $Id$
  *
  */
-public class MultiGroupPublisherMBData implements Serializable {
+public final class MultiGroupPublisherMBData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
