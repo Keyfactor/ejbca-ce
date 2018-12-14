@@ -142,15 +142,15 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private boolean keepPublishedInQueue;
     private boolean onlyUseQueue;
 
-    @ManagedProperty(value = "#{listPublishersManagedBean}")
-    private ListPublishersManagedBean listPublishersManagedBean;
+    @ManagedProperty(value = "#{listPublishers}")
+    private ListPublishersManagedBean listPublishers;
 
-    public ListPublishersManagedBean getListPublishersManagedBean() {
-        return listPublishersManagedBean;
+    public ListPublishersManagedBean getListPublishers() {
+        return listPublishers;
     }
 
-    public void setListPublishersManagedBean(final ListPublishersManagedBean listPublishersManagedBean) {
-        this.listPublishersManagedBean = listPublishersManagedBean;
+    public void setListPublishers(final ListPublishersManagedBean listPublishers) {
+        this.listPublishers = listPublishers;
     }
 
     @PostConstruct
@@ -245,7 +245,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     public String getEditPublisherTitle() {
-        return getEjbcaWebBean().getText("PUBLISHER") + " : " + listPublishersManagedBean.getSelectedPublisherName();
+        return getEjbcaWebBean().getText("PUBLISHER") + " : " + listPublishers.getSelectedPublisherName();
     }
 
     /**
@@ -325,7 +325,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
     
     private int[] getPublisherQueueLength(final int[] intervalLower, final int[] intervalUpper) {
-        return publisherqueuesession.getPendingEntriesCountForPublisherInIntervals(publisherSession.getPublisherId(listPublishersManagedBean.getSelectedPublisherName()), intervalLower, intervalUpper);
+        return publisherqueuesession.getPendingEntriesCountForPublisherInIntervals(publisherSession.getPublisherId(listPublishers.getSelectedPublisherName()), intervalLower, intervalUpper);
     }
     
     public List<String> getAvailablePublisherList() {
@@ -556,19 +556,19 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     //Actions
     public String savePublisher() throws AuthorizationDeniedException {
         prepareForSave();
-        publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), publisher);
+        publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
         return "listpublishers?faces-redirect=true";
     }
     
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
         prepareForSave();
-        publisherSession.changePublisher(getAdmin(), listPublishersManagedBean.getSelectedPublisherName(), publisher);
+        publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
         try {
             publisherSession.testConnection(publisherId);
             addInfoMessage(getEjbcaWebBean().getText("CONTESTEDSUCESSFULLY"));
         } catch (PublisherConnectionException pce) {
-            log.error("Error connecting to publisher " + listPublishersManagedBean.getSelectedPublisherName(), pce);
-            addErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB"), listPublishersManagedBean.getSelectedPublisherName());
+            log.error("Error connecting to publisher " + listPublishers.getSelectedPublisherName(), pce);
+            addErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB"), listPublishers.getSelectedPublisherName());
         }
     }
     
@@ -706,7 +706,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     private void initCommonParts() {
         if (publisher == null) { // Loading from database
-            publisher = publisherSession.getPublisher(listPublishersManagedBean.getSelectedPublisherName());
+            publisher = publisherSession.getPublisher(listPublishers.getSelectedPublisherName());
             publisherId = publisher.getPublisherId();
             fillPublisherInitMapAndInitPublisherData();
         }

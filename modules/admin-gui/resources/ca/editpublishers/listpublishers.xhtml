@@ -30,7 +30,7 @@
 
 		<ui:define name="metadata">
 			<f:metadata>
-				<f:event type="preRenderView" listener="#{listPublishersManagedBean.initAccess}" />
+				<f:event type="preRenderView" listener="#{listPublishers.initAccess}" />
 			</f:metadata>
 		</ui:define>
 
@@ -53,10 +53,10 @@
 
 				<h:panelGroup>
 					<h:selectOneListbox styleClass="select-list" id="listPublishers"
-						value="#{listPublishersManagedBean.selectedPublisherName}"
+						value="#{listPublishers.selectedPublisherName}"
 						style="width: 50em" size="15">
 						<f:selectItems
-							value="#{listPublishersManagedBean.availablePublishers}" />
+							value="#{listPublishers.availablePublishers}" />
 					</h:selectOneListbox>
 				</h:panelGroup>
 				<h:panelGroup>
@@ -66,20 +66,20 @@
 					columnClasses="subTableColumn1,subTableColumn2">
 					<h:panelGroup>
 						<h:commandButton id="editButton"
-							action="#{listPublishersManagedBean.editPublisher}"
+							action="#{listPublishers.editPublisher}"
 							value="#{web.text.EDITPUBLISHER}"
-							rendered="#{listPublishersManagedBean.hasEditRights}" />
+							rendered="#{listPublishers.hasEditRights}" />
 						<h:commandButton id="viewButton"
-							action="#{listPublishersManagedBean.editPublisher}"
+							action="#{listPublishers.editPublisher}"
 							value="#{web.text.VIEWPUBLISHER}"
-							rendered="#{!listPublishersManagedBean.hasEditRights}" />
+							rendered="#{!listPublishers.hasEditRights}" />
 					</h:panelGroup>
 					<h:panelGroup>
 						<h:commandButton id="deleteButton"
-							action="#{listPublishersManagedBean.deletePublisher}"
+							action="#{listPublishers.deletePublisher}"
 							value="#{web.text.DELETEPUBLISHER}"
 							onclick="return confirm('#{web.text.AREYOUSURE}');"
-							rendered="#{listPublishersManagedBean.hasEditRights}" />
+							rendered="#{listPublishers.hasEditRights}" />
 					</h:panelGroup>
 				</h:panelGrid>
 				<h:panelGroup>
@@ -87,7 +87,7 @@
 			</h:panelGrid>
 
 			<h:panelGrid styleClass="actions margin-top" width="100%"
-				rendered="#{listPublishersManagedBean.hasEditRights}">
+				rendered="#{listPublishers.hasEditRights}">
 				<h:panelGroup>
 					<h3>
 						<h:outputText value="#{web.text.ADDPUBLISHER}" />
@@ -95,18 +95,18 @@
 				</h:panelGroup>
 				<h:panelGroup>
 					<h:inputText id="newPublisherName"
-						value="#{listPublishersManagedBean.newPublisherName}" size="40"
+						value="#{listPublishers.newPublisherName}" size="40"
 						title="#{web.text.FORMAT_ID_STR}" />
 					<h:commandButton id="addButton"
-						action="#{listPublishersManagedBean.addPublisher}"
+						action="#{listPublishers.addPublisher}"
 						value="#{web.text.ADD}" style="margin-left: 3px;" />
 						&#xA0;&#xA0;
 					<h:commandButton id="renameButton"
-						action="#{listPublishersManagedBean.renamePublisher}"
+						action="#{listPublishers.renamePublisher}"
 						value="#{web.text.RENAME_SELECTED}" />
 						&#xA0;&#xA0;&#xA0;
 					<h:commandButton id="cloneButton"
-						action="#{listPublishersManagedBean.clonePublisher}"
+						action="#{listPublishers.clonePublisher}"
 						value="#{web.text.CLONE_SELECTED}" />
 				</h:panelGroup>
 			</h:panelGrid>

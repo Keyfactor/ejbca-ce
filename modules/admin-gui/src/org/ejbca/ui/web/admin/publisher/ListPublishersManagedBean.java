@@ -41,7 +41,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * @version $Id$
  *
  */
-@ManagedBean
+@ManagedBean(name = "listPublishers")
 @SessionScoped
 public class ListPublishersManagedBean extends BaseManagedBean implements Serializable {
 
