@@ -113,7 +113,7 @@ public class ServicesHelper extends BaseHelper {
     }
 
     public void assertHasErrorMessage(final String errorMessageText) {
-        assertErrorMessageApears(errorMessageText, "Service save error message was not found", "Expected service error message was not displayed");
+        assertErrorMessageAppears(errorMessageText, "Service save error message was not found", "Expected service error message was not displayed");
     }
 
     private void assertServiceTitleExists(final By textTitleId, final String prefixString, final String serviceName) {
