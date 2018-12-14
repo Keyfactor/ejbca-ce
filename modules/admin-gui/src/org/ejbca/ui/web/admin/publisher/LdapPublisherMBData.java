@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @version $Id$
  *
  */
-public class LdapPublisherMBData implements Serializable {
+public final class LdapPublisherMBData implements Serializable {
     
     private static final long serialVersionUID = 1L;
     public final Map<String, ConnectionSecurity> securityItems = new LinkedHashMap<>();
