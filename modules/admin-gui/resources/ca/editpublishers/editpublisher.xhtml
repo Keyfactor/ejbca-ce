@@ -25,6 +25,9 @@
      -->
 </ui:remove>
 
+
+
+
 <body>
 	<ui:composition template="/WEB-INF/include/template.xhtml">
 
@@ -169,13 +172,28 @@
 					rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 					<h:panelGroup />
 					<h:panelGroup>
-						<h:commandButton value="#{web.text.SAVEANDTESTCONNECTION}" style="margin-right:3px;" action="#{editPublisher.savePublisherAndTestConnection()}"/>
-						<h:commandButton value="#{web.text.SAVE}" style="margin-right:3px;" action="#{editPublisher.savePublisher()}"/>
+					<script type="text/javascript">
+						//<![CDATA[
+						function checkPassword(errorMsg) {
+							if (document.getElementById('selectPublisher:ldappublisherpage:ldaploginpassword').value != 
+								document.getElementById('selectPublisher:ldappublisherpage:ldapconfirmloginpassword').value) {
+								alert(errorMsg);
+								return false;
+							}
+							return true;
+						}
+						//]]>
+					</script>
+						<h:commandButton value="#{web.text.SAVEANDTESTCONNECTION}" style="margin-right:3px;" action="#{editPublisher.savePublisherAndTestConnection()}" onclick="return checkPassword('#{web.text.PASSWORDSDOESNTMATCH}')"/>
+						<h:commandButton value="#{web.text.SAVE}" style="margin-right:3px;" action="#{editPublisher.savePublisher()}" onclick="return checkPassword('#{web.text.PASSWORDSDOESNTMATCH}')"/>
 						<h:button value="#{web.text.CANCEL}" outcome="listpublishers?faces-redirect=true" />
 					</h:panelGroup>
 				</h:panelGrid>
 			</h:form>
 		</ui:define>
 	</ui:composition>
+
+
+
 </body>
 </html>
