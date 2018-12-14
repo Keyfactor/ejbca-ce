@@ -24,7 +24,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-// TODO Actual implementation and refactoring take place in ECA-7356
 /**
  * Helper class for handling 'Approval Profiles' page in automated web tests.
  *
@@ -36,52 +35,101 @@ public class ApprovalProfilesHelper extends BaseHelper {
      * Contains constants and references of the 'Approval Profiles' page.
      */
     public static class Page {
+        // General
+        static final String PAGE_URI = "/ejbca/adminweb/approval/editapprovalprofiles.xhtml";
+        static final By PAGE_LINK = By.id("supervisionEditapprovalprofiles");
 
+        static final By INPUT_APPROVALPROFILE_NAME = By.id("editapprovalprofilesForm:approvalTable:approvalProfileName");
+        static final By INPUT_REQUEST_EXPPERIOD = By.id("approvalProfilesForm:reqExpPeriod");
+        static final By INPUT_APPROVAL_EXPPERIOD =By.id("approvalProfilesForm:approvalExpPeriod");
+
+        static final By BUTTON_ADD = By.id("editapprovalprofilesForm:approvalTable:addButton");
+        static final By BUTTON_ADD_STEP = By.xpath("//input[@value='Add Step']");
+        static final By BUTTON_SAVE = By.xpath("//input[@value='Save']");
+        static final By BUTTON_CANCEL = By.xpath("//input[@value='Cancel']");
+
+        static final By SELECT_PROFILETYPE = By.id("approvalProfilesForm:selectOneMenuApprovalType");
+
+
+        static final By TEXT_TITLE_EDIT_APPROVAL_PROFILE = By.id("titleApprovalProfile");
+
+        // Dynamic references' parts
+        static final String TABLE_APPROVAL_PROFILES = "//*[@id='editapprovalprofilesForm:approvalTable']";
+
+        // Dynamic references
+        static By getAPTableRowContainingText(final String text) {
+            return By.xpath("//tbody/tr/td[contains(text(), '" + text + "')]");
+        }
+
+        static By getViewButtonFromAPTableRowContainingText(final String text) {
+            return By.xpath(TABLE_APPROVAL_PROFILES + "//tr/td[text()='" + text + "']/following-sibling::td//input[@value='View']");
+        }
+
+        static By getEditButtonFromAPTableRowContainingText(final String text) {
+            return By.xpath(TABLE_APPROVAL_PROFILES + "//tr/td[text()='" + text + "']/following-sibling::td//input[@value='Edit']");
+        }
     }
 
     public ApprovalProfilesHelper(final WebDriver webDriver) {
         super(webDriver);
     }
 
+    /**
+     * Opens the page 'Approval Profiles' by clicking menu link on home page and asserts the correctness of resulting URI.
+     *
+     * @param webUrl home page URL.
+     */
+    public void openPage(final String webUrl) {
+        openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);
+    }
+
+    public void addApprovalProfile(final String approvalProfileName){
+        fillInput(Page.INPUT_APPROVALPROFILE_NAME, approvalProfileName);
+        clickLink(Page.BUTTON_ADD);
+        assertApprovalProfileNameExists(approvalProfileName);
+    }
+
+    /**
+     * Opens the edit page for a Approval Profile, then asserts that the correct Approval Profile is being edited.
+     *
+     * @param approvalProfileName an Approval Profile name.
+     */
+    public void openEditApprovalProfilePage(final String approvalProfileName) {
+        // Click edit button for Approval Profile
+        clickLink(Page.getEditButtonFromAPTableRowContainingText(approvalProfileName));
+        // Assert correct edit page
+        assertApprovalProfileTitleExists(Page.TEXT_TITLE_EDIT_APPROVAL_PROFILE, "Approval Profile: ", approvalProfileName);
+    }
+
     // TODO Refactor ECA-7356 - EcaQa87_ApprovalMgmtPartition
-    public void addApprovalProfile(final String adminWebUrl, final String approvalProfileName, final String roleName, final String roleName2) {
-        webDriver.get(adminWebUrl);
-        //By.xpath("//a[contains(@href,'/ejbca/adminweb/approval/editapprovalprofiles.xhtml')]"));
-        WebElement approvalProfilesLink = webDriver.findElement(By.id("supervisionEditapprovalprofiles"));
-        approvalProfilesLink.click();
-        // Dynamically rendered items require some special handling...
-        WebElement inputName = webDriver.findElement(By.xpath("//input[contains(@name,'editapprovalprofiles:j_id') and //input[@type='text']]"));
-        inputName.sendKeys(approvalProfileName);
-        WebElement addProfile = webDriver.findElement(By.xpath("//input[contains(@name,'editapprovalprofiles:j_id') and //input[@value='Add']]"));
-        addProfile.sendKeys(Keys.RETURN);
-
-        WebElement addedItemRow = webDriver.findElement(By.xpath("//tbody/tr/td[contains(text(), '" + approvalProfileName + "')]"));
-        WebElement addedItemEditButton = addedItemRow.findElement(By.xpath("../td[@class='gridColumn2']/div/input[@value='Edit']"));
-        addedItemEditButton.sendKeys(Keys.RETURN);
-
-        Select dropDownProfileType =  new Select(webDriver.findElement(By.id("approvalProfilesForm:selectOneMenuApprovalType")));
-        dropDownProfileType.selectByValue("PARTITIONED_APPROVAL");
-        WebElement reqExpPeriod = webDriver.findElement(By.id("approvalProfilesForm:reqExpPeriod"));
-        reqExpPeriod.clear();
-        reqExpPeriod.sendKeys("7h 43m 20s");
-        WebElement approvalExpPeriod = webDriver.findElement(By.id("approvalProfilesForm:approvalExpPeriod"));
-        approvalExpPeriod.clear();
-        approvalExpPeriod.sendKeys("8h 16m 40s");
-
-        //Verify present elements
-        try {
-            webDriver.findElement(By.xpath("//input[@value='Add Step']"));
-            webDriver.findElement(By.xpath("//input[@value='Save']"));
-            webDriver.findElement(By.xpath("//input[@value='Cancel']"));
-        } catch (NoSuchElementException e) {
-            fail("Could not locate expected element: " + e.getMessage());
-        }
+    public void assertStepsNumber( int expectedStepsNumber, final String roleName, final String roleName2) {
 
         WebElement superTable = webDriver.findElement(By.xpath("//table[@class='superTable']"));
         List<WebElement> steps = superTable.findElements(By.xpath("./tbody/tr/td"));
-        assertEquals("Unexpected number of initial steps", 1, steps.size());
+        assertEquals("Unexpected number of initial steps", expectedStepsNumber, steps.size());
 
         verifySteps(steps, roleName, roleName2);
+    }
+
+    public void assertButtonsPresent() {
+        assertElementExists(Page.BUTTON_ADD_STEP, "Add step button does not exist");
+        assertElementExists(Page.BUTTON_SAVE, "Save button does not exist");
+        assertElementExists(Page.BUTTON_CANCEL, "Cancel button does not exist");
+    }
+
+    /**
+     * Sets Approval Profile Type
+     * @param value Approval Profile type value to be selected
+     */
+    public void setApprovalProfileType(String value) {
+        selectOptionByValue(Page.SELECT_PROFILETYPE, value);
+    }
+
+    public void setRequestExpirationPeriod( String inputString) {
+        fillInput(Page.INPUT_REQUEST_EXPPERIOD, inputString);
+    }
+    public void setApprovalExpirationPeriod( String inputString) {
+        fillInput(Page.INPUT_APPROVAL_EXPPERIOD, inputString);
     }
 
     // TODO Refactor ECA-7356 - EcaQa153_ApprovalRoleSettings
@@ -91,9 +139,9 @@ public class ApprovalProfilesHelper extends BaseHelper {
         WebElement approvalProfilesLink = webDriver.findElement(By.id("supervisionEditapprovalprofiles"));
         approvalProfilesLink.click();
         // Dynamically rendered items require some special handling...
-        WebElement inputName = webDriver.findElement(By.xpath("//input[contains(@name,'editapprovalprofiles:j_id') and //input[@type='text']]"));
+        WebElement inputName = webDriver.findElement(Page.INPUT_APPROVALPROFILE_NAME);
         inputName.sendKeys(approvalProfileName);
-        WebElement addProfile = webDriver.findElement(By.xpath("//input[contains(@name,'editapprovalprofiles:j_id') and //input[@value='Add']]"));
+        WebElement addProfile = webDriver.findElement(Page.BUTTON_ADD);
         addProfile.sendKeys(Keys.RETURN);
 
         WebElement addedItemRow = webDriver.findElement(By.xpath("//tbody/tr/td[contains(text(), '" + approvalProfileName + "')]"));
@@ -360,4 +408,28 @@ public class ApprovalProfilesHelper extends BaseHelper {
         }
     }
 
+    /**
+     * Asserts the approval profile name exists in the list.
+     *
+     * @param approvalProfileName approval profile name.
+     */
+    public void assertApprovalProfileNameExists(final String approvalProfileName) {
+        assertElementExists(
+                Page.getAPTableRowContainingText(approvalProfileName),
+                approvalProfileName + " was not found on 'Approval Profiles' page."
+        );
+    }
+
+    // Asserts the 'Approval Profile' name title exists.
+    private void assertApprovalProfileTitleExists(final By textTitleId, final String prefixString, final String approvalProfileName) {
+        final WebElement approvalProfileTitle = findElement(textTitleId);
+        if(approvalProfileName == null) {
+            fail("Approval Profile title was not found.");
+        }
+        assertEquals(
+                "Action on wrong Approval Profile.",
+                prefixString + approvalProfileName,
+                approvalProfileTitle.getText()
+        );
+    }
 }
