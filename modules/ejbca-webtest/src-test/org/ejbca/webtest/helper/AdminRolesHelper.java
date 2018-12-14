@@ -573,14 +573,14 @@ public class AdminRolesHelper extends BaseHelper {
 
     // Asserts the 'Manage Administrator Roles' add title exists.
     private void assertRoleAdded() {
-        assertInfoMessageApears("Role added.",
+        assertInfoMessageAppears("Role added.",
                 "Expected role add message was not displayed.",
                 "Role add message was not found.");
     }
 
     // Asserts the 'Manage Administrator Roles' update title exists.
     private void assertRoleUpdated() {
-        assertInfoMessageApears("Role updated successfully.",
+        assertInfoMessageAppears("Role updated successfully.",
                 "Expected role update message was not displayed.",
                 "Role update message was not found.");
     }
