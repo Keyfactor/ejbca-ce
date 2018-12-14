@@ -78,7 +78,7 @@
 						<h:selectOneMenu value="#{editPublisher.selectedPublisherType}" 
 										 rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}">
 							<f:selectItems value="#{editPublisher.availablePublisherTypes}" />
-							<f:ajax render="messagesAndContent selectPublisher" listener="#{editPublisher.changePublisherType}"/>
+							<f:ajax render=":messages @form" listener="#{editPublisher.changePublisherType}"/>
 						</h:selectOneMenu>
 					</h:panelGroup>
 				</h:panelGrid>
