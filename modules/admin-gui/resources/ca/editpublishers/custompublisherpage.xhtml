@@ -42,7 +42,7 @@
 						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherMBData.customPublisherCurrentClass}"/> 
 							
 			<h:inputText size="60" maxlength="255" rendered="#{!editPublisher.manualClassPathsEnabledAndIsCustomClassChoice}"
-						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherMBData.customPublisherCurrentClass}" readonly="readonly"/>
+						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherMBData.customPublisherCurrentClass}" readonly="true"/>
 						
 			<h:outputText value="#{web.text.OLDMANUALCLASSPATHELP}" 
 						  rendered="#{!editPublisher.manualClassPathsEnabledAndIsCustomClassChoice and editPublisher.customClassChoice}"/>							
