@@ -398,23 +398,23 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         return "editpublisher";
     }
     
-    public boolean renderLdapPublisherPage() {
+    public boolean isRenderLdapPublisherPage() {
         return publisher instanceof LdapPublisher;
     }
 
-    public boolean renderLdapSearchPublisherPage() {
+    public boolean isRenderLdapSearchPublisherPage() {
         return publisher instanceof LdapSearchPublisher;
     }
 
-    public boolean renderActiveDirectoryPublisherPage() {
+    public boolean isRenderActiveDirectoryPublisherPage() {
         return publisher instanceof ActiveDirectoryPublisher;
     }
 
-    public boolean renderCustomPublisherPage() {
+    public boolean isRenderCustomPublisherPage() {
         return publisher instanceof CustomPublisherContainer;
     }
 
-    public boolean renderMultiGroupPublisherPage() {
+    public boolean isRenderMultiGroupPublisherPage() {
         return publisher instanceof MultiGroupPublisher;
     }
 
