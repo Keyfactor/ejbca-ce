@@ -68,6 +68,10 @@ public final class LdapPublisherMBData implements Serializable {
     private String arlAttribute;
     private ArrayList<Integer> useFieldInLdapDN;
     
+    public LdapPublisherMBData(final LdapPublisher ldapPublisher) {
+        initializeData(ldapPublisher);
+    }
+    
     public String getHostName() {
         return hostName;
     }
@@ -309,7 +313,7 @@ public final class LdapPublisherMBData implements Serializable {
         return result;
     }
 
-    public void initializeData(final LdapPublisher publisher) {
+    private void initializeData(final LdapPublisher publisher) {
         hostName = publisher.getHostnames();
         port = publisher.getPort();
         connectionSecurity = publisher.getConnectionSecurity();
