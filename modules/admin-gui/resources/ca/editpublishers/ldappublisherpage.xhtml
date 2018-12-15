@@ -54,7 +54,7 @@
 				<f:validateLongRange minimum="1" maximum="65535"/>
 			</h:inputText>
 			<h:selectOneRadio value="#{editPublisher.ldapPublisherMBData.connectionSecurity}" disabled="#{editPublisher.readOnly}">
-				<f:selectItems value="#{editPublisher.ldapPublisherMBData.getSecurityItems()}" /> 
+				<f:selectItems value="#{editPublisher.ldapPublisherMBData.securityItems}" /> 
 				<f:ajax render="ldapconnectionport" listener="#{editPublisher.ldapPublisherMBData.portAjaxListener}"/>
 			</h:selectOneRadio>
 		</h:panelGroup>
@@ -265,7 +265,7 @@
 		<h:panelGroup>
 			<h:selectManyListbox value="#{editPublisher.ldapPublisherMBData.useFieldInLdapDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list" size="10" 
 								required="true" requiredMessage="#{web.text.MUSTSELECTATLEASTONEFIELD}">
-				<f:selectItems value="#{editPublisher.ldapPublisherMBData.getLdapPublisherLocationFieldsFromCertificateDN()}" />
+				<f:selectItems value="#{editPublisher.ldapPublisherMBData.ldapPublisherLocationFieldsFromCertificateDN}" />
 			</h:selectManyListbox>
 			<br />
 			<h:outputText value="#{web.text.USEFIELDSINDN_HELP}" styleClass="smallHelp" />
