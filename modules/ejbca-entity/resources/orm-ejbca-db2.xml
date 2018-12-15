@@ -50,7 +50,7 @@
         <attributes>
             <id name="accountId"><column name="accountId" column-definition="VARCHAR(254)"/></id>
             <basic fetch="EAGER" name="currentKeyId"><column name="currentKeyId" column-definition="VARCHAR(254)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(10K)"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(1M)"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
@@ -61,7 +61,7 @@
             <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(254)" nullable="false"/></basic>
             <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(254)" nullable="true"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="VARCHAR(254)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(10K)"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(1M)"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
@@ -71,7 +71,7 @@
             <id name="challengeId"><column name="challengeId" column-definition="VARCHAR(254)"/></id>
             <basic fetch="EAGER" name="authorizationId"><column name="authorizationId" column-definition="VARCHAR(254)" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="VARCHAR(20)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(10K)"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(1M)"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
@@ -81,7 +81,7 @@
             <id name="authorizationId"><column name="authorizationId" column-definition="VARCHAR(254)"/></id>
             <basic fetch="EAGER" name="orderId"><column name="orderId" column-definition="VARCHAR(254)" nullable="true"/></basic>
             <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(254)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(10K)"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="CLOB(1M)"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
