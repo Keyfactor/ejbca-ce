@@ -39,10 +39,10 @@
 		
 		<h:panelGroup rendered="#{editPublisher.manualClassPathsEnabledOrIsCustomClassChoice}">
 			<h:inputText size="60" maxlength="255" rendered="#{editPublisher.manualClassPathsEnabledAndIsCustomClassChoice}"
-						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherCurrentClass}"/> 
+						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherMBData.customPublisherCurrentClass}"/> 
 							
 			<h:inputText size="60" maxlength="255" rendered="#{!editPublisher.manualClassPathsEnabledAndIsCustomClassChoice}"
-						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherCurrentClass}" readonly="readonly"/>
+						disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherMBData.customPublisherCurrentClass}" readonly="readonly"/>
 						
 			<h:outputText value="#{web.text.OLDMANUALCLASSPATHELP}" 
 						  rendered="#{!editPublisher.manualClassPathsEnabledAndIsCustomClassChoice and editPublisher.customClassChoice}"/>							
@@ -53,22 +53,22 @@
 				<h:outputText value="#{editPublisher.getCustomPublisherPropertyText(property)}"/>
 			</h:panelGroup >
 			<h:panelGroup rendered="#{editPublisher.customUiRenderingSupported}">
-				<h:selectOneMenu value="#{editPublisher.customPublisherPropertyValues[property.name]}" 
+				<h:selectOneMenu value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
 								 disabled="#{editPublisher.readOnly}"
-								 rendered="#{editPublisher.renderCustomSelectOneMenu(property)}">
-					<f:selectItems value="#{editPublisher.getCustomPublisherPropertySelectOneMenuList(property)}"/>
+								 rendered="#{editPublisher.customPublisherMBData.renderCustomSelectOneMenu(property)}">
+					<f:selectItems value="#{editPublisher.customPublisherMBData.getCustomPublisherPropertySelectOneMenuList(property)}"/>
 				</h:selectOneMenu>
-				<h:inputText value="#{editPublisher.customPublisherPropertyValues[property.name]}" 
+				<h:inputText value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
 							 size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
-							 rendered="#{editPublisher.renderCustomTextInput(property)}"/>
-				<h:inputSecret value="#{editPublisher.customPublisherPropertyValues[property.name]}" 
+							 rendered="#{editPublisher.customPublisherMBData.renderCustomTextInput(property)}"/>
+				<h:inputSecret value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
 							   autocomplete="off" size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
-							   rendered="#{editPublisher.renderCustomInputPassword(property)}"/>
-				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherPropertyValues[property.name]}" 
-										  disabled="#{editPublisher.readOnly}" rendered="#{editPublisher.renderCustomCheckbox(property)}"/> 
-				<h:outputLabel value="#{web.text.USE}" rendered="#{editPublisher.renderCustomCheckbox(property)}"/>
-				<h:inputTextarea cols="60" rows="12" value="#{editPublisher.customPublisherPropertyValues[property.name]}" disabled="#{editPublisher.readOnly}"
-								 rendered="#{editPublisher.renderCustomOutputTextArea(property)}"/>
+							   rendered="#{editPublisher.customPublisherMBData.renderCustomInputPassword(property)}"/>
+				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
+										  disabled="#{editPublisher.readOnly}" rendered="#{editPublisher.customPublisherMBData.renderCustomCheckbox(property)}"/> 
+				<h:outputLabel value="#{web.text.USE}" rendered="#{editPublisher.customPublisherMBData.renderCustomCheckbox(property)}"/>
+				<h:inputTextarea cols="60" rows="12" value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" disabled="#{editPublisher.readOnly}"
+								 rendered="#{editPublisher.customPublisherMBData.renderCustomOutputTextArea(property)}"/>
 			<f:verbatim rendered="#{editPublisher.renderCustomHelp(property)}">
 				<br />
 			</f:verbatim>					 
@@ -80,7 +80,7 @@
 			<h:outputText value="#{web.text.PROPERTIESOFCUSTOM}"/>
 		</h:panelGroup>	
 		<h:panelGroup rendered="#{not editPublisher.customUiRenderingSupported}">
-			<h:inputTextarea cols="45" rows="8" disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherPropertyData}"/>
+			<h:inputTextarea cols="45" rows="8" disabled="#{editPublisher.readOnly}" value="#{editPublisher.customPublisherMBData.customPublisherPropertyData}"/>
 		</h:panelGroup>
 	</h:panelGrid>
 </ui:composition>
