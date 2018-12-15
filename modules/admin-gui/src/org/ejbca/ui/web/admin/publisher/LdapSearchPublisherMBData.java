@@ -29,6 +29,10 @@ public final class LdapSearchPublisherMBData implements Serializable {
     private String searchBaseDN;
     private String searchFilter;
     
+    public LdapSearchPublisherMBData(final LdapSearchPublisher ldapSearchPublisher) {
+        initializeData(ldapSearchPublisher);
+    }
+    
     public String getSearchBaseDN() {
         return searchBaseDN;
     }
@@ -48,6 +52,11 @@ public final class LdapSearchPublisherMBData implements Serializable {
     public void setLdapSearchPublisherParameters(final LdapSearchPublisher ldapSearchPublisher) {
         ldapSearchPublisher.setSearchBaseDN(searchBaseDN);
         ldapSearchPublisher.setSearchFilter(searchFilter);
+    }
+    
+    private void initializeData(final LdapSearchPublisher ldapSearchPublisher) {
+        this.searchBaseDN = ldapSearchPublisher.getSearchBaseDN();
+        this.searchFilter = ldapSearchPublisher.getSearchFilter();
     }
     
 }
