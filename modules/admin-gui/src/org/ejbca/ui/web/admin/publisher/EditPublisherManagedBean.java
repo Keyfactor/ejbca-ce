@@ -31,13 +31,11 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -74,9 +72,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private static final Logger log = Logger.getLogger(EditPublisherManagedBean.class);
 
     private static final Map<Integer, String> AVAILABLE_PUBLISHERS;
-    private static final Map<Integer, String> AVAILABLE_SAM_ACCOUNTS;
     private final Map<Class <? extends BasePublisher>, Runnable> publisherInitMap = new HashMap<>();
-    private Map<String, Object> customPublisherPropertyValues;
     private List<CustomPublisherProperty> availableCustomPublisherPropertyList;
 
     static {
@@ -86,14 +82,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_ADPUBLISHER, "ACTIVEDIRECTORYPUBLISHER");
         AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER, "CUSTOMPUBLISHER");
         AVAILABLE_PUBLISHERS.put(PublisherConst.TYPE_MULTIGROUPPUBLISHER, "MULTIGROUPPUBLISHER");
-        
-        AVAILABLE_SAM_ACCOUNTS = new LinkedHashMap<>();
-        AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.UPN, "MATCHUPN");
-        AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.CN, "MATCHCOMMONNAME");
-        AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.UID, "MATCHUID");
-        AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.SN, "MATCHDNSERIALNUMBER");
-        AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.GIVENNAME, "MATCHGIVENNAME");
-        AVAILABLE_SAM_ACCOUNTS.put(DNFieldExtractor.SURNAME, "MATCHSURNAME");
     }
     
     private String selectedPublisherType;
@@ -109,21 +97,26 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     private LdapSearchPublisherMBData ldapSearchPublisherMBData;
     private ActiveDirectoryPublisherMBData activeDirectoryPublisherMBData;
     private MultiGroupPublisherMBData multiGroupPublisherMBData;
+    private CustomPublisherMBData customPublisherMBData;
+
+    public LdapPublisherMBData getLdapPublisherMBData() {
+        return ldapPublisherMBData;
+    }
     
-    public MultiGroupPublisherMBData getMultiGroupPublisherMBData() {
-        return multiGroupPublisherMBData;
+    public LdapSearchPublisherMBData getLdapSearchPublisherMBData() {
+        return ldapSearchPublisherMBData;
     }
 
     public ActiveDirectoryPublisherMBData getActiveDirectoryPublisherMBData() {
         return activeDirectoryPublisherMBData;
     }
-
-    public LdapSearchPublisherMBData getLdapSearchPublisherMBData() {
-        return ldapSearchPublisherMBData;
+    
+    public MultiGroupPublisherMBData getMultiGroupPublisherMBData() {
+        return multiGroupPublisherMBData;
     }
-
-    public LdapPublisherMBData getLdapPublisherMBData() {
-        return ldapPublisherMBData;
+    
+    public CustomPublisherMBData getCustomPublisherMBData() {
+        return customPublisherMBData;
     }
 
     private BasePublisher publisher = null;
@@ -132,9 +125,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public int getPublisherId(){
         return publisherId;
     }
-
-    private String customPublisherPropertyData;
-    private String customPublisherCurrentClass;
 
     private String publisherDescription;
     private boolean useQueueForCertificates;
@@ -298,14 +288,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
         return text;
     }
-
-    public String getCustomPublisherPropertyData() {
-        return customPublisherPropertyData;
-    }
-
-    public void setCustomPublisherPropertyData(final String customPublisherPropertyData) {
-        this.customPublisherPropertyData = customPublisherPropertyData;
-    }
     
     public String getSelectedPublisherType() {
         return selectedPublisherType;
@@ -313,10 +295,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
 
     public void setSelectedPublisherType(final String selectedPublisherType) {
         this.selectedPublisherType = selectedPublisherType;
-    }
-    
-    public Map<String, Object> getCustomPublisherPropertyValues() {
-        return customPublisherPropertyValues;
     }
 
     public String getPublisherQueue() {
@@ -339,14 +317,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
         Collections.sort(availablePublisherList);
         return availablePublisherList;
-    }
-    
-    public List<SelectItem> getSAMAccountName() {
-        final List<SelectItem> samAccountName = new ArrayList<>();
-        for (final int accountName : AVAILABLE_SAM_ACCOUNTS.keySet()) {
-            samAccountName.add(new SelectItem(accountName, AVAILABLE_SAM_ACCOUNTS.get(accountName)));
-        }
-        return samAccountName;
     }
     
     public String getCurrentPublisherName() {
@@ -393,54 +363,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             return this.availableCustomPublisherPropertyList;
         }
         return Collections.<CustomPublisherProperty> emptyList();
-    }
-   
-    public String getCustomPublisherPropertyText(final CustomPublisherProperty customPublisherProperty) {
-        return getEjbcaWebBean()
-                .getText(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase());
-    }
-    
-    public List<SelectItem> getCustomPublisherPropertySelectOneMenuList(final CustomPublisherProperty customPublisherProperty) {
-        final List<SelectItem> customPublisherPropertySelectOneMenuList = new ArrayList<>();
-        for (int i=0; i < customPublisherProperty.getOptions().size(); i++) {
-            final String option = customPublisherProperty.getOptions().get(i);
-            final String optionText = customPublisherProperty.getOptionTexts().get(i);
-            customPublisherPropertySelectOneMenuList.add(new SelectItem(option, optionText));
-        }
-        return customPublisherPropertySelectOneMenuList;
-    }
-    
-    public boolean renderCustomTextInput(final CustomPublisherProperty customPublisherProperty) {
-        return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT;
-    }
-    
-    public boolean renderCustomSelectOneMenu(final CustomPublisherProperty customPublisherProperty) {
-        return customPublisherProperty.getType() == CustomPublisherProperty.UI_SELECTONE;
-    }
-    
-    public boolean renderCustomInputPassword(final CustomPublisherProperty customPublisherProperty) {
-        return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD;
-    }
-    
-    public boolean renderCustomCheckbox(final CustomPublisherProperty customPublisherProperty) {
-        return customPublisherProperty.getType() == CustomPublisherProperty.UI_BOOLEAN;
-    }
-    
-    public boolean renderCustomOutputTextArea(final CustomPublisherProperty customPublisherProperty) {
-        return customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTOUTPUT;
-    }
-    
-    public boolean renderCustomHelp(final CustomPublisherProperty customPublisherProperty) {
-        return !getEjbcaWebBean()
-                .getText(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase()
-                        + "_HELP")
-                .equals(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase()
-                        + "_HELP");
-    }
-    
-    public String getCustomHelpText(final CustomPublisherProperty customPublisherProperty) {
-        return getEjbcaWebBean().getText(
-                getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase() + "_HELP");
     }
 
     public String changePublisherType(AjaxBehaviorEvent event) {
@@ -495,23 +417,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public boolean renderMultiGroupPublisherPage() {
         return publisher instanceof MultiGroupPublisher;
     }
-    
-    public List<SelectItem> getAvailableSamAccountNames() {
-        List<SelectItem> result = new ArrayList<>();
-        for(final int samAccount : AVAILABLE_SAM_ACCOUNTS.keySet()){ 
-            result.add(new SelectItem(samAccount, getEjbcaWebBean().getText(AVAILABLE_SAM_ACCOUNTS.get(samAccount))));
-        }
-        return result;
-    }
-    
-
-    public String getCustomPublisherCurrentClass() {
-        return customPublisherCurrentClass;
-    }
-
-    public void setCustomPublisherCurrentClass(final String customPublisherCurrentClass) {
-        this.customPublisherCurrentClass = customPublisherCurrentClass;
-    }
 
     public String getPublisherDescription() {
         return publisherDescription;
@@ -552,6 +457,24 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     public void setOnlyUseQueue(boolean onlyUseQueue) {
         this.onlyUseQueue = onlyUseQueue;
     }
+    
+    public String getCustomPublisherPropertyText(final CustomPublisherProperty customPublisherProperty) {
+        return getEjbcaWebBean()
+                .getText(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase());
+    }    
+
+    public boolean renderCustomHelp(final CustomPublisherProperty customPublisherProperty) {
+        return !getEjbcaWebBean()
+                .getText(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase()
+                        + "_HELP")
+                .equals(getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase()
+                        + "_HELP");
+    }
+    
+    public String getCustomHelpText(final CustomPublisherProperty customPublisherProperty) {
+        return getEjbcaWebBean().getText(
+                getCurrentClassSimple().toUpperCase() + "_" + customPublisherProperty.getName().replaceAll("\\.", "_").toUpperCase() + "_HELP");
+    }    
     
     //Actions
     public String savePublisher() throws AuthorizationDeniedException {
@@ -597,33 +520,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
         
         if (publisher instanceof CustomPublisherContainer) {
-            setCustomPublisherData();
-        }
-         
-    }
-
-    private void setCustomPublisherData() {
-        final CustomPublisherContainer customPublisherContainer = ((CustomPublisherContainer) publisher);
-        customPublisherContainer.setClassPath(customPublisherCurrentClass);
-        if (customPublisherContainer.isCustomUiRenderingSupported()) {
-            final StringBuilder sb = new StringBuilder();
-            for (final CustomPublisherProperty customPublisherProperty : customPublisherContainer.getCustomUiPropertyList(getAdmin())) { 
-                if (customPublisherProperty.getType() == CustomPublisherProperty.UI_BOOLEAN) {
-                    if (((Boolean)customPublisherPropertyValues.get(customPublisherProperty.getName()))) {
-                        sb.append(customPublisherProperty.getName()).append('=').append("true").append('\n');
-                    } else {
-                        sb.append(customPublisherProperty.getName()).append('=').append("false").append('\n');
-                    }
-                } else {
-                    if (customPublisherPropertyValues.get(customPublisherProperty.getName()) != null) {
-                        sb.append(customPublisherProperty.getName()).append('=')
-                                .append(customPublisherPropertyValues.get(customPublisherProperty.getName())).append('\n');
-                    }
-                }
-            }
-            customPublisherContainer.setPropertyData(sb.toString());
-        } else {
-            customPublisherContainer.setPropertyData(customPublisherPropertyData);
+            customPublisherMBData.setCustomPublisherData((CustomPublisherContainer) publisher);
         }
     }
 
@@ -658,14 +555,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     }
 
     private Void initCustomPublisher() {
-        customPublisherCurrentClass = ((CustomPublisherContainer) publisher).getClassPath();
-        customPublisherPropertyData = ((CustomPublisherContainer) publisher).getPropertyData();
-
-        customPublisherPropertyValues = new HashMap<>();
-
-        for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
-                customPublisherPropertyValues.put(customPublisherProperty.getName(), customPublisherProperty.getValue());
-        }
+        customPublisherMBData = new CustomPublisherMBData((CustomPublisherContainer) publisher);
         return null;
     }
     
