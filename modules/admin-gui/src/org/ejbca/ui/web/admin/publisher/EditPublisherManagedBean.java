@@ -634,27 +634,26 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         publisher.setUseQueueForCertificates(useQueueForCertificates);
         publisher.setDescription(publisherDescription);        
     }
-    
-    private Void initActiveDirectoryPublisher() {
-        ldapPublisherMBData = new LdapPublisherMBData();
-        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
-        activeDirectoryPublisherMBData = new ActiveDirectoryPublisherMBData();
-        activeDirectoryPublisherMBData.initializeData((ActiveDirectoryPublisher)publisher);
+
+    private Void initLdapPublisher() {
+        ldapPublisherMBData = new LdapPublisherMBData((LdapPublisher) publisher);
         return null;
-    }
+    }    
     
     private Void initLdapSearchPublisher() {
-        ldapPublisherMBData = new LdapPublisherMBData();
-        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
-        ldapSearchPublisherMBData = new LdapSearchPublisherMBData();
-        ldapSearchPublisherMBData.setSearchBaseDN(((LdapSearchPublisher) publisher).getSearchBaseDN());
-        ldapSearchPublisherMBData.setSearchFilter(((LdapSearchPublisher) publisher).getSearchFilter());
+        ldapPublisherMBData = new LdapPublisherMBData((LdapPublisher) publisher);
+        ldapSearchPublisherMBData = new LdapSearchPublisherMBData((LdapSearchPublisher) publisher);
+        return null;
+    }
+
+    private Void initActiveDirectoryPublisher() {
+        ldapPublisherMBData = new LdapPublisherMBData((LdapPublisher) publisher);
+        activeDirectoryPublisherMBData = new ActiveDirectoryPublisherMBData((ActiveDirectoryPublisher) publisher);
         return null;
     }
     
     private Void initMultiGroupPublisher() {
-        multiGroupPublisherMBData = new MultiGroupPublisherMBData();
-        multiGroupPublisherMBData.initializeData((MultiGroupPublisher) publisher);
+        multiGroupPublisherMBData = new MultiGroupPublisherMBData((MultiGroupPublisher) publisher);
         return null;
     }
 
@@ -667,12 +666,6 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher).getCustomUiPropertyList(getEjbcaWebBean().getAdminObject())) {
                 customPublisherPropertyValues.put(customPublisherProperty.getName(), customPublisherProperty.getValue());
         }
-        return null;
-    }
-
-    private Void initLdapPublisher() {
-        ldapPublisherMBData = new LdapPublisherMBData();
-        ldapPublisherMBData.initializeData((LdapPublisher) publisher);
         return null;
     }
     

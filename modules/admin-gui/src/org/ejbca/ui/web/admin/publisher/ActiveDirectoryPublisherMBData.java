@@ -25,6 +25,10 @@ import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 public final class ActiveDirectoryPublisherMBData implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    public ActiveDirectoryPublisherMBData(final ActiveDirectoryPublisher activeDirectoryPublisher) {
+        initializeData(activeDirectoryPublisher);
+    }
 
     private int samAccountName;
     private String userDescription;
@@ -45,15 +49,14 @@ public final class ActiveDirectoryPublisherMBData implements Serializable {
     public void setSamAccountName(final int samAccountName) {
         this.samAccountName = samAccountName;
     }
-    
-    public void initializeData(final ActiveDirectoryPublisher publisher) {
-        this.userDescription = publisher.getUserDescription();
-        this.samAccountName = publisher.getSAMAccountName();
-    }
 
     public void setActiveDirectoryPublisherParameters(final ActiveDirectoryPublisher activeDirectoryPublisher) {
         activeDirectoryPublisher.setSAMAccountName(samAccountName);
         activeDirectoryPublisher.setUserDescription(userDescription);
     }
     
+    private void initializeData(final ActiveDirectoryPublisher publisher) {
+        this.userDescription = publisher.getUserDescription();
+        this.samAccountName = publisher.getSAMAccountName();
+    }
 }

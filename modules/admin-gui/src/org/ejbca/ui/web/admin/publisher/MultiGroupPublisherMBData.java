@@ -48,6 +48,10 @@ public final class MultiGroupPublisherMBData implements Serializable {
     private final PublisherSessionLocal publisherSession = ejb.getPublisherSession();
 
     private String multiGroupPublisherGroups;
+    
+    public MultiGroupPublisherMBData(final MultiGroupPublisher multiGroupPublisher) {
+        initializeData(multiGroupPublisher);
+    }
 
     public String getMultiGroupPublisherGroups() {
         return multiGroupPublisherGroups;
@@ -57,7 +61,7 @@ public final class MultiGroupPublisherMBData implements Serializable {
         this.multiGroupPublisherGroups = multiGroupPublisherGroups;
     }
 
-    public void initializeData(final MultiGroupPublisher publisher) {
+    private void initializeData(final MultiGroupPublisher publisher) {
         multiGroupPublisherGroups = getMultiPublishersDataAsString(publisher);
     }
 
