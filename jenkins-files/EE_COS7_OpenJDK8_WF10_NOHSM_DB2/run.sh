@@ -50,26 +50,6 @@ cp /opt/conf/* /app/ejbca/conf/
 echo '=================== Starting WildFly ======================================='
 $JBOSS_BIN/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
-#echo '=================== Installing DB2 JDBC Driver and Datasource =============='
-#`$JBOSS_CLI data-source add --name=EjbcaDS \
-#                            --driver-name="com.ibm.db2.jcc.DB2Driver" \
-#                            --connection-url="jdbc:db2://$DOCKER_NAME_DB:50000/ejbca" \
-#                            --jndi-name="java:/EjbcaDS" \
-#                            --use-ccm=true \
-#                            --driver-class="com.ibm.db2.jcc.DB2Driver" \
-#                            --user-name="db2inst1" \
-#                            --password="db2inst1" \
-#                            --validate-on-match=false \
-#                            --background-validation=false \
-#                            --prepared-statements-cache-size=50 \
-#                            --share-prepared-statements=true \
-#                            --min-pool-size=5 \
-#                            --max-pool-size=20 \
-#                            --pool-prefill=true \
-#                            --transaction-isolation=TRANSACTION_READ_COMMITTED \
-#                            --jta=false \
-#                            --check-valid-connection-sql="select 1;"`
-
 echo '=================== Starting clean/build/deployment ========================'
 ant clean deployear
 
@@ -99,4 +79,3 @@ echo '=================== Deployment is done ===================================
 echo '=================== Starting system tests =================================='
 ant test:runsys
 echo '=================== System tests are done =================================='
-
