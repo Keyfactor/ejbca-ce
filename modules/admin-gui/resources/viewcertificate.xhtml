@@ -269,8 +269,11 @@
                 </ui:remove>
                 
                 <h:panelGroup>
-                    <h:commandButton rendered="#{viewCertificateMBean.keyRecoveryPossible}" value="#{web.text.RECOVERKEY}" action="viewCertificateMBean.actionKeyRecovery"/>
-                    <h:commandButton rendered="#{viewCertificateMBean.republishPossible}" value="#{web.text.REPUBLISH}" action="viewCertificateMBean.actionRepublich"/>
+                    <h:commandButton rendered="#{viewCertificateMBean.keyRecoveryPossible}" value="#{web.text.RECOVERKEY}" 
+                        onclick="return confirm('#{web.text.AREYOUSUREKEYRECOVER}')" action="#{viewCertificateMBean.actionKeyRecovery}"/>
+                    
+                    <h:commandButton rendered="#{viewCertificateMBean.republishPossible}" value="#{web.text.REPUBLISH}" 
+                        onclick="return confirm('#{web.text.AREYOUSUREREPUBLISH}')" action="#{viewCertificateMBean.actionRepublish}"/>
                 </h:panelGroup>
                 
                 <h:panelGroup>
@@ -279,10 +282,10 @@
 	                    <f:selectItems value="#{viewCertificateMBean.revokeReasons}"/>
 	                </h:selectOneMenu>
 	                
-	                <h:commandButton value="#{web.text.REVOKE}" action="viewCertificateMBean.actionRevoke" 
+	                <h:commandButton value="#{web.text.REVOKE}" action="#{viewCertificateMBean.actionRevoke}" onclick="return confirm('#{web.text.AREYOUSUREREVOKECERT}')"
 	                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.revokedOrSuspended}"/>
 	                
-	                <h:commandButton value="#{web.text.UNREVOKE}" action="viewCertificateMBean.actionUnrevoke"
+	                <h:commandButton value="#{web.text.UNREVOKE}" action="#{viewCertificateMBean.actionUnrevoke}" onclick="return confirm('#{web.text.AREYOUSUREUNREVOKECERT}')"
 	                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.canBeUnrevoked}"/>
                 </h:panelGroup>
             </h:panelGrid>
