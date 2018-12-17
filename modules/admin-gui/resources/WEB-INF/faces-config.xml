@@ -238,7 +238,14 @@
       <to-view-id>/ra/editendentityprofiles/temp_endentityprofilepage.xhtml</to-view-id>
     </navigation-case>
   </navigation-rule>
-
+  <navigation-rule>
+    <from-view-id>/ra/editendentityprofiles/temp_endentityprofilepage.xhtml</from-view-id>
+    <navigation-case>
+      <from-outcome>profilesaved</from-outcome>
+      <to-view-id>/ra/editendentityprofiles/temp_editendentityprofiles.xhtml</to-view-id>
+    </navigation-case>
+  </navigation-rule> 
+      
     <navigation-rule>
         <from-view-id>/sysconfig/estconfigurations.xhtml</from-view-id>
         <navigation-case>

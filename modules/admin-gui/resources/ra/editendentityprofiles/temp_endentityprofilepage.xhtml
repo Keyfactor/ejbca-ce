@@ -336,6 +336,7 @@
 					   		size="45" 
 					   		maxlength="1024"
 							disabled="#{endEntityProfilesMBean.viewOnly}">
+							<f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 						</h:inputText>
 						<h:panelGrid id="subjectDNCheckBoxesGrid" columns="7">
 							<h:selectBooleanCheckbox 
@@ -364,6 +365,7 @@
 				    			style="font-size: 9pt" 
 				    			value="#{componentName.componentValidationString}" 
 					   			disabled="#{not componentName.componentValueValidation or not componentName.componentIsModifyable or endEntityProfilesMBean.viewOnly}">
+							    <f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 							</h:inputText>
 							</h:panelGrid>
 					</h:panelGrid>
@@ -436,6 +438,7 @@
 					   			size="45" 
 					   			maxlength="1024"
 								disabled="#{endEntityProfilesMBean.viewOnly}">
+								<f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 							</h:inputText>
 							<h:panelGrid id="subjectAltNameCheckBoxesGrid" columns="7">
 								<h:selectBooleanCheckbox 
@@ -464,6 +467,7 @@
 				    				style="font-size: 9pt" 
 				    				value="#{subjectAltNameComponent.componentValidationString}" 
 					   				disabled="#{not subjectAltNameComponent.componentValueValidation or not subjectAltNameComponent.componentIsModifyable or endEntityProfilesMBean.viewOnly}">
+								    <f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 								</h:inputText>
 							</h:panelGrid>
 						</h:panelGrid>
@@ -522,6 +526,7 @@
 					   			size="45" 
 					   			maxlength="1024"
 								disabled="#{endEntityProfilesMBean.viewOnly}">
+								<f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 							</h:inputText>
 							<h:panelGrid id="subjectDirectoryAttributesCheckBoxesGrid" columns="7">
 								<h:selectBooleanCheckbox 
@@ -715,6 +720,7 @@
 					   		size="25" 
 					   		maxlength="40"
 							disabled="#{not endEntityProfileMBean.useCertValidityStartTime}">
+				    	    <f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 				    	</h:inputText>
 				    	<h:selectBooleanCheckbox 
 				    		id="certValidityStartTimeModCheckBox" 
@@ -747,6 +753,7 @@
 					   		size="25" 
 					   		maxlength="40"
 							disabled="#{not endEntityProfileMBean.useCertValidityEndTime}">
+				    	    <f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 				    	</h:inputText>
 				    	<h:selectBooleanCheckbox 
 				    		id="certValidityEndTimeModCheckBox" 
@@ -972,6 +979,7 @@
 				   		size="25" 
 				   		maxlength="40"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
+					    <f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 					</h:inputText>
 					&nbsp;
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONRECIPIENT}"/>
@@ -981,6 +989,7 @@
 					   	size="25" 
 					   	maxlength="40"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
+					    <f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 					</h:inputText>
 					&nbsp;
 					<!--h:inputHidden id="hidden" value="#{endEntityProfileMBean.setCurrentNotification(notification)}"/-->
@@ -1002,6 +1011,7 @@
 					   		size="25" 
 					   		maxlength="40"
 							disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
+					        <f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 					</h:inputText>
 					&nbsp;
 				    <h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONMESSAGE}"/>
@@ -1011,6 +1021,7 @@
 							cols="45" 
 							rows="8" 
 							disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
+					        <f:ajax/> <!-- Currently, can't get saveProfile to save this without using ajax, but temporary, remove when possible -->
 					</h:inputTextarea>
 				</h:panelGrid>	
 			</ui:repeat>
@@ -1084,8 +1095,8 @@
 	       		<h:panelGroup>&nbsp;</h:panelGroup>
 	       		<h:panelGroup>&nbsp;</h:panelGroup>
 	       		<h:panelGrid id="saveOrCancelGrid" columns="2">
-	       			<h:commandButton id="saveButton" value="#{web.text.SAVE}">
-						<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL -->
+	       			<h:commandButton id="saveButton" value="#{web.text.SAVE}" action="#{endEntityProfileMBean.saveProfile}">
+						<f:ajax render=":eeProfiles"/> <!-- CHANGE TO SOMETHING USEFUL -->
 					</h:commandButton>
 					<h:commandButton id="cancelButton" value="#{web.text.CANCEL}">
 						<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL -->
