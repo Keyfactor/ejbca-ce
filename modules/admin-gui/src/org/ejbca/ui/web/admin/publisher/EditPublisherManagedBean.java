@@ -488,10 +488,10 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
         try {
             publisherSession.testConnection(publisherId);
-            addInfoMessage(getEjbcaWebBean().getText("CONTESTEDSUCESSFULLY"));
+            addInfoMessage("CONTESTEDSUCESSFULLY");
         } catch (PublisherConnectionException pce) {
             log.error("Error connecting to publisher " + listPublishers.getSelectedPublisherName(), pce);
-            addErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB"), listPublishers.getSelectedPublisherName(), pce.getMessage());
+            addErrorMessage("ERRORCONNECTINGTOPUB", listPublishers.getSelectedPublisherName(), pce.getMessage());
         }
     }
     
