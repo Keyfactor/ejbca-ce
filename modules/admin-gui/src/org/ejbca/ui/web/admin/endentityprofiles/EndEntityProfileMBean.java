@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -46,7 +47,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 
@@ -84,6 +85,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private RAInterfaceBean raBean = new RAInterfaceBean();
     private HardTokenInterfaceBean tokenBean = new HardTokenInterfaceBean();
     private EndEntityProfile profiledata;
+    private int profileId;
     
     //POST CONSTRUCT
     @PostConstruct
@@ -97,10 +99,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        int profileId = endEntityProfilesMBean.getSelectedEndEntityProfileId().intValue();
+        //int profileId = endEntityProfilesMBean.getSelectedEndEntityProfileId().intValue();
+        profileId = endEntityProfilesMBean.getSelectedEndEntityProfileId().intValue();
         profiledata = endEntityProfileSession.getEndEntityProfile(profileId);
     }
    
+   
+    
     
     public boolean isAuthorizedToEdit() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
@@ -436,12 +441,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        }
        
        public String getComponentValue() {
+           componentValue = profiledata.getValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]);
            return componentValue;
        }
        
-       public void setComponentValue(String componentValue) {
-           this.componentValue = componentValue;
-           profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentValue);
+       public void setComponentValue(String value) {
+           componentValue = value;
+           profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], this.componentValue);
        }
        
        public int[] getComponentField() {
@@ -1427,8 +1433,15 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        
    }
    
+   public String saveProfile() throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+       String profile = endEntityProfileSession.getEndEntityProfileName(profileId);
+       raBean.changeEndEntityProfile(profile, profiledata);
+       return "profilesaved";
+       // do check for Temp Profile...
+       // do check if no errors
+   }
    
-   
+     
    
 //==========================================================================================================================================================================   
    
