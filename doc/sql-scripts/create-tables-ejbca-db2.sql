@@ -412,7 +412,7 @@ CREATE TABLE AcmeNonceData (
 CREATE TABLE AcmeAccountData (
     accountId VARCHAR(254) NOT NULL,
     currentKeyId VARCHAR(254) NOT NULL,
-    rawData CLOB(10K),
+    rawData CLOB(1M),
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (accountId)
@@ -423,7 +423,7 @@ CREATE TABLE AcmeOrderData (
     accountId VARCHAR(254) NOT NULL,
     fingerprint VARCHAR(254),
     status VARCHAR(254) NOT NULL,
-    rawData CLOB(10K),
+    rawData CLOB(1M),
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (orderId)
@@ -433,7 +433,7 @@ CREATE TABLE AcmeChallengeData (
     challengeId VARCHAR(254) NOT NULL,
     authorizationId VARCHAR(254) NOT NULL,
     type VARCHAR(20) NOT NULL,
-    rawData CLOB(10K),
+    rawData CLOB(1M),
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (challengeId)
@@ -443,7 +443,7 @@ CREATE TABLE AcmeAuthorizationData (
     authorizationId VARCHAR(254) NOT NULL,
     orderId VARCHAR(254),
     accountId VARCHAR(254) NOT NULL,
-    rawData CLOB(10K),
+    rawData CLOB(1M),
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (authorizationId)
