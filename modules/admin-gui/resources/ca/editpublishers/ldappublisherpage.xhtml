@@ -30,7 +30,7 @@
 
 	<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 		<h:panelGroup>
-			<h:outputText value="#{web.text.LDAPSETTINGS}"/>
+			<h:outputText value="#{web.text.LDAPSETTINGS}" style="font-weight:bold;"/>
 			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/LDAP_Publisher_LDAP_Search_Publisher.html')}" escape="false" styleClass="helpReference"/>
 		</h:panelGroup>
 
@@ -119,7 +119,7 @@
 	
 	<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 		<h:panelGroup>
-			<h:outputText value="#{web.text.LDAPOPERATIONS}"/>
+			<h:outputText value="#{web.text.LDAPOPERATIONS}" styleClass="ldapPublisherHeader"/>
 		</h:panelGroup>
 		<h:panelGroup/>
 		
@@ -199,7 +199,7 @@
 	
 	<h:panelGrid styleClass="edit-top" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
 		<h:panelGroup>
-			<h:outputText value="#{web.text.LDAPCLASSESATTRIBUTES}"/>
+			<h:outputText value="#{web.text.LDAPCLASSESATTRIBUTES}" styleClass="ldapPublisherHeader"/>
 		</h:panelGroup>
 		<h:panelGroup />
 
