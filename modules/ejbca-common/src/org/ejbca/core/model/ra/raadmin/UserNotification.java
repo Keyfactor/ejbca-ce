@@ -161,7 +161,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
     
     public void setNotificationEventsCollection(Collection<String> notificationEventsCollection){
-        String notificationEvents = String.join(";", notificationEventsCollection);
+        String notificationEvents = StringUtils.join(notificationEventsCollection, ";");
         data.put(NOTIFICATIONEVENTS, notificationEvents);
     }
 
