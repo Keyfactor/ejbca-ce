@@ -33,8 +33,12 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 
 /**
- * @version $Id$
+ * Utility methods for creating CAs and CryptoTokens for tests. Both soft and PKCS#11 tokens.
+ * <p>
+ * PKCS#11 tokens will be created with the properties defined in systemtests.properties, if present.
+ * Otherwise defaults will be used (see systemtest.properties.sample or {@link SystemTestsConfiguration}) 
  *
+ * @version $Id$
  */
 public class CryptoTokenTestUtils {
 
@@ -43,7 +47,8 @@ public class CryptoTokenTestUtils {
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CryptoTokenTestUtils.class.getSimpleName()));
 
-    private static final String TOKEN_PIN = "userpin1";
+    private static final char[] SOFT_TOKEN_PIN = "foo123".toCharArray();
+    private static final String PKCS11_TOKEN_PIN = "userpin1";
 
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -58,7 +63,7 @@ public class CryptoTokenTestUtils {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
-        X509CA x509ca = CaTestUtils.createTestX509CA(dN, "foo123".toCharArray(), false, signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
+        X509CA x509ca = CaTestUtils.createTestX509CA(dN, SOFT_TOKEN_PIN, false, signedBy, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign
                 + X509KeyUsage.cRLSign);
         // Remove any lingering test CA before starting the tests
         CAInfo oldCaInfo = caSession.getCAInfo(authenticationToken, x509ca.getCAId());
@@ -159,7 +164,7 @@ public class CryptoTokenTestUtils {
         Properties props = new Properties();
         props.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
         return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), props, null,
-                "foo123".toCharArray());
+                SOFT_TOKEN_PIN);
     }
 
     public static int createPKCS11Token(AuthenticationToken authenticationToken, String cryptoTokenName, boolean useAutoActivationPin)
@@ -182,12 +187,13 @@ public class CryptoTokenTestUtils {
         prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "True");
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(PKCS11CryptoToken.class.getName(), prop, null, 111, "P11 CryptoToken");
         Properties cryptoTokenProperties = cryptoToken.getProperties();
+        final char[] p11pin = SystemTestsConfiguration.getPkcs11SlotPin(PKCS11_TOKEN_PIN);
         if (useAutoActivationPin) {
-            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, TOKEN_PIN);
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, new String(p11pin));
         }
         cryptoToken.setProperties(cryptoTokenProperties);
         return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), null, null,
-                "foo123".toCharArray());
+                p11pin);
     }
 
     /** Remove the cryptoToken, if the crypto token with the given ID does not exist, nothing happens */

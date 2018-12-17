@@ -30,6 +30,8 @@ import org.junit.Test;
  * When using PKCS11 tokens some tests run with soft tokens are not relevant, since you can never copy the
  * private key across a remote link, and the PKCS#11 sesison when updated (key gen) in one JVM is not
  * updated in another JVM with JVM restart between.
+ * <p>
+ * <b>Prerequisites:</b> PKCS#11 library installed and configured in systemtests.properties
  *
  * @version $Id$
  */
