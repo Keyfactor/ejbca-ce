@@ -76,7 +76,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-                <fileset dir="${build-test.dir}" includes="**/EcaQa*.class" excludes="**/*TestData.class"/>
+                <fileset dir="${build-test.dir}" includes="**/EcaQa*.class" excludes="**/*EcaQa*$*"/>
             </batchtest>
 		</junit>
     </target>
