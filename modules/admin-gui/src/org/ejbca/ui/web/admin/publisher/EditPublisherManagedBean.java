@@ -491,7 +491,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
             addInfoMessage(getEjbcaWebBean().getText("CONTESTEDSUCESSFULLY"));
         } catch (PublisherConnectionException pce) {
             log.error("Error connecting to publisher " + listPublishers.getSelectedPublisherName(), pce);
-            addErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB"), listPublishers.getSelectedPublisherName());
+            addErrorMessage(getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB"), listPublishers.getSelectedPublisherName(), pce.getMessage());
         }
     }
     
