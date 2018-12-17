@@ -67,11 +67,8 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private static final String BUTTON_VIEW_NEWER          = "buttonviewnewer"; 
     private static final String BUTTON_VIEW_OLDER          = "buttonviewolder";
     private static final String BUTTON_REVOKE              = "buttonrevoke";
-    private static final String BUTTON_UNREVOKE            = "buttonunrevoke";
     private static final String BUTTON_RECOVERKEY          = "buttonrekoverkey";
     private static final String BUTTON_REPUBLISH           = "buttonrepublish";
-
-    private static final String SELECT_REVOKE_REASON       = "selectrevocationreason";
 
     private static final String HIDDEN_INDEX               = "hiddenindex";
     
@@ -435,133 +432,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
                     certificateData = raBean.getCertificate(currentIndex);
             }
         }
-
-        if (request.getParameter(BUTTON_REVOKE) != null && request.getParameter(HIDDEN_INDEX) != null && !cacerts) {
-            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
-            noparameter = false;
-            final int reason = Integer.parseInt(request.getParameter(SELECT_REVOKE_REASON));
-            certificateData = raBean.getCertificate(currentIndex);
-            if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
-                    && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)
-                    && (!certificateData.isRevoked() || certificateData.isRevokedAndOnHold())) {
-                try {
-                    raBean.revokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(), certificateData.getUsername(), reason);
-                } catch (final org.ejbca.core.model.approval.ApprovalException e) {
-                    message = "THEREALREADYEXISTSAPPOBJ";
-                } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
-                    message = "REQHAVEBEENADDEDFORAPPR";
-                }
-            }
-            try {
-                if (tokenSn != null) {
-                    raBean.loadTokenCertificates(tokenSn);
-                } else {
-                    if (userName != null) {
-                        raBean.loadCertificates(userName);
-                    } else {
-                        raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                    }
-                }
-                notauthorized = false;
-            } catch (final AuthorizationDeniedException e) {
-                
-            }
-            numberOfCertificates = raBean.getNumberOfCertificates();
-            certificateData = raBean.getCertificate(currentIndex);
-        }
-        //-- Pushed unrevoke button
-        if (request.getParameter(BUTTON_UNREVOKE) != null && request.getParameter(HIDDEN_INDEX) != null && !cacerts) {
-
-            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
-            noparameter = false;
-            certificateData = raBean.getCertificate(currentIndex);
-
-            if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
-                    && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY) && certificateData.isRevokedAndOnHold()) {
-                //-- call to unrevoke method
-                try {
-                    raBean.unrevokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(),
-                            certificateData.getUsername());
-                } catch (final org.ejbca.core.model.approval.ApprovalException e) {
-                    message = "THEREALREADYEXISTSAPPOBJ";
-                } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
-                    message = "REQHAVEBEENADDEDFORAPPR";
-                }
-            }
-
-            try {
-                if (tokenSn != null) {
-                    raBean.loadTokenCertificates(tokenSn);
-                } else {
-                    if (userName != null) {
-                        raBean.loadCertificates(userName);
-                    } else {
-                        raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                    }
-                }
-                notauthorized = false;
-            } catch (final AuthorizationDeniedException e) {
-
-            }
-
-            numberOfCertificates = raBean.getNumberOfCertificates();
-            certificateData = raBean.getCertificate(currentIndex);
-        }
-
-        if (request.getParameter(BUTTON_RECOVERKEY) != null && request.getParameter(HIDDEN_INDEX) != null && !cacerts) {
-            // Mark certificate for key recovery.
-            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
-            noparameter = false;
-            certificateData = raBean.getCertificate(currentIndex);
-            if (!cacerts && raBean.keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername()) && useKeyRecovery) {
-                try {
-                    raBean.markForRecovery(certificateData.getUsername(), certificateData.getCertificate());
-                } catch (final org.ejbca.core.model.approval.ApprovalException e) {
-                    message = "THEREALREADYEXISTSAPPROVAL";
-                } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
-                    message = "REQHAVEBEENADDEDFORAPPR";
-                }
-            }
-            try {
-                if (tokenSn != null) {
-                    raBean.loadTokenCertificates(tokenSn);
-                } else {
-                    if (userName != null) {
-                        raBean.loadCertificates(userName);
-                    } else {
-                        raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                    }
-                }
-                notauthorized = false;
-            } catch (final AuthorizationDeniedException e) {
-
-            }
-            numberOfCertificates = raBean.getNumberOfCertificates();
-            certificateData = raBean.getCertificate(currentIndex);
-        }
-        if (request.getParameter(BUTTON_REPUBLISH) != null && request.getParameter(HIDDEN_INDEX) != null && !cacerts) {
-            // Mark certificate for key recovery.
-            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
-            noparameter = false;
-            certificateData = raBean.getCertificate(currentIndex);
-            message = caBean.republish(certificateData);
-            try {
-                if (tokenSn != null) {
-                    raBean.loadTokenCertificates(tokenSn);
-                } else {
-                    if (userName != null) {
-                        raBean.loadCertificates(userName);
-                    } else {
-                        raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
-                    }
-                }
-                notauthorized = false;
-            } catch (final AuthorizationDeniedException e) {
-
-            }
-            numberOfCertificates = raBean.getNumberOfCertificates();
-        }
-
+        
         if (request.getParameter(BUTTON_VIEW_NEWER) != null) {
             numberOfCertificates = raBean.getNumberOfCertificates();
             noparameter = false;
@@ -702,7 +573,8 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     }
 
     public boolean isKeyRecoveryPossible() throws AuthorizationDeniedException {
-        return !cacerts &&  raBean.keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername()) && useKeyRecovery;
+        boolean keyRecoveryPossible = raBean.keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername());
+        return !cacerts &&  keyRecoveryPossible && useKeyRecovery;
     }
 
     public boolean isRepublishPossible() throws AuthorizationDeniedException, Exception {
@@ -718,7 +590,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     }
     
     public boolean getCanBeUnrevoked() {
-        return certificateData.isRevokedAndOnHold();
+        return !cacerts && certificateData.isRevokedAndOnHold();
     }
     
     public String getRevokeReason() {
@@ -731,22 +603,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
 
     public List<String> getRevokeReasons() {
         return revokeReasons;
-    }
-    
-    public String actionKeyRecovery() {
-        return "confirmkeyrecovery";
-    }
-    
-    public String actionRepublish() {
-        return "confirmrepublish";
-    }
-    
-    public String actionUnrevoke() {
-        return "confirmunrevocation";
-    }
-    
-    public String actionRevoke() {
-        return "confirmrevocation";
     }
     
     public String getDownloadCertificateLink() {
@@ -766,4 +622,116 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     }
     
     
+    public void actionKeyRecovery() throws CADoesntExistsException, AuthorizationDeniedException {
+        if (!cacerts && raBean.keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername()) && useKeyRecovery) {
+            try {
+                raBean.markForRecovery(certificateData.getUsername(), certificateData.getCertificate());
+            } catch (final org.ejbca.core.model.approval.ApprovalException e) {
+                message = "THEREALREADYEXISTSAPPROVAL";
+            } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
+                message = "REQHAVEBEENADDEDFORAPPR";
+            }
+        }
+        try {
+            if (tokenSn != null) {
+                raBean.loadTokenCertificates(tokenSn);
+            } else {
+                if (userName != null) {
+                    raBean.loadCertificates(userName);
+                } else {
+                    raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                }
+            }
+            notauthorized = false;
+        } catch (final AuthorizationDeniedException e) {
+
+        }
+        numberOfCertificates = raBean.getNumberOfCertificates();
+        certificateData = raBean.getCertificate(currentIndex);
+    }
+    
+    public void actionRepublish() throws AuthorizationDeniedException {
+        // Mark certificate for key recovery.
+        message = caBean.republish(certificateData);
+        try {
+            if (tokenSn != null) {
+                raBean.loadTokenCertificates(tokenSn);
+            } else {
+                if (userName != null) {
+                    raBean.loadCertificates(userName);
+                } else {
+                    raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                }
+            }
+            notauthorized = false;
+        } catch (final AuthorizationDeniedException e) {
+
+        }
+        numberOfCertificates = raBean.getNumberOfCertificates();
+    }
+    
+    
+    public void actionRevoke() throws AuthorizationDeniedException {
+        final int reason = revokeReasons.indexOf(revokeReason);
+        if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
+                && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)
+                && (!certificateData.isRevoked() || certificateData.isRevokedAndOnHold())) {
+            try {
+                raBean.revokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(), certificateData.getUsername(), reason);
+            } catch (final org.ejbca.core.model.approval.ApprovalException e) {
+                message = "THEREALREADYEXISTSAPPOBJ";
+            } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
+                message = "REQHAVEBEENADDEDFORAPPR";
+            }
+        }
+        try {
+            if (tokenSn != null) {
+                raBean.loadTokenCertificates(tokenSn);
+            } else {
+                if (userName != null) {
+                    raBean.loadCertificates(userName);
+                } else {
+                    raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                }
+            }
+            notauthorized = false;
+        } catch (final AuthorizationDeniedException e) {
+            
+        }
+        numberOfCertificates = raBean.getNumberOfCertificates();
+        certificateData = raBean.getCertificate(currentIndex);
+    }
+    
+    public void actionUnrevoke() throws AuthorizationDeniedException {
+        if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
+                && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY) && certificateData.isRevokedAndOnHold()) {
+            //-- call to unrevoke method
+            try {
+                raBean.unrevokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(),
+                        certificateData.getUsername());
+            } catch (final org.ejbca.core.model.approval.ApprovalException e) {
+                message = "THEREALREADYEXISTSAPPOBJ";
+            } catch (final org.ejbca.core.model.approval.WaitingForApprovalException e) {
+                message = "REQHAVEBEENADDEDFORAPPR";
+            }
+        }
+
+        try {
+            if (tokenSn != null) {
+                raBean.loadTokenCertificates(tokenSn);
+            } else {
+                if (userName != null) {
+                    raBean.loadCertificates(userName);
+                } else {
+                    raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
+                }
+            }
+            notauthorized = false;
+        } catch (final AuthorizationDeniedException e) {
+
+        }
+
+        numberOfCertificates = raBean.getNumberOfCertificates();
+        certificateData = raBean.getCertificate(currentIndex);
+    }
 }
