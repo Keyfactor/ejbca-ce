@@ -1144,6 +1144,11 @@ table#config tr td:first-child {
 .subTableColumn2 { text-align: right; width: 50%; }
 
 
+.ldapPublisherHeader {
+	font-weight: bold;
+	color: #600;
+}
+
 /* --- Table: My Preferences */
 .myPreferencesColumn { 
     text-align: left; 
