@@ -40,8 +40,6 @@ ADD standalone2.xml /opt/standalone2.xml
 # Add IBM DB2 driver
 RUN mkdir -p /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/
 ADD db2jcc4.jar /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/db2jcc4.jar
-#ADD db2jcc.jar /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/db2jcc.jar
-#ADD db2jcc_license_cu.jar /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/db2jcc_license_cu.jar
 ADD module.xml /opt/jboss/wildfly/modules/system/layers/base/com/ibm/db2/main/module.xml
 
 # Set the working directory to /app
