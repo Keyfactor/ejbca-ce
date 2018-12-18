@@ -25,7 +25,7 @@ import java.util.List;
  * This will not guarantee that the conjunction of all restrictions will result in a good query.
  * Restrictions order should be guaranteed by the third-party lib. If not it will result in a malformed query.
  * 
- * TODO: For now there is no support for prioritizing certain conditions using parenthesis but with the current queyr generator
+ * TODO: For now there is no support for prioritizing certain conditions using parenthesis but with the current query generator
  * this could be easily supported.  
  * 
  * <em>For usage example @see QueryCriteriaTest</em>
