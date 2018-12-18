@@ -33,6 +33,8 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
@@ -52,6 +54,10 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
     private CrlStoreSessionLocal crlStoreSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    @EJB
+    private PublisherQueueSessionLocal publisherQueueSession;
 
     /** Backing object for main page list of CA and CRL statuses. */
     public class CaCrlStatusInfo {
@@ -114,4 +120,17 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    /**
+     * Used in the publisherqueuestatuses.xhtml page to get the publisher queue length by its name
+     * @param publishername
+     * @return publisher queue length
+     */
+    public int getPublisherQueueLength(String publishername) {
+            return getPublisherQueueLength(publisherSession.getPublisherId(publishername));
+    }
+    
+    private int getPublisherQueueLength(int publisherId) {
+        return publisherQueueSession.getPendingEntriesCountForPublisher(publisherId);
+    }
+    
 }
