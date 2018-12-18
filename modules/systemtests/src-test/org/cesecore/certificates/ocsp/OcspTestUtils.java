@@ -216,4 +216,16 @@ public class OcspTestUtils {
                 authenticationToken, user, req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
         return ocspSigningCertificate;
     }
+
+    public static void removeInternalKeyBinding(AuthenticationToken alwaysAllowtoken, String keyBindingName) throws AuthorizationDeniedException {
+        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        while (true) {
+            final Integer keyBindingId = internalKeyBindingMgmtSession.getIdFromName(keyBindingName);
+            if (keyBindingId == null) {
+                return;
+            }
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowtoken, keyBindingId);
+        }
+    }
 }
