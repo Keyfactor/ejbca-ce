@@ -107,7 +107,7 @@
 			</h:panelGroup>
 			<h:panelGroup id="keyrecoverygroup">
 				<h:panelGroup layout="block" styleClass="">
-					<h:selectBooleanCheckbox styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.enableKeyRecovery}" 
+					<h:selectBooleanCheckbox id="keyrecoverycheckbox" styleClass="checkBoxOverlay" value="#{systemConfigMBean.currentConfig.enableKeyRecovery}" 
 							disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
 						<f:ajax render="systemconfiguration:keyrecoverygroup"/>
 					</h:selectBooleanCheckbox>
