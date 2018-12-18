@@ -207,4 +207,14 @@ public class CryptoTokenTestUtils {
             throw new RuntimeException(e); // Expect that calling method knows what it's doing
         }
     }
+
+    public static void removeCryptoToken(final AuthenticationToken authenticationToken, final String tokenName) {
+        while (true) {
+            final Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(tokenName);
+            if (cryptoTokenId == null) {
+                return;
+            }
+            removeCryptoToken(authenticationToken, cryptoTokenId);
+        }
+    }
 }
