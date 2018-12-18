@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ejbca.webtest.helper.SystemConfigurationHelper.Page;
 import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
@@ -161,6 +162,18 @@ public class BaseHelper {
         final WebElement linkWebElement = findElement(linkId);
         assertNotNull("Page link was not found", linkWebElement);
         linkWebElement.click();
+    }
+    
+    /**
+     * Toggles a check box to the desired state (checked or unchecked)
+     * @param linkId check box locator
+     * @param shouldBeEnabled true if the box should be checked. I.e. enabled.
+     */
+    protected void toggleCheckbox(final By linkId, final boolean shouldBeEnabled) {
+        if ((!isSelectedElement(linkId) && shouldBeEnabled) ||
+            (isSelectedElement(linkId) && !shouldBeEnabled)) {
+            clickLink(linkId);
+        }
     }
 
     /**
