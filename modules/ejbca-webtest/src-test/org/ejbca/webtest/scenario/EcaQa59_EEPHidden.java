@@ -24,6 +24,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.EndEntityProfileHelper;
+import org.ejbca.webtest.helper.SystemConfigurationHelper;
+import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -48,6 +51,10 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     private static String oneMonthsFromNowString;
     private static WebDriver webDriver;
     
+    // Helpers
+    private static SystemConfigurationHelper sysConfigHelper;
+    private static EndEntityProfileHelper eeProfileHelper;
+    
     @BeforeClass
     public static void init() {
         Date currentDate = new Date();
@@ -58,6 +65,8 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         oneMonthsFromNowString = new SimpleDateFormat("yyyy-MM-dd").format(oneMonthsFromNow.getTime());
         beforeClass(true, null);
         webDriver = getWebDriver();
+        sysConfigHelper = new SystemConfigurationHelper(webDriver);
+        eeProfileHelper = new EndEntityProfileHelper(webDriver);
     }
 
     @AfterClass
@@ -70,52 +79,18 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     /** Attempts to enable key recovery through system configuration in the Admin Web. */
     @Test
     public void testA_enableKeyRecovery() {
-        webDriver.get(getAdminWebUrl());
-        WebElement configLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/sysconfig/systemconfiguration.xhtml')]"));
-        configLink.click();
-
-        WebElement currentTab = webDriver.findElement(By.xpath("//a[@class='tabLinktrue']"));
-        if (!currentTab.getText().equals("Basic Configurations")) {
-            currentTab = webDriver.findElement(By.xpath("//a[@href='adminweb/sysconfig/systemconfiguration.xhtml?tab=Basic%20Configurations'"));
-            currentTab.click();
-            currentTab = webDriver.findElement(By.xpath("//a[@class='tabLinktrue']"));
-            assertEquals("Could not navigate to 'Basic Configurations' tab", currentTab.getText(), "Basic Configurations");
-        }
-        WebElement keyRecoveryToggle = webDriver.findElement(By.id("systemconfiguration:toggleEnableKeyRecovery"));
-        String value =  keyRecoveryToggle.getAttribute("value");
-        if (!value.equals("On")) {
-            keyRecoveryToggle.click();
-            keyRecoveryToggle = webDriver.findElement(By.id("systemconfiguration:toggleEnableKeyRecovery"));
-        }
-        assertTrue("Failed to enable key recovery", keyRecoveryToggle.getAttribute("value").equals("On"));
-        WebElement saveButton = webDriver.findElement(By.xpath("//input[@value='Save']"));
-        saveButton.click();
-        //Verify saved value
-        keyRecoveryToggle = webDriver.findElement(By.id("systemconfiguration:toggleEnableKeyRecovery"));
-        assertTrue("Key recovery not enabled after configuration was saved", keyRecoveryToggle.getAttribute("value").equals("On"));
+        sysConfigHelper.openPage(getAdminWebUrl());
+        sysConfigHelper.openTab(SysConfigTabs.BASICCONFIG);
+        sysConfigHelper.triggerEnableKeyRecovery(true);
+        sysConfigHelper.saveBasicConfiguration();
+        sysConfigHelper.assertEnableKeyRecoveryEnabled(true);
     }
 
     @Test
     public void testB_addEndEntityProfile() {
-        webDriver.get(getAdminWebUrl());
-        WebElement configLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/editendentityprofiles/editendentityprofiles.jsp')]"));
-        configLink.click();
-
-        WebElement eepNameInput = webDriver.findElement(By.xpath("//input[@name='textfieldprofilename']"));
-        eepNameInput.sendKeys(eepName);
-        WebElement eepAddButton = webDriver.findElement(By.xpath("//input[@name='buttonaddprofile']"));
-        eepAddButton.click();
-
-        WebElement eepListTable = webDriver.findElement(By.xpath("//select[@name='selectprofile']"));
-        WebElement eepHiddenListItem = eepListTable.findElement(By.xpath("//option[@value='Hidden']"));
-        assertTrue("'Hidden' was not found in the list of End Entity Profiles", eepHiddenListItem.getText().equals(eepName));
-        eepHiddenListItem.click();
-        WebElement editEep = webDriver.findElement(By.xpath("//input[@name='buttoneditprofile']"));
-        editEep.click();
-
-        WebElement editEepTitle = webDriver.findElement(By.xpath("//div/h3"));
-        assertTrue("Unexpected title in 'Edit End Entity Profile'", editEepTitle.getText().equals("End Entity Profile : Hidden"));
-
+        eeProfileHelper.openPage(getAdminWebUrl());
+        eeProfileHelper.addEndEntityProfile(eepName);
+        eeProfileHelper.openEditEndEntityProfilePage(eepName);
         // Set all desired values in EEP. Set values will be validated in next step (add end entity)
         Select dropDownCa =  new Select(webDriver.findElement(By.xpath("//select[@name='selectdefaultca']")));
         dropDownCa.selectByVisibleText(getCaName());
@@ -143,7 +118,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     @Test
     public void testC_checkEep() {
         webDriver.get(getAdminWebUrl());
-        WebElement addEeLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/addendentity.jsp')]"));
+        WebElement addEeLink = webDriver.findElement(By.id("raAddendentity"));
         addEeLink.click();
 
         // Check expected values preset by EEP
@@ -183,7 +158,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     public void testD_addEndEntity() {
 
         webDriver.get(getAdminWebUrl());
-        WebElement configLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/addendentity.jsp')]"));
+        WebElement configLink = webDriver.findElement(By.id("raAddendentity"));
         configLink.click();
 
         Select dropDownEepPreSelect =  new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));

@@ -12,21 +12,17 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.helper.SystemConfigurationHelper;
+import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -38,6 +34,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
+    private static SystemConfigurationHelper sysConfigHelper;
     private static final String caName = "ECAQA72CA";
 
     @BeforeClass
@@ -45,8 +42,9 @@ public class EcaQa72_CaNameChange extends WebTestBase {
         // super
         beforeClass(true, null);
         webDriver = getWebDriver();
-        // Init helpers
+        // Initialize helpers
         caHelper = new CaHelper(webDriver);
+        sysConfigHelper = new SystemConfigurationHelper(webDriver);
     }
     
     @AfterClass
@@ -54,16 +52,6 @@ public class EcaQa72_CaNameChange extends WebTestBase {
         removeCaByName(caName);
         // super
         afterClass();
-    }
-    
-    private void editNameChangeGlobalConfig(boolean saveAsEnabled) {
-        // TODO refactor  ECA-7360
-        webDriver.findElement(By.xpath("//div/a[contains(@href,'systemconfiguration.xhtml')]")).click();
-        WebElement checkboxEnableNameChange = webDriver.findElement(By.id("systemconfiguration:enableicaocanamechange"));
-        if ((!checkboxEnableNameChange.isSelected() && saveAsEnabled) || (checkboxEnableNameChange.isSelected() && !saveAsEnabled)) {
-            checkboxEnableNameChange.click();
-            webDriver.findElement(By.xpath("//input[@value='Save']")).click();
-        }
     }
     
     @Test
@@ -78,8 +66,11 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     
     @Test
     public void testB_disableNameChange() {
-        editNameChangeGlobalConfig(false);
-        assertFalse("Failed to disable 'Enable CA Name Change'", webDriver.findElement(By.id("systemconfiguration:enableicaocanamechange")).isSelected());
+        sysConfigHelper.openPage(getAdminWebUrl());
+        sysConfigHelper.openTab(SysConfigTabs.BASICCONFIG);
+        sysConfigHelper.triggerEnableCaNameChange(false);
+        sysConfigHelper.saveBasicConfiguration();
+        sysConfigHelper.assertEnableCaNameChangeIsEnabled(false);
     }
 
     @Test
@@ -92,8 +83,11 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     
     @Test
     public void testD_enableNameChange() {
-        editNameChangeGlobalConfig(true);
-        assertTrue("Failed to enable'Enable CA Name Change'", webDriver.findElement(By.id("systemconfiguration:enableicaocanamechange")).isSelected());
+        sysConfigHelper.openPage(getAdminWebUrl());
+        sysConfigHelper.openTab(SysConfigTabs.BASICCONFIG);
+        sysConfigHelper.triggerEnableCaNameChange(true);
+        sysConfigHelper.saveBasicConfiguration();
+        sysConfigHelper.assertEnableCaNameChangeIsEnabled(true);
     }
     
     @Test
