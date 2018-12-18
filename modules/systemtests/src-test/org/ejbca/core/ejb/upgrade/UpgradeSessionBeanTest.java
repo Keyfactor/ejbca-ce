@@ -70,6 +70,7 @@ import org.cesecore.keybind.InternalKeyBindingRules;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.AccessRulesHelper;
@@ -902,10 +903,13 @@ public class UpgradeSessionBeanTest {
         // Set OCSP extensions in conf file (OcspUnid, OcspCertHash, OcspCtSct -extension)
         cesecoreConfigSession.setConfigurationValue("ocsp.extensionoid", "*2.16.578.1.16.3.2;1.3.36.8.3.13;1.3.6.1.4.1.11129.2.4.5");
         // Create test key binding and persist it
-        final int cryptoTokenId = cryptoTokenManagementSession.getCryptoTokenIds(alwaysAllowtoken).get(0);
-        final int internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(alwaysAllowtoken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                "ocspExtensionUpgradeTest", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        final String tokenName = "CryptoToken_ocspExtensionUpgradeTest";
+        final String keyBindingName = "ocspExtensionUpgradeTest";
+        int internalKeyBindingId = -1;
         try {
+            final int cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(alwaysAllowtoken, tokenName);
+            internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(alwaysAllowtoken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                    keyBindingName, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Perform upgrade
             guc.setUpgradedFromVersion("6.11.0");
             globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
@@ -925,12 +929,13 @@ public class UpgradeSessionBeanTest {
             assertTrue("IKB did not contain CtSct extension after upgrade", ocspKeyExtensionOids.contains(OCSP_SCTLIST_OID));
         } finally {
             // Delete test key binding and restore previous ocsp.extensionoid value
-            internalKeyBindingSession.deleteInternalKeyBinding(alwaysAllowtoken, internalKeyBindingId);
+            OcspTestUtils.removeInternalKeyBinding(alwaysAllowtoken, keyBindingName);
             String ocspExtensionOidRestore = "";
             for (String extension : ocspExtensionBackup) {
                 ocspExtensionOidRestore += extension + ";";
             }
             cesecoreConfigSession.setConfigurationValue("ocsp.extensionoid", ocspExtensionOidRestore);
+            CryptoTokenTestUtils.removeCryptoToken(alwaysAllowtoken, tokenName);
         }
     }
 
