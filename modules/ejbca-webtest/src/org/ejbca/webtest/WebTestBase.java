@@ -23,6 +23,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -31,6 +32,7 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -312,4 +314,17 @@ public abstract class WebTestBase {
             }
         }
     }
+    
+    /**
+     * Removes the 'Publisher' by its name using EJB remote instance.
+     * 
+     * @param publisherName name of the publisher to be removed
+     * @throws ReferencesToItemExistException exception thrown in case the publisher in use.
+     * @throws AuthorizationDeniedException exception thrown in case of authorization problem.
+     */
+    protected static void removePublisherByName(final String publisherName) throws ReferencesToItemExistException, AuthorizationDeniedException {
+        final PublisherSessionRemote publisherSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
+        publisherSessionRemote.removePublisher(ADMIN_TOKEN, publisherName);
+    }
+    
 }
