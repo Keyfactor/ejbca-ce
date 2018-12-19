@@ -45,6 +45,11 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
     // Test Data
     private static class TestData {
         private static final String CA_NAME = "ECAQA-8-TestCA";
+        private static final String CA_VALIDITY = "1y";
+        private static final String CA_CRL_PERIOD = "1d";
+        private static final String CA_CRL_ISSUEINTERVAL= "22h";
+        private static final String CA_CRL_ISSUEINTERVAL_UPDATE= "20h";
+        private static final String CA_CRL_OVERLAPTIME = "30m";
     }
 
     @BeforeClass
@@ -71,12 +76,12 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
         auditLogHelper.initFilterTime();
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
-        caHelper.setValidity("1y");
+        caHelper.setValidity(TestData.CA_VALIDITY);
 
         // CRL settings
-        caHelper.setCrlPeriod("1d");
-        caHelper.setCrlIssueInterval("22h");
-        caHelper.setCrlOverlapTime("30m");
+        caHelper.setCrlPeriod(TestData.CA_CRL_PERIOD);
+        caHelper.setCrlIssueInterval(TestData.CA_CRL_ISSUEINTERVAL);
+        caHelper.setCrlOverlapTime(TestData.CA_CRL_OVERLAPTIME);
 
         caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
@@ -98,7 +103,7 @@ public class EcaQa8_CrlProfileManagement extends WebTestBase {
         caHelper.edit(TestData.CA_NAME);
 
         // Change 'CRL Issue Interval'
-        caHelper.setCrlIssueInterval("20h");
+        caHelper.setCrlIssueInterval(TestData.CA_CRL_ISSUEINTERVAL_UPDATE);
 
         caHelper.saveCa();
         caHelper.assertExists(TestData.CA_NAME);

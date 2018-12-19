@@ -37,10 +37,15 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
     private static CaHelper caHelper;
     private static CryptoTokenHelper cryptoTokenHelper;
 
-    private static final String rootName = "ECAQA3";
-    private static final String subName = "subCA ECAQA3";
-    private static final String rootDn = "CN=ECAQA3,C=SE";
-    private static final String subDn = "CN=subCA3,C=SE";
+    public static class TestData {
+        private static final String ROOTCA_NAME = "ECAQA3";
+        private static final String SUBCA_NAME = "subCA ECAQA3";
+        private static final String ROOTCA_DN = "CN=ECAQA3,C=SE";
+        private static final String SUBCA_DN = "CN=subCA3,C=SE";
+        private static final String ROOTCA_VALIDITY = "1y";
+        private static final String SUBCA_VALIDITY = "2y";
+    }
+    
 
     @BeforeClass
     public static void init() {
@@ -55,8 +60,8 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
-        removeCaAndCryptoToken(rootName);
-        removeCaByName(subName);
+        removeCaAndCryptoToken(TestData.ROOTCA_NAME);
+        removeCaByName(TestData.SUBCA_NAME);
         // super
         afterClass();
     }
@@ -64,39 +69,39 @@ public class EcaQa3_LocallySignedCvcCa extends WebTestBase {
     @Test
     public void a_createRootCa() {
         caHelper.openPage(getAdminWebUrl());
-        caHelper.addCa(rootName);
+        caHelper.addCa(TestData.ROOTCA_NAME);
 
         // Set CA Type, Subject DN and Validity
         caHelper.setCaType(CaType.CVC);
-        caHelper.setSubjectDn(rootDn);
-        caHelper.setValidity("1y");
+        caHelper.setSubjectDn(TestData.ROOTCA_DN);
+        caHelper.setValidity(TestData.ROOTCA_VALIDITY);
 
         // Save the CA and check that save was successful
         caHelper.createCa();
-        caHelper.assertExists(rootName);
+        caHelper.assertExists(TestData.ROOTCA_NAME);
     }
 
     @Test
     public void b_checkCryptoToken() {
         cryptoTokenHelper.openPage(getAdminWebUrl());
-        cryptoTokenHelper.assertTokenExists(rootName);
+        cryptoTokenHelper.assertTokenExists(TestData.ROOTCA_NAME);
     }
 
     @Test
     public void c_createSubCa() {
         caHelper.openPage(getAdminWebUrl());
-        caHelper.addCa(subName);
+        caHelper.addCa(TestData.SUBCA_NAME);
 
         // Set CA Type, Crypto Token, Subject DN, Signed By, Validity and Certificate Profile
         caHelper.setCaType(CaType.CVC);
-        caHelper.setCryptoToken(rootName);
-        caHelper.setSubjectDn(subDn);
-        caHelper.setSignedBy(rootName);
-        caHelper.setValidity("2y");
+        caHelper.setCryptoToken(TestData.ROOTCA_NAME);
+        caHelper.setSubjectDn(TestData.SUBCA_DN);
+        caHelper.setSignedBy(TestData.ROOTCA_NAME);
+        caHelper.setValidity(TestData.SUBCA_VALIDITY);
         caHelper.setCertificateProfile("SUBCA");
 
         // Save the CA and check that save was successful
         caHelper.createCa();
-        caHelper.assertExists(subName);
+        caHelper.assertExists(TestData.SUBCA_NAME);
     }
 }
