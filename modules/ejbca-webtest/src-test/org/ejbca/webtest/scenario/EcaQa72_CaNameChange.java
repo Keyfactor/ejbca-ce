@@ -35,8 +35,12 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     // Helpers
     private static CaHelper caHelper;
     private static SystemConfigurationHelper sysConfigHelper;
-    private static final String caName = "ECAQA72CA";
 
+    public static class TestData {
+        private static final String caName = "ECAQA72CA";
+        private static final String CA_VALIDITY = "1y";
+    }
+    
     @BeforeClass
     public static void init() {
         // super
@@ -49,7 +53,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        removeCaByName(caName);
+        removeCaByName(TestData.caName);
         // super
         afterClass();
     }
@@ -57,11 +61,11 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     @Test
     public void testA_addCa() {
         caHelper.openPage(getAdminWebUrl());
-        caHelper.addCa(caName);
+        caHelper.addCa(TestData.caName);
         // Set validity (required)
-        caHelper.setValidity("1y");
+        caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.createCa();
-        caHelper.assertExists(caName);
+        caHelper.assertExists(TestData.caName);
     }
     
     @Test
@@ -76,7 +80,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     @Test
     public void testC_editCaExpectNoNameChangeAvailable() {
         caHelper.openPage(getAdminWebUrl());
-        caHelper.edit(caName);
+        caHelper.edit(TestData.caName);
         caHelper.assertCheckboxCaNameChangeNotPresent();
         caHelper.assertNewSubjectDnNotPresent();
     }
@@ -93,7 +97,7 @@ public class EcaQa72_CaNameChange extends WebTestBase {
     @Test
     public void testE_editCaExpectNameChangeAvailable() {
         caHelper.openPage(getAdminWebUrl());
-        caHelper.edit(caName);
+        caHelper.edit(TestData.caName);
         caHelper.assertCheckboxcaNameChangePresent();
         caHelper.assertNewSubjectDnIsEnabled(false);
     }

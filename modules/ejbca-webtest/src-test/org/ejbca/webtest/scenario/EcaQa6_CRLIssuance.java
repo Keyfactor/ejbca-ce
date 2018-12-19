@@ -45,6 +45,7 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
     // Test Data
     private static class TestData {
         private static final String CA_NAME = "ECAQA-6-TestCA";
+        private static final String CA_VALIDITY = "1y";
     }
 
     @BeforeClass
@@ -73,7 +74,7 @@ public class EcaQa6_CRLIssuance extends WebTestBase {
         // Add CA
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
-        caHelper.setValidity("1y");
+        caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
         // Verify Audit Log
