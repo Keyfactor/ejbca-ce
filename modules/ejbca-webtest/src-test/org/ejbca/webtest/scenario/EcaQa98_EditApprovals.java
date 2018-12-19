@@ -30,6 +30,7 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -77,6 +78,9 @@ public class EcaQa98_EditApprovals extends WebTestBase {
 
     private static int requestId = -1;
 
+    // Helpers
+    private static CaHelper caHelper = new CaHelper(webDriverSuperAdmin);
+    
     private static RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private static ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private static ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
@@ -144,15 +148,12 @@ public class EcaQa98_EditApprovals extends WebTestBase {
         saveButton.sendKeys(Keys.RETURN);
 
         //Create CA
-        WebElement caLink = webDriverSuperAdmin.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ca/editcas/managecas.xhtml')]"));
-        caLink.click();
-        webDriverSuperAdmin.findElement(By.xpath("//input[@name='textfieldcaname']")).sendKeys(caName);
-        webDriverSuperAdmin.findElement(By.xpath("//input[@name='buttoncreateca']")).click();
-        webDriverSuperAdmin.findElement(By.id("textfieldvalidity")).sendKeys("1y");
-        Select selectApprovalProfile = new Select(webDriverSuperAdmin.findElement(By.xpath("//select[@name='approvalprofile_1']")));
-        selectApprovalProfile.selectByVisibleText(approvalProfileName);
-        webDriverSuperAdmin.findElement(By.xpath("//input[@name='buttoncreate']")).click();
-
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.addCa(caName);
+        caHelper.setValidity("1y");
+        caHelper.selectApprovalProfileName(approvalProfileName);
+        caHelper.saveCa();
+        
         Role raAdmin1 = roleSession.getRole(ADMIN_TOKEN, getNamespace(), getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMIN));
         Role raAdmin2 = roleSession.getRole(ADMIN_TOKEN, getNamespace(), getProfileName(ConfigurationConstants.PROFILE_FIREFOX_RAADMINALT));
         raAdmin1.getAccessRules().put(StandardRules.CAACCESS.resource(), true);

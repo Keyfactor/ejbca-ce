@@ -154,6 +154,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         }
     }
 
+    // TODO If EjbcaMail isn't available in appserver this test errors. Should fail test immediately in that case
     @Test
     public void testD_addEndEntity() {
 
