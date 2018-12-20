@@ -134,15 +134,28 @@ public class AddEndEntityHelper extends BaseHelper {
         }
     }
 
+    /**
+     * Fills in the text field email and email domain
+     * @param emailName e.g. 'john'
+     * @param emailDomain e.g. 'company.com'
+     */
     public void fillFieldEmail(final String emailName, final String emailDomain) {
         fillInput(Page.INPUT_EMAIL_NAME, emailName);
         fillInput(Page.INPUT_EMAIL_DOMAIN, emailDomain);
     }
     
+    /**
+     * Fills in the text area 'NameConstraintsPermitted'.
+     * @param domains new line separated domains.
+     */
     public void fillFieldNameConstraintsPermitted(String domains) {
         fillInput(Page.INPUT_NAME_CONSTRAINTS_PERMITTED, domains);
     }
     
+    /**
+     * Fills in the text area 'Extension Data'
+     * @param data new line separated entries
+     */
     public void fillFieldExtensionData(String data) {
         fillInput(Page.INPUT_CERT_EXTENSION_DATA, data);
     }
