@@ -17,6 +17,7 @@ import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -38,6 +39,7 @@ public class PublisherHelper extends BaseHelper {
         static final By BUTTON_CLONE_PUBLISHER = By.id("listPublishers:cloneButton");
         static final By BUTTON_RENAME_PUBLISHER = By.id("listPublishers:renameButton");
         static final By SELECT_PUBLISHER = By.id("listPublishers:selectPublisher");
+        static final By DELETE_PUBLISHER = By.id("listPublishers:deleteButton");
     } 
     
     public PublisherHelper(WebDriver webDriver) {
@@ -71,7 +73,17 @@ public class PublisherHelper extends BaseHelper {
         assertTrue(publisherName + " was not found in the List of Publishers", selectNames.contains(publisherName));
     }
     
+    public void assertPublisherDeleted(final String publisherName) {
+        final List<String> selectNames = getSelectNames(Page.SELECT_PUBLISHER);
+        assertFalse(publisherName + " was found in the List of Publishers", selectNames.contains(publisherName));
+    }
+    
     public void selectPublisherFromList(final String publisherName) {
         selectOptionByName(Page.SELECT_PUBLISHER, publisherName);
+    }
+
+    public void deletePublisher(final String expectedAlertMessage, final boolean isConfirmed) {
+        clickLink(Page.DELETE_PUBLISHER);
+        assertAndConfirmAlertPopUp(expectedAlertMessage, isConfirmed);
     }
 }
