@@ -17,6 +17,8 @@ import static org.junit.Assert.fail;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.EndEntityProfileHelper;
+import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.junit.AfterClass;
@@ -44,10 +46,16 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
     private static final String eepName = "OnHold";
     private static final String eeName = "TestEndEntityOnHold";
 
+    // Helpers
+    private static SearchEndEntitiesHelper searchEeHelper;
+    private static EndEntityProfileHelper eeProfileHelper;
+    
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
         webDriver = getWebDriver();
+        searchEeHelper = new SearchEndEntitiesHelper(webDriver);
+        eeProfileHelper = new EndEntityProfileHelper(webDriver);
     }
 
     @AfterClass
@@ -57,7 +65,7 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
         webDriver.quit();
     }
 
-    // TODO Fix at ECA-7334 and ECA-7349
+//     TODO Fix at ECA-7334 and ECA-7349
 //    @Test
 //    public void testA_addAndEditEep() {
 //        EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
@@ -117,7 +125,12 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
     // TODO Fix at ECA-7334 and ECA-7349
 //    @Test
 //    public void testC_verifyEndEntity() {
-//        verifyEndEntityOrCertificate("Suspended: Certificate hold", "View End Entity (popup window)");
+//        searchEeHelper.openPage(getAdminWebUrl());
+//        searchEeHelper.fillSearchCriteria(eeName, null, null, null);
+//        searchEeHelper.clickSearchByUsernameButton();
+//        searchEeHelper.assertNumberOfSearchResults(1);
+//        searchEeHelper.clickViewEndEntityForRow(eeName);
+//        searchEeHelper.assertPopupContainsText("Suspended: Certificate hold");
 //    }
 
     // TODO Fix at ECA-7334 and ECA-7349
@@ -128,39 +141,12 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
 //        webDriver.findElement(By.id("enrollWithUsernameForm:enrollmentCode")).sendKeys("foo123");
 //        webDriver.findElement(By.id("enrollWithUsernameForm:checkButton")).click();
 //        webDriver.findElement(By.id("enrollWithUsernameForm:generatePkcs12")).click();
-//        webDriver.get(getAdminWebUrl());
-//        verifyEndEntityOrCertificate("Revocation reasons : Certificate hold", "View Certificates (popup window)");
-//    }
-
-    // TODO Fix at ECA-7334 and ECA-7349
-//    private void verifyEndEntityOrCertificate(String textToFind, String button) {
-//        WebElement searchEeLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/listendentities.jsp')]"));
-//        searchEeLink.click();
-//        webDriver.findElement(By.xpath("//input[@name='textfieldusername']")).sendKeys(eeName);
-//        ;
-//        webDriver.findElement(By.xpath("//input[@name='buttonfind']")).click();
-//        WebElement resultButtonGroup = webDriver.findElement(By.xpath("//table[@class='actions']"));
-//        resultButtonGroup.findElement(By.xpath(".//button[@title='" + button + "']")).click();
-//
-//        boolean foundElement = false;
-//        // Switch to popup
-//        final String mainWindow = webDriver.getWindowHandle();
-//        for (String window : webDriver.getWindowHandles()) {
-//            if (!window.equals(mainWindow)) {
-//                webDriver.switchTo().window(window);
-//                try {
-//                    webDriver.findElement(By.xpath("//*[text()[contains(.,'" + textToFind + "')]]"));
-//                    foundElement = true;
-//                } catch (NoSuchElementException e) {
-//                    continue;
-//                }
-//                break;
-//            }
-//        }
-//
-//        if (!foundElement) {
-//            fail("Could not locate '" + textToFind + "' while viewing the created end entity");
-//        }
-//        webDriver.switchTo().window(mainWindow);
+//        
+//        searchEeHelper.openPage(getAdminWebUrl());
+//        searchEeHelper.fillSearchCriteria(eeName, null, null, null);
+//        searchEeHelper.clickSearchByUsernameButton();
+//        searchEeHelper.assertNumberOfSearchResults(1);
+//        searchEeHelper.clickViewEndEntityForRow(eeName);
+//        searchEeHelper.assertPopupContainsText("Revocation reasons : Certificate hold");
 //    }
 }
