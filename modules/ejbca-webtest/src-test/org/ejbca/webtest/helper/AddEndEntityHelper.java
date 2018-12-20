@@ -14,16 +14,13 @@
 package org.ejbca.webtest.helper;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -32,112 +29,246 @@ import org.openqa.selenium.support.ui.Select;
  * @version $Id$
  *
  */
-public final class AddEndEntityHelper {
+public class AddEndEntityHelper extends BaseHelper {
 
-    private AddEndEntityHelper() {
-        throw new AssertionError("Cannot instantiate class");
+    private static class Page {
+        // General
+        static final String PAGE_URI = "/ejbca/adminweb/ra/addendentity.jsp";
+        static final By PAGE_LINK = By.id("raAddendentity");
+        static final By INFO_MESSAGE = By.xpath("//div[@class='message info']");
+        
+        // Input fields
+        static final By INPUT_NAME_CONSTRAINTS_PERMITTED = By.xpath("//textarea[@name='textarencpermitted']");
+        static final By INPUT_CERT_EXTENSION_DATA = By.xpath("//textarea[@name='textareaextensiondata']");
+        static final By INPUT_EMAIL_NAME = By.xpath("//input[@name='textfieldemail']");
+        static final By INPUT_EMAIL_DOMAIN = By.xpath("//input[@name='textfieldemaildomain']");
+        
+        // Select drop downs
+        static final By SELECT_EEP = By.xpath("//select[@name='selectendentityprofile']");
+        static final By SELECT_CP = By.xpath("//select[@name='selectcertificateprofile']");
+        static final By SELECT_CA = By.xpath("//select[@name='selectca']");
+        static final By SELECT_TOKEN = By.xpath("//select[@name='selecttoken']");
+        static final By SELECT_REVOCATION_REASON = By.xpath("//select[@name='selectissuancerevocationreason']");
+        static final By SELECT_NUMBER_OF_ALLOWED_REQUESTS = By.xpath("//select[@name='selectallowedrequests']");
+        
+        // Buttons
+        static final By BUTTON_ADD_END_ENTITY = By.xpath("//input[@name='buttonadduser']");
+        static final By BUTTON_RESET = By.xpath("//input[@name='Reset']");
+        static final By BUTTON_KEY_RECOVERABLE = By.id("checkboxkeyrecoverable");
+        static final By BUTTON_SEND_NOTIFICATIONS = By.id("checkboxsendnotification");
+        
+        static By getInputFieldLocatorByKey(final String key) {
+            return By.xpath("//td[descendant-or-self::*[text()='" + key + "']]/following-sibling::td//input[not(@type='checkbox')]");
+        }
+    }
+    
+    public AddEndEntityHelper(WebDriver webDriver) {
+        super(webDriver);
+    }
+    
+    /**
+     * Opens the 'Add end entity' page and asserts the correctness of URI path.
+     *
+     * @param webUrl home page URL.
+     */
+    public void openPage(final String webUrl) {
+        openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);;
     }
 
     /**
-     * Opens the 'Add End Entity' page.
+     * Selects End Entity Profile from the drop down.
      * 
-     * @param webDriver the WebDriver to use
-     * @param adminWebUrl the URL of the AdminWeb
+     * @param eepName the name of the End Entity Profile
      */
-    public static void goTo(WebDriver webDriver, String adminWebUrl) {
-        webDriver.get(adminWebUrl);
-        webDriver.findElement(By.xpath("//li/a[contains(@href, 'addendentity.jsp')]")).click();
-        assertEquals("Clicking 'Add End Entity' link did not redirect to expected page",
-                WebTestUtil.getUrlIgnoreDomain(webDriver.getCurrentUrl()),
-                "/ejbca/adminweb/ra/addendentity.jsp");
+    public void setEndEntityProfile(final String eepName) {
+        selectOptionByName(Page.SELECT_EEP, eepName);
     }
 
     /**
-     * Sets the End Entity's End Entity Profile.
+     * Selects Certificate Profile from the drop down.
      * 
-     * @param webDriver the WebDriver to use
-     * @param eep the name of the End Entity Profile
+     * @param cpName the name of the Certificate Profile
      */
-    public static void setEep(WebDriver webDriver, String eep) {
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")))).selectByVisibleText(eep);
+    public void setCertificateProfile(final String cpName) {
+        selectOptionByName(Page.SELECT_CP, cpName);
     }
 
     /**
-     * Sets the End Entity's Certificate Profile.
+     * Selects Certificate Authority from the 'CA' drop down.
      * 
-     * @param webDriver the WebDriver to use
-     * @param cp the name of the Certificate Profile
+     * @param caName the name of the Certificate Authority
      */
-    public static void setCp(WebDriver webDriver, String cp) {
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selectcertificateprofile']")))).selectByVisibleText(cp);
+    public void setCa(final String caName) {
+        selectOptionByName(Page.SELECT_CA, caName);
     }
 
     /**
-     * Sets the End Entity's CA.
+     * TODO Enum containing token types
      * 
-     * @param webDriver the WebDriver to use
-     * @param ca the name of the CA
+     * Selects Token Tope from the 'Token' drop down.
+     * 
+     * @param tokenName - PEM, P12, JKS, User Generated etc.
      */
-    public static void setCa(WebDriver webDriver, String ca) {
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selectca']")))).selectByVisibleText(ca);
+    public void setToken(final String tokenName) {
+        selectOptionByName(Page.SELECT_TOKEN, tokenName);
     }
 
     /**
-     * Sets the End Entity's Token.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param token the name of the Token
+     * Clicks the check box 'Send Notifications'.
      */
-    public static void setToken(WebDriver webDriver, String token) {
-        (new Select(webDriver.findElement(By.xpath("//select[@name='selecttoken']")))).selectByVisibleText(token);
+    public void triggerSendNotifications() {
+        clickLink(Page.BUTTON_SEND_NOTIFICATIONS);
     }
-
+    
     /**
      * Sets fields when adding an End Entity.
      * 
      * Can only be used to set fields which contain a single text field,
      * e.g. 'Username' and 'CN, Common name'.
      * 
-     * @param webDriver the WebDriver to use
      * @param fieldMap a map with {Key->Value} entries on the form {'Username'->'User123', 'CN, Common name'->'John Doe'}
      */
-    public static void setFields(WebDriver webDriver, Map<String, String> fieldMap) {
-        for (String key : fieldMap.keySet()) {
-            // Find the text field input element which corresponds to this field's name
-            WebElement fieldInput = webDriver.findElement(By.xpath("//td[descendant-or-self::*[text()='" + key + "']]/following-sibling::td//input[not(@type='checkbox')]"));
-            fieldInput.sendKeys(fieldMap.get(key));
+    public void fillFields(final Map<String, String> fieldMap) {
+        for (final String key : fieldMap.keySet()) {
+            fillInput(Page.getInputFieldLocatorByKey(key), fieldMap.get(key));
         }
     }
 
+    public void fillFieldEmail(final String emailName, final String emailDomain) {
+        fillInput(Page.INPUT_EMAIL_NAME, emailName);
+        fillInput(Page.INPUT_EMAIL_DOMAIN, emailDomain);
+    }
+    
+    public void fillFieldNameConstraintsPermitted(String domains) {
+        fillInput(Page.INPUT_NAME_CONSTRAINTS_PERMITTED, domains);
+    }
+    
+    public void fillFieldExtensionData(String data) {
+        fillInput(Page.INPUT_CERT_EXTENSION_DATA, data);
+    }
+    
     /**
-     * Clicks the 'Add' button, can also check that the operation was successful.
-     * 
-     * @param webDriver the WebDriver to use
-     * @param eeName true if a check should be made that the operation was successful
+     * Asserts the given End Entity Profile is selected as first option 
+     * @param expectedProfileName expected to be selected
      */
-    public static void save(WebDriver webDriver, boolean assertSuccess) {
-        String username = null;
-        if (assertSuccess) {
-            // Check the username of the End Entity
-            username = webDriver.findElement(By.xpath("//td[descendant-or-self::*[text()='Username']]/following-sibling::td//input[not(@type='checkbox')]")).getAttribute("value");
+    public void assertEndEntityProfileSelected(final String expectedProfileName) {
+        assertEquals("'" + expectedProfileName + "' was not selected as first option",
+                expectedProfileName,
+                getFirstSelectedOption(Page.SELECT_EEP));
+    }
+    
+    /**
+     * Asserts the given cert profile is selected as first option 
+     * @param expectedProfileName expected to be selected
+     */
+    public void assertCertificateProfileSelected(final String expectedProfileName) {
+        assertEquals("'" + expectedProfileName + "' was not selected as first option",
+                expectedProfileName,
+                getFirstSelectedOption(Page.SELECT_CP));
+    }
+    
+    /**
+     * Asserts the given token is selected as first option 
+     * @param expectedToken expected to be selected
+     */
+    public void assertTokenSelected(final String expectedToken) {
+        assertEquals("'" + expectedToken + "' was not selected as first option",
+                expectedToken,
+                getFirstSelectedOption(Page.SELECT_TOKEN));
+    }
+    
+    /**
+     * Asserts the given revocation reason is selected as first option 
+     * @param expectedReason expected to be selected
+     */
+    public void assertRevocationReasonSelected(final String expectedReason) {
+        assertEquals("'" + expectedReason + "' was not selected as first option",
+                expectedReason,
+                getFirstSelectedOption(Page.SELECT_REVOCATION_REASON));
+    }
+    
+    /**
+     * Verifies existence of 'Add' button on the page
+     */
+    public void assertAddEndEntityButtonExists() {
+        assertElementExists(Page.BUTTON_ADD_END_ENTITY, "'Add' button was not found on 'Add End Entity' page");
+    }
+    
+    /**
+     * Verifies existence of 'Reset' button on the page
+     */
+    public void assertResetButtonExists() {
+        assertElementExists(Page.BUTTON_RESET, "'Reset' button was not found on 'Add End Entity' page");
+    }
+    
+    /**
+     * Asserts all of the given text fields are rendered on the page.
+     * @param fieldMap a map with {Key->Value} entries on the form {'Username'->'User123', 'CN, Common name'->'John Doe'}
+     */
+    public void assertFieldsExists(final Map<String, String> fieldMap) {
+        for (final String key : fieldMap.keySet()) {
+            assertElementExists(Page.getInputFieldLocatorByKey(key), 
+                    "The input field '" + key + "' was not found on the 'Add End Entity Page'");
+        }
+    }
+    
+    /**
+     * Asserts the text area 'Name Constraints, Permitted' is rendered on the page.
+     */
+    public void assertFieldNameConstraintsPermittedExists() {
+        assertElementExists(Page.INPUT_NAME_CONSTRAINTS_PERMITTED, 
+                "The text area 'Name Constraints, Permitted' did not exist");
+    }
+    
+    /**
+     * Asserts the text area 'Certificate Extension Data' is rendered on the page.
+     */
+    public void assertFieldCertExtensionDataExists() {
+        assertElementExists(Page.INPUT_CERT_EXTENSION_DATA, 
+                "The text area 'Certificate Extension Data, Permitted' did not exist");
+    }
+    
+    /**
+     * Note! Cannot use method in BaseHelper for this one since it's an old .jsp page
+     * 
+     * Asserts the correct info message is displayed after adding end entity
+     * 
+     * @param endEntityName name of the end entity expected to have been added
+     */
+    public void assertEndEntityAddedMessageDisplayed(final String endEntityName) {
+        assertEquals("Unexpected info message while adding end entity",
+                "End Entity " + endEntityName + " added successfully.",
+                getElementText(Page.INFO_MESSAGE));
+        
+    }
+    
+    /**
+     * Asserts the given number of allowed requests is selected as first option 
+     * @param expectedNumber to be selected
+     */
+    public void assertNumberOfAllowedRequestsSelected(final String expectedNumber) {
+        assertEquals("'" + expectedNumber + "' was not selected as first option",
+                expectedNumber,
+                getFirstSelectedOption(Page.SELECT_NUMBER_OF_ALLOWED_REQUESTS));
+    }
+    
+    /**
+     * Assert whether 'Key Recoverable' check box should be enabled or disabled
+     * @param assertEnabled if the check box is expected to be enabled
+     */
+    public void assertKeyRecoveryEnabled(final boolean assertEnabled) {
+        if (assertEnabled) {
+            assertTrue("'Key Recoverable' button was expected to be enabled", isEnabledElement(Page.BUTTON_KEY_RECOVERABLE));
+        } else {
+            assertFalse("'Key Recoverable' button was expected to be disabled", isEnabledElement(Page.BUTTON_KEY_RECOVERABLE));
         }
 
-        // Click 'Add'
-        webDriver.findElement(By.xpath("//input[@name='buttonadduser']")).click();
-
-        if (assertSuccess) {
-            // Check that the End Entity was added successfully
-            try {
-                // Check save message
-                String saveMessage = webDriver.findElement(By.xpath("//div[@class='message info']")).getText();
-                assertEquals("Unexpected message upon saving a new End Entity", "End Entity " + username + " added successfully.", saveMessage);
-
-                // Check 'Previously added end entities' table
-                String saveTable = webDriver.findElement(By.xpath("(//table[@class='results']//tr)[2]/td[1]")).getText();
-                assertEquals("Unexpected username at top of 'Previously added end entities' table", username, saveTable);
-            } catch (NoSuchElementException e) {
-                fail("Could not find element upon adding an End Entity.");
-            }
-        }
+    }
+    
+    /**
+     * Clicks the 'Add' button
+     */
+    public void addEndEntity() {
+        clickLink(Page.BUTTON_ADD_END_ENTITY);
     }
 }
