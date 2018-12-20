@@ -22,17 +22,29 @@ public class SearchEndEntitiesHelper extends BaseHelper {
     public static class Page {
         // General
         static final String PAGE_URI = "/ejbca/adminweb/ra/listendentities.jsp";
-        static final By PAGE_LINK = By.xpath("//li/a[contains(@href,'listendentities.jsp')]");
-        //
+        static final By PAGE_LINK = By.id("raListendentities");
+        // Input fields
         static final By INPUT_SEARCH_USERNAME = By.xpath("//input[@name='textfieldusername']");
-        static final By BUTTON_SEARCH_BY_USERNAME = By.xpath("//input[@name='buttonfind']");
         static final By INPUT_SEARCH_CERTIFICATE_SN = By.xpath("//input[@name='textfieldserialnumber']");
-        static final By SELECT_SEARCH_STATUS = By.xpath("//select[@name='selectliststatus']");
         static final By INPUT_SEARCH_EXPIRING_WITHIN = By.xpath("//input[@name='textfielddays']");
-        static final By ROWS_SEARCH_RESULTS = By.xpath("//table[@class='results']/tbody/tr");
         static final By INPUT_SEARCH_RESULT_FIRST_ROW_SELECT = By.xpath("//table[@class='results']/tbody/tr//input[@type='checkbox']");
+        // Buttons
         static final By BUTTON_DELETE_SELECTED = By.xpath("//input[@name='buttondeleteusers']");
+        static final By BUTTON_SEARCH_BY_USERNAME = By.xpath("//input[@name='buttonfind']");
+        static final By BUTTON_SEARCH_BY_STATUS = By.xpath("//input[@name='buttonlist']");
+        static final By BUTTON_VIEW_CERTIFICATE_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View Certificates (popup window)']");
+        static final By BUTTON_VIEW_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View End Entity (popup window)']");
+        static final By BUTTON_EDIT_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='Edit End Entity (popup window)']");
+        static final By BUTTON_HARD_TOKEN_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View Hard Tokens (popup window)']");
+        // Select drop downs
+        static final By SELECT_SEARCH_STATUS = By.xpath("//select[@name='selectliststatus']");
+        // Other
+        static final By ROWS_SEARCH_RESULTS = By.xpath("//table[@class='results']/tbody/tr");
         static final By TEXT_NO_RESULTS = By.xpath("//table[@class='results']/tbody//td[text()='No end entities found.']");
+        
+        static final By getColumnContainingCommonName(final String cn) {
+            return By.xpath("//table[@class='results']/tbody/tr/td[4][contains(text(),'" + cn + "')]");
+        }
     }
 
     public SearchEndEntitiesHelper(final WebDriver webDriver) {
@@ -79,6 +91,13 @@ public class SearchEndEntitiesHelper extends BaseHelper {
     }
 
     /**
+     * Clicks the search by status button.
+     */
+    public void clickSearchByStatus() {
+        clickLink(Page.BUTTON_SEARCH_BY_STATUS);
+    }
+    
+    /**
      * Asserts the expected number of search results.
      *
      * @param numberOfResults number of results.
@@ -105,6 +124,55 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         clickLink(Page.BUTTON_DELETE_SELECTED);
     }
 
+    /**
+     * Clicks 'Edit' (End entity) for the row containing the specified CN.
+     * @param cn Common name of the row to use.
+     */
+    public void clickEditEndEntityForRow(final String cn) {
+        WebElement row = findElement(Page.getColumnContainingCommonName(cn));
+        row.findElement(Page.BUTTON_EDIT_END_ENTITY_FOR_ROW).click();
+    }
+    
+    /**
+     * Clicks 'View' (Certificate) for the row containing the specified CN.
+     * @param cn Common name of the row to use.
+     */
+    public void clickViewCertificateForRow(final String cn) {
+        WebElement row = findElement(Page.getColumnContainingCommonName(cn));
+        row.findElement(Page.BUTTON_VIEW_CERTIFICATE_FOR_ROW).click();
+    }
+    
+    /**
+     * Clicks 'View' (End entity) for the row containing the specified CN.
+     * @param cn Common name of the row to use.
+     */
+    public void clickViewEndEntityForRow(final String cn) {
+        WebElement row = findElement(Page.getColumnContainingCommonName(cn));
+        row.findElement(Page.BUTTON_VIEW_END_ENTITY_FOR_ROW).click();
+    }
+    
+    /**
+     * Clicks 'Hard Tokens' for the row containing the specified CN.
+     * @param cn Common name of the row to use.
+     */
+    public void clickHardTokensForRow(final String cn) {
+        WebElement row = findElement(Page.getColumnContainingCommonName(cn));
+        row.findElement(Page.BUTTON_HARD_TOKEN_FOR_ROW).click();
+    }
+    
+    /**
+     * TODO Introduce common helper class for pop-up windows with more accurate, by field search.
+     * 
+     * Switches to first available pop-up window and asserts the given text exists.
+     * @param textToFind to assert existence of.
+     */
+    public void assertPopupContainsText(final String textToFind) {
+        final String mainWindow = switchToNextWindow();
+        assertElementExists(By.xpath("//*[text()[contains(.,'" + textToFind + "')]]"), 
+                "'" + textToFind + "' was not found in pop-up window.");
+        switchToWindow(mainWindow);
+    }
+    
     /**
      * Operates with deletion confirmation alert dialog.
      *
