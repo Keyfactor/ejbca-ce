@@ -28,10 +28,10 @@ WORKDIR /app/ejbca
 ADD run.sh /opt/
 RUN chmod +x /opt/run.sh
 
-ADD firefox_conf/svq3ko35.default /home/seluser/.mozilla/firefox/svq3ko35.default
+ADD configuration/firefox_conf/svq3ko35.default /home/seluser/.mozilla/firefox/svq3ko35.default
 RUN chmod 777 /home/seluser/.mozilla/firefox/svq3ko35.default
 
-ADD firefox_conf/profiles.ini /home/seluser/.mozilla/firefox/profiles.ini
+ADD configuration/firefox_conf/profiles.ini /home/seluser/.mozilla/firefox/profiles.ini
 RUN chmod 777 /home/seluser/.mozilla/firefox/profiles.ini
 
 # copy ejbca conf to /opt in the container for runtime-usage
