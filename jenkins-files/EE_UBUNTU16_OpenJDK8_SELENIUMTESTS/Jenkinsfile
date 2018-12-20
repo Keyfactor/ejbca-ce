@@ -27,12 +27,13 @@ pipeline {
                 sh "mkdir ear || true"
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/ejbca_image') {
                     sh "docker build -t mypeer -m 2GB ."
-                    //sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
-                    sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app mypeer"
+                    // sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app mypeer"
+                    sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
+                    sh "sleep 300"
                 }
             }
         }
-        /*
+        
         stage('run Selenium tests') {
             steps {
                 sh "mkdir ear || true"
@@ -42,7 +43,6 @@ pipeline {
                 }
             }
         }
-        */
     }
     post {
         always {
