@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.ejbca.webtest.helper.SystemConfigurationHelper.Page;
 import org.ejbca.webtest.util.WebTestUtil;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
@@ -683,6 +682,29 @@ public class BaseHelper {
         return null;
     }
 
+    /**
+     * Switches to 'next' browser window e.g. a pop-up or a new tab
+     * Use return value to return to main window.
+     * @return The main window (switched from). 
+     */
+    protected String switchToNextWindow() {
+        final String mainWindow = webDriver.getWindowHandle();
+        for (String window : webDriver.getWindowHandles()) {
+            if (!window.equals(mainWindow)) {
+                switchToWindow(window);
+            }
+        }
+        return mainWindow;
+    }
+    
+    /**
+     * Switch to the specified window
+     * @param windowId of the window to switch to.
+     */
+    protected void switchToWindow(final String windowId) {
+        webDriver.switchTo().window(windowId);
+    }
+    
     /**
      * Asserts the appearance of the alert popup, its message and accepts/discards it.
      *
