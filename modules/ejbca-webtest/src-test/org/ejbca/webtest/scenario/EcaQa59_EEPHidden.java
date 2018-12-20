@@ -13,17 +13,18 @@
 package org.ejbca.webtest.scenario;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper;
 import org.ejbca.webtest.helper.SystemConfigurationHelper.SysConfigTabs;
@@ -33,20 +34,43 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
- * 
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa59_EEPHidden extends WebTestBase {
     
-    private static final String eepName = "Hidden";
-    private static final String endEntityName = "TestEndEnityHidden";
+    private static class TestData {
+        private static final Map<String,String> ASSERTION_FIELDMAP = new HashMap<String, String>();
+        private static final Map<String,String> INPUT_END_ENTITY_FIELDMAP = new HashMap<String, String>();
+        
+        private static final String EEP_NAME = "Hidden";
+        private static final String END_ENTITY_NAME = "TestEndEnityHidden";
+        private static final String END_ENTITY_PASSWORD = "foo123";
+        private static final String EMAIL_NAME = "sender";
+        private static final String EMAIL_DOMAIN = "example.com";
+        
+        // Map holding input fields and corresponding values
+        static {
+            INPUT_END_ENTITY_FIELDMAP.put("Username", END_ENTITY_NAME);
+            INPUT_END_ENTITY_FIELDMAP.put("Password (or Enrollment Code)", END_ENTITY_PASSWORD);
+            INPUT_END_ENTITY_FIELDMAP.put("Confirm Password", END_ENTITY_PASSWORD);
+            INPUT_END_ENTITY_FIELDMAP.put("CN, Common name", END_ENTITY_NAME);
+        }
+        // Map holding input fields used for asserting existence
+        static {
+            ASSERTION_FIELDMAP.put("Username", null);
+            ASSERTION_FIELDMAP.put("Password (or Enrollment Code)", null);
+            ASSERTION_FIELDMAP.put("Confirm Password", null);
+            ASSERTION_FIELDMAP.put("E-mail address", null);
+            ASSERTION_FIELDMAP.put("CN, Common name", null);
+        }
+    }
+    
     private static String currentDateString;
     private static String oneMonthsFromNowString;
     private static WebDriver webDriver;
@@ -54,6 +78,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     // Helpers
     private static SystemConfigurationHelper sysConfigHelper;
     private static EndEntityProfileHelper eeProfileHelper;
+    private static AddEndEntityHelper addEndEntityHelper;
     
     @BeforeClass
     public static void init() {
@@ -67,12 +92,13 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         webDriver = getWebDriver();
         sysConfigHelper = new SystemConfigurationHelper(webDriver);
         eeProfileHelper = new EndEntityProfileHelper(webDriver);
+        addEndEntityHelper = new AddEndEntityHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws NoSuchEndEntityException, AuthorizationDeniedException, CouldNotRemoveEndEntityException {
-        removeEndEntityByUsername(endEntityName);
-        removeEndEntityProfileByName(eepName);
+        removeEndEntityByUsername(TestData.END_ENTITY_NAME);
+        removeEndEntityProfileByName(TestData.EEP_NAME);
         webDriver.quit();
     }
 
@@ -89,8 +115,8 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     @Test
     public void testB_addEndEntityProfile() {
         eeProfileHelper.openPage(getAdminWebUrl());
-        eeProfileHelper.addEndEntityProfile(eepName);
-        eeProfileHelper.openEditEndEntityProfilePage(eepName);
+        eeProfileHelper.addEndEntityProfile(TestData.EEP_NAME);
+        eeProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
         // Set all desired values in EEP. Set values will be validated in next step (add end entity)
         Select dropDownCa =  new Select(webDriver.findElement(By.xpath("//select[@name='selectdefaultca']")));
         dropDownCa.selectByVisibleText(getCaName());
@@ -117,70 +143,36 @@ public class EcaQa59_EEPHidden extends WebTestBase {
 
     @Test
     public void testC_checkEep() {
-        webDriver.get(getAdminWebUrl());
-        WebElement addEeLink = webDriver.findElement(By.id("raAddendentity"));
-        addEeLink.click();
-
-        // Check expected values preset by EEP
-        Select dropDownEepPreSelect =  new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
-        dropDownEepPreSelect.selectByVisibleText(eepName);
-        Select dropDownEep =  new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
-        Select dropDownCp =  new Select(webDriver.findElement(By.xpath("//select[@name='selectcertificateprofile']")));
-        Select dropDownToken =  new Select(webDriver.findElement(By.xpath("//select[@name='selecttoken']")));
-        Select dropDownNumOfAllowedRequests =  new Select(webDriver.findElement(By.xpath("//select[@name='selectallowedrequests']")));
-        Select dropDownRevocationReason =  new Select(webDriver.findElement(By.xpath("//select[@name='selectissuancerevocationreason']")));
-        assertTrue("End entity profile: " + eepName + " was not selected", dropDownEep.getAllSelectedOptions().get(0).getText().equals(eepName));
-        assertTrue("Maximum number of failed login attempts not set to 'Unlimited'", webDriver.findElement(By.id("radiomaxfailedloginsunlimited")).isSelected());
-        assertTrue("CP 'ENDUSER' was not selected by default", dropDownCp.getAllSelectedOptions().get(0).getText().equals("ENDUSER"));
-        assertTrue("Token type 'User Generated' was not selected by default", dropDownToken.getAllSelectedOptions().get(0).getText().equals("User Generated"));
-        assertTrue("Certificate Validity Start Time was not set to todays date", webDriver.findElement(By.xpath("//input[@name='textfieldstarttime']")).getAttribute("value").contains(currentDateString));
-        assertTrue("Certificate Validity End Time was not set to 1 month from todays date", webDriver.findElement(By.xpath("//input[@name='textfieldendtime']")).getAttribute("value").contains(oneMonthsFromNowString));
-        assertTrue("Number of allowed requests was not set to '1' by default", dropDownNumOfAllowedRequests.getAllSelectedOptions().get(0).getText().equals("1"));
-        assertTrue("Revocation reason to set after certificate issuance was not set to'Active' by default", dropDownRevocationReason.getAllSelectedOptions().get(0).getText().equals("Active"));
-        assertTrue("Key recovery was not activated", webDriver.findElement(By.id("checkboxkeyrecoverable")).getAttribute("value").equals("true"));
-
-        // Check presence of expected but empty fields / attributes
-        try {
-            webDriver.findElement(By.xpath("//input[@name='textfieldusername']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldpassword']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldconfirmpassword']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldemail']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldemaildomain']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldsubjectdn0']"));
-            webDriver.findElement(By.xpath("//textarea[@name='textarencpermitted']"));
-            webDriver.findElement(By.xpath("//textarea[@name='textareaextensiondata']"));
-        } catch (NoSuchElementException e) {
-            fail("Expected attribute not found: " + e.getMessage());
-        }
+        addEndEntityHelper.openPage(getAdminWebUrl());
+        
+        addEndEntityHelper.setEndEntityProfile(TestData.EEP_NAME);
+        addEndEntityHelper.assertEndEntityProfileSelected(TestData.EEP_NAME);
+        addEndEntityHelper.assertCertificateProfileSelected("ENDUSER");
+        addEndEntityHelper.assertTokenSelected("User Generated");
+        addEndEntityHelper.assertNumberOfAllowedRequestsSelected("1");
+        addEndEntityHelper.assertRevocationReasonSelected("Active");
+        addEndEntityHelper.assertKeyRecoveryEnabled(false);
+        addEndEntityHelper.assertFieldsExists(TestData.ASSERTION_FIELDMAP);
+        addEndEntityHelper.assertFieldNameConstraintsPermittedExists();
     }
 
     // TODO If EjbcaMail isn't available in appserver this test errors. Should fail test immediately in that case
     @Test
     public void testD_addEndEntity() {
+        addEndEntityHelper.openPage(getAdminWebUrl());
 
-        webDriver.get(getAdminWebUrl());
-        WebElement configLink = webDriver.findElement(By.id("raAddendentity"));
-        configLink.click();
-
-        Select dropDownEepPreSelect =  new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
-        dropDownEepPreSelect.selectByVisibleText(eepName);
-        Select dropDownCaPreSelect =  new Select(webDriver.findElement(By.xpath("//select[@name='selectca']")));
-        dropDownCaPreSelect.selectByVisibleText(getCaName());
-        webDriver.findElement(By.xpath("//input[@name='textfieldusername']")).sendKeys(endEntityName);
-        webDriver.findElement(By.xpath("//input[@name='textfieldpassword']")).sendKeys("foo123");
-        webDriver.findElement(By.xpath("//input[@name='textfieldconfirmpassword']")).sendKeys("foo123");
-        webDriver.findElement(By.xpath("//input[@name='textfieldemail']")).sendKeys("sender");
-        webDriver.findElement(By.xpath("//input[@name='textfieldemaildomain']")).sendKeys("example.com");
-        webDriver.findElement(By.xpath("//input[@name='textfieldsubjectdn0']")).sendKeys(endEntityName);
-        webDriver.findElement(By.xpath("//textarea[@name='textarencpermitted']")).sendKeys(
+        addEndEntityHelper.setEndEntityProfile(TestData.EEP_NAME);
+        addEndEntityHelper.setCa(getCaName());
+        addEndEntityHelper.fillFields(TestData.INPUT_END_ENTITY_FIELDMAP);
+        addEndEntityHelper.fillFieldEmail(TestData.EMAIL_NAME, TestData.EMAIL_DOMAIN);
+        addEndEntityHelper.fillFieldNameConstraintsPermitted(
                 "example.com\n" +
                 "198.51.100.0/24\n" +
                 "CN=Name,O=Company @example.com"
-        );
-        webDriver.findElement(By.xpath("//textarea[@name='textareaextensiondata']")).sendKeys("Other Data");
-        webDriver.findElement(By.id("checkboxsendnotification")).click();
-        webDriver.findElement(By.xpath("//input[@name='buttonadduser']")).click();
-        WebElement messageInfo = webDriver.findElement(By.xpath("//div[@class='message info']"));
-        assertEquals("Unexpected status text after adding end entity","End Entity " + endEntityName + " added successfully.", messageInfo.getText());
+                );
+        addEndEntityHelper.fillFieldExtensionData("Other Data");
+        addEndEntityHelper.triggerSendNotifications();
+        addEndEntityHelper.addEndEntity();
+        addEndEntityHelper.assertEndEntityAddedMessageDisplayed(TestData.END_ENTITY_NAME);
     }
 }

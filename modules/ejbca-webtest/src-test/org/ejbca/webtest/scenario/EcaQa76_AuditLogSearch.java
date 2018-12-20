@@ -59,22 +59,24 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     private static CaHelper caHelper;
     private static AuditLogHelper auditLogHelper;
     private static SearchEndEntitiesHelper searchEndEntitiesHelper;
+    private static AddEndEntityHelper addEndEntityHelper;
+    
     // Test Data
     private static class TestData {
+        private static final Map<String,String> ADD_EE_FIELDMAP = new HashMap<String, String>();
         static final String CA_NAME = "TestAuditLog";
+        static final String CN_CHANGED = "testchangevalue";
         static final String TEXT_CONFIRMATION_DELETE_SELECTED_END_ENTITIES = "Are you sure you want to delete selected end entities?";
         static final String TEXT_CONFIRMATION_REVOKE_SELECTED_END_ENTITIES = "Are the selected end entities revoked?";
+        
+        static {
+            ADD_EE_FIELDMAP.put("Username", "testauditlog");
+            ADD_EE_FIELDMAP.put("Password (or Enrollment Code)", "foo123");
+            ADD_EE_FIELDMAP.put("Confirm Password", "foo123");
+            ADD_EE_FIELDMAP.put("CN, Common name", "testauditlog");
+        }
     }
-    private static final String caName = "TestAuditLog";
-    private static final String cnChanged = "testchangevalue";
-    private static final String deleteAlert = "Are you sure you want to delete the CA " + caName + "? You should revoke the CA instead if you already have used it to issue certificates.";
-    private static final Map<String,String> fieldMap = new HashMap<String, String>();
-    static {
-        fieldMap.put("Username", "testauditlog");
-        fieldMap.put("Password (or Enrollment Code)", "foo123");
-        fieldMap.put("Confirm Password", "foo123");
-        fieldMap.put("CN, Common name", "testauditlog");
-    }
+    private static final String deleteAlert = "Are you sure you want to delete the CA " + TestData.CA_NAME + "? You should revoke the CA instead if you already have used it to issue certificates.";
 
     @BeforeClass
     public static void init() {
@@ -85,6 +87,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         caHelper = new CaHelper(webDriver);
         auditLogHelper = new AuditLogHelper(webDriver);
         searchEndEntitiesHelper = new SearchEndEntitiesHelper(webDriver);
+        addEndEntityHelper = new AddEndEntityHelper(webDriver);
     }
 
     @AfterClass
@@ -101,24 +104,25 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         auditLogHelper.initFilterTime();
         // Add CA and check that it was added successfully
         caHelper.openPage(getAdminWebUrl());
-        caHelper.addCa(caName);
+        caHelper.addCa(TestData.CA_NAME);
         caHelper.setValidity("40y");
         caHelper.createCa();
-        caHelper.assertExists(caName);
+        caHelper.assertExists(TestData.CA_NAME);
         // Select the CA, click 'Delete CA' and then 'Cancel'
-        caHelper.deleteCaAndAssert(deleteAlert, false, null, caName);
+        caHelper.deleteCaAndAssert(deleteAlert, false, null, TestData.CA_NAME);
     }
 
    @Test
     public void stepB_addEe() {
-        // Add End Entity
-        AddEndEntityHelper.goTo(webDriver, getAdminWebUrl());
-        AddEndEntityHelper.setEep(webDriver, "EMPTY");
-        AddEndEntityHelper.setFields(webDriver, fieldMap);
-        AddEndEntityHelper.setCp(webDriver, "ENDUSER");
-        AddEndEntityHelper.setCa(webDriver, getCaName());
-        AddEndEntityHelper.setToken(webDriver, "User Generated");
-        AddEndEntityHelper.save(webDriver, true);
+//        // Add End Entity
+       addEndEntityHelper.openPage(getAdminWebUrl());
+       addEndEntityHelper.setEndEntityProfile("EMPTY");
+       addEndEntityHelper.fillFields(TestData.ADD_EE_FIELDMAP);
+       addEndEntityHelper.setCertificateProfile("ENDUSER");
+       addEndEntityHelper.setCa(getCaName());
+       addEndEntityHelper.setToken("User Generated");
+       addEndEntityHelper.addEndEntity();
+       
     }
 
     @Test
@@ -140,7 +144,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         webDriver.switchTo().window(editWindow);
         WebElement cnInput = webDriver.findElement(By.xpath("//td[descendant-or-self::*[text()='CN, Common name']]/following-sibling::td//input[not(@type='checkbox')]"));
         cnInput.clear();
-        cnInput.sendKeys(cnChanged);
+        cnInput.sendKeys(TestData.CN_CHANGED);
         webDriver.findElement(By.xpath("(//input[@name='buttonedituser'])[2]")).click();
         assertEquals("Unexpected save message upon edit of End Entitys", "End Entity Saved", webDriver.findElement(By.xpath("//div[@class='message info']")).getText());
         webDriver.close();
@@ -156,14 +160,14 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
                 "Success",
                 null,
                 Arrays.asList(
-                        "msg=Edited end entity " + fieldMap.get("Username"),
-                        "subjectDN=CN=" + fieldMap.get("CN, Common name") + " -> CN=" + cnChanged)
+                        "msg=Edited end entity " + TestData.ADD_EE_FIELDMAP.get("Username"),
+                        "subjectDN=CN=" + TestData.ADD_EE_FIELDMAP.get("CN, Common name") + " -> CN=" + TestData.CN_CHANGED)
         );
         auditLogHelper.assertLogEntryByEventText(
                 "End Entity Add",
                 "Success",
                 null,
-                Collections.singletonList("msg=Added end entity " + fieldMap.get("Username"))
+                Collections.singletonList("msg=Added end entity " + TestData.ADD_EE_FIELDMAP.get("Username"))
         );
         auditLogHelper.assertLogEntryByEventText(
                 "CRL Create",
@@ -175,32 +179,32 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
                 "CRL Store",
                 "Success",
                 null,
-                Collections.singletonList("issuerDN 'CN=" + caName + "'")
+                Collections.singletonList("issuerDN 'CN=" + TestData.CA_NAME + "'")
         );
         auditLogHelper.assertLogEntryByEventText(
                 "Certificate Store",
                 "Success",
                 null,
-                Collections.singletonList("subjectDN 'CN=" + caName + "', issuerDN 'CN=" + caName + "'")
+                Collections.singletonList("subjectDN 'CN=" + TestData.CA_NAME + "', issuerDN 'CN=" + TestData.CA_NAME + "'")
         );
         auditLogHelper.assertLogEntryByEventText(
                 "CA Edit",
                 "Success",
                 null,
-                Collections.singletonList("name " + caName + " edited")
+                Collections.singletonList("name " + TestData.CA_NAME + " edited")
         );
         auditLogHelper.assertLogEntryByEventText(
                 "CA Create",
                 "Success",
                 null,
-                Collections.singletonList("name " + caName + " added")
+                Collections.singletonList("name " + TestData.CA_NAME + " added")
         );
     }
 
     @Test
     public void stepE_eeEvents() {
         // Add condition and check that the correct entries are displayed
-        auditLogHelper.setViewFilteringCondition("Username", "Equals", fieldMap.get("Username"));
+        auditLogHelper.setViewFilteringCondition("Username", "Equals", TestData.ADD_EE_FIELDMAP.get("Username"));
         assertEquals("Unexpected number of entries in the Audit Log", 2, AuditLogHelper.entryCount(webDriver));
         assertEquals("Unexpected element found in table", "End Entity Edit",
                 webDriver.findElement(By.xpath("//table[caption[text()='Search results']]/tbody/tr[1]/td[2]")).getText());
@@ -285,15 +289,15 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
             }
         });
         String results = new String(Files.readAllBytes(Paths.get(xmlFiles.get(0).getAbsolutePath())));
-        assertTrue("Results did not contain expected contents", results.contains("<string>" + fieldMap.get("Username") + "</string>"));
-        assertTrue("Results did not contain expected contents", results.contains("&lt;string&gt;Added end entity " + fieldMap.get("Username") + ".&lt;/string&gt;"));
+        assertTrue("Results did not contain expected contents", results.contains("<string>" + TestData.ADD_EE_FIELDMAP.get("Username") + "</string>"));
+        assertTrue("Results did not contain expected contents", results.contains("&lt;string&gt;Added end entity " + TestData.ADD_EE_FIELDMAP.get("Username") + ".&lt;/string&gt;"));
     }
 
     @Test
     public void stepH_search() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
         // Search for End Entity, make sure there is exactly 1 result
-        searchEndEntitiesHelper.fillSearchCriteria(fieldMap.get("Username"), null, null, null);
+        searchEndEntitiesHelper.fillSearchCriteria(TestData.ADD_EE_FIELDMAP.get("Username"), null, null, null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.assertNumberOfSearchResults(1);
 
