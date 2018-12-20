@@ -201,6 +201,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String sharedCmpRaSecret = StringUtils.EMPTY;
     private boolean includeInHealthCheck;
     private String signedByString;
+    private boolean hideValidity = false;
     private String caEncodedValidity;
     private String caSubjectAltName;
     private String caCryptoTokenKeyEncryptKey;
@@ -788,7 +789,11 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public void setCaEncodedValidity(final String validity) {
         this.caEncodedValidity = validity;
     }
-    
+
+    public boolean getHideValidity() {
+        return hideValidity;
+    }
+
     public boolean isCaTypeX509() {
         return catype == CAInfo.CATYPE_X509;
     }
@@ -2375,14 +2380,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
         }      
         
-        if (isCaexternal || !isCaUninitialized && signbyexternal) {
-            if (StringUtils.isNotBlank(cainfo.getEncodedValidity())) {
-                this.caEncodedValidity = cainfo.getEncodedValidity();
-            } else {
-                this.caEncodedValidity = getEjbcaWebBean().getText("NOTUSED");
-            }
-        }
-        
         if (cainfo.getSignedBy() >= 0 && cainfo.getSignedBy() <= CAInfo.SPECIALCAIDBORDER) {
             if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
                 this.signedByString = String.valueOf(CAInfo.SELFSIGNED);
@@ -2393,8 +2390,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         } else {
             this.signedByString = String.valueOf(cainfo.getSignedBy());
         }
-        
+
         caEncodedValidity = cainfo.getEncodedValidity();
+        final boolean validityNotUsed = (isCaexternal || (!isCaUninitialized && signbyexternal));
+        if (validityNotUsed && (StringUtils.isBlank(caEncodedValidity) || "0d".equals(caEncodedValidity))) {
+            hideValidity = true;
+            caEncodedValidity = "";
+        }
+
         useCertReqHistory = cainfo.isUseCertReqHistory();
         useUserStorage = cainfo.isUseUserStorage();
         
