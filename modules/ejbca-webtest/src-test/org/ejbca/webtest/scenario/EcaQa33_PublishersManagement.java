@@ -41,6 +41,7 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
         static final String PUBLISHER_NAME = "MyPublisher";
         static final String CLONE_PUBLISHER_NAME = "TestPublisher";
         static final String RENAME_PUBLISHER_NAME = "NewPublisher";
+        static final String PUBLISHER_DELETE_MESSAGE = "Are you sure you want to delete this?";
 
     }
     
@@ -82,7 +83,13 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
         publisherHelper.assertPublisherExists(TestData.RENAME_PUBLISHER_NAME);
     }
     
-    
-    
+    @Test
+    public void stepD_deleteExistingPublisher() {
+        publisherHelper.openPage(getAdminWebUrl());
+        publisherHelper.selectPublisherFromList(TestData.RENAME_PUBLISHER_NAME);
+        publisherHelper.deletePublisher(TestData.PUBLISHER_DELETE_MESSAGE, true);
+        publisherHelper.openPage(getAdminWebUrl()); // Reload the page to get the changes in the publisher list
+        publisherHelper.assertPublisherDeleted(TestData.RENAME_PUBLISHER_NAME);
+    }
     
 }
