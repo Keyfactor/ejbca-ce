@@ -29,7 +29,7 @@ pipeline {
                     sh "docker build -t mypeer -m 2GB ."
                     // sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app mypeer"
                     sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
-                    sh "sleep 300"
+                    sh "sleep 400"
                 }
             }
         }
