@@ -12,11 +12,12 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.ejbca.webtest.helper.SearchEndEntitiesHelper;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
@@ -27,10 +28,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * In this test case all possible fields of ENDUSER End Entity with End Entity Profile
@@ -43,110 +41,107 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
 
     private static WebDriver webDriver;
 
-    private static final String eepName = "OnHold";
-    private static final String eeName = "TestEndEntityOnHold";
-
+    private static class TestData {
+        private static final Map<String,String> INPUT_END_ENTITY_FIELDMAP = new HashMap<String, String>();
+        private static final Map<String,String> ASSERTION_FIELDMAP = new HashMap<String, String>();
+        
+        private static final String EEP_NAME = "OnHold";
+        private static final String EE_NAME = "TestEndEntityOnHold";
+        private static final String EE_PASSWORD = "foo123";
+        private static final String EEP_REVOCATION_REASON = "Suspended: Certificate hold";
+        private static final String EEP_TOKEN = "P12 file";
+        
+        // Map holding input fields and corresponding values
+        static {
+            INPUT_END_ENTITY_FIELDMAP.put("Username", EE_NAME);
+            INPUT_END_ENTITY_FIELDMAP.put("Password (or Enrollment Code)", EE_PASSWORD);
+            INPUT_END_ENTITY_FIELDMAP.put("Confirm Password", EE_PASSWORD);
+            INPUT_END_ENTITY_FIELDMAP.put("CN, Common name", EE_NAME);
+        }
+        // Map holding input fields used for asserting existence
+        static {
+            ASSERTION_FIELDMAP.put("Username", null);
+            ASSERTION_FIELDMAP.put("Password (or Enrollment Code)", null);
+            ASSERTION_FIELDMAP.put("Confirm Password", null);
+            ASSERTION_FIELDMAP.put("E-mail address", null);
+            ASSERTION_FIELDMAP.put("CN, Common name", null);
+        }
+        
+    }
+    
     // Helpers
-    private static SearchEndEntitiesHelper searchEeHelper;
+    private static AddEndEntityHelper addEeHelper;
     private static EndEntityProfileHelper eeProfileHelper;
+    private static SearchEndEntitiesHelper searchEeHelper;
     
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
         webDriver = getWebDriver();
-        searchEeHelper = new SearchEndEntitiesHelper(webDriver);
+        addEeHelper = new AddEndEntityHelper(webDriver);
         eeProfileHelper = new EndEntityProfileHelper(webDriver);
+        searchEeHelper = new SearchEndEntitiesHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
-        removeEndEntityByUsername(eeName);
-        removeEndEntityProfileByName(eepName);
+        removeEndEntityByUsername(TestData.EE_NAME);
+        removeEndEntityProfileByName(TestData.EEP_NAME);
         webDriver.quit();
     }
-
-//     TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void testA_addAndEditEep() {
-//        EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
-//        EndEntityProfileHelper.add(webDriver, eepName, true);
-//        EndEntityProfileHelper.edit(webDriver, eepName);
-//        webDriver.findElement(By.id("checkboxuseissuancerevocationreason")).click();
-//        Select selectIssuanceRevocationReason = new Select(webDriver.findElement(By.xpath("//select[@name='selectissuancerevocationreason']")));
-//        selectIssuanceRevocationReason.selectByVisibleText("Suspended: Certificate hold");
-//        EndEntityProfileHelper.save(webDriver, true);
-//    }
+    
+    @Test
+    public void testA_addAndEditEep() {
+        eeProfileHelper.openPage(getAdminWebUrl());
+        eeProfileHelper.addEndEntityProfile(TestData.EEP_NAME);
+        eeProfileHelper.assertEndEntityProfileNameExists(TestData.EEP_NAME);
+        eeProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
+        eeProfileHelper.triggerRevocationReasonSetAfterCertIssuance();
+        eeProfileHelper.setIssuanceRevocationReason(TestData.EEP_REVOCATION_REASON);
+        eeProfileHelper.saveEndEntityProfile();
+    }
 
     @Test
     public void testB_addEndEntity() {
-        // Go to "Add End Entity"
-        webDriver.get(getAdminWebUrl());
-        WebElement addEeLink = webDriver.findElement(By.xpath("//a[contains(@href,'/ejbca/adminweb/ra/addendentity.jsp')]"));
-        addEeLink.click();
+        addEeHelper.openPage(getAdminWebUrl());
+        addEeHelper.setEndEntityProfile(TestData.EEP_NAME);
+        
+        addEeHelper.assertFieldsExists(TestData.ASSERTION_FIELDMAP);
+        addEeHelper.assertCertificateProfileSelected("ENDUSER");
+        addEeHelper.assertTokenSelected("User Generated");
+        addEeHelper.assertRevocationReasonSelected(TestData.EEP_REVOCATION_REASON);
+        
+        addEeHelper.setCa(getCaName());
+        addEeHelper.setToken(TestData.EEP_TOKEN);
+        addEeHelper.fillFields(TestData.INPUT_END_ENTITY_FIELDMAP);
 
-        Select dropDownEepPreSelect = new Select(webDriver.findElement(By.xpath("//select[@name='selectendentityprofile']")));
-        dropDownEepPreSelect.selectByVisibleText(eepName);
-
-        try {
-            webDriver.findElement(By.xpath("//input[@name='textfieldusername']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldpassword']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldconfirmpassword']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldemail']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldemaildomain']"));
-            webDriver.findElement(By.xpath("//input[@name='textfieldsubjectdn0']"));
-            webDriver.findElement(By.xpath("//input[@name='buttonadduser']"));
-            webDriver.findElement(By.xpath("//input[@name='buttonreset']"));
-            Select selectCertProfile = new Select(webDriver.findElement(By.xpath("//select[@name='selectcertificateprofile']")));
-            assertEquals("'ENDUSER' was not the preset Certificate Profile", "ENDUSER", selectCertProfile.getFirstSelectedOption().getText());
-            Select selectCa = new Select(webDriver.findElement(By.xpath("//select[@name='selectca']")));
-            selectCa.selectByVisibleText(getCaName());
-            Select selectToken = new Select(webDriver.findElement(By.xpath("//select[@name='selecttoken']")));
-            assertEquals("'User Generated' was not the first selected option in 'Token'", "User Generated",
-                    selectToken.getFirstSelectedOption().getText());
-            // Side step from the ECAQA test but we need it to enroll in RA web.
-            selectToken.selectByVisibleText("P12 file");
-            Select selectIssuanceRecocationReason = new Select(webDriver.findElement(By.xpath("//select[@name='selectissuancerevocationreason']")));
-            assertEquals("'Suspended: Certificate hold' was not preset in 'Revocation reason to set after certificate issuance'",
-                    "Suspended: Certificate hold", selectIssuanceRecocationReason.getFirstSelectedOption().getText());
-        } catch (NoSuchElementException e) {
-            fail("Could not locate element in 'Add End Entity page' when EEP" + eepName + " was selected.\n" + e.getMessage());
-        }
-
-        webDriver.findElement(By.xpath("//input[@name='textfieldusername']")).sendKeys(eeName);
-        webDriver.findElement(By.xpath("//input[@name='textfieldsubjectdn0']")).sendKeys(eeName);
-        webDriver.findElement(By.xpath("//input[@name='textfieldpassword']")).sendKeys("foo123");
-        webDriver.findElement(By.xpath("//input[@name='textfieldconfirmpassword']")).sendKeys("foo123");
-        webDriver.findElement(By.xpath("//input[@name='buttonadduser']")).click();
-
-        WebElement messageInfo = webDriver.findElement(By.xpath("//div[@class='message info']"));
-        assertEquals("Unexpected status text after adding end entity", "End Entity TestEndEntityOnHold added successfully.", messageInfo.getText());
+        addEeHelper.addEndEntity();
+        addEeHelper.assertEndEntityAddedMessageDisplayed(TestData.EE_NAME);
     }
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void testC_verifyEndEntity() {
-//        searchEeHelper.openPage(getAdminWebUrl());
-//        searchEeHelper.fillSearchCriteria(eeName, null, null, null);
-//        searchEeHelper.clickSearchByUsernameButton();
-//        searchEeHelper.assertNumberOfSearchResults(1);
-//        searchEeHelper.clickViewEndEntityForRow(eeName);
-//        searchEeHelper.assertPopupContainsText("Suspended: Certificate hold");
-//    }
+    @Test
+    public void testC_verifyEndEntity() {
+        searchEeHelper.openPage(getAdminWebUrl());
+        searchEeHelper.fillSearchCriteria(TestData.EE_NAME, null, null, null);
+        searchEeHelper.clickSearchByUsernameButton();
+        searchEeHelper.assertNumberOfSearchResults(1);
+        searchEeHelper.clickViewEndEntityForRow(TestData.EE_NAME);
+        searchEeHelper.assertPopupContainsText(TestData.EEP_REVOCATION_REASON);
+    }
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void testD_enroll() {
-//        webDriver.get(getRaWebUrl() + "enrollwithusername.xhtml");
-//        webDriver.findElement(By.id("enrollWithUsernameForm:username")).sendKeys(eeName);
-//        webDriver.findElement(By.id("enrollWithUsernameForm:enrollmentCode")).sendKeys("foo123");
-//        webDriver.findElement(By.id("enrollWithUsernameForm:checkButton")).click();
-//        webDriver.findElement(By.id("enrollWithUsernameForm:generatePkcs12")).click();
-//        
-//        searchEeHelper.openPage(getAdminWebUrl());
-//        searchEeHelper.fillSearchCriteria(eeName, null, null, null);
-//        searchEeHelper.clickSearchByUsernameButton();
-//        searchEeHelper.assertNumberOfSearchResults(1);
-//        searchEeHelper.clickViewEndEntityForRow(eeName);
-//        searchEeHelper.assertPopupContainsText("Revocation reasons : Certificate hold");
-//    }
+    @Test
+    public void testD_enroll() {
+        webDriver.get(getRaWebUrl() + "enrollwithusername.xhtml");
+        webDriver.findElement(By.id("enrollWithUsernameForm:username")).sendKeys(TestData.EE_NAME);
+        webDriver.findElement(By.id("enrollWithUsernameForm:enrollmentCode")).sendKeys(TestData.EE_PASSWORD);
+        webDriver.findElement(By.id("enrollWithUsernameForm:checkButton")).click();
+        webDriver.findElement(By.id("enrollWithUsernameForm:generatePkcs12")).click();
+        
+        searchEeHelper.openPage(getAdminWebUrl());
+        searchEeHelper.fillSearchCriteria(TestData.EE_NAME, null, null, null);
+        searchEeHelper.clickSearchByUsernameButton();
+        searchEeHelper.assertNumberOfSearchResults(1);
+        searchEeHelper.clickViewCertificateForRow(TestData.EE_NAME);
+        searchEeHelper.assertPopupContainsText("Revocation reasons : Certificate hold");
+    }
 }
