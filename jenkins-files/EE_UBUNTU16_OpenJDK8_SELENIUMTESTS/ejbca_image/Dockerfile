@@ -37,6 +37,10 @@ ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-ja
 # Set the working directory to EJBCA rource root folder
 WORKDIR /app/ejbca
 
+# copy p12 folder to /opt in the container for runtime-usage
+ADD p12 /opt/p12
+RUN chmod 777 /opt/p12
+
 # copy ejbca conf to /opt in the container for runtime-usage
 ADD conf /opt/conf
 RUN chmod 777 /opt/conf

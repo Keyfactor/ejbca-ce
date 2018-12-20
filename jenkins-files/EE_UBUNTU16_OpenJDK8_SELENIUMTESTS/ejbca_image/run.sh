@@ -1,6 +1,7 @@
 #!/bin/sh
 
 cp /opt/conf/* /app/ejbca/conf/
+cp /opt/p12/* /app/ejbca/p12/
 cp /opt/ManagementCA.pem /app/ejbca/ManagementCA.pem
 
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
