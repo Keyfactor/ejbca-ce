@@ -685,14 +685,14 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
-					<h:outputText value="#{editCAsMBean.caEncodedValidity}"
-						rendered="#{editCAsMBean.caExternal or editCAsMBean.editCA and not editCAsMBean.caUninitialized and editCAsMBean.signByExternal}" />
+					<h:outputText value="#{editCAsMBean.hideValidity ? web.text.NOTUSED : editCAsMBean.caEncodedValidity}"
+						rendered="#{editCAsMBean.caExternal or editCAsMBean.signByExternal}" />
 					<h:inputText name="textfieldvalidity" id="textfieldvalidity"
 						size="25" maxlength="225"
 						value="#{editCAsMBean.caEncodedValidity}"
 						title="#{web.text.FORMAT_TIME_YMODHMS} #{web.text.OR} #{web.text.FORMAT_ISO8601}"
-						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.editCA or editCAsMBean.caUninitialized or not editCAsMBean.signByExternal}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal and !editCAsMBean.caUninitialized}"
+						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.signByExternal}"
+						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.signedByExternal}"
 						label="Ca Validity" styleClass="mandatory"
 						required="true" >
 					<f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.CRLFieldValidator"/>
@@ -700,10 +700,11 @@
 					
 					<h:outputText styleClass="help"
 						value="#{web.text.CERT_VALIDITY_CA_HELP}"
-						rendered="#{editCAsMBean.editCA}" style="margin-left: 3px;"/> 
+						rendered="#{editCAsMBean.editCA and not editCAsMBean.hideValidity}" style="margin-left: 3px;"/> 
 					<br />	
 					<h:outputText styleClass="smallHelp"
-						value="#{editCAsMBean.certificateValidityHelp}"/>
+						value="#{editCAsMBean.certificateValidityHelp}"
+						rendered="#{not editCAsMBean.hideValidity}"/>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.caTypeX509}">
