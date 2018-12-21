@@ -222,7 +222,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param incrl The DER coded CRL to be stored.
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param number CRL number.
-     * @param userDN if an DN object is not found in the certificate use object from user data instead, can be null.
+     * @param userDN if a DN object is not found in the CRL use object from user data instead, can be null, but for a CRL this is typically the issuerDN.
      *
      * @return true if storage was successful.
      *
