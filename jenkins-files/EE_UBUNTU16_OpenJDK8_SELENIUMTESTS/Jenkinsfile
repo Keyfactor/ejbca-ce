@@ -39,14 +39,22 @@ pipeline {
                         waitUntil {
                            script {
                              def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true
-                             return (r >= 1);
+                             return (r < 1);
                            }
                         }
                     }
                 }
             }
+            steps {
+                sh "mkdir ear || true"
+                dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/selenium_image') {
+                    sh "docker build -t seleniumtests -m 2GB ."
+                    sh "docker run --name seleniumtests --net=selenium-network -p 4444:4444 --shm-size=2g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
+                }
+            }
         }
         
+        /*
         stage('run Selenium tests') {
             steps {
                 sh "mkdir ear || true"
@@ -56,6 +64,7 @@ pipeline {
                 }
             }
         }
+        */
     }
     post {
         always {
