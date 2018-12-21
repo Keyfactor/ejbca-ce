@@ -181,7 +181,7 @@
 					</script>
 						<h:commandButton value="#{web.text.SAVEANDTESTCONNECTION}" style="margin-right:3px;" action="#{editPublisher.savePublisherAndTestConnection()}" onclick="return checkPassword('#{web.text.PASSWORDSDOESNTMATCH}')"/>
 						<h:commandButton value="#{web.text.SAVE}" style="margin-right:3px;" action="#{editPublisher.savePublisher()}" onclick="return checkPassword('#{web.text.PASSWORDSDOESNTMATCH}')"/>
-						<h:button value="#{web.text.CANCEL}" outcome="listpublishers?faces-redirect=true" />
+						<h:button id="cancelEditPublisher" value="#{web.text.CANCEL}" outcome="listpublishers?faces-redirect=true" />
 					</h:panelGroup>
 				</h:panelGrid>
 			</h:form>
