@@ -12,14 +12,15 @@
  *************************************************************************/
 package org.ejbca.webtest.helper;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Helper class used in publisher page tests.
@@ -28,7 +29,6 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class PublisherHelper extends BaseHelper {
-
     
     public static class Page {
         // General
@@ -40,17 +40,18 @@ public class PublisherHelper extends BaseHelper {
         static final By BUTTON_RENAME_PUBLISHER = By.id("listPublishers:renameButton");
         static final By SELECT_PUBLISHER = By.id("listPublishers:selectPublisher");
         static final By DELETE_PUBLISHER = By.id("listPublishers:deleteButton");
+        static final By EDIT_PUBLISHER = By.id("listPublishers:editButton");
+        static final By EDIT_PUBLISHER_TITLE = By.id("publisherTitle");
+        static final By CANCEL_EDIT_PUBLISHER = By.id("selectPublisher:cancelEditPublisher");
     } 
     
     public PublisherHelper(WebDriver webDriver) {
         super(webDriver);
     }
-    
 
     public void openPage(final String webUrl) {
         openPageByLinkAndAssert(webUrl, Page.PAGE_LINK, Page.PAGE_URI);
     }
-    
     
     public void addPublisher(final String publisherName) {
         fillInput(Page.INPUT_PUBLISHER_NAME, publisherName);
@@ -85,5 +86,24 @@ public class PublisherHelper extends BaseHelper {
     public void deletePublisher(final String expectedAlertMessage, final boolean isConfirmed) {
         clickLink(Page.DELETE_PUBLISHER);
         assertAndConfirmAlertPopUp(expectedAlertMessage, isConfirmed);
+    }
+    
+    public void editPublisher() {
+        clickLink(Page.EDIT_PUBLISHER);
+    }
+    
+    public void assertEditPublisherTitleExistsAndCorrect(final String expectedTitle) {
+        assertEquals( 
+                "Unexpected value for publisher page title",
+                expectedTitle,
+                getElementText(Page.EDIT_PUBLISHER_TITLE));
+    }
+    
+    public void cancelEditPublisher() {
+        clickLink(Page.CANCEL_EDIT_PUBLISHER);
+    }
+
+    public void assertBackToListPublisherPage() {
+        assertPageUri(Page.PAGE_URI);        
     }
 }
