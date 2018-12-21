@@ -39,7 +39,7 @@ pipeline {
                         waitUntil {
                            script {
                              def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true
-                             echo $r
+                             echo r
                              return (r >= 1);
                            }
                         }
