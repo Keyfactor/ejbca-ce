@@ -478,13 +478,23 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
     
     //Actions
     public String savePublisher() throws AuthorizationDeniedException {
-        prepareForSave();
+        try {
+            prepareForSave();
+        } catch (PublisherDoesntExistsException | PublisherExistsException e) {
+            addErrorMessage(e.getMessage());
+            return StringUtils.EMPTY;
+        }
         publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
         return "listpublishers?faces-redirect=true";
     }
     
     public void savePublisherAndTestConnection() throws AuthorizationDeniedException {
-        prepareForSave();
+        try {
+            prepareForSave();
+        } catch (PublisherDoesntExistsException | PublisherExistsException e) {
+            addErrorMessage(e.getMessage());
+            return;
+        }
         publisherSession.changePublisher(getAdmin(), listPublishers.getSelectedPublisherName(), publisher);
         try {
             publisherSession.testConnection(publisherId);
@@ -495,7 +505,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
     }
     
-    private void prepareForSave() {
+    private void prepareForSave() throws PublisherDoesntExistsException, PublisherExistsException {
         //Set General Settings
         setPublisherQueueAndGeneralSettings();
         
@@ -512,11 +522,7 @@ public class EditPublisherManagedBean extends BaseManagedBean implements Seriali
         }
         
         if (publisher instanceof MultiGroupPublisher) {
-            try {
-                multiGroupPublisherMBData.setMultiGroupPublisherParameters((MultiGroupPublisher) publisher);
-            } catch (PublisherDoesntExistsException | PublisherExistsException e) {
-                addErrorMessage(e.getMessage());
-            }
+            multiGroupPublisherMBData.setMultiGroupPublisherParameters((MultiGroupPublisher) publisher);
         }
         
         if (publisher instanceof CustomPublisherContainer) {
