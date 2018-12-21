@@ -141,7 +141,6 @@ public class CAInterfaceBean implements Serializable {
     private SignSession signsession; 
    
     private CADataHandler cadatahandler;
-    private PublisherDataHandler publisherdatahandler;
 
     private boolean initialized;
     private AuthenticationToken authenticationToken;
@@ -171,7 +170,6 @@ public class CAInterfaceBean implements Serializable {
           this.ejbcawebbean = ejbcawebbean;
 
           cadatahandler = new CADataHandler(authenticationToken, ejbLocalHelper, ejbcawebbean);
-          publisherdatahandler = new PublisherDataHandler(authenticationToken, publishersession);
           initialized =true;
         }
     }
@@ -213,11 +211,6 @@ public class CAInterfaceBean implements Serializable {
     
     public int[] getPublisherQueueLength(int publisherId, int[] intervalLower, int[] intervalUpper) {
     	return publisherqueuesession.getPendingEntriesCountForPublisherInIntervals(publisherId, intervalLower, intervalUpper);
-    }
-    
-    @Deprecated
-    public PublisherDataHandler getPublisherDataHandler() {    
-    	return this.publisherdatahandler;
     }
     
     public CADataHandler getCADataHandler(){
