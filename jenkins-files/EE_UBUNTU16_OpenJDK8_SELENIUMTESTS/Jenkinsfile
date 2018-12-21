@@ -31,9 +31,19 @@ pipeline {
                     // sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app mypeer"
                     sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
                     //sh "docker logs -f mypeer"
-                    sh """
-                        while [ 'docker logs mypeer 2>&1 | grep -c -m 1 \"import cert commands done\"' -lt 1 ]; do sleep 5 done;
-                    """  
+                    
+                    //sh """
+                    //    while [ 'docker logs mypeer 2>&1 | grep -c -m 1 \"import cert commands done\"' -lt 1 ]; do sleep 5 done;
+                    //"""
+                    timeout(7) {
+                        waitUntil {
+                           script {
+                             def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true
+                             echo $r
+                             return (r >= 1);
+                           }
+                        }
+                    }
                 }
             }
         }
