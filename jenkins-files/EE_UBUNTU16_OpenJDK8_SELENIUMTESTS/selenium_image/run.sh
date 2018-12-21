@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# try those with sudo
+# add the seluser guy to root group
 cp /opt/ejbca_conf/* /app/ejbca/conf/
 cp /opt/ejbca_webtest_conf/* /app/ejbca/modules/ejbca-webtest/conf/
 
