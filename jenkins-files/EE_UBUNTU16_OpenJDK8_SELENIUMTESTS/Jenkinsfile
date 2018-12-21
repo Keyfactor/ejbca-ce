@@ -28,13 +28,10 @@ pipeline {
                 sh "chmod 777 " + "$env.WORKSPACE"
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/ejbca_image') {
                     sh "docker build -t mypeer -m 2GB ."
+                    
                     // sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app mypeer"
                     sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
-                    //sh "docker logs -f mypeer"
                     
-                    //sh """
-                    //    while [ 'docker logs mypeer 2>&1 | grep -c -m 1 \"import cert commands done\"' -lt 1 ]; do sleep 5 done;
-                    //"""
                     timeout(7) {
                         waitUntil {
                            script {
@@ -45,16 +42,8 @@ pipeline {
                     }
                 }
             }
-            steps {
-                sh "mkdir ear || true"
-                dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/selenium_image') {
-                    sh "docker build -t seleniumtests -m 2GB ."
-                    sh "docker run --name seleniumtests --net=selenium-network -p 4444:4444 --shm-size=2g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
-                }
-            }
         }
         
-        /*
         stage('run Selenium tests') {
             steps {
                 sh "mkdir ear || true"
@@ -64,7 +53,6 @@ pipeline {
                 }
             }
         }
-        */
     }
     post {
         always {
