@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.webtest.WebTestBase;
@@ -32,17 +35,20 @@ import org.openqa.selenium.WebDriver;
 public class EcaQa33_PublishersManagement extends WebTestBase {
 
     private static WebDriver webDriver;
-
+    
     // Helpers
     private static PublisherHelper publisherHelper; 
     
     // Test Data
     private static class TestData {
-        static final String PUBLISHER_NAME = "MyPublisher";
-        static final String CLONE_PUBLISHER_NAME = "TestPublisher";
-        static final String RENAME_PUBLISHER_NAME = "NewPublisher";
+        static final Map<String, String> PUBLISHERS;
+        static {
+            PUBLISHERS = new HashMap<>();
+            PUBLISHERS.put("PUBLISHER_NAME", "MyPublisher");
+            PUBLISHERS.put("CLONE_PUBLISHER_NAME", "TestPublisher");
+            PUBLISHERS.put("RENAME_PUBLISHER_NAME", "NewPublisher");
+        }
         static final String PUBLISHER_DELETE_MESSAGE = "Are you sure you want to delete this?";
-
     }
     
     @BeforeClass
@@ -54,42 +60,51 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
 
     @AfterClass
     public static void exit() throws ReferencesToItemExistException, AuthorizationDeniedException {
-        removePublisherByName(TestData.PUBLISHER_NAME);
-        removePublisherByName(TestData.CLONE_PUBLISHER_NAME);
-        removePublisherByName(TestData.RENAME_PUBLISHER_NAME);
+        for (final String publisherName : TestData.PUBLISHERS.values()) {
+            removePublisherByName(publisherName);
+        }
         afterClass();
     }
     
     @Test
     public void stepA_addPublisher() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.addPublisher(TestData.PUBLISHER_NAME);
-        publisherHelper.assertPublisherExists(TestData.PUBLISHER_NAME);
+        publisherHelper.addPublisher(TestData.PUBLISHERS.get("PUBLISHER_NAME"));
+        publisherHelper.assertPublisherExists(TestData.PUBLISHERS.get("PUBLISHER_NAME"));
     }
     
     @Test
     public void stepB_cloneExistingPublisher() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.PUBLISHER_NAME);
-        publisherHelper.clonePublisher(TestData.CLONE_PUBLISHER_NAME);
-        publisherHelper.assertPublisherExists(TestData.CLONE_PUBLISHER_NAME);
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_NAME"));
+        publisherHelper.clonePublisher(TestData.PUBLISHERS.get("CLONE_PUBLISHER_NAME"));
+        publisherHelper.assertPublisherExists(TestData.PUBLISHERS.get("CLONE_PUBLISHER_NAME"));
     }
     
     @Test
     public void stepC_renameExistingPublisher() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.CLONE_PUBLISHER_NAME);
-        publisherHelper.renamePublisher(TestData.RENAME_PUBLISHER_NAME);
-        publisherHelper.assertPublisherExists(TestData.RENAME_PUBLISHER_NAME);
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("CLONE_PUBLISHER_NAME"));
+        publisherHelper.renamePublisher(TestData.PUBLISHERS.get("RENAME_PUBLISHER_NAME"));
+        publisherHelper.assertPublisherExists(TestData.PUBLISHERS.get("RENAME_PUBLISHER_NAME"));
     }
     
     @Test
     public void stepD_deleteExistingPublisher() {
         publisherHelper.openPage(getAdminWebUrl());
-        publisherHelper.selectPublisherFromList(TestData.RENAME_PUBLISHER_NAME);
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("RENAME_PUBLISHER_NAME"));
         publisherHelper.deletePublisher(TestData.PUBLISHER_DELETE_MESSAGE, true);
         publisherHelper.openPage(getAdminWebUrl()); // Reload the page to get the changes in the publisher list
-        publisherHelper.assertPublisherDeleted(TestData.RENAME_PUBLISHER_NAME);
+        publisherHelper.assertPublisherDeleted(TestData.PUBLISHERS.get("RENAME_PUBLISHER_NAME"));
     }
     
+    @Test
+    public void stepE_editPublisher() {
+        publisherHelper.openPage(getAdminWebUrl());
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_NAME"));
+        publisherHelper.editPublisher();
+        publisherHelper.assertEditPublisherTitleExistsAndCorrect("Publisher : " + TestData.PUBLISHERS.get("PUBLISHER_NAME"));
+        publisherHelper.cancelEditPublisher();
+        publisherHelper.assertBackToListPublisherPage();
+    }
 }
