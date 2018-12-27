@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
@@ -28,7 +27,6 @@ import org.ejbca.core.model.ca.publisher.MultiGroupPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * 
@@ -43,9 +41,7 @@ public final class MultiGroupPublisherMBData implements Serializable {
 
     private static final Logger log = Logger.getLogger(MultiGroupPublisherMBData.class);
 
-    private final EjbLocalHelper ejb = new EjbLocalHelper();
-
-    private final PublisherSessionLocal publisherSession = ejb.getPublisherSession();
+    private final PublisherSessionLocal publisherSession = new EjbLocalHelper().getPublisherSession();
 
     private String multiGroupPublisherGroups;
     
@@ -67,19 +63,18 @@ public final class MultiGroupPublisherMBData implements Serializable {
 
     public void setMultiGroupPublisherParameters(final MultiGroupPublisher multiGroupPublisher)
             throws PublisherDoesntExistsException, PublisherExistsException {
-        HashMap<String, Integer> publisherNameToIdMap = EjbcaJSFHelper.getBean().getEjbcaWebBean().getEjb().getPublisherSession()
-                .getPublisherNameToIdMap();
-        List<TreeSet<Integer>> multiPublisherGroups = convertMultiPublishersStringToData(publisherNameToIdMap, multiGroupPublisherGroups);
+        final HashMap<String, Integer> publisherNameToIdMap = publisherSession.getPublisherNameToIdMap();
+        final List<TreeSet<Integer>> multiPublisherGroups = convertMultiPublishersStringToData(publisherNameToIdMap, multiGroupPublisherGroups);
         multiGroupPublisher.setPublisherGroups(multiPublisherGroups);
     }
 
     private String getMultiPublishersDataAsString(final MultiGroupPublisher publisher) {
         final List<TreeSet<Integer>> publisherGroups = publisher.getPublisherGroups();
-        final Map<Integer, String> publisherIdToNameMap = publisherSession.getPublisherIdToNameMap();
+        final HashMap<Integer, String> publisherIdToNameMap = publisherSession.getPublisherIdToNameMap();
         return convertMultiPublishersDataToString(publisherIdToNameMap, publisherGroups);
     }
 
-    private String convertMultiPublishersDataToString(final Map<Integer, String> publisherIdToNameMap, final List<TreeSet<Integer>> data) {
+    private String convertMultiPublishersDataToString(final HashMap<Integer, String> publisherIdToNameMap, final List<TreeSet<Integer>> data) {
         StringBuffer multiPublishersDataAsString = new StringBuffer();
         String prefix = "";
         for (final TreeSet<Integer> group : data) {
@@ -106,7 +101,7 @@ public final class MultiGroupPublisherMBData implements Serializable {
         return multiPublishersDataAsString.toString();
     }
 
-    private List<TreeSet<Integer>> convertMultiPublishersStringToData(final Map<String, Integer> publisherNameToIdMap, final String textareaData)
+    private List<TreeSet<Integer>> convertMultiPublishersStringToData(final HashMap<String, Integer> publisherNameToIdMap, final String textareaData)
             throws PublisherDoesntExistsException, PublisherExistsException {
         final TreeSet<Integer> selectedPublishers = new TreeSet<>();
         final List<String> listOfPublisherNames = Arrays.asList(textareaData.split("\n"));
