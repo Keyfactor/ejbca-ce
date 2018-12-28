@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.openqa.selenium.By;
@@ -43,6 +44,11 @@ public class PublisherHelper extends BaseHelper {
         static final By EDIT_PUBLISHER = By.id("listPublishers:editButton");
         static final By EDIT_PUBLISHER_TITLE = By.id("publisherTitle");
         static final By CANCEL_EDIT_PUBLISHER = By.id("selectPublisher:cancelEditPublisher");
+        static final By SELECT_PUBLISHER_TYPE = By.id("selectPublisher:selectpublishertype");
+        static final By AVAILABLE_PUBLISHERS_LABEL = By.id("selectPublisher:multigrouppublisherpage:availablepublisherslabel");
+        static final By PUBLISHER_GROUPS_TEXT_AREA = By.id("selectPublisher:multigrouppublisherpage:publishergroupstextarea");
+        static final By AVAILABLE_PUBLISHERS = By.id("selectPublisher:multigrouppublisherpage:availablepublishers");
+        
     } 
     
     public PublisherHelper(WebDriver webDriver) {
@@ -105,5 +111,20 @@ public class PublisherHelper extends BaseHelper {
 
     public void assertBackToListPublisherPage() {
         assertPageUri(Page.PAGE_URI);        
+    }
+
+    public void assertPublishersExist(final Collection<String> publishers) {
+        publishers.forEach(publisher -> assertPublisherExists(publisher));
+    }
+
+    public void setPublisherType(final String publisherType) {
+        selectOptionByValue(Page.SELECT_PUBLISHER_TYPE, publisherType);
+    }
+
+    public void assertMultiGroupPublisherPage(final String expectedAvailablePublishers) {
+        assertElementExists(Page.AVAILABLE_PUBLISHERS_LABEL, "Available publishers element not found in the page!");
+        assertElementExists(Page.PUBLISHER_GROUPS_TEXT_AREA, "Publisher groups text area not found in the page!");
+        assertEquals("Unexpected value for the available publishers", expectedAvailablePublishers, getElementText(Page.AVAILABLE_PUBLISHERS));
+        
     }
 }
