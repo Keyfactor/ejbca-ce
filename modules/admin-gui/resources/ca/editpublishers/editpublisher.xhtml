@@ -74,7 +74,8 @@
 						<h:outputText value="#{editPublisher.currentPublisherName}"
 							rendered="#{editPublisher.readOnly or editPublisher.deprecated}" />
 						<h:selectOneMenu value="#{editPublisher.selectedPublisherType}" 
-										 rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}">
+										 rendered="#{!editPublisher.readOnly and !editPublisher.deprecated}"
+										 id="selectpublishertype">
 							<f:selectItems value="#{editPublisher.availablePublisherTypes}" />
 							<f:ajax render=":messages @form" listener="#{editPublisher.changePublisherType}"/>
 						</h:selectOneMenu>
