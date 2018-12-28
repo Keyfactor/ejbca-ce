@@ -51,6 +51,9 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
             PUBLISHERS.put("PUBLISHER_FOUR", "pub4");
         }
         static final String EXPECTED_AVAILABLE_PUBLISHERS = "pub2\npub3\npub4";
+        static final String SAVE_AND_TEST_CONNECTION_SUCCESS_MESSAGE = "Connection Tested Successfully";
+        static final String NONEXISTING_PUBLISHER = "blabla";
+        static final String SAVE_PUBLISHER_NONEXISTING_MESSAGE = "Could not find publisher: \\\"blabla\\\"";
     }
     
     @BeforeClass
@@ -84,6 +87,17 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
         publisherHelper.editPublisher();
         publisherHelper.setPublisherType(String.valueOf(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
         publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS);
-
+        publisherHelper.saveAndTestConnection();
+        publisherHelper.assertHasInfoMessage(TestData.SAVE_AND_TEST_CONNECTION_SUCCESS_MESSAGE);
+    }
+    
+    @Test
+    public void stepC_failWhenUnknowPublisherAddedToGroup() {
+        publisherHelper.openPage(getAdminWebUrl());
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_ONE"));
+        publisherHelper.editPublisher();
+        publisherHelper.setPublisherGroup(TestData.NONEXISTING_PUBLISHER);
+        publisherHelper.save();
+        publisherHelper.assertHasErrorMessage(TestData.SAVE_PUBLISHER_NONEXISTING_MESSAGE);
     }
 }
