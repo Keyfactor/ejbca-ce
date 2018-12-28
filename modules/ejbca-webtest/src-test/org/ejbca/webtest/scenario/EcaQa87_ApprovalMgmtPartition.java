@@ -26,6 +26,9 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This test belongs to a series of tests:
  * <ul>
@@ -50,13 +53,22 @@ public class EcaQa87_ApprovalMgmtPartition extends WebTestBase {
 
     // Test Data
     public static class TestData {
-        private static final String ROLE_NAME = "ECAQA87_AdminRole1";
-        private static final String ROLE_NAME2 = "ECAQA87_AdminRole2";
-        private static final String ROLE_TEMPLATE = "Super Administrators";
-        private static final String APPROVAL_PROFILE_NAME = "ECAQA87_Partitioned Profile";
-        private static final String CA_NAME = "ECAQA87_ApprovalCA";
-        private static final String CA_VALIDITY = "1y";
-        private static final String CERTIFICATE_PROFILE_NAME = "ECAQA87_ApprovalCertificateProfile";
+        static final String ROLE_ANYBODY = "Anybody";
+        static final String ROLE_NAME = "ECAQA87_AdminRole1";
+        static final String ROLE_NAME2 = "ECAQA87_AdminRole2";
+        static final List<String> ROLE_NAMES = Arrays.asList(ROLE_NAME, ROLE_NAME2);
+        static final List<String> ROLE_NAMES_ALL = Arrays.asList(ROLE_ANYBODY, ROLE_NAME, ROLE_NAME2);
+        static final String ROLE_TEMPLATE = "Super Administrators";
+        static final String APPROVAL_PROFILE_NAME = "ECAQA87_Partitioned Profile";
+        static final String APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL = "Partitioned Approval";
+        static final String APPROVAL_PROFILE_REQUEST_EXPIRATION_PERIOD = "7h 43m 20s";
+        static final String APPROVAL_PROFILE_APPROVAL_EXPIRATION_PERIOD = "8h 16m 40s";
+        static final String APPROVAL_PROFILE_STEP_0_PARTITION_NAME_0 = "1:A";
+        static final String APPROVAL_PROFILE_STEP_0_PARTITION_NAME_1 = "1:B";
+        static final String APPROVAL_PROFILE_STEP_1_PARTITION_NAME_0 = "2:A";
+        static final String CA_NAME = "ECAQA87_ApprovalCA";
+        static final String CA_VALIDITY = "1y";
+        static final String CERTIFICATE_PROFILE_NAME = "ECAQA87_ApprovalCertificateProfile";
     }
 
     @BeforeClass
@@ -104,47 +116,98 @@ public class EcaQa87_ApprovalMgmtPartition extends WebTestBase {
 
     @Test
     public void stepB_addApprovalProfile() {
-        // TODO Refactor ECA-7356
         approvalProfilesHelper.openPage(getAdminWebUrl());
         approvalProfilesHelper.addApprovalProfile(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelper.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
-        approvalProfilesHelper.setApprovalProfileType("PARTITIONED_APPROVAL");
-        approvalProfilesHelper.setRequestExpirationPeriod("7h 43m 20s");
-        approvalProfilesHelper.setApprovalExpirationPeriod("8h 16m 40s");
-        approvalProfilesHelper.assertButtonsPresent();
-        approvalProfilesHelper.assertStepsNumber(1, TestData.ROLE_NAME, TestData.ROLE_NAME2);
+        approvalProfilesHelper.setApprovalProfileType(TestData.APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL);
+        approvalProfilesHelper.setRequestExpirationPeriod(TestData.APPROVAL_PROFILE_REQUEST_EXPIRATION_PERIOD);
+        approvalProfilesHelper.setApprovalExpirationPeriod(TestData.APPROVAL_PROFILE_APPROVAL_EXPIRATION_PERIOD);
+        approvalProfilesHelper.assertAddStepButtonPresent();
+        approvalProfilesHelper.assertFormsSaveAndCancelButtonsPresent();
+        approvalProfilesHelper.assertApprovalSteps(1, TestData.ROLE_NAMES_ALL);
     }
 
     @Test
     public void stepC_addStep() {
-        // TODO Refactor ECA-7356
-        // Add a new step
-        approvalProfilesHelper.addStep(TestData.ROLE_NAME, TestData.ROLE_NAME2);
+        approvalProfilesHelper.addStep(2, TestData.ROLE_NAMES);
     }
 
     @Test
     public void stepD_addPartition() {
-        // TODO Refactor ECA-7356
-        approvalProfilesHelper.addPartition(TestData.ROLE_NAME, TestData.ROLE_NAME2);
+        approvalProfilesHelper.addPartition(0, 2, TestData.ROLE_NAMES);
     }
 
     @Test
     public void stepE_addFields() {
-        // TODO Refactor ECA-7356
-        approvalProfilesHelper.addField();
+        approvalProfilesHelper.addField(0, 0, "Check Box");
+        approvalProfilesHelper.addField(0, 1, "Radio Button");
+        approvalProfilesHelper.addFieldRadioButtonLabel(0, 1, "Label1");
+        approvalProfilesHelper.addFieldRadioButtonLabel(0, 1, "Label2");
+        approvalProfilesHelper.addField(1, 0, "Number (Short)");
+        //
+        approvalProfilesHelper.assertApprovalStepPartitionFieldTypeExists(0, 0, "Check Box", 1);
+        approvalProfilesHelper.assertApprovalStepPartitionFieldTypeExists(0, 1, "Radio Button", 2);
+        approvalProfilesHelper.assertApprovalStepPartitionFieldTypeExists(1, 0, "Number (Short)", 1);
     }
 
     @Test
     public void stepF_addNamesAndAdmins() {
-        // TODO Refactor ECA-7356
-        approvalProfilesHelper.addNamesAndAdmins(TestData.ROLE_NAME, TestData.ROLE_NAME2);
+        approvalProfilesHelper.setApprovalStepPartitionName(0, 0, TestData.APPROVAL_PROFILE_STEP_0_PARTITION_NAME_0);
+        approvalProfilesHelper.setApprovalStepPartitionName(0, 1, TestData.APPROVAL_PROFILE_STEP_0_PARTITION_NAME_1);
+        approvalProfilesHelper.setApprovalStepPartitionName(1, 0, TestData.APPROVAL_PROFILE_STEP_1_PARTITION_NAME_0);
+        //
+        approvalProfilesHelper.setApprovalStepPartitionApprovePartitionRole(0, 0, TestData.ROLE_NAME);
+        approvalProfilesHelper.setApprovalStepPartitionViewPartitionRole(0, 0, TestData.ROLE_ANYBODY);
+        approvalProfilesHelper.setApprovalStepPartitionApprovePartitionRole(0, 1, TestData.ROLE_NAME2);
+        approvalProfilesHelper.setApprovalStepPartitionViewPartitionRole(0, 1, TestData.ROLE_ANYBODY);
+        approvalProfilesHelper.setApprovalStepPartitionApprovePartitionRole(1, 0, TestData.ROLE_NAME);
+        approvalProfilesHelper.setApprovalStepPartitionViewPartitionRole(1, 0, TestData.ROLE_ANYBODY);
     }
 
     @Test
     public void stepG_saveAndVerify() {
-        // TODO Refactor ECA-7356
+        // Save profile
         approvalProfilesHelper.saveApprovalProfile();
-        approvalProfilesHelper.saveAndVerify(TestData.ROLE_NAME, TestData.ROLE_NAME2);
+        //
+        approvalProfilesHelper.openViewApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
+        approvalProfilesHelper.assertApprovalProfileTypeSelectedName(TestData.APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL);
+        approvalProfilesHelper.assertRequestExpirationPeriodHasValue(TestData.APPROVAL_PROFILE_REQUEST_EXPIRATION_PERIOD);
+        approvalProfilesHelper.assertApprovalExpirationPeriodHasValue(TestData.APPROVAL_PROFILE_APPROVAL_EXPIRATION_PERIOD);
+        approvalProfilesHelper.assertBackButtonPresent();
+        // Assert form elements are disabled
+        approvalProfilesHelper.assertApprovalProfileTypeIsEnabled(false);
+        approvalProfilesHelper.assertRequestExpirationPeriodIsEnabled(false);
+        approvalProfilesHelper.assertApprovalExpirationPeriodIsEnabled(false);
+        approvalProfilesHelper.assertMaxExtensionTimeIsEnabled(false);
+        approvalProfilesHelper.assertAllowSelfApprovedRequestEditingIsEnabled(false);
+        approvalProfilesHelper.assertApprovalStepPartitionNameIsEnabled(0, 0, false);
+        approvalProfilesHelper.assertApprovalStepPartitionApprovePartitionRoleIsEnabled(0, 0, false);
+        approvalProfilesHelper.assertApprovalStepPartitionViewPartitionRoleIsEnabled(0, 0, false);
+        approvalProfilesHelper.assertApprovalStepPartitionNameIsEnabled(0, 1, false);
+        approvalProfilesHelper.assertApprovalStepPartitionApprovePartitionRoleIsEnabled(0, 1, false);
+        approvalProfilesHelper.assertApprovalStepPartitionViewPartitionRoleIsEnabled(0, 1, false);
+        approvalProfilesHelper.assertApprovalStepPartitionNameIsEnabled(1, 0, false);
+        approvalProfilesHelper.assertApprovalStepPartitionApprovePartitionRoleIsEnabled(1, 0, false);
+        approvalProfilesHelper.assertApprovalStepPartitionViewPartitionRoleIsEnabled(1, 0, false);
+        // Assert names of partitions
+        approvalProfilesHelper.assertApprovalStepPartitionNameHasValue(0, 0, TestData.APPROVAL_PROFILE_STEP_0_PARTITION_NAME_0);
+        approvalProfilesHelper.assertApprovalStepPartitionNameHasValue(0, 1, TestData.APPROVAL_PROFILE_STEP_0_PARTITION_NAME_1);
+        approvalProfilesHelper.assertApprovalStepPartitionNameHasValue(1, 0, TestData.APPROVAL_PROFILE_STEP_1_PARTITION_NAME_0);
+        // Assert Step 1 Partition 1 has roles
+        approvalProfilesHelper.assertApprovalStepPartitionApprovePartitionRolesHasSelectionSize(0, 0, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasApprovePartitionRole(0, 0, TestData.ROLE_NAME);
+        approvalProfilesHelper.assertApprovalStepPartitionViewPartitionRolesHasSelectionSize(0, 0, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasViewPartitionRole(0, 0, TestData.ROLE_ANYBODY);
+        // Assert Step 1 Partition 2 has roles
+        approvalProfilesHelper.assertApprovalStepPartitionApprovePartitionRolesHasSelectionSize(0, 1, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasApprovePartitionRole(0, 1, TestData.ROLE_NAME2);
+        approvalProfilesHelper.assertApprovalStepPartitionViewPartitionRolesHasSelectionSize(0, 1, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasViewPartitionRole(0, 1, TestData.ROLE_ANYBODY);
+        // Assert Step 2 Partition 1 has roles
+        approvalProfilesHelper.assertApprovalStepPartitionApprovePartitionRolesHasSelectionSize(1, 0, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasApprovePartitionRole(1, 0, TestData.ROLE_NAME);
+        approvalProfilesHelper.assertApprovalStepPartitionViewPartitionRolesHasSelectionSize(1, 0, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasViewPartitionRole(1, 0, TestData.ROLE_ANYBODY);
     }
 
     @Test
