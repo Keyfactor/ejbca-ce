@@ -48,7 +48,9 @@ public class PublisherHelper extends BaseHelper {
         static final By AVAILABLE_PUBLISHERS_LABEL = By.id("selectPublisher:multigrouppublisherpage:availablepublisherslabel");
         static final By PUBLISHER_GROUPS_TEXT_AREA = By.id("selectPublisher:multigrouppublisherpage:publishergroupstextarea");
         static final By AVAILABLE_PUBLISHERS = By.id("selectPublisher:multigrouppublisherpage:availablepublishers");
-        
+        static final By BUTTON_SAVE_AND_TEST_CONNECTION = By.id("selectPublisher:saveAndTestConnection");
+        static final By BUTTON_SAVE = By.id("selectPublisher:save");
+
     } 
     
     public PublisherHelper(WebDriver webDriver) {
@@ -125,6 +127,25 @@ public class PublisherHelper extends BaseHelper {
         assertElementExists(Page.AVAILABLE_PUBLISHERS_LABEL, "Available publishers element not found in the page!");
         assertElementExists(Page.PUBLISHER_GROUPS_TEXT_AREA, "Publisher groups text area not found in the page!");
         assertEquals("Unexpected value for the available publishers", expectedAvailablePublishers, getElementText(Page.AVAILABLE_PUBLISHERS));
-        
+    }
+
+    public void saveAndTestConnection() {
+        clickLink(Page.BUTTON_SAVE_AND_TEST_CONNECTION);
+    }
+
+    public void assertHasInfoMessage(final String infoMessage) {
+        assertInfoMessageAppears(infoMessage, "Connection tested successfully message element not found!", "Unexpected test and save connection message!");
+    }
+
+    public void setPublisherGroup(final String nonexistingPublisher) {
+        fillTextarea(Page.PUBLISHER_GROUPS_TEXT_AREA, nonexistingPublisher, false);
+    }
+
+    public void save() {
+        clickLink(Page.BUTTON_SAVE);
+    }
+
+    public void assertHasErrorMessage(final String errorMessage) {
+        assertErrorMessageAppears(errorMessage, "Publisher non existing message element not found!", "Unexpected save publisher message!");
     }
 }
