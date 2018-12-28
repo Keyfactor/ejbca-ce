@@ -158,11 +158,19 @@ public class BaseHelper {
      * @param linkId locator.
      */
     protected void clickLink(final By linkId) {
-        final WebElement linkWebElement = findElement(linkId);
+        clickLink(findElement(linkId));
+    }
+
+    /**
+     * Asserts a link (link, button, input, checkbox) by given locator exists and clicks it.
+     *
+     * @param linkWebElement link web element.
+     */
+    protected void clickLink(final WebElement linkWebElement) {
         assertNotNull("Page link was not found", linkWebElement);
         linkWebElement.click();
     }
-    
+
     /**
      * Toggles a check box to the desired state (checked or unchecked)
      * @param linkId check box locator
@@ -194,7 +202,16 @@ public class BaseHelper {
      * @param inputString input text.
      */
     protected void fillInput(final By inputId, final String inputString) {
-        final WebElement inputWebElement = findElement(inputId);
+        fillInput(findElement(inputId), inputString);
+    }
+
+    /**
+     * Asserts a given input exists and fills a text into it.
+     *
+     * @param inputWebElement input web element.
+     * @param inputString input text.
+     */
+    protected void fillInput(final WebElement inputWebElement, final String inputString) {
         assertNotNull("Page input was not found", inputWebElement);
         inputWebElement.clear();
         inputWebElement.sendKeys(inputString);
@@ -257,10 +274,9 @@ public class BaseHelper {
      *
      * @param selectId locator.
      * @param selectionOption option's names.
-     * @param dependentElementId  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
-    protected void selectOptionByName(final By selectId, final String selectionOption, final By dependentElementId) {
-        selectOptionsByName(selectId, Collections.singletonList(selectionOption), false, dependentElementId);
+    protected void selectOptionByName(final By selectId, final String selectionOption) {
+        selectOptionByName(selectId, selectionOption, false, null);
     }
 
     /**
@@ -268,9 +284,43 @@ public class BaseHelper {
      *
      * @param selectId locator.
      * @param selectionOption option's names.
+     * @param useDeselectAll deselection flag for the already selected options.
      */
-    protected void selectOptionByName(final By selectId, final String selectionOption) {
-        selectOptionsByName(selectId, Collections.singletonList(selectionOption), false, null);
+    protected void selectOptionByName(final By selectId, final String selectionOption, final boolean useDeselectAll) {
+        selectOptionByName(selectId, selectionOption, useDeselectAll, null);
+    }
+
+    /**
+     * Selects a single option in the 'select' HTML element by name and asserts that the option is selected.
+     *
+     * @param selectId locator.
+     * @param selectionOption option's names.
+     * @param dependentElementId a dependent element, which appears/reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
+     */
+    protected void selectOptionByName(final By selectId, final String selectionOption, final By dependentElementId) {
+        selectOptionByName(selectId, selectionOption, false, dependentElementId);
+    }
+
+    /**
+     * Selects a single option in the 'select' HTML element by name and asserts that the option is selected.
+     *
+     * @param selectId locator.
+     * @param selectionOption option's names.
+     * @param useDeselectAll deselection flag for the already selected options.
+     * @param dependentElementId  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
+     */
+    protected void selectOptionByName(final By selectId, final String selectionOption, final boolean useDeselectAll, final By dependentElementId) {
+        selectOptionsByName(selectId, Collections.singletonList(selectionOption), useDeselectAll, dependentElementId);
+    }
+
+    /**
+     * Selects a single option in the 'select' HTML element by name without assertion of selection and without deselection of other options.
+     *
+     * @param selectWebElement select web element.
+     * @param selectionOption option's names.
+     */
+    protected void selectOptionByName(final WebElement selectWebElement, final String selectionOption) {
+        selectOptionByName(selectWebElement, selectionOption, false);
     }
 
     /**
@@ -278,9 +328,10 @@ public class BaseHelper {
      *
      * @param selectWebElement select web element.
      * @param selectionOption option's names.
+     * @param useDeselectAll deselection flag for the already selected options.
      */
-    protected void selectOptionByName(final WebElement selectWebElement, final String selectionOption) {
-        selectOptionsByName(selectWebElement, Collections.singletonList(selectionOption), false);
+    protected void selectOptionByName(final WebElement selectWebElement, final String selectionOption, final boolean useDeselectAll) {
+        selectOptionsByName(selectWebElement, Collections.singletonList(selectionOption), useDeselectAll);
     }
 
     /**

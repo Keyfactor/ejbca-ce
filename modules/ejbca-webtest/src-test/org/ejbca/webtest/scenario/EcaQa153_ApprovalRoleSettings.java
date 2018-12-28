@@ -38,10 +38,11 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
     // Test Data
     public static class TestData {
         static final String ROLE_NAME = "ECAQA153_TestRole";
-        private static final String ROLE_TEMPLATE = "Super Administrators";
-        private static final String MATCH_WITH = "X509: CN, Common name";
-        private static final String MATCH_VALUE = "SuperAdmin";
-        private static final String APPROVAL_PROFILE_NAME = "ECAQA153_Approval Profile";
+        static final String ROLE_TEMPLATE = "Super Administrators";
+        static final String MATCH_WITH = "X509: CN, Common name";
+        static final String MATCH_VALUE = "SuperAdmin";
+        static final String APPROVAL_PROFILE_NAME = "ECAQA153_Partitioned_Profile";
+        static final String APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL = "Partitioned Approval";
     }
 
     @BeforeClass
@@ -76,12 +77,19 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
     
     @Test
     public void stepB_addApprovalProfile() {
-        // TODO Refactor ECA-7356
         approvalProfilesHelper.openPage(getAdminWebUrl());
         approvalProfilesHelper.addApprovalProfile((TestData.APPROVAL_PROFILE_NAME));
         approvalProfilesHelper.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
-        approvalProfilesHelper.setApprovalProfileType("PARTITIONED_APPROVAL");
-        approvalProfilesHelper.addApprovalProfile(getAdminWebUrl(), TestData.APPROVAL_PROFILE_NAME, TestData.ROLE_NAME);
+        approvalProfilesHelper.setApprovalProfileType(TestData.APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL);
+        approvalProfilesHelper.setApprovalStepPartitionApprovePartitionRole(0, 0, TestData.ROLE_NAME);
+        approvalProfilesHelper.setApprovalStepPartitionViewPartitionRole(0, 0, TestData.ROLE_NAME);
+        approvalProfilesHelper.saveApprovalProfile();
+        // Verify roles selection
+        approvalProfilesHelper.openViewApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
+        approvalProfilesHelper.assertApprovalStepPartitionApprovePartitionRolesHasSelectionSize(0, 0, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasApprovePartitionRole(0, 0, TestData.ROLE_NAME);
+        approvalProfilesHelper.assertApprovalStepPartitionViewPartitionRolesHasSelectionSize(0, 0, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasViewPartitionRole(0, 0, TestData.ROLE_NAME);
     }
     
     @Test
@@ -93,9 +101,13 @@ public class EcaQa153_ApprovalRoleSettings extends WebTestBase {
         adminRolesHelper.setMatchValue(TestData.MATCH_VALUE);
         adminRolesHelper.clickAddMember();
         adminRolesHelper.assertMemberMatchWithRowExists(TestData.MATCH_WITH);
+        // Verify roles selection
         approvalProfilesHelper.openPage(getAdminWebUrl());
-        approvalProfilesHelper.verifyApprovalsViewMode(getAdminWebUrl(), TestData.APPROVAL_PROFILE_NAME, TestData.ROLE_NAME);
+        approvalProfilesHelper.openViewApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
+        approvalProfilesHelper.assertApprovalStepPartitionApprovePartitionRolesHasSelectionSize(0, 0, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasApprovePartitionRole(0, 0, TestData.ROLE_NAME);
+        approvalProfilesHelper.assertApprovalStepPartitionViewPartitionRolesHasSelectionSize(0, 0, 1);
+        approvalProfilesHelper.assertApprovalStepPartitionHasViewPartitionRole(0, 0, TestData.ROLE_NAME);
     }
-    
 
 }
