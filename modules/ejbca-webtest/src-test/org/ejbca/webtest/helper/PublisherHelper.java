@@ -138,7 +138,7 @@ public class PublisherHelper extends BaseHelper {
     }
 
     public void setPublisherGroup(final String nonexistingPublisher) {
-        fillTextarea(Page.PUBLISHER_GROUPS_TEXT_AREA, nonexistingPublisher, false);
+        fillTextarea(Page.PUBLISHER_GROUPS_TEXT_AREA, nonexistingPublisher, true);
     }
 
     public void save() {
@@ -147,5 +147,12 @@ public class PublisherHelper extends BaseHelper {
 
     public void assertHasErrorMessage(final String errorMessage) {
         assertErrorMessageAppears(errorMessage, "Publisher non existing message element not found!", "Unexpected save publisher message!");
+    }
+
+    public void assertMultiGroupPublishersTextAreaValue(final String existingPublishers) {
+        assertEquals( 
+                "Unexpected value for publisher group text area",
+                existingPublishers,
+                getElementText(Page.PUBLISHER_GROUPS_TEXT_AREA));        
     }
 }
