@@ -12,9 +12,10 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -44,16 +45,23 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     private static class TestData {
         static final Map<String, String> PUBLISHERS;
         static {
-            PUBLISHERS = new HashMap<>();
+            PUBLISHERS = new LinkedHashMap<>();
             PUBLISHERS.put("PUBLISHER_ONE", "pub1");
             PUBLISHERS.put("PUBLISHER_TWO", "pub2");
             PUBLISHERS.put("PUBLISHER_THREE", "pub3");
             PUBLISHERS.put("PUBLISHER_FOUR", "pub4");
         }
-        static final String EXPECTED_AVAILABLE_PUBLISHERS = "pub2\npub3\npub4";
+        static final String EXPECTED_AVAILABLE_PUBLISHERS_PUB_ONE = "pub2\npub3\npub4";
+        static final String EXPECTED_AVAILABLE_PUBLISHERS_PUB_TWO = "pub3\npub4";
+        static final String EXPECTED_AVAILABLE_PUBLISHERS_PUB_THREE = "pub4";
         static final String SAVE_AND_TEST_CONNECTION_SUCCESS_MESSAGE = "Connection Tested Successfully";
         static final String NONEXISTING_PUBLISHER = "blabla";
         static final String SAVE_PUBLISHER_NONEXISTING_MESSAGE = "Could not find publisher: \\\"blabla\\\"";
+        static final String PUBLISHERS_GROUP_FOR_PUB_ONE = "pub2\npub3";
+        static final String PUBLISHERS_GROUP_FOR_PUB_TWO = "pub3";
+        static final String SAVE_AND_TEST_CONNECTION_FAIL_MESSAGE = "Following error occurred when testing connection pub2: "
+                                                                    + "Publishers [pub3] failed. First failure: LDAP ERROR: "
+                                                                    + "Error binding to LDAP server. Connect Error";
     }
     
     @BeforeClass
@@ -86,7 +94,7 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
         publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_ONE"));
         publisherHelper.editPublisher();
         publisherHelper.setPublisherType(String.valueOf(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
-        publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS);
+        publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS_PUB_ONE);
         publisherHelper.saveAndTestConnection();
         publisherHelper.assertHasInfoMessage(TestData.SAVE_AND_TEST_CONNECTION_SUCCESS_MESSAGE);
     }
@@ -100,4 +108,45 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
         publisherHelper.save();
         publisherHelper.assertHasErrorMessage(TestData.SAVE_PUBLISHER_NONEXISTING_MESSAGE);
     }
+    
+    @Test
+    public void stepD_successWhenAddingTwoKnownPublishersToGroup() {
+        publisherHelper.setPublisherGroup(TestData.PUBLISHERS_GROUP_FOR_PUB_ONE);
+        publisherHelper.save();
+        publisherHelper.assertBackToListPublisherPage();
+        publisherHelper.openPage(getAdminWebUrl());
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_ONE"));
+        publisherHelper.editPublisher();
+        publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS_PUB_ONE);
+        publisherHelper.assertMultiGroupPublishersTextAreaValue(TestData.PUBLISHERS_GROUP_FOR_PUB_ONE);
+        publisherHelper.cancelEditPublisher();
+        publisherHelper.assertBackToListPublisherPage();
+    }
+    
+    @Test
+    public void stepE_addSecondMultiGroupPublisher() {
+        publisherHelper.openPage(getAdminWebUrl());
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_TWO"));
+        publisherHelper.editPublisher();
+        publisherHelper.setPublisherType(String.valueOf(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
+        publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS_PUB_TWO);
+        publisherHelper.assertMultiGroupPublishersTextAreaValue(StringUtils.EMPTY);
+        publisherHelper.setPublisherGroup(TestData.PUBLISHERS_GROUP_FOR_PUB_TWO);
+        publisherHelper.saveAndTestConnection();
+        publisherHelper.assertHasErrorMessage(TestData.SAVE_AND_TEST_CONNECTION_FAIL_MESSAGE);
+        publisherHelper.save();
+        publisherHelper.assertBackToListPublisherPage();
+    }
+    
+    @Test
+    public void stepF_addThirdMultiGroupPublisher() {
+        publisherHelper.openPage(getAdminWebUrl());
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_THREE"));
+        publisherHelper.editPublisher();
+        publisherHelper.setPublisherType(String.valueOf(PublisherConst.TYPE_MULTIGROUPPUBLISHER));
+        publisherHelper.assertMultiGroupPublisherPage(TestData.EXPECTED_AVAILABLE_PUBLISHERS_PUB_THREE);
+        publisherHelper.cancelEditPublisher();
+        publisherHelper.assertBackToListPublisherPage();
+    }
+    
 }
