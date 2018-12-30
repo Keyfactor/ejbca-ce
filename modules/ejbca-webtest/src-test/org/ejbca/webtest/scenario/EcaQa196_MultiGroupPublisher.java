@@ -62,6 +62,8 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
         static final String SAVE_AND_TEST_CONNECTION_FAIL_MESSAGE = "Following error occurred when testing connection pub2: "
                                                                     + "Publishers [pub3] failed. First failure: LDAP ERROR: "
                                                                     + "Error binding to LDAP server. Connect Error";
+        static final String PUBLISHER_DELETE_MESSAGE = "Are you sure you want to delete this?";
+        static final String DELETE_PUBLISHER_INUSE_ERROR_MESSAGE = "Couldn’t delete publisher, references to it exist.";
     }
     
     @BeforeClass
@@ -149,4 +151,11 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
         publisherHelper.assertBackToListPublisherPage();
     }
     
+    @Test
+    public void stepG_deletePublisherUsedbyAnotherPublisher() {
+        publisherHelper.openPage(getAdminWebUrl());
+        publisherHelper.selectPublisherFromList(TestData.PUBLISHERS.get("PUBLISHER_TWO"));
+        publisherHelper.deletePublisher(TestData.PUBLISHER_DELETE_MESSAGE, true);
+        publisherHelper.assertHasErrorMessage(TestData.DELETE_PUBLISHER_INUSE_ERROR_MESSAGE);
+    }
 }
