@@ -149,7 +149,7 @@ public class PublisherHelper extends BaseHelper {
     public void assertMultiGroupPublisherPage(final String expectedAvailablePublishers) {
         assertElementExists(Page.AVAILABLE_PUBLISHERS_LABEL, "Available publishers element not found in the page!");
         assertElementExists(Page.PUBLISHER_GROUPS_TEXT_AREA, "Publisher groups text area not found in the page!");
-        assertEquals("Unexpected value for the available publishers", expectedAvailablePublishers, getElementText(Page.AVAILABLE_PUBLISHERS));
+        assertTrue("Unexpected value for the available publishers", getElementText(Page.AVAILABLE_PUBLISHERS).contains(expectedAvailablePublishers));
     }
 
     public void saveAndTestConnection() {
