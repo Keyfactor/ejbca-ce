@@ -9,6 +9,7 @@
 
     <target name="test:runsys" description="run system test, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
+        <ant antfile="build.xml" dir="modules/configdump" target="test:system" />
     	<antcall target="optionalteststatedump" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector" inheritrefs="true"/>
     	<antcall target="optionaltestplugins" inheritrefs="true"/>
@@ -50,6 +51,7 @@
         <antcall target="optionaltestrest-unit" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" />
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" />
+        <ant antfile="build.xml" dir="modules/configdump" target="test:unit" />
     	<antcall target="optionaltestct" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
