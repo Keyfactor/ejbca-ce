@@ -67,14 +67,16 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
     }
     
     @BeforeClass
-    public static void init() {
+    public static void init() throws ReferencesToItemExistException, AuthorizationDeniedException {
         beforeClass(true, null);
         webDriver = getWebDriver();
         publisherHelper = new PublisherHelper(webDriver);
+        removeExistingPublishers();
     }
     
     @AfterClass
     public static void exit() throws ReferencesToItemExistException, AuthorizationDeniedException {
+        // Since order of deletion matters, here we cannot use removeExistingPublishers
         for (final String publisherName : TestData.PUBLISHERS.values()) {
             removePublisherByName(publisherName);
         }

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.webtest;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -325,6 +326,20 @@ public abstract class WebTestBase {
     protected static void removePublisherByName(final String publisherName) throws ReferencesToItemExistException, AuthorizationDeniedException {
         final PublisherSessionRemote publisherSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
         publisherSessionRemote.removePublisher(ADMIN_TOKEN, publisherName);
+    }
+
+    /**
+     * Deletes any existing publishers. 
+     * 
+     * @throws ReferencesToItemExistException
+     * @throws AuthorizationDeniedException
+     */
+    protected static void removeExistingPublishers() throws ReferencesToItemExistException, AuthorizationDeniedException {
+        final PublisherSessionRemote publisherSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
+        final HashMap<Integer, String> publisherIdToNameMap = publisherSessionRemote.getPublisherIdToNameMap();
+        for (final String publisherName : publisherIdToNameMap.values()) {
+            publisherSessionRemote.removePublisher(ADMIN_TOKEN, publisherName);
+        }
     }
     
 }
