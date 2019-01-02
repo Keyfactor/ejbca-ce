@@ -35,22 +35,25 @@ public class PublisherHelper extends BaseHelper {
         // General
         static final String PAGE_URI = "/ejbca/adminweb/ca/editpublishers/listpublishers.xhtml";
         static final By PAGE_LINK = By.id("caEditpublishers");
-        static final By INPUT_PUBLISHER_NAME = By.id("listPublishers:newPublisherName");
+        
+        // Buttons
         static final By BUTTON_ADD_PUBLISHER = By.id("listPublishers:addButton");
         static final By BUTTON_CLONE_PUBLISHER = By.id("listPublishers:cloneButton");
         static final By BUTTON_RENAME_PUBLISHER = By.id("listPublishers:renameButton");
-        static final By SELECT_PUBLISHER = By.id("listPublishers:selectPublisher");
-        static final By DELETE_PUBLISHER = By.id("listPublishers:deleteButton");
-        static final By EDIT_PUBLISHER = By.id("listPublishers:editButton");
+        static final By BUTTON_DELETE_PUBLISHER = By.id("listPublishers:deleteButton");
+        static final By BUTTON_EDIT_PUBLISHER = By.id("listPublishers:editButton");
+        static final By BUTTON_SAVE_AND_TEST_CONNECTION = By.id("selectPublisher:saveAndTestConnection");
+        static final By BUTTON_SAVE = By.id("selectPublisher:save");        
+
+        // Other publisher pages elements
+        static final By LISTBOX_SELECT_PUBLISHER = By.id("listPublishers:selectPublisher");
+        static final By INPUT_PUBLISHER_NAME = By.id("listPublishers:newPublisherName");
         static final By EDIT_PUBLISHER_TITLE = By.id("publisherTitle");
-        static final By CANCEL_EDIT_PUBLISHER = By.id("selectPublisher:cancelEditPublisher");
+        static final By LINK_CANCEL_EDIT_PUBLISHER = By.id("selectPublisher:cancelEditPublisher");
         static final By SELECT_PUBLISHER_TYPE = By.id("selectPublisher:selectpublishertype");
         static final By AVAILABLE_PUBLISHERS_LABEL = By.id("selectPublisher:multigrouppublisherpage:availablepublisherslabel");
         static final By PUBLISHER_GROUPS_TEXT_AREA = By.id("selectPublisher:multigrouppublisherpage:publishergroupstextarea");
         static final By AVAILABLE_PUBLISHERS = By.id("selectPublisher:multigrouppublisherpage:availablepublishers");
-        static final By BUTTON_SAVE_AND_TEST_CONNECTION = By.id("selectPublisher:saveAndTestConnection");
-        static final By BUTTON_SAVE = By.id("selectPublisher:save");
-
     } 
     
     public PublisherHelper(WebDriver webDriver) {
@@ -76,28 +79,38 @@ public class PublisherHelper extends BaseHelper {
         clickLink(Page.BUTTON_RENAME_PUBLISHER);
     }
 
+    /**
+     * Asserts that publisherName is listed in the list of available publishers.
+     * 
+     * @param publisherName
+     */
     public void assertPublisherExists(final String publisherName) {
-        final List<String> selectNames = getSelectNames(Page.SELECT_PUBLISHER);
+        final List<String> selectNames = getSelectNames(Page.LISTBOX_SELECT_PUBLISHER);
         assertNotNull(publisherName + " was not found in the List of Publishers", selectNames);
         assertTrue(publisherName + " was not found in the List of Publishers", selectNames.contains(publisherName));
     }
     
+    /**
+     * Asserts that publisherName is not listed in the available publishers list.
+     * 
+     * @param publisherName
+     */
     public void assertPublisherDeleted(final String publisherName) {
-        final List<String> selectNames = getSelectNames(Page.SELECT_PUBLISHER);
+        final List<String> selectNames = getSelectNames(Page.LISTBOX_SELECT_PUBLISHER);
         assertFalse(publisherName + " was found in the List of Publishers", selectNames.contains(publisherName));
     }
     
     public void selectPublisherFromList(final String publisherName) {
-        selectOptionByName(Page.SELECT_PUBLISHER, publisherName);
+        selectOptionByName(Page.LISTBOX_SELECT_PUBLISHER, publisherName);
     }
 
     public void deletePublisher(final String expectedAlertMessage, final boolean isConfirmed) {
-        clickLink(Page.DELETE_PUBLISHER);
+        clickLink(Page.BUTTON_DELETE_PUBLISHER);
         assertAndConfirmAlertPopUp(expectedAlertMessage, isConfirmed);
     }
     
     public void editPublisher() {
-        clickLink(Page.EDIT_PUBLISHER);
+        clickLink(Page.BUTTON_EDIT_PUBLISHER);
     }
     
     public void assertEditPublisherTitleExistsAndCorrect(final String expectedTitle) {
@@ -108,7 +121,7 @@ public class PublisherHelper extends BaseHelper {
     }
     
     public void cancelEditPublisher() {
-        clickLink(Page.CANCEL_EDIT_PUBLISHER);
+        clickLink(Page.LINK_CANCEL_EDIT_PUBLISHER);
     }
 
     public void assertBackToListPublisherPage() {
@@ -119,10 +132,20 @@ public class PublisherHelper extends BaseHelper {
         publishers.forEach(publisher -> assertPublisherExists(publisher));
     }
 
+    /**
+     * Changes the publisher type to publisherType by selecting from the drop-down list of publishers.
+     * 
+     * @param publisherType
+     */
     public void setPublisherType(final String publisherType) {
         selectOptionByValue(Page.SELECT_PUBLISHER_TYPE, publisherType);
     }
 
+    /**
+     * Asserts that specific elements which belong to the multigroup publisher page exist and available publishers are as expected.
+     * 
+     * @param expectedAvailablePublishers
+     */
     public void assertMultiGroupPublisherPage(final String expectedAvailablePublishers) {
         assertElementExists(Page.AVAILABLE_PUBLISHERS_LABEL, "Available publishers element not found in the page!");
         assertElementExists(Page.PUBLISHER_GROUPS_TEXT_AREA, "Publisher groups text area not found in the page!");
@@ -133,22 +156,40 @@ public class PublisherHelper extends BaseHelper {
         clickLink(Page.BUTTON_SAVE_AND_TEST_CONNECTION);
     }
 
+    /**
+     * Asserts the infoMessage appears in the page
+     * @param infoMessage
+     */
     public void assertHasInfoMessage(final String infoMessage) {
         assertInfoMessageAppears(infoMessage, "Connection tested successfully message element not found!", "Unexpected test and save connection message!");
     }
 
-    public void setPublisherGroup(final String nonexistingPublisher) {
-        fillTextarea(Page.PUBLISHER_GROUPS_TEXT_AREA, nonexistingPublisher, true);
+    /**
+     * Sets the publisher groups of the multi group publisher to publisherGroup 
+     * @param publisherGroup
+     */
+    public void setPublisherGroup(final String publisherGroup) {
+        fillTextarea(Page.PUBLISHER_GROUPS_TEXT_AREA, publisherGroup, true);
     }
 
     public void save() {
         clickLink(Page.BUTTON_SAVE);
     }
 
+    /**
+     * Asserts the errorMessage appears in the page
+     * 
+     * @param errorMessage
+     */
     public void assertHasErrorMessage(final String errorMessage) {
         assertErrorMessageAppears(errorMessage, "Publisher non existing message element not found!", "Unexpected save publisher message!");
     }
 
+    /**
+     * Asserts that multigroup publishers's publisher group text is set properly
+     * 
+     * @param existingPublishers
+     */
     public void assertMultiGroupPublishersTextAreaValue(final String existingPublishers) {
         assertEquals( 
                 "Unexpected value for publisher group text area",

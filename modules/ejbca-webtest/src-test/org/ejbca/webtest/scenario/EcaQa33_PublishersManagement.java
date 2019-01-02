@@ -52,17 +52,16 @@ public class EcaQa33_PublishersManagement extends WebTestBase {
     }
     
     @BeforeClass
-    public static void init() {
+    public static void init() throws ReferencesToItemExistException, AuthorizationDeniedException {
         beforeClass(true, null);
         webDriver = getWebDriver();
         publisherHelper = new PublisherHelper(webDriver);
+        removeExistingPublishers();
     }
 
     @AfterClass
     public static void exit() throws ReferencesToItemExistException, AuthorizationDeniedException {
-        for (final String publisherName : TestData.PUBLISHERS.values()) {
-            removePublisherByName(publisherName);
-        }
+        removeExistingPublishers();
         afterClass();
     }
     
