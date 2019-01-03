@@ -63,6 +63,7 @@ public final class StringTools {
 
     private static Pattern VALID_IPV4_PATTERN = null;
     private static Pattern VALID_IPV6_PATTERN = null;
+    private static Pattern windowsOrMacNewlines = Pattern.compile("\r\n?"); // Matches Windows \r\n and Mac \r
     private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
     private static final String ipv6Pattern = "([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}";
 
@@ -1181,5 +1182,22 @@ public final class StringTools {
         return false;
     }
 
+    /**
+     * Changes Windows (\r\n) and Mac (\r) line endings into \n line endings.
+     * @param s Input string. May be null
+     * @return Output string, or null if input string was null
+     */
+    public static String normalizeNewlines(final String s) {
+        return s != null ? windowsOrMacNewlines.matcher(s).replaceAll("\n") : null;
+    }
+    
+    /**
+     * Splits a string by newlines (may be \n, \r\n or \r).
+     * @param s Input string. May <b>not</b> be null.
+     * @return Array of lines, never null. May be an empty list and may contains empty strings.
+     */
+    public static String[] splitByNewlines(final String s) {
+        return normalizeNewlines(s).split("\n");
+    }
 
 }
