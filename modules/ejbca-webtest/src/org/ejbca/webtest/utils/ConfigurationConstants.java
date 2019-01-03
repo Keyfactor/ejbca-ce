@@ -44,4 +44,5 @@ public final class ConfigurationConstants {
     // Browser Constants
     public static final String BROWSER_BINARY  = "browser.firefox.binary";
     public static final String BROWSER_DOWNLOADDIR  = "browser.downloaddir";
+    public static final String BROWSER_HEADLESS = "browser.headless";
 }
