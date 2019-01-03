@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.StringTools;
 
 /**
  * Class containing logic for a whitelist of scripts allowed to be executed by "External Command Validators".
@@ -52,12 +53,12 @@ public class ExternalScriptsWhitelist {
      * @throws ParseException if the whitelist is enabled and one of paths does not point to a file
      */
     public static ExternalScriptsWhitelist fromText(final String text, final boolean isEnabled) {
-        final List<File> scripts = new ArrayList<File>();
-        final String[] lines = text.split(System.lineSeparator());
+        final List<File> scripts = new ArrayList<>();
+        final String[] lines = StringTools.splitByNewlines(text);
         for (int i = 0; i < lines.length; i++) {
             final String path = lines[i].trim();
-            if (path.startsWith("#")) {
-                // This is a comment
+            if (path.startsWith("#") || StringUtils.isBlank(path)) {
+                // This is a comment or blank line
                 continue;
             }
             final File script = new File(path);

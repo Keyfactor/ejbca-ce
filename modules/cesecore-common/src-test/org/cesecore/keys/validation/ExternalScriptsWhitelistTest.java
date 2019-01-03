@@ -26,7 +26,7 @@ import org.junit.Test;
 public class ExternalScriptsWhitelistTest {
     @Test
     public void testConstructionFromText() {
-        final ExternalScriptsWhitelist whitelist = ExternalScriptsWhitelist.fromText("/foo/allowed" + System.lineSeparator() + "#/foo/disabled");
+        final ExternalScriptsWhitelist whitelist = ExternalScriptsWhitelist.fromText("/foo/allowed\n#/foo/disabled");
         assertEquals(1, whitelist.size());
         assertTrue("/foo/allowed should be permitted", whitelist.isPermitted("/foo/allowed"));
         assertFalse("/foo/forbidden should not be permitted", whitelist.isPermitted("/foo/forbidden"));
