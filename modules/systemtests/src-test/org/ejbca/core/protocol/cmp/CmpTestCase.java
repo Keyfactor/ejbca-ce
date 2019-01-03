@@ -213,6 +213,7 @@ public abstract class CmpTestCase extends CaTestCase {
     @Override
     protected void setUp() throws Exception { // NOPMD: this is a test base class
         super.setUp();
+        cleanup();
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
         this.cpDnOverrideId = addCertificateProfile(CP_DN_OVERRIDE_NAME);
@@ -273,8 +274,12 @@ public abstract class CmpTestCase extends CaTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        this.endEntityProfileSession.removeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME);
-        this.certProfileSession.removeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME);
+        cleanup();
+    }
+    
+    private void cleanup() throws AuthorizationDeniedException {
+        endEntityProfileSession.removeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME);
+        certProfileSession.removeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME);
     }
 
     public static PKIMessage genCertReq(String issuerDN, X500Name userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
