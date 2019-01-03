@@ -29,7 +29,13 @@ import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 /**
- * 
+ * For some unclear reason this test does not run stable enough in the Firefox graphical mode 
+ * (specially if you have already existing publishers configured in EJBCA).
+ * The reason is not obvious but it could be related to the screen resolution issue of Firefox when used by Selenium in GUI mode.
+ * Due to this issue and in order to get the stable results you should run this in Firefox headless mode 
+ * which could be set in the browser.properties file that is located under /modules/ejbca-webtest/conf/
+ * Just set the browser.headless attribute to true (default is false).
+ *  
  * @version $Id$
  *
  */

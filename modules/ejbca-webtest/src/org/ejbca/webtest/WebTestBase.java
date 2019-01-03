@@ -62,6 +62,7 @@ public abstract class WebTestBase {
     private static String ejbcaPort;
     private static String downloadDir;
     private static String browserBinary; // null = don't override default
+    private static String browserHeadless;
 
     private static WebDriver webDriver;
     private static WebDriverWait webDriverWait;
@@ -107,6 +108,10 @@ public abstract class WebTestBase {
         if (browserBinary != null) {
             firefoxOptions.setBinary(browserBinary);
         }
+        if (Boolean.parseBoolean(browserHeadless)) {
+            firefoxOptions.setHeadless(true);
+        }
+        
         webDriver = new FirefoxDriver(firefoxOptions);
 
         webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
@@ -131,6 +136,7 @@ public abstract class WebTestBase {
         ejbcaSslPort = config.getProperty(ConfigurationConstants.APPSERVER_PORT_SSL);
         downloadDir = config.getProperty(ConfigurationConstants.BROWSER_DOWNLOADDIR);
         browserBinary = config.getProperty(ConfigurationConstants.BROWSER_BINARY);
+        browserHeadless = config.getProperty(ConfigurationConstants.BROWSER_HEADLESS);
     }
 
     public String getCaName() {
