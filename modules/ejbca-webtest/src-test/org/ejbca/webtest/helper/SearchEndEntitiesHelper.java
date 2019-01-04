@@ -125,12 +125,21 @@ public class SearchEndEntitiesHelper extends BaseHelper {
     }
 
     /**
+     * Clicks the specified element (button) for a row in search results.
+     * @param cn Common Name of the row entry (used as row identifier)
+     * @param elementToClick button to click
+     */
+    private void clickForRowEntry(final String cn, final By elementToClick) {
+        final WebElement row = findElement(Page.getColumnContainingCommonName(cn));
+        row.findElement(elementToClick).click();
+    }
+    
+    /**
      * Clicks 'Edit' (End entity) for the row containing the specified CN.
      * @param cn Common name of the row to use.
      */
     public void clickEditEndEntityForRow(final String cn) {
-        WebElement row = findElement(Page.getColumnContainingCommonName(cn));
-        row.findElement(Page.BUTTON_EDIT_END_ENTITY_FOR_ROW).click();
+        clickForRowEntry(cn, Page.BUTTON_EDIT_END_ENTITY_FOR_ROW);
     }
     
     /**
@@ -138,8 +147,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      * @param cn Common name of the row to use.
      */
     public void clickViewCertificateForRow(final String cn) {
-        WebElement row = findElement(Page.getColumnContainingCommonName(cn));
-        row.findElement(Page.BUTTON_VIEW_CERTIFICATE_FOR_ROW).click();
+        clickForRowEntry(cn, Page.BUTTON_VIEW_CERTIFICATE_FOR_ROW);
     }
     
     /**
@@ -147,8 +155,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      * @param cn Common name of the row to use.
      */
     public void clickViewEndEntityForRow(final String cn) {
-        WebElement row = findElement(Page.getColumnContainingCommonName(cn));
-        row.findElement(Page.BUTTON_VIEW_END_ENTITY_FOR_ROW).click();
+        clickForRowEntry(cn, Page.BUTTON_VIEW_END_ENTITY_FOR_ROW);
     }
     
     /**
@@ -156,8 +163,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      * @param cn Common name of the row to use.
      */
     public void clickHardTokensForRow(final String cn) {
-        WebElement row = findElement(Page.getColumnContainingCommonName(cn));
-        row.findElement(Page.BUTTON_HARD_TOKEN_FOR_ROW).click();
+        clickForRowEntry(cn, Page.BUTTON_HARD_TOKEN_FOR_ROW);
     }
     
     /**
