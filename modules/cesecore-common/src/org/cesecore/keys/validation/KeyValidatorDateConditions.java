@@ -17,11 +17,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.cesecore.util.IndexEnum;
+
 /**
  * This class contains a representation of mathematical conditions, i.e <, <=, >, >=.
  * @version $Id$
  */
-public enum KeyValidatorDateConditions {
+public enum KeyValidatorDateConditions implements IndexEnum {
     /**
      * Condition for strictly less than a given date.
      */
@@ -29,7 +31,7 @@ public enum KeyValidatorDateConditions {
     /**
      * Condition for less than or equal to a given date.
      */
-    LESS_OR_EQUAL_THAN(1, "VALIDATORDATECONDITION_LESS_OR_EQUAL", "≤"),
+    LESS_OR_EQUAL(1, "VALIDATORDATECONDITION_LESS_OR_EQUAL", "≤"),
     /**
      * Condition for strictly greater than a given date.
      */
@@ -37,7 +39,7 @@ public enum KeyValidatorDateConditions {
     /**
      * Condition for greater than or equal to a given date.
      */
-    GREATER_OR_EQUAL_THAN(3, "VALIDATORDATECONDITION_GREATER_OR_EQUAL", "≥");
+    GREATER_OR_EQUAL(3, "VALIDATORDATECONDITION_GREATER_OR_EQUAL", "≥");
 
     private int index;
     private String label;
@@ -59,6 +61,7 @@ public enum KeyValidatorDateConditions {
      * Gets the index.
      * @return
      */
+    @Override
     public int getIndex() {
         return index;
     }

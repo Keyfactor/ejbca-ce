@@ -16,11 +16,13 @@ package org.cesecore.keys.validation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cesecore.util.IndexEnum;
+
 /**
  * Contains different actions which occur whenever a Validator in EJBCA fails.
  * @version $Id$
  */
-public enum KeyValidationFailedActions {
+public enum KeyValidationFailedActions implements IndexEnum {
     DO_NOTHING(0, "VALIDATORFAILEDACTION_DO_NOTHING"),
     LOG_INFO(1, "VALIDATORFAILEDACTION_LOG_INFO"),
     LOG_WARN(2, "VALIDATORFAILEDACTION_LOG_WARN"),
@@ -45,6 +47,7 @@ public enum KeyValidationFailedActions {
      * Gets the index.
      * @return
      */
+    @Override
     public int getIndex() {
         return index;
     }
