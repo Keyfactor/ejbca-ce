@@ -267,7 +267,10 @@
     </target>
     
     <target name="test:configdump" description="run JUnit Configdump test." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/configdump" target="test" />
+        <ant antfile="build.xml" dir="modules/configdump">
+            <target name="test:unit" />
+            <target name="test:system" />
+        </ant>
     	<antcall target="createreport"/>
     </target>
     
