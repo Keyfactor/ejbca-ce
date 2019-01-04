@@ -16,12 +16,14 @@ package org.cesecore.keys.validation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cesecore.util.IndexEnum;
+
 /**
  * An enum domain class representing all certificate process phases for validators.
  *
  * @version $Id$
  */
-public enum IssuancePhase {
+public enum IssuancePhase implements IndexEnum {
 
     // @formatter:off
     DATA_VALIDATION(0, "VALIDATORPHASE_DATA_VALIDATION"),
@@ -50,6 +52,7 @@ public enum IssuancePhase {
      * Gets the index.
      * @return the index.
      */
+    @Override
     public int getIndex() {
         return index;
     }
