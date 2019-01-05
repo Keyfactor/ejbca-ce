@@ -89,7 +89,7 @@ import static org.junit.Assert.*;
  * Note/TODO:
  * A lot of tests in this class is written in such a way that they are sensitive to timing on a highly loaded test
  * server. This needs to rewritten in a more robust way at a future point in time to avoid false negatives.
- * </p>
+ * The EXPIRATION_PERIOD constant can be adjusted depending on test server load/performance. 
  *
  * @version $Id$
  */
@@ -101,6 +101,12 @@ public class ApprovalSessionTest extends CaTestCase {
     private static final String P12_FOLDER_NAME = "p12";
 
     private static final String roleName = "ApprovalTest";
+    /**
+     * Expiration period for approval requests and admin approvals, in milliseconds, to use in this test.
+     * A less performant or more highly loaded test environment may need a higher value.
+     */
+    private static final long EXPIRATION_PERIOD = 2000;
+    private static final long EXPIRATION_SLEEP = EXPIRATION_PERIOD + 100;
 
     private static String adminusername1 = "createTestCAWithEndEntity";
     private static String adminusername2 = adminusername1 + "2";
@@ -132,6 +138,8 @@ public class ApprovalSessionTest extends CaTestCase {
     private List<Integer> removeApprovalIds = new ArrayList<>();
     private DummyApprovalRequest nonExecutableRequest;
     private String removeUserName = null;
+    private static KeyPair externalAdminRsaKey;
+    
     private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private ApprovalSessionProxyRemote approvalSessionProxyRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionProxyRemote.class,
             EjbRemoteHelper.MODULE_TEST);
@@ -153,6 +161,7 @@ public class ApprovalSessionTest extends CaTestCase {
         ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
         int approvalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
         approvalProfile.setProfileId(approvalProfileId);
+        externalAdminRsaKey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
     @AfterClass
@@ -202,8 +211,7 @@ public class ApprovalSessionTest extends CaTestCase {
         reqUserData.setPassword("foo123");
         endEntityManagementSession.addUser(intadmin, reqUserData, true);
 
-        KeyPair rsakey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        externalcert = CertTools.genSelfCert("CN=externalCert,C=SE", 30, null, rsakey.getPrivate(), rsakey.getPublic(),
+        externalcert = CertTools.genSelfCert("CN=externalCert,C=SE", 30, null, externalAdminRsaKey.getPrivate(), externalAdminRsaKey.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         externaladmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(externalcert));
 
@@ -247,8 +255,8 @@ public class ApprovalSessionTest extends CaTestCase {
         // TODO: before is had both a cert and username input?
 
         originalValidity = approvalProfile.getRequestExpirationPeriod();
-        approvalProfile.setApprovalExpirationPeriod(1000);
-        approvalProfile.setRequestExpirationPeriod(1000);
+        approvalProfile.setApprovalExpirationPeriod(EXPIRATION_PERIOD);
+        approvalProfile.setRequestExpirationPeriod(EXPIRATION_PERIOD);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
         nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
         removeApprovalIds = new ArrayList<>();
@@ -314,7 +322,7 @@ public class ApprovalSessionTest extends CaTestCase {
         assertEquals(0, next.getApprovals().size());
         assertFalse(next.getApprovalRequest().isExecutable());
         assertEquals(2, next.getRemainingApprovals());
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         // Test that the request expires as it should
         result = approvalSessionRemote.findApprovalDataVO(approvalId);
         assertEquals("Request should not expire", 1, result.size());
@@ -371,7 +379,7 @@ public class ApprovalSessionTest extends CaTestCase {
         assertEquals(0, next.getRemainingApprovals());
 
         // Test that the approval expires as it should
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         result = approvalSessionRemote.findApprovalDataVO(approvalId);
         assertEquals(1, result.size());
 
@@ -395,7 +403,7 @@ public class ApprovalSessionTest extends CaTestCase {
         assertEquals("Status = " + next.getStatus(), ApprovalDataVO.STATUS_EXECUTED, next.getStatus());
 
         // Make sure that the approval still have status executed after expiration
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         result = approvalSessionRemote.findApprovalDataVO(executableApprovalId);
         assertEquals(1, result.size());
         next = result.iterator().next();
@@ -473,7 +481,7 @@ public class ApprovalSessionTest extends CaTestCase {
         }
 
         // Test that the approval expires as it should
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         result = approvalSessionRemote.findApprovalDataVO(approvalId);
         assertEquals(1, result.size());
 
@@ -519,7 +527,7 @@ public class ApprovalSessionTest extends CaTestCase {
         log.trace(">testExtendApprovalRequest");
         int approvalId = removeApprovalIds.get(0);
         int requestId = approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
 
         // Should be in expired state now
         ApprovalDataVO result = approvalSessionRemote.findNonExpiredApprovalRequest(approvalId);
@@ -554,7 +562,7 @@ public class ApprovalSessionTest extends CaTestCase {
         log.trace(">testFindNonExpiredApprovalRequest");
         int approvalId = removeApprovalIds.get(0);
         approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         // Then after one of them have expired
         approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest);
 
@@ -653,11 +661,10 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalExecutionSessionRemote.approve(admin1, approvalId, createApproval("ap1test"));
         approvalExecutionSessionRemote.approve(admin2, approvalId, createApproval("ap2test"));
         // Make sure that the approval still have status executed after expiration
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         assertEquals("There should be no approvals remaining", 0, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
     }
 
-    @Test(expected = ApprovalRequestExpiredException.class)
     public void shouldFailOnCallIsApprovedWhenApprovalRequestExpired() throws Exception {
         // given
         int approvalId = removeApprovalIds.get(0);
@@ -665,9 +672,14 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalExecutionSessionRemote.approve(admin1, approvalId, createApproval("ap1test"));
         approvalExecutionSessionRemote.approve(admin2, approvalId, createApproval("ap2test"));
         approvalSessionRemote.isApproved(approvalId);
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         // when
-        approvalSessionRemote.isApproved(approvalId);
+        try {
+            approvalSessionRemote.isApproved(approvalId);
+            fail("Should throw ApprovalRequestExpiredException");
+        } catch (ApprovalRequestExpiredException e) { // this can be thrown by approve() above also!
+            // NOPMD expected
+        }
     }
 
     @Test
@@ -678,7 +690,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalExecutionSessionRemote.approve(admin1, approvalId, createApproval("ap1test"));
         approvalExecutionSessionRemote.approve(admin2, approvalId, createApproval("ap2test"));
         approvalSessionRemote.isApproved(approvalId);
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         // when
         try {
             approvalSessionRemote.isApproved(approvalId);
@@ -725,7 +737,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalExecutionSessionRemote.approve(admin1, approvalId, createApproval("testGetRemainingNumberOfApprovalsOnRejectedAndExpiredRequest1"));
         approvalExecutionSessionRemote.reject(admin2, approvalId, createApproval("testGetRemainingNumberOfApprovalsOnRejectedAndExpiredRequest2"));
         // Make sure that the approval still have status rejected after expiration
-        Thread.sleep(1100);
+        Thread.sleep(EXPIRATION_SLEEP);
         approvalSessionRemote.getRemainingNumberOfApprovals(requestId);
         assertEquals("Returned status should be -1", -1, approvalSessionRemote.getRemainingNumberOfApprovals(requestId));
     }
