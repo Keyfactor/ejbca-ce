@@ -122,6 +122,7 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
     @Test
     public void testC_verifyEndEntity() {
         searchEeHelper.openPage(getAdminWebUrl());
+        searchEeHelper.switchViewModeFromAdvancedToBasic();
         searchEeHelper.fillSearchCriteria(TestData.EE_NAME, null, null, null);
         searchEeHelper.clickSearchByUsernameButton();
         searchEeHelper.assertNumberOfSearchResults(1);
