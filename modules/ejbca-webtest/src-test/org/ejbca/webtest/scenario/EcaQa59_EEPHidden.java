@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.webtest.scenario;
 
-import static org.junit.Assert.assertEquals;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -33,10 +32,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 
 /**
  * @version $Id$
@@ -45,8 +41,8 @@ import org.openqa.selenium.support.ui.Select;
 public class EcaQa59_EEPHidden extends WebTestBase {
     
     private static class TestData {
-        private static final Map<String,String> ASSERTION_FIELDMAP = new HashMap<String, String>();
-        private static final Map<String,String> INPUT_END_ENTITY_FIELDMAP = new HashMap<String, String>();
+        private static final Map<String,String> ASSERTION_FIELDMAP = new HashMap<>();
+        private static final Map<String,String> INPUT_END_ENTITY_FIELDMAP = new HashMap<>();
         
         private static final String EEP_NAME = "Hidden";
         private static final String END_ENTITY_NAME = "TestEndEnityHidden";
