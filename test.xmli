@@ -9,7 +9,7 @@
 
     <target name="test:runsys" description="run system test, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
-        <ant antfile="build.xml" dir="modules/configdump" target="test:system" />
+        <antcall target="optionaltestconfigdump-system" inheritrefs="true"/>
     	<antcall target="optionalteststatedump" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector" inheritrefs="true"/>
     	<antcall target="optionaltestplugins" inheritrefs="true"/>
@@ -51,13 +51,16 @@
         <antcall target="optionaltestrest-unit" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" />
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" />
-        <ant antfile="build.xml" dir="modules/configdump" target="test:unit" />
+        <antcall target="optionaltestconfigdump-unit" inheritrefs="true"/>
     	<antcall target="optionaltestct" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritrefs="true"/>
     	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
     	<antcall target="optionaltestunidfnr" inheritrefs="true"/>
     	<antcall target="createreport"/>
     </target>
+    <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
+    <target name="optionaltestconfigdump-system" if="${configdump.exists}"><ant antfile="build.xml" dir="modules/configdump" target="test:system" /></target>
+    <target name="optionaltestconfigdump-unit" if="${configdump.exists}"><ant antfile="build.xml" dir="modules/configdump" target="test:unit" /></target>
     <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
     <target name="optionaltestct" if="${ct.exists}"><ant antfile="build.xml" dir="modules/ct" target="test" /></target>
     <condition property="statedump.exists"><available file="modules/statedump/build.xml" /></condition>
