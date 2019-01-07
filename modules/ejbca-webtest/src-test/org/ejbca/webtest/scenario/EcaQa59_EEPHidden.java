@@ -95,7 +95,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     public static void exit() throws NoSuchEndEntityException, AuthorizationDeniedException, CouldNotRemoveEndEntityException {
         removeEndEntityByUsername(TestData.END_ENTITY_NAME);
         removeEndEntityProfileByName(TestData.EEP_NAME);
-        webDriver.quit();
+        afterClass();
     }
 
     /** Attempts to enable key recovery through system configuration in the Admin Web. */
