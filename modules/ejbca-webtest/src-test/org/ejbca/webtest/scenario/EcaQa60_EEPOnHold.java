@@ -42,8 +42,8 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
     private static WebDriver webDriver;
 
     private static class TestData {
-        private static final Map<String,String> INPUT_END_ENTITY_FIELDMAP = new HashMap<String, String>();
-        private static final Map<String,String> ASSERTION_FIELDMAP = new HashMap<String, String>();
+        private static final Map<String,String> INPUT_END_ENTITY_FIELDMAP = new HashMap<>();
+        private static final Map<String,String> ASSERTION_FIELDMAP = new HashMap<>();
         
         private static final String EEP_NAME = "OnHold";
         private static final String EE_NAME = "TestEndEntityOnHold";
