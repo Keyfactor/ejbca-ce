@@ -109,6 +109,7 @@ public class EcaQa99_EEPManagement extends WebTestBase {
         // Clone EEP
         endEntityProfileHelper.cloneEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME, TestData.END_ENTITY_PROFILE_NAME_CLONED);
         endEntityProfileHelper.assertEndEntityProfileNameExists(TestData.END_ENTITY_PROFILE_NAME_CLONED);
+        endEntityProfileHelper.assertEndEntityProfileNameExists(TestData.END_ENTITY_PROFILE_NAME);
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.assertLogEntryByEventText(
