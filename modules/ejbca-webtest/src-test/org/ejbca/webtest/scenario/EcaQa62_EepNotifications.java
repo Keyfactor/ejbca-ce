@@ -76,8 +76,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
         endEntityProfileHelper.assertNotificationDoesNotExist();
     }
 
-    // TODO ECA-7349
-    // TODO Documentation has to be built before this case works
+    // TODO ECA-7627 Documentation has to be built before this case works
 //    @Ignore
 //    @Test
 //    public void b_checkDocumentation() {
@@ -105,8 +104,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
         endEntityProfileHelper.assertCancelNotificationButtonIsEnabled(true);
     }
 
-    // TODO ECA-7349
-    // TODO Documentation has to be built before this case works
+    // TODO ECA-7627 Documentation has to be built before this case works
 //    @Ignore
 //    @Test
 //    public void d_checkDocumentation() {
@@ -169,7 +167,6 @@ public class EcaQa62_EepNotifications extends WebTestBase {
         endEntityProfileHelper.verifyNotificationFieldsEnabled(true, 2);
     }
 
-    // TODO and ECA-7349
     @Test
     public void h_deleteNotifications() {
         // Click 'Delete' for prototype 'third' and check that it's deleted and that the other prototypes are intact
@@ -199,7 +196,7 @@ public class EcaQa62_EepNotifications extends WebTestBase {
         endEntityProfileHelper.assertNotificationSenderDoesNotExist(0);
     }
 
-    // TODO and ECA-7349
+    // TODO ECA-7627
 //    private void openDocumentation(String xpath, String title) {
 //        String mainWindow = webDriver.getWindowHandle();
 //        String editWindow = null;
