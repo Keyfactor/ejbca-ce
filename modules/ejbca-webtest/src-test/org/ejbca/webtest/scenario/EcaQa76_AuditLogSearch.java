@@ -63,7 +63,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     
     // Test Data
     private static class TestData {
-        private static final Map<String,String> ADD_EE_FIELDMAP = new HashMap<String, String>();
+        private static final Map<String,String> ADD_EE_FIELDMAP = new HashMap<>();
         static final String CA_NAME = "TestAuditLog";
         static final String CN_CHANGED = "testchangevalue";
         static final String TEXT_CONFIRMATION_DELETE_SELECTED_END_ENTITIES = "Are you sure you want to delete selected end entities?";
@@ -114,7 +114,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
 
    @Test
     public void stepB_addEe() {
-//        // Add End Entity
+       // Add End Entity
        addEndEntityHelper.openPage(getAdminWebUrl());
        addEndEntityHelper.setEndEntityProfile("EMPTY");
        addEndEntityHelper.fillFields(TestData.ADD_EE_FIELDMAP);
