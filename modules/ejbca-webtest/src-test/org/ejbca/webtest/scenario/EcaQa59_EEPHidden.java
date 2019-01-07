@@ -152,7 +152,6 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         addEndEntityHelper.assertFieldNameConstraintsPermittedExists();
     }
 
-    // TODO If EjbcaMail isn't available in appserver this test errors. Should fail test immediately in that case
     @Test
     public void testD_addEndEntity() {
         addEndEntityHelper.openPage(getAdminWebUrl());
