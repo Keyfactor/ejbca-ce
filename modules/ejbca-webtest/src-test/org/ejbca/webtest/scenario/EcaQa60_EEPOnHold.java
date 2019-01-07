@@ -87,7 +87,7 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
     public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         removeEndEntityByUsername(TestData.EE_NAME);
         removeEndEntityProfileByName(TestData.EEP_NAME);
-        webDriver.quit();
+        afterClass();
     }
     
     @Test
