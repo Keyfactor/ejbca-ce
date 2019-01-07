@@ -91,13 +91,8 @@ public class JdbcTool extends ClientToolBox {
         // Run command instance
         int errorCode = 0;
         if (jdbcUrl!=null && username!=null && password!=null && !linesInFile.isEmpty()) {
-            try {
-                errorCode = new JdbcTool().run(jdbcUrl, username, password, linesInFile);
-                log.info("Done.");
-            } catch (SQLException e) {
-                log.error(e.getMessage());
-                errorCode = 2;
-            }
+            errorCode = new JdbcTool().run(jdbcUrl, username, password, linesInFile);
+            log.info("Done.");
         } else {
             log.info("Usage: " + args[0] + " --url=<jdbcUrl> --username=<username> [--password=<password> | --password-prompt] [--file=<sqlFile> | --execute=\"<SQL-statement>\"]");
             log.info("You need to ensure that a suitable JDBC 4.0+ driver is available in the path of ClientToolBox by linking it from the 'ext/' directory.");
@@ -106,43 +101,51 @@ public class JdbcTool extends ClientToolBox {
         System.exit(errorCode); // NOPMD, this is not a JEE component
     }
 
-    private int run(final String jdbcUrl, final String username, final String password, final List<String> linesInFile) throws SQLException {
+    private int run(final String jdbcUrl, final String username, final String password, final List<String> linesInFile) {
         try (final Connection connection = DriverManager.getConnection(jdbcUrl, username, password);) {
             connection.setAutoCommit(true);
             log.info("Connected.");
             final StringBuilder sb = new StringBuilder();
             for (final String lineInFile : linesInFile) {
                 final String line = lineInFile.trim();
-                if (!line.isEmpty() && !line.startsWith("--") && !line.startsWith("#")) {
-                    sb.append(line);
-                    if (line.endsWith(";")) {
-                        sb.deleteCharAt(sb.length()-1);
-                        try {
-                            try (final Statement statement = connection.createStatement();) {
-                                final String sqlStatement = sb.toString();
-                                if (sqlStatement.toUpperCase().startsWith("SELECT")) {
-                                    try (final ResultSet resultSet = statement.executeQuery(sb.toString());) {
-                                        final boolean hasResult = resultSet!=null && resultSet.next();
-                                        log.info("'" + sqlStatement + "' -> " + (hasResult ? "hit" : "miss"));
-                                        if (linesInFile.size()==1 && !hasResult) {
-                                            return 4;
-                                        }
-                                    }
-                                } else {
-                                    final int rowCount = statement.executeUpdate(sb.toString());
-                                    log.info("'" + sqlStatement + "' -> " + rowCount);
+                // Skip lines that are comments or empty
+                if (line.isEmpty() || line.startsWith("--") || line.startsWith("#")) {
+                    continue;
+                }
+                sb.append(line);
+                // Assume a multi-line statement if line does not end with the ';' character
+                if (!line.endsWith(";")) {
+                    sb.append(" ");
+                    continue;
+                }
+                // Remove the statement ending character ';'
+                sb.deleteCharAt(sb.length()-1);
+                try {
+                    try (final Statement statement = connection.createStatement();) {
+                        final String sqlStatement = sb.toString();
+                        if (sqlStatement.toUpperCase().startsWith("SELECT")) {
+                            try (final ResultSet resultSet = statement.executeQuery(sb.toString());) {
+                                final boolean hasResult = resultSet!=null && resultSet.next();
+                                log.info("'" + sqlStatement + "' -> " + (hasResult ? "hit" : "miss"));
+                                if (linesInFile.size()==1 && !hasResult) {
+                                    // Return a non-zero error code for easy scripting if we do a single select with no match
+                                    return 4;
                                 }
                             }
-                        } catch (SQLException e) {
-                            log.error(e.getMessage());
-                            return 3;
+                        } else {
+                            final int rowCount = statement.executeUpdate(sb.toString());
+                            log.info("'" + sqlStatement + "' -> " + rowCount);
                         }
-                        sb.setLength(0);
-                    } else {
-                        sb.append(" ");
                     }
+                } catch (SQLException e) {
+                    log.error(e.getMessage());
+                    return 3;
                 }
+                sb.setLength(0);
             }
+        } catch (SQLException e) {
+            log.error(e.getMessage());
+            return 2;
         }
         return 0;
     }
