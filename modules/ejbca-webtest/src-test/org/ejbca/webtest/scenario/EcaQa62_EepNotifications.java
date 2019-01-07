@@ -17,11 +17,17 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.webtest.WebTestBase;
+import org.ejbca.webtest.helper.EndEntityProfileHelper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * This test checks the behavior of EEP Notifications in the edit view.
@@ -30,43 +36,47 @@ import org.openqa.selenium.WebDriver;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa62_EepNotifications extends WebTestBase {
+    // Helpers
+    private static EndEntityProfileHelper endEntityProfileHelper;
 
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserDataTest"));
 
     private static WebDriver webDriver;
-    private static final String eepName = "NotificationEEP-ECAQA-62";
-    private static final String firstText = "first";
-    private static final String secondText = "second";
-    private static final String thirdText = "third";
+
+    // Test Data
+    private static class TestData {
+        private static final String EEP_NAME = "NotificationEEP-ECAQA-62";
+        private static final String FIRST_TEXT = "first";
+        private static final String SECOND_TEXT = "second";
+        private static final String THIRD_TEXT = "third";
+    }
 
     @BeforeClass
     public static void init() {
         beforeClass(true, null);
         webDriver = getWebDriver();
+        // Init helpers
+        endEntityProfileHelper = new EndEntityProfileHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
-        removeEndEntityProfileByName(eepName);
+        removeEndEntityProfileByName(TestData.EEP_NAME);
         webDriver.quit();
     }
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void a_addEep() {
-//        EndEntityProfileHelper.goTo(webDriver, getAdminWebUrl());
-//        EndEntityProfileHelper.add(webDriver, eepName, true);
-//
-//        // Verify that notifications are disabled by default
-//        EndEntityProfileHelper.edit(webDriver, eepName);
-//        assertFalse("'Send Notification' was checked upon creation of EEP", webDriver.findElement(By.id("checkboxusesendnotification")).isSelected());
-//        try {
-//            webDriver.findElement(By.xpath("//tr[td/strong[text()='Send Notification']]/following-sibling::tr[1]/td[2][contains(text(), 'Notification')]"));
-//            fail("There were notifications displayed upon creation of EEP");
-//        } catch (NoSuchElementException e) {}
-//    }
+    @Test
+    public void a_addEep() {
+        endEntityProfileHelper.openPage(getAdminWebUrl());
+        endEntityProfileHelper.addEndEntityProfile(TestData.EEP_NAME);
 
-    // TODO Fix at ECA-7334 and ECA-7349
+        // Verify that notifications are disabled by default
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
+        endEntityProfileHelper.assertUseSendNotificationIsSelected(false);
+        endEntityProfileHelper.assertNotificationDoesNotExist();
+    }
+
+    // TODO ECA-7349
     // TODO Documentation has to be built before this case works
 //    @Ignore
 //    @Test
@@ -74,32 +84,28 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        openDocumentation("//strong[text()='Send Notification']/following-sibling::a", "E-mail Notifications");
 //    }
 
-//    @Test
-//    public void c_enableNotifications() {
-//        // Check 'Use' and check that 'Default=', 'Required' and 'Add' are enabled (and not selected)
-//        webDriver.findElement(By.id("checkboxusesendnotification")).click();
-//        assertTrue("'Default=' was not enabled", webDriver.findElement(By.id("checkboxsendnotification")).isEnabled());
-//        assertFalse("'Default=' was selected", webDriver.findElement(By.id("checkboxsendnotification")).isSelected());
-//        assertTrue("'Required' was not enabled", webDriver.findElement(By.id("checkboxrequiredsendnotification")).isEnabled());
-//        assertFalse("'Required' was selected", webDriver.findElement(By.id("checkboxrequiredsendnotification")).isSelected());
-//        assertTrue("'Add' was not enabled", webDriver.findElement(By.xpath("//input[@name='buttonaddnotification']")).isEnabled());
-//
-//        // Click 'Add' button and check that all the fields are added
-//        webDriver.findElement(By.xpath("//input[@name='buttonaddnotification']")).click();
-//        try {
-//            webDriver.findElement(By.xpath("//td[contains(text(), 'Notification Sender')]/following-sibling::td/input[@id='textfieldnotificationsender' and @type='text']"));
-//            webDriver.findElement(By.xpath("//td[contains(text(), 'Notification Recipient')]/following-sibling::td/input[@name='textfieldnotificationrcpt' and @type='text']"));
-//            webDriver.findElement(By.xpath("//td[contains(text(), 'Notification Events')]/following-sibling::td/select[@name='selectnotificationevents']"));
-//            webDriver.findElement(By.xpath("//td[contains(text(), 'Notification Subject')]/following-sibling::td/input[@name='textfieldnotificationsubject' and @type='text']"));
-//            webDriver.findElement(By.xpath("//td[contains(text(), 'Notification Message')]/following-sibling::td/textarea[@name='textareanotificationmessage']"));
-//            webDriver.findElement(By.xpath("//input[@name='buttonaddanothernotification']"));
-//            assertTrue("Cancel button was not enabled", webDriver.findElement(By.xpath("//input[@name='buttondeletetemporarynotification']")).isEnabled());
-//        } catch (NoSuchElementException e) {
-//            fail("All fields were not displayed correctly after adding notification");
-//        }
-//    }
+    @Test
+    public void c_enableNotifications() {
+        // Check 'Use' and check that 'Default=', 'Required' and 'Add' are enabled (and not selected)
+        endEntityProfileHelper.triggerSendNotification();
+        endEntityProfileHelper.assertDefaultSendNotificationIsEnabled(true);
+        endEntityProfileHelper.assertDefaultSendNotificationIsSelected(false);
+        endEntityProfileHelper.assertRequiredSendNotificationIsEnabled(true);
+        endEntityProfileHelper.assertRequiredSendNotificationIsSelected(false);
+        endEntityProfileHelper.assertAddNotificationButtonIsEnabled(true);
 
-    // TODO Fix at ECA-7334 and ECA-7349
+        // Click 'Add' button and check that all the fields are added
+        endEntityProfileHelper.addNotification();
+        endEntityProfileHelper.assertNotificationSenderExists();
+        endEntityProfileHelper.assertNotificationRecipientExists();
+        endEntityProfileHelper.assertNotificationEventsExists();
+        endEntityProfileHelper.assertNotificationSubjectExists();
+        endEntityProfileHelper.assertNotificationMessageExists();
+        endEntityProfileHelper.assertAddAnotherNotificationButtonExists();
+        endEntityProfileHelper.assertCancelNotificationButtonIsEnabled(true);
+    }
+
+    // TODO ECA-7349
     // TODO Documentation has to be built before this case works
 //    @Ignore
 //    @Test
@@ -108,143 +114,92 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        openDocumentation("//td[contains(text(), 'Notification Message')]/a", "Dynamic Substitution Variables");
 //    }
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void e_addAnotherNotification() {
-//        webDriver.findElement(By.xpath("//input[@name='buttonaddanothernotification']")).click();
-//        WebTestHelper.assertAlert(webDriver, "You must fill in a notification sender if notification is to be used.", true);
-//        WebTestHelper.assertAlert(webDriver, "You must fill in a notification subject if notification is to be used.", true);
-//        WebTestHelper.assertAlert(webDriver, "You must fill in a notification message if notification is to be used.", true);
-//
-//        // Click 'Cancel' and make sure that the page looks like before
-//        webDriver.findElement(By.xpath("//input[@name='buttondeletetemporarynotification']")).click();
-//        try {
-//            webDriver.findElement(By.xpath("//td[contains(text(), 'Notification Sender')]/following-sibling::td/input[@id='textfieldnotificationsender' and @type='text']"));
-//            fail("'Notification Sender' still displayed");
-//        } catch (NoSuchElementException e) {}
-//        assertEquals("'Add' button doesn't display 'Add'", "Add", webDriver.findElement(By.xpath("//input[@name='buttonaddnotification']")).getAttribute("value"));
-//    }
+    @Test
+    public void e_addAnotherNotification() throws InterruptedException {
+        //TODO ECA-7349 check after eep page convertion, alerts should be replaced with error messages.
+//        endEntityProfileHelper.addAnotherNotification();
+//        endEntityProfileHelper.assertNotificationNotFilledAllerts();
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void f_addFirstNotification() {
-//        webDriver.findElement(By.xpath("//input[@name='buttonaddnotification']")).click();
-//
-//        // Fill fields with 'first' and then click 'Add Another'
-//        fillTopPrototype(firstText);
-//        webDriver.findElement(By.xpath("//input[@name='buttonaddanothernotification']")).click();
-//
-//        // Make sure the new prototype is on top
-//        assertTrue("Top prototype was not empty", webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender']")).getText().isEmpty());
-//        assertEquals("Bottom prototype didn't contain expected value", firstText, webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsubject_newvalue0']")).getAttribute("value"));
-//        assertEquals("Bottom prototype didn't have 'Delete' button", "Delete", webDriver.findElement(By.xpath("//input[@name='buttondeleltenotification0']")).getAttribute("value"));
-//
-//        // Click 'Save' and make sure the correct error messages are displayed
-//        EndEntityProfileHelper.save(webDriver, false);
-//        WebTestHelper.assertAlert(webDriver, "You must fill in a notification sender if notification is to be used.", true);
-//        WebTestHelper.assertAlert(webDriver, "You must fill in a notification subject if notification is to be used.", true);
-//        WebTestHelper.assertAlert(webDriver, "You must fill in a notification message if notification is to be used.", true);
-//    }
+        // Click 'Cancel' and make sure that the page looks like before
+        endEntityProfileHelper.cancelNotification();
+        endEntityProfileHelper.assertNotificationSenderDoesNotExist();
+    }
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void g_addSecondAndThirdNotification() {
-//        // Fill fields with 'second' and then click 'Add Another'
-//        fillTopPrototype(secondText);
-//        webDriver.findElement(By.xpath("//input[@name='buttonaddanothernotification']")).click();
-//
-//        // Fill fields with 'third' and then save
-//        fillTopPrototype(thirdText);
-//        EndEntityProfileHelper.save(webDriver, true);
-//    }
+    @Test
+    public void f_addFirstNotification() {
+        endEntityProfileHelper.addNotification();
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void g_disabledFields() {
-//        EndEntityProfileHelper.edit(webDriver, eepName);
-//
-//        // Un-tick 'Use' and check that all fields become disabled
-//        webDriver.findElement(By.id("checkboxusesendnotification")).click();
-//        List<String> disabledElements = Arrays.asList(
-//                "//input[@name='buttondeleteallnotification']",
-//                "//input[@name='checkboxsendnotification']",
-//                "//input[@name='checkboxrequiredsendnotification']",
-//                "//input[@name='buttonaddnotification']",
-//                "//input[@name='buttondeleltenotification2']",
-//                "//input[@name='textfieldnotificationsender_newvalue2']",
-//                "//input[@name='textfieldnotificationrcpt_newvalue2']",
-//                "//select[@name='selectnotificationevents_newvalue2']",
-//                "//input[@name='textfieldnotificationsubject_newvalue2']",
-//                "//textarea[@name='textareanotificationmessage_newvalue2']",
-//                "//input[@name='buttondeleltenotification1']",
-//                "//input[@name='textfieldnotificationsender_newvalue1']",
-//                "//input[@name='textfieldnotificationrcpt_newvalue1']",
-//                "//select[@name='selectnotificationevents_newvalue1']",
-//                "//input[@name='textfieldnotificationsubject_newvalue1']",
-//                "//textarea[@name='textareanotificationmessage_newvalue1']",
-//                "//input[@name='buttondeleltenotification0']",
-//                "//input[@name='textfieldnotificationsender_newvalue0']",
-//                "//input[@name='textfieldnotificationrcpt_newvalue0']",
-//                "//select[@name='selectnotificationevents_newvalue0']",
-//                "//input[@name='textfieldnotificationsubject_newvalue0']",
-//                "//textarea[@name='textareanotificationmessage_newvalue0']"
-//        );
-//        for (String disabledElement : disabledElements) {
-//            assertFalse("Element was not disabled: " + disabledElement, webDriver.findElement(By.xpath(disabledElement)).isEnabled());
-//        }
-//
-//        // Tick 'Use' again and check that fields become enabled
-//        webDriver.findElement(By.id("checkboxusesendnotification")).click();
-//        for (String disabledElement : disabledElements) {
-//            assertTrue("Element was not disabled: " + disabledElement, webDriver.findElement(By.xpath(disabledElement)).isEnabled());
-//        }
-//    }
+        // Fill fields with 'first' and then click 'Add Another'
+        endEntityProfileHelper.fillNotification(TestData.FIRST_TEXT);
+        endEntityProfileHelper.addAnotherNotification();
+        // Make sure the new prototype is on top
+        assertTrue("Top notification was not empty", endEntityProfileHelper.getNotificationSenderText().isEmpty());
+        assertEquals("Bottom notification didn't contain expected value", TestData.FIRST_TEXT, endEntityProfileHelper.getNotificationSubjectValueText(0));
+        assertEquals("Bottom notification didn't have 'Delete' button", "Delete", endEntityProfileHelper.getNotificationDeleteButtonValueText(0));
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    @Test
-//    public void h_deleteNotifications() {
-//        // Click 'Delete' for prototype 'third' and check that it's deleted and that the other prototypes are intact
-//        webDriver.findElement(By.xpath("//input[@name='buttondeleltenotification2']")).click();
-//        try {
-//            webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue2']"));
-//            fail("Prototype 'third' still present");
-//        } catch (NoSuchElementException e) {}
-//        assertEquals("Top prototype had unexpected value", secondText, webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue1']")).getAttribute("value"));
-//        assertEquals("Bottom prototype had unexpected value", firstText, webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue0']")).getAttribute("value"));
-//
-//        // Click 'Delete All', then cancel and restart editing
-//        webDriver.findElement(By.xpath("//input[@name='buttondeleteallnotification']")).click();
-//        EndEntityProfileHelper.cancel(webDriver);
-//        EndEntityProfileHelper.edit(webDriver, eepName);
-//
-//        // Check that all prototypes are present
-//        try {
-//            webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue2']"));
-//            webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue1']"));
-//            webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue0']"));
-//        } catch (NoSuchElementException e) {
-//            fail("A prototype was not present");
-//        }
-//
-//        // Click 'Delete All', save, edit and check that all prototypes are gone
-//        webDriver.findElement(By.xpath("//input[@name='buttondeleteallnotification']")).click();
-//        EndEntityProfileHelper.save(webDriver, true);
-//        EndEntityProfileHelper.edit(webDriver, eepName);
-//        try {
-//            webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue2']"));
-//            fail("Prototype 'third' was still present");
-//        } catch (NoSuchElementException e) {}
-//        try {
-//            webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue1']"));
-//            fail("Prototype 'second' was still present");
-//        } catch (NoSuchElementException e) {}
-//        try {
-//            webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender_newvalue0']"));
-//            fail("Prototype 'first' was still present");
-//        } catch (NoSuchElementException e) {}
-//    }
+        // Click 'Save' and make sure the correct error messages are displayed
+//        TODO ECA-7349 check after eep page convertion, alerts should be replaced with error messages.
+//        endEntityProfileHelper.saveEndEntityProfile( false);
+//        endEntityProfileHelper.assertNotificationNotFilledAllerts();
+    }
 
-    // TODO Fix at ECA-7334 and ECA-7349
+    @Test
+    public void g_addSecondAndThirdNotification() {
+        // Fill fields with 'second' and then click 'Add Another'
+        endEntityProfileHelper.fillNotification(TestData.SECOND_TEXT);
+        endEntityProfileHelper.addAnotherNotification();
+
+        // Fill fields with 'third' and then save
+
+        endEntityProfileHelper.fillNotification(TestData.THIRD_TEXT);
+        endEntityProfileHelper.saveEndEntityProfile( true);
+    }
+
+    //TODO ECA-7349 verify after jsf convertion. There may be a problem with indeces
+    @Test
+    public void g_disabledFields() {
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
+
+        // Un-tick 'Use' and check that all fields become disabled
+        endEntityProfileHelper.triggerSendNotification();
+        endEntityProfileHelper.verifyNotificationFieldsEnabled(false, 2);
+
+        // Tick 'Use' again and check that fields become enabled
+        endEntityProfileHelper.triggerSendNotification();
+        endEntityProfileHelper.verifyNotificationFieldsEnabled(true, 2);
+    }
+
+    // TODO and ECA-7349
+    @Test
+    public void h_deleteNotifications() {
+        // Click 'Delete' for prototype 'third' and check that it's deleted and that the other prototypes are intact
+        endEntityProfileHelper.deleteNotification(2);
+        endEntityProfileHelper.assertNotificationSenderDoesNotExist(2);
+
+        assertEquals("Top notification had unexpected value", TestData.SECOND_TEXT, endEntityProfileHelper.getNotificationSenderValueText(1));
+        assertEquals("Bottom prototype had unexpected value", TestData.FIRST_TEXT, endEntityProfileHelper.getNotificationSenderValueText(0));
+
+        // Click 'Delete All', then cancel and restart editing
+        endEntityProfileHelper.deleteAllNotifications();
+        endEntityProfileHelper.cancel();
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
+
+        // Check that all prototypes are present
+        endEntityProfileHelper.assertNotificationSenderExists(2);
+        endEntityProfileHelper.assertNotificationSenderExists(1);
+        endEntityProfileHelper.assertNotificationSenderExists(0);
+
+        // Click 'Delete All', save, edit and check that all prototypes are gone
+
+        endEntityProfileHelper.deleteAllNotifications();
+        endEntityProfileHelper.saveEndEntityProfile(true);
+        endEntityProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
+        endEntityProfileHelper.assertNotificationSenderDoesNotExist(2);
+        endEntityProfileHelper.assertNotificationSenderDoesNotExist(1);
+        endEntityProfileHelper.assertNotificationSenderDoesNotExist(0);
+    }
+
+    // TODO and ECA-7349
 //    private void openDocumentation(String xpath, String title) {
 //        String mainWindow = webDriver.getWindowHandle();
 //        String editWindow = null;
@@ -272,16 +227,4 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 //        webDriver.switchTo().window(mainWindow);
 //    }
 
-    // TODO Fix at ECA-7334 and ECA-7349
-//    private void fillTopPrototype(String text) {
-//        WebElement senderField = webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender']"));
-//        WebElement recipientField = webDriver.findElement(By.xpath("//input[@name='textfieldnotificationrcpt']"));
-//        WebElement subjectField = webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsubject']"));
-//        WebElement messageField = webDriver.findElement(By.xpath("//textarea[@name='textareanotificationmessage']"));
-//        senderField.sendKeys(text);
-//        recipientField.clear();
-//        recipientField.sendKeys(text);
-//        subjectField.sendKeys(text);
-//        messageField.sendKeys(text);
-//    }
 }
