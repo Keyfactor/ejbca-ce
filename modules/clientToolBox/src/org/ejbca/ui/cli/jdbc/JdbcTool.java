@@ -22,8 +22,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -57,16 +58,27 @@ public class JdbcTool extends ClientToolBox {
         String jdbcUrl = null;
         String username = null;
         String password = null;
-        final List<String> linesInFile = new ArrayList<>();
+        final LinkedList<String> linesInFile = new LinkedList<>();
         // Parse command line arguments (excluding the first)
-        for (final String current : Arrays.copyOfRange(args, 1, args.length)) {
-            if (current.startsWith("--url=")) {
-                jdbcUrl = current.substring("--url=".length());
-            } else if (current.startsWith("--username=")) {
-                username = current.substring("--username=".length());
-            } else if (current.startsWith("--password=")) {
-                password = current.substring("--password=".length());
-            } else if (current.startsWith("--password-prompt")) {
+        List<String> parametersReversed = Arrays.asList(Arrays.copyOfRange(args, 1, args.length));
+        Collections.reverse(parametersReversed);
+        String potentialValue = null;
+        for (final String current : parametersReversed) {
+            if (log.isDebugEnabled()) {
+                log.debug("current: '" + current + "' potentialValue: '" + potentialValue + "'");
+            }
+            if (current.equals("--url")) {
+                jdbcUrl = potentialValue;
+                potentialValue = null;
+            } else if (current.equals("--username")) {
+                username = potentialValue;
+                potentialValue = null;
+            } else if (current.equals("--password")) {
+                password = potentialValue;
+                potentialValue = null;
+            } else if (current.equals("--password-prompt")) {
+                handleUnusedPotentialValue(potentialValue);
+                potentialValue = null;
                 final Console console = System.console();
                 if (console==null) {
                     log.error("Console is not available. Unable to use '--password-prompt'.");
@@ -74,31 +86,41 @@ public class JdbcTool extends ClientToolBox {
                     console.printf("Enter database password: ");
                     password = String.valueOf(console.readPassword());
                 }
-            } else if (current.startsWith("--file=")) {
-                final String sqlFile = current.substring("--file=".length());
+            } else if (current.equals("--file")) {
+                final String sqlFile = potentialValue;
+                potentialValue = null;
                 try {
                     linesInFile.addAll(Files.readAllLines(Paths.get(sqlFile), StandardCharsets.UTF_8));
                     log.info("Loading SQL script '" + sqlFile + "' with " + linesInFile.size() + " lines.");
                 } catch (IOException e) {
                     log.error("Failed to load SQL script '" + sqlFile + "': " + e.getMessage());
                 }
-            } else if (current.startsWith("--execute=")) {
-                linesInFile.add(current.substring("--execute=".length()));
+            } else if (current.equals("--execute")) {
+                linesInFile.add(0, potentialValue);
+                potentialValue = null;
             } else {
-                log.warn("Unrecognized argument '" +current + "'.");
+                handleUnusedPotentialValue(potentialValue);
+                potentialValue = current;
             }
         }
+        handleUnusedPotentialValue(potentialValue);
         // Run command instance
         int errorCode = 0;
         if (jdbcUrl!=null && username!=null && password!=null && !linesInFile.isEmpty()) {
             errorCode = new JdbcTool().run(jdbcUrl, username, password, linesInFile);
             log.info("Done.");
         } else {
-            log.info("Usage: " + args[0] + " --url=<jdbcUrl> --username=<username> [--password=<password> | --password-prompt] [--file=<sqlFile> | --execute=\"<SQL-statement>\"]");
+            log.info("Usage: " + args[0] + " --url <jdbcUrl> --username <username> [--password <password> | --password-prompt] [--file <sqlFile> | --execute \"<SQL-statement>\"]");
             log.info("You need to ensure that a suitable JDBC 4.0+ driver is available in the path of ClientToolBox by linking it from the 'ext/' directory.");
             errorCode = 1;
         }
         System.exit(errorCode); // NOPMD, this is not a JEE component
+    }
+    
+    private void handleUnusedPotentialValue(final String potentialValue) {
+        if (potentialValue!=null) {
+            log.warn("Unrecognized argument '" + potentialValue + "'.");
+        }
     }
 
     private int run(final String jdbcUrl, final String username, final String password, final List<String> linesInFile) {
