@@ -94,11 +94,11 @@ function confirmrevocation(){
     <div align="right">
      <% if(filtermode == AdminPreference.FILTERMODE_BASIC){ %>
       <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHANGEFILTERMODETO_ADVANCED %>'>
-      <A href='javascript:document.changefiltermode.submit();'><u><c:out value="<%= ejbcawebbean.getText(\"ADVANCEDMODE\") %>"/></u></A>
+      <A id="viewModeSwitchBasicOrAdvanced" href='javascript:document.changefiltermode.submit();'><u><c:out value="<%= ejbcawebbean.getText(\"ADVANCEDMODE\") %>"/></u></A>
      <% }
         if(filtermode == AdminPreference.FILTERMODE_ADVANCED){ %>
         <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHANGEFILTERMODETO_BASIC %>'>
-        <A href='javascript:document.changefiltermode.submit();'><u><c:out value="<%= ejbcawebbean.getText(\"BASICMODE\") %>"/></u></A>
+        <A id="viewModeSwitchBasicOrAdvanced"  href='javascript:document.changefiltermode.submit();'><u><c:out value="<%= ejbcawebbean.getText(\"BASICMODE\") %>"/></u></A>
      <% } %>
      &nbsp;&nbsp;&nbsp;
   </div>

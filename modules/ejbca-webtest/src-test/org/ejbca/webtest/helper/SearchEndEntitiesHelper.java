@@ -36,12 +36,15 @@ public class SearchEndEntitiesHelper extends BaseHelper {
         static final By BUTTON_VIEW_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View End Entity (popup window)']");
         static final By BUTTON_EDIT_END_ENTITY_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='Edit End Entity (popup window)']");
         static final By BUTTON_HARD_TOKEN_FOR_ROW = By.xpath("./..//div[@class='button-group']/button[@title='View Hard Tokens (popup window)']");
+
+        static final String TEXT_VIEW_MODE_SWITCH_BASIC = "Basic Mode";
+        static final By BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED = By.id("viewModeSwitchBasicOrAdvanced");
         // Select drop downs
         static final By SELECT_SEARCH_STATUS = By.xpath("//select[@name='selectliststatus']");
         // Other
         static final By ROWS_SEARCH_RESULTS = By.xpath("//table[@class='results']/tbody/tr");
         static final By TEXT_NO_RESULTS = By.xpath("//table[@class='results']/tbody//td[text()='No end entities found.']");
-        
+
         static final By getColumnContainingCommonName(final String cn) {
             return By.xpath("//table[@class='results']/tbody/tr/td[4][contains(text(),'" + cn + "')]");
         }
@@ -63,22 +66,22 @@ public class SearchEndEntitiesHelper extends BaseHelper {
     /**
      * Fills search form if a search entry is not null.
      *
-     * @param username username.
-     * @param certificateSn certificate SN in hex.
+     * @param username            username.
+     * @param certificateSn       certificate SN in hex.
      * @param endEntityStatusName name of the status to select.
-     * @param expiringWithinDays expiring value.
+     * @param expiringWithinDays  expiring value.
      */
     public void fillSearchCriteria(final String username, final String certificateSn, final String endEntityStatusName, final String expiringWithinDays) {
-        if(username != null) {
+        if (username != null) {
             fillInput(Page.INPUT_SEARCH_USERNAME, username);
         }
-        if(certificateSn != null) {
+        if (certificateSn != null) {
             fillInput(Page.INPUT_SEARCH_CERTIFICATE_SN, certificateSn);
         }
-        if(endEntityStatusName != null) {
+        if (endEntityStatusName != null) {
             selectOptionByName(Page.SELECT_SEARCH_STATUS, endEntityStatusName);
         }
-        if(expiringWithinDays != null) {
+        if (expiringWithinDays != null) {
             fillInput(Page.INPUT_SEARCH_EXPIRING_WITHIN, expiringWithinDays);
         }
     }
@@ -96,7 +99,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
     public void clickSearchByStatus() {
         clickLink(Page.BUTTON_SEARCH_BY_STATUS);
     }
-    
+
     /**
      * Asserts the expected number of search results.
      *
@@ -104,7 +107,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      */
     public void assertNumberOfSearchResults(final int numberOfResults) {
         final List<WebElement> searchResultsWebElement = findElements(Page.ROWS_SEARCH_RESULTS);
-        if(searchResultsWebElement == null) {
+        if (searchResultsWebElement == null) {
             fail("Cannot find search result rows.");
         }
         assertEquals("Unexpected number of End Entity results on search", numberOfResults, searchResultsWebElement.size());
@@ -126,64 +129,70 @@ public class SearchEndEntitiesHelper extends BaseHelper {
 
     /**
      * Clicks the specified element (button) for a row in search results.
-     * @param cn Common Name of the row entry (used as row identifier)
+     *
+     * @param cn             Common Name of the row entry (used as row identifier)
      * @param elementToClick button to click
      */
     private void clickForRowEntry(final String cn, final By elementToClick) {
         final WebElement row = findElement(Page.getColumnContainingCommonName(cn));
         row.findElement(elementToClick).click();
     }
-    
+
     /**
      * Clicks 'Edit' (End entity) for the row containing the specified CN.
+     *
      * @param cn Common name of the row to use.
      */
     public void clickEditEndEntityForRow(final String cn) {
         clickForRowEntry(cn, Page.BUTTON_EDIT_END_ENTITY_FOR_ROW);
     }
-    
+
     /**
      * Clicks 'View' (Certificate) for the row containing the specified CN.
+     *
      * @param cn Common name of the row to use.
      */
     public void clickViewCertificateForRow(final String cn) {
         clickForRowEntry(cn, Page.BUTTON_VIEW_CERTIFICATE_FOR_ROW);
     }
-    
+
     /**
      * Clicks 'View' (End entity) for the row containing the specified CN.
+     *
      * @param cn Common name of the row to use.
      */
     public void clickViewEndEntityForRow(final String cn) {
         clickForRowEntry(cn, Page.BUTTON_VIEW_END_ENTITY_FOR_ROW);
     }
-    
+
     /**
      * Clicks 'Hard Tokens' for the row containing the specified CN.
+     *
      * @param cn Common name of the row to use.
      */
     public void clickHardTokensForRow(final String cn) {
         clickForRowEntry(cn, Page.BUTTON_HARD_TOKEN_FOR_ROW);
     }
-    
+
     /**
      * TODO Introduce common helper class for pop-up windows with more accurate, by field search.
-     * 
+     * <p>
      * Switches to first available pop-up window and asserts the given text exists.
+     *
      * @param textToFind to assert existence of.
      */
     public void assertPopupContainsText(final String textToFind) {
         final String mainWindow = switchToNextWindow();
-        assertElementExists(By.xpath("//*[text()[contains(.,'" + textToFind + "')]]"), 
+        assertElementExists(By.xpath("//*[text()[contains(.,'" + textToFind + "')]]"),
                 "'" + textToFind + "' was not found in pop-up window.");
         switchToWindow(mainWindow);
     }
-    
+
     /**
      * Operates with deletion confirmation alert dialog.
      *
      * @param expectedMessage expected message.
-     * @param isConfirmed true to confirm, false otherwise.
+     * @param isConfirmed     true to confirm, false otherwise.
      */
     public void confirmDeletionOfEndEntity(final String expectedMessage, final boolean isConfirmed) {
         assertAndConfirmAlertPopUp(expectedMessage, isConfirmed);
@@ -193,7 +202,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      * Operates with revocation confirmation alert dialog.
      *
      * @param expectedMessage expected message.
-     * @param isConfirmed true to confirm, false otherwise.
+     * @param isConfirmed     true to confirm, false otherwise.
      */
     public void confirmRevocationOfEndEntity(final String expectedMessage, final boolean isConfirmed) {
         assertAndConfirmAlertPopUp(expectedMessage, isConfirmed);
@@ -204,7 +213,7 @@ public class SearchEndEntitiesHelper extends BaseHelper {
      */
     public void assertNoSearchResults() {
         final WebElement noResultsWebElement = findElement(Page.TEXT_NO_RESULTS);
-        if(noResultsWebElement == null) {
+        if (noResultsWebElement == null) {
             fail("Cannot find no search result row.");
         }
         assertEquals(
@@ -212,5 +221,15 @@ public class SearchEndEntitiesHelper extends BaseHelper {
                 "No end entities found.",
                 noResultsWebElement.getText()
         );
+    }
+
+    /**
+     * Switches the view to 'Basic Mode' if the link with proper text exists.
+     *
+     */
+    public void switchViewModeFromAdvancedToBasic() {
+        if (Page.TEXT_VIEW_MODE_SWITCH_BASIC.equals(getElementText(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED))) {
+            clickLink(Page.BUTTON_VIEW_MODE_SWITCH_BASIC_OR_ADVANCED);
+        }
     }
 }

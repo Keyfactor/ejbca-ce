@@ -118,27 +118,27 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         eeProfileHelper.addEndEntityProfile(TestData.EEP_NAME);
         eeProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
         // Set all desired values in EEP. Set values will be validated in next step (add end entity)
-        Select dropDownCa =  new Select(webDriver.findElement(By.xpath("//select[@name='selectdefaultca']")));
-        dropDownCa.selectByVisibleText(getCaName());
-        webDriver.findElement(By.id("checkboxusemaxfailedlogins")).click();
-        webDriver.findElement(By.id("checkboxsusetarttime")).click();
-        webDriver.findElement(By.id("checkboxuseendtime")).click();
-        webDriver.findElement(By.xpath("//input[@name='textfieldstarttime']")).sendKeys(currentDateString);
-        webDriver.findElement(By.xpath("//input[@name='textfieldendtime']")).sendKeys(oneMonthsFromNowString);
-        webDriver.findElement(By.id("checkboxusencpermitted")).click();
-        webDriver.findElement(By.id("checkboxuseextensiondata")).click();
-        webDriver.findElement(By.id("checkboxuseallowedrequests")).click();
-        webDriver.findElement(By.id("checkboxusekeyrecoverable")).click();
-        webDriver.findElement(By.id("checkboxuseissuancerevocationreason")).click();
-        webDriver.findElement(By.id("checkboxusesendnotification")).click();
-        webDriver.findElement(By.xpath("//input[@name='buttonaddnotification']")).click();
-        webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsender']")).sendKeys("sender@example.com");
-        webDriver.findElement(By.xpath("//input[@name='textfieldnotificationsubject']")).sendKeys("test subject");
-        webDriver.findElement(By.xpath("//textarea[@name='textareanotificationmessage']")).sendKeys("test message");
+        eeProfileHelper.selectDefaultCa(getCaName());
+        eeProfileHelper.triggerMaximumNumberOfFailedLoginAttempts();
+        eeProfileHelper.triggerCertificateValidityStartTime();
+        eeProfileHelper.triggerCertificateValidityEndTime();
+        eeProfileHelper.setCertificateValidityStartTime(currentDateString);
+        eeProfileHelper.setCertificateValidityEndTime(oneMonthsFromNowString);
+        eeProfileHelper.triggerNameConstraints();
+        eeProfileHelper.triggerExtensionData();
+        eeProfileHelper.triggerNumberOfAllowedRequests();
+        eeProfileHelper.triggerKeyRecoverable();
+        eeProfileHelper.triggerIssuanceRevocationReason();
+        eeProfileHelper.triggerSendNotification();
+        eeProfileHelper.addNotification();
+        eeProfileHelper.setNotificationSender("sender@example.com");
+        eeProfileHelper.setNotificationSubject("test subject");
+        eeProfileHelper.setNotificationMessage("test message");
         // Save configuration
-        webDriver.findElement(By.xpath("//input[@name='buttonsave']")).click();
-        WebElement tableResult = webDriver.findElement(By.xpath("//table[@class='list']/tbody/tr/td"));
-        assertEquals("Status text 'End Entity Profile saved' could not be found after saving EEP", "End Entity Profile saved.", tableResult.getText());
+        eeProfileHelper.saveEndEntityProfile(true);
+
+        // Assert that the EEP exists
+        eeProfileHelper.assertEndEntityProfileNameExists(TestData.EEP_NAME);
     }
 
     @Test
