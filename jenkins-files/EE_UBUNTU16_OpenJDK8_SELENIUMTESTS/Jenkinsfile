@@ -36,7 +36,7 @@ pipeline {
                         waitUntil {
                            script {
                              //def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true
-                             def r = sh 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"';
+                             def r = sh returnStdout: true, script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"';
                              echo "$r";
                              return (r < 1);
                            }
