@@ -83,6 +83,8 @@ public class EndEntityProfileTest {
         }
         
         // A regexp that validates valid domain name
+        // (note that it is a java string below, so when copying to be used as a regexp all \\ should be \)
+        // Reference: https://stackoverflow.com/questions/10306690/what-is-a-regular-expression-which-will-match-a-valid-domain-name-without-a-subd
         String domainNameRegexp = "^(((?!-))(xn--|_{1,1})?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$";
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "www.primekey.com");
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "xn--primekey.se");
