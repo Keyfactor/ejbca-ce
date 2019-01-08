@@ -59,7 +59,7 @@ pipeline {
                              
                              
                              
-                             return (r >= 1);
+                             return (r == 1);
                            }
                         }
                     }
