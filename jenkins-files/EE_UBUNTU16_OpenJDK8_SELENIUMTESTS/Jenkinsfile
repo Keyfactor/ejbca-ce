@@ -43,7 +43,7 @@ pipeline {
                              sh "docker logs mypeer 2>&1";
                              
                              return (r == 1);
-                           }
+                        
                         }
                     }
                 }
