@@ -43,10 +43,10 @@ pipeline {
                              sh "docker logs mypeer 2>&1";
                              
                              if (r > 0) {
-                               echo "R is greater than 1";
+                               echo "R is greater than 0";
                              }
                              if (r >= 0) {
-                               echo "R is greater or equal than 1";
+                               echo "R is greater or equal than 0";
                              }
                              if (r == 0) {
                                echo "R is EXACTLY 0";
