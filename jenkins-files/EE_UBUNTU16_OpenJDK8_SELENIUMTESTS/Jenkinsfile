@@ -59,7 +59,7 @@ pipeline {
                              echo "here is the DOCKER LOGS output:";
                              sh "docker logs mypeer 2>&1";
                              
-                             return (r == "1");
+                             return (r == 1);
                            }
                         }
                     }
