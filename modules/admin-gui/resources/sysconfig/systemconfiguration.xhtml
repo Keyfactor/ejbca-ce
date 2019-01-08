@@ -400,7 +400,7 @@
 			</h:panelGroup>
 			<h:panelGroup id="preferedLanguage">
 				<h:selectOneMenu value="#{systemConfigMBean.currentConfig.preferedLanguage}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
-					<f:selectItems value="#{systemConfigMBean.availableLanguages}"/>
+					<f:selectItems value="#{systemConfigMBean.availableLanguageSelectItems}"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
 		
@@ -411,7 +411,7 @@
 			</h:panelGroup>
 			<h:panelGroup id="secondaryLanguage">
 				<h:selectOneMenu value="#{systemConfigMBean.currentConfig.secondaryLanguage}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
-					<f:selectItems value="#{systemConfigMBean.availableLanguages}"/>
+					<f:selectItems value="#{systemConfigMBean.availableLanguageSelectItems}"/>
 				</h:selectOneMenu>
 			</h:panelGroup>
 		

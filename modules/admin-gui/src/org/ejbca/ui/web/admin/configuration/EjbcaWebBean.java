@@ -590,14 +590,6 @@ public class EjbcaWebBean implements Serializable {
         return adminsweblanguage.getAvailableLanguages();
     }
 
-    public String[] getLanguagesEnglishNames() {
-        return adminsweblanguage.getLanguagesEnglishNames();
-    }
-
-    public String[] getLanguagesNativeNames() {
-        return adminsweblanguage.getLanguagesNativeNames();
-    }
-
     public String getText(final String template) {
         return adminsweblanguage.getText(template);
     }
