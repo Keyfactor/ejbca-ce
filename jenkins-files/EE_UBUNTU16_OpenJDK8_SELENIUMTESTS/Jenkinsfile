@@ -37,11 +37,11 @@ pipeline {
                            script {
                              try {
                                  //def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true;
-                                 //def r1 = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true;
+                                 //def r1 = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true; // <- returnStdout seems to be unsupported, seems to produce hudson.AbortException 
                              
-                                 //def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"';
-                                 def r = sh 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"';
                                  
+                                 //def r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"');
+                                 def r = sh script: 'docker logs mypeer 2>&1', returnStatus: true;
                                  
                                  echo "echo R";
                                  echo "$r";                             
