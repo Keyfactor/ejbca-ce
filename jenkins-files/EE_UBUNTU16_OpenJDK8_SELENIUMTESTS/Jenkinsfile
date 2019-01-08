@@ -40,8 +40,8 @@ pipeline {
                              
                              //r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true)
                              
-                             sh "echo R";
-                             sh 'echo "$r"';                             
+                             echo "echo R";
+                             echo "$r";                             
                              
                              if (r > 0) {
                                echo "R is greater than 0";
