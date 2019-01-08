@@ -53,7 +53,7 @@ pipeline {
                              }
                              
                              def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true
-                             def r = sh returnStdout: true, script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"';
+                             //def r = sh returnStdout: true, script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"';
                              
                              sh 'echo "$r"';
                              echo "here is the DOCKER LOGS output:";
