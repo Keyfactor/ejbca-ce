@@ -34,30 +34,13 @@ pipeline {
                     
                     timeout(7) {
                         waitUntil {
-                           script {
-                             echo "DEBUGING GROOVY:";
-                             def x1 = 0;
-                             if (x1 > 1) {
-                               echo "0 is greater than 1";
-                             }
-                             if (x1 >= 1) {
-                               echo "0 is greater or equal than 1";
-                             }
-                             def x2 = 1;
-                             if (x2 > 1) {
-                               echo "1 is greater than 1";
-                             }
-                             if (x2 >= 1) {
-                               echo "1 is greater or equal than 1";
-                             }
+
+                             //def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true
+                             def r = sh returnStdout: true, script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"';
                              
-                             def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true
-                             //def r = sh returnStdout: true, script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"';
                              sh 'echo "$r"';
                              echo "here is the DOCKER LOGS output:";
                              sh "docker logs mypeer 2>&1";
-                             
-                             
                              
                              return (r == 1);
                            }
