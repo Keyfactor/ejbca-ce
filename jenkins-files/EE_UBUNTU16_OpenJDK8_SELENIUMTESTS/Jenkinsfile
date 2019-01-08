@@ -35,7 +35,7 @@ pipeline {
                     timeout(7) {
                         waitUntil {
                            script {
-                             def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true;
+                             def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: false;
                              //def r1 = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true;
                              
                              //r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true)
