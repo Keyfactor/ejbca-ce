@@ -44,8 +44,6 @@ public class WebLanguages implements java.io.Serializable {
     private final int userssecondarylanguage;
 
     private String[] availablelanguages;
-    private String[] languagesenglishnames;
-    private String[] languagesnativenames;
     private LanguageProperties[] languages = null;
     private List<WebLanguage> webLanguages;
     
@@ -99,9 +97,6 @@ public class WebLanguages implements java.io.Serializable {
                 }
                
             }
-            // Get languages English and native names
-            languagesenglishnames = new String[availablelanguages.length];
-            languagesnativenames = new String[availablelanguages.length];
             
             webLanguages = new ArrayList<WebLanguage>();
             
@@ -109,9 +104,6 @@ public class WebLanguages implements java.io.Serializable {
                 final String englishName = languages[i].getProperty("LANGUAGE_ENGLISHNAME");
                 final String nativeName = languages[i].getProperty("LANGUAGE_NATIVENAME");
                 final String abbreviation = availablelanguages[i];
-                
-                languagesenglishnames[i] = englishName;
-                languagesnativenames[i] = nativeName;
                 
                 webLanguages.add(new WebLanguage(i, englishName, nativeName, abbreviation));
             }
@@ -146,16 +138,6 @@ public class WebLanguages implements java.io.Serializable {
     /* Returns a text string array containing the available languages */
     public String[] getAvailableLanguages(){
       return availablelanguages;
-    }
-
-    /* Returns a text string array containing the languages English names */
-    public String[] getLanguagesEnglishNames(){
-      return languagesenglishnames;
-    }
-
-    /* Returns a text string array containing the languages native names */
-    public String[] getLanguagesNativeNames(){
-      return languagesnativenames;
     }
 
     /* Returns a list of available languages for EJBCA */
