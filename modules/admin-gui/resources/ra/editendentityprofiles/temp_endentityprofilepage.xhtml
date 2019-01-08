@@ -661,7 +661,7 @@
 				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
 					<h:outputLabel for="header_maincertificatedata"  value="#{web.text.DEFAULTHARDTOKENISSUER}"/>
 				</h:panelGroup>
-				<h:selectOneMenu id="defaultHardTokenTokenMenu" value="#{endEntityProfileMBean.currentHardTokenIssuer}" disabled="#{not endEntityProfileMBean.useHardTokenIssuer or endEntityProfilesMBean.viewOnly}" rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
+				<h:selectOneMenu id="defaultHardTokenTokenMenu" value="#{endEntityProfileMBean.currentDefaultHardTokenIssuer}" disabled="#{not endEntityProfileMBean.useHardTokenIssuer or endEntityProfilesMBean.viewOnly}" rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
 						<f:ajax/>
 						<f:selectItems id="defaultHardTokensList" value="#{endEntityProfileMBean.hardTokenIssuers}"/> 
 				<!-- THIS NEEDS TO BE CHANGED FROM DEFAULT TOKEN TO LIST OF HARD TOKEN ISSUERS -->
@@ -671,7 +671,7 @@
 					<h:outputLabel for="header_maincertificatedata"  value="#{web.text.AVAILABLEHARDTOKENISSUERS}"/>
 				</h:panelGroup>
 				<h:panelGroup rendered="#{endEntityProfileMBean.hardTokenIssuerSystemConfigured}">
-	       	    		<h:selectManyListbox id="availableHardTokens" size="7" value="#{endEntityProfileMBean.hardTokenIssuers}"> <!-- new method for selectMany ...-->
+	       	    		<h:selectManyListbox id="availableHardTokens" size="7" value="#{endEntityProfileMBean.currentHardTokenIssuers}"> <!-- new method for selectMany ...-->
 	       	    			<f:ajax/>
 	       	    			<f:selectItems id="availableHardTokensList" value="#{endEntityProfileMBean.hardTokenIssuers}"/>
 	       	    			<!-- CHANGE ABOVE METHODS FROM TOKENS TO HARDTOKENS -->

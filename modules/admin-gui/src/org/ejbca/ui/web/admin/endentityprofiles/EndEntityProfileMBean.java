@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.endentityprofiles;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -868,7 +869,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    
    // MAIN CERTIFICATE DATA
    
-   //was: getDefaultCertProfiles()
    public List<SelectItem> getAvailableCertProfiles(){
        final List<SelectItem> defaultCertProfilesReturned = new ArrayList<>();
        TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
@@ -972,7 +972,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        return strC;
    }
    
- //new method 
+   //new method 
    public void setCurrentAvailableCAs(Collection<String> strC) {
        profiledata.setAvailableCAsIDsAsStrings(strC);//Tries to set String names rather than IDs probably...
    }
@@ -989,23 +989,21 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        profiledata.setDefaultCA(dcaInt.intValue());
    }
    
-   //
+   // WORKS!!
    public List<SelectItem> getAvailableTokens(){
        String[] tokenString = RAInterfaceBean.tokentexts;
+       int[] tokenIds = RAInterfaceBean.tokenids;
        final List<SelectItem> availableTokensReturned = new ArrayList<>();
-       //String availableTokenNr;
        String availableToken;
-       String availableTokenReturned = "";//remove init empty?
+       String availableTokenReturned = "";//remove ?
        Integer stringElement;
+       Integer availableTokenNr;
        for(stringElement = 0; stringElement < tokenString.length; stringElement++) {
-           //availableTokenNr = stringElement.toString();
+           availableTokenNr = tokenIds[stringElement];
            availableToken = tokenString[stringElement.intValue()];
            availableTokenReturned = ejbcaWebBean.getText(availableToken);
-           //TRY ADDING availableToken to SelectItem, it's the TOKEN ID (see caidvalue, caname as example)***************************'''
-           //availableTokensReturned.add(new SelectItem(availableTokenReturned, availableTokenReturned ));
-           availableTokensReturned.add(new SelectItem(availableToken, availableTokenReturned ));//new, original is the one above... also make sure getHartokenIssuers below is same kind of selectitem
+           availableTokensReturned.add(new SelectItem(availableTokenNr.toString(), availableTokenReturned ));
        }
-       System.out.println("DEFTOKENRETURNED= " + availableTokenReturned);//testing
        if(getHardTokenIssuers() != null) {
           Iterator<SelectItem> hardTokenIterator = getHardTokenIssuers().iterator();
           while(hardTokenIterator.hasNext()) {
@@ -1015,57 +1013,38 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
        return availableTokensReturned;
    }
    
-   public void setAvailableTokens(List<SelectItem> str) {} //Fake method remove later...
+   //public void setAvailableTokens(List<SelectItem> str) {} //Fake method remove later...
    
-   // verify...
+   // verify... 
    public String getCurrentDefaultToken() { 
-       //int currentDefTokenId = profiledata.getDefaultTokenType();// .getValue(EndEntityProfile.DEFKEYSTORE,0);
        String currentDefTokenId = profiledata.getValue(EndEntityProfile.DEFKEYSTORE,0);
-       /*String returnToken = "EMPTY";
-       String[] tokentexts = RAInterfaceBean.tokentexts;
-       int[] tokenids = RAInterfaceBean.tokenids;
-       for(int i=0; i < tokentexts.length; i++){
-           System.out.println("Fetched Token: " + currentDefTokenId);
-           System.out.println("TokenID: " + tokenids[i]);
-           System.out.println("TokenText: " + tokentexts[i]);
-           if(currentDefTokenId.equals(Integer.toString(tokenids[i])) ) {
-               returnToken = ejbcaWebBean.getText(tokentexts[i]);
-           }
-       }*/
-       //System.out.println("CURRENTTOKENRETURNED= " + returnToken);//testing
-       //return ejbcaWebBean.getText(profiledata.getValue(EndEntityProfile.DEFKEYSTORE,0));
-       //return profiledata.getValue(EndEntityProfile.DEFKEYSTORE,0);
-       //return returnToken;
-       return currentDefTokenId;
+       return currentDefTokenId.toString();
    }
    
-   //...
+   //... 
    public void setCurrentDefaultToken(String defaultToken) {
        String token = defaultToken;
        profiledata.setValue(EndEntityProfile.DEFKEYSTORE,0, token);
    }
    
    
-   //New method: THIS CODE IS PURELY EXPERIMENTAL AND CANNOT BE USED... 
+   //New method: 
    public Collection<String> getCurrentAvailableTokens(){
        Collection<Integer> intC = new ArrayList<Integer>();
        Collection<String> strC = new ArrayList<String>();
        intC = profiledata.getAvailableTokenTypes();
-       String[] tokentexts = RAInterfaceBean.tokentexts;
-       int[] tokenids = RAInterfaceBean.tokenids;
-       for (int counter = 0; counter < tokenids.length; counter++ )
        for (int i : intC) {
-           if (i == tokenids[counter]) {
-               //strC.add(new Integer(i).toString());
-               strC.add(tokentexts[counter]);
-           }
+           Integer intObject = new Integer(i);
+           strC.add(intObject.toString());
        }
        return strC;
    }
-   //New method: 
+   
+   //New method:
    public void setCurrentAvailableTokens(Collection<String> strC) {
-       
-       //DO STUFF
+       String[] values = strC.toArray(new String[0]);
+       String availableTokens = raBean.getAvailableTokenTypes(getCurrentDefaultToken(), values);
+       profiledata.setValue(EndEntityProfile.AVAILKEYSTORE,0, availableTokens);
    }
    
    //
@@ -1085,40 +1064,38 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
    
   //
    public List<SelectItem> getHardTokenIssuers(){
-       //String[] hardtokenissueraliases = new String[0];
-       //int[] hardtokenissuerids = new int[0];
        TreeMap<String,HardTokenIssuerInformation> tokenIssuerMap = ejbcaWebBean.getHardTokenIssuers();
-       //hardtokenissueraliases = new String[tokenIssuerMap.keySet().size()];
-       //Iterator<String> issuerIterator = tokenIssuerMap.keySet().iterator();
-       //hardtokenissuerids = new int[hardtokenissueraliases.length];
        final List<SelectItem> hardTokenIssuersReturned = new ArrayList<>();
-       //String hardTokenIssuerNr;
-       //String hardTokenIssuer;
-       //String hardTokenIssuerReturned;
-       //Integer stringElement;
-       //String tokenIssuerInfo;
-       //while (issuerIterator.hasNext()) {
-       for (String hardTokenIssuer : tokenIssuerMap.keySet()) {
-           //hardTokenIssuer = issuerIterator.next();
-           hardTokenIssuersReturned.add(new SelectItem(hardTokenIssuer, hardTokenIssuer));
+       Integer stringInt = new Integer(0);
+       String id;
+       for (Entry<String, HardTokenIssuerInformation> hardTokenIssuer : tokenIssuerMap.entrySet()) {
+           stringInt = (hardTokenIssuer.getValue().getHardTokenIssuerId());
+           id = stringInt.toString();
+           hardTokenIssuersReturned.add(new SelectItem(id, hardTokenIssuer.getKey() ));
        }
-       /*for(stringElement = 0; stringElement < tokenIssuerString.length; stringElement++) {
-           hardTokenIssuerNr = stringElement.toString();
-           hardTokenIssuer = tokenIssuerString[stringElement.intValue()];
-           hardTokenIssuerReturned = ejbcaWebBean.getText(ejbcaWebBean.getText(hardTokenIssuer));
-           hardTokenIssuersReturned.add(new SelectItem(hardTokenIssuerNr, hardTokenIssuerReturned ));
-       }*/
        return hardTokenIssuersReturned;
    }
    
-   public void setHardTokenIssuers(List<SelectItem> str) {} //Fake method remove later...
-   
-   public String getCurrentHardTokenIssuer() {
-       return "";
+   public String getCurrentDefaultHardTokenIssuer() {
+       return profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER, 0);
    }
    
-   public void setCurrentHardTokenIssuer(String str) {
-       str = "";
+   public void setCurrentDefaultHardTokenIssuer(String token) {
+       profiledata.setValue(EndEntityProfile.DEFAULTTOKENISSUER, 0, token);
+   }
+   
+   public Collection<String> getCurrentHardTokenIssuers() {
+       Collection<String> currentHardTokens = new ArrayList<String>();
+       String[] availableissuers = profiledata.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR);
+       Collections.addAll(currentHardTokens,availableissuers);
+       return currentHardTokens;
+   }
+   
+   public void setCurrentHardTokenIssuers(Collection<String> htCollection) {
+       String defaulthardtokenissuer =  getCurrentDefaultHardTokenIssuer();
+       String[] valueArray = htCollection.toArray(new String[0]);
+       String availablehardtokenissuers = raBean.getAvailableHardTokenIssuers(defaulthardtokenissuer, valueArray);
+       profiledata.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, availablehardtokenissuers);
    }
    
    // OTHER CERTIFICATE DATA
