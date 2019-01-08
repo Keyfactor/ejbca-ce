@@ -35,16 +35,13 @@ pipeline {
                     timeout(7) {
                         waitUntil {
                            script {
-                             //def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true;
+                             def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true;
                              //def r1 = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true;
                              
-                             r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true)
+                             //r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true)
                              
-                             sh 'echo R';
+                             sh "echo R";
                              sh 'echo "$r"';                             
-                             
-                             echo "here is the DOCKER LOGS output:";
-                             sh "docker logs mypeer 2>&1";
                              
                              if (r > 0) {
                                echo "R is greater than 0";
@@ -67,7 +64,14 @@ pipeline {
                                echo "R is EXACTLY 1";
                              }
                              
-                             return (r == 1);
+                             //echo "here is the DOCKER LOGS output:";
+                             //sh "docker logs mypeer 2>&1";
+                             
+                             if (r == 1) {
+                               return true;
+                             } else {
+                               return false;
+                             }                             
                            }
                         }
                     }
