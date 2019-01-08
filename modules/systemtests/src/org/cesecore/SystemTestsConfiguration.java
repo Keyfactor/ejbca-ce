@@ -36,6 +36,9 @@ public abstract class SystemTestsConfiguration {
     // These are public so they can be used in error messages
     public static final String TARGET_CLIENTCERT_CA = "target.clientcert.ca";
     public static final String TARGET_SERVERCERT_CA = "target.servercert.ca";
+    // Used by tests that spawn servers
+    public static final String TESTSERVERS_BINDADDRESS = "testservers.bindaddress";
+    public static final String TESTSERVERS_HOSTNAME = "testservers.hostname";
 
     private static final String[] COMMON_PKCS11_PATHS = {
         "/etc/utimaco/libcs2_pkcs11.so", // Utimaco (Linux)
@@ -96,6 +99,20 @@ public abstract class SystemTestsConfiguration {
 
     public static String[] getClientCertificateCaNames() {
         return getProperties().getProperty(TARGET_CLIENTCERT_CA, "ManagementCA;AdminCA1").split(";");
+    }
+
+    /**
+     * Address which tests that spawn servers should bind to.
+     * Default is 127.0.0.1, which means that only local connections are allowed.
+     * Set to 0.0.0.0 to allow external connections (perhaps from a different VM).
+     */
+    public static String getTestServersBindAddress() {
+        return getProperties().getProperty(TESTSERVERS_BINDADDRESS, "127.0.0.1");
+    }
+
+    /** Hostname of that EJBCA should connect to, to reach servers spawned by tests. */
+    public static String getTestServersHostname() {
+        return getProperties().getProperty(TESTSERVERS_HOSTNAME, "localhost");
     }
 
     /** Use {@link #getHsmLibrary} instead, which has auto-detection. */

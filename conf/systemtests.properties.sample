@@ -15,6 +15,15 @@
 # Normally this overrides "8443" in the tests.
 #target.port.https=443
 
+# The following two properties are needed when EJBCA and tests are running on different VMs/containers.
+# Address which tests that spawn servers should bind to.
+# Default is 127.0.0.1, which means that only local connections are allowed
+# Set to 0.0.0.0 to allow external connections (perhaps from a different VM).
+#testservers.bindaddress=0.0.0.0
+# Hostname of that EJBCA should connect to, to reach servers spawned by tests.
+# Must be a hostname, not an IP address (but can be defined in the system's hosts file)
+#testservers.hostname=localhost
+
 # Name of CA that has issued the target server TLS certificate. The CA can be an external CA.
 # Use ; to search for, to search for multiple CAs. Only the first one found will be used.
 #target.servercert.ca=ManagementCA;AdminCA1
