@@ -195,7 +195,6 @@ import org.junit.runners.MethodSorters;
  * <li>A CA named ManagementCA or AdminCA1 must exist.
  * <li>That CA must be trusted in the appserver truststore.
  * <li>That CA must have issued the EJBCA server certificate.
- * <li>An admin end-entity with username "superadmin" must exist.
  * <li>If EJBCA is not running on localhost, then target.hostname must be configured in systemtests.properties
  * 
  * @version $Id$
@@ -723,7 +722,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test19RevocationApprovals() throws Exception {
         log.trace(">test19RevocationApprovals");
-        final String APPROVINGADMINNAME = "superadmin";
+        final String APPROVINGADMINNAME = TEST_ADMIN_USERNAME;
         final String TOKENSERIALNUMBER = "42424242";
         final String TOKENUSERNAME = "WSTESTTOKENUSER3";
         final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
