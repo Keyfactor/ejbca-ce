@@ -41,9 +41,9 @@ pipeline {
                              
                                  
                                  //def r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"');
-                                 def r = sh script: 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"', returnStatus: true;
+                                 def r = sh(script: 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"', returnStatus: true).trim();
                                  
-                                 def r2 = sh(script:'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"', returnStdout:true).trim()
+                                 //def r2 = sh(script:'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"', returnStdout:true).trim()
                                  
                                  
                                  echo "echo dollar R";
@@ -58,8 +58,8 @@ pipeline {
                                  //echo "echo dollar R2 (groovy)";
                                  //echo "r is ${r2}";
                                  
-                                 echo "echo R2";
-                                 println r2
+                                 //echo "echo R2";
+                                 //println r2
                                  
                                  //echo "here is the DOCKER LOGS output:";
                                  //sh "docker logs mypeer 2>&1";
