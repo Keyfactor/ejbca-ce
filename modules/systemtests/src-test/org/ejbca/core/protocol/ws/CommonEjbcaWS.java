@@ -228,7 +228,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private static final Logger log = Logger.getLogger(CommonEjbcaWS.class);
 
     protected static final String P12_FOLDER_NAME = "p12";
-    private static final String TEST_ADMIN_USERNAME = "wstest";
+    protected static final String TEST_ADMIN_USERNAME = "wstest";
     private static final String TEST_ADMIN_FILE = P12_FOLDER_NAME + "/" + TEST_ADMIN_USERNAME+".jks";
     protected static final String TEST_NONADMIN_USERNAME = "wsnonadmintest";
     protected static final String TEST_NONADMIN_FILE =  P12_FOLDER_NAME + "/" + TEST_NONADMIN_USERNAME + ".jks";
