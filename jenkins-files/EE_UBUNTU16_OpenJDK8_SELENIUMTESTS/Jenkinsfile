@@ -30,6 +30,8 @@ pipeline {
                     sh "docker build -t mypeer -m 2GB ."
                     
                     // sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app mypeer"
+                    
+                    // set it running on background (-d parameter). needs to stay up, until selnuimtests use it. will be killed later at cleanup phase.
                     sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
                     
                     timeout(10) {
@@ -38,34 +40,13 @@ pipeline {
                              try {
                                  def command = 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"'
                                  
-                                 //def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true;
                                  //def r1 = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true; // <- returnStdout seems to be unsupported, seems to produce hudson.AbortException 
                              
-                                 
-                                 //def r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"');
                                  def r = sh script: command, returnStatus: true
+                             
+                                 echo "here is the DOCKER LOGS output:";
+                                 sh "docker logs mypeer 2>&1";
                                  
-                                 //def r2 = sh(script:'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"', returnStdout:true).trim()
-                                 
-                                 echo "echo dollar R";
-                                 echo "r is $r";
-                                 
-                                 echo "echo dollar R (groovy)";
-                                 echo "r is ${r}";
-                                 
-                                 //echo "echo dollar R2";
-                                 //echo "r is $r2";
-                                 
-                                 //echo "echo dollar R2 (groovy)";
-                                 //echo "r is ${r2}";
-                                 
-                                 //echo "echo R2";
-                                 //println r2
-                                 
-                                 //echo "here is the DOCKER LOGS output:";
-                                 //sh "docker logs mypeer 2>&1";
-                                 
-                                 //return "${r}".equals("1")
                                  return (r == 0)
                              
                              } catch (exc) {
