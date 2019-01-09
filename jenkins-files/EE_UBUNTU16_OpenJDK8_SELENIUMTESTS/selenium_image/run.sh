@@ -16,4 +16,4 @@ sleep 10
 # ant test:runone -Dtest.runone=EcaQa12_CPManagement
 
 # this test works in RA mode!
-ant clean test:runone -Dtest.runone=EcaQa28_ServiceManagement
+ant build test:runone -Dtest.runone=EcaQa28_ServiceManagement
