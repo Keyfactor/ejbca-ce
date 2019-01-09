@@ -17,5 +17,3 @@ sleep 10
 
 # this test works in RA mode!
 ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
-
-sleep 1000000
