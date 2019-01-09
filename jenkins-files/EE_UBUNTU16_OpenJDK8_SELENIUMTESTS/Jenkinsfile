@@ -36,12 +36,14 @@ pipeline {
                         waitUntil {
                            script {
                              try {
+                                 def command = 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"'
+                                 
                                  //def r = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStatus: true;
                                  //def r1 = sh script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"', returnStdout: true; // <- returnStdout seems to be unsupported, seems to produce hudson.AbortException 
                              
                                  
                                  //def r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"');
-                                 def r = sh script: 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"', returnStatus: true
+                                 def r = sh script: command, returnStatus: true
                                  
                                  //def r2 = sh(script:'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"', returnStdout:true).trim()
                                  
@@ -50,15 +52,6 @@ pipeline {
                                  
                                  echo "echo dollar R (groovy)";
                                  echo "r is ${r}";
-                                 
-                                 sh 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done" > commandResult'
-                                 result1 = readFile('commandResult').trim()
-                                 
-                                 echo "result1 1";
-                                 echo "result1 is $result1";
-                                 
-                                 echo "result1 2";
-                                 echo "result1 is ${result1}";
                                  
                                  //echo "echo dollar R2";
                                  //echo "r is $r2";
