@@ -50,7 +50,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -71,6 +70,7 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionProxyRemote;
@@ -99,8 +99,6 @@ import org.junit.Test;
  * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
  * and these requests are handled by EJBCA without further authentication, end entities are created automatically in EJBCA.
  * 
- * 'ant clean; ant bootstrap' to deploy configuration changes.
- * 
  * @version $Id: CrmfRAPbeRequestTest.java 9435 2010-07-14 15:18:39Z mikekushner$
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
@@ -111,11 +109,13 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
     private static final String PBEPASSWORD = "password";
 
-    /**
-     * userDN of user used in this test, this contains special, escaped, characters to test that this works with CMP RA operations
-     */
-    private static final X500Name userDN = new X500Name("C=SE,O=PrimeKey'foo'&bar\\,ha\\<ff\\\"aa,organizationIdentifier=VATAT-U12345678,CN=cmptest");
-    private static final String issuerDN = "CN=TestCA,O=PrimeKey,OU=FoooUåäö,organizationIdentifier=VATAT-U87654321";
+    /** userDN of user used in this test, this contains special, escaped, characters to test that this works with CMP RA operations */
+    private static X500Name userDN;
+    private static final String USERDN_ENTERPRISE = "C=SE,O=PrimeKey'foo'&bar\\,ha\\<ff\\\"aa,organizationIdentifier=VATAT-U12345678,CN=cmptest";
+    private static final String USERDN_COMMUNITY = "C=SE,O=PrimeKey'foo'&bar\\,ha\\<ff\\\"aa,CN=cmptest";
+    private static String issuerDN;
+    private static final String ISSUERDN_ENTERPRISE = "CN=TestCA,O=PrimeKey,OU=FoooUåäö,organizationIdentifier=VATAT-U87654321";
+    private static final String ISSUERDN_COMMUNITY = "CN=TestCA,O=PrimeKey,OU=FoooUåäö";
     private final KeyPair keys;
     private final int caid;
     private final X509Certificate cacert;
@@ -129,14 +129,22 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private final ApprovalSessionProxyRemote approvalSessionProxyRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionProxyRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-
+    private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     
     
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
+        if (enterpriseEjbBridgeSession.isRunningEnterprise()) {
+            log.debug("Testing WITH organizationIdentifier");
+            userDN = new X500Name(USERDN_ENTERPRISE);
+            issuerDN = ISSUERDN_ENTERPRISE;
+        } else {
+            log.debug("Testing WITHOUT organizationIdentifier");
+            userDN = new X500Name(USERDN_COMMUNITY);
+            issuerDN = ISSUERDN_COMMUNITY;
+        }
     }
 
     public CrmfRAPbeRequestTest() throws Exception {
@@ -456,7 +464,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         String approvalProfileName = this.getClass().getName() + "-NrOfApprovalsProfile";
         X509CAInfo cainfo = null;
         int cryptoTokenId = 0;
-        List<File> fileHandles = new ArrayList<File>();
+        List<File> fileHandles = new ArrayList<>();
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
         approvalProfile.setNumberOfApprovalsRequired(1);
         final int approvalProfileId = approvalProfileSession.addApprovalProfile(ADMIN, approvalProfile);
