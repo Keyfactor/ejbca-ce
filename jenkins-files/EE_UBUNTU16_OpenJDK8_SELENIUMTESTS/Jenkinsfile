@@ -65,7 +65,8 @@ pipeline {
                                  //echo "here is the DOCKER LOGS output:";
                                  //sh "docker logs mypeer 2>&1";
                                  
-                                 return "${r}".equals("1")
+                                 //return "${r}".equals("1")
+                                 return (r == 0)
                              
                              } catch (exc) {
                                echo exc;
