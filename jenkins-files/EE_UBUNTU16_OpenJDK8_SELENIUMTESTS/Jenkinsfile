@@ -43,52 +43,13 @@ pipeline {
                                  //def r = sh (script: 'docker logs mypeer 2>&1 | grep -c -m 1 "import cert commands done"');
                                  def r = sh script: 'docker logs mypeer 2>&1 | grep -v "import cert commands done"', returnStatus: true;
                                  
-                                 r2 = sh "docker logs mypeer 2>&1 | grep -v 'import cert commands done'"
-                                 
-                                 echo "echo R";
-                                 echo "$r";                             
-                                 
-                                 echo "echo R2 (groovy)";
-                                 echo r2;
-                                 
                                  echo "echo dollar R (groovy)";
                                  echo "r is ${r}";
-                                 
-                                 echo "echo dollar R2 (groovy)";
-                                 echo "r2 is ${r2}";
-                                 
-                                 echo "echo R (groovy)";
-                                 echo r;
-                                 
-                                 if (r > 0) {
-                                   echo "R is greater than 0";
-                                 }
-                                 if (r >= 0) {
-                                   echo "R is greater or equal than 0";
-                                 }
-                                 if (r == 0) {
-                                   echo "R is EXACTLY 0";
-                                 }
-                                 
-                                 if (r > 1) {
-                                   echo "R is greater than 1";
-                                 }
-                                 if (r >= 1) {
-                                   echo "R is greater or equal than 1";
-                                 }
-                                 
-                                 if (r == 1) {
-                                   echo "R is EXACTLY 1";
-                                 }
                                  
                                  //echo "here is the DOCKER LOGS output:";
                                  //sh "docker logs mypeer 2>&1";
                                  
-                                 if (r == 1) {
-                                   return true;
-                                 } else {
-                                   return false;
-                                 }
+                                 return "${r}".equals("1")
                              
                              } catch (exc) {
                                echo exc;
