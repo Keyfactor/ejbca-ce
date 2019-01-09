@@ -942,7 +942,7 @@
                 <exclude name="modules/cesecore-entity/build/**" />
                 <exclude name="modules/ejbca-common/build-common/**" />
                 <exclude name="modules/va/build-va-publisher/**" />
-                <!-- Exclude continious integration files -->
+                <!-- Exclude continuous integration files -->
                 <exclude name="jenkins-files/**" />
 		    	<!-- Exclude Web Tests -->
 		    	<exclude name="modules/ejbca-webtest/**"/>
@@ -1007,6 +1007,7 @@
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 		    	<exclude name="bin/backup/**" />
+                <exclude name="jenkins-files/**" />
 		    	<exclude name="modules/statedump/**" />
                 <exclude unless="edition.is.ee" name="modules/ejbca-entity/**"/>
                 <exclude unless="edition.is.ee" name="modules/configdump/**"/>
