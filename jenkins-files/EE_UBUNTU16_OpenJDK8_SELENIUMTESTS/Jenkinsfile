@@ -45,12 +45,20 @@ pipeline {
                                  
                                  //def r2 = sh(script:'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"', returnStdout:true).trim()
                                  
-                                 
                                  echo "echo dollar R";
                                  echo "r is $r";
                                  
                                  echo "echo dollar R (groovy)";
                                  echo "r is ${r}";
+                                 
+                                 sh 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done" > commandResult'
+                                 result1 = readFile('commandResult').trim()
+                                 
+                                 echo "result1 1";
+                                 echo "result1 is $result1";
+                                 
+                                 echo "result1 2";
+                                 echo "result1 is ${result1}";
                                  
                                  //echo "echo dollar R2";
                                  //echo "r is $r2";
