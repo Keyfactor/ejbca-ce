@@ -124,22 +124,18 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        boolean cleanUpOk = true;
         try {
             this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
         } catch (NoSuchEndEntityException e) {
             // A test probably failed before creating the entity
             log.error("Failed to delete user \"cmptest\".");
-            cleanUpOk = false;
         }
         if (!this.configurationSession.restoreConfiguration()) {
-            cleanUpOk = false;
+            log.error("Failed to restore configuration");
         }
         CryptoTokenTestUtils.removeCryptoToken(null, this.testx509ca.getCAToken().getCryptoTokenId());
         this.caSession.removeCA(ADMIN, this.caid);
-        
-        assertTrue("Unable to clean up properly.", cleanUpOk);
-        
+
         this.cmpConfiguration.removeAlias(cmpAlias);
         if(this.cmpConfiguration.aliasExists("backupTcpAlias")) {
             this.cmpConfiguration.renameAlias("backupTcpAlias", cmpAlias);
