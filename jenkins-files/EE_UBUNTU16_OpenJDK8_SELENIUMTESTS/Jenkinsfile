@@ -52,11 +52,14 @@ pipeline {
                                  echo "echo dollar R (groovy)";
                                  echo "r is ${r}";
                                  
-                                 echo "echo dollar R2";
-                                 echo "r is $r2";
+                                 //echo "echo dollar R2";
+                                 //echo "r is $r2";
                                  
-                                 echo "echo dollar R2 (groovy)";
-                                 echo "r is ${r2}";
+                                 //echo "echo dollar R2 (groovy)";
+                                 //echo "r is ${r2}";
+                                 
+                                 echo "echo R2";
+                                 echo r2;
                                  
                                  //echo "here is the DOCKER LOGS output:";
                                  //sh "docker logs mypeer 2>&1";
