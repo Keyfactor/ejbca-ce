@@ -123,7 +123,7 @@
 	                 <h:panelGroup>
 	                  	<h:inputText 
 	                  		id="password" 
-	                  		value="#{endEntityProfileMBean.minPwdStrength}" 
+	                  		value="#{endEntityProfileMBean.profiledata.minPwdStrength}" 
 					   		size="5" 
 					   		maxlength="10"
 							disabled="#{endEntityProfilesMBean.viewOnly}">
@@ -143,7 +143,7 @@
 	                   		id="nrFailedAttempts" 
 	                   		value="#{endEntityProfileMBean.useMaxFailLogins}" 
 	                   		disabled="#{endEntityProfilesMBean.viewOnly}">
-				    		<f:ajax render=":eeProfiles:passwordfailedattemptsgrid"/>
+				    		<f:ajax render=":eeProfiles:passwordFailedAttemptsGrid"/>
 				    	</h:selectBooleanCheckbox>
 				    	<h:outputLabel for="passwordFailedAttemptsGrid" value="#{web.text.USE} : " />
 				    	&nbsp;
@@ -161,7 +161,7 @@
 				    			id="failedAttemptsUnlimited" 
 				    			value="#{endEntityProfileMBean.maxFailLoginsUnlimited}" 
 				    			disabled="#{not endEntityProfileMBean.profiledata.maxFailedLoginsUsed or endEntityProfilesMBean.viewOnly}">
-				    			<f:ajax render=":eeProfiles:passwordfailedattemptsgrid"/>
+				    			<f:ajax render=":eeProfiles:passwordFailedAttemptsGrid"/>
 				    		</h:selectBooleanCheckbox>
 				    		<h:outputLabel for="passwordFailedAttemptsGrid" value="#{web.text.UNLIMITED}" />
 				    	</h:panelGrid>
@@ -277,7 +277,7 @@
 					<h:panelGrid id="mergerdWebServicesGrid" columns="2">
 	       	    	    <h:selectBooleanCheckbox 
 	       	    	    	id="mergerdWebServicesCheckBox" 
-	       	    	    	value="#{endEntityProfileMBean.allowMergeDNWebServices}" 
+	       	    	    	value="#{endEntityProfileMBean.profiledata.allowMergeDnWebServices}" 
 	       	    	    	disabled="#{endEntityProfilesMBean.viewOnly}">
 						</h:selectBooleanCheckbox>
 	       	    		<h:outputLabel for="mergerdWebServicesGrid" value="#{web.text.ALLOW}"/>
