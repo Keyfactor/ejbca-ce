@@ -27,5 +27,7 @@ cat /etc/passwd
 
 su - seluser
 
+whoami
+
 # this test works in RA mode!
 ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
