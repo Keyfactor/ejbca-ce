@@ -213,7 +213,7 @@ public class HttpMethodsTest {
         assertFalse("HTTP DELETE is supported.", allowsDeleteHttpRequest(resourceName, httpPort));
         assertFalse("HTTP PUT is supported.", allowsPutHttpRequest(resourceName + ".2", httpPort));
         assertFalse("HTTP TRACE is supported.", allowsTraceHttpRequest(resourceName, httpPort));
-        assertFalse("HTTP OPTIONS is supported.haha ", allowHttpOptions(resourceName, httpPort));
+        assertFalse("HTTP OPTIONS is supported.", allowHttpOptions(resourceName, httpPort));
     }
 
     /** Try an HTTP OPTIONS and return true if it was successful. */
