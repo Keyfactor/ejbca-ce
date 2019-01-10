@@ -15,5 +15,11 @@ sleep 10
 # this one hangs!
 # ant test:runone -Dtest.runone=EcaQa12_CPManagement
 
+cd /app/ejbca
+
+ant build
+
+echo '=================== build successful ========================'
+
 # this test works in RA mode!
-ant build test:runone -Dtest.runone=EcaQa28_ServiceManagement
+ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
