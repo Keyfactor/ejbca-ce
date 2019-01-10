@@ -12,7 +12,7 @@ RUN mkdir -p /opt/jboss/wildfly
 ENV ANT_HOME /opt/ant/apache-ant-1.9.8
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 ENV ANT_OPTS="-Xms256M -Xmx512M"
-ENV APPSRV_HOME ="/opt/jboss/wildfly/"
+# ENV APPSRV_HOME ="/opt/jboss/wildfly/"
 
 RUN cd $HOME \
 	&& curl -O http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz \
