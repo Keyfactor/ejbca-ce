@@ -25,6 +25,7 @@ pipeline {
 			steps {
 				sh "docker container rm ${params.DOCKER_NAME_DB} -f || true"
 				sh "docker container rm ${params.DOCKER_NAME_BASE} -f || true"
+				sh "docker network rm ${params.DOCKER_NAME_NET} || true"
 				sh "rm -rf ear"
 			}
 		}
