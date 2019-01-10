@@ -17,9 +17,15 @@ sleep 10
 
 cd /app/ejbca
 
+
+
 ant build
 
-echo '=================== build successful ========================'
+echo '=================== build finished ========================'
+
+cat /etc/passwd
+
+su - seluser
 
 # this test works in RA mode!
 ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
