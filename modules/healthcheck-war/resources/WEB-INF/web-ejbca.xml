@@ -44,7 +44,7 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>restricted methods</web-resource-name>
-            <url-pattern>/</url-pattern>
+            <url-pattern>/*</url-pattern>
             <http-method-omission>HEAD</http-method-omission>
             <http-method-omission>GET</http-method-omission>
             <http-method-omission>POST</http-method-omission>
