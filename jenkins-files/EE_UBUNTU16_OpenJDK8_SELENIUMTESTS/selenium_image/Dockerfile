@@ -10,6 +10,7 @@ RUN mkdir -p /opt/jboss/wildfly
 
 #Updating Path
 ENV ANT_HOME /opt/ant/apache-ant-1.9.8
+ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 ENV APPSRV_HOME ="/opt/jboss/wildfly/"
 
@@ -19,9 +20,6 @@ RUN cd $HOME \
     && mv $HOME/apache-ant-1.9.8 $ANT_HOME \
     && rm apache-ant-1.9.8-bin.tar.gz \
     && chmod -R g+rw ${ANT_HOME}
-
-#Updating Path
-ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 
 # install JDK instead of JRE
 RUN apt-get update
