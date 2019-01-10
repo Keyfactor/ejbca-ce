@@ -188,6 +188,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 addNonTranslatedErrorMessage(e.getMessage());
             }
         }
+        endEntityProfileName = null;
         endEntityProfileItems = null;
     }
     
