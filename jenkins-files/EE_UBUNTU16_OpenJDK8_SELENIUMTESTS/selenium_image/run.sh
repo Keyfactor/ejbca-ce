@@ -1,5 +1,7 @@
 #!/bin/sh
 
+sudo su
+
 # try those with sudo
 # add the seluser guy to root group
 cp /opt/ejbca_conf/* /app/ejbca/conf/
@@ -25,7 +27,7 @@ echo '=================== build finished ========================'
 
 cat /etc/passwd
 
-su seluser
+exit
 
 whoami
 
