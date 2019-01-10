@@ -8,8 +8,8 @@ RUN mkdir -p /opt/ant/
 #Create Appserver Home Dir (dummy, but needed for WebTests suite)
 RUN mkdir -p /opt/jboss/wildfly
 
-#Updating Path
-ENV ANT_HOME = "/opt/ant/apache-ant-1.9.8"
+# environment variables
+ENV ANT_HOME /opt/ant/apache-ant-1.9.8
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 ENV APPSRV_HOME ="/opt/jboss/wildfly/"
