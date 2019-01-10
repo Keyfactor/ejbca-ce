@@ -188,10 +188,10 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         }
         try {
             byte[] uploadedFileBytes = upload.getBytes();
-            return KeyTools.getBytesFromPublicKeyFile(uploadedFileBytes);
+            return KeyTools.getBytesFromCtLogKey(uploadedFileBytes);
         } catch (final CertificateParsingException e) {
             log.info("Could not parse the public key file.", e);
-            systemConfigurationHelper.addErrorMessage("CTLOGTAB_BADKEYFILE", upload.getName());
+            systemConfigurationHelper.addErrorMessage("CTLOGTAB_BADKEYFILE", upload.getName(), e.getMessage());
             return null;
         } catch (final Exception e) {
             log.info("Failed to add CT Log.", e);
