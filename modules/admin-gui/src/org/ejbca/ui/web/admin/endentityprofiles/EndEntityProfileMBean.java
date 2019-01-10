@@ -849,12 +849,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         TreeMap<String, Integer> mergedMap = new TreeMap<String, Integer>();
         mergedMap.putAll(eecertificateprofilenames);
         mergedMap.putAll(subcacertificateprofilenames);
-        Collection<Integer> ids = new ArrayList<Integer>();
+        Collection<Integer> idCollection = new ArrayList<Integer>();
         for (String profile : profiles) {
             int certprofid = ((Integer) mergedMap.get(profile)).intValue();
-            ids.add(certprofid);
+            idCollection.add(certprofid);
         }
-        profiledata.setAvailableCertificateProfileIds(ids);
+        profiledata.setAvailableCertificateProfileIds(idCollection);
     }
 
     // getter for above new method
@@ -893,8 +893,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return defaultCAsReturned;
     }
 
-    public void setDefaultCAs(List<SelectItem> defca) {
-    } //fake method, remove
+    //public void setDefaultCAs(List<SelectItem> defca) {
+    //} //fake method, remove
 
     // new method 
     public Collection<String> getCurrentAvailableCAs() {
@@ -904,8 +904,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     // new method 
-    public void setCurrentAvailableCAs(Collection<String> strC) {
-        profiledata.setAvailableCAsIDsAsStrings(strC);//Tries to set String names rather than IDs probably...
+    public void setCurrentAvailableCAs(Collection<String> availableCAs) {
+        profiledata.setAvailableCAsIDsAsStrings(availableCAs);//Tries to set String names rather than IDs probably...
     }
 
     // verify
@@ -914,8 +914,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     // verify...
-    public void setCurrentDefaultCA(String dca) {
-        Integer dcaInt = new Integer(dca);
+    public void setCurrentDefaultCA(String defaultCA) {
+        Integer dcaInt = new Integer(defaultCA);
         profiledata.setDefaultCA(dcaInt.intValue());
     }
 
@@ -957,19 +957,19 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     // new method: 
     public Collection<String> getCurrentAvailableTokens() {
-        Collection<Integer> intC = new ArrayList<Integer>();
-        Collection<String> strC = new ArrayList<String>();
-        intC = profiledata.getAvailableTokenTypes();
-        for (int i : intC) {
-            Integer intObject = new Integer(i);
-            strC.add(intObject.toString());
+        Collection<Integer> tokensAsIntegers = new ArrayList<Integer>();
+        Collection<String> tokensAsStrings = new ArrayList<String>();
+        tokensAsIntegers = profiledata.getAvailableTokenTypes();
+        for (int tokenIntValue : tokensAsIntegers) {
+            Integer tokenIntObject = new Integer(tokenIntValue);
+            tokensAsStrings.add(tokenIntObject.toString());
         }
-        return strC;
+        return tokensAsStrings;
     }
 
     // new method:
-    public void setCurrentAvailableTokens(Collection<String> strC) {
-        String[] values = strC.toArray(new String[0]);
+    public void setCurrentAvailableTokens(Collection<String> tokensAsStrings) {
+        String[] values = tokensAsStrings.toArray(new String[0]);
         String availableTokens = raBean.getAvailableTokenTypes(getCurrentDefaultToken(), values);
         profiledata.setValue(EndEntityProfile.AVAILKEYSTORE, 0, availableTokens);
     }
@@ -1018,9 +1018,9 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return currentHardTokens;
     }
 
-    public void setCurrentHardTokenIssuers(Collection<String> htCollection) {
+    public void setCurrentHardTokenIssuers(Collection<String> hardTokenCollection) {
         String defaulthardtokenissuer = getCurrentDefaultHardTokenIssuer();
-        String[] valueArray = htCollection.toArray(new String[0]);
+        String[] valueArray = hardTokenCollection.toArray(new String[0]);
         String availablehardtokenissuers = raBean.getAvailableHardTokenIssuers(defaulthardtokenissuer, valueArray);
         profiledata.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, availablehardtokenissuers);
     }
@@ -1060,8 +1060,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return profiledata.isModifyable(EndEntityProfile.STARTTIME, 0);
     }
 
-    public void setCertValidityStartTimeMod(boolean bool) {
-        profiledata.setModifyable(EndEntityProfile.STARTTIME, 0, bool);
+    public void setCertValidityStartTimeMod(boolean startTimeModifyable) {
+        profiledata.setModifyable(EndEntityProfile.STARTTIME, 0, startTimeModifyable);
     }
 
     //
@@ -1069,8 +1069,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return profiledata.isModifyable(EndEntityProfile.ENDTIME, 0);
     }
 
-    public void setCertValidityEndTimeMod(boolean bool) {
-        profiledata.setModifyable(EndEntityProfile.ENDTIME, 0, bool);
+    public void setCertValidityEndTimeMod(boolean endTimeModifyable) {
+        profiledata.setModifyable(EndEntityProfile.ENDTIME, 0, endTimeModifyable);
     }
 
     //
@@ -1237,12 +1237,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
     }
 
-    //
+    // ****
     public boolean isReuseKeyRecoveredCertificate() {
         return profiledata.getReUseKeyRecoveredCertificate();
     }
 
-    //
+    // ****
     public void setReuseKeyRecoveredCertificate(boolean reuse) {
         profiledata.setReUseKeyRecoveredCertificate(reuse);
     }
@@ -1287,17 +1287,17 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     //
     public List<SelectItem> getRevocationReasons() {
         final List<SelectItem> revocationReasonsReturned = new ArrayList<>();
-        String humanRead;
+        String humanReadable;
         int revocationReasonDBValue;
         for (RevocationReasons revocationReason : RevocationReasons.values()) {
-            humanRead = revocationReason.getHumanReadable();
+            humanReadable = revocationReason.getHumanReadable();
             revocationReasonDBValue = revocationReason.getDatabaseValue();
             if (revocationReasonDBValue == -1) {// Not revoked
                 revocationReasonsReturned.add(0, new SelectItem(revocationReasonDBValue, ejbcaWebBean.getText("ACTIVE")));
             } else if (revocationReasonDBValue == 6) {// Certificate on hold    
-                revocationReasonsReturned.add(1, new SelectItem(revocationReasonDBValue, ejbcaWebBean.getText("SUSPENDED") + ": " + humanRead));
+                revocationReasonsReturned.add(1, new SelectItem(revocationReasonDBValue, ejbcaWebBean.getText("SUSPENDED") + ": " + humanReadable));
             } else {
-                revocationReasonsReturned.add(new SelectItem(revocationReasonDBValue, ejbcaWebBean.getText("REVOKED") + ": " + humanRead));
+                revocationReasonsReturned.add(new SelectItem(revocationReasonDBValue, ejbcaWebBean.getText("REVOKED") + ": " + humanReadable));
             }
         }
         return revocationReasonsReturned;
@@ -1381,8 +1381,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return profiledata.getSendNotificationDefault();
     }
 
-    public void setSendNotificationDefault(boolean isdefault) {
-        if (isdefault) {
+    public void setSendNotificationDefault(boolean isDefault) {
+        if (isDefault) {
             profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.TRUE);
         } else {
             profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.FALSE);
@@ -1393,8 +1393,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return profiledata.getSendNotificationRequired();
     }
 
-    public void setSendNotificationRequired(boolean isrequired) {
-        profiledata.setRequired(EndEntityProfile.SENDNOTIFICATION, 0, isrequired);
+    public void setSendNotificationRequired(boolean isRequired) {
+        profiledata.setRequired(EndEntityProfile.SENDNOTIFICATION, 0, isRequired);
     }
 
     //
@@ -1512,11 +1512,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             raBean.changeEndEntityProfile(profileName, profiledata);
             return "profilesaved";
         } else {
-            Iterator<Entry<String, String>> iterator = editerrors.entrySet().iterator();
-            String str;
-            while (iterator.hasNext()) {
-                str = iterator.next().getValue();
-                addNonTranslatedErrorMessage(str);//Non translated is temorary for testing
+            Iterator<Entry<String, String>> errorIterator = editerrors.entrySet().iterator();
+            String errorMessage;
+            while (errorIterator.hasNext()) {
+                errorMessage = errorIterator.next().getValue();
+                addNonTranslatedErrorMessage(errorMessage);//Non translated is temporary for testing
             }
         }
         return "";
@@ -1525,7 +1525,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     //==========================================================================================================================================================================   
 
-    // Temporary methods, remove when it is possible to remove fields from profile
+    // Temporary methods, remove when it is possible
     public boolean getCheckBoxValue() {
         return false;
     }
