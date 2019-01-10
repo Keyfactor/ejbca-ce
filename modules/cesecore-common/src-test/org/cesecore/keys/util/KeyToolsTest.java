@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -132,6 +133,9 @@ public class KeyToolsTest {
 
     private static final String storepwd = "foo123";
     private static final String pkAlias = "privateKey";
+
+    private static final byte[] ecPublicKey = Base64.decode(("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAnXBeTH4xcl2c8VBZqtfgCTa+5sc" + 
+            "wV+deHQeaRJQuM5DBYfee9TQn+mvBfYPCTbKEnMGeoYq+BpLCBYgaqV6hw==").getBytes());
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -673,4 +677,44 @@ public class KeyToolsTest {
         }
         assertTrue("Failed to generate EC key pair using " + sb.toString(), sb.length()==0);
     }
+
+    @Test
+    public void testGetBytesFromCtLogKeyEmpty() {
+        try {
+            KeyTools.getBytesFromCtLogKey(new byte[] {});
+            fail("Should throw");
+        } catch (CertificateParsingException e) {
+            assertEquals("Public key file is empty", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testGetBytesFromCtLogKeyBadAscii() {
+        try {
+            KeyTools.getBytesFromCtLogKey(new byte[] { -12 });
+            fail("Should throw");
+        } catch (CertificateParsingException e) {
+            assertEquals("Public key could not be parsed as either PEM, DER or base64.", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testGetBytesFromCtLogKeyBadB64Key() {
+        try {
+            KeyTools.getBytesFromCtLogKey("AQIDBA==".getBytes(StandardCharsets.US_ASCII));
+            fail("Should throw");
+        } catch (CertificateParsingException e) {
+            assertEquals("The base64 encoded data does not represent a public key.", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testGetBytesFromCtLogKeyGoodKeys() throws CertificateParsingException {
+        assertArrayEquals("Binary public key was not parsed correctly", ecPublicKey, KeyTools.getBytesFromCtLogKey(ecPublicKey));
+        final byte[] b64Key = Base64.encode(ecPublicKey);
+        assertArrayEquals("Base64 public key was not parsed correctly", ecPublicKey, KeyTools.getBytesFromCtLogKey(b64Key));
+        final byte[] pemKey = CertTools.getPEMFromPublicKey(ecPublicKey);
+        assertArrayEquals("PEM public key was not parsed correctly", ecPublicKey, KeyTools.getBytesFromCtLogKey(pemKey));
+    }
+
 }

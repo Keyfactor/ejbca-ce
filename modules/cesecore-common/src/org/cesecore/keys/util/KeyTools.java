@@ -14,6 +14,7 @@ package org.cesecore.keys.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -73,6 +74,7 @@ import javax.crypto.interfaces.DHPublicKey;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Exception;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBMPString;
@@ -99,6 +101,7 @@ import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -1338,6 +1341,9 @@ public final class KeyTools {
      * @throws CertificateParsingException If the data isn't a public key in either PEM or DER format.
      */
     public static byte[] getBytesFromPublicKeyFile(final byte[] file) throws CertificateParsingException {
+        if (file.length == 0) {
+            throw new CertificateParsingException("Public key file is empty");
+        }
         final String fileText = Charset.forName("ASCII").decode(java.nio.ByteBuffer.wrap(file)).toString();
         final byte[] asn1bytes;
         {
@@ -1347,11 +1353,39 @@ public final class KeyTools {
         try {
             PublicKeyFactory.createKey(asn1bytes); // Check that it's a valid public key
             return asn1bytes;
-        } catch (IOException e) {
-            throw new CertificateParsingException(e);
+        } catch (IOException | IllegalArgumentException e) {
+            throw new CertificateParsingException("File is neither a valid PEM nor DER file.", e);
         }
     }
-    
+
+    /** Like {@link getBytesFromPublicKeyFile}, but allows for missing ----BEGIN... and END lines. */
+    public static byte[] getBytesFromCtLogKey(final byte[] file) throws CertificateParsingException {
+        try {
+            return getBytesFromPublicKeyFile(file);
+        } catch (CertificateParsingException originalException) {
+            log.debug("Could not parse key as PEM or DER, trying as raw base64.", originalException);
+            final byte[] decoded;
+            try {
+                decoded = Base64.decode(file);
+            } catch (DecoderException ignored) {
+                log.debug("Public key file is not valid base64");
+                throw new CertificateParsingException("Public key could not be parsed as either PEM, DER or base64.", originalException);
+            }
+            if (decoded == null || decoded.length == 0) {
+                log.debug("Decoded base64 data of public key is empty or null");
+                throw originalException;
+            }
+            try {
+                PublicKeyFactory.createKey(decoded); // Check that it's a valid public key
+                return decoded;
+            } catch (IOException | IllegalArgumentException e) {
+                final String msg = "The base64 encoded data does not represent a public key.";
+                log.debug(msg);
+                throw new CertificateParsingException(msg, e);
+            }
+        }
+    }
+
     /**
      * Returns the modulus of the public key.
      * @param publicKey public key
