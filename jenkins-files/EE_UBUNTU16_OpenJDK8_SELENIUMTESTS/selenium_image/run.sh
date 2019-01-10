@@ -25,7 +25,7 @@ echo '=================== build finished ========================'
 
 cat /etc/passwd
 
-su - seluser
+su seluser
 
 whoami
 
