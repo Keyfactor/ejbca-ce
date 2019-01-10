@@ -5,6 +5,8 @@ USER root
 #Create Ant Dir
 RUN mkdir -p /opt/ant/
 
+#Create Appserver Home Dir (dummy, but needed for WebTests suite)
+RUN mkdir -p /opt/jboss/wildfly
 
 #Updating Path
 ENV ANT_HOME /opt/ant/apache-ant-1.9.8
