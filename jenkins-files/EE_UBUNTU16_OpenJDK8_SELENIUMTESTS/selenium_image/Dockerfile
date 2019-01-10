@@ -5,8 +5,11 @@ USER root
 #Create Ant Dir
 RUN mkdir -p /opt/ant/
 
-#Setting Ant Home
+
+#Updating Path
 ENV ANT_HOME /opt/ant/apache-ant-1.9.8
+ENV ANT_OPTS="-Xms256M -Xmx512M"
+ENV APPSRV_HOME ="/opt/jboss/wildfly/"
 
 RUN cd $HOME \
 	&& curl -O http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz \
