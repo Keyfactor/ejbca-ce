@@ -1665,7 +1665,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public String getCmsCertLink() throws UnsupportedEncodingException {
         if (cmscert != null) {
-            return "adminweb/viewcertificate.xhtml?"
+            return viewCertLink + "?certsernoparameter="
                     + java.net.URLEncoder.encode(cmscert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(cmscert), "UTF-8");
         } else {
             return StringUtils.EMPTY;
