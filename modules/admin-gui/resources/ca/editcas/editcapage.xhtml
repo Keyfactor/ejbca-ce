@@ -78,14 +78,14 @@
 					<h:commandButton
 						id="catypex509"
 						styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeX509?'selected':'notSelected'}"
-						action="#{editCAsMBean.setCaTypeX509()}"
+						action="#{editCAsMBean.setCaTypeX509}"
 						value="#{editCAsMBean.caTypeX509?'✓':' '}#{web.text.X509}">
 						<f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form" />
 					</h:commandButton>
 					<h:commandButton
 						id="catypecvc"
 						styleClass="selectButton largeSelectButton #{editCAsMBean.caTypeCVC?'selected':''}"
-						action="#{editCAsMBean.setCaTypeCVC()}"
+						action="#{editCAsMBean.setCaTypeCVC}"
 						value="#{editCAsMBean.caTypeCVC?'✓':' '}#{web.text.CVCCA}">
 						<f:ajax listener="#{editCAsMBean.resetSignedBy()}" render="@form" />
 					</h:commandButton>
@@ -176,8 +176,8 @@
 						style="font-weight: bold;" />
 					<ui:repeat var="failedCrypto"
 						value="editCAsMBean.failedCryptoTokenLinkMap()">
-						<h:outputLink value="#{failedCrypto.getKey()}" />
-						<h:outputText value="#{failedCrypto.getValue()}" />
+						<h:outputLink value="#{failedCrypto.key}" />
+						<h:outputText value="#{failedCrypto.value}" />
 					</ui:repeat>
 				</h:panelGroup>
 
@@ -361,7 +361,7 @@
 					<h:selectOneMenu id="keysequenceformat"
 						value="#{editCAsMBean.keySequenceFormat}"
 						disabled="#{not editCAsMBean.hasEditRight}">
-						<f:selectItems value="#{editCAsMBean.getKeySequenceFormatList()}"/>
+						<f:selectItems value="#{editCAsMBean.keySequenceFormatList}"/>
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -844,7 +844,7 @@
 				<h:panelGroup
 					rendered="#{editCAsMBean.editCA and not editCAsMBean.waitingForResponse and not editCAsMBean.caUninitialized and editCAsMBean.caTypeX509}">
 					<h:commandButton type="button"
-						onclick="viewcacert('#{editCAsMBean.caCertLink()}')"
+						onclick="viewcacert('#{editCAsMBean.caCertLink}')"
 						title="#{web.text.VIEW_CACERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}"
 						value="#{web.text.VIEW_CERTIFICATE}"
 						disabled="#{not editCAsMBean.editCA or editCAsMBean.waitingForResponse}" />
@@ -1107,7 +1107,7 @@
 						rendered="#{not editCAsMBean.caExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 					<h:commandButton type="button"
-						action="#{editCAsMBean.genDefaultCrlDistPoint()}"
+						action="#{editCAsMBean.genDefaultCrlDistPoint}"
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:ajax render=":editcapage:textfielddefaultcrldistpoint" />
@@ -1133,7 +1133,7 @@
 						rendered="#{not editCAsMBean.caExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 					<h:commandButton type="button"
-						action="#{editCAsMBean.genDefaultCrlIssuer()}"
+						action="#{editCAsMBean.genDefaultCrlIssuer}"
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:ajax render=":editcapage:textfielddefaultcrlissuer" />
@@ -1158,7 +1158,7 @@
 						rendered="#{not editCAsMBean.caExternal}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 					<h:commandButton type="button"
-						action="#{editCAsMBean.genCaDefinedFreshestCrl()}"
+						action="#{editCAsMBean.genCaDefinedFreshestCrl}"
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:ajax render=":editcapage:textfieldcadefinedfreshestcrl" />
@@ -1185,7 +1185,7 @@
 						disabled="#{not editCAsMBean.hasEditRight}" />
 					<h:commandButton type="button"
 						name="checkbexgeneratedefaultocsplocator"
-						action="#{editCAsMBean.genDefaultOcspLocator()}"
+						action="#{editCAsMBean.genDefaultOcspLocator}"
 						value="#{web.text.GENERATE}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:ajax render=":editcapage:textfielddefaultocsplocator" />
@@ -1232,7 +1232,7 @@
 				columnClasses="editColumn1,editColumn2" style="padding-right: 4px;"
 				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
 				<h:column>
-					<h:outputText value="#{requestItem.getDisplayText()}" />
+					<h:outputText value="#{requestItem.displayText}" />
 				</h:column>
 				<h:column>
 					<h:selectOneMenu id="approvalProfile"
@@ -1290,11 +1290,11 @@
 						value="#{web.text.REVOKERENEWCMSCERT}"
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.waitingForResponse}"
 						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized}"
-						action="#{editCAsMBean.renewAndRevokeCmsCertificate()}" />
+						action="#{editCAsMBean.renewAndRevokeCmsCertificate}" />
 				<h:commandButton type="button"
 						title="#{web.text.VIEW_CMSCERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}"
 						value="#{web.text.VIEW_CMSCERTIFICATE}"
-						onclick="viewcmscert(#{editCAsMBean.cmsCertLink()})"
+						onclick="viewcmscert(#{editCAsMBean.cmsCertLink})"
 						rendered="#{editCAsMBean.renderViewCmsCert}" />
 				</h:panelGroup>
 
@@ -1373,7 +1373,7 @@
         	    &nbsp;&nbsp;&nbsp;
 				<h:commandButton name="buttonrevokeca" value="#{web.text.REVOKE}"
 						onclick="return confirmcaaction('#{web.text.AREYOUSUREREVOKECA}')"
-						action="#{editCAsMBean.revokeCa()}" />
+						action="#{editCAsMBean.revokeCa}" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{editCAsMBean.renderRenewCA}">
@@ -1443,7 +1443,7 @@
 						<h:panelGroup>
 							<h:commandButton id="buttonrenewca" value="#{web.text.RENEWCA}"
 								onclick="return confirmcaaction('#{web.text.AREYOUSURERENEWCA}')"
-								action="#{editCAsMBean.renewCa()}"
+								action="#{editCAsMBean.renewCa}"
 								disabled="#{!editCAsMBean.hasEditRight}" />
 						</h:panelGroup>
 
@@ -1479,7 +1479,7 @@
 							<h:commandButton name="buttonrollover"
 								value="#{web.text.CAROLLOVERBUTTON}"
 								onclick="#{editCAsMBean.confirmRolloverDate}"
-								action="#{editCAsMBean.rolloverCA()}"
+								action="#{editCAsMBean.rolloverCA}"
 								rendered="#{editCAsMBean.editCA and editCAsMBean.rollOverDate}" />
 						</h:panelGroup>
 					</h:panelGrid>
@@ -1489,7 +1489,7 @@
 				<h:commandButton name="buttonpublishca"
 					value="#{web.text.REPUBLISHCA}"
 					rendered="#{editCAsMBean.renderRepublishCA}"
-					action="#{editCAsMBean.publishCA()}" />
+					action="#{editCAsMBean.publishCA}" />
 				<h:panelGroup>
 
 				</h:panelGroup>
@@ -1539,8 +1539,7 @@
 						<h:panelGroup>
 							<h:commandButton id="buttonmakerequest"
 								value="#{web.text.MAKEREQUEST}"
-								onclick="return checkallfields()"
-								action="#{editCAsMBean.makeRequest()}"
+								action="#{editCAsMBean.makeRequest}"
 								disabled="#{!editCAsMBean.signedByExternal and !editCAsMBean.editCA or editCAsMBean.caUninitialized}" />
 						</h:panelGroup>
 
@@ -1587,7 +1586,7 @@
 						<h:panelGroup rendered="#{editCAsMBean.editCA}">
 							<h:commandButton name="buttonreceiverequest"
 								value="#{web.text.RECIEVEREQUEST}"
-								onclick="return checkallfields()" />
+								action="#{editCAsMBean.receiveResponse}" />
 						</h:panelGroup>
 					</h:panelGrid>
 				</h:panelGroup>
@@ -1624,7 +1623,7 @@
 						<h:commandButton 
 							name="buttonreceiveimportrenewal"
 							value="#{web.text.RECEIVE_IMPORT_RENEWAL}"
-							action="#{editCAsMBean.importCACertUpdate()}" />
+							action="#{editCAsMBean.importCACertUpdate}" />
 					</h:panelGroup>
 				</h:panelGrid>
 			</h:panelGrid>
@@ -1641,21 +1640,19 @@
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 
 					<h:commandButton id="buttonsave"
-						onclick='return checkallfields()' value="#{web.text.SAVE}"
+						value="#{web.text.SAVE}"
 						action="#{editCAsMBean.saveCa}"
 						rendered="#{editCAsMBean.editCaNotUninitializedHasEditRights}" />
 						
 					<h:commandButton name="buttonsave"
-						onclick='return checkallfields()'
 						value="#{web.text.SAVE}"
 						rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
-						action="#{editCAsMBean.saveCa()}" />
+						action="#{editCAsMBean.saveCa}" />
 												
 					<h:commandButton name="buttoninitialize"
-						onclick='return checkallfields()'
 						value="#{web.text.SAVE_AND_INITIALIZE}"
 						rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
-						action="#{editCAsMBean.initializeCa()}" />
+						action="#{editCAsMBean.initializeCa}" />
 
 					<h:outputText
 						value="#{web.text.CRYPTOTOKEN_DOESNT_EXIST_CANT_INITIALIZE}"
@@ -1668,9 +1665,8 @@
 					</ui:fragment>
 
 					<h:commandButton name="buttonsave"
-						onclick='return checkallfields()' 
 						value="#{web.text.SAVE}"
-						action="#{editCAsMBean.saveCa()}"
+						action="#{editCAsMBean.saveCa}"
 						rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and editCAsMBean.caUninitialized}" />
 
 					<h:outputText
@@ -1679,8 +1675,8 @@
 						rendered="#{editCAsMBean.editCaUninitializedHasEditRights and not editCAsMBean.cryptoTokenIdParamNotNull and not editCAsMBean.caUninitialized}" />
 
 					<h:commandButton id="buttoncreate"
-						onclick='return checkallfields()' value="#{web.text.CREATE}"
-						action="#{editCAsMBean.createCa()}"
+						value="#{web.text.CREATE}"
+						action="#{editCAsMBean.createCa}"
 						rendered="#{not editCAsMBean.editCA or not editCAsMBean.hasEditRight and editCAsMBean.hasCreateRight}"
 						disabled="#{editCAsMBean.signedByExternal}" />
         	    &nbsp;&nbsp;&nbsp;
@@ -1695,7 +1691,7 @@
 					<h:commandButton name="buttonsaveexternalca"
 						value="#{web.text.SAVE}"
 						rendered="#{editCAsMBean.renderSaveExternalCa}"
-						action="#{editCAsMBean.saveExternalCA()}" />
+						action="#{editCAsMBean.saveExternalCA}" />
 				&nbsp;&nbsp;&nbsp;
 				<h:button name="buttoncancel" value="#{web.text.CANCEL}"
 						rendered="#{editCAsMBean.renderSaveExternalCa}"
@@ -1724,7 +1720,7 @@
 				<h:inputSecret autocomplete="off" />
 				<h:commandButton name="buttonexportca"
 					value="#{web.text.EXPORTCA} ..."
-					action="#{editCAsMBean.exportCA()}" />
+					action="#{editCAsMBean.exportCA}" />
 			</h:panelGroup>
 			<h:panelGroup rendered="#{not editCAsMBean.caExportable}">
 				<h:outputText value="#{web.text.EXPORTCA_NA}" />
