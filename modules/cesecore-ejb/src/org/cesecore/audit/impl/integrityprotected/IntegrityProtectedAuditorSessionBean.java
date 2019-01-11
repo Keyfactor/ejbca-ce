@@ -139,7 +139,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
         detailsDelete.put("timestamp", FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(timestamp));
         securityEventsLogger.log(EventTypes.LOG_DELETE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, token.toString(), null, null, null, detailsDelete);
         // Delete all the exported logs (from all nodes)
-		final QueryCriteria queryCriteria = QueryCriteria.create().add(Criteria.leq(AuditLogEntry.FIELD_TIMESTAMP, timestamp.getTime())).add(Criteria.orderAsc(AuditLogEntry.FIELD_SEQUENCENUMBER));
+		final QueryCriteria queryCriteria = QueryCriteria.create().add(Criteria.leq(AuditLogEntry.FIELD_TIMESTAMP, timestamp.getTime()));
 		return buildConditionalQuery(entityManager, "DELETE FROM AuditRecordData a", queryCriteria, 0, 0).executeUpdate();
 	}
 
