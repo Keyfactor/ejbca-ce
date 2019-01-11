@@ -19,7 +19,7 @@ cd /app/ejbca
 
 
 
-sudo -E env "PATH=$PATH" ant build
+#sudo -E env "PATH=$PATH" ant build
 
 echo '=================== build finished ========================'
 
@@ -31,7 +31,6 @@ cat /etc/passwd
 
 # whoami
 
-ls -la /app/ejbca
 ls -la /app/ejbca/reports
 
 # this test works in RA mode!
