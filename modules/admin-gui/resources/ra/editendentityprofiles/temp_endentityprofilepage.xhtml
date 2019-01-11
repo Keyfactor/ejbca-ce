@@ -301,11 +301,11 @@
 					    <f:ajax/> <!-- SUBMITTING ITEM SELECTED --> 
 						<f:selectItems id="subjectDNAttributesList" value="#{endEntityProfileMBean.subjectDNAttributes}"/>
 					</h:selectOneMenu>
-					<h:commandButton 
+					<h:commandButton
 						id="addSubjectDNAttributeButton" 
 						value="#{web.text.ADD}" 
 						action="#{endEntityProfileMBean.addSubjectDNAttribute}">
-						<f:ajax render=":eeProfiles"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+						<f:ajax render=":eeProfiles"/>  
 					</h:commandButton>
 				</h:panelGrid>
 			</h:panelGrid>	
@@ -379,7 +379,7 @@
 			<h:panelGrid id="bottom_subjectdnattributes" columns="3" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">	
 				<h:column>
 					<h:commandButton id="removeSubjectDNAttributeButton" value="#{web.text.REMOVE}">
-						<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+						<f:ajax render="@this"/>  
 					</h:commandButton>
 				</h:column>
 				<h:panelGroup>
@@ -410,7 +410,7 @@
 						<f:selectItems id="subjectAltNameList" value="#{endEntityProfileMBean.subjectAltNameTypes}"/>
 					</h:selectOneMenu>
 				    <h:commandButton id="addSubjectAltNameButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectAltName}">
-					<f:ajax render=":eeProfiles"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+					<f:ajax render=":eeProfiles"/>  
 				</h:commandButton>
 				</h:panelGrid>
 			</h:panelGrid>	
@@ -481,7 +481,7 @@
 				
 				<h:panelGrid id="header_othersubjectattributes2" columns="3" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
 					<h:commandButton id="removeSubjectAltNameButton" value="#{web.text.REMOVE}">
-						<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL -->
+						<f:ajax render="@this"/> 
 					</h:commandButton>
 					<h:panelGroup>
 						&nbsp;
@@ -499,7 +499,7 @@
 							<f:selectItems id="subjectDirectoryAttributeTypeList" value="#{endEntityProfileMBean.subjectDirectoryAttributes}"/> 
 						</h:selectOneMenu>
 				    	<h:commandButton id="addSubjectDirectoryAttributeTypeButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectDirectoryAttribute}">
-							<f:ajax render=":eeProfiles"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+							<f:ajax render=":eeProfiles"/>  
 						</h:commandButton>
 					</h:panelGrid>
 				</h:panelGrid>
@@ -552,7 +552,7 @@
 				</h:dataTable>
 				<h:panelGrid id="header_othersubjectattributes3" columns="3" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">		
 					<h:commandButton id="removeSubjectDirectoryAttributeTypeButton" value="#{web.text.REMOVE}">
-						<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+						<f:ajax render="@this"/>  
 					</h:commandButton>
 					<h:panelGroup>
 						&nbsp;
@@ -674,7 +674,6 @@
 	       	    		<h:selectManyListbox id="availableHardTokens" size="7" value="#{endEntityProfileMBean.currentHardTokenIssuers}"> <!-- new method for selectMany ...-->
 	       	    			<f:ajax/>
 	       	    			<f:selectItems id="availableHardTokensList" value="#{endEntityProfileMBean.hardTokenIssuers}"/>
-	       	    			<!-- CHANGE ABOVE METHODS FROM TOKENS TO HARDTOKENS -->
 	       	    		</h:selectManyListbox>
 	       	    </h:panelGroup>
 			</h:panelGrid>
@@ -935,7 +934,7 @@
 				    	<h:outputLabel for="header_otherdata"  value="#{web.text.MODIFYABLE}"/>
 				</h:panelGrid>
 				<h:commandButton id="deleteAllButton" value="#{web.text.DELETEALL}">
-					<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+					<f:ajax render="@this"/>  
 				</h:commandButton>
 				<h:panelGroup id="sendNotificationGroup">
 					<h:outputLabel for="sendNotificationGroup" style="font-weight: bold;" value="#{web.text.SENDNOTIFICATION}"/>
@@ -964,7 +963,7 @@
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.REQUIRED}"/>	
 					<h:commandButton id="addButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addNotification}" disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
-						<f:ajax render=":eeProfiles"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+						<f:ajax render=":eeProfiles"/>  
 					</h:commandButton>
 				</h:panelGrid>			
 			</h:panelGrid> <!-- Ending before dataTable or ui_repeat -->	
@@ -975,7 +974,7 @@
 						id="removeSendNotificationButton" 
 						value="#{web.text.DELETE}" 
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfilesMBean.viewOnly}">
-						<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL --> 
+						<f:ajax render="@this"/>  
 					</h:commandButton>
 					<h:outputLabel for="sendNotificationGrid" value="#{web.text.NOTIFICATIONSENDER}"/>
 					<h:inputText 
@@ -1103,7 +1102,7 @@
 	       			<h:commandButton id="saveButton" value="#{web.text.SAVE}" action="#{endEntityProfileMBean.saveProfile}">
 					</h:commandButton>
 					<h:commandButton id="cancelButton" value="#{web.text.CANCEL}">
-						<f:ajax render="@this"/> <!-- CHANGE TO SOMETHING USEFUL -->
+						<f:ajax render="@this"/> 
 					</h:commandButton>
 				</h:panelGrid>
 			</h:panelGrid>
