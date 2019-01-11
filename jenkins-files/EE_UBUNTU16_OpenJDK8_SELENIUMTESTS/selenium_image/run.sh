@@ -25,8 +25,6 @@ echo '=================== build finished ========================'
 
 #chown -R root /home/seluser
 
-sudo -E env "PATH=$PATH" mkdir -p /app/ejbca/modules/ejbca-webtest/build/classes
-sudo -E env "PATH=$PATH" chmod 777 /app/ejbca/modules/ejbca-webtest/build/classes
 
 # this test works in RA mode!
 ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
