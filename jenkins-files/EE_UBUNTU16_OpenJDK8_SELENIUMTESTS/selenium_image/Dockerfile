@@ -39,12 +39,12 @@ RUN chmod 777 /home/seluser/.mozilla/firefox/profiles.ini
 
 
 # testing testing - add firefox profile to root user profile
-RUN mkdir -p /root/.mozilla
-RUN mkdir -p /root/.mozilla/firefox
-ADD configuration/firefox_conf/svq3ko35.default /root/.mozilla/firefox/svq3ko35.default
-RUN chmod 777 /root/.mozilla/firefox/svq3ko35.default
-ADD configuration/firefox_conf/profiles.ini /root/.mozilla/firefox/profiles.ini
-RUN chmod 777 /root/.mozilla/firefox/profiles.ini
+# RUN mkdir -p /root/.mozilla
+# RUN mkdir -p /root/.mozilla/firefox
+# ADD configuration/firefox_conf/svq3ko35.default /root/.mozilla/firefox/svq3ko35.default
+# RUN chmod 777 /root/.mozilla/firefox/svq3ko35.default
+# ADD configuration/firefox_conf/profiles.ini /root/.mozilla/firefox/profiles.ini
+# RUN chmod 777 /root/.mozilla/firefox/profiles.ini
 
 
 
@@ -58,6 +58,6 @@ ADD configuration/ejbca_webtest_conf /opt/ejbca_webtest_conf
 RUN chmod 777 /opt/ejbca_webtest_conf
 
 # need to run as root, because source checkout user is not accessible to seluser and is not allwed to chmod by jenkinsuser
-# USER seluser
+USER seluser
 
 CMD ["/opt/run.sh"]
