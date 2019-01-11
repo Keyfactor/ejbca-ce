@@ -23,7 +23,10 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAData;
@@ -31,8 +34,9 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.certificate.CertificateData;
-import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -50,13 +54,18 @@ import org.cesecore.util.CertTools;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
 
+    private static final Logger log = Logger.getLogger(CAAdminTestSessionBean.class);
+    
     @EJB
     private CaSessionLocal caSession;
     @EJB
-    private CertificateDataSessionLocal certificateDataSession;
+    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
-    
+
+    @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
+    private EntityManager entityManager;
+
     @Override
     public String getKeyFingerPrint(String caname) throws CADoesntExistsException, UnsupportedEncodingException, IllegalCryptoTokenException, CryptoTokenOfflineException, NoSuchAlgorithmException {
     	CAData cadata = caSession.findByNameOrThrow(caname);
@@ -81,8 +90,14 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
     @Override
     public void clearCertData(Certificate cert) {
         final String fingerprint = CertTools.getFingerprintAsString(cert);
-        CertificateData data = certificateDataSession.findByFingerprint(fingerprint);
-        data.setBase64Cert("");
+        final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
+        if (cdw.getBase64CertData()!=null) {
+            log.info("Resetting base64 data of certificate with fingerprint '" + fingerprint + "' by removing Base64CertData entity.");
+            entityManager.remove(cdw.getBase64CertData());
+        } else {
+            log.info("Resetting base64 data of certificate with fingerprint '" + fingerprint + "' by setting CertificateData.base64Cert to ''.");
+            cdw.getCertificateData().setBase64Cert("");
+            entityManager.merge(cdw.getCertificateData());
+        }
     }
-
 }
