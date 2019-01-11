@@ -55,7 +55,7 @@ pipeline {
             steps {
                 sh "mkdir ear || true"
                 sh "chmod 777 " + "$env.WORKSPACE"
-                sh "chmod 777 " + "$env.WORKSPACE/conf"
+                sh "chmod 777 " + "$env.WORKSPACE/ejbca/conf"
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/selenium_image') {
                     sh "docker build -t seleniumtests -m 2GB ."
                     sh "docker run --name seleniumtests --net=selenium-network -p 4444:4444 --shm-size=2g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
