@@ -19,7 +19,7 @@ cd /app/ejbca
 
 
 
-ant build
+sudo ant build
 
 echo '=================== build finished ========================'
 
