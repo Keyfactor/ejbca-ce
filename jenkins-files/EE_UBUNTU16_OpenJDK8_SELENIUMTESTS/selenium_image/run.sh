@@ -23,9 +23,11 @@ ant build
 
 echo '=================== build finished ========================'
 
-chown -R root /home/seluser
+#chown -R root /home/seluser
 
 cat /etc/passwd
+
+su - seluser
 
 whoami
 
