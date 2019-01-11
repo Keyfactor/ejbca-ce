@@ -1663,7 +1663,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return catype == CAInfo.CATYPE_X509 && isHasEditRight();
     }
     
-    public String cmsCertLink() throws UnsupportedEncodingException {
+    public String getCmsCertLink() throws UnsupportedEncodingException {
         if (cmscert != null) {
             return "adminweb/viewcertificate.xhtml?"
                     + java.net.URLEncoder.encode(cmscert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(cmscert), "UTF-8");
@@ -1688,7 +1688,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     
-    public String caCertLink() {
+    public String getCaCertLink() {
         return viewCertLink + "?caid=" + caid;
     }
     
@@ -2007,7 +2007,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * Receives a request (in editcas page) and navigates to managecas.xhtml page
      * @return
      */
-    public String recieveRequest() {
+    public String receiveResponse() {
         final byte[] fileBuffer = EditCaUtil.getUploadedFileBuffer(fileRecieveFileRecieveRequest);
         Date cafuturerolloverdate = null;
 
@@ -2021,6 +2021,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             }
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (final Exception e) {
+            log.debug("Error occurred while receiving response", e);
             addNonTranslatedErrorMessage(e);
             return "";
         }
