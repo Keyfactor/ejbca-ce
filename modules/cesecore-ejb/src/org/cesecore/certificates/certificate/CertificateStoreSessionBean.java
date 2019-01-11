@@ -1069,7 +1069,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             serialNumber = certificateData.getSerialNumber();
         }
         final String issuerDn = certificateData.getIssuerDN();
-        final int caid = CertTools.stringToBCDNString(issuerDn).hashCode();
+        final int caid = issuerDn.hashCode();
         final String username = certificateData.getUsername();
         final Date now = new Date();
 
