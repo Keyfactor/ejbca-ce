@@ -85,10 +85,13 @@ public class EndEntityProfileTest {
         // A regexp that validates valid domain name
         // (note that it is a java string below, so when copying to be used as a regexp all \\ should be \)
         // Reference: https://stackoverflow.com/questions/10306690/what-is-a-regular-expression-which-will-match-a-valid-domain-name-without-a-subd
-        String domainNameRegexp = "^(((?!-))(xn--|_{1,1})?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$";
+        //String domainNameRegexp = "^(((?!-))(xn--|_{1,1})?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$";
+        // An updated regexp (by Samuel) that allows * (wildcard certificates) and disallows _ in the beginning
+        String domainNameRegexp = "^(\\*.)?(((?!-))(xn--)?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$";
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "www.primekey.com");
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "xn--primekey.se");
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "a.b.primekey.cu.uk");
+        EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "*.primekey.com");
         // This is actually invalid and should not be allowed to pass, but it does with the above regexp (i.e. the regexp is not a perfect dnsName validator)
         // Anything with hyphens for 3rd/4th char is reserved, and xn— needs to be well formed & normalized
         EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "aa--primekey.se");
@@ -96,13 +99,19 @@ public class EndEntityProfileTest {
             EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "foo_.primekey.se");
             fail("should throw EndEntityFieldValidatorException on invalid value: foo_.primekey.se");
         } catch (EndEntityFieldValidatorException e) {
-            assertEquals("Validation error message is not the expected", e.getMessage(), "Technical details: Value \"foo_.primekey.se\" does not match regex ^(((?!-))(xn--|_{1,1})?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$");
+            assertEquals("Validation error message is not the expected", e.getMessage(), "Technical details: Value \"foo_.primekey.se\" does not match regex ^(\\*.)?(((?!-))(xn--)?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$");
+        }
+        try {
+            EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "_www.primekey.com");
+            fail("should throw EndEntityFieldValidatorException on invalid value: _www.primekey.se");
+        } catch (EndEntityFieldValidatorException e) {
+            assertEquals("Validation error message is not the expected", e.getMessage(), "Technical details: Value \"_www.primekey.com\" does not match regex ^(\\*.)?(((?!-))(xn--)?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$");
         }
         try {
             EndEntityValidationHelper.checkValue(DnComponents.DNSNAME, makeRegexValidator(domainNameRegexp), "http://www.primekey.se");
             fail("should throw EndEntityFieldValidatorException on invalid value: http://www.primekey.se");
         } catch (EndEntityFieldValidatorException e) {
-            assertEquals("Validation error message is not the expected", e.getMessage(), "Technical details: Value \"http://www.primekey.se\" does not match regex ^(((?!-))(xn--|_{1,1})?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$");
+            assertEquals("Validation error message is not the expected", e.getMessage(), "Technical details: Value \"http://www.primekey.se\" does not match regex ^(\\*.)?(((?!-))(xn--)?[a-z0-9-]{0,61}[a-z0-9]{1,1}\\.)*(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$");
         }
     }
     
