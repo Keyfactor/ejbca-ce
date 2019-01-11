@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -34,7 +33,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -947,19 +945,25 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
             return ret;
         } finally {
-            //End entity clean-up must be done if enrollment could not be completed (but end-entity has been added and wasn't already existing)
+            cleanUpEndEntities(errorCode);
+        }
+    }
+
+    /** End entity clean-up must be done if enrollment could not be completed (but end-entity has been added and wasn't already existing) */
+    private void cleanUpEndEntities(final ErrorCode errorCode) {
+        if ((errorCode == null || !errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) && !KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
+            EndEntityInformation endEntityInfoFromCA = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
             try {
-                if ((errorCode == null || !errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) && !KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
-                    EndEntityInformation fromCA = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
-                    if(fromCA != null && fromCA.getStatus() != EndEntityConstants.STATUS_GENERATED){
-                        raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
-                    }
+                if (endEntityInfoFromCA != null && 
+                    endEntityInfoFromCA.getStatus() != EndEntityConstants.STATUS_GENERATED && 
+                    endEntityInfoFromCA.getStatus() != EndEntityConstants.STATUS_NEW) {
+                    raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
                 }
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException(e);
             }
-            endEntityInformation.setUsername("");
         }
+        endEntityInformation.setUsername("");
     }
 
     /** Returns true if the default value of the given field is true in the end entity profile */
