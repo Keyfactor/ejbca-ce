@@ -885,25 +885,26 @@
 						id="keyRecoverableCheckBox" 
 						value="#{endEntityProfileMBean.useKeyRecoverable}" 
 						disabled="#{endEntityProfilesMBean.viewOnly}">
+						<f:ajax render=":eeProfiles:header_otherdata"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="header_otherdata"  value="#{web.text.USE} : " />
 					<h:outputLabel for="header_otherdata"  value="#{web.text.DEFAULT} = "/>
 					<h:selectBooleanCheckbox 
 						id="keyRecoverableDefaultCheckBox" 
 						value="#{endEntityProfileMBean.keyRecoverableDefault}" 
-						disabled="#{endEntityProfilesMBean.viewOnly}">
+						disabled="#{not endEntityProfileMBean.useKeyRecoverable or endEntityProfilesMBean.viewOnly}">
 					</h:selectBooleanCheckbox>
 					&nbsp;
 					<h:selectBooleanCheckbox 
 						id="reuseOldCertCheckBox" 
-						value="#{endEntityProfileMBean.reuseKeyRecoveredCertificate}" 
-						disabled="#{endEntityProfilesMBean.viewOnly}">
+						value="#{endEntityProfileMBean.profiledata.reUseKeyRecoveredCertificate}" 
+						disabled="#{not endEntityProfileMBean.useKeyRecoverable or endEntityProfilesMBean.viewOnly}">
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="keyRecoverableGrid" value="#{web.text.REUSEOLDCERTIFICATE}"/>	
 					<h:selectBooleanCheckbox 
 						id="keyRecoverableRequiredCheckBox" 
 						value="#{endEntityProfileMBean.keyRecoverableRequired}" 
-						disabled="#{endEntityProfilesMBean.viewOnly}">
+						disabled="#{not endEntityProfileMBean.useKeyRecoverable or endEntityProfilesMBean.viewOnly }">
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="keyRecoverableGrid" value="#{web.text.REQUIRED}"/>
 				</h:panelGrid>

@@ -1237,16 +1237,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
     }
 
-    // ****
-    public boolean isReuseKeyRecoveredCertificate() {
-        return profiledata.getReUseKeyRecoveredCertificate();
-    }
-
-    // ****
-    public void setReuseKeyRecoveredCertificate(boolean reuse) {
-        profiledata.setReUseKeyRecoveredCertificate(reuse);
-    }
-
     //
     public boolean isKeyRecoverableRequired() {
         return profiledata.getKeyRecoverableRequired();
