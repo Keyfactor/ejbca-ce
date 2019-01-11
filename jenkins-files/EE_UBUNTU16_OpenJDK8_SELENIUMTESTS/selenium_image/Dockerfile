@@ -43,7 +43,6 @@ RUN chmod 777 /opt/ejbca_conf
 
 # copy ejbca-webtest module conf to /opt in the container for runtime-usage
 ADD configuration/ejbca_webtest_conf /opt/ejbca_webtest_conf
-RUN chmod 777 /opt/ejbca_webtest_conf
 
 # need to run as root, because source checkout user is not accessible to seluser and is not allwed to chmod by jenkinsuser
 # USER seluser
