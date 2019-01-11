@@ -60,8 +60,6 @@ pipeline {
                 sh "chmod +w " + "$env.WORKSPACE/ejbca"
                 
                 sh "mkdir -p " + "$env.WORKSPACE/ejbca/reports/test"
-                sh "chmod +w " + "$env.WORKSPACE/ejbca/reports"
-                sh "chmod +w " + "$env.WORKSPACE/ejbca/reports/test"
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca/reports"
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca/reports/test"
                 
