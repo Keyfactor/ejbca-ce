@@ -45,6 +45,7 @@ RUN chmod 777 /opt/ejbca_conf
 ADD configuration/ejbca_webtest_conf /opt/ejbca_webtest_conf
 RUN chmod 777 /opt/ejbca_webtest_conf
 
-USER seluser
+# need to run as root, because source checkout user is not accessible to seluser and is not allwed to chmod by jenkinsuser
+# USER seluser
 
 CMD ["/opt/run.sh"]
