@@ -31,5 +31,8 @@ cat /etc/passwd
 
 # whoami
 
+ls -la /app/ejbca
+ls -la /app/ejbca/reports
+
 # this test works in RA mode!
-sudo -E env "PATH=$PATH" ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
+ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
