@@ -41,6 +41,9 @@ RUN chmod 777 /home/seluser/.mozilla/firefox/profiles.ini
 RUN mkdir /tmp/firefox_profiles/
 ADD configuration/firefox_conf/svq3ko35.default /tmp/firefox_profiles/svq3ko35.default
 
+# hopefully this makes ff to take this profile as default
+RUN mkdir /tmp/firefox
+ADD configuration/firefox_conf/svq3ko35.default /tmp/firefox/svq3ko35.default
 
 # testing testing - add firefox profile to root user profile
 # RUN mkdir -p /root/.mozilla
