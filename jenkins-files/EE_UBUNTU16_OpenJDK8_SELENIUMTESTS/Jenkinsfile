@@ -22,7 +22,6 @@ pipeline {
             }
         }
         
-        /*
         stage('deploy EJBCA') {
             steps {
                 sh "mkdir ear || true"
@@ -49,7 +48,7 @@ pipeline {
                 }
             }
         }
-        */
+        
         
         stage('run Selenium tests') {
             steps {
