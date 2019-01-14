@@ -25,8 +25,8 @@ sudo -E env "PATH=$PATH" ant build
 
 echo '=================== build finished ========================'
 
-#chown -R root /home/seluser
 
 
 # this test works in RA mode!
+chown -R root /home/seluser
 sudo -E env "PATH=$PATH" ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
