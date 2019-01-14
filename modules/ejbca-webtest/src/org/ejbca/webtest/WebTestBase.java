@@ -114,7 +114,7 @@ public abstract class WebTestBase {
         }
         
         if (profilePath != null) {
-            firefoxOptions.addArguments("-profile", "/tmp/firefox_profiles/hcqx24zh.selenium");
+            firefoxOptions.addArguments("-profile", profilePath);
         }
         
         webDriver = new FirefoxDriver(firefoxOptions);
