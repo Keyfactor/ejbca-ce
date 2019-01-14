@@ -63,7 +63,7 @@ public abstract class WebTestBase {
     private static String downloadDir;
     private static String browserBinary; // null = don't override default
     private static String browserHeadless;
-
+    private static String profilePath;
     private static WebDriver webDriver;
     private static WebDriverWait webDriverWait;
 
@@ -103,6 +103,7 @@ public abstract class WebTestBase {
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
             firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream");
             firefoxOptions.setProfile(firefoxProfile);
+
             firefoxOptions.setAcceptInsecureCerts(true);
         }
         if (browserBinary != null) {
@@ -110,6 +111,10 @@ public abstract class WebTestBase {
         }
         if (Boolean.parseBoolean(browserHeadless)) {
             firefoxOptions.setHeadless(true);
+        }
+        
+        if (profilePath != null) {
+            firefoxOptions.addArguments("-profile", "/tmp/firefox_profiles/hcqx24zh.selenium");
         }
         
         webDriver = new FirefoxDriver(firefoxOptions);
@@ -137,6 +142,8 @@ public abstract class WebTestBase {
         downloadDir = config.getProperty(ConfigurationConstants.BROWSER_DOWNLOADDIR);
         browserBinary = config.getProperty(ConfigurationConstants.BROWSER_BINARY);
         browserHeadless = config.getProperty(ConfigurationConstants.BROWSER_HEADLESS);
+        profilePath = config.getProperty(ConfigurationConstants.BROWSER_PROFILEPATH);
+        
     }
 
     public String getCaName() {
