@@ -1499,15 +1499,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
 
         if (authorizedLocalCaIds.isEmpty()) {
-            log.debug("No authorized CAs found for cleint " + authenticationToken + ". Returning empty response in role member search");
+            log.debug("No authorized CAs found for client " + authenticationToken + ". Returning empty response in role member search");
             return response;
         }
         if (authorizedLocalRoleIds.isEmpty()) {
-            log.debug("No authorized Roles found for cleint " + authenticationToken + " Returning empty response in role member search");
+            log.debug("No authorized Roles found for client " + authenticationToken + " Returning empty response in role member search");
             return response;
         }
         if (authorizedLocalTokenTypes.isEmpty()) {
-            log.debug("No authorized token types found for cleint " + authenticationToken + " Returning empty response in role member search");
+            log.debug("No authorized token types found for client " + authenticationToken + " Returning empty response in role member search");
             return response;
         }
 
