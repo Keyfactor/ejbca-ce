@@ -41,6 +41,7 @@ import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.ejbca.webtest.utils.ConfigurationHolder;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
@@ -115,6 +116,7 @@ public abstract class WebTestBase {
         
         if (profilePath != null) {
             firefoxOptions.addArguments("-profile", profilePath);
+            firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
         }
         
         webDriver = new FirefoxDriver(firefoxOptions);
