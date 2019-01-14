@@ -62,6 +62,7 @@ pipeline {
                 sh "mkdir -p " + "$env.WORKSPACE/ejbca/reports"
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca/reports"
                 
+                sh "mkdir -p /app/ejbca/modules/ejbca-webtest"
                 sh "chmod 777 /app/ejbca/modules/ejbca-webtest"
 
                 sh "ls -la $env.WORKSPACE/ejbca/conf"
