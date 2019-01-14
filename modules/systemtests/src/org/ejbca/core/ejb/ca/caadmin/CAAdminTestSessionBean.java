@@ -25,6 +25,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -93,7 +94,12 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
         final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
         if (cdw.getBase64CertData()!=null) {
             log.info("Resetting base64 data of certificate with fingerprint '" + fingerprint + "' by removing Base64CertData entity.");
-            entityManager.remove(cdw.getBase64CertData());
+            final Query deleteQuery = entityManager.createQuery("DELETE FROM Base64CertData a WHERE a.fingerprint=:fingerprint");
+            deleteQuery.setParameter("fingerprint", fingerprint);
+            final int updatedRows = deleteQuery.executeUpdate();
+            if (updatedRows!=1) {
+                log.warn("Failed to reset base64 data of certificate with fingerprint '\" + fingerprint + \"'.");
+            }
         } else {
             log.info("Resetting base64 data of certificate with fingerprint '" + fingerprint + "' by setting CertificateData.base64Cert to ''.");
             cdw.getCertificateData().setBase64Cert("");
