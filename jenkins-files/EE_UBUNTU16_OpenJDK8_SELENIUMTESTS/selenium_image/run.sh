@@ -18,6 +18,8 @@ sleep 10
 cd /app/ejbca
 
 
+echo '=================== Profile folder contents ========================'
+ls -la /home/seluser/.mozilla/firefox/svq3ko35.default
 
 sudo -E env "PATH=$PATH" ant build
 
