@@ -28,5 +28,5 @@ echo '=================== build finished ========================'
 
 
 # this test works in RA mode!
-chown -R root /home/seluser
-sudo -E env "PATH=$PATH" ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
+#chown -R root /home/seluser
+ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
