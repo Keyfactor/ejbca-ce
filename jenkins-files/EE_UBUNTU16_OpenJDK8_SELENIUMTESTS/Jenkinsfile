@@ -29,6 +29,9 @@ pipeline {
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/ejbca_image') {
                     sh "docker build -t mypeer -m 2GB ."
                     
+                    sh "mkdir -p " + "$env.WORKSPACE/ejbca/p12"
+                    sh "chmod 777 " + "$env.WORKSPACE/ejbca/p12"
+                    
                     // set it running on background (-d parameter). needs to stay up, until selniumtests use it. will be killed later at cleanup phase.
                     sh "docker run --name mypeer --net=selenium-network -v " + "$env.WORKSPACE" + ":/app -d mypeer"
                     
