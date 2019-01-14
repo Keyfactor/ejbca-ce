@@ -29,4 +29,4 @@ echo '=================== build finished ========================'
 
 
 # this test works in RA mode!
-ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
+sudo -E env "PATH=$PATH" ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
