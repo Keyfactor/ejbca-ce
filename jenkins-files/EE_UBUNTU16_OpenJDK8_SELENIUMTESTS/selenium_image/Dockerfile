@@ -32,29 +32,10 @@ ADD run.sh /opt/
 RUN chmod +x /opt/run.sh
 
 ADD configuration/firefox_conf/svq3ko35.default /home/seluser/.mozilla/firefox/svq3ko35.default
-RUN chmod 777 /home/seluser/.mozilla/firefox/svq3ko35.default
+RUN chmod -R 777 /home/seluser/.mozilla/firefox/svq3ko35.default
 
 ADD configuration/firefox_conf/profiles.ini /home/seluser/.mozilla/firefox/profiles.ini
 RUN chmod 777 /home/seluser/.mozilla/firefox/profiles.ini
-
-# hopefully this makes ff to take this profile as default
-RUN mkdir /tmp/firefox_profiles/
-ADD configuration/firefox_conf/svq3ko35.default /tmp/firefox_profiles/svq3ko35.default
-
-# hopefully this makes ff to take this profile as default
-RUN mkdir /tmp/firefox
-ADD configuration/firefox_conf/svq3ko35.default /tmp/firefox/svq3ko35.default
-
-# testing testing - add firefox profile to root user profile
-# RUN mkdir -p /root/.mozilla
-# RUN mkdir -p /root/.mozilla/firefox
-# ADD configuration/firefox_conf/svq3ko35.default /root/.mozilla/firefox/svq3ko35.default
-# RUN chmod 777 /root/.mozilla/firefox/svq3ko35.default
-# ADD configuration/firefox_conf/profiles.ini /root/.mozilla/firefox/profiles.ini
-# RUN chmod 777 /root/.mozilla/firefox/profiles.ini
-
-
-
 
 # copy ejbca conf to /opt in the container for runtime-usage
 ADD configuration/ejbca_conf /opt/ejbca_conf
@@ -64,8 +45,8 @@ RUN chmod 777 /opt/ejbca_conf
 ADD configuration/ejbca_webtest_conf /opt/ejbca_webtest_conf
 RUN chmod 777 /opt/ejbca_webtest_conf
 
-# need to run as root, because source checkout user is not accessible to seluser and is not allwed to chmod by jenkinsuser
-# need to run as seluser, because firefox needs to be run as seluser for the profile to work properly inside the container
+# need to run as root, because source checkout user is not accessible to seluser and is not allwed to chmod by jenkinsuser ?
+# need to run as seluser, because firefox needs to be run as seluser for the profile to work properly inside the container ?
 USER seluser
 
 CMD ["/opt/run.sh"]
