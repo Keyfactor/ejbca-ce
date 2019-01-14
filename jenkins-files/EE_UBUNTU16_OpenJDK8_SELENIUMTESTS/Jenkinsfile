@@ -38,6 +38,9 @@ pipeline {
                                 try {
                                     def command = 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"'
                                     def r = sh script: command, returnStatus: true
+                                    if (r == 0) {
+                                        sh "docker logs mypeer 2>&1"
+                                    }
                                     return (r == 0)
                                 } catch (exc) {
                                     echo exc;
@@ -54,13 +57,13 @@ pipeline {
             steps {
                 sh "mkdir ear || true"
                 sh "chmod 777 " + "$env.WORKSPACE"
+                
+                // pre-create necessary folders and gice permissions, so that seluser can later do its stuff
                 sh "chmod +w " + "$env.WORKSPACE/ejbca/conf"
                 sh "chmod +w " + "$env.WORKSPACE/ejbca/modules/ejbca-webtest/conf/"
                 sh "chmod +w " + "$env.WORKSPACE/ejbca"
-                
                 sh "mkdir -p " + "$env.WORKSPACE/ejbca/reports"
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca/reports"
-                
                 sh "chmod 777 $env.WORKSPACE/ejbca/modules/ejbca-webtest"
 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/selenium_image') {
