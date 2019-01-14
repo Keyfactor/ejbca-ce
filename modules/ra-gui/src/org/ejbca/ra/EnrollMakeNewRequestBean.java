@@ -815,11 +815,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
 
         ErrorCode errorCode = null; // we need to be able to check for USER_ALREADY_EXISTS error during cleanup
+        byte[] ret = null;
+
         try{
             //Add end-entity
             //Generates a keystore token if user has specified "ON SERVER" key pair generation.
             //Generates a certificate token if user has specified "PROVIDED_BY_USER" key pair generation
-            byte[] ret = null;
             if (KeyPairGeneration.ON_SERVER.equals(getSelectedKeyPairGenerationEnum())) {
                 try {
                     ret = raMasterApiProxyBean.addUserAndGenerateKeyStore(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
@@ -945,25 +946,29 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
             return ret;
         } finally {
-            cleanUpEndEntities(errorCode);
+            cleanUpEndEntities(errorCode, ret);
         }
     }
 
     /** End entity clean-up must be done if enrollment could not be completed (but end-entity has been added and wasn't already existing) */
-    private void cleanUpEndEntities(final ErrorCode errorCode) {
-        if ((errorCode == null || !errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) && !KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
-            EndEntityInformation endEntityInfoFromCA = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
-            try {
-                if (endEntityInfoFromCA != null && 
-                    endEntityInfoFromCA.getStatus() != EndEntityConstants.STATUS_GENERATED && 
-                    endEntityInfoFromCA.getStatus() != EndEntityConstants.STATUS_NEW) {
-                    raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
+    private void cleanUpEndEntities(final ErrorCode errorCode, final byte[] certificate) {
+        if (certificate == null) {
+            if ((errorCode == null || !errorCode.equals(ErrorCode.USER_ALREADY_EXISTS))
+                    && !KeyPairGeneration.POSTPONE.equals(getSelectedKeyPairGenerationEnum())) {
+                EndEntityInformation endEntityInfoFromCA = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(),
+                        endEntityInformation.getUsername());
+                try {
+                    if (endEntityInfoFromCA != null && endEntityInfoFromCA.getStatus() != EndEntityConstants.STATUS_GENERATED) {
+                        raMasterApiProxyBean.deleteUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation.getUsername());
+                    }
+                } catch (AuthorizationDeniedException e) {
+                    throw new IllegalStateException(e);
                 }
-            } catch (AuthorizationDeniedException e) {
-                throw new IllegalStateException(e);
             }
+            endEntityInformation.setUsername("");
+        } else {
+            return; // We simply return since certificate is generated and EE must not be deleted.
         }
-        endEntityInformation.setUsername("");
     }
 
     /** Returns true if the default value of the given field is true in the end entity profile */
