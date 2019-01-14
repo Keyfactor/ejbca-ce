@@ -63,17 +63,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private static final String CACERT_PARAMETER           = "caid";
     private static final String HARDTOKENSN_PARAMETER      = "tokensn";
     private static final String SERNO_PARAMETER            = "serno";
- 
-    private static final String BUTTON_VIEW_NEWER          = "buttonviewnewer"; 
-    private static final String BUTTON_VIEW_OLDER          = "buttonviewolder";
-    private static final String BUTTON_REVOKE              = "buttonrevoke";
-    private static final String BUTTON_RECOVERKEY          = "buttonrekoverkey";
-    private static final String BUTTON_REPUBLISH           = "buttonrepublish";
 
     private static final String HIDDEN_INDEX               = "hiddenindex";
     
     private boolean noparameter = true;
-    private boolean notauthorized = true;
     private boolean cacerts = false;
     private boolean useKeyRecovery = false;   
     private CertificateView certificateData = null;
@@ -139,8 +132,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         
         final String caIdParameter = request.getParameter(CA_ID_PARAMETER);
         if (caIdParameter != null) {
-            caId = Integer.parseInt(caIdParameter);
-            
+            caId = Integer.parseInt(caIdParameter);           
         }
         
         raBean.initialize(request, ejbcaBean);
@@ -151,8 +143,12 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         
         parseRequest(request);
         
-        assertRequestValid();
+        assertRequestValid(caIdParameter);
         
+        composeCertificateData(request, globalconfiguration);
+    }
+
+    private void composeCertificateData(final HttpServletRequest request, final GlobalConfiguration globalconfiguration) {
         if (certificateData != null) {
             caName = caBean.getName(caId);
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
@@ -376,7 +372,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         if (request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER) != null) {
             noparameter = false;
             if (ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
-                notauthorized = false;
                 userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
                 tokenSn = request.getParameter(HARDTOKENSN_PARAMETER);
                 raBean.loadTokenCertificates(tokenSn);
@@ -386,7 +381,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         if (request.getParameter(USER_PARAMETER) != null && request.getParameter(HARDTOKENSN_PARAMETER) == null) {
             noparameter = false;
             if (ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
-                notauthorized = false;
                 userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
                 raBean.loadCertificates(userName);
             }
@@ -400,69 +394,36 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
                     raBean.loadCertificates(new BigInteger(certdata[0], 16), certdata[1]);
                 }
             }
-            notauthorized = false;
             noparameter = false;
         }
 
         if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(CACERT_PARAMETER) != null) {
             certificateSerNo = request.getParameter(SERNO_PARAMETER);
             caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
-            notauthorized = false;
             noparameter = false;
             raBean.loadCertificates(new BigInteger(certificateSerNo, 16), caId);
         } else if (request.getParameter(CACERT_PARAMETER) != null) {
             caId = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
-            if (request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null) {
-                raBean.loadCACertificates(caBean.getCACertificates(caId));
-                numberOfCertificates = raBean.getNumberOfCertificates();
-                if (numberOfCertificates > 0) {
-                    currentIndex = 0;
-                }
-                notauthorized = false;
-                noparameter = false;
+            raBean.loadCACertificates(caBean.getCACertificates(caId));
+            numberOfCertificates = raBean.getNumberOfCertificates();
+            if (numberOfCertificates > 0) {
+                currentIndex = 0;
             }
+            noparameter = false;
             cacerts = true;
         }
-        if (!noparameter) {
-            if (request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null
-                    && request.getParameter(BUTTON_REVOKE) == null && request.getParameter(BUTTON_RECOVERKEY) == null
-                    && request.getParameter(BUTTON_REPUBLISH) == null) {
-                numberOfCertificates = raBean.getNumberOfCertificates();
-                if (numberOfCertificates > 0)
-                    certificateData = raBean.getCertificate(currentIndex);
-            }
-        }
         
-        if (request.getParameter(BUTTON_VIEW_NEWER) != null) {
+        if (!noparameter) {
             numberOfCertificates = raBean.getNumberOfCertificates();
-            noparameter = false;
-            if (request.getParameter(HIDDEN_INDEX) != null) {
-                currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) - 1;
-                if (currentIndex < 0) {
-                    currentIndex = 0;
-                }
+            if (numberOfCertificates > 0)
                 certificateData = raBean.getCertificate(currentIndex);
-                notauthorized = false;
-            }
-        }
-        if (request.getParameter(BUTTON_VIEW_OLDER) != null) {
-            numberOfCertificates = raBean.getNumberOfCertificates();
-            noparameter = false;
-            if (request.getParameter(HIDDEN_INDEX) != null) {
-                currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) + 1;
-                if (currentIndex > numberOfCertificates - 1) {
-                    currentIndex = numberOfCertificates;
-                }
-                certificateData = raBean.getCertificate(currentIndex);
-                notauthorized = false;
-            }
         }
     }
     
-    private void assertRequestValid() {
+    private void assertRequestValid(final String caIdParameter) {
         if (noparameter) {
             addErrorMessage("YOUMUSTSPECIFYCERT");
-        } else if (notauthorized) {
+        } else if (caIdParameter == null && !ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
             addErrorMessage("NOTAUTHORIZEDTOVIEWCERT");
         } else if (certificateData == null) {
             addErrorMessage("CERTIFICATEDOESNTEXIST");
@@ -621,6 +582,39 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return returnToLink;
     }
     
+    public void actionViewOlder() {
+        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        
+        numberOfCertificates = raBean.getNumberOfCertificates();
+        noparameter = false;
+        if (request.getParameter(HIDDEN_INDEX) != null) {
+            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) + 1;
+            if (currentIndex > numberOfCertificates - 1) {
+                currentIndex = numberOfCertificates;
+            }
+            certificateData = raBean.getCertificate(currentIndex);
+        }
+        
+        final GlobalConfiguration globalConfiguration = ejbcaBean.getGlobalConfiguration();
+        composeCertificateData(request, globalConfiguration);
+    }
+    
+    public void actionViewNewer() {
+        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        
+        numberOfCertificates = raBean.getNumberOfCertificates();
+        noparameter = false;
+        if (request.getParameter(HIDDEN_INDEX) != null) {
+            currentIndex = Integer.parseInt(request.getParameter(HIDDEN_INDEX)) - 1;
+            if (currentIndex < 0) {
+                currentIndex = 0;
+            }
+            certificateData = raBean.getCertificate(currentIndex);
+        }
+        
+        final GlobalConfiguration globalConfiguration = ejbcaBean.getGlobalConfiguration();
+        composeCertificateData(request, globalConfiguration);
+    }
     
     public void actionKeyRecovery() throws CADoesntExistsException, AuthorizationDeniedException {
         if (!cacerts && raBean.keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername()) && useKeyRecovery) {
@@ -642,7 +636,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
                     raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
                 }
             }
-            notauthorized = false;
         } catch (final AuthorizationDeniedException e) {
 
         }
@@ -663,7 +656,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
                     raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
                 }
             }
-            notauthorized = false;
         } catch (final AuthorizationDeniedException e) {
 
         }
@@ -694,7 +686,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
                     raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
                 }
             }
-            notauthorized = false;
         } catch (final AuthorizationDeniedException e) {
             
         }
@@ -726,7 +717,6 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
                     raBean.loadCertificates(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped());
                 }
             }
-            notauthorized = false;
         } catch (final AuthorizationDeniedException e) {
 
         }
