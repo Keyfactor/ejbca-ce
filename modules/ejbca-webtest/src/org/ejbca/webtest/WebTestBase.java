@@ -41,6 +41,7 @@ import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.ejbca.webtest.utils.ConfigurationHolder;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
@@ -63,7 +64,6 @@ public abstract class WebTestBase {
     private static String downloadDir;
     private static String browserBinary; // null = don't override default
     private static String browserHeadless;
-    private static String profilePath;
     private static WebDriver webDriver;
     private static WebDriverWait webDriverWait;
 
@@ -102,13 +102,13 @@ public abstract class WebTestBase {
             }
             
             firefoxProfile.setAcceptUntrustedCertificates(true);
-            
             firefoxProfile.setPreference("security.default_personal_cert", "Select Automatically");
             firefoxProfile.setPreference("browser.download.folderList", 2);
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
             firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream");
+            
             firefoxOptions.setProfile(firefoxProfile);
-
+            firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
             firefoxOptions.setAcceptInsecureCerts(true);
         }
         if (browserBinary != null) {
@@ -118,12 +118,6 @@ public abstract class WebTestBase {
             firefoxOptions.setHeadless(true);
         }
         
-        /*
-        if (profilePath != null) {
-            firefoxOptions.addArguments("-profile", profilePath);
-            firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
-        }
-        */
         
         webDriver = new FirefoxDriver(firefoxOptions);
 
@@ -150,8 +144,6 @@ public abstract class WebTestBase {
         downloadDir = config.getProperty(ConfigurationConstants.BROWSER_DOWNLOADDIR);
         browserBinary = config.getProperty(ConfigurationConstants.BROWSER_BINARY);
         browserHeadless = config.getProperty(ConfigurationConstants.BROWSER_HEADLESS);
-        profilePath = config.getProperty(ConfigurationConstants.BROWSER_PROFILEPATH);
-        
     }
 
     public String getCaName() {
