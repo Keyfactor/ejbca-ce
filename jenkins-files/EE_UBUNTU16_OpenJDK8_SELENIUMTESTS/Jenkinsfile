@@ -48,7 +48,7 @@ pipeline {
                                         echo "curl styles:"
                                         sh "openssl pkcs12 -in p12/superadmin.p12 -out p12/superadmin.key.pem -passin pass:ejbca -nocerts -nodes"
                                         sh "openssl pkcs12 -in p12/superadmin.p12 -out p12/superadmin.crt.pem -passin pass:ejbca -clcerts -nokeys"
-                                        sh "curl -E p12/superadmin.crt.pem --key p12/superadmin.key.pem --cacert p12/ManagementCA.pem https://localhost:28443/ejbca/styles.css"
+                                        sh "curl -E p12/superadmin.crt.pem --key p12/superadmin.key.pem --insecure https://localhost:28443/ejbca/styles.css"
                                     }
                                     return (r == 0)
                                 } catch (exc) {
