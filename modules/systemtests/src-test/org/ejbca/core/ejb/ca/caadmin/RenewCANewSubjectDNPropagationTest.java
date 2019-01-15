@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -151,10 +150,8 @@ public class RenewCANewSubjectDNPropagationTest extends CaTestCase {
     private void createTestEndEntityProfile(final String profileName) throws Exception {
         endEntityProfileSessionRemote.removeEndEntityProfile(internalAdmin, profileName);
         EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-        Collection<String> availableCAIDsBeforeNameChange = new ArrayList<String>();
         X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
-        availableCAIDsBeforeNameChange.add(info.getCAId() + "");
-        endEntityProfile.setAvailableCAsIDsAsStrings(availableCAIDsBeforeNameChange);
+        endEntityProfile.setAvailableCAs(Arrays.asList(info.getCAId())); // available CA IDs before name change
         endEntityProfileSessionRemote.addEndEntityProfile(internalAdmin, profileName, endEntityProfile);
     }
     
