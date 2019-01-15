@@ -41,7 +41,6 @@ import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.ejbca.webtest.utils.ConfigurationHolder;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
@@ -90,15 +89,20 @@ public abstract class WebTestBase {
         if (requireCert) {
             final ProfilesIni allProfiles = new ProfilesIni();
             final FirefoxProfile firefoxProfile;
+            
             final String configProperty = profileConfigProperty != null ? profileConfigProperty : ConfigurationConstants.PROFILE_FIREFOX_DEFAULT;
             final String profileName = config.getProperty(configProperty);
             if (StringUtils.isEmpty(profileName)) {
                 throw new IllegalStateException("Property '" + configProperty + "' must be defined in modules/ejbca-webtest/conf/profiles.properties");
             }
             firefoxProfile = allProfiles.getProfile(profileName);
+            
             if (firefoxProfile == null) {
                 throw new IllegalStateException("Profile '" + profileName + "' was not found (defined by property '" + configProperty + "').");
             }
+            
+            firefoxProfile.setAcceptUntrustedCertificates(true);
+            
             firefoxProfile.setPreference("security.default_personal_cert", "Select Automatically");
             firefoxProfile.setPreference("browser.download.folderList", 2);
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
@@ -114,10 +118,12 @@ public abstract class WebTestBase {
             firefoxOptions.setHeadless(true);
         }
         
+        /*
         if (profilePath != null) {
             firefoxOptions.addArguments("-profile", profilePath);
             firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
         }
+        */
         
         webDriver = new FirefoxDriver(firefoxOptions);
 
