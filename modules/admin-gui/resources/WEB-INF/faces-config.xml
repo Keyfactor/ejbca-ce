@@ -51,16 +51,6 @@
     	    <value>#{certProfilesBean}</value>
     	</managed-property>
   </managed-bean>
- 
-  <managed-bean>
-    	<managed-bean-name>endEntityProfileMBean</managed-bean-name>
-    	<managed-bean-class>org.ejbca.ui.web.admin.endentityprofiles.EndEntityProfileMBean</managed-bean-class>
-    	<managed-bean-scope>view</managed-bean-scope>
-    	<managed-property>
-    	    <property-name>endEntityProfilesMBean</property-name>
-    	    <value>#{endEntityProfilesMBean}</value>
-    	</managed-property>
-  </managed-bean>
   
   <managed-bean>
     	<managed-bean-name>validatorsBean</managed-bean-name>
