@@ -43,17 +43,6 @@ pipeline {
                                     def r = sh script: command, returnStatus: true
                                     if (r == 0) {
                                         //sh "docker logs mypeer 2>&1"
-                                        
-                                        echo "== CURL =="
-                                        def page = sh script: "curl http://127.0.0.1:28080/ejbca/styles.css", returnStdout: true
-                                        
-                                        echo "== page =="
-                                        echo page
-                                        
-                                        echo "== dollar page =="
-                                        echo $page
-                                        
-                                        echo "== after curls =="
                                     }
                                     return (r == 0)
                                 } catch (exc) {
