@@ -10,11 +10,6 @@ sudo -E env "PATH=$PATH" cp /opt/ejbca_webtest_conf/* /app/ejbca/modules/ejbca-w
 
 sleep 10
 
-# this should run eventually!
-# ant test:webtest
-
-# this one hangs!
-# ant test:runone -Dtest.runone=EcaQa12_CPManagement
 
 cd /app/ejbca
 
@@ -30,6 +25,11 @@ echo '=================== build finished ========================'
 
 # this test works in RA mode!
 #chown -R root /home/seluser
-ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
+#ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
 
-ls -LRa /tmp/
+# this one hangs?
+ant test:runone -Dtest.runone=EcaQa12_CPManagement
+
+# this should run eventually!
+# ant test:webtest
+
