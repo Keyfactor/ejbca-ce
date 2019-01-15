@@ -387,6 +387,28 @@ function inputIntoFieldConfirm(confirmmessage, field, input) {
 	return false;
 }
 
+// Forces client to re-authenticate using certificate. Only works with Internet Explorer 6+.
+function logout() {
+	var logoutUrl = "https://" + window.location.hostname + ":" + window.location.port + "/ejbca/adminweb/logout";
+	window.location.href = logoutUrl;
+	alert("Session timed out");
+	document.execCommand('ClearAuthenticationCache');
+}
+
+// Required for ajax calls from JSF pages.
+function logoutIe(data) {
+	if (data.status === "complete") {
+		logout();
+	}
+}
+
+// Resets timer for page inactivity.
+function resetTimer() {
+	clearTimeout(time);
+	// Log out after 30 minutes of inactivity
+	time=setTimeout(logout, 1000*60*30)
+}
+
 /* JS library functions used by EJBCA 6.8.0+ JSF pages */
 (function() {
     "use strict";
