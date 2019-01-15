@@ -34,6 +34,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -90,6 +91,114 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private int profileId;
     private final Map<String, String> editerrors = new HashMap<>();
 
+    public class NameComponentGuiWrapper implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private final int[] field;
+        private final String name;
+        private final boolean emailField;
+        private boolean shouldRemove = false;
+
+        public NameComponentGuiWrapper(final String name, final int[] field, final boolean emailField) {
+            this.name = name;
+            this.field = field;
+            this.emailField = emailField;
+        }
+
+        public boolean isEmailField() {
+            return emailField;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return profiledata.getValue(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+        }
+
+        public void setValue(final String value) {
+            if (!EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS)) {
+                if (StringUtils.isBlank(value) && !isModifiable() && isRequired()) {
+                    editerrors.put(name, ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY", true) + ejbcaWebBean.getText(" " + "DN_PKIX_" + name, true));
+                } else {
+                    profiledata.setValue(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], value);
+                }
+            } else {
+                if (StringUtils.isBlank(value) && !isModifiable() && isRequired()) {
+                    editerrors.put(name, ejbcaWebBean.getText("SUBJECTDNEMAILEMPTY", true));
+                } else {
+                    // Test validation end 
+                    profiledata.setValue(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], value);
+                }
+            }
+        }
+
+        public int[] getField() {
+            return field;
+        }
+
+        public int getFieldType() {
+            return field[EndEntityProfile.FIELDTYPE];
+        }
+
+        public int getNumber() {
+            return field[EndEntityProfile.NUMBER];
+        }
+
+        public boolean isRequired() {
+            return profiledata.isRequired(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+        }
+
+        public void setRequired(final boolean required) {
+            profiledata.setRequired(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], required);
+        }
+
+        public boolean isModifiable() {
+            return profiledata.isModifyable(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+        }
+
+        public void setModifiable(final boolean modifiable) {
+            profiledata.setModifyable(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], modifiable);
+
+        }
+
+        public boolean isUseValidation() {
+            return null != profiledata.getValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+        }
+
+        public void setUseValidation(final boolean use) {
+            if (use) {
+                if (profiledata.getValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]) == null) {
+                    profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], new LinkedHashMap<String, Serializable>());
+                }
+            } else {
+                profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], null);
+            }
+        }
+
+        public String getValidationString() {
+            if (isUseValidation()) {
+                return (String) profiledata.getValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
+            } else {
+                return "";
+            }
+        }
+
+        public void setValidationString(final String validationString) {
+            final LinkedHashMap<String, Serializable> validation = raBean.getValidationFromRegexp(validationString);
+            profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], validation);
+        }
+
+        public boolean isShouldRemove() {
+            return shouldRemove;
+        }
+
+        public void setShouldRemove(final boolean shouldRemove) {
+            this.shouldRemove = shouldRemove;
+        }
+    }
+
     //POST CONSTRUCT
     @PostConstruct
     private void postConstruct() {
@@ -103,7 +212,9 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             throw new IllegalStateException(e);
         }
         profileId = endEntityProfilesMBean.getSelectedEndEntityProfileId().intValue();
-        profiledata = endEntityProfileSession.getEndEntityProfile(profileId);
+        if (profiledata == null) {
+            profiledata = endEntityProfileSession.getEndEntityProfile(profileId);
+        }
     }
 
     public boolean isAuthorizedToEdit() {
@@ -133,8 +244,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     // PASSWORD, USERNAME AND EMAIL
-
-    // 
     public void setUseAutoGeneratedUserName(final boolean autoGeneratedUserName) {
         profiledata.setAutoGeneratedUsername(autoGeneratedUserName);
     }
@@ -143,42 +252,33 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return profiledata.isAutoGeneratedUsername();
     }
 
-    // 
     public String getPassword() {
-        return profiledata.getValue(EndEntityProfile.PASSWORD, 0);
+        return profiledata.getPredefinedPassword();
     }
 
-    // 
-    public void setPassword(String password) {
-        profiledata.setValue(EndEntityProfile.PASSWORD, 0, password);
+    public void setPassword(final String password) {
+        profiledata.setPredefinedPassword(password);
     }
 
-    //
     public boolean getPasswordRequired() {
         return profiledata.isPasswordRequired();
     }
 
-    // 
     public void setPasswordRequired(boolean passwordRequired) {
-        profiledata.setRequired(EndEntityProfile.PASSWORD, 0, passwordRequired);
+        profiledata.setPasswordRequired(passwordRequired);
     }
 
-    // 
     public boolean getAutoGeneratedPassword() {
-        return !profiledata.getUse(EndEntityProfile.PASSWORD, 0);
+        return profiledata.useAutoGeneratedPasswd();
     }
 
-    //
     public void setAutoGeneratedPassword(boolean autoGenerate) {
         if (autoGenerate) {
             setPasswordRequired(false);
-            profiledata.setUse(EndEntityProfile.PASSWORD, 0, false);
-        } else {
-            profiledata.setUse(EndEntityProfile.PASSWORD, 0, true);
         }
+        profiledata.setAutoGeneratedPassword(autoGenerate);
     }
 
-    //
     public String getCurrentPasswordType() {
         return profiledata.getAutoGeneratedPasswdType();
     }
@@ -199,26 +299,20 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return pwdTypesReturned;
     }
 
-    //
-    public List<SelectItem> getPasswordLen() {
+    public List<SelectItem> getPasswordLengths() {
         final List<SelectItem> pwdLenListReturned = new ArrayList<>();
-        Integer len = 4;
-        for (; len < 17; len++) {//possible values: 4-16, hard coded here?
-            pwdLenListReturned.add(new SelectItem(len.toString(), len.toString()));
+        for (int len = 4; len < 17; len++) {//possible values: 4-16, hard coded here?
+            pwdLenListReturned.add(new SelectItem(len, String.valueOf(len)));
         }
         return pwdLenListReturned;
     }
 
-    // 
-    public void setCurrentPasswordLen(String len) {
-        profiledata.setValue(EndEntityProfile.AUTOGENPASSWORDLENGTH, 0, len);
+    public int getCurrentPasswordLen() {
+        return profiledata.getAutoGeneratedPasswordLength();
     }
 
-    // 
-    public String getCurrentPasswordLen() {
-        //return new Integer(profiledata.getAutoGeneratedPasswdLength()).toString();
-        Integer pwdLen = profiledata.getAutoGeneratedPasswdLength();
-        return pwdLen.toString();
+    public void setCurrentPasswordLen(int len) {
+        profiledata.setAutoGeneratedPasswordLength(len);
     }
 
     // 
@@ -267,13 +361,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
     }
 
-    //
     public boolean getBatchGenerationUse() {
-        return profiledata.getUse(EndEntityProfile.CLEARTEXTPASSWORD, 0);
+        return profiledata.isClearTextPasswordUsed();
     }
 
     public void setBatchGenerationUse(boolean useBatchGeneration) {
-        profiledata.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, useBatchGeneration);
+        profiledata.setClearTextPasswordUsed(useBatchGeneration);
     }
 
     //
@@ -282,28 +375,29 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public void setBatchGenerationDefault(boolean batchGenerationDefault) { // Verify, temporary for now
+        // FIXME
         if (batchGenerationDefault) {
             profiledata.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.TRUE);
         }
     }
 
-    //
+    // FIXME do boolean "require" settings like this make any sense at all? why not just use "modifiable"?
     public boolean getBatchGenerationRequired() {
-        return profiledata.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) && getBatchGenerationUse();
+        return profiledata.isClearTextPasswordRequired() && getBatchGenerationUse();
     }
 
-    public void setBatchGenerationRequired(boolean batchGenerationRequired) {
-        profiledata.setRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0, batchGenerationRequired);
+    public void setBatchGenerationRequired(final boolean required) {
+        profiledata.setClearTextPasswordRequired(required);
     }
 
     //
     public boolean getUseEmail() {
-        return profiledata.getUse(EndEntityProfile.EMAIL, 0);
+        return profiledata.isEmailUsed();
     }
 
     //
     public void setUseEmail(boolean useEmail) {
-        profiledata.setUse(EndEntityProfile.EMAIL, 0, useEmail);
+        profiledata.setEmailUsed(useEmail);
     }
 
     // temporary, verify... 
@@ -316,37 +410,35 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     // as above...
-    public void setEmail(String email) {
+    public void setEmail(final String domain) {
         if (getUseEmail()) {
-            profiledata.setValue(EndEntityProfile.EMAIL, 0, email);
+            profiledata.setEmailDomain(domain);
         }
     }
 
     //
     public boolean isEmailRequired() {
-        return profiledata.getEmailDomainRequired();
+        return profiledata.isEmailRequired();
     }
 
     //
-    public void setEmailRequired(boolean emailRequired) {
-        profiledata.setRequired(EndEntityProfile.EMAIL, 0, emailRequired);
+    public void setEmailRequired(final boolean emailRequired) {
+        profiledata.setEmailRequired(emailRequired);
     }
 
     //
-    public boolean isEmailModifyable() {
-        return profiledata.getEmailDomainModifiable();
+    public boolean isEmailModifiable() {
+        return profiledata.isEmailDomainModifiable();
     }
 
     //
-    public void setEmailModifyable(boolean emailModifyable) {
-        profiledata.setModifyable(EndEntityProfile.EMAIL, 0, emailModifyable);
+    public void setEmailModifiable(final boolean emailModifyable) {
+        profiledata.setEmailDomainModifiable(emailModifyable);
     }
 
     // DIRECTIVES
 
     // SUBJECT DN ATTRIBUTES
-
-    //
     public List<SelectItem> getSubjectDNAttributes() {
         final List<SelectItem> attributesReturned = new ArrayList<>();
         String attribute;
@@ -361,301 +453,95 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return attributesReturned;
     }
 
-    // testing...
-    private String currentSubjectDNAttribute;
-    private String addedSubjectDNAttribute;
+    private String currentSubjectDnAttribute;
 
-    // 
     public String getCurrentSubjectDNAttribute() {
-        return currentSubjectDNAttribute;
+        return currentSubjectDnAttribute;
     }
 
-    public void setCurrentSubjectDNAttribute(String attribute) {
-        currentSubjectDNAttribute = attribute;
+    public void setCurrentSubjectDNAttribute(final String attribute) {
+        currentSubjectDnAttribute = attribute;
     }
 
-    // temp
-    public String addSubjectDNAttribute() {
-        addedSubjectDNAttribute = new String(currentSubjectDNAttribute); // need to fetch the value from the selected component here instead...
-        profiledata.addField(addedSubjectDNAttribute);
-        return ""; // remove
+    public void addSubjectDNAttribute() {
+        if (StringUtils.isBlank(currentSubjectDnAttribute)) {
+            log.debug("No Subject DN attribute type selected");
+            return;
+        }
+        profiledata.addField(currentSubjectDnAttribute);
+        subjectDnComponentList = null; // reload state from profile
     }
 
-    // if to write DN text field in gui 
-    public boolean emailField(String fieldProcessing) {
-        boolean returnValue;
-        if (!fieldProcessing.contains("E-mail")) {
-            returnValue = true;
-        } else {
-            returnValue = false;
-        }
-        return returnValue;
-    }
-
-    // New SDN component object, currently testing only
-    public class SubjectDnComponent implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private int[] componentField;
-        private String componentName;
-        private String componentValue;
-        private boolean componentIsRequired;
-        private boolean componentIsModifyable;
-        private boolean shouldRemove = false;
-
-        public SubjectDnComponent(String componentName, boolean componentIsRequired, boolean componentIsModifyable, boolean componentValueValidation,
-                int[] componentField, String componentValue, String componentValidationString) {
-            this.componentName = componentName;
-            this.componentField = componentField;
-            this.componentIsRequired = componentIsRequired;
-            this.componentIsModifyable = componentIsModifyable;
-            this.componentValue = componentValue;
-        }
-
-        public boolean isEmailField() {
-            return componentName.contains("E-mail");
-        }
-
-        public String getComponentName() {
-            return componentName;
-        }
-
-        public void setComponentName(String componentName) {
-            this.componentName = componentName;
-        }
-
-        public String getComponentValue() {
-            componentValue = profiledata.getValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]);
-            return componentValue;
-        }
-
-        public void setComponentValue(String value) {
-            componentValue = value;
-            // Test validation begin
-            if (!EndEntityProfile.isFieldOfType(componentField[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS)) {
-                if ((value == null) || (value.trim().equals("")) && componentIsModifyable == false && componentIsRequired == true) {
-                    editerrors.put(componentName, ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY", true) + ejbcaWebBean.getText(" " + "DN_PKIX_".concat(componentName), true));
-                } else {
-                    profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], this.componentValue);
-                }
-            } else {
-                if ((value == null) || (value.trim().equals("")) && componentIsModifyable == false && componentIsRequired == true) {
-                    editerrors.put(componentName, ejbcaWebBean.getText("SUBJECTDNEMAILEMPTY", true));
-                } else {
-                    // Test validation end 
-                    profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], this.componentValue);
-                }
+    public void removeSubjectDnComponent() {
+        for (final NameComponentGuiWrapper nameComponent : getSubjectDnComponentList()) {
+            if (nameComponent.isShouldRemove()) {
+                profiledata.removeField(nameComponent.getFieldType(), nameComponent.getNumber());
             }
         }
-
-        public int[] getComponentField() {
-            return componentField;
-        }
-
-        public void getComponentField(int[] componentField) {
-            this.componentField = componentField;
-        }
-
-        public boolean getComponentIsRequired() {
-            return componentIsRequired;
-        }
-
-        public void setComponentIsRequired(boolean componentIsRequired) {
-            this.componentIsRequired = componentIsRequired;
-            profiledata.setRequired(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsRequired);
-        }
-
-        public boolean getComponentIsModifyable() {
-            return componentIsModifyable;
-        }
-
-        public void setComponentIsModifyable(boolean componentIsModifyable) {
-            this.componentIsModifyable = componentIsModifyable;
-            profiledata.setModifyable(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsModifyable);
-
-        }
-
-        public boolean getComponentValueValidation() {
-            return null != profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]);
-        }
-
-        // ..temporary
-        public void setComponentValueValidation(boolean componentValueValidation) {
-            if (componentValueValidation) {
-                if (profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]) == null) {
-                    profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], new LinkedHashMap<String, Serializable>());
-                }
-            } else {
-                profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], null);
-            }
-        }
-
-        public String getComponentValidationString() {
-            if (getComponentValueValidation()) {
-                return (String) profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
-            } else {
-                return "";
-            }
-        }
-
-        public void setComponentValidationString(String componentValidationString) {
-            final LinkedHashMap<String, Serializable> validation = raBean.getValidationFromRegexp(componentValidationString);
-            profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], validation);
-        }
-
-        public boolean getShouldRemove() {
-            return shouldRemove;
-        }
-        
-        public void setShouldRemove(final boolean shouldRemove) {
-            this.shouldRemove = shouldRemove;
-        }
+        subjectDnComponentList = null; // reload state from profile
     }
 
-    public List<SubjectDnComponent> subjectDnComponentList;
+    public List<NameComponentGuiWrapper> subjectDnComponentList;
 
-    public List<SubjectDnComponent> getSubjectDnComponentList() {
-        subjectDnComponentList = new ArrayList<>();
-        List<int[]> fielddatalist = new ArrayList<>();
-        int numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
-        for (int i = 0; i < numberofsubjectdnfields; i++) {
-            fielddatalist.add(profiledata.getSubjectDNFieldsInOrder(i));
-        }
-        for (int[] temp : fielddatalist) {
-            boolean required = profiledata.isRequired(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            boolean modifyable = profiledata.isModifyable(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            // ..replace?
-            boolean validation = null != profiledata.getValidation(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            String value = profiledata.getValue(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            String validationString;
-            if (validation) {
-                validationString = (String) profiledata.getValidation(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
-            } else {
-                validationString = "";
+    public List<NameComponentGuiWrapper> getSubjectDnComponentList() {
+        if (subjectDnComponentList == null) {
+            final List<NameComponentGuiWrapper> components = new ArrayList<>();
+            final List<int[]> fielddatalist = new ArrayList<>();
+            final int numberOfFields = profiledata.getSubjectDNFieldOrderLength();
+            for (int i = 0; i < numberOfFields; i++) {
+                fielddatalist.add(profiledata.getSubjectDNFieldsInOrder(i));
             }
-            subjectDnComponentList.add(new SubjectDnComponent(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])), 
-                    required, modifyable, validation, temp, value, validationString));
+            for (int[] field : fielddatalist) {
+                final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
+                // FIXME use field[EndEntityProfile.FIELDTYPE] instead
+    //            final int fieldType = getFieldType();
+    //            final String fieldName = DnComponents.get
+    //            return fieldType == EndEntityProfile.EMAIL || fieldType == EndEntityProfile.
+                final boolean isEmailField = fieldName.contains("E-mail");
+                components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField));
+            }
+            subjectDnComponentList = components;
         }
         return subjectDnComponentList;
     }
 
     // OTHER SUBJECT ATTRIBUTES
 
-    //
-    public class SubjectAltNameComponent implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private int[] componentField;
-        private String componentName;
-        private String componentValue;
-        private boolean componentIsRequired;
-        private boolean componentIsModifyable;
+    public List<NameComponentGuiWrapper> subjectAltNameComponentList;
 
-        public SubjectAltNameComponent(String componentName, boolean componentIsRequired, boolean componentIsModifyable,
-                boolean componentValueValidation, int[] componentField, String componentValue, String componentValidationString) {
-            this.componentName = componentName;
-            this.componentField = componentField;
-            this.componentIsRequired = componentIsRequired;
-            this.componentIsModifyable = componentIsModifyable;
-            this.componentValue = componentValue;
-        }
-
-        public String getComponentName() {
-            return componentName;
-        }
-
-        public void setComponentName(String componentName) {
-            this.componentName = componentName;
-        }
-
-        public String getComponentValue() {
-            return componentValue;
-        }
-
-        public void setComponentValue(String componentValue) {
-            this.componentValue = componentValue;
-            profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentValue);
-        }
-
-        public int[] getComponentField() {
-            return componentField;
-        }
-
-        public void getComponentField(int[] componentField) {
-            this.componentField = componentField;
-        }
-
-        public boolean getComponentIsRequired() {
-            return componentIsRequired;
-        }
-
-        public void setComponentIsRequired(boolean componentIsRequired) {
-            this.componentIsRequired = componentIsRequired;
-            profiledata.setRequired(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsRequired);
-        }
-
-        public boolean getComponentIsModifyable() {
-            return componentIsModifyable;
-        }
-
-        public void setComponentIsModifyable(boolean componentIsModifyable) {
-            this.componentIsModifyable = componentIsModifyable;
-            profiledata.setModifyable(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsModifyable);
-
-        }
-
-        public boolean getComponentValueValidation() {
-            return null != profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]);
-        }
-
-        // ..temporary
-        public void setComponentValueValidation(boolean componentValueValidation) {
-            if (componentValueValidation) {
-                if (profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]) == null) {
-                    profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER],
-                            new LinkedHashMap<String, Serializable>());
-                }
-            } else {
-                profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], null);
-            }
-        }
-
-        public String getComponentValidationString() {
-            if (getComponentValueValidation()) {
-                return (String) profiledata.getValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
-            } else {
-                return "";
-            }
-        }
-
-        public void setComponentValidationString(String componentValidationString) {
-            final LinkedHashMap<String, Serializable> validation = raBean.getValidationFromRegexp(componentValidationString);
-            profiledata.setValidation(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], validation);
-        }
-    }
-
-    //
     public List<SelectItem> getSubjectAltNameTypes() {
         final List<SelectItem> subjectAltNamesReturned = new ArrayList<>();
         String subjectAltName;
-        String subjectAltNameReturned;
         String[] attributeString = EndEntityProfile.getSubjectAltnameProfileFields();
         Integer stringElement;
         for (stringElement = 0; stringElement < attributeString.length; stringElement++) {
             subjectAltName = attributeString[stringElement.intValue()];
             if (EndEntityProfile.isFieldImplemented(subjectAltName)) {
-                subjectAltNameReturned = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileName(subjectAltName));
-                subjectAltNamesReturned.add(new SelectItem(subjectAltName, subjectAltNameReturned));
+                final String displayName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileName(subjectAltName));
+                subjectAltNamesReturned.add(new SelectItem(subjectAltName, displayName));
             }
         }
         return subjectAltNamesReturned;
     }
 
     private String currentSubjectAltName;
-    private String addedSubjectAltName;
 
-    public String addSubjectAltName() {
-        addedSubjectAltName = new String(currentSubjectAltName); // I need to fetch the value from the selected component here instead...
-        profiledata.addField(addedSubjectAltName);
-        return "";// remove
+    public void addSubjectAltName() {
+        if (StringUtils.isBlank(currentSubjectAltName)) {
+            log.debug("No SAN component type selected.");
+            return;
+        }
+        profiledata.addField(currentSubjectAltName);
+        subjectAltNameComponentList = null; // reload state from profile
+    }
+
+    public void removeSubjectAltNameComponent() {
+        for (final NameComponentGuiWrapper nameComponent : getSubjectAltNameComponent()) {
+            if (nameComponent.isShouldRemove()) {
+                profiledata.removeField(nameComponent.getFieldType(), nameComponent.getNumber());
+            }
+        }
+        subjectAltNameComponentList = null; // reload state from profile
     }
 
     // temp value atm
@@ -664,100 +550,36 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     // temp value atm
-    public void setCurrentSubjectAltNameType(String subjectAltNameType) {
+    public void setCurrentSubjectAltNameType(final String subjectAltNameType) {
         currentSubjectAltName = subjectAltNameType;
     }
 
     //
-    public List<SubjectAltNameComponent> getSubjectAltNameComponent() {
-        List<SubjectAltNameComponent> subjectAltNameComponentList = new ArrayList<>();
-        List<int[]> fielddatalist = new ArrayList<>();
-        int numberOfSubjectAltNameFields = profiledata.getSubjectAltNameFieldOrderLength();
-        for (int i = 0; i < numberOfSubjectAltNameFields; i++) {
-            fielddatalist.add(profiledata.getSubjectAltNameFieldsInOrder(i));
-        }
-        for (int[] temp : fielddatalist) {
-            boolean required = profiledata.isRequired(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            boolean modifyable = profiledata.isModifyable(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            // replace?
-            boolean validation = null != profiledata.getValidation(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            String value = profiledata.getValue(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            String validationString;
-            if (validation) {
-                validationString = (String) profiledata.getValidation(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]).get(RegexFieldValidator.class.getName());
-            } else {
-                validationString = "";
+    public List<NameComponentGuiWrapper> getSubjectAltNameComponent() {
+        if (subjectAltNameComponentList == null) {
+            final List<NameComponentGuiWrapper> components = new ArrayList<>();
+            final List<int[]> fielddatalist = new ArrayList<>();
+            final int numberOfFields = profiledata.getSubjectAltNameFieldOrderLength();
+            for (int i = 0; i < numberOfFields; i++) {
+                fielddatalist.add(profiledata.getSubjectAltNameFieldsInOrder(i));
             }
-            subjectAltNameComponentList.add(new SubjectAltNameComponent(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])), 
-                    required, modifyable, validation, temp, value, validationString));
+            for (int[] field : fielddatalist) {
+                final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
+                // FIXME use field[EndEntityProfile.FIELDTYPE] instead
+    //          final int fieldType = getFieldType();
+    //          final String fieldName = DnComponents.get
+    //          return fieldType == EndEntityProfile.EMAIL || fieldType == EndEntityProfile.
+                final boolean isEmailField = fieldName.contains("E-mail");
+                components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField));
+            }
+            subjectAltNameComponentList = components;
         }
         return subjectAltNameComponentList;
     }
 
-    //
-    public class SubjectDirectoryAttributesComponent implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private int[] componentField;
-        private String componentName;
-        private String componentValue;
-        private boolean componentIsRequired;
-        private boolean componentIsModifyable;
+    // Subject Directory attributes
+    private List<NameComponentGuiWrapper> subjectDirectoryAttributesComponentList;
 
-        public SubjectDirectoryAttributesComponent(String componentName, boolean componentIsRequired, boolean componentIsModifyable,
-                int[] componentField, String componentValue) {
-            this.componentName = componentName;
-            this.componentField = componentField;
-            this.componentIsRequired = componentIsRequired;
-            this.componentIsModifyable = componentIsModifyable;
-            this.componentValue = componentValue;
-        }
-
-        public String getComponentName() {
-            return componentName;
-        }
-
-        public void setComponentName(String componentName) {
-            this.componentName = componentName;
-        }
-
-        public String getComponentValue() {
-            return componentValue;
-        }
-
-        public void setComponentValue(String componentValue) {
-            this.componentValue = componentValue;
-            profiledata.setValue(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentValue);
-        }
-
-        public int[] getComponentField() {
-            return componentField;
-        }
-
-        public void getComponentField(int[] componentField) {
-            this.componentField = componentField;
-        }
-
-        public boolean getComponentIsRequired() {
-            return componentIsRequired;
-        }
-
-        public void setComponentIsRequired(boolean componentIsRequired) {
-            this.componentIsRequired = componentIsRequired;
-            profiledata.setRequired(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsRequired);
-        }
-
-        public boolean getComponentIsModifyable() {
-            return componentIsModifyable;
-        }
-
-        public void setComponentIsModifyable(boolean componentIsModifyable) {
-            this.componentIsModifyable = componentIsModifyable;
-            profiledata.setModifyable(componentField[EndEntityProfile.FIELDTYPE], componentField[EndEntityProfile.NUMBER], componentIsModifyable);
-
-        }
-    }
-
-    //
     public List<SelectItem> getSubjectDirectoryAttributes() {
         final List<SelectItem> subjectDirectoryAttributesReturned = new ArrayList<>();
         String subjectDirectoryAttribute;
@@ -773,12 +595,19 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     private String currentSubjectDirectoryAttribute;
-    private String addedSubjectDirectoryAttribute;
 
-    public String addSubjectDirectoryAttribute() {
-        addedSubjectDirectoryAttribute = new String(currentSubjectDirectoryAttribute); // I need to fetch the value from the selected component here instead...
-        profiledata.addField(addedSubjectDirectoryAttribute);
-        return "";// remove
+    public void addSubjectDirectoryAttribute() {
+        profiledata.addField(currentSubjectDirectoryAttribute);
+        subjectDirectoryAttributesComponentList = null; // reload state from profile
+    }
+
+    public void removeSubjectDirectoryAttributeComponent() {
+        for (final NameComponentGuiWrapper nameComponent : getSubjectDirectoryAttributeComponent()) {
+            if (nameComponent.isShouldRemove()) {
+                profiledata.removeField(nameComponent.getFieldType(), nameComponent.getNumber());
+            }
+        }
+        subjectDirectoryAttributesComponentList = null; // reload state from profile
     }
 
     // 
@@ -792,40 +621,57 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     //
-    public List<SubjectDirectoryAttributesComponent> getSubjectDirectoryAttributeComponent() {
-        List<SubjectDirectoryAttributesComponent> components = new ArrayList<>();
-        List<int[]> fielddatalist = new ArrayList<>();
-        int numberOfSubjectDirectoryAttributeFields = profiledata.getSubjectDirAttrFieldOrderLength();
-        for (int i = 0; i < numberOfSubjectDirectoryAttributeFields; i++) {
-            fielddatalist.add(profiledata.getSubjectDirAttrFieldsInOrder(i));
+    public List<NameComponentGuiWrapper> getSubjectDirectoryAttributeComponent() {
+        if (subjectDirectoryAttributesComponentList == null) {
+            List<NameComponentGuiWrapper> components = new ArrayList<>();
+            List<int[]> fielddatalist = new ArrayList<>();
+            int numberOfSubjectDirectoryAttributeFields = profiledata.getSubjectDirAttrFieldOrderLength();
+            for (int i = 0; i < numberOfSubjectDirectoryAttributeFields; i++) {
+                fielddatalist.add(profiledata.getSubjectDirAttrFieldsInOrder(i));
+            }
+            for (int[] field : fielddatalist) {
+                final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
+                components.add(new NameComponentGuiWrapper(fieldName, field, false));
+            }
+            subjectDirectoryAttributesComponentList = components;
         }
-        for (int[] temp : fielddatalist) {
-            boolean required = profiledata.isRequired(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            boolean modifyable = profiledata.isModifyable(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            String value = profiledata.getValue(temp[EndEntityProfile.FIELDTYPE], temp[EndEntityProfile.NUMBER]);
-            components.add(new SubjectDirectoryAttributesComponent(ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(temp[EndEntityProfile.FIELDTYPE])), 
-                    required, modifyable, temp, value));
-        }
-        return components;
+        return subjectDirectoryAttributesComponentList;
     }
 
     // MAIN CERTIFICATE DATA
 
-    public List<SelectItem> getAvailableCertProfiles() {
-        final List<SelectItem> defaultCertProfilesReturned = new ArrayList<>();
-        TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
-        TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
-        TreeMap<String, Integer> mergedMap = new TreeMap<>();
+    public List<SelectItem> getAllCertificateProfiles() {
+        final List<SelectItem> allAuthorizedCertProfiles = new ArrayList<>();
+        final TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
+        final TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
+        final TreeMap<String, Integer> mergedMap = new TreeMap<>();
         mergedMap.putAll(eecertificateprofilenames);
         mergedMap.putAll(subcacertificateprofilenames);
-        for (String defaultCertProfile : mergedMap.keySet()) {
-            defaultCertProfilesReturned.add(new SelectItem(defaultCertProfile, defaultCertProfile));// will need the ID, not the name, in the future
+        for (final String certProfileName : mergedMap.keySet()) {
+            final int certProfileId = mergedMap.get(certProfileName);
+            allAuthorizedCertProfiles.add(new SelectItem(certProfileId, certProfileName));
         }
-        return defaultCertProfilesReturned;
+        return allAuthorizedCertProfiles;
+    }
+
+    public int getDefaultCertificateProfile() {
+        return profiledata.getDefaultCertificateProfile();
+    }
+
+    public void setDefaultCertificateProfile(final int certificateProfileId) {
+        profiledata.setDefaultCertificateProfile(certificateProfileId);
+    }
+
+    public List<Integer> getAvailableCertificateProfiles() {
+        return profiledata.getAvailableCertificateProfileIds();
+    }
+
+    public void setAvailableCertificateProfiles(final Collection<Integer> certProfileIds) {
+        profiledata.setAvailableCertificateProfileIds(certProfileIds);
     }
 
     //  
-    public String getCurrentDefaultCertProfile() {
+    /*public String getCurrentDefaultCertProfile() {
         int certProfile = profiledata.getDefaultCertificateProfile();
         String retValue = "";
         TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();//should probably b declared elsewhere
@@ -885,104 +731,101 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
         }
         return profilesReturned;
-    }
-
-    //
-    public List<SelectItem> getAvailableCAs() {
-        final List<SelectItem> defaultCAsReturned = new ArrayList<>();
-        Map<Integer, String> caidtonamemap = caSession.getCAIdToNameMap();
-        List<Integer> authorizedcas = ejbcaWebBean.getAuthorizedCAIds();
-        Iterator<Integer> iterator = authorizedcas.iterator();
-        String caidvalue;
-        String caname;
-        for (Integer caid : authorizedcas) {
-            caid = iterator.next();
-            caidvalue = caid.toString();
-            caname = caidtonamemap.get(caid).toString();
-            defaultCAsReturned.add(new SelectItem(caidvalue, caname));
+    }*/
+    
+   /* public Collection<String> getAllAvailableCertificateProfiles() {
+        
+        Collection<Integer> availableCertProfiles = profiledata.getAvailableCertificateProfileIds();
+        Collection<String> profilesReturned = new ArrayList<>();
+        TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
+        TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
+        TreeMap<String, Integer> mergedMap = new TreeMap<>();
+        mergedMap.putAll(eecertificateprofilenames);
+        mergedMap.putAll(subcacertificateprofilenames);
+        for (String profile : mergedMap.keySet()) {
+            for (int id : availableCertProfiles) {
+                if (id == mergedMap.get(profile).intValue()) {
+                    profilesReturned.add(profile);
+                }
+            }
         }
-        return defaultCAsReturned;
+        return profilesReturned;
+    } */
+
+    public List<SelectItem> getAllCas() {
+        final List<SelectItem> list = new ArrayList<>();
+        final Map<Integer, String> caidtonamemap = caSession.getCAIdToNameMap();
+        final List<Integer> authorizedcas = ejbcaWebBean.getAuthorizedCAIds();
+        for (Integer caid : authorizedcas) {
+            final String caname = caidtonamemap.get(caid).toString();
+            list.add(new SelectItem(caid, caname));
+        }
+        return list;
     }
 
-    //public void setDefaultCAs(List<SelectItem> defca) {
-    //} //fake method, remove
-
-    // new method 
-    public Collection<String> getCurrentAvailableCAs() {
-        Collection<String> strC = new ArrayList<>();
-        strC = profiledata.getAvailableCAsAsStrings(); //this is the IDs as string returned
-        return strC;
+    public Collection<Integer> getAvailableCas() {
+        return profiledata.getAvailableCAs();
     }
 
-    // new method 
-    public void setCurrentAvailableCAs(Collection<String> availableCAs) {
-        profiledata.setAvailableCAsIDsAsStrings(availableCAs);//Tries to set String names rather than IDs probably...
+    public void setAvailableCas(final Collection<Integer> availableCas) {
+        profiledata.setAvailableCAs(availableCas);
     }
 
-    // verify
-    public String getCurrentDefaultCA() {
-        return profiledata.getValue(EndEntityProfile.DEFAULTCA, 0);
+    public int getDefaultCa() {
+        return profiledata.getDefaultCA();
     }
 
-    // verify...
-    public void setCurrentDefaultCA(String defaultCA) {
-        Integer dcaInt = new Integer(defaultCA);
-        profiledata.setDefaultCA(dcaInt.intValue());
+    public void setDefaultCa(final int defaultCa) {
+        profiledata.setDefaultCA(defaultCa);
     }
 
     // 
-    public List<SelectItem> getAvailableTokens() {
+    public List<SelectItem> getAllTokenTypes() {
         String[] tokenString = RAInterfaceBean.tokentexts;
         int[] tokenIds = RAInterfaceBean.tokenids;
-        final List<SelectItem> availableTokensReturned = new ArrayList<>();
-        String availableToken;
-        String availableTokenReturned = "";//remove ?
-        Integer stringElement;
-        Integer availableTokenNr;
-        for (stringElement = 0; stringElement < tokenString.length; stringElement++) {
-            availableTokenNr = tokenIds[stringElement];
-            availableToken = tokenString[stringElement.intValue()];
-            availableTokenReturned = ejbcaWebBean.getText(availableToken);
-            availableTokensReturned.add(new SelectItem(availableTokenNr.toString(), availableTokenReturned));
+        final List<SelectItem> selectItems = new ArrayList<>();
+        for (int stringElement = 0; stringElement < tokenString.length; stringElement++) {
+            final int tokenTypeId = tokenIds[stringElement];
+            final String tokenLanguageString = tokenString[stringElement];
+            final String displayText = ejbcaWebBean.getText(tokenLanguageString);
+            selectItems.add(new SelectItem(tokenTypeId, displayText));
         }
         if (getHardTokenIssuers() != null) {
             Iterator<SelectItem> hardTokenIterator = getHardTokenIssuers().iterator();
             while (hardTokenIterator.hasNext()) {
-                availableTokensReturned.add(hardTokenIterator.next());
+                selectItems.add(hardTokenIterator.next());
             }
         }
-        return availableTokensReturned;
+        return selectItems;
     }
 
     // verify... 
-    public String getCurrentDefaultToken() {
-        String currentDefTokenId = profiledata.getValue(EndEntityProfile.DEFKEYSTORE, 0);
-        return currentDefTokenId.toString();
+    public int getDefaultTokenType() {
+        return profiledata.getDefaultTokenType();
     }
 
     //... 
-    public void setCurrentDefaultToken(String defaultToken) {
-        String token = defaultToken;
-        profiledata.setValue(EndEntityProfile.DEFKEYSTORE, 0, token);
+    public void setDefaultTokenType(final int defaultTokenType) {
+        profiledata.setDefaultTokenType(defaultTokenType);
     }
 
-    // new method: 
-    public Collection<String> getCurrentAvailableTokens() {
-        Collection<Integer> tokensAsIntegers = new ArrayList<>();
-        Collection<String> tokensAsStrings = new ArrayList<>();
-        tokensAsIntegers = profiledata.getAvailableTokenTypes();
-        for (int tokenIntValue : tokensAsIntegers) {
-            Integer tokenIntObject = new Integer(tokenIntValue);
-            tokensAsStrings.add(tokenIntObject.toString());
-        }
-        return tokensAsStrings;
+    public Collection<Integer> getAvailableTokenTypes() {
+//        Collection<Integer> tokensAsIntegers = new ArrayList<>();
+//        Collection<String> tokensAsStrings = new ArrayList<>();
+//        tokensAsIntegers = profiledata.getAvailableTokenTypes();
+//        for (int tokenIntValue : tokensAsIntegers) {
+//            Integer tokenIntObject = new Integer(tokenIntValue);
+//            tokensAsStrings.add(tokenIntObject.toString());
+//        }
+//        return tokensAsStrings;
+        return profiledata.getAvailableTokenTypes();
     }
 
-    // new method:
-    public void setCurrentAvailableTokens(Collection<String> tokensAsStrings) {
-        String[] values = tokensAsStrings.toArray(new String[0]);
-        String availableTokens = raBean.getAvailableTokenTypes(getCurrentDefaultToken(), values);
-        profiledata.setValue(EndEntityProfile.AVAILKEYSTORE, 0, availableTokens);
+    public void setAvailableTokenTypes(final Collection<Integer> tokenTypes) {
+//        String[] values = tokensAsStrings.toArray(new String[0]);
+//        String availableTokens = raBean.getAvailableTokenTypes(getCurrentDefaultToken(), values);
+//        profiledata.setValue(EndEntityProfile.AVAILKEYSTORE, 0, availableTokens);
+        profiledata.setAvailableTokenTypes(tokenTypes);
     }
 
     //
@@ -1000,28 +843,27 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setUse(EndEntityProfile.AVAILTOKENISSUER, 0, hardTokenIssuer);
     }
 
-    //
     public List<SelectItem> getHardTokenIssuers() {
-        TreeMap<String, HardTokenIssuerInformation> tokenIssuerMap = ejbcaWebBean.getHardTokenIssuers();
+        final TreeMap<String, HardTokenIssuerInformation> tokenIssuerMap = ejbcaWebBean.getHardTokenIssuers();
         final List<SelectItem> hardTokenIssuersReturned = new ArrayList<>();
-        Integer stringInt = new Integer(0);
-        String id;
         for (Entry<String, HardTokenIssuerInformation> hardTokenIssuer : tokenIssuerMap.entrySet()) {
-            stringInt = (hardTokenIssuer.getValue().getHardTokenIssuerId());
-            id = stringInt.toString();
-            hardTokenIssuersReturned.add(new SelectItem(id, hardTokenIssuer.getKey()));
+            final int tokenIssuerId = hardTokenIssuer.getValue().getHardTokenIssuerId();
+            hardTokenIssuersReturned.add(new SelectItem(tokenIssuerId, hardTokenIssuer.getKey()));
         }
         return hardTokenIssuersReturned;
     }
 
+    // FIXME should not use strings
     public String getCurrentDefaultHardTokenIssuer() {
         return profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER, 0);
     }
 
+    // FIXME should not use strings
     public void setCurrentDefaultHardTokenIssuer(String token) {
         profiledata.setValue(EndEntityProfile.DEFAULTTOKENISSUER, 0, token);
     }
 
+    // FIXME should not use strings
     public Collection<String> getCurrentHardTokenIssuers() {
         Collection<String> currentHardTokens = new ArrayList<>();
         String[] availableissuers = profiledata.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR);
@@ -1029,6 +871,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return currentHardTokens;
     }
 
+    // FIXME should not use strings
     public void setCurrentHardTokenIssuers(Collection<String> hardTokenCollection) {
         String defaulthardtokenissuer = getCurrentDefaultHardTokenIssuer();
         String[] valueArray = hardTokenCollection.toArray(new String[0]);
@@ -1037,76 +880,60 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     // OTHER CERTIFICATE DATA
-
-    //
     public boolean getUseCertSerialNumber() {
-        return profiledata.getCustomSerialNumberUsed();
+        return profiledata.isCustomSerialNumberUsed();
     }
 
     public void setUseCertSerialNumber(boolean useCertSerialNr) {
-        profiledata.setUse(EndEntityProfile.CERTSERIALNR, 0, useCertSerialNr);
+        profiledata.setCustomSerialNumberUsed(useCertSerialNr);
     }
 
-    //
     public boolean isUseCertValidityStartTime() {
-        return profiledata.getValidityStartTimeUsed();
+        return profiledata.isValidityStartTimeUsed();
     }
 
-    //
     public void setUseCertValidityStartTime(boolean useValidityStartTime) {
-        profiledata.setUse(EndEntityProfile.STARTTIME, 0, useValidityStartTime);
+        profiledata.setValidityStartTimeUsed(useValidityStartTime);
     }
 
-    //
     public String getValidityStartTime() {
         return profiledata.getValidityStartTime();
     }
 
-    public void setValidityStartTime(String starttime) {
-        profiledata.setValue(EndEntityProfile.STARTTIME, 0, starttime);
+    public void setValidityStartTime(final String startTime) {
+        profiledata.setValidityStartTime(startTime);
     }
 
-    //
-    public boolean getCertValidityStartTimeMod() {
-        return profiledata.isModifyable(EndEntityProfile.STARTTIME, 0);
+    public boolean isCertValidityStartTimeModifiable() {
+        return profiledata.isValidityStartTimeModifiable();
     }
 
-    public void setCertValidityStartTimeMod(boolean startTimeModifyable) {
-        profiledata.setModifyable(EndEntityProfile.STARTTIME, 0, startTimeModifyable);
+    public void setCertValidityStartTimeModifiable(boolean startTimeModifyable) {
+        profiledata.setValidityStartTimeModifiable(startTimeModifyable);
     }
 
-    //
-    public boolean getCertValidityEndTimeMod() {
-        return profiledata.isModifyable(EndEntityProfile.ENDTIME, 0);
+    public boolean isCertValidityEndTimeModifiable() {
+        return profiledata.isValidityEndTimeModifiable();
     }
 
-    public void setCertValidityEndTimeMod(boolean endTimeModifyable) {
-        profiledata.setModifyable(EndEntityProfile.ENDTIME, 0, endTimeModifyable);
+    public void setCertValidityEndTimeModifiable(boolean endTimeModifyable) {
+        profiledata.setValidityEndTimeModifiable(endTimeModifyable);
     }
 
-    //
     public boolean getUseCertValidityEndTime() {
-        return profiledata.getValidityEndTimeUsed();
+        return profiledata.isValidityEndTimeUsed();
     }
 
-    //
     public void setUseCertValidityEndTime(boolean useValidityEndTime) {
-        profiledata.setUse(EndEntityProfile.ENDTIME, 0, useValidityEndTime);
-        ;
+        profiledata.setValidityEndTimeUsed(useValidityEndTime);
     }
 
-    //
     public String getValidityEndTime() {
         return profiledata.getValidityEndTime();
     }
 
-    public void setValidityEndTime(String endtime) {
-        profiledata.setValue(EndEntityProfile.ENDTIME, 0, endtime);
-    }
-
-    //
-    public boolean isCertValidityEndTimeMod() {
-        return profiledata.isModifyable(EndEntityProfile.ENDTIME, 0);
+    public void setValidityEndTime(final String endTime) {
+        profiledata.setValidityEndTime(endTime);
     }
 
     //
@@ -1115,106 +942,87 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
                 + ejbcaWebBean.getText("HOURS").toLowerCase() + ejbcaWebBean.getText("MINUTES").toLowerCase();
     }
 
-    //
     public boolean isUseCardNumber() {
-        return profiledata.getUse(EndEntityProfile.CARDNUMBER, 0);
+        return profiledata.isCardNumberUsed();
     }
 
     public void setUseCardNumber(boolean useCardNumber) {
-        profiledata.setUse(EndEntityProfile.CARDNUMBER, 0, useCardNumber);
+        profiledata.setCardNumberUsed(useCardNumber);
     }
 
-    //
     public boolean isCardNumberRequired() {
-        return profiledata.isRequired(EndEntityProfile.CARDNUMBER, 0);
+        return profiledata.isCardNumberRequired();
     }
 
-    //
     public void setCardNumberRequired(boolean cardNumberRequired) {
-        profiledata.setRequired(EndEntityProfile.CARDNUMBER, 0, cardNumberRequired);
+        profiledata.setCardNumberRequired(cardNumberRequired);
     }
 
-    //
     public boolean isUseNameConstraintsPermitted() {
-        return profiledata.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0);
+        return profiledata.isNameConstraintsPermittedUsed();
     }
 
-    //
-    public void setUseNameConstraintsPermitted(boolean useNameConstraintsPermitted) {
-        profiledata.setUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0, useNameConstraintsPermitted);
+    public void setUseNameConstraintsPermitted(boolean use) {
+        profiledata.setNameConstraintsPermittedUsed(use);
     }
 
-    //
     public boolean isUseNameConstraintsPermittedRequired() {
-        return profiledata.isRequired(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0);
+        return profiledata.isNameConstraintsPermittedRequired();
     }
 
-    //
-    public void setUseNameConstraintsPermittedRequired(boolean useNameConstraintsRequired) {
-        profiledata.setRequired(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0, useNameConstraintsRequired);
+    public void setUseNameConstraintsPermittedRequired(boolean required) {
+        profiledata.setNameConstraintsPermittedRequired(required);
     }
 
-    //
     public boolean getUseNameConstraintsExcluded() {
-        return profiledata.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0);
+        return profiledata.isNameConstraintsExcludedUsed();
     }
 
-    //
-    public void setUseNameConstraintsExcluded(boolean useNameConstraintsExcluded) {
-        profiledata.setUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0, useNameConstraintsExcluded);
+    public void setUseNameConstraintsExcluded(boolean use) {
+        profiledata.setNameConstraintsExcludedUsed(use);
     }
 
-    //
     public boolean getUseNameConstraintsExcludedRequired() {
-        return profiledata.isRequired(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0);
+        return profiledata.isNameConstraintsExcludedRequired();
     }
 
-    //
-    public void setUseNameConstraintsExcludedRequired(boolean useNameConstraintsExcludedRequired) {
-        profiledata.setRequired(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0, useNameConstraintsExcludedRequired);
+    public void setUseNameConstraintsExcludedRequired(boolean required) {
+        profiledata.setNameConstraintsExcludedRequired(required);
     }
 
-    //
     public boolean isUseCustomCertificateExtensionData() {
         return profiledata.getUseExtensiondata();
     }
 
-    //
     public void setUseCustomCertificateExtensionData(boolean useCustomCertificateExtensionData) {
         profiledata.setUseExtensiondata(useCustomCertificateExtensionData);
     }
 
-    // OTHER DATA    
+    // OTHER DATA
 
-    //
     public boolean getUseNumberOfAllowedRequests() {
-        return profiledata.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0);
+        return profiledata.isAllowedRequestsLimited();
     }
 
     public void setUseNumberOfAllowedRequests(boolean useNumberOfAllowedRequests) {
-        profiledata.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, useNumberOfAllowedRequests);
+        profiledata.setAllowedRequestsLimited(useNumberOfAllowedRequests);
     }
 
-    //
-    public List<SelectItem> getNumberOfAllowedRequests() {
+    public List<SelectItem> getSelectableNumberOfAllowedRequests() {
         final List<SelectItem> numberOfAllowedRequestsListReturned = new ArrayList<>();
-        Integer numberOfRequests;
-        String numberOfRequestString;
-        for (numberOfRequests = 1; numberOfRequests < 6; numberOfRequests++) {
-            numberOfRequestString = numberOfRequests.toString();
-            numberOfAllowedRequestsListReturned.add(new SelectItem(numberOfRequestString, numberOfRequestString));
+        for (int numberOfRequests = 1; numberOfRequests < 6; numberOfRequests++) {
+            final String displayText = String.valueOf(numberOfRequests);
+            numberOfAllowedRequestsListReturned.add(new SelectItem(numberOfRequests, displayText));
         }
         return numberOfAllowedRequestsListReturned;
     }
 
-    //
-    public String getCurrentNumberOfAllowedRequests() {
-        return profiledata.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
+    public int getCurrentNumberOfAllowedRequests() {
+        return profiledata.getAllowedRequests();
     }
 
-    // 
-    public void setCurrentNumberOfAllowedRequests(String numberOfAllowedRequests) {
-        profiledata.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, numberOfAllowedRequests);
+    public void setCurrentNumberOfAllowedRequests(final int numberOfAllowedRequests) {
+        profiledata.setAllowedRequests(numberOfAllowedRequests);
     }
 
     // Key Recoverable
@@ -1224,104 +1032,83 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return ejbcaWebBean.getGlobalConfiguration().getEnableKeyRecovery();
     }
 
-    //
     public boolean isUseKeyRecoverable() {
-        return profiledata.getKeyRecoverableUsed();
+        return profiledata.isKeyRecoverableUsed();
     }
 
-    //
     public void setUseKeyRecoverable(boolean useKeyRecoverable) {
-        profiledata.setUse(EndEntityProfile.KEYRECOVERABLE, 0, useKeyRecoverable);
+        profiledata.setKeyRecoverableUsed(useKeyRecoverable);
     }
 
-    //
     public boolean getKeyRecoverableDefault() {
-        return profiledata.getKeyRecoverableDefault();
+        return profiledata.isKeyRecoverableDefault();
     }
 
-    //
     public void setKeyRecoverableDefault(boolean keyRecoverableDefault) {
-        if (keyRecoverableDefault) {
-            profiledata.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);
-        } else {
-            profiledata.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.FALSE);
-        }
+        profiledata.setKeyRecoverableDefault(keyRecoverableDefault);
     }
 
-    //
     public boolean isKeyRecoverableRequired() {
-        return profiledata.getKeyRecoverableRequired();
+        return profiledata.isKeyRecoverableRequired();
     }
 
-    //
     public void setKeyRecoverableRequired(boolean keyRecoverableReqired) {
-        profiledata.setRequired(EndEntityProfile.KEYRECOVERABLE, 0, keyRecoverableReqired);
+        profiledata.setKeyRecoverableRequired(keyRecoverableReqired);
     }
 
-    //
     public boolean getUseRevocationReasonAfterIssuance() {
-        return profiledata.getIssuanceRevocationReasonUsed();
+        return profiledata.isIssuanceRevocationReasonUsed();
     }
 
-    //
-    public void setUseRevocationReasonAfterIssuance(boolean useRevocationReasonAfterIssuance) {
-        profiledata.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, useRevocationReasonAfterIssuance);
+    public void setUseRevocationReasonAfterIssuance(final boolean use) {
+        profiledata.setIssuanceRevocationReasonUsed(use);
     }
 
-    //
-    public String getCurrentRevocationReason() {
-        return profiledata.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+    public RevocationReasons getCurrentRevocationReason() {
+        return profiledata.getIssuanceRevocationReason();
     }
 
-    //
-    public void setCurrentRevocationReason(String currentRevocationReason) {
-        profiledata.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, currentRevocationReason);
+    public void setCurrentRevocationReason(RevocationReasons reason) {
+        profiledata.setIssuanceRevocationReason(reason);
     }
 
+    /*
     // verify this
     public boolean isCurrentRevocationReason(SelectItem currentRevocationReasonItem) {
         final String value = getCurrentRevocationReason();
         final String reason = currentRevocationReasonItem.getLabel();
         return reason.equals(value);
-    }
+    }*/
 
-    //
     public List<SelectItem> getRevocationReasons() {
         final List<SelectItem> revocationReasonsReturned = new ArrayList<>();
-        String humanReadable;
-        int revocationReasonDBValue;
         for (RevocationReasons revocationReason : RevocationReasons.values()) {
-            humanReadable = revocationReason.getHumanReadable();
-            revocationReasonDBValue = revocationReason.getDatabaseValue();
-            if (revocationReasonDBValue == -1) {// Not revoked
-                revocationReasonsReturned.add(0, new SelectItem(revocationReasonDBValue, ejbcaWebBean.getText("ACTIVE")));
-            } else if (revocationReasonDBValue == 6) {// Certificate on hold    
-                revocationReasonsReturned.add(1, new SelectItem(revocationReasonDBValue, ejbcaWebBean.getText("SUSPENDED") + ": " + humanReadable));
+            final String humanReadable = revocationReason.getHumanReadable();
+            if (revocationReason == RevocationReasons.NOT_REVOKED) {
+                revocationReasonsReturned.add(0, new SelectItem(revocationReason, ejbcaWebBean.getText("ACTIVE")));
+            } else if (revocationReason == RevocationReasons.CERTIFICATEHOLD) {    
+                revocationReasonsReturned.add(1, new SelectItem(revocationReason, ejbcaWebBean.getText("SUSPENDED") + ": " + humanReadable));
             } else {
-                revocationReasonsReturned.add(new SelectItem(revocationReasonDBValue, ejbcaWebBean.getText("REVOKED") + ": " + humanReadable));
+                revocationReasonsReturned.add(new SelectItem(revocationReason, ejbcaWebBean.getText("REVOKED") + ": " + humanReadable));
             }
         }
         return revocationReasonsReturned;
     }
 
-    //
-    public boolean getRevocationReasonModifyable() {
-        return profiledata.getIssuanceRevocationReasonModifiable();
+    public boolean getRevocationReasonModifiable() {
+        return profiledata.isIssuanceRevocationReasonModifiable();
     }
 
-    //
-    public void setRevocationReasonModifyable(boolean revocationReasonModifyable) {
-        profiledata.setModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, revocationReasonModifyable);
+    public void setRevocationReasonModifyable(boolean modifiable) {
+        profiledata.setIssuanceRevocationReasonModifiable(modifiable);
     }
 
-    //
     public boolean getUseSendNotification() {
-        return profiledata.getSendNotificationUsed();
+        return profiledata.isSendNotificationUsed();
     }
 
-    //
     public void setUseSendNotification(boolean useSendNotification) {
-        profiledata.setUse(EndEntityProfile.SENDNOTIFICATION, 0, useSendNotification);
+        profiledata.setSendNotificationUsed(useSendNotification);
     }
 
     private UserNotification notification;
@@ -1379,23 +1166,19 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     //
     public boolean getSendNotificationDefault() {
-        return profiledata.getSendNotificationDefault();
+        return profiledata.isSendNotificationDefault();
     }
 
     public void setSendNotificationDefault(boolean isDefault) {
-        if (isDefault) {
-            profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.TRUE);
-        } else {
-            profiledata.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.FALSE);
-        }
+        profiledata.setSendNotificationDefault(isDefault);
     }
 
     public boolean getSendNotificationRequired() {
-        return profiledata.getSendNotificationRequired();
+        return profiledata.isSendNotificationRequired();
     }
 
     public void setSendNotificationRequired(boolean isRequired) {
-        profiledata.setRequired(EndEntityProfile.SENDNOTIFICATION, 0, isRequired);
+        profiledata.setSendNotificationRequired(isRequired);
     }
 
     //
@@ -1495,7 +1278,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     private UploadedFile uploadFile;
 
-    public void setUploadFile(UploadedFile uploadFile) {
+    public void setUploadFile(final UploadedFile uploadFile) {
         this.uploadFile = uploadFile;
     }
 
@@ -1504,7 +1287,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public void uploadTemplate() {
-
+        // TODO
     }
 
     public String saveProfile() throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
@@ -1513,11 +1296,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             raBean.changeEndEntityProfile(profileName, profiledata);
             return "profilesaved";
         } else {
-            Iterator<Entry<String, String>> errorIterator = editerrors.entrySet().iterator();
-            String errorMessage;
-            while (errorIterator.hasNext()) {
-                errorMessage = errorIterator.next().getValue();
-                addNonTranslatedErrorMessage(errorMessage);//Non translated is temporary for testing
+            for (final String errorMessage : editerrors.values()) {
+                addNonTranslatedErrorMessage(errorMessage); // FIXME Non translated is temporary for testing
             }
         }
         return "";
