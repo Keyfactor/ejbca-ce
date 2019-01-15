@@ -3,6 +3,8 @@
 echo "curl styles:"
 curl http://mypeer:8080/ejbca/styles.css
 
+openssl version
+
 # try those with sudo
 # add the seluser guy to root group
 sudo -E env "PATH=$PATH" cp /opt/ejbca_conf/* /app/ejbca/conf/
