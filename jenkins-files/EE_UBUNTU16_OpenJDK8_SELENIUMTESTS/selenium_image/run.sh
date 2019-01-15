@@ -31,3 +31,5 @@ echo '=================== build finished ========================'
 # this test works in RA mode!
 #chown -R root /home/seluser
 ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
+
+ls -LRa /tmp/
