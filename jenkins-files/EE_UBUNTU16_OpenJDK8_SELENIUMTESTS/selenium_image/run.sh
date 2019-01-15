@@ -6,7 +6,7 @@ curl http://mypeer:8080/ejbca/styles.css
 cd /app/ejbca/p12
 openssl pkcs12 -in superadmin.p12 -out superadmin.key.pem -nocerts -nodes
 openssl pkcs12 -in superadmin.p12 -out superadmin.crt.pem -clcerts -nokeys
-curl -E superadmin.crt.pem --key superadmin.key.pem https://mypeer:8443/ejbca/adminweb/
+curl -E superadmin.crt.pem --key superadmin.key.pem https://mypeer:8443/ejbca/styles.css
 
 
 
