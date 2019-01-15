@@ -47,6 +47,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 import javax.ejb.EJBException;
+import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -516,6 +517,13 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
+     * @return Public application base URL (e.g. 'http://localhost:8080/ejbca')
+     */
+    public String getBaseUrlPublic() {
+        return globalconfiguration.getBaseUrlPublic();
+    }
+    
+    /**
      * A functions that returns wanted imagefile in preferred language and theme. If none of the language specific images are found the original
      * imagefilename will be returned.
      *
@@ -972,10 +980,11 @@ public class EjbcaWebBean implements Serializable {
         }
         return returnValue;
     }
-    
-    
 
-
+    public boolean isSessionTimeoutEnabled() {
+        return globalconfiguration.getUseSessionTimeout();
+    }
+    
     public boolean isHelpEnabled() {
         return !"disabled".equalsIgnoreCase(WebConfiguration.getDocBaseUri());
     }
