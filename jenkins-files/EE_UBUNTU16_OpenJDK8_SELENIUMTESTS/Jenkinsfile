@@ -44,7 +44,7 @@ pipeline {
                                     if (r == 0) {
                                         //sh "docker logs mypeer 2>&1"
                                         echo "== CURL =="
-                                        sh "curl http://mypeer:8080/ejbca"
+                                        sh "curl http://127.0.0.1:28080/ejbca"
                                     }
                                     return (r == 0)
                                 } catch (exc) {
