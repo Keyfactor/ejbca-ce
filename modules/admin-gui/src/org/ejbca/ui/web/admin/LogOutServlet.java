@@ -14,13 +14,16 @@ package org.ejbca.ui.web.admin;
 
 import java.io.IOException;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.ejbca.config.InternalConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 
 /**
@@ -30,11 +33,21 @@ import org.ejbca.config.WebConfiguration;
  */
 public class LogOutServlet extends HttpServlet {
 
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    
     private static final long serialVersionUID = 1L;
     
     // JavaServlet Specification 2.5 Section 7.1.1: "...The name of the session tracking cookie must be JSESSIONID".
     private static final String SESSIONCOOKIENAME = "JSESSIONID";
-
+    private GlobalConfiguration globalConfiguration;
+    
+    @PostConstruct
+    public void initialize() {
+        globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    }
+    
     @Override
     public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
     	doGet(request, response);
@@ -57,7 +70,7 @@ public class LogOutServlet extends HttpServlet {
             response.sendRedirect("/logout");
         } else {
         	// Redirect user to the public web pages to avoid initializing a new AdminGUI session.
-            response.sendRedirect("/" + InternalConfiguration.getAppNameLower() + "/");
+            response.sendRedirect(globalConfiguration.getBaseUrlPublic());
         }
     }
 }

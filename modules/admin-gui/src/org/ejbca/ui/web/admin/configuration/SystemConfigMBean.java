@@ -122,6 +122,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private boolean enableExternalScripts;
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
+        private boolean enableSessionTimeout;
 
         //Admin Preferences
         private int preferedLanguage;
@@ -162,6 +163,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
                 this.enableExternalScripts = globalConfig.getEnableExternalScripts();
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
+                this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
                 // Admin Preferences
@@ -228,6 +230,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs=ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
         public void setPublicWebCertChainOrderRootFirst(boolean publicWebCertChainOrderRootFirst) { this.publicWebCertChainOrderRootFirst=publicWebCertChainOrderRootFirst; }
+        public boolean isEnableSessionTimeout() { return enableSessionTimeout; }
+        public void setEnableSessionTimeout(boolean enableSessionTimeout) { this.enableSessionTimeout = enableSessionTimeout;}
+
         public boolean getEnableIcaoCANameChange() {return enableIcaoCANameChange;}
         public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
 
@@ -776,6 +781,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
                 globalConfig.setEnableExternalScripts(currentConfig.getEnableExternalScripts());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
+                globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for(CTLogInfo ctlog : currentConfig.getCtLogs()) {

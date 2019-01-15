@@ -44,7 +44,11 @@
         <link rel="shortcut icon" type="image/png" href="#{adminMenuBean.adminWebUrl}/images/favicon.png"/>
     </h:head>
     <h:body dir="ltr" styleClass="ltrDirection isJsf">
-    
+    	<h:outputScript rendered="#{ejbcawebbean.sessionTimeoutEnabled}">
+	        var time;
+	        window.onload=resetTimer;
+	        document.onkeypress=resetTimer;
+        </h:outputScript>
     <ui:insert name="banner">
       <h:panelGroup layout="block" styleClass="banner-container" rendered="#{adminMenuBean.nonDefaultHeadBanner}">
 	      <iframe id="topFrame" name="topFrame" width="100%" height="100" scrolling="no" src="#{adminMenuBean.headBannerUrl}">
@@ -128,7 +132,13 @@
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb"><h:outputText value="#{web.text.RAWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getHelpBaseURI() }/index.html" target="_ejbcaDocWindow" rendered="#{adminMenuBean.helpEnabled}"><h:outputText value="#{web.text.DOCUMENTATION}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top" rendered="#{!ejbcawebbean.sessionTimeoutEnabled}"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
+      	  <h:form>
+          <h:commandLink rendered="#{ejbcawebbean.sessionTimeoutEnabled}">
+          	  <h:outputText value="#{web.text.LOGOUT}"/>
+          	  <f:ajax onevent="logoutIe" />
+          </h:commandLink>
+          </h:form>
         </h:panelGroup>
       </h:panelGroup>
     </h:panelGroup>
