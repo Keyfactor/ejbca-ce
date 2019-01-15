@@ -261,7 +261,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             EndEntityProfile profile = new EndEntityProfile();
             profile.addField(DnComponents.COMMONNAME);
             profile.addField(DnComponents.COUNTRY);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
             profile.setAllowMergeDnWebServices(true);
             // Profile will be removed in finally clause
             endEntityProfileSession.addEndEntityProfile(admin, eeprofileName, profile);
@@ -285,7 +285,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
             }
             // Set required = false for password, then an empty password should be allowed
-            profile.setRequired(EndEntityProfile.PASSWORD,0,false);
+            profile.setPasswordRequired(false);
             endEntityProfileSession.changeEndEntityProfile(admin, eeprofileName, profile);
             try {
                 endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
@@ -651,7 +651,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             //profile.addField(DnComponents.ORGANIZATIONALUNIT);
             profile.addField(DnComponents.ORGANIZATION);
             profile.addField(DnComponents.COUNTRY);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
             profile.setAllowMergeDnWebServices(true);
 
             endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);

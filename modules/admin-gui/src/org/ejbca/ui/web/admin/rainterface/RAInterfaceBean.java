@@ -1216,6 +1216,8 @@ public class RAInterfaceBean implements Serializable {
         return availablehardtokenissuers;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public String getAvailableTokenTypes(final String defaulttokentype, final String[] values) {
         String availabletokentypes = defaulttokentype;
         if (values!= null) {
@@ -1233,7 +1235,9 @@ public class RAInterfaceBean implements Serializable {
      * @param defaultcertprof the Id of the selected default cert profile
      * @param values an array of cert profile Ids
      * @return the ;-seperated list of cert profile Ids
+     * @deprecated Since EJBCA 7.0.0
      */
+    @Deprecated
     public String getAvailableCertProfiles(final String defaultcertprof, final String[] values) {
         String availablecertprofiles = defaultcertprof;
         if (values!= null) {

@@ -233,8 +233,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 caAdminSession, caSession, certProfileIdActivateCATokensApprovals, catoken3);
 
         // Create an end entity profile with the certificate profiles
-        endEntityProfileId = createEndEntityProfile(admin1, ENDENTITYPROFILE, new int[] { certProfileIdNoApprovals, certProfileIdEndEntityApprovals,
-                certProfileIdActivateCATokensApprovals, certProfileIdKeyRecoveryApprovals, certProfileIdAllApprovals });
+        endEntityProfileId = createEndEntityProfile(admin1, ENDENTITYPROFILE, Arrays.asList(certProfileIdNoApprovals, certProfileIdEndEntityApprovals,
+                certProfileIdActivateCATokensApprovals, certProfileIdKeyRecoveryApprovals, certProfileIdAllApprovals));
 
         log.info("approvalCAID=" + approvalCAID);
         log.info("certProfileId1=" + certProfileIdNoApprovals);
@@ -555,26 +555,20 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         endEntityManagementSession.changeUser(admin, userdata, true);
     }
 
-    private int createEndEntityProfile(AuthenticationToken admin, String endEntityProfileName, int[] certProfiles)
+    private int createEndEntityProfile(AuthenticationToken admin, String endEntityProfileName, final Collection<Integer> certProfiles)
             throws EndEntityProfileExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException {
         EndEntityProfile profile;
         endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);
 
-        StringBuilder availableCertProfiles = new StringBuilder();
-        for (int id : certProfiles) {
-            availableCertProfiles.append(id);
-            availableCertProfiles.append(EndEntityProfile.SPLITCHAR);
-        }
-
         profile = new EndEntityProfile();
-        profile.setUse(EndEntityProfile.ENDTIME, 0, true);
-        profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
-        profile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.TRUE);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, String.valueOf(approvalCAID));
-        profile.setUse(EndEntityProfile.STARTTIME, 0, true);
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles.toString());
-        profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, String.valueOf(certProfiles[0]));
-        profile.setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(approvalCAID));
+        profile.setValidityStartTimeUsed(true);
+        profile.setValidityEndTimeUsed(true);
+        profile.setClearTextPasswordUsed(true);
+        profile.setClearTextPasswordDefault(true);
+        profile.setAvailableCAs(Arrays.asList(approvalCAID));
+        profile.setAvailableCertificateProfileIds(certProfiles);
+        profile.setDefaultCA(approvalCAID);
+        profile.setDefaultCertificateProfile(certProfiles.iterator().next());
         endEntityProfileSession.addEndEntityProfile(admin, endEntityProfileName, profile);
 
         int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
