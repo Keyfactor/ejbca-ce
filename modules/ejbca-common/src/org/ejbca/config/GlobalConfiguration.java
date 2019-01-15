@@ -97,6 +97,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final boolean DEFAULTENABLEEXTERNALSCRIPTS = false;
 
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
+    
+    private static final boolean DEFAULTSESSIONTIMEOUT = false;
 
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
@@ -181,6 +183,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String IS_EXTERNAL_SCRIPTS_WHITELIST_ENABLED = "is_external_scripts_whitelist_enabled";
 
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
+    private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
 
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -261,6 +264,13 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     	           InternalConfiguration.getAppNameLower() + "/";
     }
 
+    public String getBaseUrlPublic() {
+        return (String) data.get(GlobalConfiguration.PUBLICPROTOCOL) + "://" +
+                WebConfiguration.getHostName() + ":" +
+                (String) data.get(GlobalConfiguration.PUBLICPORT) + "/" +
+                InternalConfiguration.getAppNameLower() + "/";
+    }
+    
     public String getAdminWebPath() {
         return getString(ADMINPATH, "adminweb");
     }
@@ -524,6 +534,14 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
         putBoolean(PUBLICWEBCERTCHAINORDEROOTFIRST, value);
     }
 
+    public boolean getUseSessionTimeout() {
+        return getBoolean(ENABLESESSIONTIMEOUT, DEFAULTSESSIONTIMEOUT);
+    }
+    
+    public void setUseSessionTimeout(final boolean value) {
+        putBoolean(ENABLESESSIONTIMEOUT, value);
+    }
+    
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Integer,CTLogInfo> getCTLogs() {
         final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
