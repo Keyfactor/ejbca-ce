@@ -16,8 +16,9 @@ sleep 10
 cd /app/ejbca
 
 
-echo '=================== Profile folder contents ========================'
-ls -la /home/seluser/.mozilla/firefox/svq3ko35.default
+echo '=================== Debug Info ========================'
+# ls -la /home/seluser/.mozilla/firefox/svq3ko35.default
+tail /app/ejbca/src/appserver/jboss/jboss7/jboss-ejb-client.properties
 
 sudo -E env "PATH=$PATH" ant build
 
