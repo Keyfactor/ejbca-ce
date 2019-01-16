@@ -46,8 +46,8 @@
     <h:body dir="ltr" styleClass="ltrDirection isJsf">
     	<h:outputScript rendered="#{ejbcawebbean.sessionTimeoutEnabled}">
 	        var time;
-	        window.onload=resetTimer;
-	        document.onkeypress=resetTimer;
+	        window.onload=resetTimer("#{ejbcawebbean.sessionTimeoutTime}");
+	        document.onkeypress=resetTimer("#{ejbcawebbean.sessionTimeoutTime}");
         </h:outputScript>
     <ui:insert name="banner">
       <h:panelGroup layout="block" styleClass="banner-container" rendered="#{adminMenuBean.nonDefaultHeadBanner}">
