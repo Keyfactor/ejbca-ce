@@ -6,6 +6,8 @@
 sudo -E env "PATH=$PATH" cp /opt/ejbca_conf/* /app/ejbca/conf/
 sudo -E env "PATH=$PATH" cp /opt/ejbca_webtest_conf/* /app/ejbca/modules/ejbca-webtest/conf/
 
+sudo -E env "PATH=$PATH" cp -rf /opt/jboss-ejb-client.properties /app/ejbca/src/appserver/jboss/jboss7/jboss-ejb-client.properties
+
 /opt/bin/entry_point.sh &
 
 sleep 10
