@@ -110,12 +110,12 @@ public class BlacklistEntry implements Serializable, Cloneable {
 
 
     public Map<Object, Object> diff(BlacklistEntry newEntry) {
-        Map<Object, Object> result = new LinkedHashMap<Object, Object>();
+        final Map<Object, Object> result = new LinkedHashMap<>();
         if (!StringUtils.equals(this.getValue(), newEntry.getValue())) {
-            result.put("changed:value", newEntry != null ? newEntry.getValue() : "null");
+            result.put("changed:value", newEntry.getValue() == null ? "null" : newEntry.getValue());
         }
         if (!StringUtils.equals(this.getData(), newEntry.getData())) {
-            result.put("changed:data", newEntry != null ? newEntry.getData() : "null");
+            result.put("changed:data", newEntry.getData() == null ? "null" : newEntry.getData());
         }
         return result;
     }
