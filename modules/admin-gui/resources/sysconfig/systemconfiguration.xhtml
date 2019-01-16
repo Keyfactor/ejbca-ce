@@ -163,14 +163,20 @@
 				<h:outputLabel for="certChainOrder" value="#{web.text.CERTIFICATECHAINROOTFIRST}" />
 			</h:panelGroup>
 			<h:panelGroup>
-				<h:outputLabel for="sessionTimeout" value="#{web.text.SESSION_TIMEOUT}" styleClass="titles"/>
+				<h:outputLabel for="sessionTimeout" value="#{web.text.USE_SESSION_TIMEOUT}" styleClass="titles"/>
 				<br/>
-				<h:outputText value="#{web.text.SESSION_TIMEOUT_HELP}" styleClass="help"/>
+				<h:outputText value="#{web.text.USE_SESSION_TIMEOUT_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:panelGroup>
+			<h:panelGroup id="sessiontimeoutgroup">
 				<h:selectBooleanCheckbox id="sessionTimeout" value="#{systemConfigMBean.currentConfig.enableSessionTimeout}"
-					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
+					<f:ajax render="systemconfiguration:sessiontimeoutgroup"/>
+				</h:selectBooleanCheckbox>
 				<h:outputLabel for="sessionTimeout" value="#{web.text.USE}" />
+				<br/>
+	            <h:inputText id="sessionTimeoutTime" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration or !systemConfigMBean.currentConfig.enableSessionTimeout}" 
+	            	value="#{systemConfigMBean.currentConfig.sessionTimeoutTime}" size="10"/>
+                 <h:outputLabel for="sessionTimeout" value="#{web.text.SESSION_TIMEOUT_TIME}" />
 			</h:panelGroup>	
 			
 		</h:panelGrid>

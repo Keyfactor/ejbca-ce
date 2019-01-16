@@ -98,7 +98,12 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     private static final boolean DEFAULTPUBLICWEBCERTCHAINORDEROOTFIRST = true;
     
+    // Default values for session timeout
     private static final boolean DEFAULTSESSIONTIMEOUT = false;
+    private static final int DEFAULTSESSIONTIMEOUTTIME = 30;
+    
+    private static final int SESSION_TIMEOUT_MIN = 1;
+    private static final int SESSION_TIMEOUT_MAX = Integer.MAX_VALUE;
 
     // Default CT Logs
     private static final LinkedHashMap<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<>();
@@ -184,6 +189,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     private static final String PUBLICWEBCERTCHAINORDEROOTFIRST = "publicwebcertchainorderrootfirst";
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
+    private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
 
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -540,6 +546,23 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     
     public void setUseSessionTimeout(final boolean value) {
         putBoolean(ENABLESESSIONTIMEOUT, value);
+    }
+    
+    public int getSessionTimeoutTime() {
+        Object num = data.get(SESSIONTIMEOUTTIME);
+        if(num == null){
+            return DEFAULTSESSIONTIMEOUTTIME;
+        } else {
+            return ((Integer) num).intValue();
+        }
+    }
+    
+    public void setSessionTimeoutTime(int timeInMinutes) {
+        if (timeInMinutes < SESSION_TIMEOUT_MIN || timeInMinutes > SESSION_TIMEOUT_MAX) {
+            data.put(SESSIONTIMEOUTTIME, DEFAULTSESSIONTIMEOUTTIME);
+        } else {
+            data.put(SESSIONTIMEOUTTIME, timeInMinutes);
+        }
     }
     
     @SuppressWarnings("unchecked")

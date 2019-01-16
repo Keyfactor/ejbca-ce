@@ -403,10 +403,11 @@ function logoutIe(data) {
 }
 
 // Resets timer for page inactivity.
-function resetTimer() {
+// parameter 'validity' should be specified in minutes.
+function resetTimer(validity) {
 	clearTimeout(time);
-	// Log out after 30 minutes of inactivity
-	time=setTimeout(logout, 1000*60*30)
+	// Log out after X minutes of inactivity
+	time=setTimeout(logout, 1000*60*validity)
 }
 
 /* JS library functions used by EJBCA 6.8.0+ JSF pages */
