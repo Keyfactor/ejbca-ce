@@ -123,6 +123,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
+        private int sessionTimeoutTime;
 
         //Admin Preferences
         private int preferedLanguage;
@@ -164,6 +165,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.enableExternalScripts = globalConfig.getEnableExternalScripts();
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
+                this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
                 this.setEnableIcaoCANameChange(globalConfig.getEnableIcaoCANameChange());
                 this.ctLogs = new ArrayList<>(globalConfig.getCTLogs().values());
                 // Admin Preferences
@@ -232,6 +234,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setPublicWebCertChainOrderRootFirst(boolean publicWebCertChainOrderRootFirst) { this.publicWebCertChainOrderRootFirst=publicWebCertChainOrderRootFirst; }
         public boolean isEnableSessionTimeout() { return enableSessionTimeout; }
         public void setEnableSessionTimeout(boolean enableSessionTimeout) { this.enableSessionTimeout = enableSessionTimeout;}
+        public int getSessionTimeoutTime() {return sessionTimeoutTime;}
+        public void setSessionTimeoutTime(int sessionTimeoutTime) {this.sessionTimeoutTime = sessionTimeoutTime;}
 
         public boolean getEnableIcaoCANameChange() {return enableIcaoCANameChange;}
         public void setEnableIcaoCANameChange(boolean enableIcaoCANameChange) {this.enableIcaoCANameChange = enableIcaoCANameChange;}
@@ -782,6 +786,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setEnableExternalScripts(currentConfig.getEnableExternalScripts());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
+                globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
                 LinkedHashMap<Integer, CTLogInfo> ctlogsMap = new LinkedHashMap<>();
                 for(CTLogInfo ctlog : currentConfig.getCtLogs()) {

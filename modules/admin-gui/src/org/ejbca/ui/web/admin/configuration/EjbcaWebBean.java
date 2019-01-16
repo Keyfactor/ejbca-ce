@@ -985,6 +985,10 @@ public class EjbcaWebBean implements Serializable {
         return globalconfiguration.getUseSessionTimeout();
     }
     
+    public int getSessionTimeoutTime() {
+        return globalconfiguration.getSessionTimeoutTime();
+    }
+    
     public boolean isHelpEnabled() {
         return !"disabled".equalsIgnoreCase(WebConfiguration.getDocBaseUri());
     }
