@@ -45,8 +45,11 @@ RUN chmod 777 /opt/ejbca_conf
 ADD configuration/ejbca_webtest_conf /opt/ejbca_webtest_conf
 RUN chmod 777 /opt/ejbca_webtest_conf
 
-# need to run as root, because source checkout user is not accessible to seluser and is not allwed to chmod by jenkinsuser ?
-# need to run as seluser, because firefox needs to be run as seluser for the profile to work properly inside the container ?
+# copy jboss-ejb-client.properties to /opt in the container for runtime-usage
+ADD configuration/jboss-ejb-client.properties /opt/
+RUN chmod 777 /opt/jboss-ejb-client.properties
+
+# need to run as seluser, because firefox needs to be run as seluser for the profile to work properly inside the container
 USER seluser
 
 CMD ["/opt/run.sh"]
