@@ -12,7 +12,7 @@ RUN mkdir -p /opt/jboss/wildfly
 ENV ANT_HOME /opt/ant/apache-ant-1.9.8
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 ENV ANT_OPTS="-Xms256M -Xmx512M"
-ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -XX:PermSize=1024m -XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true"
+ENV JAVA_OPTS="-Xms2048m -Xmx3g -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -XX:PermSize=1024m -XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true"
 
 RUN cd $HOME \
 	&& curl -O http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz \
