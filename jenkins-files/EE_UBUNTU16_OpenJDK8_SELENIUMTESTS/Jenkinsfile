@@ -67,6 +67,9 @@ pipeline {
                 sh "mkdir ear || true"
                 sh "chmod 777 " + "$env.WORKSPACE"
                 
+                // to allow creation of /app/ejbca/reports/test folder for ant test task
+                sh "chmod 777 " + "$env.WORKSPACE/ejbca"
+                
                 // pre-create necessary folders and gice permissions, so that seluser can later do its stuff
                 sh "chmod +w " + "$env.WORKSPACE/ejbca/conf"
                 sh "chmod +w " + "$env.WORKSPACE/ejbca/modules/ejbca-webtest/conf/"
