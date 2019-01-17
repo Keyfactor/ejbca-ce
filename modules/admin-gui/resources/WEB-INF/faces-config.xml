@@ -15,12 +15,12 @@
 
  version: $Id$
  -->
-<faces-config version="2.0"
+<faces-config version="2.2"
     metadata-complete="false"
     xmlns="http://java.sun.com/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
-                        http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd">
+                        http://java.sun.com/xml/ns/javaee/web-facesconfig_2_2.xsd">
 
   <managed-bean>
     <managed-bean-name>web</managed-bean-name>
@@ -234,8 +234,12 @@
       <from-outcome>profilesaved</from-outcome>
       <to-view-id>/ra/editendentityprofiles/temp_editendentityprofiles.xhtml</to-view-id>
     </navigation-case>
+    <navigation-case>
+      <from-outcome>cancel</from-outcome>
+      <to-view-id>/ra/editendentityprofiles/temp_editendentityprofiles.xhtml</to-view-id>
+    </navigation-case>
   </navigation-rule> 
-      
+
     <navigation-rule>
         <from-view-id>/sysconfig/estconfigurations.xhtml</from-view-id>
         <navigation-case>

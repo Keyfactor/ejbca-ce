@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
@@ -37,7 +38,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
 	 * A hashmap is good because it serializes nicely and data can be upgraded without changing
 	 * serialversion uid
 	 */
-    private HashMap<String, String> data;
+    private final HashMap<String, String> data = new LinkedHashMap<>();
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -67,11 +68,9 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     private static final String   NOTIFICATIONEVENTS     = "NOTIFICATIONEVENTS";
 
     public UserNotification() {
-    	data = new HashMap<String, String>();
     }
     
     public UserNotification(String sender, String rcpt, String subject, String message, String events) {
-    	data = new HashMap<String, String>();
     	setNotificationSender(sender);
     	setNotificationSubject(subject);
     	setNotificationMessage(message);
@@ -80,11 +79,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
 
     public String getNotificationSender(){
-    	String ret = "";
-    	if(data.get(NOTIFICATIONSENDER) != null) {
-    		ret = (String) data.get(NOTIFICATIONSENDER);
-    	}
-    	return ret;
+    	return StringUtils.defaultString(data.get(NOTIFICATIONSENDER));
     }
     
     public void setNotificationSender(String sender){
@@ -92,11 +87,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
     
     public String getNotificationSubject(){
-    	String ret = "";
-    	if(data.get(NOTIFICATIONSUBJECT) != null) {
-    		ret = (String) data.get(NOTIFICATIONSUBJECT);
-    	}
-    	return ret;
+    	return StringUtils.defaultString(data.get(NOTIFICATIONSUBJECT));
     }
     
     public void setNotificationSubject(String subject){
@@ -104,11 +95,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
         
     public String getNotificationMessage(){
-    	String ret = "";
-    	if(data.get(NOTIFICATIONMESSAGE) != null) {
-    		ret = (String) data.get(NOTIFICATIONMESSAGE);
-    	}
-    	return ret;
+    	return StringUtils.defaultString(data.get(NOTIFICATIONMESSAGE));
     }
     
     public void setNotificationMessage(String message){
@@ -116,11 +103,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
 
     public String getNotificationRecipient(){
-    	String ret = "";
-    	if(data.get(NOTIFICATIONRECIPIENT) != null) {
-    		ret = (String) data.get(NOTIFICATIONRECIPIENT);
-    	}
-    	return ret;
+    	return StringUtils.defaultString(data.get(NOTIFICATIONRECIPIENT));
     }
     
     /**
@@ -136,12 +119,8 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
      * @return String with integer values separated by ;
      * @see UserNotification.EVENTS_EDITUSER
      */
-    public String getNotificationEvents(){
-    	String ret = "";
-    	if(data.get(NOTIFICATIONEVENTS) != null) {
-    		ret = (String) data.get(NOTIFICATIONEVENTS);
-    	}
-    	return ret;
+    public String getNotificationEvents() {
+    	return StringUtils.defaultString(data.get(NOTIFICATIONEVENTS));
     }
 
     /** Returns a collection view of getNotificationEvents.
@@ -150,7 +129,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
      */
     public Collection<String> getNotificationEventsCollection(){
     	String events = getNotificationEvents();
-    	ArrayList<String> ret = new ArrayList<String>();
+    	ArrayList<String> ret = new ArrayList<>();
     	if (StringUtils.isNotEmpty(events)) {
     		StringTokenizer tokenizer = new StringTokenizer(events, ";", false);
             while (tokenizer.hasMoreTokens()) {

@@ -575,6 +575,8 @@ public class RAInterfaceBean implements Serializable {
         return endEntityProfileSession.getEndEntityProfileId(profilename);
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public EndEntityProfile getEndEntityProfile(String name) {
     	return endEntityProfileSession.getEndEntityProfile(name);
     }
@@ -583,6 +585,8 @@ public class RAInterfaceBean implements Serializable {
     	return endEntityProfileSession.getEndEntityProfile(id);
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public void addEndEntityProfile(String name) throws EndEntityProfileExistsException, AuthorizationDeniedException {
     	EndEntityProfile profile = new EndEntityProfile();
     	String availablecas = StringUtils.join(caSession.getAuthorizedCaIds(administrator), EndEntityProfile.SPLITCHAR);
@@ -591,6 +595,8 @@ public class RAInterfaceBean implements Serializable {
     	endEntityProfileSession.addEndEntityProfile(administrator, name, profile);
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public void changeEndEntityProfile(String name, EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
     	endEntityProfileSession.changeEndEntityProfile(administrator, name, profile);
     }
@@ -604,7 +610,9 @@ public class RAInterfaceBean implements Serializable {
      * @return an array of strings containing information about the EEs and administrator roles using the EEP
      * @throws AuthorizationDeniedException if the admin is not authorized to remove the EEP
      * @throws EndEntityProfileNotFoundException if no such end entity profile was found
+     * @deprecated Since EJBCA 7.0.0
      */
+    @Deprecated
     public String[] removeEndEntityProfile(String name) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         String[] messageArray = {"", "", ""};
         int profileId = endEntityProfileSession.getEndEntityProfileId(name);
@@ -662,18 +670,26 @@ public class RAInterfaceBean implements Serializable {
         return rolenames;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public void renameEndEntityProfile(String oldname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException {
     	endEntityProfileSession.renameEndEntityProfile(administrator, oldname, newname);
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public void setTemporaryEndEntityProfileNotification(UserNotification userNotification) {
         temporaryNotification = userNotification;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public UserNotification getTemporaryEndEntityProfileNotification() {
         return temporaryNotification;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public void cloneEndEntityProfile(String originalname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException {
     	endEntityProfileSession.cloneEndEntityProfile(administrator, originalname, newname);
     }
@@ -804,6 +820,8 @@ public class RAInterfaceBean implements Serializable {
     	return returnval;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public boolean authorizedToEditEndEntityProfiles() {
         return authorizationSession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
     }
@@ -873,6 +891,8 @@ public class RAInterfaceBean implements Serializable {
     	}
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public String[] getCertificateProfileNames(){
         String[] dummy = {""};
         Collection<String> certprofilenames = ejbcawebbean.getAuthorizedEndEntityCertificateProfileNames().keySet();
@@ -886,6 +906,8 @@ public class RAInterfaceBean implements Serializable {
     	return certificateProfileSession.getCertificateProfileName(certificateprofileid);
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public boolean getEndEntityParameter(String parameter) {
     	if(parameter == null) {
     		return false;
@@ -909,15 +931,21 @@ public class RAInterfaceBean implements Serializable {
     /**
      *  Help function used by edit end entity pages used to temporary save a profile
      *  so things can be canceled later
+     * @deprecated Since EJBCA 7.0.0
      */
+    @Deprecated
     public EndEntityProfile getTemporaryEndEntityProfile(){
     	return this.temporaryEndEntityProfile;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public void setTemporaryEndEntityProfile(EndEntityProfile profile){
     	this.temporaryEndEntityProfile = profile;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public String[] listPrinters(){
     	if (printerNames == null) {
     		printerNames = org.ejbca.util.PrinterManager.listPrinters();
@@ -948,7 +976,9 @@ public class RAInterfaceBean implements Serializable {
      * @param availableCasArray an array of CA Ids
      * @param defaultCa the CA Id of the selected default CA
      * @return the ;-seperated list of CA Ids
+     * @deprecated Since EJBCA 7.0.0
      */
+    @Deprecated
     public String getAvailableCasString(final String[] availableCasArray, final String defaultCa) {
         final List<String> availableCasList = Arrays.asList(availableCasArray);
         final StringBuilder sb = new StringBuilder();
@@ -1032,10 +1062,14 @@ public class RAInterfaceBean implements Serializable {
     //-------------------------------------------------------
     //         Import/Export  profiles related code
     //-------------------------------------------------------
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public byte[]  getfileBuffer(final HttpServletRequest request, final Map<String, String> requestMap) throws IOException, FileUploadException {
         return getFileBuffer(request, requestMap, 60_000);
     }
-    
+
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public byte[]  getFileBuffer(final HttpServletRequest request, final Map<String, String> requestMap, final int maxSize) throws IOException, FileUploadException {
         byte[] fileBuffer = null;
         if (ServletFileUpload.isMultipartContent(request)) {
@@ -1073,6 +1107,8 @@ public class RAInterfaceBean implements Serializable {
         return fileBuffer;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public String importProfilesFromZip(byte[] filebuffer) {
         if(log.isTraceEnabled()) {
             log.trace(">importProfiles(): " + importedProfileName + " - " + filebuffer.length + " bytes");
@@ -1199,11 +1235,15 @@ public class RAInterfaceBean implements Serializable {
         return retmsg;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     private String getSuccessImportMessage(String fileName, int nrOfFiles, int importedFiles, int ignoredFiles) {
         return importedProfileName + " contained " + nrOfFiles + " files. " +
                         importedFiles + " EndEntity Profiles were imported and " + ignoredFiles + " files  were ignored.";
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public String getAvailableHardTokenIssuers(final String defaulthardtokenissuer, final String[] values) {
         String availablehardtokenissuers = defaulthardtokenissuer;
         if (values!= null) {
@@ -1259,6 +1299,8 @@ public class RAInterfaceBean implements Serializable {
         return validation;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public UserNotification getNotificationForDelete(String sender, String rcpt, String subject, String msg, String[] val) {
         String events = null;
         if (val != null) {
@@ -1273,6 +1315,9 @@ public class RAInterfaceBean implements Serializable {
         return new UserNotification(sender, rcpt, subject, msg, events);
 
     }
+
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     public UserNotification getNotificationForAdd(String sender, String rcpt, String subject, String msg, String[] val) {
         UserNotification not = new UserNotification();
         not.setNotificationSender(sender);
@@ -1294,7 +1339,9 @@ public class RAInterfaceBean implements Serializable {
         not.setNotificationEvents(events);
         return not;
     }
-    
+
+    /** @deprecated Since EJBCA 7.0.0 */
+    @Deprecated
     private EndEntityProfile getEEProfileFromByteArray(String profilename, byte[] profileBytes) {
         ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
         EndEntityProfile eprofile = new EndEntityProfile();
