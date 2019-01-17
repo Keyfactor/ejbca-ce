@@ -20,7 +20,8 @@ echo '=================== Debug Info ========================'
 # ls -la /home/seluser/.mozilla/firefox/svq3ko35.default
 tail /app/ejbca/src/appserver/jboss/jboss7/jboss-ejb-client.properties
 
-sudo -E env "PATH=$PATH" ant build
+# needs to be *clean* build, because otherwise the ejb remote configs won't be built into the package
+sudo -E env "PATH=$PATH" ant clean build
 
 echo '=================== build finished ========================'
 
