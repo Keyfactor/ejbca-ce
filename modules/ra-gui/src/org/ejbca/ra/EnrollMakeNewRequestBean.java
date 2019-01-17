@@ -947,6 +947,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return ret;
         } finally {
             cleanUpEndEntities(errorCode, ret);
+            endEntityInformation.setUsername(StringUtils.EMPTY);
         }
     }
 
@@ -965,7 +966,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     throw new IllegalStateException(e);
                 }
             }
-            endEntityInformation.setUsername("");
         } else {
             return; // We simply return since certificate is generated and EE must not be deleted.
         }
