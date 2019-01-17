@@ -257,6 +257,6 @@ public abstract class PatternLogger implements Serializable {
 
     /** @return true if this logger is enabled */
     public boolean isEnabled() {
-        return doLogging;
+        return doLogging && getLogger().isDebugEnabled();
     }
 }
