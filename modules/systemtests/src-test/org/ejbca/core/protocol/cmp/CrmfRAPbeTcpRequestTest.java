@@ -77,7 +77,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
 
