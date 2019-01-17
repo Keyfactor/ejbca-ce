@@ -425,7 +425,10 @@ public final class CesecoreConfiguration {
      * Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
      *  TLS versions: SSLv3, TLSv1, SSLv2Hello
      * Java 7: http://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
-     *  TLS versions: SSLv3, TLSv1, SSLv2Hello, TLSv1.1, TLSv1.2
+     *  TLS versions: SSLv3, TLSv1, TLSv1.1, TLSv1.2
+     *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
+     * Java 8: http://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
+     *  TLS versions: SSLv3, TLSv1, TLSv1.1, TLSv1.2
      *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
      */
     public static String[] getAvailableCipherSuites() {
