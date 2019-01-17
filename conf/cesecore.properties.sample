@@ -228,8 +228,13 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
 #   TLS versions: SSLv3, TLSv1, SSLv2Hello
 # Java 7: http://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
-#   TLS versions: SSLv3, TLSv1, SSLv2Hello, TLSv1.1, TLSv1.2
+#   TLS versions: SSLv3, TLSv1, TLSv1.1, TLSv1.2
 #   Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
+# Java 8: http://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
+#   TLS versions: SSLv3, TLSv1, TLSv1.1, TLSv1.2
+#   Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
+#
+# Use TLSv1.2 or better unless you have too keep compatibility with really old systems.
 #
 # The configuration format is "<TLS version>;cipher" and the follow ciphers are defined by default
 # and can be undefined by setting the properties to "undefined".
