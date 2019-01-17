@@ -32,8 +32,8 @@ echo '=================== build finished ========================'
 #ant test:runone -Dtest.runone=EcaQa28_ServiceManagement
 
 # this one hangs?
-ant test:runone -Dtest.runone=EcaQa12_CPManagement
+# ant test:runone -Dtest.runone=EcaQa12_CPManagement
 
 # this should run eventually!
-# ant test:webtest
+ant test:webtest
 
