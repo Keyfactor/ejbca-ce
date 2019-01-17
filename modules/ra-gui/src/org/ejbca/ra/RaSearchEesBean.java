@@ -636,6 +636,16 @@ public class RaSearchEesBean implements Serializable {
                 + currentEndEntityDetails.getUsername();
         return url;
     }
+    
+    /**
+     * @param chosen the RaEndEntityDetails to be edited
+     * @return the URL to editing the chosen End Entity
+     */
+    public String redirectToEdit(final RaEndEntityDetails chosen) {
+        String url = "endentity.xhtml?faces-redirect=true&edit=true&ee="
+                + chosen.getUsername();
+        return url;
+    }
 
     /**
      * @return true if the API is compatible with End Entity editing 

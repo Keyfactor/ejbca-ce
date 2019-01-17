@@ -1468,7 +1468,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     background: #637b98;
     flex: 1;
     margin: 50px auto 30px auto;
-    width: 60em; }
+    width: 70em; }
 
   ul.pure-menu-list > li.pure-menu-item:hover:before {
     /*hover-effekt för pil i dropdown*/
