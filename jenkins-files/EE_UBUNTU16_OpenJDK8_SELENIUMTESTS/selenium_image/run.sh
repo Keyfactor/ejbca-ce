@@ -20,7 +20,7 @@ echo '=================== Debug Info ========================'
 # ls -la /home/seluser/.mozilla/firefox/svq3ko35.default
 tail /app/ejbca/src/appserver/jboss/jboss7/jboss-ejb-client.properties
 
-sudo -E env "PATH=$PATH" ant build
+sudo -E env "PATH=$PATH" ant clean build
 
 echo '=================== build finished ========================'
 
