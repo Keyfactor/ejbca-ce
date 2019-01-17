@@ -23,11 +23,10 @@ import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.PatternLogger;
 
 /**
+ * Transaction logger for EJBCA WS with output in DEBUG log level when enabled.
  * 
  * @version $Id$
- *
  */
-
 public class TransactionLogger {
     
     private static TransactionLogger instance = null;
@@ -56,7 +55,7 @@ public class TransactionLogger {
     }
 
     private IPatternLogger getNewPatternLogger() {
-        if ( !this.doLog ) {
+        if ( !this.doLog || !this.log.isDebugEnabled()) {
             return new DummyPatternLogger();
         }
         IPatternLogger pl = new PatternLogger(this.PATTERN.matcher(this.orderString), this.orderString, this.log, this.logDateFormat, this.timeZone);
