@@ -1657,10 +1657,6 @@ table#contentForm\:searchCertTable > tbody > tr > td > input, #contentForm\:sear
     height: auto;
     padding: 1.3% 15px 1.3% 15px; }
 
-  #enrollWithUsernameForm\:issuedCertsTable input {
-    height: auto;
-    padding: 2.5% 25px 2.5% 25px; }
-
   #manageRequestForm\:commandReject {
     padding: 1.3% 20px 1.3% 20px; }
 

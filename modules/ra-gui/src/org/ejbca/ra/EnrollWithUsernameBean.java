@@ -15,8 +15,6 @@ package org.ejbca.ra;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -33,24 +31,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.ra.CustomFieldException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
 /**
  * Managed bean that backs up the enrollwithusername.xhtml page. Extends EnrollWithRequestIdBean to make use of common code
@@ -82,20 +71,14 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     // Since enrollmentCode of the EnrollWithRequestIdBean is managed through JSF, and it won't let me set a password field
     // through GET param, we need this temporary var in order to be able to pass enrollment code in the URL
     private String paramEnrollmentCode;
-    private boolean isCertRenewal;
     // Cache for certificate profile
     private CertificateProfile certificateProfile;
 
-    private List<RaCertificateDetails> currentIssuedCerts = null;
-    
     @PostConstruct
     protected void postConstruct() {
         final HttpServletRequest httpServletRequest = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
         username = httpServletRequest.getParameter(EnrollWithUsernameBean.PARAM_USERNAME);
         paramEnrollmentCode = httpServletRequest.getParameter(EnrollWithUsernameBean.PARAM_ENROLLMENT_CODE);
-        if (!StringUtils.isEmpty(httpServletRequest.getParameter("certrenewal")) && httpServletRequest.getParameter("certrenewal").equals("true")) {
-            isCertRenewal = true;
-        }
         super.setRaAuthenticationBean(raAuthenticationBean);
         super.postConstruct();
     }
@@ -110,8 +93,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     @Override
     public void reset() {
         this.certificateProfile = null;
-        enrollmentCode = null;   
-        currentIssuedCerts = null;
+        enrollmentCode = null;        
         super.reset();
     }
     
@@ -244,71 +226,7 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
         }
         return this.certificateProfile;
     }
-    
-    /**
-     * TODO if (username != null might not be needed)
-     * @return a list of the current End Entity's certificates
-     */
-    public List<RaCertificateDetails> getCurrentIssuedCerts() {
-        if (currentIssuedCerts == null) {
-            if (username != null) {
-                currentIssuedCerts = RaEndEntityTools.searchCertsByUsernameSorted(
-                        raMasterApiProxyBean, raAuthenticationBean.getAuthenticationToken(),
-                        username, raLocaleBean);
-            } else {
-                currentIssuedCerts = new ArrayList<>();
-            }
-        }
-        return currentIssuedCerts;
-    }
-    
-    public void actionRenewCert(RaCertificateDetails certDetails) {
-        // Request renewal
-        try {
-            raMasterApiProxyBean.renewCertificate(raAuthenticationBean.getAuthenticationToken(), certDetails.getUsername());
-        } catch (CADoesntExistsException e) {
-            raLocaleBean.addMessageInfo("component_certdetails_keyrecovery_unknown_error");
-            log.debug("CA does not exist", e);
-        } catch (ApprovalException e) {
-            raLocaleBean.addMessageInfo("component_certdetails_keyrecovery_pending");
-            if (log.isDebugEnabled()) {
-                log.debug("Request is still waiting for approval", e);
-            }
-        } catch (CertificateSerialNumberException e) {
-            raLocaleBean.addMessageError("errorcode_GENERAL_UNKNOWN_ERROR");
-            log.info(e.getMessage());
-        } catch (IllegalNameException e) {
-            raLocaleBean.addMessageError("errorcode_GENERAL_UNKNOWN_ERROR");
-            log.info(e.getMessage());
-        } catch (NoSuchEndEntityException e) {
-            raLocaleBean.addMessageInfo("component_certdetails_keyrecovery_no_such_end_entity", username);
-            if (log.isDebugEnabled()) {
-                log.debug("End entity with username: " + username + " does not exist", e);
-            }
-        } catch (CustomFieldException e) {
-            raLocaleBean.addMessageError("errorcode_GENERAL_UNKNOWN_ERROR");
-            log.info(e.getMessage());
-        } catch (AuthorizationDeniedException e) {
-            raLocaleBean.addMessageInfo("component_certdetails_keyrecovery_unauthorized");
-            log.debug("Not authorized to perform certificate renewal", e);
-        } catch (EndEntityProfileValidationException e) {
-            raLocaleBean.addMessageError("errorcode_USER_DOESNT_FULFILL_END_ENTITY_PROFILE");
-            if (log.isDebugEnabled()) {
-                log.debug("End entity with username: " + username + " does not match end entity profile");
-            };
-        } catch (WaitingForApprovalException e) {
-            // Setting requestId will render link to 'enroll with request id' page
-            log.info("Request with Id: " + e.getRequestId() + " has been sent for approval");
-        } catch (CertificateRenewalException e) {
-            raLocaleBean.addMessageInfo(e.getMessage());
-            log.info("Failed to renew certificate: " + e.getMessage());
-        }
-        // Reset page state (prompt for authentication)
-        reset();
-        isCertRenewal = false;
-        raLocaleBean.addMessageInfo("enrollwithusername_renewcert_success_message");
-    }
-    
+
     //-----------------------------------------------------------------
     //Getters/setters
     
@@ -330,13 +248,5 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     /** @param enrollmentCode the enrollment code to set */
     public void setEnrollmentCode(String enrollmentCode) {
         this.enrollmentCode = enrollmentCode;
-    }
-
-    public boolean isCertRenewal() {
-        return isCertRenewal;
-    }
-
-    public void setCertRenewal(boolean isCertRenewal) {
-        this.isCertRenewal = isCertRenewal;
     }
 }
