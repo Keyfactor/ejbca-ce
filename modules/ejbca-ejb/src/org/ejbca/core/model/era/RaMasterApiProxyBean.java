@@ -1640,6 +1640,22 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public void renewCertificate(AuthenticationToken authenticationToken, String username) throws AuthorizationDeniedException,
+            CADoesntExistsException, ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException,
+            CustomFieldException, EndEntityProfileValidationException, WaitingForApprovalException, CertificateRenewalException {
+        
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 3) {
+                try {
+                    raMasterApi.renewCertificate(authenticationToken, username);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+    }
+    
+    @Override
     public CertificateStatus getCertificateStatus(AuthenticationToken authenticationToken, String issuerDN, BigInteger serno) throws CADoesntExistsException, AuthorizationDeniedException{
         CertificateStatus ret = null;
         // Try remote first, since the certificate might be present in the RA database but the admin might not authorized to revoke it there
@@ -3034,4 +3050,5 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+
 }
