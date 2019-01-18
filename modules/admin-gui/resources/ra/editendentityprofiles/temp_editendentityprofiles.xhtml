@@ -53,7 +53,7 @@
 				    			id="deleteButton" 
 				    			action="#{endEntityProfilesMBean.actionDelete}" 
 				    			value="#{web.text.DELETEENDENTITYPROFILE}"
-				    			rendered="#{endEntityProfilesMBean.authorizedToEdit and not endEntityProfilesMBean.deleteInProgress}">
+				    			rendered="#{endEntityProfilesMBean.authorizedToEdit and not endEntityProfilesMBean.operationInProgress}">
 				    			<f:ajax execute="@this" render=":modalBlockContainer"/>
 				    		</h:commandButton>	
 				    	</h:column>
@@ -73,7 +73,7 @@
 						value="#{endEntityProfilesMBean.endEntityProfileName}" 
 						size="45" 
 						maxlength="255" 
-						title="TITLE">
+						title="web.text.NAME">
 					</h:inputText>	
 					<h:commandButton 
 						id="addButton" 
@@ -85,7 +85,7 @@
 					<h:commandButton 
 						id="renameButton" 
 						class="buttonstyle" 
-						action="#{endEntityProfilesMBean.actionRenameConfirm}" 
+						action="#{endEntityProfilesMBean.actionRename}" 
 						value="Rename selected" 
 						rendered="#{endEntityProfilesMBean.authorizedToEdit}">
 					</h:commandButton>	
