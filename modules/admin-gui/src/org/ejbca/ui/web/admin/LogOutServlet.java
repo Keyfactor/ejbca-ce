@@ -56,6 +56,7 @@ public class LogOutServlet extends HttpServlet {
     @Override
     public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
     	// First we invalidate the current session on the server side, so the old session cookie cannot be used again.
+        // Will trigger audit log event by CaHttpSessionListner
         request.getSession().invalidate();
         // Next, we ask the browser to remove the cookie (a sneaky client can refuse to comply)
         final Cookie killCookie = new Cookie(SESSIONCOOKIENAME, "");
