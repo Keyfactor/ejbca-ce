@@ -28,13 +28,13 @@ pipeline {
                 sh "chmod 777 " + "$env.WORKSPACE"
                 sh "chmod 777 -R " + "$env.WORKSPACE/ejbca"
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/ejbca_image') {
-                    sh "docker build -t mypeer -m 3GB ."
+                    sh "docker build -t mypeer -m 2GB ."
                     
                     sh "mkdir -p " + "$env.WORKSPACE/ejbca/p12"
                     sh "chmod 777 " + "$env.WORKSPACE/ejbca/p12"
                     
                     // set it running on background (-d parameter). needs to stay up, until selniumtests use it. will be killed later at cleanup phase.
-                    sh "docker run --name mypeer --net=selenium-network -p 28443:8443 -p 28080:8080 -v " + "$env.WORKSPACE" + ":/app -d mypeer"
+                    sh 'docker run  --memory="2g" --memory-swap="2g" --name mypeer --net=selenium-network -p 28443:8443 -p 28080:8080 -v " + "$env.WORKSPACE" + ":/app -d mypeer'
                     
                     timeout(10) {
                         waitUntil {
