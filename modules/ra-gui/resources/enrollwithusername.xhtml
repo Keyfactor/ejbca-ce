@@ -30,19 +30,21 @@
 	<ui:define name="content">
 		<h:panelGroup layout="block" class="header" id="title">
 			<h1>
-				<h:outputText
-					value="#{msg.enrollwithusername_enrollment_with_username_title}" />
+				<h:outputText value="#{msg.enrollwithusername_enrollment_with_username_title}" rendered="#{!enrollWithUsernameBean.certRenewal}"/>
+			</h1>
+			<h1>
+				<h:outputText value="#{msg.enrollwithusername_renewcert_title}" rendered="#{enrollWithUsernameBean.certRenewal}"/>
 			</h1>
 		</h:panelGroup>
 		<h:panelGroup layout="block" id="enrollUseUsernameContentBody"
 			styleClass="content-body">
-			<h:form id="enrollWithUsernameForm"
-				styleClass="pure-form pure-form-aligned">
-
+			<h:form id="enrollWithUsernameForm" styleClass="pure-form pure-form-aligned">
 				<h:panelGroup layout="block" rendered="#{!(enrollWithUsernameBean.finalizeEnrollmentRendered)}">
 					<h2>
-						<h:outputText
-							value="#{msg.enrollwithusername_enter_username_to_check_the_request_status}" />
+						<h:outputText value="#{msg.enrollwithusername_enter_username_to_check_the_request_status}" rendered="#{!enrollWithUsernameBean.certRenewal}"/>
+					</h2>
+					<h2>
+						<h:outputText value="#{msg.enrollwithusername_enter_username_to_renew_cert}" rendered="#{enrollWithUsernameBean.certRenewal}"/>
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 						<fieldset>
@@ -73,21 +75,24 @@
 				
 				<h:panelGroup layout="block" rendered="#{enrollWithUsernameBean.finalizeEnrollmentRendered}">
 					<h2>
-						<h:outputText
-							value="#{msg.enrollwithusername_finalize_enrollment} " />
+						<h:outputText value="#{msg.enrollwithusername_finalize_enrollment}" rendered="#{!enrollWithUsernameBean.certRenewal}"/>
+					</h2>
+					<h2>
+						<h:outputText value="#{msg.enrollwithusername_renewcert_overview}" rendered="#{enrollWithUsernameBean.certRenewal}"/>
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
 							<h:panelGroup id="enteredUsername" layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="usernameField" value="#{msg.enroll_username}" />
 								<h:outputText id="usernameField" value="#{enrollWithUsernameBean.username}" />
 							</h:panelGroup>
-							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" rendered="#{enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
+							<h:panelGroup id="requestKeyAlgorithm" layout="block" styleClass="pure-control-group" 
+									rendered="#{enrollWithUsernameBean.preSetKeyAlgorithmRendered and !enrollWithUsernameBean.certRenewal}">
 								<h:outputLabel for="requestKeyAlgorithmField" value="Key Algorithm"/>
 								<h:outputText id="requestKeyAlgorithmField" value="#{enrollWithUsernameBean.preSetKeyAlgorithm}"/>
 							</h:panelGroup>
 					</h:panelGroup>
 
-					<h:panelGroup layout="block" styleClass="internal-frame">
+					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{!enrollWithUsernameBean.certRenewal}">
 							<!--Either render the fields for algorithm selection, or render the field for CSR upload/paste -->
 							<h:panelGroup id="enteredkeyAlg" layout="block" styleClass="pure-control-group"
 								rendered="#{!enrollWithUsernameBean.keyAlgorithmPreSet}">
@@ -178,14 +183,58 @@
 								</h:commandButton>
 							</h:panelGroup>
 					</h:panelGroup>
-					<h:panelGroup layout="block" id="navigationButtonGroup"
-					styleClass="navigation-button-group">
-					<h:commandButton id="resetButton" value="#{msg.generic_back}"
-						styleClass="pure-button ra-button"
-						action="#{enrollWithUsernameBean.reset}" immediate="true">
-					</h:commandButton>
+					<h:panelGroup layout="block" id="navigationButtonGroup" styleClass="navigation-button-group" rendered="#{!enrollWithUsernameBean.certRenewal}">
+						<h:commandButton id="resetButton" value="#{msg.generic_back}"
+							styleClass="pure-button ra-button"
+							action="#{enrollWithUsernameBean.reset}" immediate="true">
+						</h:commandButton>
+					</h:panelGroup>
 				</h:panelGroup>
-				</h:panelGroup>
+				
+				<!-- Certificate Renewal -->                
+	            <h:panelGroup layout="block" rendered="#{enrollWithUsernameBean.certRenewal and enrollWithUsernameBean.finalizeEnrollmentRendered}" styleClass="internal-frame">
+	            	<h:outputLabel for="issuedCertsTable" value="#{msg.component_eedetails_field_certificates}"
+	                	styleClass="pure-u-lg-1-3" />
+	                <h:dataTable id="issuedCertsTable" value="#{enrollWithUsernameBean.currentIssuedCerts}" var="issuedCert"
+	                    	styleClass="ra-eeCertTable" style="width:100%">
+	                    <h:column>
+	                        <f:facet name="header">
+	                            <h:outputText value="#{msg.component_eedetails_header_serialnumber}" />
+	                        </f:facet>
+	                        <h:outputLink value="viewcert.xhtml" target="_blank">
+	                            <f:param name="fp" value="#{issuedCert.fingerprint}" />
+	                            <h:outputText value="#{issuedCert.serialnumber}" />
+	                        </h:outputLink>
+	                    </h:column>
+	                    <h:column>
+	                        <f:facet name="header">
+	                            <h:outputText value="#{msg.component_eedetails_header_created}" />
+	                        </f:facet>
+	                        <h:outputText value="#{issuedCert.created}" />
+	                    </h:column>
+	                    <h:column>
+	                        <f:facet name="header">
+	                            <h:outputText value="#{msg.component_eedetails_header_expires}" />
+	                        </f:facet>
+	                        <h:outputText value="#{issuedCert.expires}" />
+	                    </h:column>
+	                    <h:column>
+	                        <f:facet name="header">
+	                            <h:outputText value="#{msg.component_eedetails_header_status}" />
+	                        </f:facet>
+	                        <h:outputText value="#{issuedCert.status}" />
+	                    </h:column>
+                    	<h:column>
+	                        <f:facet name="header">
+	                            <h:outputText value="#{msg.component_eedetails_header_renewal_request}" />
+	                        </f:facet>
+	                        <h:commandButton value="Renew" action="#{enrollWithUsernameBean.actionRenewCert(issuedCert)}" styleClass="pure-button ra-button executeActionButton"/>
+	                    </h:column>
+	                </h:dataTable>
+	                <h:outputText styleClass="pure-u-lg-1" value=" " />
+	            </h:panelGroup>
+                
+				
 			</h:form>
 		</h:panelGroup>
 	</ui:define>

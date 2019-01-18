@@ -47,7 +47,6 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 
 import javax.ejb.EJBException;
-import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -155,7 +154,8 @@ public class EjbcaWebBean implements Serializable {
     private boolean errorpage_initialized = false;
     private AuthenticationToken administrator;
     private String requestServerName;
-
+    private String currentRemoteIp;
+    
     /*
      * We should make this configurable, so GUI client can use their own time zone rather than the
      * servers. Using JavaScript's "new Date().getTimezoneOffset()" in a cookie will not work on
@@ -207,6 +207,7 @@ public class EjbcaWebBean implements Serializable {
                 log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificateFingerprint+", new cert fp: "+fingerprint);
             }
             final String requestURL = request.getRequestURL().toString();
+            currentRemoteIp = request.getRemoteAddr();
             requestServerName = RequestHelper.getRequestServerName(requestURL);
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
@@ -521,6 +522,10 @@ public class EjbcaWebBean implements Serializable {
      */
     public String getBaseUrlPublic() {
         return globalconfiguration.getBaseUrlPublic();
+    }
+    
+    public String getCurrentRemoteIp() {
+        return currentRemoteIp;
     }
     
     /**
