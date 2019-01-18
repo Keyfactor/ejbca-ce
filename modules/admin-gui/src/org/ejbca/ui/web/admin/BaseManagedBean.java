@@ -169,4 +169,11 @@ public abstract class BaseManagedBean implements Serializable {
             }
         }
     }
+
+    /**
+     * Dummy method to force a client-server roundtrip, for example for "reload" buttons
+     */
+    public void doNothing() {
+        // does nothing
+    }
 }
