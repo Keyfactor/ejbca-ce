@@ -598,7 +598,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         log.error(errMsg, e);
         if (transactionLogger.isEnabled()) {
             transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
-            transactionLogger.writeln();
         }
         if (auditLogger.isEnabled()) {
             auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
@@ -1185,7 +1184,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), nextUpdate));
                         if (transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN);
-                            transactionLogger.writeln();
                         }
                         continue;
                     } else {
@@ -1238,7 +1236,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     if (transactionLogger.isEnabled()) {
                         transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                         transactionLogger.paramPut(TransactionLogger.REV_REASON, signerIssuerCertStatus.revocationReason);
-                        transactionLogger.writeln();
                     }
                 } else {
                     /**
@@ -1365,9 +1362,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         addArchiveCutoff(respItem);
                         producedAt = new Date();
                     }
-                    if (transactionLogger.isEnabled()) {
-                        transactionLogger.writeln();
-                    }
                 }
  
                 for (String oidstr : extensionOids) {
@@ -1468,7 +1462,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             ocspResponse = responseGenerator.build(OCSPRespBuilder.SIG_REQUIRED, null);
             if (transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.SIG_REQUIRED);
-                transactionLogger.writeln();
             }
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SIG_REQUIRED);
@@ -1486,7 +1479,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
             if (transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
-                transactionLogger.writeln();
             }
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.UNAUTHORIZED);
@@ -1504,7 +1496,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             ocspResponse = responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null);
             if (transactionLogger.isEnabled()) {
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
-                transactionLogger.writeln();
             }
             if (auditLogger.isEnabled()) {
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
@@ -1524,6 +1515,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.flush();
             }
             if (transactionLogger.isEnabled()) {
+                transactionLogger.writeln();
                 transactionLogger.flush();
             }
             if (OcspConfiguration.getLogSafer()) {
@@ -1544,9 +1536,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         } catch (IOException e) {
             log.error("Unexpected IOException caught.", e);
             if (transactionLogger.isEnabled()) {
+                transactionLogger.writeln();
                 transactionLogger.flush();
             }
             if (auditLogger.isEnabled()) {
+                auditLogger.writeln();
                 auditLogger.flush();
             }
         }
