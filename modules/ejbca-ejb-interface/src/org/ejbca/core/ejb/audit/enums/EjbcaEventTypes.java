@@ -27,6 +27,8 @@ import org.cesecore.audit.enums.EventType;
 public enum EjbcaEventTypes implements EventType {
     /** An administrator logs in to EJBCA's Administrative Web GUI. */
     ADMINWEB_ADMINISTRATORLOGGEDIN,
+    /** An administrator session to EJBCA's Administrative Web GUI is terminated */
+    ADMINWEB_ADMINISTRATORLOGGEDOUT,
     /** Action that requires approval by one or more administrators is requested. */
     APPROVAL_ADD,
     /** Action that requires approval was approved by one of the required administrator(s). */
