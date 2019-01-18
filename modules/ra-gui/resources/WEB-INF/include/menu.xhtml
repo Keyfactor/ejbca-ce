@@ -77,18 +77,7 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
                                         <li class="pure-menu-item">
-                                    	    <h:outputLink value="enrollwithusername.xhtml" styleClass="pure-menu-link enroll-menu-link">
-	                                       		<h:outputText value="#{msg.menu_pagetitle_enroll_use_username}"/>
-                                        	</h:outputLink>
-                                        </li>
-                                    </ui:fragment>
-                                    <!-- TODO Different kind of auth check? -->
-                                    <ui:fragment rendered="#{raAccessBean.authorizedToEnrollWithRequestId}">
-                                        <li class="pure-menu-item">
-                                    	    <h:outputLink value="enrollwithusername.xhtml" styleClass="pure-menu-link enroll-menu-link">
-	                                       		<f:param name="certrenewal" value="true"/>
-	                                       		<h:outputText value="#{msg.menu_pagetitle_enroll_cert_renewal}"/>
-                                        	</h:outputLink>
+                                        	<h:outputLink value="enrollwithusername.xhtml" styleClass="pure-menu-link enroll-menu-link"><h:outputText value="#{msg.menu_pagetitle_enroll_use_username}"/></h:outputLink>
                                         </li>
                                     </ui:fragment>
                                 </ul>

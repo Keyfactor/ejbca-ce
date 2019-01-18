@@ -39,10 +39,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
-import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.ValidityDate;
@@ -52,10 +50,8 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.core.model.era.RaCertificateSearchResponse;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
-import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaCertificateDetails.Callbacks;
-import org.ejbca.ui.web.protocol.CertificateRenewalException;
 
 /**
  * Backing bean for Search Certificates page.
@@ -133,15 +129,15 @@ public class RaSearchCertsBean implements Serializable {
             return ret;
         }
         @Override
-        public boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) {
-            final boolean ret = raMasterApiProxyBean.keyRecoveryPossible(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getCertificate(), raCertificateDetails.getUsername());
-            return ret;
-        }
-        @Override
         public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException,
                                     NoSuchEndEntityException, EndEntityProfileValidationException {
             final boolean ret = raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getUsername(), raCertificateDetails.getPassword(),
                     EJBTools.wrap(raCertificateDetails.getCertificate()), false);
+            return ret;
+        }
+        @Override
+        public boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) {
+            final boolean ret = raMasterApiProxyBean.keyRecoveryPossible(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getCertificate(), raCertificateDetails.getUsername());
             return ret;
         }
     };
