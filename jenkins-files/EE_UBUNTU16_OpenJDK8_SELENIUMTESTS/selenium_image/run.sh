@@ -19,6 +19,6 @@ sudo -E env "PATH=$PATH" ant clean build
 
 echo '=================== build finished ========================'
 
-# ant test:webtest
-
-ant test:runone -Dtest.runone=EcaQa99_EEPManagement 
+# ant test:runone -Dtest.runone=EcaQa99_EEPManagement
+ 
+ant test:webtest
