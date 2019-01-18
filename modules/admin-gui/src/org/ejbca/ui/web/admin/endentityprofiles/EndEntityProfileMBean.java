@@ -83,8 +83,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
     private RAInterfaceBean raBean = new RAInterfaceBean();
     private EndEntityProfile profiledata;
-    // modifications to the return value of profiledata.getUserNotifications does not propagate, so this needs its own variable
-    private List<UserNotification> userNotifications; 
+    private List<UserNotificationGuiWrapper> userNotifications; 
     private String[] printerNames = null;
     private int profileId;
     private final Map<String, String> editerrors = new HashMap<>();
@@ -212,7 +211,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profileId = endEntityProfilesMBean.getSelectedEndEntityProfileId().intValue();
         if (profiledata == null) {
             profiledata = endEntityProfileSession.getEndEntityProfile(profileId);
-            userNotifications = profiledata.getUserNotifications();
+            userNotifications = new ArrayList<>();
+            for (final UserNotification notification : profiledata.getUserNotifications()) {
+                userNotifications.add(new UserNotificationGuiWrapper(notification));
+            }
         }
     }
 
@@ -1102,22 +1104,22 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setSendNotificationUsed(useSendNotification);
     }
 
-    public List<UserNotification> getUserNotifications() {
+    public List<UserNotificationGuiWrapper> getUserNotifications() {
         return userNotifications;
     }
 
-    public void setUserNotifications(final List<UserNotification> userNotifications) {
+    public void setUserNotifications(final List<UserNotificationGuiWrapper> userNotifications) {
         this.userNotifications = userNotifications;
     }
 
     public void addNotification() {
         log.debug("Adding UserNotification");
-        UserNotification newNotification = new UserNotification();
+        final UserNotification newNotification = new UserNotification();
         //profiledata.addUserNotification(newNotification);
-        userNotifications.add(newNotification);
+        userNotifications.add(new UserNotificationGuiWrapper(newNotification));
     }
 
-    public void removeNotification(final UserNotification notification) {
+    public void removeNotification(final UserNotificationGuiWrapper notification) {
         log.debug("Removing UserNotification");
 //        profiledata.removeUserNotification(notification);
         userNotifications.remove(notification);
@@ -1293,8 +1295,12 @@ log.debug("Template file upload: " + templateFileUpload); // XXX removeme
     public String saveProfile() throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
         log.trace(">saveProfile");
         if (editerrors.isEmpty()) {
-            String profileName = endEntityProfileSession.getEndEntityProfileName(profileId);
-            profiledata.setUserNotifications(userNotifications);
+            final String profileName = endEntityProfileSession.getEndEntityProfileName(profileId);
+            final List<UserNotification> realNotifications = new ArrayList<>();
+            for (final UserNotificationGuiWrapper guiWrapper : userNotifications) {
+                realNotifications.add(guiWrapper.getUserNotification());
+            }
+            profiledata.setUserNotifications(realNotifications);
             endEntityProfileSession.changeEndEntityProfile(getAdmin(), profileName, profiledata);
             log.trace("<saveProfile: success");
             return "profilesaved";
