@@ -172,6 +172,8 @@ public class RAAuthorization implements Serializable {
     	return authprofilenames;
     }
 
+    /** @deprecated Since 7.0.0 */
+    @Deprecated
     public List<String> getViewAuthorizedEndEntityProfilesWithMissingCAs() {
 	   if (authprofileswithmissingcas == null) {
             authprofileswithmissingcas = new ArrayList<String>();
