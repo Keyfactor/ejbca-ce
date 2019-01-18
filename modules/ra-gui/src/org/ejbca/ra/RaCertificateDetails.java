@@ -74,9 +74,9 @@ public class RaCertificateDetails {
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
         boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException;
-        boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
         boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
-        WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
+                                                                                WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
+        boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
         UIComponent getConfirmPasswordComponent();
     }
 
@@ -332,9 +332,6 @@ public class RaCertificateDetails {
     public boolean isSuspended() {
         return status == CertificateConstants.CERT_REVOKED && revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD;
     }
-    public boolean isRevoked() {
-        return status == CertificateConstants.CERT_REVOKED;
-    }
 
     /** @return a localized certificate (revocation) status string */
     public String getStatus() {
@@ -506,7 +503,7 @@ public class RaCertificateDetails {
         styleRowCallCounter = 0;    // Reset
         renderConfirmRecoveryToggle();
     }
-    
+
     /** Validate that password and password confirm entries match and render error messages otherwise. */
     public final void validatePassword(ComponentSystemEvent event) {
         if (renderConfirmRecovery){
