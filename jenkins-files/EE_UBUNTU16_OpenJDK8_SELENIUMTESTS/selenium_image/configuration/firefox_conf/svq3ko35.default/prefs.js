@@ -12,6 +12,8 @@
 user_pref("app.normandy.first_run", false);
 user_pref("app.normandy.startupExperimentPrefs.dom.push.alwaysConnect", false);
 user_pref("app.normandy.user_id", "79a98689-0a6d-4b84-a679-b0b5a343a40e");
+user_pref("app.update.silent", true);
+user_pref("app.update.enabled", false);
 user_pref("app.update.lastUpdateTime.addon-background-update-timer", 0);
 user_pref("app.update.lastUpdateTime.background-update-timer", 0);
 user_pref("app.update.lastUpdateTime.blocklist-background-update-timer", 0);
