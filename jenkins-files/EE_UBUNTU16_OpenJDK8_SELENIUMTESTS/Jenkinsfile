@@ -26,7 +26,7 @@ pipeline {
             steps {
                 sh "mkdir ear || true"
                 sh "chmod 777 " + "$env.WORKSPACE"
-                sh "chmod 777 -R " + "$env.WORKSPACE/ejbca"
+                // sh "chmod 777 -R " + "$env.WORKSPACE/ejbca"
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/ejbca_image') {
                     sh "docker build -t mypeer -m 2GB ."
                     
