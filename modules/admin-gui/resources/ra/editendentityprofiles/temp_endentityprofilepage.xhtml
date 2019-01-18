@@ -39,7 +39,7 @@
 <!-- PASSWORD AND E-MAIL -->
 	
 		<h:form id="eeProfiles" enctype="multipart/form-data">
-			<noscript><p>Javascript is disabled. <h:commandButton value="Update form" action="doNothing" /></p></noscript>
+			<noscript><p>Javascript is disabled. <h:commandButton value="Update form" action="#{endEntityProfilesMBean.doNothing}" /></p></noscript>
 			<h:panelGrid columns="3" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
 			<h:panelGroup><h:outputText value="&nbsp;" escape="false"></h:outputText></h:panelGroup>
 				<h:panelGroup> &nbsp; </h:panelGroup>
@@ -963,7 +963,7 @@
 							id="sendNotificationsDeleteAllButton"
 							value="#{web.text.DELETEALL}"
 							action="#{endEntityProfileMBean.removeAllNotifications}"
-							rendered="#{not empty endEntityProfileMBean.profiledata.userNotifications}"
+							rendered="#{not empty endEntityProfileMBean.userNotifications}"
 							disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfileMBean.viewOnly}">
 						<f:ajax render="userNotificationsWrapper sendNotificationsDeleteAllGroup"/>
 					</h:commandButton>
@@ -1003,14 +1003,13 @@
 			</h:panelGrid> <!-- Ending before dataTable or ui_repeat -->	
 			<h:panelGroup id="userNotificationsWrapper">
 			<ui:repeat var="userNotification" value="#{endEntityProfileMBean.userNotifications}">
-			<!--<h:dataTable var="userNotification" value="#{endEntityProfileMBean.userNotifications}">-->
 				<h:panelGrid columns="3" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
 					<h:commandButton 
 						id="removeSendNotificationButton" 
 						value="#{web.text.DELETE}" 
 						action="#{endEntityProfileMBean.removeNotification(userNotification)}"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfileMBean.viewOnly}">
-						<f:ajax render="userNotificationsWrapper sendNotificationsDeleteAllGroup"/>  
+						<f:ajax render=":eeProfiles:userNotificationsWrapper :eeProfiles:sendNotificationsDeleteAllGroup"/>  
 					</h:commandButton>
 					<h:outputLabel for="textFieldNotificationSender" value="#{web.text.NOTIFICATIONSENDER}"/>
 					<h:inputText 
@@ -1063,7 +1062,6 @@
 					</h:inputTextarea>
 				</h:panelGrid>	
 			</ui:repeat>
-			<!--</h:dataTable>-->
 			</h:panelGroup>
 			<h:panelGrid id="header_otherdata2" columns="3" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn-eeProfile1, editColumn-eeProfile2, editColumn-eeProfile3">
 				<h:outputLabel>&nbsp;</h:outputLabel>

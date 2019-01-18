@@ -25,14 +25,18 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 
 /**
  * Class holding information about user notification sent when a user transitions through
- * the work-flow. 
+ * the work-flow.
+ * <p> 
  * This class is implemented on top of a HashMap, so it can easily be upgraded with new features
  * such as different notification actions (apart from email) etc.
+ * <p>
+ * This class used to extend HashMap until EJBCA 7.0.0, which was unnecessary because the
+ * "data" map contains all the information. When deserialized on 7.0.0 and later,
+ * the redundant HashMap superclass will be ignored if present.
  * 
  * @version $Id$
  */
-@SuppressWarnings("rawtypes")
-public class UserNotification extends HashMap implements Serializable, Cloneable {
+public class UserNotification implements Serializable, Cloneable {
 
 	/** This is the data stored in this object.
 	 * A hashmap is good because it serializes nicely and data can be upgraded without changing
