@@ -247,10 +247,6 @@
         </cookie-config>
     </session-config>
 
-	<listener>
-    	<listener-class>org.ejbca.ui.web.admin.CaHttpSessionListener</listener-class>
-	</listener>
-
     <welcome-file-list>
         <welcome-file>index.xhtml</welcome-file>
     </welcome-file-list>

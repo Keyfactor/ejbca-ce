@@ -666,25 +666,6 @@ public interface RaMasterApi {
      */
     void revokeUser(AuthenticationToken authenticationToken, String username, int reason, boolean deleteUser) throws AuthorizationDeniedException, CADoesntExistsException,
             ApprovalException, WaitingForApprovalException, AlreadyRevokedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException;
-    
-    /**
-     * 
-     * @param authenticationToken of the requesting administrator / client.
-     * @param username of the end entity.
-     * @throws AuthorizationDeniedException if administrator isn't authorized to operations carried renewal.
-     * @throws CADoesntExistsException the end entities CA does not exist
-     * @throws ApprovalException if request is already awaiting approval
-     * @throws CertificateSerialNumberException if SubjectDN serial number already exists
-     * @throws IllegalNameException if the Subject DN failed constraints
-     * @throws NoSuchEndEntityException if the specified user (end entity) was not found in database.
-     * @throws CustomFieldException if the EE was not validated by a locally defined field validator.
-     * @throws EndEntityProfileValidationException request data doesn't fulfill EEP requirements.
-     * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled). The request ID will be included as a field in this exception.
-     * @throws CertificateRenewalException if request didn't fulfill requirements for renewal.
-     */
-    void renewCertificate(AuthenticationToken authenticationToken, String username) throws AuthorizationDeniedException, CADoesntExistsException,
-        ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException,
-        EndEntityProfileValidationException, WaitingForApprovalException, CertificateRenewalException;
 
     /**
      * @see CertificateStoreSession#getStatus(String, BigInteger)
@@ -1352,5 +1333,4 @@ public interface RaMasterApi {
      * @param acmeChallenges challenges list to persit
      */
     void persistAcmeChallengeList(final List<AcmeChallenge> acmeChallenges);
-
 }
