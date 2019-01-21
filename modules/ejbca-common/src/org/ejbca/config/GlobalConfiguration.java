@@ -256,25 +256,24 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
       return data.get(AVAILABLELANGUAGES)!=null;
     }
 
-    /** Method used by the Admin GUI. */
-    public   String getBaseUrl(String requestServerName) {
-    	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" +
-    	            requestServerName  + "/" +
-    	            InternalConfiguration.getAppNameLower() + "/";
-   }
+    /** @return The base URL of the application using the supplied values. */
+    public String getBaseUrl(final String scheme, final String requestServerName, final int port) {
+        return scheme + "://" + requestServerName + ":" + port + "/" + InternalConfiguration.getAppNameLower() + "/";
+    }
 
+    /** @return The base path (and not the URL as the name suggests). The name was kept to enable a smaller patch between EJBCA 6.15 and 7.0. */
     public String getBaseUrl() {
-    	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" +
-    	           WebConfiguration.getHostName() + ":" +
-    	           (String) data.get(GlobalConfiguration.PRIVATEPORT) + "/" +
-    	           InternalConfiguration.getAppNameLower() + "/";
+        return "/" + InternalConfiguration.getAppNameLower() + "/";
+    }
+
+    /** @return The base path derived values in configuration files */
+    public String getBaseUrlFromConfig() {
+        return getBaseUrl((String) data.get(GlobalConfiguration.PRIVATEPROTOCOL), WebConfiguration.getHostName(),
+                Integer.parseInt((String) data.get(GlobalConfiguration.PRIVATEPORT)));
     }
 
     public String getBaseUrlPublic() {
-        return (String) data.get(GlobalConfiguration.PUBLICPROTOCOL) + "://" +
-                WebConfiguration.getHostName() + ":" +
-                (String) data.get(GlobalConfiguration.PUBLICPORT) + "/" +
-                InternalConfiguration.getAppNameLower() + "/";
+        return getBaseUrl((String) data.get(PUBLICPROTOCOL), WebConfiguration.getHostName(), Integer.parseInt((String) data.get(PUBLICPORT)));
     }
     
     public String getAdminWebPath() {
@@ -286,11 +285,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     public String getStandardCRLDistributionPointURINoDN(){
-        String retval = getBaseUrl();
-        retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
-        retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
-        retval+= DEFAULTCRLDISTURIPATH;
-        return retval;
+        return getBaseUrlPublic() + DEFAULTCRLDISTURIPATH;
     }
 
     public String getStandardCRLIssuer() {
@@ -302,19 +297,11 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     }
 
     public String getStandardDeltaCRLDistributionPointURINoDN(){
-        String retval = getBaseUrl();
-        retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
-        retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
-        retval+= DEFAULTDELTACRLDISTURIPATH;
-        return retval;
+        return getBaseUrlPublic() + DEFAULTDELTACRLDISTURIPATH;
     }
 
 	public String getStandardOCSPServiceLocatorURI(){
-		String retval = getBaseUrl();
-		retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
-		retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
-		retval+= DEFAULTOCSPSERVICELOCATORURIPATH;
-		return retval;
+        return getBaseUrlPublic() + DEFAULTOCSPSERVICELOCATORURIPATH;
 	}
 
      /** Checks the themes path for css files and returns an array of filenames
