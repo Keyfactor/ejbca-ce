@@ -203,7 +203,8 @@
 					<h:commandButton action="#{auditor.reorderDescBySearchDetail1}" value="▲" styleClass="sortButton"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml?serno=#{auditLogEntry.searchDetail1}&amp;caid=#{auditLogEntry.customId}&amp;returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.xhtml?serno=#{auditLogEntry.searchDetail1}&amp;caid=#{auditLogEntry.customId}&amp;returnTo=0" rendered="#{not empty auditor.caIdToName[(auditLogEntry.customId)]}"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
+		    <h:outputText value="#{auditLogEntry.searchDetail1}" title="#{web.text.UNKNOWNCAID}" rendered="#{empty auditor.caIdToName[(auditLogEntry.customId)]}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
