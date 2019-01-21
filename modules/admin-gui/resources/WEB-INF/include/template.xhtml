@@ -132,13 +132,7 @@
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb"><h:outputText value="#{web.text.RAWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getHelpBaseURI() }/index.html" target="_ejbcaDocWindow" rendered="#{adminMenuBean.helpEnabled}"><h:outputText value="#{web.text.DOCUMENTATION}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top" rendered="#{!ejbcawebbean.sessionTimeoutEnabled}"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
-      	  <h:form>
-          <h:commandLink rendered="#{ejbcawebbean.sessionTimeoutEnabled}">
-          	  <h:outputText value="#{web.text.LOGOUT}"/>
-          	  <f:ajax onevent="logoutIe" />
-          </h:commandLink>
-          </h:form>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>
     </h:panelGroup>

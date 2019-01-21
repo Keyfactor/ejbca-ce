@@ -70,8 +70,8 @@ public class LogOutServlet extends HttpServlet {
         	// Redirect user to "/logout" that can be handled by a authentication proxy
             response.sendRedirect("/logout");
         } else {
-        	// Redirect user to the public web pages to avoid initializing a new AdminGUI session.
-            response.sendRedirect(globalConfiguration.getBaseUrlPublic());
+        	// Redirect user to public RA Web pages to avoid initializing a new AdminGUI session.
+            response.sendRedirect(globalConfiguration.getBaseUrlPublic() + "ra/logout.xhtml");
         }
     }
 }

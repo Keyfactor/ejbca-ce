@@ -388,19 +388,9 @@ function inputIntoFieldConfirm(confirmmessage, field, input) {
 }
 
 function logout() {
-	// Redirects user to public web and terminates session
+	// Redirects user to RA web (through LogOutServlet) and terminates session.
 	var logoutUrl = "https://" + window.location.hostname + ":" + window.location.port + "/ejbca/adminweb/logout";
 	window.location.href = logoutUrl;
-	alert("Session ended");
-	// Forces client to re-authenticate using certificate. Only works with Internet Explorer 6+.
-	document.execCommand('ClearAuthenticationCache');
-}
-
-// Required for ajax calls from JSF pages.
-function logoutIe(data) {
-	if (data.status === "complete") {
-		logout();
-	}
 }
 
 // Resets timer for page inactivity.
