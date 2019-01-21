@@ -27,7 +27,6 @@ import java.util.TreeMap;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
@@ -68,6 +67,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EndEntityProfileMBean.class);
 
+    public static final String PARAMETER_PROFILE_ID = "id";
     private static final int MAX_TEMPLATE_FILESIZE = 2*1024*1024;
 
     @EJB
@@ -77,15 +77,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
 
-    @ManagedProperty(value="#{endEntityProfilesMBean}")
-    private EndEntityProfilesMBean endEntityProfilesMBean;
-
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
     private RAInterfaceBean raBean = new RAInterfaceBean();
     private EndEntityProfile profiledata;
     private List<UserNotification> userNotifications; 
     private String[] printerNames = null;
-    private int profileId;
+    private Integer profileId;
+    private String profileName;
+    private boolean viewOnly;
     private final Map<String, String> editerrors = new HashMap<>();
 
     public class NameComponentGuiWrapper implements Serializable {
@@ -196,47 +195,29 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
     }
 
-    //POST CONSTRUCT
     @PostConstruct
     private void postConstruct() {
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         try {
             ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
-//            caBean.initialize(ejbcaWebBean);
             raBean.initialize(req, ejbcaWebBean);
-//            tokenBean.initialize(req, ejbcaWebBean);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        profileId = endEntityProfilesMBean.getSelectedEndEntityProfileId().intValue();
         if (profiledata == null) {
-            profiledata = endEntityProfileSession.getEndEntityProfile(profileId);
-            userNotifications = new ArrayList<>();
-            for (final UserNotification notification : profiledata.getUserNotifications()) {
-                userNotifications.add(notification);
+            final String profileIdParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(PARAMETER_PROFILE_ID);
+            if (StringUtils.isEmpty(profileIdParam)) {
+                throw new IllegalStateException("Internal error. Missing " + PARAMETER_PROFILE_ID + " HTTP request parameter.");
             }
+            profileId = Integer.valueOf(profileIdParam);
+            profileName = endEntityProfileSession.getEndEntityProfileName(profileId);
+            profiledata = endEntityProfileSession.getEndEntityProfile(profileId);
+            userNotifications = new ArrayList<>(profiledata.getUserNotifications());
+            viewOnly = !authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
         }
     }
-
-    public boolean isAuthorizedToEdit() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
-    }
-
-    public boolean isAuthorizedToView() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
-    }
-
-    public EndEntityProfilesMBean getEndEntityProfilesMBean() {
-        return endEntityProfilesMBean;
-    }
-
-    public void setEndEntityProfilesMBean(EndEntityProfilesMBean endEntityProfilesMBean) {
-        this.endEntityProfilesMBean = endEntityProfilesMBean;
-    }
-
-    // remove this?
     public boolean isViewOnly() {
-        return endEntityProfilesMBean.isViewOnly();
+        return viewOnly;
     }
 
     public EndEntityProfile getProfiledata() {
@@ -245,6 +226,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public void setProfiledata(final EndEntityProfile profiledata) {
         this.profiledata = profiledata;
+    }
+    
+    public String getEndEntityProfileName() {
+        return profileName;
     }
 
     // PASSWORD, USERNAME AND EMAIL
@@ -679,88 +664,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setAvailableCertificateProfileIds(certProfileIds);
     }
 
-    //  
-    /*public String getCurrentDefaultCertProfile() {
-        int certProfile = profiledata.getDefaultCertificateProfile();
-        String retValue = "";
-        TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();//should probably b declared elsewhere
-        TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();//should probably b declared elsewhere
-        TreeMap<String, Integer> mergedMap = new TreeMap<>();
-        mergedMap.putAll(eecertificateprofilenames);
-        mergedMap.putAll(subcacertificateprofilenames);
-        for (String defaultCertProfile : mergedMap.keySet()) {
-            int certprofid = mergedMap.get(defaultCertProfile).intValue();
-            if (certprofid == certProfile) {
-                retValue = defaultCertProfile;
-            }
-        }
-        return retValue;
-    }
-
-    // some value...
-    public void setCurrentDefaultCertProfile(String defaultCertProfile) {
-        TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();//should probably b declared elsewhere
-        TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();//should probably b declared elsewhere
-        TreeMap<String, Integer> mergedMap = new TreeMap<>();
-        mergedMap.putAll(eecertificateprofilenames);
-        mergedMap.putAll(subcacertificateprofilenames);
-        int certprofid = mergedMap.get(defaultCertProfile).intValue();
-        profiledata.setDefaultCertificateProfile(certprofid);
-    }
-
-    // new method...
-    public void setCurrentAvailableCertProfiles(Collection<String> profiles) {
-        TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();//should probably b declared elsewhere
-        TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();//should probably b declared elsewhere
-        TreeMap<String, Integer> mergedMap = new TreeMap<>();
-        mergedMap.putAll(eecertificateprofilenames);
-        mergedMap.putAll(subcacertificateprofilenames);
-        Collection<Integer> idCollection = new ArrayList<>();
-        for (String profile : profiles) {
-            int certprofid = mergedMap.get(profile).intValue();
-            idCollection.add(certprofid);
-        }
-        profiledata.setAvailableCertificateProfileIds(idCollection);
-    }
-
-    // getter for above new method
-    public Collection<String> getCurrentAvailableCertProfiles() {
-        Collection<Integer> availableCertProfiles = profiledata.getAvailableCertificateProfileIds();
-        Collection<String> profilesReturned = new ArrayList<>();
-        TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
-        TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
-        TreeMap<String, Integer> mergedMap = new TreeMap<>();
-        mergedMap.putAll(eecertificateprofilenames);
-        mergedMap.putAll(subcacertificateprofilenames);
-        for (String profile : mergedMap.keySet()) {
-            for (int id : availableCertProfiles) {
-                if (id == mergedMap.get(profile).intValue()) {
-                    profilesReturned.add(profile);
-                }
-            }
-        }
-        return profilesReturned;
-    }*/
-    
-   /* public Collection<String> getAllAvailableCertificateProfiles() {
-        
-        Collection<Integer> availableCertProfiles = profiledata.getAvailableCertificateProfileIds();
-        Collection<String> profilesReturned = new ArrayList<>();
-        TreeMap<String, Integer> eecertificateprofilenames = ejbcaWebBean.getAuthorizedEndEntityCertificateProfileNames();
-        TreeMap<String, Integer> subcacertificateprofilenames = ejbcaWebBean.getAuthorizedSubCACertificateProfileNames();
-        TreeMap<String, Integer> mergedMap = new TreeMap<>();
-        mergedMap.putAll(eecertificateprofilenames);
-        mergedMap.putAll(subcacertificateprofilenames);
-        for (String profile : mergedMap.keySet()) {
-            for (int id : availableCertProfiles) {
-                if (id == mergedMap.get(profile).intValue()) {
-                    profilesReturned.add(profile);
-                }
-            }
-        }
-        return profilesReturned;
-    } */
-
     public List<SelectItem> getAllCas() {
         final List<SelectItem> list = new ArrayList<>();
         final Map<Integer, String> caidtonamemap = caSession.getCAIdToNameMap();
@@ -816,21 +719,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public Collection<Integer> getAvailableTokenTypes() {
-//        Collection<Integer> tokensAsIntegers = new ArrayList<>();
-//        Collection<String> tokensAsStrings = new ArrayList<>();
-//        tokensAsIntegers = profiledata.getAvailableTokenTypes();
-//        for (int tokenIntValue : tokensAsIntegers) {
-//            Integer tokenIntObject = new Integer(tokenIntValue);
-//            tokensAsStrings.add(tokenIntObject.toString());
-//        }
-//        return tokensAsStrings;
         return profiledata.getAvailableTokenTypes();
     }
 
     public void setAvailableTokenTypes(final Collection<Integer> tokenTypes) {
-//        String[] values = tokensAsStrings.toArray(new String[0]);
-//        String availableTokens = raBean.getAvailableTokenTypes(getCurrentDefaultToken(), values);
-//        profiledata.setValue(EndEntityProfile.AVAILKEYSTORE, 0, availableTokens);
         profiledata.setAvailableTokenTypes(tokenTypes);
     }
 
@@ -1064,14 +956,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setIssuanceRevocationReason(reason);
     }
 
-    /*
-    // verify this
-    public boolean isCurrentRevocationReason(SelectItem currentRevocationReasonItem) {
-        final String value = getCurrentRevocationReason();
-        final String reason = currentRevocationReasonItem.getLabel();
-        return reason.equals(value);
-    }*/
-
     public List<SelectItem> getRevocationReasons() {
         final List<SelectItem> revocationReasonsReturned = new ArrayList<>();
         for (RevocationReasons revocationReason : RevocationReasons.values()) {
@@ -1287,8 +1171,10 @@ log.debug("Template file upload: " + templateFileUpload); // XXX removeme
             final String profileName = endEntityProfileSession.getEndEntityProfileName(profileId);
             profiledata.setUserNotifications(userNotifications);
             endEntityProfileSession.changeEndEntityProfile(getAdmin(), profileName, profiledata);
+            log.debug("Successfully edited End Entity Profile");
+            redirect("temp_editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, true);
             log.trace("<saveProfile: success");
-            return "profilesaved";
+            return "";
         } else {
             for (final String errorMessage : editerrors.values()) {
                 addNonTranslatedErrorMessage(errorMessage); // FIXME Non translated is temporary for testing
@@ -1298,7 +1184,7 @@ log.debug("Template file upload: " + templateFileUpload); // XXX removeme
         return "";
     }
 
-    public String cancel() {
-        return "cancel";
+    public void cancel() {
+        redirect("temp_editendentityprofiles.xhtml");
     }
 }
