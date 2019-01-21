@@ -17,7 +17,7 @@ org.ejbca.util.HTMLTools
        GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); 
       
        final String THIS_FILENAME            =   "adminmenu.jsp";
-
+       
        final String MAIN_LINK                =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath();
 
        final String APPROVAL_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/approvalactions.xhtml";
@@ -101,6 +101,12 @@ org.ejbca.util.HTMLTools
 	</div>
 <% } %>
 
+	<script type="text/javascript">
+	    var time;
+	    window.onload=resetTimer(<%=ejbcawebbean.getSessionTimeoutTime()%>);
+	    document.onkeypress=resetTimer(<%=ejbcawebbean.getSessionTimeoutTime()%>);
+	</script>
+	
 	<div id="navigation">
 	<ul class="navbar">
 
