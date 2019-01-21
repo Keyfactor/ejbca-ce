@@ -56,7 +56,7 @@ public abstract class BaseManagedBean implements Serializable {
 	protected EjbcaWebBean getEjbcaErrorWebBean() {
 	    return EjbcaJSFHelper.getBean().getEjbcaErrorWebBean();
 	}
-	
+
 	/** @return true if the current admin is authorized to the resources or false otherwise */
     protected boolean isAuthorizedTo(final String...resources) {
         return getEjbcaWebBean().getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), resources);
@@ -72,7 +72,8 @@ public abstract class BaseManagedBean implements Serializable {
 	        log.debug("Adding error message: " + messageResource + ": " + StringUtils.join(params, "; "));
 	    }
 		FacesContext ctx = FacesContext.getCurrentInstance();
-		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,getEjbcaWebBean().getText(messageResource, true, params),getEjbcaWebBean().getText(messageResource, true, params)));
+        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR, getEjbcaWebBean().getText(messageResource, false, params),
+                getEjbcaWebBean().getText(messageResource, false, params)));
 	}
 
 	protected void addNonTranslatedErrorMessage(String message) {
@@ -101,7 +102,8 @@ public abstract class BaseManagedBean implements Serializable {
 
 	protected void addInfoMessage(String messageResource, Object... params) {
         FacesContext ctx = FacesContext.getCurrentInstance();
-        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO,getEjbcaWebBean().getText(messageResource, true, params),getEjbcaWebBean().getText(messageResource, true, params)));
+        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO, getEjbcaWebBean().getText(messageResource, false, params),
+                getEjbcaWebBean().getText(messageResource, false, params)));
     }
 
     protected void addNonTranslatedInfoMessage(String messageResource){
