@@ -424,7 +424,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             addErrorMessage("YOUCANTEDITEMPTYPROFILE");
             return "";
         } else if (selectedProfileExists()) {
-            redirect("temp_endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, selectedEndEntityProfileId);
+            redirect("endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, selectedEndEntityProfileId);
             return "";
         } else {
             return "";
