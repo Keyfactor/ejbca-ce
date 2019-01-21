@@ -391,7 +391,7 @@ function logout() {
 	// Redirects user to public web and terminates session
 	var logoutUrl = "https://" + window.location.hostname + ":" + window.location.port + "/ejbca/adminweb/logout";
 	window.location.href = logoutUrl;
-	alert("Session timed out");
+	alert("Session ended");
 	// Forces client to re-authenticate using certificate. Only works with Internet Explorer 6+.
 	document.execCommand('ClearAuthenticationCache');
 }
