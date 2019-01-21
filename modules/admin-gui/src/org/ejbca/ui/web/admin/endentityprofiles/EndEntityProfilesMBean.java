@@ -29,7 +29,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
@@ -57,12 +57,13 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * @version $Id$
  */
 @ManagedBean
-//@ViewScoped
-@SessionScoped
+@ViewScoped
 public class EndEntityProfilesMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EndEntityProfilesMBean.class);
+
+    public static final String PARAMETER_PROFILE_SAVED = "profileSaved";
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -81,13 +82,13 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+        profileSaved = "true".equals(FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(PARAMETER_PROFILE_SAVED));
     }
-    
+
     private Integer selectedEndEntityProfileId = null;
-    
     private boolean deleteInProgress = false;
-    private boolean viewOnly = true;
-    
+    private boolean profileSaved;
+
     private String endEntityProfileName;
     private UploadedFile uploadFile;
     private List<SelectItem> endEntityProfileItems = null; 
@@ -96,14 +97,12 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         return endEntityProfileName;
     }
 
-    public void setEndEntityProfileName(String endEntityProfileName) {
-        endEntityProfileName = endEntityProfileName.trim();
-        if (!StringTools.checkFieldForLegalChars(endEntityProfileName)) {
-            addErrorMessage("ONLYCHARACTERS");
-            this.endEntityProfileName = null;
-        } else {
-            this.endEntityProfileName = endEntityProfileName;
-        }
+    public void setEndEntityProfileName(final String endEntityProfileName) {
+        this.endEntityProfileName = StringUtils.trim(endEntityProfileName);
+    }
+
+    public boolean isProfileSaved() {
+        return profileSaved;
     }
 
     public boolean isAuthorizedToEdit() {
@@ -112,10 +111,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     
     public boolean isAuthorizedToView() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
-    }
-    
-    public boolean isViewOnly() {
-        return viewOnly;
     }
     
     public boolean isEmptyProfile() {
@@ -137,22 +132,31 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
          return endEntityProfileItems;
     } 
-    
-    public void actionAdd() {
+
+    private boolean validateEndEntityProfileName() {
         if (StringUtils.isBlank(endEntityProfileName)) {
             addErrorMessage("EEPROFILENAMEREQUIRED");
-            return;
+            return false;
+        } else if (!StringTools.checkFieldForLegalChars(endEntityProfileName)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
         }
-        try {
-            final EndEntityProfile endEntityProfile = new EndEntityProfile();
-            endEntityProfile.setAvailableCAs(getEjbcaWebBean().getAuthorizedCAIds());
-            endEntityProfileSession.addEndEntityProfile(getAdmin(), endEntityProfileName, endEntityProfile);
-            endEntityProfileName = null;
-            endEntityProfileItems = null;
-        } catch (EndEntityProfileExistsException e) {
-            addErrorMessage("EEPROFILEALREADYEXISTS");
-        } catch (AuthorizationDeniedException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
+        return true;
+    }
+
+    public void actionAdd() {
+        if (validateEndEntityProfileName()) {
+            try {
+                final EndEntityProfile endEntityProfile = new EndEntityProfile();
+                endEntityProfile.setAvailableCAs(getEjbcaWebBean().getAuthorizedCAIds());
+                endEntityProfileSession.addEndEntityProfile(getAdmin(), endEntityProfileName, endEntityProfile);
+                endEntityProfileName = null;
+                endEntityProfileItems = null;
+            } catch (EndEntityProfileExistsException e) {
+                addErrorMessage("EEPROFILEALREADYEXISTS");
+            } catch (AuthorizationDeniedException e) {
+                addNonTranslatedErrorMessage(e.getMessage());
+            }
         }
     }
     
@@ -204,6 +208,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         endEntityProfileItems = null;
         selectedEndEntityProfileId = null;
         endEntityProfileName = null;
+        profileSaved = false;
     }
 
     public void actionCancel() {
@@ -211,11 +216,9 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void actionRename() {
-        if (!selectedProfileExists()) {
+        if (!selectedProfileExists() || !validateEndEntityProfileName()) {
             // Do nothing
-        } else if (StringUtils.isBlank(endEntityProfileName)) {
-            addErrorMessage("EEPROFILENAMEREQUIRED");
-        } else  if (isEmptyProfile()) {
+        } else if (isEmptyProfile()) {
             addErrorMessage("YOUCANTEDITEMPTYPROFILE");
         } else {
             try {
@@ -239,7 +242,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionImportProfiles() throws IOException, NumberFormatException, AuthorizationDeniedException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
         if (uploadFile == null) {
-//            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "File upload failed.", null));
             addNonTranslatedErrorMessage("File upload failed.");
             return;
         }
@@ -361,7 +363,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
         return profile;
     }
-        
+
     /** @return true if the file shall be ignored from an End Entity Profile import, false if it should be imported */
     private boolean ignoreFile(final String filename) {
         if (!filename.endsWith(".xml")) {
@@ -390,7 +392,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private void printImportMessage(final int nrOfFiles, String importedFiles, String ignoredFiles) {
         String msg = "Number of files included in " + uploadFile.getName() + ": " + nrOfFiles;
         log.info(msg);
-//        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
         addNonTranslatedInfoMessage(msg);
         if (StringUtils.isNotEmpty(importedFiles)) {
             importedFiles = importedFiles.substring(0, importedFiles.length() - 2);
@@ -399,7 +400,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         if (log.isDebugEnabled()) {
             log.debug(msg);
         }
-//        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
         addNonTranslatedInfoMessage(msg);
         if (StringUtils.isNotEmpty(ignoredFiles)) {
             ignoredFiles = ignoredFiles.substring(0, ignoredFiles.length() - 2);
@@ -408,14 +408,13 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         if (log.isDebugEnabled()) {
             log.debug(msg);
         }
-//        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
         addNonTranslatedInfoMessage(msg);
     }
 
     public void setUploadFile(final UploadedFile uploadFile) {
         this.uploadFile = uploadFile;
     }
-    
+
     public UploadedFile getUploadFile() {
         return uploadFile;
     }
@@ -425,35 +424,23 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             addErrorMessage("YOUCANTEDITEMPTYPROFILE");
             return "";
         } else if (selectedProfileExists()) {
-            viewOnly = false;
-            return "edit"; 
+            redirect("temp_endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, selectedEndEntityProfileId);
+            return "";
         } else {
             return "";
         }
     }
 
-    /*public String actionView() {
-        selectCurrentRowData();
-        if (selectedProfileExists()) {
-            viewOnly = true;
-            return "view"; // Outcome is defined in faces-config.xml
-        } else {
-            return "";
-        }
-    }*/
-
     public void actionCloneProfile() {
-        if (StringUtils.isBlank(endEntityProfileName)) {
-            addErrorMessage("EEPROFILENAMEREQUIRED");
-            return;
-        }
-        try {
-            endEntityProfileSession.cloneEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
-            reset();
-        } catch (EndEntityProfileExistsException e) {
-            addErrorMessage("EEPROFILEALREADYEXISTS");
-        } catch (AuthorizationDeniedException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
+        if (validateEndEntityProfileName()) {
+            try {
+                endEntityProfileSession.cloneEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
+                reset();
+            } catch (EndEntityProfileExistsException e) {
+                addErrorMessage("EEPROFILEALREADYEXISTS");
+            } catch (AuthorizationDeniedException e) {
+                addNonTranslatedErrorMessage(e.getMessage());
+            }
         }
     }
 }

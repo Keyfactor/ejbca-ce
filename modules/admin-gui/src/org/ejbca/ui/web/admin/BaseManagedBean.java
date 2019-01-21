@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -169,6 +170,40 @@ public abstract class BaseManagedBean implements Serializable {
                     log.debug("Post-Redirect-Get to '" + url + "' failed: " + e.getMessage());
                 }
             }
+        }
+    }
+
+    /**
+     * Performs a redirect with the given parameters names and paramter values.
+     * @param url URL (without query string)
+     * @param parameterKeysAndValues Alternating names and values. These are escaped.
+     * @throws IllegalArgumentException if a parameter name is invalid.
+     */
+    protected void redirect(final String url, final Object... parameterKeysAndValues) {
+        boolean firstParam = url.indexOf('?') == -1;
+            try {
+            final StringBuilder sb = new StringBuilder(url);
+            for (int i = 0; i < parameterKeysAndValues.length; i += 2) {
+                final String name = (String) parameterKeysAndValues[i];
+                if (!name.matches("^[a-zA-Z0-9_:-]+$")) {
+                    final RuntimeException exception = new IllegalArgumentException("Internal error: Invalid URL parameter name");
+                    log.warn("Invalid URL request parameter name, this is a bug: " + name, exception);
+                    throw exception;
+                }
+                final String value = URLEncoder.encode(String.valueOf(parameterKeysAndValues[i+1]), "UTF-8");
+                sb.append(firstParam ? '?' : '&');
+                sb.append(name);
+                sb.append('=');
+                sb.append(value);
+                firstParam = false;
+            }
+            final String fullUrl = sb.toString();
+            if (log.isDebugEnabled()) {
+                log.debug("Redirecting to URL: " + fullUrl);
+            }
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fullUrl);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 
