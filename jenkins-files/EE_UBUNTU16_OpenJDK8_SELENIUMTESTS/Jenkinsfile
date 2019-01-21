@@ -26,7 +26,7 @@ pipeline {
             steps {
                 sh "mkdir ear || true"
                 sh "chmod 777 " + "$env.WORKSPACE"
-                // sh "chmod 777 -R " + "$env.WORKSPACE/ejbca"
+                
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_SELENIUMTESTS/ejbca_image') {
                     sh "docker build -t mypeer -m 2GB ."
                     
@@ -40,17 +40,9 @@ pipeline {
                         waitUntil {
                             script {
                                 try {
+                                    // the command needs to be its own variable, otherwise sh call doesn't handle the | pipe correctly
                                     def command = 'docker logs mypeer 2>&1 | grep  -c -m 1 "import cert commands done"'
                                     def r = sh script: command, returnStatus: true
-                                    if (r == 0) {
-                                        //sh "docker logs mypeer 2>&1"
-                                        
-                                        // testing if connection with the cert works at all
-                                        echo "curl styles:"
-                                        sh "openssl pkcs12 -in p12/superadmin.p12 -out p12/superadmin.key.pem -passin pass:ejbca -nocerts -nodes"
-                                        sh "openssl pkcs12 -in p12/superadmin.p12 -out p12/superadmin.crt.pem -passin pass:ejbca -clcerts -nokeys"
-                                        sh "curl -E p12/superadmin.crt.pem --key p12/superadmin.key.pem --insecure https://localhost:28443/ejbca/styles.css"
-                                    }
                                     return (r == 0)
                                 } catch (exc) {
                                     echo exc;
@@ -62,7 +54,6 @@ pipeline {
             }
         }
         
-        
         stage('run Selenium tests') {
             steps {
                 sh "mkdir ear || true"
@@ -71,7 +62,7 @@ pipeline {
                 // to allow creation of /app/ejbca/reports/test folder for ant test task
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca"
                 
-                // pre-create necessary folders and gice permissions, so that seluser can later do its stuff
+                // pre-create necessary folders and give permissions, so that seluser can later do its stuff
                 sh "chmod +w " + "$env.WORKSPACE/ejbca/conf"
                 sh "chmod +w " + "$env.WORKSPACE/ejbca/modules/ejbca-webtest/conf/"
                 sh "chmod +w " + "$env.WORKSPACE/ejbca"
