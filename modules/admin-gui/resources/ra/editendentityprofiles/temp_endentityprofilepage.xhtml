@@ -25,7 +25,7 @@
      
      @version $id$
      -->
-    </ui:remove> 
+    </ui:remove>
 	<ui:composition template="/WEB-INF/include/template.xhtml">
 		<ui:define name="content">
 		<h:panelGroup>
@@ -33,7 +33,7 @@
      			<h:outputText value="#{web.text.EDITENDENTITYPROFILE}" rendered="#{!endEntityProfileMBean.viewOnly}"/>
     			<h:outputText value="#{web.text.VIEW}" rendered="#{endEntityProfileMBean.viewOnly}"/>
   			</h2>
-  			<h3><h:outputText value="#{web.text.ENDENTITYPROFILE}: #{endEntityProfilesMBean.selectedEndEntityProfileName}"/></h3>
+  			<h3><h:outputText value="#{web.text.ENDENTITYPROFILE}: #{endEntityProfileMBean.endEntityProfileName}"/></h3>
 		</h:panelGroup>
 	
 <!-- PASSWORD AND E-MAIL -->
@@ -1007,7 +1007,7 @@
 					<h:commandButton 
 						id="removeSendNotificationButton" 
 						value="#{web.text.DELETE}" 
-						action="#{endEntityProfileMBean.removeNotification(userNotification)}"
+						action="#{endEntityProfileMBean.addNotification(userNotification)}"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfileMBean.viewOnly}">
 						<f:ajax render=":eeProfiles:userNotificationsWrapper :eeProfiles:sendNotificationsDeleteAllGroup"/>  
 					</h:commandButton>
@@ -1122,8 +1122,7 @@
 						id="templateUploadInput"
 						value="#{endEntityProfileMBean.templateFileUpload}"
 						size="20"
-						rendered="#{endEntityProfileMBean.authorizedToEdit or endEntityProfileMBean.viewOnly}"
-						disabled="#{not endEntityProfileMBean.usePrintUserData}"/>
+						disabled="#{endEntityProfileMBean.viewOnly or not endEntityProfileMBean.usePrintUserData}"/>
 					<h:commandButton id="uploadTemplateButton" value="#{web.text.UPLOADTEMPLATE}" action="#{endEntityProfileMBean.uploadTemplate}" disabled="#{not endEntityProfileMBean.usePrintUserData or endEntityProfileMBean.viewOnly}"/>
 				</h:panelGroup>
 			</h:panelGrid>
