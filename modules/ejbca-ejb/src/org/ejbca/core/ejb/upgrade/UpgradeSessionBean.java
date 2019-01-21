@@ -1635,8 +1635,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private void addApprovalNotification(final AccumulativeApprovalProfile newProfile) {
         final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         if (gc.getUseApprovalNotifications()) {
-            final String hostname = WebConfiguration.getHostName();
-            final String baseUrl = gc.getBaseUrl(hostname);
+            final String baseUrl = gc.getBaseUrlFromConfig();
             final String defaultSubject = "[AR-${approvalRequest.ID}-${approvalRequest.STEP_ID}-${approvalRequest.PARTITION_ID}] " +
                     "Approval Request to ${approvalRequest.TYPE} is now in state ${approvalRequest.WORKFLOWSTATE}";
             final String defaultBody = "Approval Request to ${approvalRequest.TYPE} from ${approvalRequest.REQUESTOR} is now in state ${approvalRequest.WORKFLOWSTATE}.\n" +
