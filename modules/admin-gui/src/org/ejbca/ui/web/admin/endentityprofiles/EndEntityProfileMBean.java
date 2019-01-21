@@ -1172,7 +1172,7 @@ log.debug("Template file upload: " + templateFileUpload); // XXX removeme
             profiledata.setUserNotifications(userNotifications);
             endEntityProfileSession.changeEndEntityProfile(getAdmin(), profileName, profiledata);
             log.debug("Successfully edited End Entity Profile");
-            redirect("temp_editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, true);
+            redirect("editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, true);
             log.trace("<saveProfile: success");
             return "";
         } else {
@@ -1185,6 +1185,6 @@ log.debug("Template file upload: " + templateFileUpload); // XXX removeme
     }
 
     public void cancel() {
-        redirect("temp_editendentityprofiles.xhtml");
+        redirect("editendentityprofiles.xhtml");
     }
 }
