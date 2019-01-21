@@ -104,7 +104,6 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
-import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
 /**
@@ -153,7 +152,9 @@ public class EjbcaWebBean implements Serializable {
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
     private AuthenticationToken administrator;
+    private String requestScheme;
     private String requestServerName;
+    private int requestServerPort;
     private String currentRemoteIp;
     
     /*
@@ -194,11 +195,11 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /* Sets the current user and returns the global configuration */
-    public GlobalConfiguration initialize(final HttpServletRequest request, final String... resources) throws Exception {
+    public GlobalConfiguration initialize(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
         // Get some variables so we can detect if the TLS session and/or TLS client certificate changes within this session
-        final X509Certificate certificate = getClientX509Certificate(request);
+        final X509Certificate certificate = getClientX509Certificate(httpServletRequest);
         final String fingerprint = CertTools.getFingerprintAsString(certificate);
-        final String currentTlsSessionId = getTlsSessionId(request);
+        final String currentTlsSessionId = getTlsSessionId(httpServletRequest);
         // Re-initialize if we are not initialized (new session) or if authentication parameters change within an existing session (TLS session ID or client certificate).
         // If authentication parameters change it can be an indication of session hijacking, which should be denied if we re-auth, or just session re-use in web browser such as what FireFox 57 seems to do even after browser re-start
         if (!initialized || !StringUtils.equals(authenticationTokenTlsSessionId, currentTlsSessionId) || !StringUtils.equals(fingerprint, certificateFingerprint)) {
@@ -206,9 +207,11 @@ public class EjbcaWebBean implements Serializable {
                 // Only log this if we are not initialized, i.e. if we entered here because session authentication parameters changed
                 log.debug("TLS session authentication changed withing the HTTP Session, re-authenticating admin. Old TLS session ID: "+authenticationTokenTlsSessionId+", new TLS session ID: "+currentTlsSessionId+", old cert fp: "+certificateFingerprint+", new cert fp: "+fingerprint);
             }
-            final String requestURL = request.getRequestURL().toString();
-            currentRemoteIp = request.getRemoteAddr();
-            requestServerName = RequestHelper.getRequestServerName(requestURL);
+            // Escape value taken from the request, just to be sure there can be no XSS
+            requestScheme = HTMLTools.htmlescape(httpServletRequest.getScheme());
+            requestServerName = HTMLTools.htmlescape(httpServletRequest.getServerName());
+            requestServerPort = httpServletRequest.getServerPort();
+            currentRemoteIp = httpServletRequest.getRemoteAddr();
             if (log.isDebugEnabled()) {
                 log.debug("requestServerName: "+requestServerName);
             }
@@ -241,10 +244,10 @@ public class EjbcaWebBean implements Serializable {
                     details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
                 }
                 if (WebConfiguration.getAdminLogRemoteAddress()) {
-                    details.put("remoteip", request.getRemoteAddr());
+                    details.put("remoteip", httpServletRequest.getRemoteAddr());
                 }
                 if (WebConfiguration.getAdminLogForwardedFor()) {
-                    details.put("forwardedip", StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
+                    details.put("forwardedip", StringTools.getCleanXForwardedFor(httpServletRequest.getHeader("X-Forwarded-For")));
                 }
                 // Also check if this administrator is present in any role, if not, login failed
                 if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
@@ -261,13 +264,13 @@ public class EjbcaWebBean implements Serializable {
                         administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
             } else {
                 // TODO: When other types of authentication are implemented, check the distinct configured tokenTypes and try to authenticate for each
-                administrator = authenticationSession.authenticateUsingNothing(request.getRemoteAddr(), currentTlsSessionId!=null);
+                administrator = authenticationSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), currentTlsSessionId!=null);
                 Map<String, Object> details = new LinkedHashMap<>();
                 if (WebConfiguration.getAdminLogRemoteAddress()) {
-                    details.put("remoteip", request.getRemoteAddr());
+                    details.put("remoteip", httpServletRequest.getRemoteAddr());
                 }
                 if (WebConfiguration.getAdminLogForwardedFor()) {
-                    details.put("forwardedip", StringTools.getCleanXForwardedFor(request.getHeader("X-Forwarded-For")));
+                    details.put("forwardedip", StringTools.getCleanXForwardedFor(httpServletRequest.getHeader("X-Forwarded-For")));
                 }
                 // Also check if this administrator is present in any role, if not, login failed
                 if (roleSession.getRolesAuthenticationTokenIsMemberOf(administrator).isEmpty()) {
@@ -287,7 +290,7 @@ public class EjbcaWebBean implements Serializable {
             // Set the current TLS session
             authenticationTokenTlsSessionId = currentTlsSessionId;
             // Set ServletContext for reading language files from resources
-            servletContext = request.getSession(true).getServletContext();
+            servletContext = httpServletRequest.getSession(true).getServletContext();
         }
         try {
             if (resources.length > 0 && !authorizationSession.isAuthorized(administrator, resources)) {
@@ -505,7 +508,7 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public String getBaseUrl() {
-        return globalconfiguration.getBaseUrl(requestServerName);
+        return globalconfiguration.getBaseUrl(requestScheme, requestServerName, requestServerPort);
     }
 
     public String getReportsPath() {
