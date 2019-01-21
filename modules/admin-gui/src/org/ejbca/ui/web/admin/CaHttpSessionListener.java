@@ -14,10 +14,10 @@
 package org.ejbca.ui.web.admin;
 
 import java.security.cert.Certificate;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
@@ -28,7 +28,9 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.CertTools;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -48,15 +50,32 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 public class CaHttpSessionListener implements HttpSessionListener {
 
     private static final Logger log = Logger.getLogger(CaHttpSessionListener.class);
+    private GlobalConfiguration globalConfiguration;
     
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditLogSession;
     
+    @PostConstruct
+    public void initialize() {
+        globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+    }
     
     @Override
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {
         if (log.isDebugEnabled()) {
             log.debug("HTTP session from client started. jsessionId=" + httpSessionEvent.getSession().getId());
+        }
+        // Hard limit specified in web.xml.
+        final int maxInactiveIntervalSeconds = httpSessionEvent.getSession().getMaxInactiveInterval();
+        // Session timeout configured by Administrator (system configuration).
+        final int maxConfiguredInactiveIntervalSeconds = globalConfiguration.getSessionTimeoutTime() * 60;
+        // We don't want the hard limit to override configured value. Add an extra minute on top of configured time.
+        if (globalConfiguration.getUseSessionTimeout() && 
+                maxConfiguredInactiveIntervalSeconds > maxInactiveIntervalSeconds) {
+            httpSessionEvent.getSession().setMaxInactiveInterval(maxConfiguredInactiveIntervalSeconds + 60);
         }
     }
 
@@ -69,6 +88,7 @@ public class CaHttpSessionListener implements HttpSessionListener {
             // this should never happen. If it does, audit logging will fail but with a log error.
             return;
         }
+        
         final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
         final Certificate x509Certificate= getCertificate(admin);
         final String issuerDn = Integer.toString(CertTools.getIssuerDN(x509Certificate).hashCode());
