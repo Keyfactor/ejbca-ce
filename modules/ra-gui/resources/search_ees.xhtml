@@ -249,9 +249,9 @@
                             </h:column>
                             <h:column>
                                 <f:facet name="header"><h:outputText value="#{msg.search_ees_page_colhead_action}"/></f:facet>
-                                <h:commandButton id="viewButton" action="#{raSearchEesBean.openEndEntityDetails(raSearchEndEntity)}" value="#{msg.search_ees_page_show_command}"/>
+                                <h:commandButton id="viewButton" action="#{raSearchEesBean.openEndEntityDetails(raSearchEndEntity)}" value="#{msg.search_ees_page_show_command}" style="display:block;padding-bottom:5px"/>
                                 <h:commandButton id="editButton" action="#{raSearchEesBean.redirectToEdit(raSearchEndEntity)}" value="#{msg.endentity_page_command_edit}"
-                                    rendered="#{raAccessBean.authorizedToEditEndEntities and raSearchEesBean.apiEditCompatible}"/> 
+                                    rendered="#{raAccessBean.authorizedToEditEndEntities and raSearchEesBean.apiEditCompatible}" style="display:block;"/> 
                             </h:column>
                         </h:dataTable>
                     </h:panelGroup>
