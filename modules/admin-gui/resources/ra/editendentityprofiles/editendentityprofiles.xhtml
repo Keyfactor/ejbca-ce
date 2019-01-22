@@ -25,13 +25,13 @@
      -->
      </ui:remove>
      <ui:composition template="/WEB-INF/include/template.xhtml">
+		 <f:metadata>
+			 <f:event type="preRenderView" listener="#{endEntityProfilesMBean.preRenderView}"/>
+		</f:metadata>
 	 	<ui:define name="content">
 	 		<h1>
 				<h:outputText value="#{web.text.MANAGEENDENTITYPROFILES}"/>
 			</h1>
-			<h:panelGroup rendered="#{endEntityProfilesMBean.profileSaved}">
-				<h:outputText value="#{web.text.ENDENTITYPROFILESAVED}"/>
-			</h:panelGroup>
 			<h:form id="manageEndEntityProfiles" rendered="#{endEntityProfilesMBean.authorizedToView}">
 				<ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
 				<h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
