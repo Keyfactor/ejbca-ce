@@ -101,12 +101,13 @@ org.ejbca.util.HTMLTools
 	</div>
 <% } %>
 
-	<script type="text/javascript">
-	    var time;
-	    window.onload=resetTimer(<%=ejbcawebbean.getSessionTimeoutTime()%>);
-	    document.onkeypress=resetTimer(<%=ejbcawebbean.getSessionTimeoutTime()%>);
-	</script>
-	
+	<% if (ejbcawebbean.isSessionTimeoutEnabled()) { %>
+		<script type="text/javascript">
+		    var time;
+		    window.onload=resetTimer(<%=ejbcawebbean.getSessionTimeoutTime()%>);
+		    document.onkeypress=resetTimer(<%=ejbcawebbean.getSessionTimeoutTime()%>);
+		</script>
+	<% } %>
 	<div id="navigation">
 	<ul class="navbar">
 
