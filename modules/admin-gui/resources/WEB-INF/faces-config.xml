@@ -17,10 +17,10 @@
  -->
 <faces-config version="2.2"
     metadata-complete="false"
-    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
-                        http://java.sun.com/xml/ns/javaee/web-facesconfig_2_2.xsd">
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+                        http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd">
 
   <managed-bean>
     <managed-bean-name>web</managed-bean-name>

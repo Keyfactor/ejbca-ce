@@ -15,10 +15,13 @@
 
  version: $Id$
  -->
-<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	version="3.0" id="ejbca-rest-api"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee                         
-	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+<web-app version="3.1" id="ejbca-rest-api"
+    metadata-complete="false"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                        http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+
 	<description><![CDATA[External interface for the EJBCA rest api]]></description>
 	<display-name>ejbca-rest-api</display-name>
 	<context-param>

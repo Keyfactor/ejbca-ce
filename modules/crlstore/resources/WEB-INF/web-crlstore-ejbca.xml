@@ -15,11 +15,12 @@
 
  version: $Id$
  -->
-<web-app version="3.0" id="crlstore"
+<web-app version="3.1" id="crlstore"
+    metadata-complete="false"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns="http://java.sun.com/xml/ns/javaee"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-                        http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                        http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
     <description><![CDATA[Certificate Store]]></description>
 
