@@ -15,12 +15,12 @@
 
  version: $Id: faces-config.xml 22193 2015-11-17 21:10:53Z mikekushner $
  -->
-<faces-config version="2.0"
-    xmlns="http://java.sun.com/xml/ns/javaee"
+<faces-config version="2.2"
+    metadata-complete="false"
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
-                        http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
-    metadata-complete="false">
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+                        http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd">
     <application>
         <locale-config>
             <default-locale>en_US</default-locale>
