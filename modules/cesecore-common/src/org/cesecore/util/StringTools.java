@@ -210,6 +210,22 @@ public final class StringTools {
     }
 
     /**
+     * Removes control characters (characters 0-31) that should not be included in the server log.
+     */
+    public static String stripLog(final String str) {
+        if (str == null) {
+            return null;
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) >= 32) {
+                sb.append(str.charAt(i));
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
      * Characters from 'str' will be stripped like this:
      * any character that is in the 'stripThis' set will be replaced with '/'.
      * any character that is escaped (preceded with '\') and not in the {@value #allowedEscapeChars} set will be replaced with '/'.
