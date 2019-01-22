@@ -95,7 +95,16 @@
     <filter-mapping>
         <filter-name>extensionsFilter</filter-name>
         <url-pattern>*.jsf</url-pattern>
-        <url-pattern>*.xhtml</url-pattern>
+        <!-- The following JSF pages in the AdminGUI are still using <t:inputFileUpload>. They should be converted to use <h:inputFile> instead (ECA-3658) -->
+        <url-pattern>/sysconfig/editctlog.xhtml</url-pattern> 
+        <url-pattern>/sysconfig/systemconfiguration.xhtml</url-pattern> 
+        <url-pattern>/keybind/keybindings.xhtml</url-pattern>
+        <url-pattern>/ca/editcas/importca.xhtml</url-pattern>
+        <url-pattern>/ca/editcas/editcapage.xhtml</url-pattern>
+        <url-pattern>/ca/editcas/recievefile.xhtml</url-pattern>
+        <url-pattern>/ca/editcas/importcacert.xhtml</url-pattern> 
+        <url-pattern>/ca/cafunctions.xhtml</url-pattern>
+        <url-pattern>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</url-pattern>
     </filter-mapping>
 
 	<filter>

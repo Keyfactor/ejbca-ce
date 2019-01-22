@@ -79,26 +79,22 @@
 						value="#{endEntityProfilesMBean.endEntityProfileName}" 
 						size="45" 
 						maxlength="255" 
-						title="web.text.NAME">
-					</h:inputText>	
+						title="web.text.NAME"/>
 					<h:commandButton 
 						id="addButton" 
 						class="buttonstyle" 
 						action="#{endEntityProfilesMBean.actionAdd}" 
-						value="Add profile">
-					</h:commandButton>	
+						value="Add profile"/>
 					<h:commandButton 
 						id="renameButton" 
 						class="buttonstyle" 
 						action="#{endEntityProfilesMBean.actionRename}" 
-						value="Rename selected">
-					</h:commandButton>	
+						value="Rename selected"/>
 					<h:commandButton 
 						id="cloneButton" 
 						class="buttonstyle" 
 						action="#{endEntityProfilesMBean.actionCloneProfile}" 
-						value="Clone selected" >
-					</h:commandButton>	
+						value="Clone selected"/>
 	 			</h:panelGroup>	
 				<h:panelGroup id="importProfile"> 
 					<h3>
@@ -107,16 +103,14 @@
 					</h3>
 					<h:panelGrid columns="3" >
 						<h:outputLabel for="profileUploadInput" value="#{web.text.IMPORTPROFILESFROM}" rendered="#{endEntityProfilesMBean.authorizedToEdit}"/>
-						<t:inputFileUpload 
+						<h:inputFile
 							id="profileUploadInput" 
 							value="#{endEntityProfilesMBean.uploadFile}" 
-							size="20" >
-						</t:inputFileUpload>	
+							size="20"/>
 						<h:commandButton 
 							id="importButton" 
 							action="#{endEntityProfilesMBean.actionImportProfiles}" 
-							value="#{web.text.IMPORT}">
-						</h:commandButton>	
+							value="#{web.text.IMPORT}"/>
 					</h:panelGrid>
 					<h:panelGrid columns="1">
 						<h:outputLink value="#{adminMenuBean.adminWebUrl}profilesexport?profileType=eep">

@@ -33,7 +33,9 @@ import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
@@ -90,7 +92,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private boolean profileSaved;
 
     private String endEntityProfileName;
-    private UploadedFile uploadFile;
+    private Part uploadFile;
     private List<SelectItem> endEntityProfileItems = null; 
 
     public String getEndEntityProfileName() {
@@ -245,7 +247,8 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             addNonTranslatedErrorMessage("File upload failed.");
             return;
         }
-        importProfilesFromZip(getUploadFile().getBytes());
+        final byte[] fileBytes = IOUtils.toByteArray(getUploadFile().getInputStream());
+        importProfilesFromZip(fileBytes);
         endEntityProfileItems = null;
     }
     
@@ -411,11 +414,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         addNonTranslatedInfoMessage(msg);
     }
 
-    public void setUploadFile(final UploadedFile uploadFile) {
+    public void setUploadFile(final Part uploadFile) {
         this.uploadFile = uploadFile;
     }
 
-    public UploadedFile getUploadFile() {
+    public Part getUploadFile() {
         return uploadFile;
     }
     
