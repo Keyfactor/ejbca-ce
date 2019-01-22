@@ -15,11 +15,11 @@
 
  version: $Id$
  -->
-<application version="6"
-    xmlns="http://java.sun.com/xml/ns/javaee"
+<application version="7"
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-                        http://java.sun.com/xml/ns/javaee/application_6.xsd">
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                        http://xmlns.jcp.org/xml/ns/javaee/application_7.xsd">
 
     <description>The EJBCA module consists of the CA beans and the web applications for enrollment, distribution and administration.</description>
     <display-name>EJBCA</display-name>
