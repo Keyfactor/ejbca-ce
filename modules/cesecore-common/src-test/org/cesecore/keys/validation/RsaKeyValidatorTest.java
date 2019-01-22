@@ -51,6 +51,100 @@ public class RsaKeyValidatorTest {
     /** Class logger. */
     private static final Logger log = Logger.getLogger(RsaKeyValidatorTest.class);
 
+    private static byte[] noRocaCert = Base64
+            .decode(("MIIEdDCCA1ygAwIBAgIIVjkVCQFZomowDQYJKoZIhvcNAQEFBQAwNTEWMBQGA1UE"
+                    +"AwwNTWFuYWdlbWVudCBDQTEOMAwGA1UECgwFUEstRE0xCzAJBgNVBAYTAkFFMB4X"
+                    +"DTE2MDkyMjE1MDgxM1oXDTE2MDkyNDE1MDgxM1owMDEOMAwGA1UEAwwFeG1wcDIx"
+                    +"ETAPBgNVBAoMCFByaW1lS2V5MQswCQYDVQQGEwJBRTCBnzANBgkqhkiG9w0BAQEF"
+                    +"AAOBjQAwgYkCgYEAlYenj6Yh6/WGDyxpSIFu4p8JUn8Gs0+p8jYwNsdwut0n2jRs"
+                    +"92u0ekrmao5C0sdOF3EgVojOAWMGbqA32Q/3skXQqKwapgVlJGJXpNeMm47EwB4z"
+                    +"HTFKDwHNrnUOU3EB4kf4Z3leZU1KsDppVyt3he9M1gPHwnhSMKRkdPg64AkCAwEA"
+                    +"AaOCAg8wggILMBkGB2eBCAEBBgIEDjAMAgEAMQcTAVATAklEMAwGA1UdEwEB/wQC"
+                    +"MAAwHwYDVR0jBBgwFoAUu2ifcFjWKrS4wThm+sPPj8GYatowagYDVR0RBGMwYYgD"
+                    +"KQECoBgGCisGAQQBgjcUAgOgCgwIZm9vQGEuc2WgIwYIKwYBBQUHCAWgFwwVdG9t"
+                    +"YXNAeG1wcC5kb21haW4uY29toBsGCCsGAQUFBwgHoA8WDV9TZXJ2aWNlLk5hbWUw"
+                    +"ggEDBgNVHSAEgfswgfgwKAYDKQECMCEwHwYIKwYBBQUHAgEWE2h0dHBzOi8vZWpi"
+                    +"Y2Eub3JnLzIwKAYDKQEDMCEwHwYIKwYBBQUHAgEWE2h0dHBzOi8vZWpiY2Eub3Jn"
+                    +"LzMwBQYDKQEBMD0GAykBBDA2MDQGCCsGAQUFBwICMCgeJgBNAHkAIABVAHMAZQBy"
+                    +"ACAATgBvAHQAaQBjAGUAIABUAGUAeAB0MFwGAykBBTBVMDAGCCsGAQUFBwICMCQe"
+                    +"IgBFAEoAQgBDAEEAIABVAHMAZQByACAATgBvAHQAaQBjAGUwIQYIKwYBBQUHAgEW"
+                    +"FWh0dHBzOi8vZWpiY2Eub3JnL0NQUzAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYB"
+                    +"BQUHAwQwHQYDVR0OBBYEFMUFBPXfQktUn7WTMUxTHnYSXk8TMA4GA1UdDwEB/wQE"
+                    +"AwIF4DANBgkqhkiG9w0BAQUFAAOCAQEAQ1K6zjPjCNFT1+KJ/E959khU/Hg5dObK"
+                    +"p4LsS+LpPmFu4M9DjS2vwr48lLh+eBB65U+6/WMTO7/3fEeD3AaoD2+f9pnG6pq9"
+                    +"tC3GlfQfuSWELIhebg+73+GcvEpGRqQIKQ0qguTZEJiGK6i7714ECRE+xVD81Hez"
+                    +"BE3M3tBSK1Q6zJ36DdgSx99hz0p8IutMX6ntYDWbA1DJ+V3zzCc5zF3ZSogWv3+T"
+                    +"CJG3EfrGDJ91eVUlGyfDpHRr9a3WOWbypLjh1Q92xxHOJbvgnS9J6mybaOpQYyCn"
+                    +"MVWCdyTMTi9Ik0eybpeVMZYaSEO4xIqwoGbvuBgE2WKm+RuMnMOkfA==").getBytes());
+
+    private static byte[] rocaCert = Base64
+            .decode(("MIICpTCCAYwCCQC2u0PIfFaGMjANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls"
+                    +"b2NhbGhvc3QwHhcNMTcxMDE2MTkzODIxWhcNMTgxMDE2MTkzODIxWjAUMRIwEAYD"
+                    +"VQQDDAlsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQJZ"
+                    +"J7UrpeaMjJJou5IY83ZzYUymVBj0dFsUPNTuU/lJHJoOHC8jqVFjBq/784ZnuHG8"
+                    +"DMguYPW7Gp+hWlZxp2XJ8huVh9gBFZZDcqODyIOw3L9sd1cGsx6v8+P9SIVZoIze"
+                    +"og+al8TFm2uKjuykV9SoINSVCfdZM2MCvKGjaQsICRgR+Fjy6M6lpiNVrW4EHRk1"
+                    +"7aWSibWXaDtz4mV650v/x2Dk1RPMh9uTVZGOqgjTmLvl9oNdyHElIRubNrOgvHC5"
+                    +"k6bLP30stAYd5z25cslCrfmVW2/kzZDwDQiK7ASvH17/kfIa9e1EYXx9uAk/lTZt"
+                    +"smWAxK85neuU+bFBMFvhAgMBAAEwDQYJKoZIhvcNAQELBQADggECAAG7W49CYRUk"
+                    +"YAFRGXu3M85MKOISyc/kkJ8nbHdV6GxJ05FkoDKbcbZ7nncJiIp2VMAMEIP4bRTJ"
+                    +"5U4g4vSZlmCs8BDmV3Ts/tbDCM6eqK+2hwjhUnCnmmsLt4xVUeAAsWUHl9AVtjzd"
+                    +"oYlm1Kk20QBzNpsvM/gFS5B+duHvTSfELfoq9Pdfvmn2gEXJHe9scO8bfT3fm15z"
+                    +"R6AUYsSsxAhup2Rix6jgJ14KGsh6uVm6jhz9aBTBcgx7iMuuP8zUbUE6nryHYXnR"
+                    +"cSvuYSesTCoFfnL7elrZDak/n0jLfwUD80aWnReJfu9QQGdqdDnSG8lSQ1XPOC7O"
+                    +"/hFW9l0TCzOE").getBytes());
+
+    @SuppressWarnings("unused")
+    private static final String pubExp3Csr = "-----BEGIN CERTIFICATE REQUEST-----\n" +
+            "MIICyTCCAbECAQAwgYUxCzAJBgNVBAYTAlNFMRMwEQYDVQQIDApTb21lLVN0YXRl\n" +
+            "MR4wHAYDVQQKDBVQcmltZUtleSBTb2x1dGlvbnMgQUIxHDAaBgNVBAMME0Jhc3Rp\n" +
+            "YW4gRnJlZHJpa3Nzb24xIzAhBgkqhkiG9w0BCQEWFGJhc3RpYW5AcHJpbWVrZXku\n" +
+            "Y29tMIIBIDANBgkqhkiG9w0BAQEFAAOCAQ0AMIIBCAKCAQEA4hmdDGhY9G1o8bx7\n" +
+            "b7uNShH1UEqzGLNuYPmnYPQo282+ufLru5ON6ySqDcIFSVStObAwkY/pe2Hibhbd\n" +
+            "o6HcNdbJuoy/sbMEeykxDE2gAWsMp8NYGLfd5COL9I2mSnLHRbiICSuHKfsxIOpf\n" +
+            "PR7IWgxGXUtBXxGnVhtfm8epKmQUwMMzQnbiYl5IrVAlt15r88qgL9uhI9AhyYth\n" +
+            "3my4jSm/MKsIJfEq02OHzOrvWWNHU6d8ay0Xetoy8YSL95F1s/q1ONw39mTriLyH\n" +
+            "IUHzHe6CinhiMdQuJ9GjrzGnyrkgAZW9bK3SEuZp3kGGDCDE/CP/cb/2B1d9R/DX\n" +
+            "NHwv7QIBA6AAMA0GCSqGSIb3DQEBCwUAA4IBAQAB7V+//THv+dzTMn0P7JYqI8Ob\n" +
+            "tVrRcPDr1taSFWBeRTzxchc3+D3JIsA1j00hdOFyje01dCt2LbDCAsJmRmD5JpWW\n" +
+            "qu+j/Hg2gEF2pA3V8r9KKCVVYWCtKak45l8YrKyldvENTrqAgF6zHBvtfZGkk5ik\n" +
+            "a0mu2joz3uTQD97k+t2+DlYXecc0Il57+KCefAqOcqYwO7HHDvWdxJESJDL8pVw4\n" +
+            "Qmd5jcD0aZbh8UjlIROMyziCjMloK/8lKza59bkvdsWbAEdNy88YXnC1hljdisEK\n" +
+            "fwpZY7RnlI0FPAp9qyQ7KAKt+hsTnfICkaINhM9ADxzToqaq8f1bjCdD3a95\n" +
+            "-----END CERTIFICATE REQUEST-----";
+
+    @SuppressWarnings("unused")
+    private static final String powOfPrimeCsr = "-----BEGIN CERTIFICATE REQUEST-----\n" +
+            "MIIE3zCCAscCAQAwgZkxCzAJBgNVBAYTAlNFMRMwEQYDVQQIDApTb21lLVN0YXRl\n" +
+            "MRIwEAYDVQQHDAlTdG9ja2hvbG0xHjAcBgNVBAoMFVByaW1lS2V5IFNvbHV0aW9u\n" +
+            "cyBBQjEcMBoGA1UEAwwTQmFzdGlhbiBGcmVkcmlrc3NvbjEjMCEGCSqGSIb3DQEJ\n" +
+            "ARYUYmFzdGlhbkBwcmltZWtleS5jb20wggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAw\n" +
+            "ggIKAoICAQDjf1K0BpT20vXA/e/rt7dYFLJDTWeS5YmIG3Ctr2DlpMlUMZ9eWWuz\n" +
+            "b3x6GdH7PMGug0tjpm7E0pbSiJk3y4cr2qFp9UXufIcsPaVK7VRsqEkcGOsD6VwS\n" +
+            "1zZamdGGeu5zD50YOOcdhqH0tKhhj+CtgEmbsoVXdkAkUtxC4HkkDZWnF/9DhEhM\n" +
+            "wHh7iuOaTKOQsOakCYL34p+tbqm1t98HZjmTzIxsW890HzqWu+Crm/t5KQaJOluT\n" +
+            "O4O20QI5iAB9dgsx6qK45K74mmeY20953na3j8kQ8Rs7O3aJCiZGkGpnFHQF6wOw\n" +
+            "k8WPjRAernlP+1oefBHtDau3VEH1xbUz5adN+MOYS94o4hhARHoT+9WOWDBgzAIw\n" +
+            "ZlYX8epvktElTglFq7lSf7mTkIFTYx5mIAGMwQXQw8Uvl86IvBPaHVZXosYm03BU\n" +
+            "tY7htyw341rDyaHKn6Zt+05X337sai5VzxupAzgt1f16RUuHC15ItnUoQN/wYX8E\n" +
+            "bOb+ViZmZ9wShALRIO75pNgzDS8P49eu1Nobq+wsAt7ZrbcvfzynTizgansrQnWI\n" +
+            "pG6l465E/P/hIEyQtZzZva2HcNvxfPr/JOs79jsSUdyuyLLpvm9Z19jF4fZv7m84\n" +
+            "1DrfiDfB4BYIiQD309heRwONlmLy2hxXbDdUkH/CdWT6W9VZ3xniwQIDAQABoAAw\n" +
+            "DQYJKoZIhvcNAQELBQADggIBAK6upG22yKnetxbNt1P9gCw04syNyBwr3MtEkV8c\n" +
+            "z0GNPwC0K77Vn75FASV3V4BqCyt8OOf9vT4F9KDi3m3zA1MaKtgVbFAHwhq1fepM\n" +
+            "SVIS2kRLdwP/k4CXdlKxnpnIpJ69NFcW7gKrUNaS6KDcl46QQdwd5kOgrUNhUTqZ\n" +
+            "kpPsFsgrnMA/7Nfhz1JTQcmuVe+wj3m+2x28YAkwli2YZhjL/74xHNvebMNV22ur\n" +
+            "cSFE0dk1VsyEufl6zUqqtmyZD5uxFfvd7DvUwXg+hUfgBe1NsBaEjIsECuptmOAu\n" +
+            "Vj8IBzFlXHXha1Bk/1KLK0CAmvJWdjmJQSAU8i4j6LO8jl5wQhuTx8QtPIVlhN+/\n" +
+            "DHu9I9oT9hvQV9uLpe404PLN+qn6C02TIMFMH+o2GSazNAmKIRsFrkh5zEHrcoDI\n" +
+            "V2qm1cf3xfRYw3krPOQ646I5Uk5WxHipjBYZ5OKX7+5TonShiQEDEwq0A5rddBx9\n" +
+            "M3GoPMpvB38VIrmeD3WnSkAPPPvURusmuSqsEpXmsYcjdgaKXSMjGNCV2eawTOi0\n" +
+            "eUvySPbD0ieV4cKvKuih8u95xKByU3TNf5BWdynGJyKVIE1Y6vG/rUTHjslVgYRy\n" +
+            "jcC54t6oAAAlqPBMyX8DtwPAaWBueaV9FVd2RMeBLIatSyrKaKkFIjaJqg1GN4DM\n" +
+            "+Zln\n" +
+            "-----END CERTIFICATE REQUEST-----";
+
+
     @BeforeClass
     public static void setClassUp() throws Exception {
         log.trace("setClassUp()");
@@ -401,48 +495,4 @@ public class RsaKeyValidatorTest {
 
         log.trace("<profileHasSmallerFactor()");
     }
-
-    private static byte[] noRocaCert = Base64
-            .decode(("MIIEdDCCA1ygAwIBAgIIVjkVCQFZomowDQYJKoZIhvcNAQEFBQAwNTEWMBQGA1UE"
-                    +"AwwNTWFuYWdlbWVudCBDQTEOMAwGA1UECgwFUEstRE0xCzAJBgNVBAYTAkFFMB4X"
-                    +"DTE2MDkyMjE1MDgxM1oXDTE2MDkyNDE1MDgxM1owMDEOMAwGA1UEAwwFeG1wcDIx"
-                    +"ETAPBgNVBAoMCFByaW1lS2V5MQswCQYDVQQGEwJBRTCBnzANBgkqhkiG9w0BAQEF"
-                    +"AAOBjQAwgYkCgYEAlYenj6Yh6/WGDyxpSIFu4p8JUn8Gs0+p8jYwNsdwut0n2jRs"
-                    +"92u0ekrmao5C0sdOF3EgVojOAWMGbqA32Q/3skXQqKwapgVlJGJXpNeMm47EwB4z"
-                    +"HTFKDwHNrnUOU3EB4kf4Z3leZU1KsDppVyt3he9M1gPHwnhSMKRkdPg64AkCAwEA"
-                    +"AaOCAg8wggILMBkGB2eBCAEBBgIEDjAMAgEAMQcTAVATAklEMAwGA1UdEwEB/wQC"
-                    +"MAAwHwYDVR0jBBgwFoAUu2ifcFjWKrS4wThm+sPPj8GYatowagYDVR0RBGMwYYgD"
-                    +"KQECoBgGCisGAQQBgjcUAgOgCgwIZm9vQGEuc2WgIwYIKwYBBQUHCAWgFwwVdG9t"
-                    +"YXNAeG1wcC5kb21haW4uY29toBsGCCsGAQUFBwgHoA8WDV9TZXJ2aWNlLk5hbWUw"
-                    +"ggEDBgNVHSAEgfswgfgwKAYDKQECMCEwHwYIKwYBBQUHAgEWE2h0dHBzOi8vZWpi"
-                    +"Y2Eub3JnLzIwKAYDKQEDMCEwHwYIKwYBBQUHAgEWE2h0dHBzOi8vZWpiY2Eub3Jn"
-                    +"LzMwBQYDKQEBMD0GAykBBDA2MDQGCCsGAQUFBwICMCgeJgBNAHkAIABVAHMAZQBy"
-                    +"ACAATgBvAHQAaQBjAGUAIABUAGUAeAB0MFwGAykBBTBVMDAGCCsGAQUFBwICMCQe"
-                    +"IgBFAEoAQgBDAEEAIABVAHMAZQByACAATgBvAHQAaQBjAGUwIQYIKwYBBQUHAgEW"
-                    +"FWh0dHBzOi8vZWpiY2Eub3JnL0NQUzAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYB"
-                    +"BQUHAwQwHQYDVR0OBBYEFMUFBPXfQktUn7WTMUxTHnYSXk8TMA4GA1UdDwEB/wQE"
-                    +"AwIF4DANBgkqhkiG9w0BAQUFAAOCAQEAQ1K6zjPjCNFT1+KJ/E959khU/Hg5dObK"
-                    +"p4LsS+LpPmFu4M9DjS2vwr48lLh+eBB65U+6/WMTO7/3fEeD3AaoD2+f9pnG6pq9"
-                    +"tC3GlfQfuSWELIhebg+73+GcvEpGRqQIKQ0qguTZEJiGK6i7714ECRE+xVD81Hez"
-                    +"BE3M3tBSK1Q6zJ36DdgSx99hz0p8IutMX6ntYDWbA1DJ+V3zzCc5zF3ZSogWv3+T"
-                    +"CJG3EfrGDJ91eVUlGyfDpHRr9a3WOWbypLjh1Q92xxHOJbvgnS9J6mybaOpQYyCn"
-                    +"MVWCdyTMTi9Ik0eybpeVMZYaSEO4xIqwoGbvuBgE2WKm+RuMnMOkfA==").getBytes());
-
-    private static byte[] rocaCert = Base64
-            .decode(("MIICpTCCAYwCCQC2u0PIfFaGMjANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls"
-                    +"b2NhbGhvc3QwHhcNMTcxMDE2MTkzODIxWhcNMTgxMDE2MTkzODIxWjAUMRIwEAYD"
-                    +"VQQDDAlsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQJZ"
-                    +"J7UrpeaMjJJou5IY83ZzYUymVBj0dFsUPNTuU/lJHJoOHC8jqVFjBq/784ZnuHG8"
-                    +"DMguYPW7Gp+hWlZxp2XJ8huVh9gBFZZDcqODyIOw3L9sd1cGsx6v8+P9SIVZoIze"
-                    +"og+al8TFm2uKjuykV9SoINSVCfdZM2MCvKGjaQsICRgR+Fjy6M6lpiNVrW4EHRk1"
-                    +"7aWSibWXaDtz4mV650v/x2Dk1RPMh9uTVZGOqgjTmLvl9oNdyHElIRubNrOgvHC5"
-                    +"k6bLP30stAYd5z25cslCrfmVW2/kzZDwDQiK7ASvH17/kfIa9e1EYXx9uAk/lTZt"
-                    +"smWAxK85neuU+bFBMFvhAgMBAAEwDQYJKoZIhvcNAQELBQADggECAAG7W49CYRUk"
-                    +"YAFRGXu3M85MKOISyc/kkJ8nbHdV6GxJ05FkoDKbcbZ7nncJiIp2VMAMEIP4bRTJ"
-                    +"5U4g4vSZlmCs8BDmV3Ts/tbDCM6eqK+2hwjhUnCnmmsLt4xVUeAAsWUHl9AVtjzd"
-                    +"oYlm1Kk20QBzNpsvM/gFS5B+duHvTSfELfoq9Pdfvmn2gEXJHe9scO8bfT3fm15z"
-                    +"R6AUYsSsxAhup2Rix6jgJ14KGsh6uVm6jhz9aBTBcgx7iMuuP8zUbUE6nryHYXnR"
-                    +"cSvuYSesTCoFfnL7elrZDak/n0jLfwUD80aWnReJfu9QQGdqdDnSG8lSQ1XPOC7O"
-                    +"/hFW9l0TCzOE").getBytes());
-
 }
