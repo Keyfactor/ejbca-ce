@@ -33,7 +33,6 @@ import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -53,6 +52,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper;
+import org.ejbca.util.HttpTools;
 import org.ejbca.util.PrinterManager;
 
 /**
@@ -1111,11 +1111,9 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setPrintedCopies(copies);
     }
 
-    // verify...
     public String getCurrentTemplate() {
-        String currentTemplate = profiledata.getPrinterSVGFileName();
-        ;
-        if (currentTemplate.equals("")) {
+        final String currentTemplate = profiledata.getPrinterSVGFileName();
+        if (StringUtils.isEmpty(currentTemplate)) {
             return ejbcaWebBean.getText("NOTEMPLATEUPLOADED");
         } else {
             return currentTemplate;
@@ -1129,7 +1127,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public void setTemplateFileUpload(final Part templateFileUpload) {
-log.debug("Template file upload: " + templateFileUpload); // XXX removeme
         this.templateFileUpload = templateFileUpload;
     }
 
@@ -1140,17 +1137,17 @@ log.debug("Template file upload: " + templateFileUpload); // XXX removeme
             addErrorMessage("YOUMUSTSELECT");
             return;
         }
-        final String filename = FilenameUtils.getName(StringUtils.defaultString(templateFileUpload.getName()));
         byte[] contents = null;
         if (templateFileUpload.getSize() > MAX_TEMPLATE_FILESIZE) {
             addErrorMessage("TEMPLATEUPLOADFAILED");
             return;
         }
         try {
-            contents = IOUtils.readFully(templateFileUpload.getInputStream(), MAX_TEMPLATE_FILESIZE);
+            contents = IOUtils.toByteArray(templateFileUpload.getInputStream(), templateFileUpload.getSize());
         } catch (IOException e) {
             log.info("Caught exception when trying to get template file upload", e);
         }
+        final String filename = HttpTools.getUploadFilename(templateFileUpload);
         if (contents == null || contents.length == 0 || StringUtils.isEmpty(filename)) {
             log.info("No template file uploaded, or empty file.");
             addErrorMessage("TEMPLATEUPLOADFAILED");
