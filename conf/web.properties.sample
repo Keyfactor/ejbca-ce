@@ -122,7 +122,7 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default = internal
 #web.docbaseuri=disabled
 #web.docbaseuri=internal
-#web.docbaseuri=https://www.ejbca.org
+#web.docbaseuri=https://www.ejbca.org/docs
 
 # Require administrator certificates to be available in database for revocation
 # checks. Set this to false, if you want to be able to use admin certificates
