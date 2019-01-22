@@ -38,7 +38,6 @@ import javax.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -87,6 +86,12 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         profileSaved = "true".equals(FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(PARAMETER_PROFILE_SAVED));
     }
 
+    public void preRenderView() {
+        if (profileSaved) {
+            addInfoMessage("ENDENTITYPROFILESAVED");
+        }
+    }
+
     private Integer selectedEndEntityProfileId = null;
     private boolean deleteInProgress = false;
     private boolean profileSaved;
@@ -101,10 +106,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void setEndEntityProfileName(final String endEntityProfileName) {
         this.endEntityProfileName = StringUtils.trim(endEntityProfileName);
-    }
-
-    public boolean isProfileSaved() {
-        return profileSaved;
     }
 
     public boolean isAuthorizedToEdit() {
@@ -147,6 +148,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void actionAdd() {
+        clearMessages();
         if (validateEndEntityProfileName()) {
             try {
                 final EndEntityProfile endEntityProfile = new EndEntityProfile();
@@ -196,6 +198,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void actionDeleteConfirm() {
+        clearMessages();
         try {
             endEntityProfileSession.removeEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName());
             reset();
@@ -213,11 +216,18 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         profileSaved = false;
     }
 
+    @Override
+    public void clearMessages() {
+        super.clearMessages();
+        profileSaved = false;
+    }
+
     public void actionCancel() {
         deleteInProgress = false;
     }
 
     public void actionRename() {
+        clearMessages();
         if (!selectedProfileExists() || !validateEndEntityProfileName()) {
             // Do nothing
         } else if (isEmptyProfile()) {
@@ -243,6 +253,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void actionImportProfiles() throws IOException, NumberFormatException, AuthorizationDeniedException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
+        clearMessages();
         if (uploadFile == null) {
             addNonTranslatedErrorMessage("File upload failed.");
             return;
@@ -423,6 +434,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
     
     public String actionEdit() {
+        clearMessages();
         if (isEmptyProfile()) {
             addErrorMessage("YOUCANTEDITEMPTYPROFILE");
             return "";
@@ -435,6 +447,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void actionCloneProfile() {
+        clearMessages();
         if (validateEndEntityProfileName()) {
             try {
                 endEntityProfileSession.cloneEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
