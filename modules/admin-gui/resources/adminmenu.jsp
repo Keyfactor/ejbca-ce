@@ -28,7 +28,7 @@ org.ejbca.util.HTMLTools
        final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editpublishers/listpublishers.xhtml";
        final String EDITVALIDATORS_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath()  + "/editvalidators/editvalidators.xhtml";
 
-       final String CRYPTOTOKENS_LINK        =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotokens.jsf";
+       final String CRYPTOTOKENS_LINK        =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotokens.xhtml";
 
        final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/cafunctions.xhtml";
        final String CA_ACTIVATION_LINK		=  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() + "/caactivation.xhtml";   
