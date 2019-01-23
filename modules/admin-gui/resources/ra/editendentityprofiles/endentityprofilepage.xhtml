@@ -445,6 +445,7 @@
                     </h:column>
                     <h:column>
                     	<h:panelGrid id="subjectAltNameTextFieldGrid" column="1">
+							<h:outputText styleClass="help" value="#{subjectAltNameComponent.helpText}" rendered="#{not empty subjectAltNameComponent.helpText}"/>
 							<h:inputText 
 								id="subjectAltNameTextField" 
 								value="#{subjectAltNameComponent.value}" 
