@@ -151,6 +151,19 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             this.helpText = helpText;
         }
 
+        /** Used for "Use End Entity E-mail" only */
+        public boolean isUsed() {
+            return profiledata.getUse(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+        }
+
+        public void setUsed(final boolean use) {
+            profiledata.setUse(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], use);
+        }
+
+        public boolean getUseEndEntityEmail() {
+            return emailField && isUsed();
+        }
+
         public boolean isRequired() {
             return profiledata.isRequired(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
         }
