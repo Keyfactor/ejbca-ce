@@ -299,7 +299,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECERTIFICATETRANSPARENCYINCERTS = "usecertificatetransparencyincerts";
     protected static final String USECERTIFICATETRANSPARENCYINOCSP  = "usecertificatetransparencyinocsp";
     protected static final String USECERTIFICATETRANSPARENCYINPUBLISHERS  = "usecertificatetransparencyinpublisher";
-
+    protected static final String USECERTIFICATETRANSPARENCYNONE = "usecertificatetransparencynone";
+    
     /* Certificate Transparency */
     protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
     protected static final String CTLOGS = "ctlogs";
@@ -2543,6 +2544,38 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, use);
     }
     
+    public String getUseCertificateTransparency() {
+        String type = USECERTIFICATETRANSPARENCYNONE;
+        if (isUseCertificateTransparencyInCerts()) {
+            type = USECERTIFICATETRANSPARENCYINCERTS;
+        } else if (isUseCertificateTransparencyInOCSP()) {
+            type = USECERTIFICATETRANSPARENCYINOCSP;
+        } else if (isUseCertificateTransparencyInPublishers()) {
+            type = USECERTIFICATETRANSPARENCYINPUBLISHERS;
+        }
+        return type;
+    }
+    
+    public void setUseCertificateTransparency(final String type) {
+        if (USECERTIFICATETRANSPARENCYINCERTS.equals(type)) {
+            data.put(USECERTIFICATETRANSPARENCYINCERTS, true);
+            data.put(USECERTIFICATETRANSPARENCYINOCSP, false);
+            data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, false);
+        } else if (USECERTIFICATETRANSPARENCYINOCSP.equals(type)) {
+            data.put(USECERTIFICATETRANSPARENCYINCERTS, false);
+            data.put(USECERTIFICATETRANSPARENCYINOCSP, true);
+            data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, false);
+        } else if (USECERTIFICATETRANSPARENCYINPUBLISHERS.equals(type)) {
+            data.put(USECERTIFICATETRANSPARENCYINCERTS, false);
+            data.put(USECERTIFICATETRANSPARENCYINOCSP, false);
+            data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, true);
+        } else {
+            data.put(USECERTIFICATETRANSPARENCYINCERTS, false);
+            data.put(USECERTIFICATETRANSPARENCYINOCSP, false);
+            data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, false);
+        }
+    }
+    
     public boolean isCtEnabled() {
         return isUseCertificateTransparencyInCerts() ||
             isUseCertificateTransparencyInOCSP() ||
@@ -2571,6 +2604,40 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     public void setNumberOfSctByCustom(boolean use) {
         data.put(CT_NUMBER_OF_SCTS_BY_CUSTOM, use);
+    }
+    
+    public String getNumberOfSctBy() {
+        if (isNumberOfSctByValidity()) {
+            return CT_NUMBER_OF_SCTS_BY_VALIDITY;
+        }
+        return CT_NUMBER_OF_SCTS_BY_CUSTOM;
+    }
+    
+    public void setNumberOfSctBy(String choice) {
+        if (CT_NUMBER_OF_SCTS_BY_VALIDITY.equals(choice)) {
+            setNumberOfSctByValidity(true);
+            setNumberOfSctByCustom(false);
+        } else {
+            setNumberOfSctByValidity(false);
+            setNumberOfSctByCustom(true);            
+        }
+    }
+    
+    public String getMaxNumberOfSctBy() {
+        if (isMaxNumberOfSctByValidity()) {
+            return CT_NUMBER_OF_SCTS_BY_VALIDITY;
+        }
+        return CT_NUMBER_OF_SCTS_BY_CUSTOM;
+    }
+    
+    public void setMaxNumberOfSctBy(String choice) {
+        if (CT_NUMBER_OF_SCTS_BY_VALIDITY.equals(choice)) {
+            setMaxNumberOfSctByValidity(true);
+            setMaxNumberOfSctByCustom(false);
+        } else {
+            setMaxNumberOfSctByValidity(false);
+            setMaxNumberOfSctByCustom(true);            
+        }
     }
     
     public boolean isMaxNumberOfSctByValidity() {
