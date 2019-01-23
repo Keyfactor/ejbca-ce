@@ -15,11 +15,12 @@
 
  version: $Id$
  -->
-<web-app version="3.0" id="cmptcpweb"
+<web-app version="3.1" id="cmptcpweb"
+    metadata-complete="false"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns="http://java.sun.com/xml/ns/javaee"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-                        http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                        http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
     <description><![CDATA[CMP TCP server]]></description>
     
@@ -61,12 +62,7 @@
         <web-resource-collection>
             <web-resource-name>restricted methods</web-resource-name>
             <url-pattern>/*</url-pattern>
-            <http-method>GET</http-method>
-            <http-method>POST</http-method>
-            <http-method>PUT</http-method>
-            <http-method>DELETE</http-method>
-            <http-method>OPTIONS</http-method>
-            <http-method>TRACE</http-method>
+            <!-- "If no HTTP methods are named in the collection (which means that all are protected)" -->
         </web-resource-collection>
         <auth-constraint />
     </security-constraint> 
