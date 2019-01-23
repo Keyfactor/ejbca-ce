@@ -91,6 +91,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         private static final long serialVersionUID = 1L;
 
         private final int[] field;
+        private String helpText;
         private final String name;
         private final boolean emailField;
         private boolean shouldRemove = false;
@@ -140,6 +141,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
         public int getNumber() {
             return field[EndEntityProfile.NUMBER];
+        }
+
+        public String getHelpText() {
+            return helpText;
+        }
+
+        public void setHelpText(final String helpText) {
+            this.helpText = helpText;
         }
 
         public boolean isRequired() {
@@ -482,11 +491,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
             for (int[] field : fielddatalist) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
-                // FIXME use field[EndEntityProfile.FIELDTYPE] instead
-    //            final int fieldType = getFieldType();
-    //            final String fieldName = DnComponents.get
-    //            return fieldType == EndEntityProfile.EMAIL || fieldType == EndEntityProfile.
-                final boolean isEmailField = fieldName.contains("E-mail");
+                final boolean isEmailField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS);
                 components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField));
             }
             subjectDnComponentList = components;
@@ -555,12 +560,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
             for (int[] field : fielddatalist) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
-                // FIXME use field[EndEntityProfile.FIELDTYPE] instead
-    //          final int fieldType = getFieldType();
-    //          final String fieldName = DnComponents.get
-    //          return fieldType == EndEntityProfile.EMAIL || fieldType == EndEntityProfile.
-                final boolean isEmailField = fieldName.contains("E-mail");
-                components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField));
+                final boolean isEmailField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
+                final NameComponentGuiWrapper guiWrapper = new NameComponentGuiWrapper(fieldName, field, isEmailField);
+                if (EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
+                    guiWrapper.setHelpText(ejbcaWebBean.getText("ALT_MS_UPN_HELP"));
+                }
+                components.add(guiWrapper);
             }
             subjectAltNameComponentList = components;
         }
@@ -1162,11 +1167,50 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         log.trace("<uploadTemplate");
     }
 
+    private void validateProfile() {
+        // Available Certificate Profiles
+        final List<Integer> availableCertProfs = profiledata.getAvailableCertificateProfileIds();
+        if (!availableCertProfs.contains(profiledata.getDefaultCertificateProfile())) {
+            editerrors.put("Certificate Profiles", ejbcaWebBean.getText("DEFAULTAVAILABLECERTIFICATEPROFILE"));
+        }
+        // Available CAs
+        final List<Integer> availableCas = profiledata.getAvailableCAs();
+        if (!availableCas.contains(profiledata.getDefaultCA())) {
+            editerrors.put("CAs", ejbcaWebBean.getText("DEFAULTAVAILABLECA"));
+        }
+        // Token types
+        final List<Integer> availableTokenTypes = profiledata.getAvailableTokenTypes();
+        if (!availableTokenTypes.contains(profiledata.getDefaultTokenType())) {
+            editerrors.put("Token Types", ejbcaWebBean.getText("DEFAULTAVAILABLETOKENTYPE"));
+        }
+        // Hard Token Issuers
+        if (profiledata.isHardTokenIssuerUsed()) {
+            final List<Integer> availableHardTokenIssuers = profiledata.getAvailableHardTokenIssuers();
+            if (!availableHardTokenIssuers.contains(profiledata.getDefaultHardTokenIssuer())) {
+                editerrors.put("Hard Token Issuers", ejbcaWebBean.getText("DEFAULTAVAILABLEHARDTOKENISSUER"));
+            }
+        }
+        // Printing
+        if (profiledata.getUsePrinting()) {
+            if (StringUtils.isEmpty(profiledata.getPrinterName())) {
+                editerrors.put("Printer Name", ejbcaWebBean.getText("MUSTSELECTPRINTER"));
+            }
+        }
+    }
+
+    @Override
+    public void clearMessages() {
+        super.clearMessages();
+        editerrors.clear();
+    }
+
     public String saveProfile() throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
         log.trace(">saveProfile");
+        clearMessages();
+        profiledata.setUserNotifications(userNotifications);
+        validateProfile();
         if (editerrors.isEmpty()) {
             final String profileName = endEntityProfileSession.getEndEntityProfileName(profileId);
-            profiledata.setUserNotifications(userNotifications);
             endEntityProfileSession.changeEndEntityProfile(getAdmin(), profileName, profiledata);
             log.debug("Successfully edited End Entity Profile");
             redirect("editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, true);
