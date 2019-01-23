@@ -16,6 +16,7 @@ package org.ejbca.ui.web.pub;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -88,6 +89,7 @@ public class HttpMethodsTest {
     /** Test the doc.war module. */
     @Test
     public void testDocs() throws Exception {
+        assumeTrue(WebConfiguration.CONFIG_DOCBASEURI + " is not set to \"internal\".", "internal".equals(configurationSession.getProperty(WebConfiguration.CONFIG_DOCBASEURI)));
         performResourceTest("/ejbca/doc/index.html");
     }
 

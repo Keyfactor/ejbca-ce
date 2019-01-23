@@ -33,6 +33,7 @@ public class WebConfiguration {
     public static final String CONFIG_HTTPSERVERPUBHTTPS   = "httpserver.pubhttps";
 	public static final String CONFIG_HTTPSSERVERPRIVHTTPS = "httpserver.privhttps";
 	public static final String CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS = "httpserver.external.privhttps";
+    public static final String CONFIG_DOCBASEURI = "web.docbaseuri";
     public static final String CONFIG_REQCERT = "web.reqcert";
 	public static final String CONFIG_REQCERTINDB = "web.reqcertindb";
 	
@@ -103,7 +104,7 @@ public class WebConfiguration {
 	 * @return "disabled", "internal" or and URL
 	 */
 	public static String getDocBaseUri() {
-		return EjbcaConfigurationHolder.getExpandedString("web.docbaseuri");
+		return EjbcaConfigurationHolder.getExpandedString(CONFIG_DOCBASEURI);
 	}
 	
 	/**
