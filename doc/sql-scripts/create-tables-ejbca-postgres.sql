@@ -89,6 +89,7 @@ CREATE TABLE Base64CertData (
     base64Cert TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
+    certificateRequest TEXT,
     PRIMARY KEY (fingerprint)
 );
 
@@ -153,6 +154,7 @@ CREATE TABLE CertificateData (
     type INT4 NOT NULL,
     updateTime INT8 NOT NULL,
     username TEXT,
+    certificateRequest TEXT,
     PRIMARY KEY (fingerprint)
 );
 
@@ -424,6 +426,7 @@ CREATE TABLE NoConflictCertificateData (
     type INT4 NOT NULL,
     updateTime INT8 NOT NULL,
     username TEXT,
+    certificateRequest TEXT,
     PRIMARY KEY (id)
 );
 

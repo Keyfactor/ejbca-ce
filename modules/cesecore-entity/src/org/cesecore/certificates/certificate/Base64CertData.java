@@ -49,10 +49,12 @@ public class Base64CertData extends ProtectedData implements Serializable {
 
     private String fingerprint = "";
     private String base64Cert;
+	private String certificateRequest;
+	
     private int rowVersion = 0;
-
-    private String rowProtection;
-
+	private String rowProtection;    
+	
+	
     /**
      * Storing an encoded certificate. Called only when
      * {@link CertificateData#CertificateData(Certificate, java.security.PublicKey, String, String, int, int, int, int, String, long, boolean, boolean)}
@@ -79,6 +81,7 @@ public class Base64CertData extends ProtectedData implements Serializable {
         setFingerprint(copy.getFingerprint());
         setRowProtection(copy.getRowProtection());
         setRowVersion(copy.getRowVersion());
+        setCertificateRequest(copy.getCertificateRequest());
     }
 
     public Base64CertData() {
@@ -124,6 +127,14 @@ public class Base64CertData extends ProtectedData implements Serializable {
         this.base64Cert = base64Cert;
     }
 
+	public String getCertificateRequest() {
+        return certificateRequest;
+    }
+
+    public void setCertificateRequest(String certificateRequest) {
+        this.certificateRequest = certificateRequest;
+    }
+	
     // @Version @Column
     public int getRowVersion() {
         return this.rowVersion;
@@ -157,7 +168,7 @@ public class Base64CertData extends ProtectedData implements Serializable {
     }
     
     public boolean equals(final Base64CertData other) {
-        if (other==null) {
+        if (other == null) {
             return false;
         }
         if (!fingerprint.equals(other.fingerprint)) {
@@ -166,13 +177,16 @@ public class Base64CertData extends ProtectedData implements Serializable {
         if (!base64Cert.equals(other.base64Cert)) {
             return false;
         }
-        if (rowProtection!=null && !rowProtection.equals(other.rowProtection)) {
+        if (rowProtection != null && !rowProtection.equals(other.rowProtection)) {
             return false;
         }
-        if (rowProtection==null && other.rowProtection!=null) {
+        if (rowProtection == null && other.rowProtection != null) {
             return false;
         }
-        if (rowVersion!=other.rowVersion) {
+        if (rowVersion != other.rowVersion) {
+            return false;
+        }
+        if (certificateRequest != other.certificateRequest) {
             return false;
         }
         return true;

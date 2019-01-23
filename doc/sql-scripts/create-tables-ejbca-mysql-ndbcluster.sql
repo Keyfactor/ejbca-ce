@@ -92,6 +92,7 @@ CREATE TABLE Base64CertData (
     base64Cert LONGTEXT,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
+    certificateRequest LONGTEXT,
     PRIMARY KEY (fingerprint)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
@@ -156,6 +157,7 @@ CREATE TABLE CertificateData (
     type INT(11) NOT NULL,
     updateTime BIGINT(20) NOT NULL,
     username VARCHAR(250) BINARY,
+    certificateRequest LONGTEXT,
     PRIMARY KEY (fingerprint)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
@@ -432,6 +434,7 @@ CREATE TABLE NoConflictCertificateData (
     type INT(11) NOT NULL,
     updateTime BIGINT(20) NOT NULL,
     username VARCHAR(250) BINARY,
+    certificateRequest LONGTEXT,
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 

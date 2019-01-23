@@ -161,6 +161,9 @@ public abstract class BaseCertificateData extends ProtectedData {
     
     public abstract int getRowVersion();
     
+    public abstract String getCertificateRequest();
+    
+    
     //
     // Setters to call when changing revocation status
     //
@@ -267,6 +270,7 @@ public abstract class BaseCertificateData extends ProtectedData {
      */
     public abstract void setCaFingerprint(String cafp);
     
+    public abstract void setCertificateRequest(String certificateRequest);
     
     /**
      * expire date of certificate
