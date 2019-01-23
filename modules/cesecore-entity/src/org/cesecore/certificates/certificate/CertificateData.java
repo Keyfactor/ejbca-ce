@@ -89,6 +89,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     private Integer endEntityProfileId = null;  // @since EJBCA 6.6.0
     private long updateTime = 0;
     private String subjectKeyId;
+    private String certificateRequest;  // @since EJBCA 7.0.0
     private int rowVersion = 0;
     private String rowProtection;
 
@@ -198,6 +199,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         setTag(copy.getTag());
         setRowVersion(copy.getRowVersion());
         setRowProtection(copy.getRowProtection());
+        setCertificateRequest(copy.getCertificateRequest());
     }
 
     public CertificateData() {
@@ -484,8 +486,18 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return endEntityProfileId;
     }
     
+    @Override
+    public String getCertificateRequest() {
+        return certificateRequest;
+    }
+    
+    @Override
+    public void setCertificateRequest(String certificateRequest) {
+        this.certificateRequest = certificateRequest;
+    }
     
     // Comparators
+
 
     @Override
     public boolean equals(Object obj) {
@@ -585,6 +597,9 @@ public class CertificateData extends BaseCertificateData implements Serializable
         if (!StringUtils.equals(subjectAltName, certificateData.subjectAltName)) {
             return false;
         }
+        if (!StringUtils.equals(certificateRequest, certificateData.certificateRequest)) {
+            return false;
+        }
         return true;
     }
 
@@ -609,6 +624,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         certificateProfileId = certificateData.certificateProfileId;
         updateTime = certificateData.updateTime;
         base64Cert = inclusionMode ? null : certificateData.base64Cert;
+        certificateRequest = certificateData.certificateRequest;
     }
 
     

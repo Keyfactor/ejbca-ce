@@ -89,6 +89,7 @@ CREATE TABLE Base64CertData (
     base64Cert CLOB,
     rowProtection CLOB,
     rowVersion NUMBER(10) NOT NULL,
+    certificateRequest CLOB,
     PRIMARY KEY (fingerprint)
 );
 
@@ -153,6 +154,7 @@ CREATE TABLE CertificateData (
     type NUMBER(10) NOT NULL,
     updateTime NUMBER(19) NOT NULL,
     username VARCHAR2(255 byte),
+    certificateRequest CLOB,
     PRIMARY KEY (fingerprint)
 );
 
@@ -428,6 +430,7 @@ CREATE TABLE NoConflictCertificateData (
     type NUMBER(10) NOT NULL,
     updateTime NUMBER(19) NOT NULL,
     username VARCHAR2(255 byte),
+    certificateRequest CLOB,
     PRIMARY KEY (id)
 );
 
