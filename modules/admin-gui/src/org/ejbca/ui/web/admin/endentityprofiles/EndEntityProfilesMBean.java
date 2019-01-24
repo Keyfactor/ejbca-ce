@@ -65,6 +65,14 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private static final Logger log = Logger.getLogger(EndEntityProfilesMBean.class);
 
     public static final String PARAMETER_PROFILE_SAVED = "profileSaved";
+    /**
+     * Maximum size of the profiles ZIP file upload.
+     * <p>
+     * Usually profiles aren't larger than a few kilobytes, but with printing templates
+     * (rarely used) they could be larger. The application server usually has it's
+     * own limitation as well.
+     */
+    private static final int MAX_PROFILEZIP_FILESIZE = 50*1024*1024;
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -258,7 +266,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             addNonTranslatedErrorMessage("File upload failed.");
             return;
         }
-        final byte[] fileBytes = IOUtils.toByteArray(getUploadFile().getInputStream());
+        if (uploadFile.getSize() > MAX_PROFILEZIP_FILESIZE) {
+            addErrorMessage("File is too large. Maximum size is " + (MAX_PROFILEZIP_FILESIZE/1024/1024) + " MB, but server configuration may impose further limitations.");
+            return;
+        }
+        final byte[] fileBytes = IOUtils.toByteArray(getUploadFile().getInputStream(), uploadFile.getSize());
         importProfilesFromZip(fileBytes);
         endEntityProfileItems = null;
     }
