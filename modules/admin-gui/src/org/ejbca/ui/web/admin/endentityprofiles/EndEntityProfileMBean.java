@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -97,7 +98,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private Integer profileId;
     private String profileName;
     private boolean viewOnly;
-    private final Map<String, String> editerrors = new HashMap<>();
+    private final List<String> editerrors = new ArrayList<>();
 
     private Part templateFileUpload;
 
@@ -129,20 +130,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
 
         public void setValue(final String value) {
-            if (!EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS)) {
-                if (StringUtils.isBlank(value) && !isModifiable() && isRequired()) {
-                    editerrors.put(name, ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY", true) + ejbcaWebBean.getText(" " + "DN_PKIX_" + name, true));
-                } else {
-                    profiledata.setValue(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], value);
-                }
-            } else {
-                if (StringUtils.isBlank(value) && !isModifiable() && isRequired()) {
-                    editerrors.put(name, ejbcaWebBean.getText("SUBJECTDNEMAILEMPTY", true));
-                } else {
-                    // Test validation end 
-                    profiledata.setValue(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], value);
-                }
-            }
+            profiledata.setValue(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], StringUtils.trim(value));
         }
 
         public int[] getField() {
@@ -218,7 +206,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
 
         public void setValidationString(final String validationString) {
-            final LinkedHashMap<String, Serializable> validation = raBean.getValidationFromRegexp(validationString);
+            final LinkedHashMap<String, Serializable> validation = raBean.getValidationFromRegexp(StringUtils.trim(validationString));
             profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], validation);
         }
 
@@ -282,7 +270,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public void setPassword(final String password) {
-        profiledata.setPredefinedPassword(password);
+        profiledata.setPredefinedPassword(StringUtils.trim(password));
     }
 
     public boolean getPasswordRequired() {
@@ -427,7 +415,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     // as above...
     public void setEmail(final String domain) {
         if (getUseEmail()) {
-            profiledata.setEmailDomain(domain);
+            profiledata.setEmailDomain(StringUtils.trim(domain));
         }
     }
 
@@ -457,8 +445,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public List<SelectItem> getSubjectDNAttributes() {
         final List<SelectItem> attributesReturned = new ArrayList<>();
         final String[] attributeStrings = EndEntityProfile.getSubjectDNProfileFields();
-        //for (int stringElement = 0; stringElement < attributeString.length; stringElement++) {
-            //final String attribute = attributeString[stringElement];
         for (final String attribute : attributeStrings) {
             if (currentSubjectDnAttribute == null) {
                 currentSubjectDnAttribute = attribute;
@@ -556,17 +542,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         subjectAltNameComponentList = null; // reload state from profile
     }
 
-    // temp value atm
     public String getCurrentSubjectAltNameType() {
         return currentSubjectAltName;
     }
 
-    // temp value atm
     public void setCurrentSubjectAltNameType(final String subjectAltNameType) {
         currentSubjectAltName = subjectAltNameType;
     }
 
-    //
     public List<NameComponentGuiWrapper> getSubjectAltNameComponentList() {
         if (subjectAltNameComponentList == null) {
             final List<NameComponentGuiWrapper> components = new ArrayList<>();
@@ -621,17 +604,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         subjectDirectoryAttributesComponentList = null; // reload state from profile
     }
 
-    // 
     public String getCurrentSubjectDirectoryAttribute() {
         return currentSubjectDirectoryAttribute;
     }
 
-    // 
     public void setCurrentSubjectDirectoryAttribute(final String subjectDirectoryAttribute) {
         currentSubjectDirectoryAttribute = subjectDirectoryAttribute;
     }
 
-    //
     public List<NameComponentGuiWrapper> getSubjectDirectoryAttributeComponentList() {
         if (subjectDirectoryAttributesComponentList == null) {
             List<NameComponentGuiWrapper> components = new ArrayList<>();
@@ -823,7 +803,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public void setValidityStartTime(final String startTime) throws ParseException {
-        final String convertedStartTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(startTime);
+        final String convertedStartTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(StringUtils.trim(startTime));
         profiledata.setValidityStartTime(convertedStartTime);
     }
 
@@ -856,7 +836,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public void setValidityEndTime(final String endTime) throws ParseException {
-        final String convertedEndTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(endTime);
+        final String convertedEndTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(StringUtils.trim(endTime));
         profiledata.setValidityEndTime(convertedEndTime);
     }
 
@@ -1192,28 +1172,32 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private void validateProfile() {
         // E-mail
         if (!profiledata.isEmailModifiable() && StringUtils.isEmpty(profiledata.getEmailDomain())) {
-            editerrors.put("E-mail", ejbcaWebBean.getText("EMAILEMPTYNONMODIFIABLE"));
+            editerrors.add(ejbcaWebBean.getText("EMAILEMPTYNONMODIFIABLE"));
         }
+        // Subject DN, SAN and Subject Directory Attributes
+        validateNameComponents(getSubjectDnComponentList());
+        validateNameComponents(getSubjectAltNameComponentList());
+        validateNameComponents(getSubjectDirectoryAttributeComponentList());
         // Available Certificate Profiles
         final List<Integer> availableCertProfs = profiledata.getAvailableCertificateProfileIds();
         if (!availableCertProfs.contains(profiledata.getDefaultCertificateProfile())) {
-            editerrors.put("Certificate Profiles", ejbcaWebBean.getText("DEFAULTAVAILABLECERTIFICATEPROFILE"));
+            editerrors.add(ejbcaWebBean.getText("DEFAULTAVAILABLECERTIFICATEPROFILE"));
         }
         // Available CAs
         final List<Integer> availableCas = profiledata.getAvailableCAs();
         if (!availableCas.contains(profiledata.getDefaultCA())) {
-            editerrors.put("CAs", ejbcaWebBean.getText("DEFAULTAVAILABLECA"));
+            editerrors.add(ejbcaWebBean.getText("DEFAULTAVAILABLECA"));
         }
         // Token types
         final List<Integer> availableTokenTypes = profiledata.getAvailableTokenTypes();
         if (!availableTokenTypes.contains(profiledata.getDefaultTokenType())) {
-            editerrors.put("Token Types", ejbcaWebBean.getText("DEFAULTAVAILABLETOKENTYPE"));
+            editerrors.add(ejbcaWebBean.getText("DEFAULTAVAILABLETOKENTYPE"));
         }
         // Hard Token Issuers
         if (profiledata.isHardTokenIssuerUsed()) {
             final List<Integer> availableHardTokenIssuers = profiledata.getAvailableHardTokenIssuers();
             if (!availableHardTokenIssuers.contains(profiledata.getDefaultHardTokenIssuer())) {
-                editerrors.put("Hard Token Issuers", ejbcaWebBean.getText("DEFAULTAVAILABLEHARDTOKENISSUER"));
+                editerrors.add(ejbcaWebBean.getText("DEFAULTAVAILABLEHARDTOKENISSUER"));
             }
         }
         // Key Recovery
@@ -1224,18 +1208,45 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         // Printing
         if (profiledata.getUsePrinting()) {
             if (StringUtils.isEmpty(profiledata.getPrinterName())) {
-                editerrors.put("Printer Name", ejbcaWebBean.getText("MUSTSELECTPRINTER"));
+                editerrors.add(ejbcaWebBean.getText("MUSTSELECTPRINTER"));
             }
         }
         // Validity time
         if (profiledata.isValidityStartTimeUsed() && !StringUtils.isEmpty(profiledata.getValidityStartTime())) {
             if (!validityTimePattern.matcher(profiledata.getValidityStartTime()).matches()) {
-                editerrors.put("Validity Start Time", "Invalid validity start time"); // validated with HTML5 pattern also, but everything should have a server-side check
+                editerrors.add("Invalid validity start time"); // validated with HTML5 pattern also, but everything should have a server-side check
             }
         }
         if (profiledata.isValidityEndTimeUsed() && !StringUtils.isEmpty(profiledata.getValidityEndTime())) {
             if (!validityTimePattern.matcher(profiledata.getValidityEndTime()).matches()) {
-                editerrors.put("Validity End Time", "Invalid validity end time");
+                editerrors.add("Invalid validity end time");
+            }
+        }
+    }
+    
+    private void validateNameComponents(final List<NameComponentGuiWrapper> list) {
+        for (final NameComponentGuiWrapper component : list) {
+            final String name = component.getName();
+            // empty value + non-modifiable + required = invalid
+            // empty value + non-modifiable = could make sense in theory, but most likely a user error, so disallow it as well (consistent with 6.15.x behavior)
+            if (StringUtils.isBlank(component.getValue()) && !component.isModifiable()) {
+                if (component.isEmailField()) {
+                    editerrors.add(ejbcaWebBean.getText("SUBJECTDNEMAILEMPTY"));
+                } else {
+                    editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + ejbcaWebBean.getText("DN_PKIX_" + name));
+                }
+            }
+            if (component.isUseValidation()) {
+                final String regex = component.getValidationString();
+                if (StringUtils.isBlank(regex)) {
+                    editerrors.add(ejbcaWebBean.getText("EESUBJDNVALIDATIONEMPTY",  false, name));
+                } else {
+                    try {
+                        Pattern.compile(regex);
+                    } catch (PatternSyntaxException e) {
+                        editerrors.add(ejbcaWebBean.getText("VALIDATIONREGEXERROR", false, name, e.getMessage()));
+                    }
+                }
             }
         }
     }
@@ -1259,8 +1270,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             log.trace("<saveProfile: success");
             return "";
         } else {
-            for (final String errorMessage : editerrors.values()) {
-                addNonTranslatedErrorMessage(errorMessage); // FIXME Non translated is temporary for testing
+            for (final String errorMessage : editerrors) {
+                addNonTranslatedErrorMessage(errorMessage);
             }
         }
         log.trace("<saveProfile: error");
