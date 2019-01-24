@@ -1044,6 +1044,7 @@
                         requiredMessage="#{web.text.MUSTFILLINANOTIFICATIONSENDER}"
 				   		title="#{web.text.FORMAT_EMAILADDRESS}"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfileMBean.viewOnly}">
+						<f:converter converterId="trimConverter"/>
 					    <f:ajax/> 
 					</h:inputText>
 					&nbsp;
@@ -1057,6 +1058,7 @@
                         requiredMessage="#{web.text.MUSTFILLINANOTIFICATIONRECIPIENT}"
 					   	title="#{web.text.FORMAT_EMAILADDRESSORUSER}"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfileMBean.viewOnly}">
+						<f:converter converterId="trimConverter"/>
 					    <f:ajax/>
 					</h:inputText>
 					&nbsp;
@@ -1080,6 +1082,7 @@
                         requiredMessage="#{web.text.MUSTFILLINANOTIFICATIONSUBJECT}"
 				   		title="#{web.text.FORMAT_STRING}"
 						disabled="#{not endEntityProfileMBean.useSendNotification or endEntityProfileMBean.viewOnly}">
+						<f:converter converterId="trimConverter"/>
 				        <f:ajax/> 
 					</h:inputText>
 					&nbsp;
