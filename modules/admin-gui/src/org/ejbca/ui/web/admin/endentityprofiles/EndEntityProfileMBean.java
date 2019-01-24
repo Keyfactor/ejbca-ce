@@ -1171,7 +1171,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
      */
     private void validateProfile() {
         // E-mail
-        if (!profiledata.isEmailModifiable() && StringUtils.isEmpty(profiledata.getEmailDomain())) {
+        if (profiledata.isEmailUsed() && !profiledata.isEmailModifiable() && StringUtils.isEmpty(profiledata.getEmailDomain())) {
             editerrors.add(ejbcaWebBean.getText("EMAILEMPTYNONMODIFIABLE"));
         }
         // Subject DN, SAN and Subject Directory Attributes
