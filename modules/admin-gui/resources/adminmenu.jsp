@@ -163,9 +163,9 @@ org.ejbca.util.HTMLTools
 <% } %>
         <%
       if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){
-         if(!raheaderprinted){
+         if(!caheaderprinted){
            out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>");
-           raheaderprinted=true;
+           caheaderprinted=true;
          }  %>
     <li><a href="<%= RA_EDITPROFILESLINK %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
         <% } %>
