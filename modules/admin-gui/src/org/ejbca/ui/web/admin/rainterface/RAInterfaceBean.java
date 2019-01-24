@@ -1290,6 +1290,7 @@ public class RAInterfaceBean implements Serializable {
         return availablecertprofiles;
     }
 
+    /** @deprecated Since EJBCA 7.0.0 */
     public LinkedHashMap<String,Serializable> getValidationFromRegexp(final String validationRegex) {
         // We must accept an empty value in case the user has Javascript turned
         // off and has to update the page before the text field appears

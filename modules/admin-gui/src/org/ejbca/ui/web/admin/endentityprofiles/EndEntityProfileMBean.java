@@ -48,6 +48,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -56,7 +57,6 @@ import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper;
 import org.ejbca.util.HttpTools;
 import org.ejbca.util.PrinterManager;
@@ -91,7 +91,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private HardTokenSessionLocal hardTokenSession;
 
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
-    private RAInterfaceBean raBean = new RAInterfaceBean();
     private EndEntityProfile profiledata;
     private List<UserNotification> userNotifications; 
     private String[] printerNames = null;
@@ -109,12 +108,16 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         private String helpText;
         private final String name;
         private final boolean emailField;
+        /** Corresponds to the removal checkboxes on the left */
         private boolean shouldRemove = false;
+        /** Stores the last used validation regex in case the user mis-clicks and wants to undo */
+        private String lastUsedValidationString = "";
 
         public NameComponentGuiWrapper(final String name, final int[] field, final boolean emailField) {
             this.name = name;
             this.field = field;
             this.emailField = emailField;
+            lastUsedValidationString = getValidationString();
         }
 
         public boolean isEmailField() {
@@ -180,7 +183,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
         public void setModifiable(final boolean modifiable) {
             profiledata.setModifyable(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], modifiable);
+        }
 
+        private LinkedHashMap<String, Serializable> validationFromRegex(final String regex) {
+            final LinkedHashMap<String, Serializable> validation = new LinkedHashMap<>();
+            validation.put(RegexFieldValidator.class.getName(), StringUtils.defaultString(regex));
+            return validation;
         }
 
         public boolean isUseValidation() {
@@ -190,7 +198,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         public void setUseValidation(final boolean use) {
             if (use) {
                 if (profiledata.getValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]) == null) {
-                    profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], new LinkedHashMap<String, Serializable>());
+                    profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], validationFromRegex(lastUsedValidationString));
                 }
             } else {
                 profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], null);
@@ -206,8 +214,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
 
         public void setValidationString(final String validationString) {
-            final LinkedHashMap<String, Serializable> validation = raBean.getValidationFromRegexp(StringUtils.trim(validationString));
-            profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], validation);
+            lastUsedValidationString = validationString;
+            profiledata.setValidation(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], validationFromRegex(lastUsedValidationString));
         }
 
         public boolean isShouldRemove() {
@@ -224,7 +232,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         try {
             ejbcaWebBean.initialize(req, AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES);
-            raBean.initialize(req, ejbcaWebBean);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -705,8 +712,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public List<SelectItem> getAllTokenTypes() {
-        final String[] tokenString = RAInterfaceBean.tokentexts;
-        final int[] tokenIds = RAInterfaceBean.tokenids;
+        final String[] tokenString = SecConst.TOKENTEXTS;
+        final int[] tokenIds = SecConst.TOKENIDS;
         final List<SelectItem> selectItems = new ArrayList<>();
         for (int stringElement = 0; stringElement < tokenString.length; stringElement++) {
             final int tokenTypeId = tokenIds[stringElement];
@@ -720,12 +727,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return selectItems;
     }
 
-    // verify... 
     public int getDefaultTokenType() {
         return profiledata.getDefaultTokenType();
     }
 
-    //... 
     public void setDefaultTokenType(final int defaultTokenType) {
         profiledata.setDefaultTokenType(defaultTokenType);
     }
@@ -785,7 +790,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public void setUseCertSerialNumber(boolean useCertSerialNr) {
         profiledata.setCustomSerialNumberUsed(useCertSerialNr);
     }
-    
+
     public String getValidityTimeRegex() {
         return VALIDITY_TIME_REGEX;
     }
