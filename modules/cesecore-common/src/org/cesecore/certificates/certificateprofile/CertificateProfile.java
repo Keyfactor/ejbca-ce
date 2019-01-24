@@ -299,7 +299,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECERTIFICATETRANSPARENCYINCERTS = "usecertificatetransparencyincerts";
     protected static final String USECERTIFICATETRANSPARENCYINOCSP  = "usecertificatetransparencyinocsp";
     protected static final String USECERTIFICATETRANSPARENCYINPUBLISHERS  = "usecertificatetransparencyinpublisher";
-    protected static final String USECERTIFICATETRANSPARENCYNONE = "usecertificatetransparencynone";
     
     /* Certificate Transparency */
     protected static final String CTSUBMITEXISTING  = "ctsubmitexisting";
@@ -2542,38 +2541,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setUseCertificateTransparencyInPublishers(boolean use) {
         data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, use);
-    }
-    
-    public String getUseCertificateTransparency() {
-        String type = USECERTIFICATETRANSPARENCYNONE;
-        if (isUseCertificateTransparencyInCerts()) {
-            type = USECERTIFICATETRANSPARENCYINCERTS;
-        } else if (isUseCertificateTransparencyInOCSP()) {
-            type = USECERTIFICATETRANSPARENCYINOCSP;
-        } else if (isUseCertificateTransparencyInPublishers()) {
-            type = USECERTIFICATETRANSPARENCYINPUBLISHERS;
-        }
-        return type;
-    }
-    
-    public void setUseCertificateTransparency(final String type) {
-        if (USECERTIFICATETRANSPARENCYINCERTS.equals(type)) {
-            data.put(USECERTIFICATETRANSPARENCYINCERTS, true);
-            data.put(USECERTIFICATETRANSPARENCYINOCSP, false);
-            data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, false);
-        } else if (USECERTIFICATETRANSPARENCYINOCSP.equals(type)) {
-            data.put(USECERTIFICATETRANSPARENCYINCERTS, false);
-            data.put(USECERTIFICATETRANSPARENCYINOCSP, true);
-            data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, false);
-        } else if (USECERTIFICATETRANSPARENCYINPUBLISHERS.equals(type)) {
-            data.put(USECERTIFICATETRANSPARENCYINCERTS, false);
-            data.put(USECERTIFICATETRANSPARENCYINOCSP, false);
-            data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, true);
-        } else {
-            data.put(USECERTIFICATETRANSPARENCYINCERTS, false);
-            data.put(USECERTIFICATETRANSPARENCYINOCSP, false);
-            data.put(USECERTIFICATETRANSPARENCYINPUBLISHERS, false);
-        }
     }
     
     public boolean isCtEnabled() {
