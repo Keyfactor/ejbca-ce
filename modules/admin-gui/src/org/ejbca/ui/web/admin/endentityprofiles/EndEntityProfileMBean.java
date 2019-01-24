@@ -1228,12 +1228,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
         }
         // Validity time
-        if (profiledata.isValidityStartTimeUsed()) {
+        if (profiledata.isValidityStartTimeUsed() && !StringUtils.isEmpty(profiledata.getValidityStartTime())) {
             if (!validityTimePattern.matcher(profiledata.getValidityStartTime()).matches()) {
                 editerrors.put("Validity Start Time", "Invalid validity start time"); // validated with HTML5 pattern also, but everything should have a server-side check
             }
         }
-        if (profiledata.isValidityEndTimeUsed()) {
+        if (profiledata.isValidityEndTimeUsed() && !StringUtils.isEmpty(profiledata.getValidityEndTime())) {
             if (!validityTimePattern.matcher(profiledata.getValidityEndTime()).matches()) {
                 editerrors.put("Validity End Time", "Invalid validity end time");
             }
