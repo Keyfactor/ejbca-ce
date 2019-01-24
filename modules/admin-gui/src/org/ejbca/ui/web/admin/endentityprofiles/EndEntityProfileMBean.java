@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.endentityprofiles;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -72,6 +74,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public static final String PARAMETER_PROFILE_ID = "id";
     private static final int MAX_TEMPLATE_FILESIZE = 2*1024*1024;
+
+    private static final String RELATIVE_TIME_REGEX = "\\d+:\\d?\\d:\\d?\\d"; // example: 90:0:0 or 0:15:30
+    private static final String ISO_TIME_REGEX = "\\d{4,}-(0\\d|10|11|12)-[0123]\\d( \\d\\d:\\d\\d(:\\d\\d)?)?([+-]\\d\\d:\\d\\d)?"; // example: 2019-12-31 or 2019-12-31 23:59:59+00:00
+    private static final String VALIDITY_TIME_REGEX = "^(" + RELATIVE_TIME_REGEX + "|" + ISO_TIME_REGEX + ")$";
+    private static final Pattern validityTimePattern = Pattern.compile(VALIDITY_TIME_REGEX);
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -436,7 +443,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     //
     public boolean isEmailModifiable() {
-        return profiledata.isEmailDomainModifiable();
+        return profiledata.isEmailModifiable();
     }
 
     //
@@ -798,6 +805,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public void setUseCertSerialNumber(boolean useCertSerialNr) {
         profiledata.setCustomSerialNumberUsed(useCertSerialNr);
     }
+    
+    public String getValidityTimeRegex() {
+        return VALIDITY_TIME_REGEX;
+    }
 
     public boolean isUseCertValidityStartTime() {
         return profiledata.isValidityStartTimeUsed();
@@ -808,11 +819,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public String getValidityStartTime() {
-        return profiledata.getValidityStartTime();
+        return ejbcaWebBean.getISO8601FromImpliedUTCOrRelative(profiledata.getValidityStartTime());
     }
 
-    public void setValidityStartTime(final String startTime) {
-        profiledata.setValidityStartTime(startTime);
+    public void setValidityStartTime(final String startTime) throws ParseException {
+        final String convertedStartTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(startTime);
+        profiledata.setValidityStartTime(convertedStartTime);
     }
 
     public boolean isCertValidityStartTimeModifiable() {
@@ -840,11 +852,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public String getValidityEndTime() {
-        return profiledata.getValidityEndTime();
+        return ejbcaWebBean.getISO8601FromImpliedUTCOrRelative(profiledata.getValidityEndTime());
     }
 
-    public void setValidityEndTime(final String endTime) {
-        profiledata.setValidityEndTime(endTime);
+    public void setValidityEndTime(final String endTime) throws ParseException {
+        final String convertedEndTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(endTime);
+        profiledata.setValidityEndTime(convertedEndTime);
     }
 
     public String getValidityTimeExample() {
@@ -911,11 +924,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     // OTHER DATA
 
     public boolean getUseNumberOfAllowedRequests() {
-        return profiledata.isAllowedRequestsLimited();
+        return profiledata.isAllowedRequestsUsed();
     }
 
     public void setUseNumberOfAllowedRequests(boolean useNumberOfAllowedRequests) {
-        profiledata.setAllowedRequestsLimited(useNumberOfAllowedRequests);
+        profiledata.setAllowedRequestsUsed(useNumberOfAllowedRequests);
     }
 
     public List<SelectItem> getSelectableNumberOfAllowedRequests() {
@@ -1173,7 +1186,14 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         log.trace("<uploadTemplate");
     }
 
+    /**
+     * Performs validation for fields that cannot be validated using JSF validators or required attributes.
+     */
     private void validateProfile() {
+        // E-mail
+        if (!profiledata.isEmailModifiable() && StringUtils.isEmpty(profiledata.getEmailDomain())) {
+            editerrors.put("E-mail", ejbcaWebBean.getText("EMAILEMPTYNONMODIFIABLE"));
+        }
         // Available Certificate Profiles
         final List<Integer> availableCertProfs = profiledata.getAvailableCertificateProfileIds();
         if (!availableCertProfs.contains(profiledata.getDefaultCertificateProfile())) {
@@ -1205,6 +1225,17 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (profiledata.getUsePrinting()) {
             if (StringUtils.isEmpty(profiledata.getPrinterName())) {
                 editerrors.put("Printer Name", ejbcaWebBean.getText("MUSTSELECTPRINTER"));
+            }
+        }
+        // Validity time
+        if (profiledata.isValidityStartTimeUsed()) {
+            if (!validityTimePattern.matcher(profiledata.getValidityStartTime()).matches()) {
+                editerrors.put("Validity Start Time", "Invalid validity start time"); // validated with HTML5 pattern also, but everything should have a server-side check
+            }
+        }
+        if (profiledata.isValidityEndTimeUsed()) {
+            if (!validityTimePattern.matcher(profiledata.getValidityEndTime()).matches()) {
+                editerrors.put("Validity End Time", "Invalid validity end time");
             }
         }
     }
