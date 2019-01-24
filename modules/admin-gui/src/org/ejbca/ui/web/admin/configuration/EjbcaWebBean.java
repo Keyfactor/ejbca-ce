@@ -662,6 +662,9 @@ public class EjbcaWebBean implements Serializable {
      * return it as it was. Otherwise we try to parse it as a ISO8601 date time.
      */
     public String getImpliedUTCFromISO8601OrRelative(final String dateString) throws ParseException {
+        if (StringUtils.isEmpty(dateString)) {
+            return "";
+        }
         if (!isRelativeDateTime(dateString)) {
             return getImpliedUTCFromISO8601(dateString);
         }
