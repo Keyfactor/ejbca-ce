@@ -164,7 +164,7 @@ org.ejbca.util.HTMLTools
         <%
       if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){
          if(!raheaderprinted){
-           out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>");
+           out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>");
            raheaderprinted=true;
          }  %>
     <li><a href="<%= RA_EDITPROFILESLINK %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
