@@ -57,7 +57,7 @@ public class RaStyleCacheBean {
         raStyleCache = new HashMap<>();
         lastUpdateMap = new HashMap<>();
         if (log.isDebugEnabled()) {
-            log.info(this.getClass().getName() + " initialized");
+            log.debug(this.getClass().getName() + " initialized");
         }
     }
     
