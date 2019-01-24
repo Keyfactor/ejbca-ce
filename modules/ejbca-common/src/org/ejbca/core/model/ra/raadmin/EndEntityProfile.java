@@ -1038,7 +1038,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setValue(EMAIL, 0, domain);
     }
 
-    public boolean isEmailDomainModifiable() {
+    public boolean isEmailModifiable() {
         return isModifyable(EMAIL, 0);
     }
 
@@ -1054,17 +1054,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setRequired(EMAIL, 0, required);
     }
 
-    public boolean isAllowedRequestsLimited() {
+    public boolean isAllowedRequestsUsed() {
         return getUse(ALLOWEDREQUESTS, 0);
     }
 
-    public void setAllowedRequestsLimited(final boolean limited) {
+    public void setAllowedRequestsUsed(final boolean limited) {
         setUse(ALLOWEDREQUESTS, 0, limited);
     }
 
     public int getAllowedRequests() {
-        if (!isAllowedRequestsLimited()) {
-            return -1;
+        if (!isAllowedRequestsUsed()) {
+            return 1; // only one request is allowed by default, see the "End Entity Profiles" documentation page
         }
         final String value = getValue(ALLOWEDREQUESTS, 0);
         if (StringUtils.isEmpty(value)) {

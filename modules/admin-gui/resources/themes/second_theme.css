@@ -349,6 +349,9 @@ input.selectButton.enabled:hover {
 	background-color: Highlight;
 	color: HighlightText;
 }
+input[type=number] {
+	height: 1em;
+}
 div.message {
 	margin-top: 1.0em;
 	text-align: center;
@@ -1312,7 +1315,7 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 
 .fullwidth-dynui-table .editColumn2 table { width: 100%; }
 .fullwidth-dynui-table textarea,
-.fullwidth-dynui-table input[type=text] {
+.fullwidth-dynui-table input[type=text], .fullwidth-dynui-table input[type=number] {
     display: block;
     width: 100%;
     box-sizing: border-box;

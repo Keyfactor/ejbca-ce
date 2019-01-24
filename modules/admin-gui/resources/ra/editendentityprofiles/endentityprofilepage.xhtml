@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:t="http://myfaces.apache.org/tomahawk"
-    xmlns:component="http://java.sun.com/jsf/composite/component"
-    >
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:component="http://xmlns.jcp.org/jsf/composite/component"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+    xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
     <ui:remove>
     <!--
     /*************************************************************************
@@ -127,7 +127,8 @@
 					   		size="5" 
 					   		maxlength="10"
 					   		title="#{web.text.UNIT_BITS}"
-					   		type="number"
+					   		pt:type="number"
+					   		required="true"
 					   		converterMessage="#{web.text.MINPWDSTRENGTHINVALID}"
 							disabled="#{endEntityProfileMBean.viewOnly}"/>
 				     </h:panelGroup> 
@@ -158,8 +159,10 @@
 					   			size="5" 
 					   			maxlength="255"
 					   			title="#{web.text.FORMAT_INTEGER}"
-					   			type="number"
+					   			pt:type="number"
+					   			required="true"
 					   			converterMessage="#{web.text.MAXFAILEDLOGINATTEMPTSINVALID}"
+					   			requiredMessage="#{web.text.MAXFAILEDLOGINATTEMPTSINVALID}"
 								disabled="#{not endEntityProfileMBean.profiledata.maxFailedLoginsUsed or endEntityProfileMBean.maxFailLoginsUnlimited}"/>
 				    		<h:selectBooleanCheckbox 
 				    			id="failedAttemptsUnlimited" 
@@ -763,6 +766,7 @@
 					   		size="25" 
 					   		maxlength="40"
 					   		title="#{web.text.FORMAT_ISO8601}"
+					   		pt:pattern="#{endEntityProfileMBean.validityTimeRegex}"
 							disabled="#{not endEntityProfileMBean.useCertValidityStartTime}">
 				    	    <f:ajax/> 
 				    	</h:inputText>
@@ -797,6 +801,7 @@
 					   		size="25" 
 					   		maxlength="40"
 					   		title="#{web.text.FORMAT_ISO8601}"
+					   		pt:pattern="#{endEntityProfileMBean.validityTimeRegex}"
 							disabled="#{not endEntityProfileMBean.useCertValidityEndTime}">
 				    	    <f:ajax/> 
 				    	</h:inputText>
@@ -1160,7 +1165,8 @@
 	       		<h:panelGroup>&nbsp;</h:panelGroup>
 	       		<h:panelGrid id="saveOrCancelGrid" columns="2">
 	       			<h:commandButton id="saveButton" value="#{web.text.SAVE}" action="#{endEntityProfileMBean.saveProfile}"/>
-					<h:commandButton id="cancelButton" value="#{web.text.CANCEL}" action="#{endEntityProfileMBean.cancel}"/>
+					<h:commandButton id="cancelButton" value="#{web.text.CANCEL}" action="#{endEntityProfileMBean.cancel}"
+						immediate="true" pt:formnovalidate="formnovalidate"/>
 				</h:panelGrid>
 			</h:panelGrid>
 	    </h:form>
