@@ -1015,7 +1015,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         newNotification.setNotificationRecipient(UserNotification.RCPT_USER);
         newNotification.setNotificationEventsCollection(new ArrayList<>(Arrays.asList(
                 EndEntityConstants.STATUS_NEW+"", EndEntityConstants.STATUS_INITIALIZED+"")));
-        userNotifications.add(newNotification);
+        userNotifications.add(0, newNotification);
     }
 
     public void removeNotification(final UserNotification notification) {
@@ -1257,12 +1257,44 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         editerrors.clear();
     }
 
+    public void cleanUpUnused() {
+        if (!profiledata.isEmailUsed()) {
+            profiledata.setEmailRequired(false);
+        }
+        if (!profiledata.isCardNumberUsed()) {
+            profiledata.setCardNumberRequired(false);
+        }
+        if (!profiledata.isClearTextPasswordUsed()) {
+            profiledata.setClearTextPasswordRequired(false);
+            profiledata.setClearTextPasswordDefault(false);
+        }
+        if (!profiledata.isKeyRecoverableUsed()) {
+            profiledata.setKeyRecoverableRequired(false);
+            profiledata.setKeyRecoverableDefault(false);
+        }
+        if (!profiledata.isNameConstraintsPermittedUsed()) {
+            profiledata.setNameConstraintsPermittedRequired(false);
+        }
+        if (!profiledata.isNameConstraintsExcludedUsed()) {
+            profiledata.setNameConstraintsExcludedRequired(false);
+        }
+        if (!profiledata.isSendNotificationUsed()) {
+            profiledata.setSendNotificationRequired(false);
+            profiledata.setSendNotificationDefault(false);
+        }
+        if (!profiledata.getUsePrinting()) {
+            profiledata.setPrintingRequired(false);
+            profiledata.setPrintingDefault(false);
+        }
+    }
+
     public String saveProfile() throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
         log.trace(">saveProfile");
         clearMessages();
         profiledata.setUserNotifications(userNotifications);
         validateProfile();
         if (editerrors.isEmpty()) {
+            cleanUpUnused();
             final String profileName = endEntityProfileSession.getEndEntityProfileName(profileId);
             endEntityProfileSession.changeEndEntityProfile(getAdmin(), profileName, profiledata);
             log.debug("Successfully edited End Entity Profile");
