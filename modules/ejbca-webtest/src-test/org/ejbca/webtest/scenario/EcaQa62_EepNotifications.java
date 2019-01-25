@@ -95,13 +95,12 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 
         // Click 'Add' button and check that all the fields are added
         endEntityProfileHelper.addNotification();
-        endEntityProfileHelper.assertNotificationSenderExists();
-        endEntityProfileHelper.assertNotificationRecipientExists();
-        endEntityProfileHelper.assertNotificationEventsExists();
-        endEntityProfileHelper.assertNotificationSubjectExists();
-        endEntityProfileHelper.assertNotificationMessageExists();
-        endEntityProfileHelper.assertAddAnotherNotificationButtonExists();
-        endEntityProfileHelper.assertCancelNotificationButtonIsEnabled(true);
+        endEntityProfileHelper.assertNotificationSenderExists(0);
+        endEntityProfileHelper.assertNotificationRecipientExists(0);
+        endEntityProfileHelper.assertNotificationEventsExists(0);
+        endEntityProfileHelper.assertNotificationSubjectExists(0);
+        endEntityProfileHelper.assertNotificationMessageExists(0);
+        endEntityProfileHelper.assertDeleteAllNotificationButtonIsEnabled(true);
     }
 
     // TODO ECA-7627 Documentation has to be built before this case works
@@ -114,13 +113,12 @@ public class EcaQa62_EepNotifications extends WebTestBase {
 
     @Test
     public void e_addAnotherNotification() throws InterruptedException {
-        //TODO ECA-7349 check after eep page convertion, alerts should be replaced with error messages.
-//        endEntityProfileHelper.addAnotherNotification();
-//        endEntityProfileHelper.assertNotificationNotFilledAllerts();
-
+        endEntityProfileHelper.addNotification();
+        endEntityProfileHelper.assertNotificationSenderExists(0);
+        endEntityProfileHelper.assertNotificationSenderExists(1);
         // Click 'Cancel' and make sure that the page looks like before
-        endEntityProfileHelper.cancelNotification();
-        endEntityProfileHelper.assertNotificationSenderDoesNotExist();
+        endEntityProfileHelper.deleteAllNotifications();
+        endEntityProfileHelper.assertNotificationSenderDoesNotExist(0);
     }
 
     @Test
@@ -128,32 +126,31 @@ public class EcaQa62_EepNotifications extends WebTestBase {
         endEntityProfileHelper.addNotification();
 
         // Fill fields with 'first' and then click 'Add Another'
-        endEntityProfileHelper.fillNotification(TestData.FIRST_TEXT);
-        endEntityProfileHelper.addAnotherNotification();
+        endEntityProfileHelper.fillNotification(0, TestData.FIRST_TEXT);
+        endEntityProfileHelper.addNotification();
         // Make sure the new prototype is on top
-        assertTrue("Top notification was not empty", endEntityProfileHelper.getNotificationSenderText().isEmpty());
-        assertEquals("Bottom notification didn't contain expected value", TestData.FIRST_TEXT, endEntityProfileHelper.getNotificationSubjectValueText(0));
-        assertEquals("Bottom notification didn't have 'Delete' button", "Delete", endEntityProfileHelper.getNotificationDeleteButtonValueText(0));
+        assertTrue("Top notification was not empty", endEntityProfileHelper.getNotificationSenderText(0).isEmpty());
+        assertEquals("Bottom notification didn't contain expected value", TestData.FIRST_TEXT, endEntityProfileHelper.getNotificationSubjectValueText(1));
+        assertEquals("Top notification didn't have 'Delete' button", "Delete", endEntityProfileHelper.getNotificationDeleteButtonValueText(0));
+        assertEquals("Bottom notification didn't have 'Delete' button", "Delete", endEntityProfileHelper.getNotificationDeleteButtonValueText(1));
 
         // Click 'Save' and make sure the correct error messages are displayed
-//        TODO ECA-7349 check after eep page convertion, alerts should be replaced with error messages.
-//        endEntityProfileHelper.saveEndEntityProfile( false);
-//        endEntityProfileHelper.assertNotificationNotFilledAllerts();
+        endEntityProfileHelper.saveEndEntityProfile( false);
+        endEntityProfileHelper.assertNotificationNotFilledErrorMessages();
     }
 
     @Test
     public void g_addSecondAndThirdNotification() {
         // Fill fields with 'second' and then click 'Add Another'
-        endEntityProfileHelper.fillNotification(TestData.SECOND_TEXT);
-        endEntityProfileHelper.addAnotherNotification();
+        endEntityProfileHelper.fillNotification(0, TestData.SECOND_TEXT);
+        endEntityProfileHelper.addNotification();
 
         // Fill fields with 'third' and then save
 
-        endEntityProfileHelper.fillNotification(TestData.THIRD_TEXT);
+        endEntityProfileHelper.fillNotification(0, TestData.THIRD_TEXT);
         endEntityProfileHelper.saveEndEntityProfile( true);
     }
 
-    //TODO ECA-7349 verify after jsf convertion. There may be a problem with indeces
     @Test
     public void g_disabledFields() {
         endEntityProfileHelper.openEditEndEntityProfilePage(TestData.EEP_NAME);
@@ -170,11 +167,11 @@ public class EcaQa62_EepNotifications extends WebTestBase {
     @Test
     public void h_deleteNotifications() {
         // Click 'Delete' for prototype 'third' and check that it's deleted and that the other prototypes are intact
-        endEntityProfileHelper.deleteNotification(2);
+        endEntityProfileHelper.deleteNotification(0);
         endEntityProfileHelper.assertNotificationSenderDoesNotExist(2);
 
-        assertEquals("Top notification had unexpected value", TestData.SECOND_TEXT, endEntityProfileHelper.getNotificationSenderValueText(1));
-        assertEquals("Bottom prototype had unexpected value", TestData.FIRST_TEXT, endEntityProfileHelper.getNotificationSenderValueText(0));
+        assertEquals("Top notification had unexpected value", TestData.SECOND_TEXT, endEntityProfileHelper.getNotificationSenderValueText(0));
+        assertEquals("Bottom prototype had unexpected value", TestData.FIRST_TEXT, endEntityProfileHelper.getNotificationSenderValueText(1));
 
         // Click 'Delete All', then cancel and restart editing
         endEntityProfileHelper.deleteAllNotifications();
