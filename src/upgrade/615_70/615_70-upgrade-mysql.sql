@@ -1,0 +1,5 @@
+-- New columns in CertificateData are added by the JPA provider if there are sufficient privileges
+-- if not added automatically the following SQL statements can be run to add the new columns 
+-- ALTER TABLE CertificateData ADD certificateRequest LONGTEXT;
+-- ALTER TABLE NoConflictCertificateData ADD certificateRequest LONGTEXT;
+-- ALTER TABLE Base64CertData ADD certificateRequest LONGTEXT;
