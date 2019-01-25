@@ -132,7 +132,9 @@ public abstract class WebTestBase {
      */
     public static void afterClass() {
         // Destroy web driver & close all windows
-        webDriver.quit();
+        if (webDriver != null) {
+            webDriver.quit();
+        }
     }
 
     private static void setGlobalConstants() {
