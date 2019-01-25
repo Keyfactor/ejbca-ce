@@ -684,6 +684,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return list;
     }
 
+    public List<SelectItem> getAllCasWithAnyCaOption() {
+        final List<SelectItem> list = new ArrayList<>();
+        list.add(new SelectItem(SecConst.ALLCAS, ejbcaWebBean.getText("ANYCA")));
+        list.addAll(getAllCas());
+        return list;
+    }
+
     public Collection<Integer> getAvailableCas() {
         return profiledata.getAvailableCAs();
     }
@@ -1190,7 +1197,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
         // Available CAs
         final List<Integer> availableCas = profiledata.getAvailableCAs();
-        if (!availableCas.contains(profiledata.getDefaultCA())) {
+        if (!availableCas.contains(SecConst.ALLCAS) && !availableCas.contains(profiledata.getDefaultCA())) {
             editerrors.add(ejbcaWebBean.getText("DEFAULTAVAILABLECA"));
         }
         // Token types
@@ -1263,6 +1270,9 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public void cleanUpUnused() {
+        if (profiledata.getAvailableCAs().contains(SecConst.ALLCAS)) {
+            profiledata.setAvailableCAs(new ArrayList<>(Arrays.asList(SecConst.ALLCAS)));
+        }
         if (!profiledata.isEmailUsed()) {
             profiledata.setEmailRequired(false);
         }
