@@ -158,6 +158,32 @@ CREATE TABLE CertificateData (
     PRIMARY KEY (fingerprint)
 );
 
+CREATE TABLE NoConflictCertificateData (
+    fingerprint VARCHAR(256) NOT NULL,
+    base64Cert CLOB,
+    cAFingerprint VARCHAR(256),
+    certificateProfileId INTEGER NOT NULL,
+    endEntityProfileId INTEGER,
+    expireDate BIGINT NOT NULL,
+    issuerDN VARCHAR(256) NOT NULL,
+    notBefore BIGINT,
+    revocationDate BIGINT NOT NULL,
+    revocationReason INTEGER NOT NULL,
+    rowProtection CLOB(10 K),
+    rowVersion INTEGER NOT NULL,
+    serialNumber VARCHAR(256) NOT NULL,
+    status INTEGER NOT NULL,
+    subjectAltName VARCHAR(2000),
+    subjectDN VARCHAR(400) NOT NULL,
+    subjectKeyId VARCHAR(256),
+    tag VARCHAR(256),
+    type INTEGER NOT NULL,
+    updateTime BIGINT NOT NULL,
+    username VARCHAR(256),
+    certificateRequest CLOB,
+    PRIMARY KEY (fingerprint)
+);
+
 CREATE TABLE CertificateProfileData (
     id INTEGER NOT NULL,
     certificateProfileName VARCHAR(256) NOT NULL,
