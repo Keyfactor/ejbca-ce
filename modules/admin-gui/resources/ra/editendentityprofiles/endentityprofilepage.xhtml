@@ -307,12 +307,12 @@
 				</h:column>
 				<h:outputText style="font-weight: bold;" value="#{web.text.CERT_SUBJECTDN_ATTRIBUTES}"/>
 				<h:panelGrid id="subjectDNAttributeGrid" columns="2">
-					<h:selectOneMenu id="subjectDNAttributeMenu" value="#{endEntityProfileMBean.currentSubjectDNAttribute}">
+					<h:selectOneMenu id="subjectDnAttributeType" value="#{endEntityProfileMBean.currentSubjectDNAttribute}">
 					    <f:ajax/> <!-- Needed to submit the selected item via AJAX --> 
 						<f:selectItems id="subjectDNAttributesList" value="#{endEntityProfileMBean.subjectDNAttributes}"/>
 					</h:selectOneMenu>
 					<h:commandButton
-						id="addSubjectDNAttributeButton" 
+						id="addSubjectDnAttributeButton"
 						value="#{web.text.ADD}" 
 						action="#{endEntityProfileMBean.addSubjectDNAttribute}">
 						<f:ajax render="subjectDnComponents"/>  
@@ -338,12 +338,12 @@
 						</h:selectBooleanCheckbox>
 					</h:column>
 					<h:column>
-						<h:outputLabel for="subjectDNTextField" value="#{dnComponent.name}"/>
+						<h:outputLabel for="subjectDnTextField" value="#{dnComponent.name}"/>
 					</h:column>
 					<h:column>
 					<h:panelGrid id="subjectDNTextFieldGrid" column="1">
 						<h:inputText 
-							id="subjectDNTextField" 
+							id="subjectDnTextField"
 							value="#{dnComponent.value}" 
 					   		size="45" 
 					   		maxlength="1024"
@@ -360,14 +360,14 @@
 				    		</h:selectBooleanCheckbox>
 				    		<h:outputLabel for="dnAttributeRequiredCheckBox"  value="#{web.text.REQUIRED}"/>
 				    		<h:selectBooleanCheckbox 
-				    			id="dnAttributeModifiableCheckBox" 
+				    			id="dnModifiableCheckBox"
 				    			value="#{dnComponent.modifiable}" 
 				    			rendered="#{not dnComponent.emailField}"
 				    			disabled="#{endEntityProfileMBean.viewOnly}">
 				    			<f:ajax render="subjectDNCheckBoxesGrid"/>
 				    		</h:selectBooleanCheckbox>
 				    		<h:outputText class="help" value="#{web.text.DN_PKIX_EMAILADDRESS_HELP}" rendered="#{dnComponent.emailField}"/>
-				    		<h:outputLabel for="dnAttributeModifiableCheckBox"  value="#{web.text.MODIFYABLE}" rendered="#{not dnComponent.emailField}"/>
+				    		<h:outputLabel for="dnModifiableCheckBox"  value="#{web.text.MODIFYABLE}" rendered="#{not dnComponent.emailField}"/>
 				    		<h:selectBooleanCheckbox 
 				    			id="dnAttributeValidationCheckBox" 
 				    			value="#{dnComponent.useValidation}" 
@@ -421,11 +421,11 @@
 					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles.html#Subject_Alternative_Names')}" escape="false"/>
 	       		</h:panelGroup>
 	       		<h:panelGrid id="subjectAltNameTypeGrid" columns="2">
-					<h:selectOneMenu id="subjectAltNameType" value="#{endEntityProfileMBean.currentSubjectAltNameType}" disabled="#{endEntityProfileMBean.viewOnly}">
+					<h:selectOneMenu id="subjectAltNameAttributeType" value="#{endEntityProfileMBean.currentSubjectAltNameType}" disabled="#{endEntityProfileMBean.viewOnly}">
 						<f:ajax/>
 						<f:selectItems id="subjectAltNameList" value="#{endEntityProfileMBean.subjectAltNameTypes}"/>
 					</h:selectOneMenu>
-				    <h:commandButton id="addSubjectAltNameButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectAltName}">
+				    <h:commandButton id="addSubjectAltNameAttributeButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectAltName}">
 					<f:ajax render="subjectAltNameComponents"/>  
 				</h:commandButton>
 				</h:panelGrid>
@@ -531,14 +531,14 @@
 							<f:ajax/> <!-- SUBMITTING ITEM SELECTED -->
 							<f:selectItems id="subjectDirectoryAttributeTypeList" value="#{endEntityProfileMBean.subjectDirectoryAttributes}"/> 
 						</h:selectOneMenu>
-				    	<h:commandButton id="addSubjectDirectoryAttributeTypeButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectDirectoryAttribute}">
-							<f:ajax render="subjectDirectoryAttributesComponents"/>  
+				    	<h:commandButton id="addSubjectDirectoryAttributeButton" value="#{web.text.ADD}" action="#{endEntityProfileMBean.addSubjectDirectoryAttribute}">
+							<f:ajax render="subjectDirectoryComponents"/>
 						</h:commandButton>
 					</h:panelGrid>
 				</h:panelGrid>
 				
 				<h:dataTable 
-					id="subjectDirectoryAttributesComponents"
+					id="subjectDirectoryComponents"
 					var="subjectDirectoryAttributesComponent" 
 					value="#{endEntityProfileMBean.subjectDirectoryAttributeComponentList}"
 					cellspacing="1" 
@@ -556,12 +556,12 @@
 						</h:selectBooleanCheckbox>
 					</h:column>
 					<h:column>	
-						<h:outputLabel for="subjectDirectoryAttributesTextField"  value="#{subjectDirectoryAttributesComponent.name}"/>
+						<h:outputLabel for="subjectDirectoryTextField"  value="#{subjectDirectoryAttributesComponent.name}"/>
                     </h:column>
                     <h:column>
                     	<h:panelGrid id="subjectDirectoryAttributesTextFieldGrid" column="1">
 							<h:inputText 
-								id="subjectDirectoryAttributesTextField" 
+								id="subjectDirectoryTextField"
 								value="#{subjectDirectoryAttributesComponent.value}" 
 					   			size="45" 
 					   			maxlength="1024"
@@ -577,12 +577,12 @@
 								</h:selectBooleanCheckbox>
 				    			<h:outputLabel for="directoryAttributesRequiredCheckBox"  value="#{web.text.REQUIRED}"/>
 				    			<h:selectBooleanCheckbox 
-				    				id="directoryAttributesModifiableCheckBox" 
+				    				id="directoryModifiableCheckBox"
 				    				value="#{subjectDirectoryAttributesComponent.modifiable}" 
 				    				disabled="#{endEntityProfileMBean.viewOnly}">
 				    				<f:ajax/>
 				    			</h:selectBooleanCheckbox>
-				    			<h:outputLabel for="directoryAttributesModifiableCheckBox"  value="#{web.text.MODIFYABLE}"/>
+				    			<h:outputLabel for="directoryModifiableCheckBox"  value="#{web.text.MODIFYABLE}"/>
 				    		</h:panelGrid>
 						</h:panelGrid>
 					</h:column>					
