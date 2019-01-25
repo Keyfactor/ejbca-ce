@@ -78,7 +78,7 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
         // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
             final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+            getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR);
         }
     }
 
