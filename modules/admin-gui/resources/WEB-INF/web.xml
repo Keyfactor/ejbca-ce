@@ -191,6 +191,12 @@
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <multipart-config>
+            <!-- Upload file size limit. 10485760 = 10 MB -->
+            <max-file-size>10485760</max-file-size>
+            <max-request-size>10485760</max-request-size>
+            <file-size-threshold>10485760</file-size-threshold>
+        </multipart-config>
     </servlet>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
