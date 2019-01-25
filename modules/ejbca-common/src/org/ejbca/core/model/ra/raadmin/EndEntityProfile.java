@@ -727,8 +727,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     /** Gets a Collection of available CA Ids (as Integers). 
-     * Use String.valueOf(caidstring) to get the int value of the CA id.
-     * 
+     *
      * @return a Collection of CA Ids (never null).
      */
     public List<Integer> getAvailableCAs(){
