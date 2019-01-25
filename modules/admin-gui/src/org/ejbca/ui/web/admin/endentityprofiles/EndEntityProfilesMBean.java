@@ -182,6 +182,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionDelete() {
         if (selectedProfileExists()) {
+            clearMessages();
             deleteInProgress = true;
         }
     }
