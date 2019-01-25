@@ -872,7 +872,7 @@ public class BaseHelper {
      */
     protected void assertErrorMessageAppears(String expectedErrorMessage, String noElementMessage, String assertMessage) {
         final WebElement errorMessage = findElement(Page.TEXT_ERROR_MESSAGE);
-        if(errorMessage == null) {
+        if (errorMessage == null) {
             fail(noElementMessage);
         }
         assertEquals(
@@ -880,5 +880,28 @@ public class BaseHelper {
                 expectedErrorMessage,
                 errorMessage.getText()
         );
+    }
+
+    /**
+     * Asserts all error Messages appears with correct message text
+     *
+     * @param expectedErrorMessages
+     * @param noElementMessage
+     * @param assertMessage
+     */
+    protected void assertErrorAllErrorMessageAppear(String[] expectedErrorMessages, String noElementMessage, String assertMessage) {
+        List<WebElement> errorMessages = findElements(Page.TEXT_ERROR_MESSAGE);
+        if (errorMessages == null) {
+            fail(noElementMessage);
+        }
+        assertEquals("Expected number of error messages is not equal to actual one", expectedErrorMessages.length, errorMessages.size());
+
+        for (int i = 0; i < errorMessages.size(); i++) {
+            assertEquals(
+                    assertMessage,
+                    expectedErrorMessages[i],
+                    errorMessages.get(i).getText()
+            );
+        }
     }
 }

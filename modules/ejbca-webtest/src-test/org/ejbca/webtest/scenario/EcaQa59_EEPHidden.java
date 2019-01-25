@@ -49,7 +49,8 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         private static final String END_ENTITY_PASSWORD = "foo123";
         private static final String EMAIL_NAME = "sender";
         private static final String EMAIL_DOMAIN = "example.com";
-        
+        private static final int NOTIFICATION_INDEX = 0;
+
         // Map holding input fields and corresponding values
         static {
             INPUT_END_ENTITY_FIELDMAP.put("Username", END_ENTITY_NAME);
@@ -127,9 +128,9 @@ public class EcaQa59_EEPHidden extends WebTestBase {
         eeProfileHelper.triggerIssuanceRevocationReason();
         eeProfileHelper.triggerSendNotification();
         eeProfileHelper.addNotification();
-        eeProfileHelper.setNotificationSender("sender@example.com");
-        eeProfileHelper.setNotificationSubject("test subject");
-        eeProfileHelper.setNotificationMessage("test message");
+        eeProfileHelper.setNotificationSender(TestData.NOTIFICATION_INDEX, "sender@example.com");
+        eeProfileHelper.setNotificationSubject(TestData.NOTIFICATION_INDEX,"test subject");
+        eeProfileHelper.setNotificationMessage(TestData.NOTIFICATION_INDEX, "test message");
         // Save configuration
         eeProfileHelper.saveEndEntityProfile(true);
 

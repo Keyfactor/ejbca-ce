@@ -48,7 +48,9 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
         private static final String EEP_NAME = "OnHold";
         private static final String EE_NAME = "TestEndEntityOnHold";
         private static final String EE_PASSWORD = "foo123";
-        private static final String EEP_REVOCATION_REASON = "Suspended: Certificate hold";
+        private static final String EEP_REVOCATION_REASON = "Suspended: Certificate Hold";
+        private static final String EEP_REVOCATION_REASON_ADD_EE = "Suspended: Certificate hold";
+        private static final String EEP_REVOCATION_REASON_CERTIFICATE_VIEW = "Revocation reasons : Certificate hold";
         private static final String EEP_TOKEN = "P12 file";
         
         // Map holding input fields and corresponding values
@@ -109,7 +111,7 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
         addEeHelper.assertFieldsExists(TestData.ASSERTION_FIELDMAP);
         addEeHelper.assertCertificateProfileSelected("ENDUSER");
         addEeHelper.assertTokenSelected("User Generated");
-        addEeHelper.assertRevocationReasonSelected(TestData.EEP_REVOCATION_REASON);
+        addEeHelper.assertRevocationReasonSelected(TestData.EEP_REVOCATION_REASON_ADD_EE);
         
         addEeHelper.setCa(getCaName());
         addEeHelper.setToken(TestData.EEP_TOKEN);
@@ -127,11 +129,12 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
         searchEeHelper.clickSearchByUsernameButton();
         searchEeHelper.assertNumberOfSearchResults(1);
         searchEeHelper.clickViewEndEntityForRow(TestData.EE_NAME);
-        searchEeHelper.assertPopupContainsText(TestData.EEP_REVOCATION_REASON);
+        searchEeHelper.assertPopupContainsText(TestData.EEP_REVOCATION_REASON_ADD_EE);
     }
 
     @Test
     public void testD_enroll() {
+        //TODO refactor in ECA-7710
         webDriver.get(getRaWebUrl() + "enrollwithusername.xhtml");
         webDriver.findElement(By.id("enrollWithUsernameForm:username")).sendKeys(TestData.EE_NAME);
         webDriver.findElement(By.id("enrollWithUsernameForm:enrollmentCode")).sendKeys(TestData.EE_PASSWORD);
@@ -143,6 +146,6 @@ public class EcaQa60_EEPOnHold extends WebTestBase {
         searchEeHelper.clickSearchByUsernameButton();
         searchEeHelper.assertNumberOfSearchResults(1);
         searchEeHelper.clickViewCertificateForRow(TestData.EE_NAME);
-        searchEeHelper.assertPopupContainsText("Revocation reasons : Certificate hold");
+        searchEeHelper.assertPopupContainsText(TestData.EEP_REVOCATION_REASON_CERTIFICATE_VIEW);
     }
 }
