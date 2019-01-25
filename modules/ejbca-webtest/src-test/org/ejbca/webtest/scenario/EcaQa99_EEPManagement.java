@@ -40,7 +40,6 @@ public class EcaQa99_EEPManagement extends WebTestBase {
     private static AuditLogHelper auditLogHelper;
     // Test Data
     private static class TestData {
-        static final String EXPECTED_DELETION_CONFIRMATION_MESSAGE = "Are you sure you want to delete this?";
         static final String END_ENTITY_PROFILE_NAME = "ECAQA-99-EndEntityProfile";
         static final String END_ENTITY_PROFILE_NAME_CLONED = "ECAQA-99-EndEntityProfile-Cloned";
         static final String END_ENTITY_PROFILE_NAME_RENAMED = "ECAQA-99-EndEntityProfile-Renamed";
@@ -146,11 +145,11 @@ public class EcaQa99_EEPManagement extends WebTestBase {
         endEntityProfileHelper.openPage(getAdminWebUrl());
         endEntityProfileHelper.deleteEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME_RENAMED);
         // Dismiss alert, assert that EEP still exists
-        endEntityProfileHelper.confirmEndEntityProfileDeletion(TestData.EXPECTED_DELETION_CONFIRMATION_MESSAGE, false);
+        endEntityProfileHelper.confirmEndEntityProfileDeletion(false);
         endEntityProfileHelper.assertEndEntityProfileNameExists(TestData.END_ENTITY_PROFILE_NAME_RENAMED);
         // Actually delete EEP
         endEntityProfileHelper.deleteEndEntityProfile(TestData.END_ENTITY_PROFILE_NAME_RENAMED);
-        endEntityProfileHelper.confirmEndEntityProfileDeletion(TestData.EXPECTED_DELETION_CONFIRMATION_MESSAGE, true);
+        endEntityProfileHelper.confirmEndEntityProfileDeletion(true);
         // TODO Review after JSP->JSF conversion
         Thread.sleep(2000); // Not pretty but WebDriverWait didn't work here for some reason.
         endEntityProfileHelper.assertEndEntityProfileNameDoesNotExist(TestData.END_ENTITY_PROFILE_NAME_RENAMED);
