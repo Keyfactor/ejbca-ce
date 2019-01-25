@@ -102,6 +102,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         Pkcs11SlotLabelType type = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
         String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
         String attributesFile = properties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY);
+        // If doNotAddP11Provider is set to true, this boolean is set to false
         Boolean addProvider = !BooleanUtils.toBoolean(properties.getProperty(PKCS11CryptoToken.DO_NOT_ADD_P11_PROVIDER));
 
         String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
