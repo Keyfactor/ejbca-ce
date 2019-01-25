@@ -630,7 +630,7 @@
 							</h:selectOneMenu>
 						</h:panelGroup>
 						<h:panelGroup>
-	       	    			<h:selectManyListbox id="availableCertProfiles" value="#{endEntityProfileMBean.availableCertificateProfiles}" disabled="#{endEntityProfileMBean.viewOnly}">
+	       	    			<h:selectManyListbox id="availableCertProfiles" size="7" value="#{endEntityProfileMBean.availableCertificateProfiles}" disabled="#{endEntityProfileMBean.viewOnly}">
 	       	    				<f:selectItems id="availableCertProfilesList" value="#{endEntityProfileMBean.allCertificateProfiles}"/>
 	       	    				<f:converter converterId="javax.faces.Integer"/>
 	       	    			</h:selectManyListbox>
@@ -655,7 +655,7 @@
 					</h:selectOneMenu>
 					<h:panelGroup>
 	       	    		<h:selectManyListbox id="availableCA" size="7" value="#{endEntityProfileMBean.availableCas}" disabled="#{endEntityProfileMBean.viewOnly}">
-	       	    			<f:selectItems id="availableCAList" value="#{endEntityProfileMBean.allCas}"/>
+	       	    			<f:selectItems id="availableCAList" value="#{endEntityProfileMBean.allCasWithAnyCaOption}"/>
 	       	    			<f:converter converterId="javax.faces.Integer"/>
 	       	    		</h:selectManyListbox>
 	       	    	</h:panelGroup>
