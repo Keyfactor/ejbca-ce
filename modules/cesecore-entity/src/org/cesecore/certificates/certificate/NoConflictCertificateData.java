@@ -408,13 +408,32 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     
     @Override
     public String getCertificateRequest() {
-        return certificateRequest;
+        return this.getZzzCertificateRequest();
     }
     
     @Override
     public void setCertificateRequest(String certificateRequest) {
+        this.setZzzCertificateRequest(certificateRequest);
+    }
+    
+
+    /**
+     * Horrible work-around due to the fact that Oracle needs to have (LONG and) CLOB values last in order to avoid ORA-24816.
+     *
+     * Since Hibernate sorts columns by the property names, naming this Z-something will apparently ensure that this column is used last.
+     * @deprecated Use {@link #getCertificateRequest()} instead
+     */
+    @Deprecated
+    public String getZzzCertificateRequest() {
+        return this.certificateRequest;
+    }
+    
+    /** @deprecated Use {@link #setCertificateRequest(String)} instead */
+    @Deprecated
+    public void setZzzCertificateRequest(String certificateRequest) {
         this.certificateRequest = certificateRequest;
     }
+    
     
     // Comparators
 
