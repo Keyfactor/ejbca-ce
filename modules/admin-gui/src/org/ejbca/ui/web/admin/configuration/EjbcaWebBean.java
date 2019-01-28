@@ -244,7 +244,7 @@ public class EjbcaWebBean implements Serializable {
                     details.put("msg", "Logging in: Administrator Certificate is issued by external CA and not present in the database.");
                 }
                 if (WebConfiguration.getAdminLogRemoteAddress()) {
-                    details.put("remoteip", httpServletRequest.getRemoteAddr());
+                    details.put("remoteip", currentRemoteIp);
                 }
                 if (WebConfiguration.getAdminLogForwardedFor()) {
                     details.put("forwardedip", StringTools.getCleanXForwardedFor(httpServletRequest.getHeader("X-Forwarded-For")));
@@ -264,10 +264,10 @@ public class EjbcaWebBean implements Serializable {
                         administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
             } else {
                 // TODO: When other types of authentication are implemented, check the distinct configured tokenTypes and try to authenticate for each
-                administrator = authenticationSession.authenticateUsingNothing(httpServletRequest.getRemoteAddr(), currentTlsSessionId!=null);
+                administrator = authenticationSession.authenticateUsingNothing(currentRemoteIp, currentTlsSessionId!=null);
                 Map<String, Object> details = new LinkedHashMap<>();
                 if (WebConfiguration.getAdminLogRemoteAddress()) {
-                    details.put("remoteip", httpServletRequest.getRemoteAddr());
+                    details.put("remoteip", currentRemoteIp);
                 }
                 if (WebConfiguration.getAdminLogForwardedFor()) {
                     details.put("forwardedip", StringTools.getCleanXForwardedFor(httpServletRequest.getHeader("X-Forwarded-For")));
