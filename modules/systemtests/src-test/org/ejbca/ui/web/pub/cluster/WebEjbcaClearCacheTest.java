@@ -40,10 +40,9 @@ public class WebEjbcaClearCacheTest {
 
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
-    protected String httpPort;
-    protected String httpReqPath;
-    protected String httpReqPathNoCommand;
-    protected String httpReqPathNoCommandExternal;
+    private String httpPort;
+    private String httpReqPath;
+    private String httpReqPathNoCommand;
 
     @Before
     public void setUp() throws Exception {
