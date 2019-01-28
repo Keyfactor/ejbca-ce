@@ -114,11 +114,12 @@
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
-            <basic fetch="EAGER" name="certificateRequest"><column name="certificateRequest" column-definition="LONG VARCHAR"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="LONG VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
             <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
             <transient name="base64Cert"/>
             <transient name="rowProtection"/>
+	    <transient name="certificateRequest"/>
         </attributes>
     </entity>
     <entity class="org.cesecore.certificates.certificate.NoConflictCertificateData" access="PROPERTY" metadata-complete="false">
@@ -145,11 +146,12 @@
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="LONG VARCHAR"/><lob/></basic>
-            <basic fetch="EAGER" name="certificateRequest"><column name="certificateRequest" column-definition="LONG VARCHAR"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="LONG VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
             <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
             <transient name="base64Cert"/>
             <transient name="rowProtection"/>
+	    <transient name="certificateRequest"/>
         </attributes>
     </entity>
     <entity class="org.cesecore.certificates.certificate.Base64CertData" access="PROPERTY" metadata-complete="false">
