@@ -1245,7 +1245,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
                 if (component.isEmailField()) {
                     editerrors.add(ejbcaWebBean.getText("SUBJECTDNEMAILEMPTY"));
                 } else {
-                    editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + ejbcaWebBean.getText("DN_PKIX_" + name));
+                    editerrors.add(ejbcaWebBean.getText("SUBJECTDNFIELDEMPTY") + " " + name);
                 }
             }
             if (component.isUseValidation()) {
