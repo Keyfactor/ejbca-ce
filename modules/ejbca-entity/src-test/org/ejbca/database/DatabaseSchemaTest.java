@@ -13,8 +13,6 @@
 
 package org.ejbca.database;
 
-import static org.junit.Assert.assertTrue;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -68,6 +66,8 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Simple class to trigger Hibernate's JPA schema validation.
@@ -350,6 +350,7 @@ public class DatabaseSchemaTest {
         entity.setType(0);
         entity.setUpdateTime(Long.valueOf(0L));
         entity.setUsername(VARCHAR_250B);
+        entity.setCertificateRequest(CLOB_1MiB);
         storeAndRemoveEntity(entity);
         LOG.trace("<testCertificateData");
     }
