@@ -472,7 +472,12 @@ public class RequestInstance {
 
 					if ((reqBytes != null) && (reqBytes.length>0)) {
                         if (log.isDebugEnabled()) {
-                            log.debug("Received CVC request: "+new String(reqBytes));
+                        	final String reqString = new String(reqBytes);
+                            if (!StringUtils.isAsciiPrintable(reqString)) {
+                                log.debug("Received non ascii printable CVC request: " + org.bouncycastle.util.encoders.Base64.toBase64String(reqBytes));                                
+                            } else {
+                                log.debug("Received CVC request: " + reqString);
+                            }
                         }
 						byte[] b64cert=helper.cvcCertRequest(signSession, reqBytes, username, password);
 						CVCertificate cvccert = (CVCertificate) CertificateParser.parseCVCObject(Base64.decode(b64cert));
