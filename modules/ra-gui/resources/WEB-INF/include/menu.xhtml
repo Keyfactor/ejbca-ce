@@ -208,6 +208,9 @@
                         <ui:fragment rendered="#{!raAuthenticationBean.publicUser}">
                             <li class="pure-menu-item"><h:outputLink value="#" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_logout} #{raAuthenticationBean.userDisplayName}"/></h:outputLink></li>
                         </ui:fragment>
+                        <ui:fragment rendered="#{raAuthenticationBean.publicUser}">
+                            <li class="pure-menu-item"><h:outputLink value="#" styleClass="pure-menu-link"><h:outputText value="#{msg.menu_pagetitle_no_auth}"/></h:outputLink></li>
+                        </ui:fragment>
                     </ul>
                 </h:panelGroup>
             </h:panelGroup>

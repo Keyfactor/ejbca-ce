@@ -33,7 +33,7 @@
             </h:panelGroup>
 			<!-- Runs on IE6+ only, forcing certificate re-authentication -->
             <script>
-            	document.execCommand('ClearAuthenticationCache');
+            	setTimeout("document.execCommand('ClearAuthenticationCache')", 1000);
     		</script>
         </ui:define>
     </ui:composition>
