@@ -1107,8 +1107,8 @@ public final class StringTools {
      * @return a list of Integer.
      */
     public static final List<Integer> idStringToListOfInteger(final String ids, final String listSeparator) {
-        final ArrayList<Integer> result = new ArrayList<Integer>();
-        if (ids != null) {
+        final ArrayList<Integer> result = new ArrayList<>();
+        if (StringUtils.isNotEmpty(ids)) {
             for (final String id : ids.split(listSeparator)) {
                 result.add(Integer.valueOf(id));
             }

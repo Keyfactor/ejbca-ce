@@ -34,7 +34,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -108,6 +107,8 @@ import org.ejbca.util.HTMLTools;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
+ * <p>
+ * Do not add page specific code here, use a ManagedBean for that.
  *
  * @version $Id$
  */
@@ -387,15 +388,6 @@ public class EjbcaWebBean implements Serializable {
 
     public void setLastFilterMode(final int lastfiltermode) throws AdminDoesntExistException, AdminExistsException {
         currentAdminPreference.setLastFilterMode(lastfiltermode);
-        saveCurrentAdminPreference();
-    }
-
-    public int getLastLogFilterMode() {
-        return currentAdminPreference.getLastLogFilterMode();
-    }
-
-    public void setLastLogFilterMode(final int lastlogfiltermode) throws AdminDoesntExistException, AdminExistsException {
-        currentAdminPreference.setLastLogFilterMode(lastlogfiltermode);
         saveCurrentAdminPreference();
     }
 
@@ -754,18 +746,26 @@ public class EjbcaWebBean implements Serializable {
         return hardtokenprofiles;
     }
 
+    /** @deprecated Since EJBCA 7.0.0. Use HardTokenSession.getHardTokenIssuers instead. */
+    @Deprecated
     public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
         return hardTokenSession.getHardTokenIssuers(administrator);
     }
 
+    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getCAIdToNameMap instead. */
+    @Deprecated
     public Map<Integer,String> getCAIdToNameMap() {
         return caSession.getCAIdToNameMap();
     }
 
+    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaIds instead. */
+    @Deprecated
     public List<Integer> getAuthorizedCAIds() {
         return caSession.getAuthorizedCaIds(administrator);
     }
 
+    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
+    @Deprecated
     public TreeMap<String,Integer> getCANames() {
         return caSession.getAuthorizedCaNamesToIds(administrator);
     }
@@ -789,15 +789,8 @@ public class EjbcaWebBean implements Serializable {
         return ret;
     }
 
-    /** @return authorized CA Ids sorted by CA name alphabetically*/
-    public Collection<Integer> getAuthorizedCAIdsByName() {
-        return caSession.getAuthorizedCaNamesToIds(administrator).values();
-    }
-
-    public boolean isAuthorizedToAllCAs() {
-        return caSession.getAllCaIds().size() == getAuthorizedCAIds().size();
-    }
-
+    /** @deprecated Since EJBCA 7.0.0. Use CertificateProfileSession.getCertificateProfileName instead. */
+    @Deprecated
     public String getCertificateProfileName(final int profileId) {
         return certificateProfileSession.getCertificateProfileName(profileId);
     }
@@ -869,7 +862,7 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /**
-     * @return all authorized publishers names as a list 
+     * @return all authorized publishers names as a list
      */
     public List<String> getAuthorizedPublisherNames() {
         return new ArrayList<String>(getAuthorizedPublisherNamesAndIds().keySet());
@@ -920,20 +913,6 @@ public class EjbcaWebBean implements Serializable {
 
     public AuthenticationToken getAdminObject() {
         return this.administrator;
-    }
-
-    /**
-     * Method returning all CA ids with CMS service enabled
-     */
-    public Collection<Integer> getCAIdsWithCMSServiceActive() {
-        final ArrayList<Integer> retval = new ArrayList<>();
-        final Collection<Integer> caids = caSession.getAuthorizedCaIds(administrator);
-        final Iterator<Integer> iter = caids.iterator();
-        while (iter.hasNext()) {
-            final Integer caid = iter.next();
-            retval.add(caid);
-        }
-        return retval;
     }
 
     /**
@@ -1442,6 +1421,8 @@ public class EjbcaWebBean implements Serializable {
         return entries;
     }
 
+    /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
+    @Deprecated
     public TreeMap<String, Integer> getCAOptions() {
         return getCANames();
     }
