@@ -284,7 +284,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         return !validateEndEntityProfileName() && ok;
     }
 
-    public void actionImportProfiles() throws IOException, NumberFormatException, AuthorizationDeniedException, EndEntityProfileExistsException {
+    public void actionImportProfiles() throws IOException, AuthorizationDeniedException, EndEntityProfileExistsException {
         clearMessages();
         if (uploadFile == null) {
             addNonTranslatedErrorMessage("File upload failed.");
@@ -309,8 +309,8 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         if (zipFileBytes.length == 0) {
             throw new IllegalArgumentException("No input file");
         }
-        String importedFiles = "";
-        String ignoredFiles = "";
+        final List<String> importedFiles = new ArrayList<>();
+        final List<String> ignoredFiles = new ArrayList<>();
         int nrOfFiles = 0;
         final ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(zipFileBytes));
         ZipEntry zipEntry = zipInputStream.getNextEntry();
@@ -333,7 +333,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             }
             final DecodedFilename decodedFilename = decodeFilename(filename);
             if (decodedFilename == null) {
-                ignoredFiles += filename + ", ";
+                ignoredFiles.add(filename);
                 continue;
             }
             final String profileName = decodedFilename.profileName;
@@ -342,7 +342,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 log.debug("Extracted profile name '" + profileName + "' and profile ID '" + profileId + "'");
             }
             if (ignoreProfile(profileName)) {
-                ignoredFiles += filename + ", ";
+                ignoredFiles.add(filename);
                 continue;
             }
             if (endEntityProfileSession.getEndEntityProfile(profileId) != null) {
@@ -362,7 +362,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             } else {
                 endEntityProfileSession.addEndEntityProfile(getAdmin(), profileId, profileName, eeProfile);                
             }
-            importedFiles += filename + ", ";
+            importedFiles.add(filename);
             log.info("Added End entity profile: " + profileName);
         } while ((zipEntry = zipInputStream.getNextEntry()) != null);
         zipInputStream.closeEntry();
@@ -439,26 +439,19 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
        return false;
     }
 
-    private void printImportMessage(final int nrOfFiles, String importedFiles, String ignoredFiles) {
-        String msg = "Number of files included in " + uploadFilename + ": " + nrOfFiles;
+    private void printImportMessage(final int nrOfFiles, final List<String> importedFiles, final List<String> ignoredFiles) {
+        final String msg = "Number of files included in " + uploadFilename + ": " + nrOfFiles;
         log.info(msg);
         addNonTranslatedInfoMessage(msg);
-        if (StringUtils.isNotEmpty(importedFiles)) {
-            importedFiles = importedFiles.substring(0, importedFiles.length() - 2);
+        if (!importedFiles.isEmpty()) {
+            addNonTranslatedInfoMessage("Imported End Entity Profiles from files: " + StringUtils.join(importedFiles, ", "));
         }
-        msg = "Imported End Entity Profiles from files: " + importedFiles;
-        if (log.isDebugEnabled()) {
-            log.debug(msg);
+        if (!ignoredFiles.isEmpty()) {
+            addNonTranslatedInfoMessage("Ignored files: " + StringUtils.join(ignoredFiles, ", "));
         }
-        addNonTranslatedInfoMessage(msg);
-        if (StringUtils.isNotEmpty(ignoredFiles)) {
-            ignoredFiles = ignoredFiles.substring(0, ignoredFiles.length() - 2);
+        if (importedFiles.isEmpty()) {
+            addErrorMessage("No End Entity Profiles were imported.");
         }
-        msg = "Ignored files: " + ignoredFiles;
-        if (log.isDebugEnabled()) {
-            log.debug(msg);
-        }
-        addNonTranslatedInfoMessage(msg);
     }
 
     public void setUploadFile(final Part uploadFile) {

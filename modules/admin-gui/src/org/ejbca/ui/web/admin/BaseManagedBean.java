@@ -103,14 +103,20 @@ public abstract class BaseManagedBean implements Serializable {
 	}
 
 	protected void addInfoMessage(String messageResource, Object... params) {
+	    if (log.isDebugEnabled()) {
+            log.debug("Adding info message: " + messageResource + ": " + StringUtils.join(params, "; "));
+        }
         FacesContext ctx = FacesContext.getCurrentInstance();
         ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO, getEjbcaWebBean().getText(messageResource, false, params),
                 getEjbcaWebBean().getText(messageResource, false, params)));
     }
 
-    protected void addNonTranslatedInfoMessage(String messageResource){
+    protected void addNonTranslatedInfoMessage(final String message) {
+        if (log.isDebugEnabled()) {
+            log.debug("Adding info message: " + message);
+        }
         FacesContext ctx = FacesContext.getCurrentInstance();
-        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO,messageResource,messageResource));
+        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO, message, message));
     }
 
     /**
