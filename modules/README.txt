@@ -17,8 +17,9 @@ modules/build-properties.xml
   Paths, class-paths and variables are defined here. Included from modules/build.xml.
 modules/build-helpers.xml
   Contains general ant-targets that are used from several modules. Included from modules/build.xml.
-modules/{module name}/build.xml
+modules/{module-name}/build.xml
   The modules build file. Should normally have at least a "build" and "test" target.
+  This is where dependencies on other modules are managed.
 modules/dist/
   This is a directory that hold results (JAR, WAR files) from the different module builds that
   should be re-used by different modules.
@@ -35,25 +36,26 @@ src/
 Creating a new module
 ---------------------
 This is just a general guideline that has to be adapted for each module.
-- Create a new directory modules/{module name}.
+- Create a new directory modules/{module-name}.
 - Create new sub-directories
-modules/{module name}/src         Holds the module's source-code
-modules/{module name}/src-test    Holds the module's JUnit test source-code
-modules/{module name}/resources   Holds the module's meta-data and templates
-- Create a new build script, modules/{module name}/build.xml using the following template:
+modules/{module-name}/src         Holds the module's source-code
+modules/{module-name}/src-test    Holds the module's JUnit test source-code
+modules/{module-name}/resources   Holds the module's meta-data and templates
+- Create a new build script, modules/{module-name}/build.xml using the following template:
 
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="{module name}" default="build">
+<project name="{module-name}" default="build">
     <description>
     	Describe the module here...
     </description>
 
-	<dirname property="this.dir" file="${ant.file.{module name}}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="module-name.dir" file="${ant.file.{module-name}}"/>
+
+	<import file="${module-name.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="module-name.build.dir" location="${module-name.dir}/build"/>
+	<property name="module-name.build-test.dir" location="${module-name.dir}/build-test"/>
+	<property name="module-name.src.dir" location="${module-name.dir}/src"/>
 
 	<path id="compile.classpath">
 		<path refid="{reference to class-path(s) defined in build-properties.xml}"/>
@@ -63,10 +65,11 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 	<path id="compile-test.classpath">
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<path location="${mod.module-name.lib}"/>
 	</path>
 	
 	<path id="test.classpath">
-		<path location="${build-test.dir}" />
+		<path location="${module-name.build-test.dir}" />
 		<path refid="compile-test.classpath"/>
 	</path>
 
@@ -76,41 +79,40 @@ modules/{module name}/resources   Holds the module's meta-data and templates
     </target>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
-		<delete dir="${build-test.dir}" />
+		<delete dir="${module-name.build.dir}" />
+		<delete dir="${module-name.build-test.dir}" />
 		<delete file="{JAR produced by 'build'}" />
     </target>
 	
-    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="some external dependency target from modules/build.xml"/></target>
-    <target name="compile" depends="compile-external-deps">
-       	<mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+    <target name="compile">
+       	<mkdir dir="${module-name.build.dir}" />
+        <javac srcdir="${module-name.src.dir}" destdir="${module-name.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
             classpathref="compile.classpath"/>
     </target>
 
-    <target name="compile-tests" depends="build">
-    	<mkdir dir="${build-test.dir}" />
-        <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+    <target name="compile-tests">
+    	<mkdir dir="${module-name.build-test.dir}" />
+        <javac srcdir="${src-test.dir}" destdir="${module-name.build-test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
             classpathref="compile-test.classpath"/>
-        <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
+        <copy file="${log4j.test.file}" tofile="${module-name.build-test.dir}/log4j.xml" failonerror="true"/>
     </target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
-    	<antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
+    	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${module-name.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
         		<path refid="lib.clover.classpath"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*Test.class">
+				<fileset dir="${module-name.build-test.dir}" includes="**/*Test.class">
 					...
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
-    	<antcall target="showtime"/>
+		<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
     </target>
 
 	<target name="runone" depends="compile-tests">
@@ -121,12 +123,12 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${module-name.build-test.dir}">
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
+		<antcall target="createreport" inheritall="true" inheritrefs="true"/>
 	</target>
 </project>
 
