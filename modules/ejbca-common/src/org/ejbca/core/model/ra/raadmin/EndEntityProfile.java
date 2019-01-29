@@ -152,42 +152,42 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     // These must be in a strict order that can never change 
     // Custom values configurable in a properties file (profilemappings.properties)
     static {
-    	dataConstants.put(USERNAME, Integer.valueOf(0));
-    	dataConstants.put(PASSWORD, Integer.valueOf(1));
-    	dataConstants.put(CLEARTEXTPASSWORD, Integer.valueOf(2));
-    	dataConstants.put(AUTOGENPASSWORDTYPE, Integer.valueOf(95));
-    	dataConstants.put(AUTOGENPASSWORDLENGTH, Integer.valueOf(96));
+    	dataConstants.put(USERNAME, 0);
+    	dataConstants.put(PASSWORD, 1);
+    	dataConstants.put(CLEARTEXTPASSWORD, 2);
+    	dataConstants.put(AUTOGENPASSWORDTYPE, 95);
+    	dataConstants.put(AUTOGENPASSWORDLENGTH, 96);
         // DN components
     
-    	dataConstants.put(EMAIL, Integer.valueOf(26));
-    	dataConstants.put(KEYRECOVERABLE, Integer.valueOf(28));
-    	dataConstants.put(DEFAULTCERTPROFILE, Integer.valueOf(29));
-    	dataConstants.put(AVAILCERTPROFILES, Integer.valueOf(30));
-    	dataConstants.put(DEFKEYSTORE, Integer.valueOf(31));
-    	dataConstants.put(AVAILKEYSTORE, Integer.valueOf(32));
-    	dataConstants.put(DEFAULTTOKENISSUER, Integer.valueOf(33));
-    	dataConstants.put(AVAILTOKENISSUER, Integer.valueOf(34));
-    	dataConstants.put(SENDNOTIFICATION, Integer.valueOf(35));
+    	dataConstants.put(EMAIL, 26);
+    	dataConstants.put(KEYRECOVERABLE, 28);
+    	dataConstants.put(DEFAULTCERTPROFILE, 29);
+    	dataConstants.put(AVAILCERTPROFILES, 30);
+    	dataConstants.put(DEFKEYSTORE, 31);
+    	dataConstants.put(AVAILKEYSTORE, 32);
+    	dataConstants.put(DEFAULTTOKENISSUER, 33);
+    	dataConstants.put(AVAILTOKENISSUER, 34);
+    	dataConstants.put(SENDNOTIFICATION, 35);
 
-    	dataConstants.put(DEFAULTCA, Integer.valueOf(37));
-    	dataConstants.put(AVAILCAS, Integer.valueOf(38));
+    	dataConstants.put(DEFAULTCA, 37);
+    	dataConstants.put(AVAILCAS, 38);
     	
     	// Load all DN, altName and directoryAttributes from DnComponents.
     	dataConstants.putAll(DnComponents.getProfilenameIdMap());
     	
-    	dataConstants.put(ISSUANCEREVOCATIONREASON, Integer.valueOf(94));
-    	dataConstants.put(ALLOWEDREQUESTS, Integer.valueOf(97));
-    	dataConstants.put(STARTTIME, Integer.valueOf(98));
-    	dataConstants.put(ENDTIME, Integer.valueOf(99));
-    	dataConstants.put(CARDNUMBER, Integer.valueOf(91));
-    	dataConstants.put(MAXFAILEDLOGINS, Integer.valueOf(93));
-    	dataConstants.put(CERTSERIALNR, Integer.valueOf(92));
-    	dataConstants.put(MINPWDSTRENGTH, Integer.valueOf(90));
-    	dataConstants.put(NAMECONSTRAINTS_PERMITTED, Integer.valueOf(89));
-    	dataConstants.put(NAMECONSTRAINTS_EXCLUDED, Integer.valueOf(88));
+    	dataConstants.put(ISSUANCEREVOCATIONREASON, 94);
+    	dataConstants.put(ALLOWEDREQUESTS, 97);
+    	dataConstants.put(STARTTIME, 98);
+    	dataConstants.put(ENDTIME, 99);
+    	dataConstants.put(CARDNUMBER, 91);
+    	dataConstants.put(MAXFAILEDLOGINS, 93);
+    	dataConstants.put(CERTSERIALNR, 92);
+    	dataConstants.put(MINPWDSTRENGTH, 90);
+    	dataConstants.put(NAMECONSTRAINTS_PERMITTED, 89);
+    	dataConstants.put(NAMECONSTRAINTS_EXCLUDED, 88);
     }
 	// The max value in dataConstants (we only want to do this once)
-    private static final int dataConstantsMaxValue = Collections.max(dataConstants.values()).intValue();
+    private static final int dataConstantsMaxValue = Collections.max(dataConstants.values());
     // The keys used when we create an empty profile (we only want to do this once)
     private static final List<String> dataConstantsUsedInEmpty = new LinkedList<>(dataConstants.keySet());
     static {
@@ -290,7 +290,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         // Common initialization of profile
         final List<Integer> numberoffields = new ArrayList<>(dataConstantsMaxValue);
-        Collections.fill(numberoffields, Integer.valueOf(0));
+        Collections.fill(numberoffields, 0);
         data.put(NUMBERARRAY, numberoffields);
         data.put(SUBJECTDNFIELDORDER, new ArrayList<Integer>());
         data.put(SUBJECTALTNAMEFIELDORDER, new ArrayList<Integer>());
@@ -400,30 +400,30 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final int size = getNumberOfField(parameter);
     	// Perform operations directly on "data" to save some cycles..
     	final int offset = (NUMBERBOUNDRARY*size) + parameter;
-   		data.put(Integer.valueOf(FIELDBOUNDRARY_VALUE + offset), value);
-    	data.put(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + offset), required);
-    	data.put(Integer.valueOf(FIELDBOUNDRARY_USE + offset), use);
-    	data.put(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + offset), modifyable);
+   		data.put(FIELDBOUNDRARY_VALUE + offset, value);
+    	data.put(FIELDBOUNDRARY_ISREQUIRED + offset, required);
+    	data.put(FIELDBOUNDRARY_USE + offset, use);
+    	data.put(FIELDBOUNDRARY_MODIFYABLE + offset, modifyable);
     	if (validation != null) {
     	    // validation should be a map of a validator class name (excluding package name) and a validator-specific object.
-    	    data.put(Integer.valueOf(FIELDBOUNDRARY_VALIDATION + offset), validation);
+    	    data.put(FIELDBOUNDRARY_VALIDATION + offset, validation);
     	} else {
-    	    data.remove(Integer.valueOf(FIELDBOUNDRARY_VALIDATION + offset));
+    	    data.remove(FIELDBOUNDRARY_VALIDATION + offset);
     	}
     	if (DnComponents.isDnProfileField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
-    		final Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
+    		final int val = (NUMBERBOUNDRARY*parameter) + size;
     		fieldorder.add(val);
     	} else if (DnComponents.isAltNameField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
-    		final Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
+    		final int val = (NUMBERBOUNDRARY*parameter) + size;
     		fieldorder.add(val);
     	} else if (DnComponents.isDirAttrField(parameterName)) {
     		@SuppressWarnings("unchecked")
             final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
-    		final Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
+    		final int val = (NUMBERBOUNDRARY*parameter) + size;
     		fieldorder.add(val);
     	}
     	incrementFieldnumber(parameter);
@@ -455,27 +455,27 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			@SuppressWarnings("unchecked")
                 final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     			final int value = (NUMBERBOUNDRARY*parameter) + size -1;
-    			fieldorder.remove(Integer.valueOf(value));
+    			fieldorder.remove(value);
     		}
     		// Remove last element from Subject AltName order list.
     		if (DnComponents.isAltNameField(param)) {
     			@SuppressWarnings("unchecked")
                 final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
     			final int value = (NUMBERBOUNDRARY*parameter) + size -1;	//number;
-    			fieldorder.remove(Integer.valueOf(value));
+    			fieldorder.remove(value);
     		}
     		// Remove last element from Subject DirAttr order list.
     		if (DnComponents.isDirAttrField(param)) {
     			@SuppressWarnings("unchecked")
                 final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
     			final int value = (NUMBERBOUNDRARY*parameter) + size -1;	//number;
-    			fieldorder.remove(Integer.valueOf(value));
+    			fieldorder.remove(value);
     		}
     		// Remove last element of the type from hashmap
-    		data.remove(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*(size-1)) + parameter));
-    		data.remove(Integer.valueOf(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*(size-1)) + parameter));
-    		data.remove(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*(size-1)) + parameter));
-    		data.remove(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*(size-1)) + parameter));
+    		data.remove(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*(size-1)) + parameter);
+    		data.remove(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*(size-1)) + parameter);
+    		data.remove(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*(size-1)) + parameter);
+    		data.remove(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*(size-1)) + parameter);
     		decrementFieldnumber(parameter);
     	}
     }
@@ -499,7 +499,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      */
     public int getNumberOfField(final int parameter){
     	final ArrayList<Integer> arr = checkAndUpgradeWithNewFields(parameter);
-    	return arr.get(parameter).intValue();
+    	return arr.get(parameter);
     }
 
 	private ArrayList<Integer> checkAndUpgradeWithNewFields(final int parameter) {
@@ -508,10 +508,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	// This is an automatic upgrade function, if we have dynamically added new fields
     	if (parameter >= arr.size()) {
     		if (log.isDebugEnabled()) {
-        		log.debug(intres.getLocalizedMessage("ra.eeprofileaddfield", Integer.valueOf(parameter)));
+        		log.debug(intres.getLocalizedMessage("ra.eeprofileaddfield", parameter));
     		}
     		for (int i=arr.size(); i<=parameter; i++) {
-                arr.add(Integer.valueOf(0));
+                arr.add(0);
     		}
             data.put(NUMBERARRAY,arr);
     	}
@@ -519,11 +519,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	}
 
     public void setValue(final int parameter, final int number, final String value) {
-    	if (value !=null) {
-    		data.put(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter), value.trim());
-    	} else {
-    		data.put(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter), "");
-    	}
+		data.put(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter, StringUtils.trim(value));
     }
 
     public void setValue(final String parameter, final int number, final String value) {
@@ -531,7 +527,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public void setUse(final int parameter, final int number, final boolean use){
-    	data.put(Integer.valueOf(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(use));
+    	data.put(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*number) + parameter, Boolean.valueOf(use));
     }
 
     public void setUse(final String parameter, final int number, final boolean use){
@@ -539,7 +535,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public void setRequired(final int parameter, final int number, final boolean isrequired) {
-    	data.put(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(isrequired));
+    	data.put(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*number) + parameter, Boolean.valueOf(isrequired));
     }
 
     public void setRequired(final String parameter, final int number, final boolean isrequired) {
@@ -547,7 +543,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public void setModifyable(final int parameter, final int number, final boolean changeable) {
-    	data.put(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(changeable));
+    	data.put(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*number) + parameter, Boolean.valueOf(changeable));
     }
 
     public void setModifyable(final String parameter, final int number, final boolean changeable) {
@@ -555,7 +551,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public void setValidation(final int parameter, final int number, final Map<String,Serializable> validation){
-        Integer paramNum = Integer.valueOf(FIELDBOUNDRARY_VALIDATION + (NUMBERBOUNDRARY*number) + parameter);
+        Integer paramNum = FIELDBOUNDRARY_VALIDATION + (NUMBERBOUNDRARY*number) + parameter;
         if (validation != null) {
             data.put(paramNum, new LinkedHashMap<>(validation));
         } else {
@@ -568,14 +564,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public String getValue(final int parameter, final int number) {
-    	return getValueDefaultEmpty(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter));
+    	return getValueDefaultEmpty(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter);
     }
 
     /**
      * Semi-internal method to get a default value, or list of allowed values.
-     * 
+     *
      * <p><b>Note:</b> Consider calling the appropriate getters instead of this method.
      * For example <code>getAvailableCertificateProfileIds()</code> instead of calling <code>getValue(AVAILCERTPROFILES,0)</code>
+     *
+     * @param parameter Field type, one of the constants defined in this class.
+     * @param number Zero based index of field, if there is more than one.
      */
     public String getValue(final String parameter, final int number) {
     	return getValue(getParameterNumber(parameter), number);
@@ -585,20 +584,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * Gets a value, converted from ; separated string to a list of integers.
      * Used for lists of available CAs, certificate profiles, token types, etc... 
      * @return List of integer IDs, never null.
+     * @see {@link #getValue(String, int) getValue} for a description of the parameters.
      */
     private List<Integer> getIdListValue(final String fieldType, final int number) {
-        final List<Integer> ret = new ArrayList<>();
         final String str = getValue(fieldType, number);
-        if (StringUtils.isNotEmpty(str)) {
-            for (final String elem : str.split(SPLITCHAR)) {
-                ret.add(Integer.parseInt(elem));
-            }
-        }
-        return ret;
+        return StringTools.idStringToListOfInteger(str, SPLITCHAR);
     }
 
     public boolean getUse(final int parameter, final int number){
-    	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*number) + parameter));
+    	return getValueDefaultFalse(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*number) + parameter);
     }
 
     /**
@@ -612,7 +606,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public boolean isRequired(final int parameter, final int number) {
-    	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*number) + parameter));
+    	return getValueDefaultFalse(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*number) + parameter);
     }
 
     /**
@@ -626,7 +620,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public boolean isModifyable(final int parameter, final int number) {
-    	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*number) + parameter));
+    	return getValueDefaultFalse(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*number) + parameter);
     }
 
     /**
@@ -641,7 +635,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     
     @SuppressWarnings("unchecked")
     public LinkedHashMap<String,Serializable> getValidation(final int parameter, final int number){
-        return (LinkedHashMap<String,Serializable>)data.get(Integer.valueOf(FIELDBOUNDRARY_VALIDATION + (NUMBERBOUNDRARY*number) + parameter));
+        return (LinkedHashMap<String,Serializable>)data.get(FIELDBOUNDRARY_VALIDATION + (NUMBERBOUNDRARY*number) + parameter);
     }
 
     public LinkedHashMap<String,Serializable> getValidation(final String parameter, final int number){
@@ -685,7 +679,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final int[] returnval = new int[2];
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
-    	final int i = fieldorder.get(index).intValue();
+    	final int i = fieldorder.get(index);
     	returnval[NUMBER] = i % NUMBERBOUNDRARY;
     	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
     	return returnval;
@@ -695,7 +689,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	int[] returnval = new int[2];
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
-    	final int i = fieldorder.get(index).intValue();
+    	final int i = fieldorder.get(index);
     	returnval[NUMBER] = i % NUMBERBOUNDRARY;
     	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
     	return returnval;
@@ -705,7 +699,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final int[] returnval = new int[2];
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
-    	final int i = fieldorder.get(index).intValue();
+    	final int i = fieldorder.get(index);
     	returnval[NUMBER] = i % NUMBERBOUNDRARY;
     	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
     	return returnval;
@@ -916,7 +910,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public boolean isPasswordPreDefined() {
-        return getPredefinedPassword() != null && !getPredefinedPassword().trim().equals("");
+        return StringUtils.isNotBlank(getPredefinedPassword());
     }
 
     public String getPredefinedPassword() {
@@ -1365,11 +1359,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (data.get(PRINTINGCOPIES) == null) {
     		return 1;
     	}
-    	return ((Integer) data.get(PRINTINGCOPIES)).intValue();
+    	return (int) data.get(PRINTINGCOPIES);
     }
     
     public void setPrintedCopies(int copies){
-    	data.put(PRINTINGCOPIES, Integer.valueOf(copies));
+    	data.put(PRINTINGCOPIES, copies);
     }
     
     /** @return the name of the printer that should be used */
@@ -1411,7 +1405,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (data.get(key) == null) {
     		return false;
     	}
-    	return ((Boolean) data.get(key)).booleanValue();
+    	return (boolean) data.get(key);
     }
 
     /** @return the boolean value or false if null. Note: Some keys need translating to integer first (e.g. those with use/value/required flags) */
@@ -1461,7 +1455,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     				throw new EndEntityProfileValidationException("Password didn't match requirement of it's profile.");
     			}
     		} else if (isPasswordRequired()) {
-    			if (password == null || password.trim().equals("")) {
+    			if (StringUtils.isBlank(password)) {
     				throw new EndEntityProfileValidationException("Password cannot be empty or null.");
     			}
     		}
@@ -1544,24 +1538,25 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final HashMap<Integer,Integer> subjectdirattrnumbers = subjectdirattrs.getNumberOfFields();
     	final List<Integer> dirattrids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDIRATTR);
     	for (final Integer dirattrid : dirattrids) {
-    		final int nof = subjectdirattrnumbers.get(dirattrid).intValue();
+    		final int nof = subjectdirattrnumbers.get(dirattrid);
     		for (int j=0; j<nof; j++) {
-    			checkForIllegalChars(subjectdirattrs.getField(dirattrid.intValue(),j));
-    			switch (dirattrid.intValue()) {
+    		    final String field = subjectdirattrs.getField(dirattrid, j);
+    			checkForIllegalChars(field);
+    			switch (dirattrid) {
     			case DNFieldExtractor.COUNTRYOFCITIZENSHIP:
-    				checkIfISO3166FulfillProfile(DnComponents.COUNTRYOFCITIZENSHIP,j,subjectdirattrs.getField(dirattrid.intValue(),j),"COUNTRYOFCITIZENSHIP");
+    				checkIfISO3166FulfillProfile(DnComponents.COUNTRYOFCITIZENSHIP, j, field, "COUNTRYOFCITIZENSHIP");
     				break;
     			case DNFieldExtractor.COUNTRYOFRESIDENCE:
-    				checkIfISO3166FulfillProfile(DnComponents.COUNTRYOFRESIDENCE,j,subjectdirattrs.getField(dirattrid.intValue(),j),"COUNTRYOFRESIDENCE");
+    				checkIfISO3166FulfillProfile(DnComponents.COUNTRYOFRESIDENCE, j, field, "COUNTRYOFRESIDENCE");
     				break;
     			case DNFieldExtractor.DATEOFBIRTH:
-    				checkIfDateFulfillProfile(DnComponents.DATEOFBIRTH,j,subjectdirattrs.getField(dirattrid.intValue(),j),"DATEOFBIRTH");
+    				checkIfDateFulfillProfile(DnComponents.DATEOFBIRTH, j, field, "DATEOFBIRTH");
     				break;
     			case DNFieldExtractor.GENDER:
-    				checkIfGenderFulfillProfile(DnComponents.GENDER,j,subjectdirattrs.getField(dirattrid.intValue(),j),"GENDER");
+    				checkIfGenderFulfillProfile(DnComponents.GENDER, j, field, "GENDER");
     				break;
     			default:
-    				checkIfDataFulfillProfile(DnComponents.dnIdToProfileName(dirattrid.intValue()),j,subjectdirattrs.getField(dirattrid.intValue(),j), DnComponents.getErrTextFromDnId(dirattrid.intValue()), email);
+    				checkIfDataFulfillProfile(DnComponents.dnIdToProfileName(dirattrid), j, field, DnComponents.getErrTextFromDnId(dirattrid), email);
     			}
     		}
     	}
@@ -1795,7 +1790,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final List<Integer> dnids = DNFieldExtractor.getUseFields(type);
     	// For each type of field
     	for ( int i=0; i<dnids.size(); i++ ) {
-    		final int dnid = dnids.get(i).intValue();
+    		final int dnid = dnids.get(i);
     		final int profileID = DnComponents.dnIdToProfileId(dnid);
     		final int dnFieldExtractorID = DnComponents.profileIdToDnId(profileID);
     		final int nof = fields.getNumberOfFields(dnFieldExtractorID);
@@ -1964,7 +1959,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
                 while (numberarray.size() < 37) {
-                   numberarray.add(Integer.valueOf(0));
+                   numberarray.add(0);
                 }
                 data.put(NUMBERARRAY,numberarray);
             }
@@ -1972,7 +1967,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
                 while (numberarray.size() < 39) {
-                   numberarray.add(Integer.valueOf(0));
+                   numberarray.add(0);
                 }
                 data.put(NUMBERARRAY,numberarray);
                 addField(AVAILCAS);
@@ -1990,7 +1985,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);                
                 for (int i =numberoffields.size(); i < dataConstants.size(); i++) {
-                  numberoffields.add(Integer.valueOf(0));
+                  numberoffields.add(0);
                 }               
                 data.put(NUMBERARRAY,numberoffields);                
             }
@@ -2007,7 +2002,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
-                  numberoffields.add(Integer.valueOf(0));
+                  numberoffields.add(0);
                 }               
                 data.put(NUMBERARRAY,numberoffields);
                 data.put(SUBJECTDIRATTRFIELDORDER,new ArrayList<Integer>());
@@ -2025,7 +2020,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
-                	numberoffields.add(Integer.valueOf(0));
+                	numberoffields.add(0);
                 }               
                 data.put(NUMBERARRAY,numberoffields);
                 addField(STARTTIME);
@@ -2064,7 +2059,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
-                	numberoffields.add(Integer.valueOf(0));
+                	numberoffields.add(0);
                 }               
                 data.put(NUMBERARRAY,numberoffields);
                 addField(ALLOWEDREQUESTS);
@@ -2410,7 +2405,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	// Check if required Email fields exists.
     	if (isRequired(EMAIL,0)) {
-    		if (email == null || email.trim().isEmpty()) {
+    		if (StringUtils.isBlank(email)) {
     			throw new EndEntityProfileValidationException("Email address cannot be empty or null.");
     		}
     	}
@@ -2420,7 +2415,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	for (int i = 0; i<dnfields.size(); i++) {
     		final String currentDnField = dnfields.get(i);
     		if (getReverseFieldChecks()) {
-    			final int nof = subjectdnfields.getNumberOfFields(dnFieldExtractorIds.get(i).intValue());
+    			final int nof = subjectdnfields.getNumberOfFields(dnFieldExtractorIds.get(i));
     			final int numRequiredFields = getNumberOfRequiredFields(currentDnField);
     			if (nof < numRequiredFields) {
     				throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
@@ -2429,7 +2424,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			final int size = getNumberOfField(currentDnField);
     			for (int j = 0; j<size; j++) {
     				if (isRequired(currentDnField,j)) {
-    					if (subjectdnfields.getField(dnFieldExtractorIds.get(i).intValue(),j).trim().isEmpty()) {
+    					if (StringUtils.isBlank(subjectdnfields.getField(dnFieldExtractorIds.get(i), j))) {
     						throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
     					}
     				}
@@ -2442,7 +2437,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	for (int i=0; i<altnamefields.size(); i++) {
     		final String currentAnField = altnamefields.get(i);
     		if (getReverseFieldChecks()) {
-    			final int nof = subjectaltnames.getNumberOfFields(altNameFieldExtractorIds.get(i).intValue());
+    			final int nof = subjectaltnames.getNumberOfFields(altNameFieldExtractorIds.get(i));
     			final int numRequiredFields = getNumberOfRequiredFields(currentAnField);
     			if (nof < numRequiredFields) {
     				throw new EndEntityProfileValidationException("Subject Alternative Name field '" + currentAnField + "' must exist.");
@@ -2450,10 +2445,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		} else {
     			// Only verify fields that are actually used
     			// size = getNumberOfField(altnamefields[i]);
-    			final int size = subjectaltnames.getNumberOfFields(altNameFieldExtractorIds.get(i).intValue());
+    			final int size = subjectaltnames.getNumberOfFields(altNameFieldExtractorIds.get(i));
     			for (int j = 0; j < size; j++) {
     				if (isRequired(currentAnField,j)) {
-    					if (subjectaltnames.getField(altNameFieldExtractorIds.get(i).intValue(),j).trim().isEmpty()) {
+    					if (StringUtils.isBlank(subjectaltnames.getField(altNameFieldExtractorIds.get(i), j))) {
     						throw new EndEntityProfileValidationException("Subject Alterntive Name field '" + currentAnField + "' must exist.");
     					}
     				}
@@ -2468,7 +2463,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		final int size = getNumberOfField(currentDaField);
     		for (int j = 0; j < size; j++) {
     			if (isRequired(currentDaField,j)) {
-    				if (subjectdirattrs.getField(dirAttrFieldExtractorIds.get(i).intValue(),j).trim().isEmpty()) {
+    				if (StringUtils.isBlank(subjectdirattrs.getField(dirAttrFieldExtractorIds.get(i), j))) {
     					throw new EndEntityProfileValidationException("Subject Directory Attribute field '" + currentDaField + "' must exist.");
     				}
     			}
@@ -2497,7 +2492,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final List<String> dnfields = DnComponents.getDnProfileFields();
     	final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
     	for (int i=0; i<dnfields.size(); i++) {
-    		if (getNumberOfField(dnfields.get(i)) < subjectdnfields.getNumberOfFields(dnFieldExtractorIds.get(i).intValue())) {
+    		if (getNumberOfField(dnfields.get(i)) < subjectdnfields.getNumberOfFields(dnFieldExtractorIds.get(i))) {
     			throw new EndEntityProfileValidationException("Wrong number of " + dnfields.get(i) + " fields in Subject DN.");
     		}
     	}
@@ -2505,7 +2500,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final List<String> altnamefields = DnComponents.getAltNameFields();
     	final List<Integer> altNameFieldExtractorIds = DnComponents.getAltNameDnIds();
     	for (int i=0; i<altnamefields.size(); i++) {
-    		if (getNumberOfField(altnamefields.get(i)) < subjectaltnames.getNumberOfFields(altNameFieldExtractorIds.get(i).intValue())) {
+    		if (getNumberOfField(altnamefields.get(i)) < subjectaltnames.getNumberOfFields(altNameFieldExtractorIds.get(i))) {
     			throw new EndEntityProfileValidationException("Wrong number of " + altnamefields.get(i) + " fields in Subject Alternative Name.");
     		}
     	}
@@ -2513,7 +2508,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	final List<String> dirattrfields = DnComponents.getDirAttrFields();
     	final List<Integer> dirAttrFieldExtractorIds = DnComponents.getDirAttrDnIds();
     	for (int i=0; i<dirattrfields.size(); i++) {
-    		if (getNumberOfField(dirattrfields.get(i)) < subjectdirattrs.getNumberOfFields(dirAttrFieldExtractorIds.get(i).intValue())) {
+    		if (getNumberOfField(dirattrfields.get(i)) < subjectdirattrs.getNumberOfFields(dirAttrFieldExtractorIds.get(i))) {
     			throw new EndEntityProfileValidationException("Wrong number of " + dirattrfields.get(i) + " fields in Subject Directory Attributes.");
     		}
     	}
@@ -2567,7 +2562,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	private static int getParameterNumber(final String parameter) {
 		final Integer number = dataConstants.get(parameter);
 		if (number != null) {
-			return number.intValue();			
+			return number;			
 		}
 		if (log.isDebugEnabled()) {
 		    log.warn("No parameter number for "+parameter, new Exception("Stacktrace"));
@@ -2599,13 +2594,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private void incrementFieldnumber(final int parameter){
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
-    	numberarray.set(parameter, Integer.valueOf(numberarray.get(parameter).intValue() + 1));
+    	numberarray.set(parameter, numberarray.get(parameter) + 1);
     }
 
     private void decrementFieldnumber(final int parameter){
     	@SuppressWarnings("unchecked")
         final ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
-    	numberarray.set(parameter, Integer.valueOf(numberarray.get(parameter).intValue() - 1));
+    	numberarray.set(parameter, numberarray.get(parameter) - 1);
     }
 
     public static String[] getSubjectDNProfileFields() {
