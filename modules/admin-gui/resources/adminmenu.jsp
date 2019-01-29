@@ -161,14 +161,6 @@ org.ejbca.util.HTMLTools
         } %>
 				<li><a href="<%= CRYPTOTOKENS_LINK %>"><%=ejbcawebbean.getText("NAV_CRYPTOTOKENS") %></a></li>
 <% } %>
-        <%
-      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){
-         if(!caheaderprinted){
-           out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>");
-           caheaderprinted=true;
-         }  %>
-    <li><a href="<%= RA_EDITPROFILESLINK %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
-        <% } %>
 <%
      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWPUBLISHER)){ 
         if(!caheaderprinted){
@@ -202,6 +194,14 @@ org.ejbca.util.HTMLTools
            raheaderprinted=true;
          }  %>
 				<li><a href="<%= RA_ADDENDENTITYLINK %>"><%=ejbcawebbean.getText("NAV_ADDENDENTITY") %></a></li>
+<% } %>
+<%
+      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){
+         if(!raheaderprinted){
+           out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>");
+           raheaderprinted=true;
+         }  %>
+				<li><a href="<%= RA_EDITPROFILESLINK %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
 <% } %>
 <%
       if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
