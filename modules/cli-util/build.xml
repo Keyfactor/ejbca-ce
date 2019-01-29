@@ -4,14 +4,14 @@
     	Builds a utility jar containing all classes needed by CLI modules
     </description>
 
-	<dirname property="this.dir" file="${ant.file.cli-util}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="cli-util.dir" file="${ant.file.cli-util}"/>
+
+    <import file="${cli-util.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="src-test.dir" location="${this.dir}/src-test"/>
-    <property name="intresources.dir" location="${this.dir}/intresources"/>
+	<property name="cli-util.build.dir" location="${cli-util.dir}/build"/>
+	<property name="cli-util.build-test.dir" location="${cli-util.dir}/build-test"/>
+	<property name="cli-util.src.dir" location="${cli-util.dir}/src"/>
+	<property name="cli-util.src-test.dir" location="${cli-util.dir}/src-test"/>
 
 	<path id="cli-util.lib.classpath">
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
@@ -45,39 +45,37 @@
     		<manifest >
     			<attribute name="Class-path" value="${cli-util.dependencies} ./" />
     		</manifest>
-            <fileset dir="${build.dir}" includes="**/*.class **/*.xml **/*.properties"/>
+            <fileset dir="${cli-util.build.dir}" includes="**/*.class **/*.xml **/*.properties"/>
         </jar>
     </target>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
-		<delete dir="${build-test.dir}" />
+		<delete dir="${cli-util.build.dir}" />
+		<delete dir="${cli-util.build-test.dir}" />
     </target>
 	
     <target name="compile" depends="setup, with.clover">
-    	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+    	<mkdir dir="${cli-util.build.dir}" />
+        <javac destdir="${cli-util.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
             <classpath>
             	<path refid="lib.bouncycastle.classpath"/>
             	<path refid="lib.jee.classpath"/>
             	<path refid="cli-util.lib.classpath"/>
             </classpath>
-        	<src path="${src.dir}"/>
+        	<src path="${cli-util.src.dir}"/>
         </javac>
     </target>
     
-    <target name="setup-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ejb-interface"/></target>
-	
-    <target name="setup" depends="setup-external-deps">
+    <target name="setup">
     	<mkdir dir="${mod.cli-util.dist}"/>
     </target>
     
     
     <!-- Tests -->
     <target name="compile-tests" depends="build, with.clover">
-    	<mkdir dir="${build-test.dir}" />
+    	<mkdir dir="${cli-util.build-test.dir}" />
     	
-        <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+        <javac srcdir="${cli-util.src-test.dir}" destdir="${cli-util.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}">
         	<classpath>
             	<path refid="lib.bouncycastle.classpath"/>
@@ -85,39 +83,39 @@
                 <path refid="lib.commons-io.classpath"/>
             	<path refid="cli-util.lib.classpath"/>
                 <path refid="lib.junit.classpath"/>
-                <path location="${build.dir}" />
-                <path location="${build-test.dir}" />
+                <path location="${cli-util.build.dir}" />
+                <path location="${cli-util.build-test.dir}" />
         	</classpath>
     	</javac>
-    	<mkdir dir="${build-test.dir}/conf"/>
-    	<copy todir="${build-test.dir}/conf">
+    	<mkdir dir="${cli-util.build-test.dir}/conf"/>
+    	<copy todir="${cli-util.build-test.dir}/conf">
     		<fileset dir="${ejbca.home}/conf" includes="ejbca.properties"/>
     	</copy>
-    	<copy todir="${build-test.dir}">
+    	<copy todir="${cli-util.build-test.dir}">
     	    <fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>
        	</copy>
     </target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
-    	<antcall target="showtime"/>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
+    	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cli-util.dir}">
 			<classpath>
         		<path refid="lib.bouncycastle.classpath"/>
             	<path refid="lib.jee.classpath"/>
             	<path refid="lib.commons-io.classpath"/>
             	<path refid="cli-util.lib.classpath"/>
                 <path refid="lib.junit.classpath"/>
-                <path location="${build.dir}" />
-                <path location="${build-test.dir}" />
+                <path location="${cli-util.build.dir}" />
+                <path location="${cli-util.build-test.dir}" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*Test.class">
+				<fileset dir="${cli-util.build-test.dir}" includes="**/*Test.class">
 				</fileset>
 			</batchtest>
 		</junit>
-    	<antcall target="showtime"/>
+    	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
     </target>
 	
 	<target name="runone" depends="compile-tests">
@@ -129,13 +127,13 @@
             	<path refid="lib.commons-io.classpath"/>
             	<path refid="cli-util.lib.classpath"/>
                 <path refid="lib.junit.classpath"/>
-                <path location="${build.dir}" />
-                <path location="${build-test.dir}" />
+                <path location="${cli-util.build.dir}" />
+                <path location="${cli-util.build-test.dir}" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${cli-util.build-test.dir}">
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>

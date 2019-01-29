@@ -2,20 +2,20 @@
 <project name="ejbcatest" basedir=".">
 
     <target name="test:run" description="run both stand-alone JUnit test cases and system test" depends="deleteDirectories">
-    	<antcall target="test:runsa" inheritrefs="true"><param name="aggregate.results" value="true"/></antcall>
-    	<antcall target="test:runsys" inheritrefs="true"><param name="aggregate.results" value="true"/></antcall>
+    	<antcall target="test:runsa" inheritall="true" inheritrefs="true"><param name="aggregate.results" value="true"/></antcall>
+    	<antcall target="test:runsys" inheritall="true" inheritrefs="true"><param name="aggregate.results" value="true"/></antcall>
     	<antcall target="createreport"/>
     </target>
 
     <target name="test:runsys" description="run system test, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
-        <antcall target="optionaltestconfigdump-system" inheritrefs="true"/>
-    	<antcall target="optionalteststatedump" inheritrefs="true"/>
-    	<antcall target="optionaltestpeerconnector" inheritrefs="true"/>
-    	<antcall target="optionaltestplugins" inheritrefs="true"/>
-    	<antcall target="optionaltestacme-system" inheritrefs="true"/>
-        <antcall target="optionaltestrest-system" inheritrefs="true"/>
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/systemtests" target="run" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestconfigdump-system" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionalteststatedump" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestpeerconnector" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestplugins" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestrest-system" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     	<!-- The name of the output from the profiling result will vary slightly -->
 		<fileset id="profilingtest.logfile.id" dir="${reports.base.dir}/test/html/org/ejbca/core/ejb" includes="*_ProfilingTest-out.html"/>
 		<property name="profilingtest.logfile" refid="profilingtest.logfile.id"/>
@@ -37,58 +37,91 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
-        <antcall target="optionaltestacme-unit" inheritrefs="true"/>
-       	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" />
-       	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test" />        	       	       
-       	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test" />  
-       	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test" />              	       	 	
-       	<ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" />
-       	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test-common-web" />  
-    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" /> 
-    	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
-    	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
-    	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
-        <antcall target="optionaltestrest-unit" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" />
-        <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" />
-        <antcall target="optionaltestconfigdump-unit" inheritrefs="true"/>
-    	<antcall target="optionaltestct" inheritrefs="true"/>
-    	<antcall target="optionaltestcaa" inheritrefs="true"/>
-    	<antcall target="optionaltestcmpproxy" inheritrefs="true"/>
-    	<antcall target="optionaltestunidfnr" inheritrefs="true"/>
-    	<antcall target="createreport"/>
+        <antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/cesecore-common" target="test" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test-common-web" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/cli-util" target="test" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestconfigdump-unit" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestct" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestcaa" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestcmpproxy" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestunidfnr" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
-    <target name="optionaltestconfigdump-system" if="${configdump.exists}"><ant antfile="build.xml" dir="modules/configdump" target="test:system" /></target>
-    <target name="optionaltestconfigdump-unit" if="${configdump.exists}"><ant antfile="build.xml" dir="modules/configdump" target="test:unit" /></target>
+    <target name="optionaltestconfigdump-system" if="${configdump.exists}">
+        <ant antfile="build.xml" dir="modules/configdump" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="optionaltestconfigdump-unit" if="${configdump.exists}">
+        <ant antfile="build.xml" dir="modules/configdump" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
-    <target name="optionaltestct" if="${ct.exists}"><ant antfile="build.xml" dir="modules/ct" target="test" /></target>
+    <target name="optionaltestct" if="${ct.exists}">
+        <ant antfile="build.xml" dir="modules/ct" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="statedump.exists"><available file="modules/statedump/build.xml" /></condition>
-    <target name="optionalteststatedump" if="${statedump.exists}"><antcall target="statedump" inheritrefs="true"/><ant antfile="build.xml" dir="modules/statedump" target="test" /></target>
+    <target name="optionalteststatedump" if="${statedump.exists}">
+        <antcall target="statedump" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/statedump" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
-    <target name="optionaltestconfigdump" if="${configdump.exists}"><antcall target="configdump" inheritrefs="true"/><ant antfile="build.xml" dir="modules/configdump" target="test" /></target>
+    <target name="optionaltestconfigdump" if="${configdump.exists}">
+        <antcall target="configdump" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/configdump" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
-    <target name="optionaltestpeerconnector" if="${peerconnector.exists}"><ant antfile="build.xml" dir="modules/peerconnector" target="test" /></target>
+    <target name="optionaltestpeerconnector" if="${peerconnector.exists}">
+        <ant antfile="build.xml" dir="modules/peerconnector" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="ee-plugins.exist"><available file="modules/plugins-ee/build.xml" /></condition>
-    <target name="optionaltestplugins" if="${ee-plugins.exist}"><ant antfile="build.xml" dir="modules/plugins-ee" target="test" /></target>
+    <target name="optionaltestplugins" if="${ee-plugins.exist}">
+        <ant antfile="build.xml" dir="modules/plugins-ee" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="acme.exists"><available file="modules/acme"/></condition>
-    <target name="optionaltestacme-unit" if="${acme.exists}"><ant antfile="build.xml" dir="modules/acme" target="test:unit"/></target>
-    <target name="optionaltestacme-system" if="${acme.exists}"><ant antfile="build.xml" dir="modules/acme" target="test:system"/></target>
+    <target name="optionaltestacme-unit" if="${acme.exists}">
+        <ant antfile="build.xml" dir="modules/acme" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="optionaltestacme-system" if="${acme.exists}">
+        <ant antfile="build.xml" dir="modules/acme" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="ejbca-rest-api.exists"><available file="modules/ejbca-rest-api"/></condition>
-    <target name="optionaltestrest-unit" if="${ejbca-rest-api.exists}"><ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit"/></target>
-    <target name="optionaltestrest-system" if="${ejbca-rest-api.exists}"><ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:system"/></target>
+    <target name="optionaltestrest-unit" if="${ejbca-rest-api.exists}">
+        <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="optionaltestrest-system" if="${ejbca-rest-api.exists}">
+        <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="est.exists"><available file="modules/est"/></condition>
-    <target name="optionaltestest" if="${est.exists}"><ant antfile="build.xml" dir="modules/est" target="test"/></target>
+    <target name="optionaltestest" if="${est.exists}">
+        <ant antfile="build.xml" dir="modules/est" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="cmpproxy.exists"><available file="modules/cmpProxy" /></condition>
-    <target name="optionaltestcmpproxy" if="${cmpproxy.exists}"><ant antfile="build-http.xml" dir="modules/cmpProxy" target="test" /></target>
+    <target name="optionaltestcmpproxy" if="${cmpproxy.exists}">
+        <antcall target="externalra-library" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build-http.xml" dir="modules/cmpProxy" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
-    <target name="optionaltestcaa" if="${caa.exists}"><ant antfile="build.xml" dir="modules/caa" target="test" /></target>
+    <target name="optionaltestcaa" if="${caa.exists}">
+        <ant antfile="build.xml" dir="modules/caa" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="unidfnr.exists"><available file="modules/unidfnr/build.xml" /></condition>
-    <target name="optionaltestunidfnr" if="${unidfnr.exists}"><ant antfile="build.xml" dir="modules/unidfnr" target="test" /></target>
+    <target name="optionaltestunidfnr" if="${unidfnr.exists}">
+        <ant antfile="build.xml" dir="modules/unidfnr" target="test" inheritall="true" inheritrefs="true"/>
+    </target>
 
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" />
+    	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:runone" description="run a single Test specified -Dtest.runone=classname" depends="deleteDirectories">
@@ -206,130 +239,130 @@
             <matches string="${test-fullname}" pattern="^modules/plugins-ee/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
-    	<ant antfile="${test-buildfile}" dir="${module}" target="runone" />
-		<antcall target="createreport"/>
+    	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>
+		<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:runlots" description="run JUnit testcases that creates lots of users and certificates" >
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runlotsofusers" />
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runperf" />
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runlotsofusers" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runperf" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:runlotsperuser" description="run JUnit testcases that creates lots of users and certificates for each user">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runlotsperuser" />
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runlotsperuser" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:runperf" description="run JUnit performance tests">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runperf" />
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runperf" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:runweb" description="run JUnit web system tests" depends="deleteDirectories" >
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runweb" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runweb" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:runcmpra" description="run JUnit CMP RA system tests" depends="deleteDirectories" >
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runcmp" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runcmp" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:logstress" description="Run log stress tests." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runlogstress" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runlogstress" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:runws" description="Run web service tests." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runws" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runws" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:externalra" description="run JUnit External RA test." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/externalra" target="test" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/externalra" target="test" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:externalra-scep" description="run JUnit stand-alone SCEP External RA tests" depends="deleteDirectories">
     	<echo message="Hint: use the ant-target 'test:externalra-scep.setuptest' to setup a proper testing environment for this test."/>
-    	<ant antfile="build.xml" dir="modules/externalra-scep" target="test" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/externalra-scep" target="test" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:externalra-scep.setuptest" description="setup some a basic environment for the stand-alone SCEP External RA tests" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/externalra-scep" target="setuptest" />
-    	<antcall target="createreport"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:dbschema" description="run JUnit test to validate the schema of the configured database" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test-dbschema" />
-    	<antcall target="createreport"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="test:statedump" description="run JUnit Statedump test." depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/statedump" target="test" />
-    	<antcall target="createreport"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="test:configdump" description="run JUnit Configdump test." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/configdump">
+        <ant antfile="build.xml" dir="modules/configdump" inheritall="true" inheritrefs="true">
             <target name="test:unit" />
             <target name="test:system" />
         </ant>
-    	<antcall target="createreport"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="test:ct" description="run JUnit Certificate Transparency test." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/ct" target="test" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/ct" target="test" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
    
     <target name="test:pc" depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/peerconnector" target="test" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/peerconnector" target="test" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="test:vapub" depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/va" target="test" />
-    	<antcall target="createreport"/>
+    	<ant antfile="build.xml" dir="modules/va" target="test" inheritall="true" inheritrefs="true"/>
+    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="test:unidfnr" description="run UNID-FNR test." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/unidfnr" target="test" />
-        <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/unidfnr" target="test" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="test:webtest" description="run all JUnit web tests." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/ejbca-webtest" target="test" />
-        <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/ejbca-webtest" target="test" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:unit:ejbca-rest-api" description="run all JUnit tests for ejbca-rest-api." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit" />
-        <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:system:ejbca-rest-api" description="run all System tests for ejbca-rest-api." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:system" />
-        <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:unit:ejbca-ejb" description="run all JUnit tests for ejbca-ejb module." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" />
-        <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:unit:acme" description="run all JUnit tests for ACME." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/acme" target="test:unit" />
-        <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/acme" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:system:acme" description="run all System tests for ACME." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/acme" target="test:system" />
-        <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/acme" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:unit:admingui" description="run all JUnit tests for Admin GUI." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" />
-        <antcall target="createreport"/>
+        <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="createreport">
