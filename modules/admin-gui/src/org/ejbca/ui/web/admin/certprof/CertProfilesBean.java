@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -45,6 +44,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -506,7 +506,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         ZipEntry ze = zis.getNextEntry();
         if (ze == null) {
             // Print import message if the file header corresponds to an empty zip archive
-            if (Arrays.equals(Arrays.copyOfRange(filebuffer, 0, 4), new byte[] { 80, 75, 5, 6 })) {
+            if (FileTools.isEmptyZipFile(filebuffer)) {
                 printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
             } else {
                 String msg = uploadFile.getName() + " is not a zip file.";

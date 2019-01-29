@@ -39,6 +39,12 @@ import org.apache.log4j.Logger;
 public abstract class FileTools {
     private static final Logger log = Logger.getLogger(FileTools.class);
 
+    private static final int ZIP_HEADER_SIZE = 4;
+    /** Starting byte sequence of a ZIP file with at least one file */
+    private static final byte[] ZIP_LOCAL_HEADER = new byte[] { 'P', 'K', 3, 4 };
+    /** Starting byte sequence of an empty ZIP file */
+    private static final byte[] ZIP_END_OF_CENTRAL_HEADER = new byte[] { 'P', 'K', 5, 6 };
+
     /**
      * Reads binary bytes from a PEM-file. The PEM-file may contain other stuff, the first item
      * between beginKey and endKey is read. Example: <code>-----BEGIN CERTIFICATE REQUEST-----
@@ -228,5 +234,25 @@ public abstract class FileTools {
         }
         
         return bytesCopied;
+    }
+
+    /**
+     * Returns true if the given file data looks like a ZIP file based on the first bytes.
+     * @param fileData File bytes.
+     * @return true if it looks like a ZIP file
+     */
+    public static boolean isZipFile(final byte[] fileData) {
+        final byte[] header = Arrays.copyOfRange(fileData, 0, ZIP_HEADER_SIZE);
+        return Arrays.equals(header, ZIP_LOCAL_HEADER) || Arrays.equals(header, ZIP_END_OF_CENTRAL_HEADER);
+    }
+
+    /**
+     * Returns true if the given file data looks like an empty ZIP file based on the first bytes.
+     * @param fileData File bytes.
+     * @return true if it looks like a ZIP file which is empty.
+     */
+    public static boolean isEmptyZipFile(final byte[] fileData) {
+        final byte[] header = Arrays.copyOfRange(fileData, 0, ZIP_HEADER_SIZE);
+        return Arrays.equals(header, ZIP_END_OF_CENTRAL_HEADER);
     }
 }
