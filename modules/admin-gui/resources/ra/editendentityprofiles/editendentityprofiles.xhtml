@@ -58,7 +58,7 @@
 				    			action="#{endEntityProfilesMBean.actionDelete}" 
 				    			value="#{web.text.DELETEENDENTITYPROFILE}"
 				    			rendered="#{endEntityProfilesMBean.authorizedToEdit and not endEntityProfilesMBean.deleteInProgress}">
-				    			<f:ajax execute="@this" render=":modalBlockContainer"/>
+				    			<f:ajax execute="@this" render=":modalBlockContainer :messagesBlock"/>
 				    		</h:commandButton>	
 				    	</h:column>
 				    </h:panelGrid>
