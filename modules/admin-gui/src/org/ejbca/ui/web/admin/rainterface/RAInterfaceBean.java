@@ -13,38 +13,22 @@
 
 package org.ejbca.ui.web.admin.rainterface;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.URLDecoder;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -52,7 +36,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -62,18 +45,14 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.roles.Role;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
-import org.cesecore.util.FileTools;
-import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -84,7 +63,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -95,11 +73,8 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
-import org.ejbca.core.model.ra.raadmin.UserNotification;
-import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -140,15 +115,8 @@ public class RAInterfaceBean implements Serializable {
     private CertificateView[]                  certificates;
     private AddedUserMemory              addedusermemory;
     private AuthenticationToken administrator;
-    private EjbcaWebBean ejbcawebbean;
     private RAAuthorization raauthorization;
     private boolean initialized=false;
-
-    private String[] printerNames = null;
-    private String importedProfileName = null;
-
-    private EndEntityProfile temporaryEndEntityProfile = null;
-    private UserNotification temporaryNotification = null;
 
     /** Creates new RaInterfaceBean */
     public RAInterfaceBean()  {
@@ -164,7 +132,6 @@ public class RAInterfaceBean implements Serializable {
     		} else {
                 administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("RAInterface", request.getRemoteAddr()));
     		}
-    		this.ejbcawebbean = ejbcawebbean;
     		endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     		certificatesession = ejbLocalHelper.getCertificateStoreSession();
     		caSession = ejbLocalHelper.getCaSession();
@@ -246,30 +213,6 @@ public class RAInterfaceBean implements Serializable {
       return success;
     }
 
-    /** Changes the status of a number of users from the database.
-     *
-     * @param usernames an array of usernames to change.
-     * @param status gives the status to apply to users, should be one of UserDataRemote.STATUS constants.
-     * @return false if administrator wasn't authorized to change all of the given users.
-     * */
-    public boolean setUserStatuses(String[] usernames, String status) throws ApprovalException, NoSuchEndEntityException, WaitingForApprovalException {
-    	log.trace(">setUserStatuses()");
-    	boolean success = true;
-    	int intstatus = 0;
-    	try {
-    		intstatus = Integer.parseInt(status);
-    	} catch(Exception e) {}
-    	for (int i=0; i < usernames.length; i++) {
-    		try {
-    			endEntityManagementSession.setUserStatus(administrator, usernames[i],intstatus);
-    		} catch(AuthorizationDeniedException e) {
-    			success = false;
-    		}
-    	}
-    	log.trace("<setUserStatuses(): " + success);
-    	return success;
-    }
-
     /**
      * Revokes the given user.
      * @param username username of user to revoke.
@@ -325,10 +268,6 @@ public class RAInterfaceBean implements Serializable {
     public boolean unrevokeCert(BigInteger serno, String issuerdn, String username) throws ApprovalException, WaitingForApprovalException {
     	// Method needed because it is used as an ApprovalOveradableClassName
     	return revokeCert(serno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
-    }
-
-    public boolean renameUser(final String currentUsername, final String newUsername) throws AuthorizationDeniedException, EndEntityExistsException {
-        return endEntityManagementSession.renameEndEntity(administrator, currentUsername, newUsername);
     }
 
     /** Changes the userdata
@@ -556,10 +495,6 @@ public class RAInterfaceBean implements Serializable {
     	return raauthorization.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
 
-    public List<String> getAuthorizedEndEntityProfileIdsWithMissingCAs() {
-        return raauthorization.getViewAuthorizedEndEntityProfilesWithMissingCAs();
-    }
-
     /** Returns the profile name from id proxied */
     public String getEndEntityProfileName(int profileid) {
     	return endEntityProfileSession.getEndEntityProfileName(profileid);
@@ -575,123 +510,8 @@ public class RAInterfaceBean implements Serializable {
         return endEntityProfileSession.getEndEntityProfileId(profilename);
     }
 
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public EndEntityProfile getEndEntityProfile(String name) {
-    	return endEntityProfileSession.getEndEntityProfile(name);
-    }
-
     public EndEntityProfile getEndEntityProfile(int id) {
     	return endEntityProfileSession.getEndEntityProfile(id);
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public void addEndEntityProfile(String name) throws EndEntityProfileExistsException, AuthorizationDeniedException {
-    	EndEntityProfile profile = new EndEntityProfile();
-    	String availablecas = StringUtils.join(caSession.getAuthorizedCaIds(administrator), EndEntityProfile.SPLITCHAR);
-    	profile.setValue(EndEntityProfile.AVAILCAS, 0,availablecas);
-    	profile.setRequired(EndEntityProfile.AVAILCAS, 0,true);
-    	endEntityProfileSession.addEndEntityProfile(administrator, name, profile);
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public void changeEndEntityProfile(String name, EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
-    	endEntityProfileSession.changeEndEntityProfile(administrator, name, profile);
-    }
-
-    /**
-     * Tries to remove an End Entity Profile. Returns an array of messages
-     * containing information about what is preventing the removal, or empty
-     * strings if the removal was successful.
-     *
-     * @param name the name of the profile to be removed
-     * @return an array of strings containing information about the EEs and administrator roles using the EEP
-     * @throws AuthorizationDeniedException if the admin is not authorized to remove the EEP
-     * @throws EndEntityProfileNotFoundException if no such end entity profile was found
-     * @deprecated Since EJBCA 7.0.0
-     */
-    @Deprecated
-    public String[] removeEndEntityProfile(String name) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
-        String[] messageArray = {"", "", ""};
-        int profileId = endEntityProfileSession.getEndEntityProfileId(name);
-        List<UserData> users = endEntityAccessSession.findByEndEntityProfileId(profileId);
-        if (users.size() > 0) {
-            messageArray[0] = "used";
-        }
-        // Only return the users the admin is authorized to view to prevent information leaks
-        List<String> authorizedUsers = new ArrayList<>();
-        for (UserData user : users) {
-            if (caSession.authorizedToCANoLogging(administrator, user.getCaId())
-                    && authorizationSession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_VIEWENDENTITY)) {
-                authorizedUsers.add(user.getUsername());
-            }
-        }
-        // Only return the End Entities that the admin is authorized to (empty string if none)
-        messageArray[1] = StringUtils.join(authorizedUsers, ", ");
-        List<String> usedRules = getRulesWithEndEntityProfile(profileId);
-        if (usedRules.size() > 0) {
-            messageArray[0] = "used";
-        }
-        if (authorizationSession.isAuthorizedNoLogging(administrator, StandardRules.VIEWROLES.resource())) {
-            // Only return the used administrator roles if the admin is authorized to view them to prevent information leaks
-            messageArray[2] = StringUtils.join(usedRules, ", ");
-        }
-        // Remove profile if it's not in use
-        if (messageArray[0].isEmpty()) {
-            endEntityProfileSession.removeEndEntityProfile(administrator, name);
-        }
-        return messageArray;
-    }
-
-    /** @return a list of role names where the End Entity Profile's ID is explicitly defined in the role's access rules */
-    private List<String> getRulesWithEndEntityProfile(final int profileId) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getRulesWithEndEntityProfile(" + profileId + ")");
-        }
-        final List<String> rolenames = new ArrayList<>();
-        final Pattern idInRulename = Pattern.compile("^"+AccessRulesConstants.ENDENTITYPROFILEPREFIX+"(-?[0-9]+)/.*$");
-        for (final Role role : ejbLocalHelper.getRoleDataSession().getAllRoles()) {
-            for (final String explicitResource : role.getAccessRules().keySet()) {
-                final Matcher matcher = idInRulename.matcher(explicitResource);
-                if (matcher.find() && String.valueOf(profileId).equals(matcher.group(1))) {
-                    rolenames.add(role.getRoleNameFull());
-                    break;
-                }
-            }
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("End entity profile with id " + profileId + " is present in roles: " + StringUtils.join(rolenames, ", "));
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<getRulesWithEndEntityProfile(" + profileId + ")");
-        }
-        return rolenames;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public void renameEndEntityProfile(String oldname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException {
-    	endEntityProfileSession.renameEndEntityProfile(administrator, oldname, newname);
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public void setTemporaryEndEntityProfileNotification(UserNotification userNotification) {
-        temporaryNotification = userNotification;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public UserNotification getTemporaryEndEntityProfileNotification() {
-        return temporaryNotification;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public void cloneEndEntityProfile(String originalname, String newname) throws EndEntityProfileExistsException, AuthorizationDeniedException {
-    	endEntityProfileSession.cloneEndEntityProfile(administrator, originalname, newname);
     }
 
     public void loadCertificates(final String username) {
@@ -820,12 +640,6 @@ public class RAInterfaceBean implements Serializable {
     	return returnval;
     }
 
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public boolean authorizedToEditEndEntityProfiles() {
-        return authorizationSession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
-    }
-
     public boolean authorizedToEditUser(int profileid) {
     	return endEntityAuthorization(administrator, profileid, AccessRulesConstants.EDIT_END_ENTITY, false);
     }
@@ -891,32 +705,12 @@ public class RAInterfaceBean implements Serializable {
     	}
     }
 
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public String[] getCertificateProfileNames(){
-        String[] dummy = {""};
-        Collection<String> certprofilenames = ejbcawebbean.getAuthorizedEndEntityCertificateProfileNames().keySet();
-        if(certprofilenames == null) {
-            return new String[0];
-        }
-        return certprofilenames.toArray(dummy);
-    }
-
     public String getCertificateProfileName(int certificateprofileid) {
     	return certificateProfileSession.getCertificateProfileName(certificateprofileid);
     }
 
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public boolean getEndEntityParameter(String parameter) {
-    	if(parameter == null) {
-    		return false;
-    	}
-    	return parameter.equals(EndEntityProfile.TRUE);
-    }
-
     /** Help function used to check end entity profile authorization. */
-    public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights, boolean log) {
+    private boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights, boolean log) {
     	boolean returnval = false;
     	if (log) {
     		returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights,
@@ -926,31 +720,6 @@ public class RAInterfaceBean implements Serializable {
     				+ rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     	}
     	return returnval;
-    }
-
-    /**
-     *  Help function used by edit end entity pages used to temporary save a profile
-     *  so things can be canceled later
-     * @deprecated Since EJBCA 7.0.0
-     */
-    @Deprecated
-    public EndEntityProfile getTemporaryEndEntityProfile(){
-    	return this.temporaryEndEntityProfile;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public void setTemporaryEndEntityProfile(EndEntityProfile profile){
-    	this.temporaryEndEntityProfile = profile;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public String[] listPrinters(){
-    	if (printerNames == null) {
-    		printerNames = org.ejbca.util.PrinterManager.listPrinters();
-    	}
-    	return printerNames;
     }
 
     public String getFormatedCertSN(CertificateView certificateData) {
@@ -969,37 +738,6 @@ public class RAInterfaceBean implements Serializable {
     	}
     	return serialnumber;
 
-    }
-
-    /**
-     * Handle the combinations of AnyCA and default CA to get the correct available CAs line.
-     * @param availableCasArray an array of CA Ids
-     * @param defaultCa the CA Id of the selected default CA
-     * @return the ;-seperated list of CA Ids
-     * @deprecated Since EJBCA 7.0.0
-     */
-    @Deprecated
-    public String getAvailableCasString(final String[] availableCasArray, final String defaultCa) {
-        final List<String> availableCasList = Arrays.asList(availableCasArray);
-        final StringBuilder sb = new StringBuilder();
-        if (availableCasList.contains(String.valueOf(SecConst.ALLCAS)) || availableCasList.contains(defaultCa)) {
-            // If the AnyCA or the default CA is selected we will just keep list of selected CAs as is
-            // (the admin might want to use AnyCA with additional selections for awkward access control)
-            for (final String current : availableCasList) {
-                if (sb.length()>0) {
-                    sb.append(EndEntityProfile.SPLITCHAR);
-                }
-                sb.append(current);
-            }
-        } else {
-            // If AnyCA isn't selected and the not the default either we need to add the default CA to the list of available CAs
-            sb.append(defaultCa);
-            for (final String current : availableCasList) {
-                sb.append(EndEntityProfile.SPLITCHAR);
-                sb.append(current);
-            }
-        }
-        return sb.toString();
     }
     
     /**
@@ -1055,412 +793,4 @@ public class RAInterfaceBean implements Serializable {
         }
         return ret;
     }
-
-
-
-
-    //-------------------------------------------------------
-    //         Import/Export  profiles related code
-    //-------------------------------------------------------
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public byte[]  getfileBuffer(final HttpServletRequest request, final Map<String, String> requestMap) throws IOException, FileUploadException {
-        return getFileBuffer(request, requestMap, 60_000);
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public byte[]  getFileBuffer(final HttpServletRequest request, final Map<String, String> requestMap, final int maxSize) throws IOException, FileUploadException {
-        byte[] fileBuffer = null;
-        if (ServletFileUpload.isMultipartContent(request)) {
-            final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-            diskFileItemFactory.setSizeThreshold(maxSize); // it makes no sense to write to a temporary file
-            ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
-            upload.setSizeMax(maxSize);
-            upload.setFileSizeMax(maxSize);
-            final List<FileItem> items = upload.parseRequest(request);
-            for (final FileItem item : items) {
-                if (item.isFormField()) {
-                    final String fieldName = item.getFieldName();
-                    final String currentValue = requestMap.get(fieldName);
-                    if (currentValue != null) {
-                        requestMap.put(fieldName, currentValue + ";" + item.getString("UTF8"));
-                    } else {
-                        requestMap.put(fieldName, item.getString("UTF8"));
-                    }
-                } else {
-                    importedProfileName = item.getName();
-                    final InputStream file = item.getInputStream();
-                    byte[] fileBufferTmp = FileTools.readInputStreamtoBuffer(file);
-                    if (fileBuffer == null && fileBufferTmp.length > 0) {
-                        fileBuffer = fileBufferTmp;
-                    }
-                }
-            }
-        } else {
-            final Set<String> keySet = request.getParameterMap().keySet();
-            for (final String key : keySet) {
-                requestMap.put(key, request.getParameter(key));
-            }
-        }
-
-        return fileBuffer;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public String importProfilesFromZip(byte[] filebuffer) {
-        if(log.isTraceEnabled()) {
-            log.trace(">importProfiles(): " + importedProfileName + " - " + filebuffer.length + " bytes");
-        }
-
-        String retmsg = "";
-        String faultXMLmsg = "";
-
-        if(StringUtils.isEmpty(importedProfileName) || filebuffer.length == 0) {
-            retmsg = "Error: No input file";
-            log.error(retmsg);
-            return retmsg;
-        }
-
-        int importedFiles = 0;
-        int ignoredFiles = 0;
-        int nrOfFiles = 0;
-        try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(filebuffer))) {
-            ZipEntry ze = zis.getNextEntry();
-            if(ze == null) {
-                // Print import message if the file header corresponds to an empty zip archive
-                if (Arrays.equals(Arrays.copyOfRange(filebuffer, 0, 4), new byte[] { 80, 75, 5, 6 })) {
-                    retmsg = getSuccessImportMessage(importedProfileName, nrOfFiles, importedFiles, ignoredFiles);
-                    log.info(retmsg);
-                } else {
-                    retmsg = "Error: Expected a zip file. '" + importedProfileName + "' is not a  zip file.";
-                    log.error(retmsg);
-                }
-                return retmsg;
-            }
-
-            do {
-                nrOfFiles++;
-                String filename = ze.getName();
-                if(log.isDebugEnabled()) {
-                    log.debug("Importing file: " + filename);
-                }
-
-                if(ignoreFile(filename)) {
-                    ignoredFiles++;
-                    continue;
-                }
-
-                String profilename;
-                filename = URLDecoder.decode(filename, "UTF-8");
-
-                int index1 = filename.indexOf("_");
-                int index2 = filename.lastIndexOf("-");
-                int index3 = filename.lastIndexOf(".xml");
-                profilename = filename.substring(index1 + 1, index2);
-                int profileid = 0;
-                try {
-                    profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
-                } catch (NumberFormatException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("NumberFormatException parsing certificate profile id: "+e.getMessage());
-                    }
-                    ignoredFiles++;
-                    continue;
-                }
-                if(log.isDebugEnabled()) {
-                    log.debug("Extracted profile name '" + profilename + "' and profile ID '" + profileid + "'");
-                }
-
-                if(ignoreProfile(filename, profilename, profileid)) {
-                    ignoredFiles++;
-                    continue;
-                }
-
-                if (endEntityProfileSession.getEndEntityProfile(profileid) != null) {
-                    int newprofileid = endEntityProfileSession.findFreeEndEntityProfileId();
-                    log.warn("Entity profileid '" + profileid + "' already exist in database. Using " + newprofileid
-                            + " instead.");
-                    profileid = newprofileid;
-                }
-
-                byte[] filebytes = new byte[102400];
-                int i = 0;
-                while ((zis.available() == 1) && (i < filebytes.length)) {
-                    filebytes[i++] = (byte) zis.read();
-                }
-
-                EndEntityProfile eprofile = getEEProfileFromByteArray(profilename, filebytes);
-                if(eprofile == null) {
-                    String msg = "Faulty XML file '" + filename + "'. Failed to read End Entity Profile.";
-                    log.info(msg + " Ignoring file.");
-                    ignoredFiles++;
-                    faultXMLmsg += filename + ", ";
-                    continue;
-                }
-
-                endEntityProfileSession.addEndEntityProfile(administrator, profilename, eprofile);
-                importedFiles++;
-                log.info("Added EndEntity profile: " + profilename);
-
-            } while((ze=zis.getNextEntry()) != null);
-            zis.closeEntry();
-        } catch (UnsupportedEncodingException e) {
-            retmsg = "Error: UTF-8 was not a known character encoding.";
-            log.error(retmsg, e);
-            return retmsg;
-        } catch (IOException e) {
-            log.error(e);
-            retmsg = "Error: " + e.getLocalizedMessage();
-            return retmsg;
-        } catch (AuthorizationDeniedException e) {
-            log.error(e);
-            retmsg = "Error: " + e.getLocalizedMessage();
-            return retmsg;
-        } catch (EndEntityProfileExistsException e) {
-            log.error(e);
-            retmsg = "Error: " + e.getLocalizedMessage();
-            return retmsg;
-        }
-
-        if(StringUtils.isNotEmpty(faultXMLmsg)) {
-            faultXMLmsg = faultXMLmsg.substring(0, faultXMLmsg.length()-2);
-            retmsg = "Faulty XML files: " + faultXMLmsg + ". " + importedFiles + " profiles were imported.";
-        } else {
-            retmsg = getSuccessImportMessage(importedProfileName, nrOfFiles, importedFiles, ignoredFiles);
-        }
-        log.info(retmsg);
-
-        return retmsg;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    private String getSuccessImportMessage(String fileName, int nrOfFiles, int importedFiles, int ignoredFiles) {
-        return importedProfileName + " contained " + nrOfFiles + " files. " +
-                        importedFiles + " EndEntity Profiles were imported and " + ignoredFiles + " files  were ignored.";
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public String getAvailableHardTokenIssuers(final String defaulthardtokenissuer, final String[] values) {
-        String availablehardtokenissuers = defaulthardtokenissuer;
-        if (values!= null) {
-            for (int i=0; i< values.length; i++) {
-                if(!values[i].equals(defaulthardtokenissuer)) {
-                    availablehardtokenissuers += EndEntityProfile.SPLITCHAR + values[i];
-                }
-            }
-        }
-        return availablehardtokenissuers;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public String getAvailableTokenTypes(final String defaulttokentype, final String[] values) {
-        String availabletokentypes = defaulttokentype;
-        if (values!= null) {
-            for (int i=0; i< values.length; i++) {
-                if(!values[i].equals(defaulttokentype)) {
-                    availabletokentypes += EndEntityProfile.SPLITCHAR + values[i];
-                }
-            }
-        }
-        return availabletokentypes;
-    }
-
-    /**
-     * Handle the combinations of available cert profiles and default cert profile to get the correct available cert profiles line.
-     * @param defaultcertprof the Id of the selected default cert profile
-     * @param values an array of cert profile Ids
-     * @return the ;-seperated list of cert profile Ids
-     * @deprecated Since EJBCA 7.0.0
-     */
-    @Deprecated
-    public String getAvailableCertProfiles(final String defaultcertprof, final String[] values) {
-        String availablecertprofiles = defaultcertprof;
-        if (values!= null) {
-            for (int i=0; i< values.length; i++) {
-                if(!values[i].equals(defaultcertprof)) {
-                    availablecertprofiles += EndEntityProfile.SPLITCHAR + values[i];
-                }
-            }
-        }
-        return availablecertprofiles;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    public LinkedHashMap<String,Serializable> getValidationFromRegexp(final String validationRegex) {
-        // We must accept an empty value in case the user has Javascript turned
-        // off and has to update the page before the text field appears
-        final String regex = StringUtils.defaultString(validationRegex);
-        LinkedHashMap<String,Serializable> validation = new LinkedHashMap<>();
-        validation.put(RegexFieldValidator.class.getName(), regex);
-        return validation;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public UserNotification getNotificationForDelete(String sender, String rcpt, String subject, String msg, String[] val) {
-        String events = null;
-        if (val != null) {
-            for (String v : val) {
-               if (events == null) {
-                  events = v;
-               } else {
-                  events = events + ";"+v;
-               }
-            }
-        }
-        return new UserNotification(sender, rcpt, subject, msg, events);
-
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    public UserNotification getNotificationForAdd(String sender, String rcpt, String subject, String msg, String[] val) {
-        UserNotification not = new UserNotification();
-        not.setNotificationSender(sender);
-        not.setNotificationSubject(subject);
-        not.setNotificationMessage(msg);
-        if ( (rcpt == null) || (rcpt.length() == 0) ) {
-            // Default value if nothing is entered is users email address
-            rcpt = UserNotification.RCPT_USER;
-        }
-        not.setNotificationRecipient(rcpt);
-        String events = null;
-        for (String v : val) {
-           if (events == null) {
-              events = v;
-           } else {
-              events = events + ";"+v;
-           }
-        }
-        not.setNotificationEvents(events);
-        return not;
-    }
-
-    /** @deprecated Since EJBCA 7.0.0 */
-    @Deprecated
-    private EndEntityProfile getEEProfileFromByteArray(String profilename, byte[] profileBytes) {
-        ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
-        EndEntityProfile eprofile = new EndEntityProfile();
-        try {
-            final SecureXMLDecoder decoder = new SecureXMLDecoder(is);
-
-            // Add end entity profile
-            Object data = null;
-            try {
-                data = decoder.readObject();
-            } catch(IOException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error parsing certificate profile data: "+e.getMessage());
-                }
-                return null;
-            } finally {
-                decoder.close();
-            }
-            eprofile.loadData(data);
-
-            // Translate cert profile ids that have changed after import
-            String availableCertProfiles = "";
-            String defaultCertProfile = eprofile.getValue(EndEntityProfile.DEFAULTCERTPROFILE, 0);
-            for (String currentCertProfile : eprofile.getAvailableCertificateProfileIdsAsStrings()) {
-                Integer currentCertProfileId = Integer.parseInt(currentCertProfile);
-
-                if (certificateProfileSession.getCertificateProfile(currentCertProfileId) != null
-                        || CertificateProfileConstants.isFixedCertificateProfile(currentCertProfileId)) {
-                    availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";") + currentCertProfile;
-                } else {
-                    log.warn("End Entity Profile '" + profilename + "' references certificate profile "
-                            + currentCertProfile + " that does not exist.");
-                    if (currentCertProfile.equals(defaultCertProfile)) {
-                        defaultCertProfile = "";
-                    }
-                }
-            }
-            if (availableCertProfiles.equals("")) {
-                log.warn("End Entity Profile only references certificate profile(s) that does not exist. Using ENDUSER profile.");
-                availableCertProfiles = "1"; // At least make sure the default profile is available
-            }
-            if (defaultCertProfile.equals("")) {
-                defaultCertProfile = availableCertProfiles.split(";")[0]; // Use first available profile from list as default if original default was missing
-            }
-            eprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles);
-            eprofile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, defaultCertProfile);
-            // Remove any unknown CA and break if none is left
-            String defaultCA = eprofile.getValue(EndEntityProfile.DEFAULTCA, 0);
-            String availableCAs = eprofile.getValue(EndEntityProfile.AVAILCAS, 0);
-            List<String> cas = Arrays.asList(availableCAs.split(";"));
-            availableCAs = "";
-            for (String currentCA : cas) {
-                Integer currentCAInt = Integer.parseInt(currentCA);
-                // The constant ALLCAS will not be searched for among available CAs
-                if (currentCAInt.intValue() != SecConst.ALLCAS) {
-                    if (caSession.existsCa(currentCAInt)) {
-                        availableCAs += (availableCAs.equals("") ? "" : ";") + currentCA; // No Exception means CA exists
-                    } else {
-                        log.warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profilename + "'.");
-                        if (defaultCA.equals(currentCA)) {
-                            defaultCA = "";
-                        }
-                    }
-                }
-
-            }
-            if (availableCAs.equals("")) {
-                log.error("No CAs left in end entity profile '" + profilename + "'. Using ALLCAs.");
-                availableCAs = Integer.toString(SecConst.ALLCAS);
-            }
-            if (defaultCA.equals("")) {
-                defaultCA = availableCAs.split(";")[0]; // Use first available
-                log.warn("Changing default CA in end entity profile '" + profilename + "' to " + defaultCA + ".");
-            }
-            eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
-            eprofile.setDefaultCA(Integer.parseInt(defaultCA));
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw new IllegalStateException("Unknown IOException was caught when closing stream", e);
-            }
-        }
-        return eprofile;
-    }
-
-    private boolean ignoreFile(String filename) {
-        if(filename.lastIndexOf(".xml") != (filename.length() - 4)) {
-            if(log.isDebugEnabled()) {
-                log.debug(filename + " is not an XML file. IGNORED");
-            }
-            return true;
-        }
-
-        if (filename.indexOf("_") < 0 || filename.lastIndexOf("-") < 0 || (filename.indexOf("entityprofile_") < 0) ) {
-            if(log.isDebugEnabled()) {
-                log.debug(filename + " is not in the expected format. " +
-                		"The file name should look like: entityprofile_<profile name>-<profile id>.xml. IGNORED");
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private boolean ignoreProfile(String filename, String profilename, int profileid) {
-        // We don't add the fixed profiles, EJBCA handles those automagically
-        if (profileid == EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
-            log.info(filename + " contains a fixed profile. IGNORED");
-            return true;
-        }
-
-        // Check if the profiles already exist, and change the name and id if already taken
-        if (endEntityProfileSession.getEndEntityProfile(profilename) != null) {
-            log.info("Entity profile '" + profilename + "' already exist in database. IGNORED");
-            return true;
-        }
-
-        return false;
-    }
-
 }
