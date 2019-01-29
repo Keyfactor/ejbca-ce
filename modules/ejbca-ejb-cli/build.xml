@@ -4,11 +4,12 @@
             Build file for the remote EJB access CLI
     </description>
 
-	<dirname property="this.dir" file="${ant.file.ejbca-ejb-cli}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="ejbca-ejb-cli.dir" file="${ant.file.ejbca-ejb-cli}"/>
+
+    <import file="${ejbca-ejb-cli.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="ejbca-ejb-cli.build.dir" location="${ejbca-ejb-cli.dir}/build"/>
+	<property name="ejbca-ejb-cli.src.dir" location="${ejbca-ejb-cli.dir}/src"/>
 
 	<path id="compile.classpath">
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
@@ -37,14 +38,14 @@
 	
     <target name="build" description="Build this module" depends="compile">
     	<!-- Upgrade of certificate profiles requires extendedkeyusage.properties -->
-    	<mkdir dir="${build.dir}/conf"/>
-    	<copy todir="${build.dir}/conf">
+    	<mkdir dir="${ejbca-ejb-cli.build.dir}/conf"/>
+    	<copy todir="${ejbca-ejb-cli.build.dir}/conf">
     		<fileset dir="${ejbca.home}/conf" includes="extendedkeyusage.properties"/>
     		<fileset dir="${ejbca.home}/conf" includes="ejbca.properties"/>
             <!-- Required because it holds 'password.encryption.key', required for 'encryptpwd' CLI command. -->
             <fileset dir="${ejbca.home}/conf" includes="cesecore.properties"/>
     	</copy>
-    	<copy todir="${build.dir}">
+    	<copy todir="${ejbca-ejb-cli.build.dir}">
     		<fileset dir="${ejbca.home}/src/java" includes="defaultvalues.properties"/>
     	</copy>
     	<!-- Create the JAR -->
@@ -55,26 +56,26 @@
     		<map from="${mod.ejbca-ejb-cli.dist}/" to=""/>
     	</pathconvert>
     	<dirname file="${mod.ejbca-ejb-cli.lib}" property="mod.ejbca-ejb-cli.lib.dir"/>
-    	<buildservicemanifest interface="org.ejbca.ui.cli.infrastructure.command.CliCommandPlugin" file="${build.dir}" classpath="compile.classpath"/>
+    	<buildservicemanifest interface="org.ejbca.ui.cli.infrastructure.command.CliCommandPlugin" file="${ejbca-ejb-cli.build.dir}" classpath="compile.classpath"/>
     	<mkdir dir="${mod.ejbca-ejb-cli.lib.dir}" />	<!-- Make sure the dir exists before we start the jar-task -->
     	<jar destfile="${mod.ejbca-ejb-cli.lib}">
     		<manifest>
     			<attribute name="Class-path" value="${ejbca-ejb-cli.dependencies} ./" />
     			<attribute name="Main-Class" value="org.ejbca.ui.cli.EjbcaEjbCli"/>
     		</manifest>
-   			<fileset dir="${build.dir}" includes="**/*.class **/*.xml **/*.properties META-INF/**/*"/>
+   			<fileset dir="${ejbca-ejb-cli.build.dir}" includes="**/*.class **/*.xml **/*.properties META-INF/**/*"/>
     	</jar>
     </target>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
+		<delete dir="${ejbca-ejb-cli.build.dir}" />
 		<delete file="${mod.ejbca-ejb-cli.lib}" />
     	<delete dir="${mod.ejbca-ejb-cli.dist}" />
     </target>
 	
     <target name="compile" depends="setup, with.clover">
-    	<mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
+    	<mkdir dir="${ejbca-ejb-cli.build.dir}" />
+        <javac srcdir="${ejbca-ejb-cli.src.dir}" destdir="${ejbca-ejb-cli.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}">
         	<classpath>
         		<path refid="compile.classpath"/>
@@ -83,9 +84,7 @@
     	</javac>
     </target>
 
-    <target name="setup-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ejb-interface"/></target>
-	
-    <target name="setup" depends="setup-external-deps">
+    <target name="setup">
     	<mkdir dir="${mod.ejbca-ejb-cli.dist}" />
     	<mkdir dir="${mod.ejbca-ejb-cli.dist}/lib" />
     	<pathconvert property="lib.compile.classpath.property" pathsep=" ">

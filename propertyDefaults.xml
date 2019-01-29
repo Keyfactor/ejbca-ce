@@ -41,7 +41,7 @@
     <condition property="customejbca.dir" value="${customejbca.home}" else="${ejbca.home}/conf">	<!-- This is just any dir that we know exists to avoid error messages.. -->
     	<isset property="customejbca.present" />
     </condition>
-	<ant antfile="${ejbca.home}/echo.xml" target="customejbca.message"/>
+	<ant antfile="${ejbca.home}/echo.xml" target="customejbca.message" inheritall="true" inheritrefs="true"/>
 	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
 		<fileset dir="${customejbca.dir}">
 			<include name="**/*.${customejbca.extensions}" unless="runoncesetup.hasrun"/>
@@ -108,7 +108,7 @@
 	<available file="${appserver.home}/glassfish/lib/appserv-rt.jar" property="appserver.subtype" value="glassfish4"/>
 	<property name="appserver.type.detected.errormessage"
 		value="'appserver.type' could not be detected or is not configured. Glassfish 3.1, Glassfish 4.0, JBoss 7.1.1, JBoss EAP 6.1, 6.2, 6.3, 6.4, WildFly 8, 9, 10 can be detected. (Is 'appserver.home' configured?)"/>
-	<ant antfile="${ejbca.home}/echo.xml" target="appserver.error.message"/>
+	<ant antfile="${ejbca.home}/echo.xml" target="appserver.error.message" inheritall="true" inheritrefs="true"/>
 	
 	<condition property="bundle-hibernate-jpa">
 		<or>

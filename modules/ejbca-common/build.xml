@@ -2,14 +2,15 @@
 <project name="ejbca-common" basedir="../.." default="build-common">
     <property environment="env" />
     <dirname property="ejbca-common.dir" file="${ant.file.ejbca-common}"/>
-	<property name="build-common.dir" location="${ejbca-common.dir}/build-common"/>
-	<property name="src.dir" location="${ejbca-common.dir}/src"/>
-	<property name="src-test.dir" location="${ejbca-common.dir}/src-test"/>
-	<!-- configdump, systemtests modules depend on /build-test -->
-	<property name="build-test.dir" location="${ejbca-common.dir}/build-test"/>
 
-    <import file="${ejbca-common.dir}/../build.xml"/>
+    <import file="${ejbca-common.dir}/../build-helpers.xml"/>
     
+	<property name="ejbca-common.build-common.dir" location="${ejbca-common.dir}/build-common"/>
+	<property name="ejbca-common.src.dir" location="${ejbca-common.dir}/src"/>
+	<property name="ejbca-common.src-test.dir" location="${ejbca-common.dir}/src-test"/>
+	<!-- configdump, systemtests modules depend on /build-test -->
+	<property name="ejbca-common.build-test.dir" location="${ejbca-common.dir}/build-test"/>
+
 	<path id="compile-common.classpath">
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
@@ -25,12 +26,9 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.mail.classpath"/>
 		<path refid="lib.swagger.classpath"/>
-        <path location="${mod.ejbca-ejb-interface.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
-		<path location="${mod.edition-specific-interface.lib}"/>
-		<path location="${mod.edition-specific-ejb.lib}"/>
 	</path>
 	
 	<!-- The buildservicemanifest needs additional classes in order to run. 
@@ -62,7 +60,7 @@
 	</path>
 	
 	<path id="test.classpath">
-		<path location="${build-test.dir}" />
+		<path location="${ejbca-common.build-test.dir}" />
 		<path location="${mod.ejbca-ejb.lib}" />
 		<path location="${mod.ejbca-common.lib}" />
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
@@ -73,72 +71,73 @@
 	<target name="build-common" description="Build the ejbca-common JAR" depends="compile-common">
 		<dirname file="${mod.ejbca-common.lib}" property="mod.ejbca-common.lib.dir"/>
 		<mkdir dir="${mod.ejbca-common.lib.dir}" />
-		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.configuration.ConfigurationCache;org.ejbca.core.model.approval.profile.ApprovalProfile;org.cesecore.keys.validation.Validator" file="${build-common.dir}" classpath="manifest.classpath"/>
+		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.configuration.ConfigurationCache;org.ejbca.core.model.approval.profile.ApprovalProfile;org.cesecore.keys.validation.Validator"
+			file="${ejbca-common.build-common.dir}" classpath="manifest.classpath"/>
 		<!-- Since the base classes reading properties is in ejbca-common, we also store defaultvalues.properties here so it can be used stand-alone -->
 		<jar destfile="${mod.ejbca-common.lib}">
 			<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>
 			</manifest>
-			<fileset dir="${build-common.dir}" includes="**/*.class,META-INF/**/*"/>
-			<fileset dir="${src.dir}">
+			<fileset dir="${ejbca-common.build-common.dir}" includes="**/*.class,META-INF/**/*"/>
+			<fileset dir="${ejbca-common.src.dir}">
 			    <include name="META-INF/services/*"/> <!-- for GeneralPurposeCustomPublisher, etc. -->	
 			</fileset>
 		</jar>
 	</target>
 	
-	<target name="compile-common" depends="with.clover, cesecore-ejb-interface">
-		<mkdir dir="${build-common.dir}" />
-		<javac srcdir="${src.dir}" destdir="${build-common.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+	<target name="compile-common" depends="with.clover">
+		<mkdir dir="${ejbca-common.build-common.dir}" />
+		<javac srcdir="${ejbca-common.src.dir}" destdir="${ejbca-common.build-common.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	 classpathref="compile-common.classpath"/>
 	</target>
 	
 	<target name="test-common" depends="compile-tests" description="Run tests for this module, use -Dtest.includep11=true to include P11 tests">
-		<antcall target="showtime"/>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
     	<echo message="pkcs11-exclude=${p11exclude}"/>
 		<echo message=" ** Running unit tests in parallel chunks. Console output will be a bit scrambled.. **"/>
 		<parallel>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/ra/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/ra/*Test.class" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/util/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/ca/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="${p11exclude}" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/util/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="org/cesecore/certificates/ca/**/*Test.class org/cesecore/certificates/util/**/*Test.class" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/cesecore/util/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/cesecore/keys/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="${p11exclude}" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/core/protocol/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class org/cesecore/certificates/**/*Test.class org/cesecore/util/**/*Test.class org/ejbca/core/protocol/**/*Test.class org/cesecore/keys/**/*Test.class ${p11exclude}" />
 			</antcall>
 		</parallel>
-		<antcall target="showtime"/>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="test-subprocess">
@@ -149,7 +148,7 @@
 				</classpath>
 				<formatter type="xml" />
 				<batchtest fork="yes" todir="${reports.dir}">
-					<fileset dir="${build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
+					<fileset dir="${ejbca-common.build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
 				</batchtest>
 			</junit>
 		</target>
@@ -163,7 +162,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${ejbca-common.build-test.dir}">
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
@@ -171,23 +170,24 @@
 	</target>
 
 	<!-- configdump, systemtests modules depend on this target -->
-	<target name="compile-tests" depends="with.clover, cesecore-ejb, ejbca-ejb">
-		<mkdir dir="${build-test.dir}" />
-		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+	<!-- depends="cesecore-ejb, ejbca-ejb" -->
+	<target name="compile-tests" depends="with.clover">
+		<mkdir dir="${ejbca-common.build-test.dir}" />
+		<javac srcdir="${ejbca-common.src-test.dir}" destdir="${ejbca-common.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>
-		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
-		<copy todir="${build-test.dir}" failonerror="true">
+		<copy file="${log4j.test.file}" tofile="${ejbca-common.build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy todir="${ejbca-common.build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
 			<fileset dir="${ejbca.home}" includes="conf/extendedkeyusage.properties"/>
 		</copy>
 		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
-		<copy file="${systemtests.properties.file}" todir="${build-test.dir}" failonerror="false"/>
+		<copy file="${systemtests.properties.file}" todir="${ejbca-common.build-test.dir}" failonerror="false"/>
 	</target>
         
     <target name="clean" depends="">
         <delete dir="${ejbca-common.dir}/dist"/>
-		<delete dir="${build-common.dir}" />
-		<delete dir="${build-test.dir}" />
+		<delete dir="${ejbca-common.build-common.dir}" />
+		<delete dir="${ejbca-common.build-test.dir}" />
 		<delete file="${mod.ejbca-common.lib}" />
     </target>
 
