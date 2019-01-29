@@ -18,10 +18,11 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -40,17 +41,18 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
+import org.ejbca.util.HttpTools;
 
 /**
  * JSF MBean backing edit end entity profiles page.
@@ -73,15 +75,36 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
      * own limitation as well.
      */
     private static final int MAX_PROFILEZIP_FILESIZE = 50*1024*1024;
+    /**
+     * Maximum size of a profile XML file in a ZIP upload.
+     */
+    private static final int MAX_PROFILE_XML_SIZE = 2*1024*1024;
+
+    /**
+     * Matches XML filenames in uploaded ZIP files.
+     * The accepted format is: entityprofile_<profile name>-<profile id>.xml
+     */
+    private static final Pattern xmlFilenamePattern = Pattern.compile("entityprofile_(.*)-(.*)\\.xml");
+    private static final int XML_FILENAME_NAME_INDEX = 1;
+    private static final int XML_FILENAME_ID_INDEX = 2;
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private CertificateProfileSessionLocal certificateProfileSession;
+    private CaSessionLocal caSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
 
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
+
+    private Integer selectedEndEntityProfileId = null;
+    private boolean deleteInProgress = false;
+    private boolean profileSaved;
+    private String endEntityProfileName;
+    private Part uploadFile;
+    private String uploadFilename;
+    private List<SelectItem> endEntityProfileItems = null; 
+
 
     @PostConstruct
     private void postConstruct() {
@@ -99,14 +122,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             addInfoMessage("ENDENTITYPROFILESAVED");
         }
     }
-
-    private Integer selectedEndEntityProfileId = null;
-    private boolean deleteInProgress = false;
-    private boolean profileSaved;
-
-    private String endEntityProfileName;
-    private Part uploadFile;
-    private List<SelectItem> endEntityProfileItems = null; 
 
     public String getEndEntityProfileName() {
         return endEntityProfileName;
@@ -131,13 +146,13 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public List<SelectItem> getEndEntityProfileItems() {
         if (endEntityProfileItems == null) {
             endEntityProfileItems = new ArrayList<>();
-            final TreeMap<String,String> profiles = getEjbcaWebBean().getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
+            final TreeMap<String,String> profiles = ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.VIEW_END_ENTITY);
             final List<Integer> withMissingCAs = endEntityProfileSession.getAuthorizedEndEntityProfileIdsWithMissingCAs(getAdmin());
             for(Entry<String, String> entry : profiles.entrySet()) {
                 final String profileName = entry.getKey();
                 final String profileId = entry.getValue();
                 final boolean missingCa = withMissingCAs.contains(Integer.valueOf(profileId));
-                final String displayName = profileName + (missingCa ? " "+getEjbcaWebBean().getText("MISSINGCAIDS") : "");
+                final String displayName = profileName + (missingCa ? " "+ejbcaWebBean.getText("MISSINGCAIDS") : "");
                 endEntityProfileItems.add(new SelectItem(Integer.valueOf(profileId), displayName));
             }
         }
@@ -160,7 +175,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         if (validateEndEntityProfileName()) {
             try {
                 final EndEntityProfile endEntityProfile = new EndEntityProfile();
-                endEntityProfile.setAvailableCAs(getEjbcaWebBean().getAuthorizedCAIds());
+                endEntityProfile.setAvailableCAs(caSession.getAuthorizedCaIds(getAdmin()));
                 endEntityProfileSession.addEndEntityProfile(getAdmin(), endEntityProfileName, endEntityProfile);
                 endEntityProfileName = null;
                 endEntityProfileItems = null;
@@ -253,15 +268,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         }
     }
 
-    public boolean isOperationInProgress() {
-        return isDeleteInProgress();
-    }
-
-    public String getInputName() {
-        return ejbcaWebBean.getText("FORMAT_ID_STR");
-    }
-
-    public void actionImportProfiles() throws IOException, NumberFormatException, AuthorizationDeniedException, EndEntityProfileExistsException, EndEntityProfileNotFoundException {
+    public void actionImportProfiles() throws IOException, NumberFormatException, AuthorizationDeniedException, EndEntityProfileExistsException {
         clearMessages();
         if (uploadFile == null) {
             addNonTranslatedErrorMessage("File upload failed.");
@@ -275,23 +282,28 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         importProfilesFromZip(fileBytes);
         endEntityProfileItems = null;
     }
-    
-    public void importProfilesFromZip(final byte[] filebuffer) throws AuthorizationDeniedException, NumberFormatException, IOException,
-            EndEntityProfileExistsException, EndEntityProfileNotFoundException {
-        if (filebuffer.length == 0) {
+
+    /** Holds profile information decoded from a filename. Used in this class only, so no getters/setters */
+    private static class DecodedFilename {
+        public String profileName;
+        public int profileId;
+    }
+
+    public void importProfilesFromZip(final byte[] zipFileBytes) throws AuthorizationDeniedException, IOException, EndEntityProfileExistsException {
+        if (zipFileBytes.length == 0) {
             throw new IllegalArgumentException("No input file");
         }
         String importedFiles = "";
         String ignoredFiles = "";
         int nrOfFiles = 0;
-        ZipInputStream zipInputstream = new ZipInputStream(new ByteArrayInputStream(filebuffer));
-        ZipEntry zipEntry = zipInputstream.getNextEntry();
+        final ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(zipFileBytes));
+        ZipEntry zipEntry = zipInputStream.getNextEntry();
         if (zipEntry == null) {
             // Print import message if the file header corresponds to an empty zip archive
-            if (Arrays.equals(Arrays.copyOfRange(filebuffer, 0, 4), new byte[] { 80, 75, 5, 6 })) {
+            if (FileTools.isEmptyZipFile(zipFileBytes)) {
                 printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
             } else {
-                String msg = uploadFile.getName() + " is not a zip file.";
+                String msg = uploadFilename + " is not a zip file.";
                 log.info(msg);
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
             }
@@ -303,72 +315,52 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             if (log.isDebugEnabled()) {
                 log.debug("Importing file: " + filename);
             }
-            if (ignoreFile(filename)) {
+            final DecodedFilename decodedFilename = decodeFilename(filename);
+            if (decodedFilename == null) {
                 ignoredFiles += filename + ", ";
                 continue;
             }
-            try {
-                filename = URLDecoder.decode(filename, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("UTF-8 was not a known character encoding", e);
-            }
-            int index1 = filename.indexOf("_");
-            int index2 = filename.lastIndexOf("-");
-            int index3 = filename.lastIndexOf(".xml");
-            String profilename = filename.substring(index1 + 1, index2);
-            int profileid = 0;
-            try {
-                profileid = Integer.parseInt(filename.substring(index2 + 1, index3));
-            } catch (NumberFormatException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("NumberFormatException parsing end entity profile id: " + e.getMessage());
-                }
-                ignoredFiles += filename + ", ";
-                continue;
-            }
+            final String profileName = decodedFilename.profileName;
+            int profileId = decodedFilename.profileId;
             if (log.isDebugEnabled()) {
-                log.debug("Extracted profile name '" + profilename + "' and profile ID '" + profileid + "'");
+                log.debug("Extracted profile name '" + profileName + "' and profile ID '" + profileId + "'");
             }
-            if (ignoreProfile(profilename)) {
+            if (ignoreProfile(profileName)) {
                 ignoredFiles += filename + ", ";
                 continue;
             }
-            if (endEntityProfileSession.getEndEntityProfile(profileid) != null) {
-                log.warn("Endentity profile id '" + profileid + "' already exist in database. Adding with a new profile id instead.");
-                profileid = -1; // create a new id when adding the profile
+            if (endEntityProfileSession.getEndEntityProfile(profileId) != null) {
+                log.warn("End Entity Profile ID '" + profileId + "' already exist in database. Adding with a new profile ID instead.");
+                profileId = -1; // create a new id when adding the profile
             }
-            byte[] filebytes = new byte[102400];
-            int i = 0;
-            while ((zipInputstream.available() == 1) && (i < filebytes.length)) {
-                filebytes[i++] = (byte) zipInputstream.read();
-            }
+            final byte[] filebytes = IOUtils.readFully(zipInputStream, Math.min((int) zipEntry.getSize(), MAX_PROFILE_XML_SIZE));
             final EndEntityProfile eeProfile = getEndEntityProfileFromByteArray(filebytes);
             if (eeProfile == null) {
-                String msg = "Faulty XML file '" + filename + "'. Failed to read end entity Profile.";
+                final String msg = "Faulty XML file '" + filename + "'. Failed to read end entity Profile.";
                 log.info(msg + " Ignoring file.");
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
                 continue;
             }
-            if (profileid == -1) {
-                endEntityProfileSession.addEndEntityProfile(getAdmin(), profilename, eeProfile);
+            if (profileId == -1) {
+                endEntityProfileSession.addEndEntityProfile(getAdmin(), profileName, eeProfile);
             } else {
-                endEntityProfileSession.addEndEntityProfile(getAdmin(), profileid, profilename, eeProfile);                
+                endEntityProfileSession.addEndEntityProfile(getAdmin(), profileId, profileName, eeProfile);                
             }
             importedFiles += filename + ", ";
-            log.info("Added End entity profile: " + profilename);
-        } while ((zipEntry = zipInputstream.getNextEntry()) != null);
-        zipInputstream.closeEntry();
-        zipInputstream.close();
+            log.info("Added End entity profile: " + profileName);
+        } while ((zipEntry = zipInputStream.getNextEntry()) != null);
+        zipInputStream.closeEntry();
+        zipInputStream.close();
         printImportMessage(nrOfFiles, importedFiles, ignoredFiles);
     }
 
     private EndEntityProfile getEndEntityProfileFromByteArray(final byte[] profileBytes) {
-        ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
-        EndEntityProfile profile = new EndEntityProfile();
+        final ByteArrayInputStream is = new ByteArrayInputStream(profileBytes);
+        final EndEntityProfile profile = new EndEntityProfile();
         try {
             final SecureXMLDecoder decoder = new SecureXMLDecoder(is);
             // Add end entity profile
-            Object data = null;
+            final Object data;
             try {
                 data = decoder.readObject();
             } catch (IOException e) {
@@ -391,23 +383,38 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         return profile;
     }
 
-    /** @return true if the file shall be ignored from an End Entity Profile import, false if it should be imported */
-    private boolean ignoreFile(final String filename) {
+    /**
+     * Checks if a file should be imported, and if so, returns the decoded filename component (profile name and ID).
+     * @return Decoded filename components, or null if the file should be ignored.
+     */
+    private DecodedFilename decodeFilename(final String filename) {
         if (!filename.endsWith(".xml")) {
             log.info(filename + " is not an XML file. IGNORED");
-            return true;
+            return null;
         }
-        if (filename.indexOf("_") < 0 || filename.lastIndexOf("-") < 0 || (filename.indexOf("entityprofile_") < 0)) {
+        final Matcher matcher = xmlFilenamePattern.matcher(filename);
+        if (!matcher.matches()) {
             log.info(filename + " is not in the expected format. "
                     + "The file name should look like: entityprofile_<profile name>-<profile id>.xml. IGNORED");
-            return true;
+            return null;
         }
-        return false;
+        final DecodedFilename ret = new DecodedFilename();
+        try {
+            ret.profileName = URLDecoder.decode(matcher.group(XML_FILENAME_NAME_INDEX), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UTF-8 was not a known character encoding", e);
+        }
+        try {
+            ret.profileId = Integer.parseInt(matcher.group(XML_FILENAME_ID_INDEX));
+        } catch (NumberFormatException e) {
+            log.info(filename + " contains an invvalid entity profile id: " + e.getMessage());
+            return null;
+        }
+        return ret;
     }
 
-    /** @return true if the profile should be ignored from a End Entity Profile import because it already exists, false if it should be imported 
-     * @throws EndEntityProfileNotFoundException */
-    private boolean ignoreProfile(final String profilename) throws EndEntityProfileNotFoundException {
+    /** @return true if the profile should be ignored from a End Entity Profile import because it already exists, false if it should be imported */
+    private boolean ignoreProfile(final String profilename) {
         // Check if the profiles already exist
         if (endEntityProfileSession.getEndEntityProfile(profilename) != null) {
             log.info("End entity profile '" + profilename + "' already exist in database. IGNORED");
@@ -417,7 +424,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     private void printImportMessage(final int nrOfFiles, String importedFiles, String ignoredFiles) {
-        String msg = "Number of files included in " + uploadFile.getName() + ": " + nrOfFiles;
+        String msg = "Number of files included in " + uploadFilename + ": " + nrOfFiles;
         log.info(msg);
         addNonTranslatedInfoMessage(msg);
         if (StringUtils.isNotEmpty(importedFiles)) {
@@ -440,6 +447,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void setUploadFile(final Part uploadFile) {
         this.uploadFile = uploadFile;
+        uploadFilename = uploadFile != null ? HttpTools.getUploadFilename(uploadFile) : null;
     }
 
     public Part getUploadFile() {

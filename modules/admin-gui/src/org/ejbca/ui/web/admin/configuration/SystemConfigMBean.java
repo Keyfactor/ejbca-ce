@@ -606,7 +606,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private void importStatedump(byte[] zip, boolean lockdown) throws IOException, AuthorizationDeniedException {
         // Check that it's a ZIP file
-        if (zip.length < 2 || zip[0] != 'P' || zip[1] != 'K') {
+        if (!FileTools.isZipFile(zip)) {
             throw new IOException("File is not a valid zip file.");
         }
 
