@@ -858,7 +858,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         return StringUtils.isEmpty(value) ? -1 : Integer.valueOf(value);
     }
 
-    /** @deprecated Since 7.0.0. This value appears to only be used in the user interface */
+    /** @deprecated Since 7.0.0. This value appears to only be used in the user interface. This should be investigated (ECA-7746) */
     @Deprecated
     public void setDefaultHardTokenIssuer(final int defaultHardTokenIssuerId) {
         final String value = defaultHardTokenIssuerId != -1 ? String.valueOf(defaultHardTokenIssuerId) : "";
