@@ -76,6 +76,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public static final String PARAMETER_PROFILE_ID = "id";
     private static final int MAX_TEMPLATE_FILESIZE = 2*1024*1024;
 
+    /** Minimum and maximum options to show for password length restriction */
+    private static final int PASSWORD_LIMIT_MIN = 4;
+    private static final int PASSWORD_LIMIT_MAX = 16;
+    private static final int MAX_FAILED_LOGINS_DEFAULT = 3;
+
     private static final String RELATIVE_TIME_REGEX = "\\d+:\\d?\\d:\\d?\\d"; // example: 90:0:0 or 0:15:30
     private static final String ISO_TIME_REGEX = "\\d{4,}-(0\\d|10|11|12)-[0123]\\d( \\d\\d:\\d\\d(:\\d\\d)?)?([+-]\\d\\d:\\d\\d)?"; // example: 2019-12-31 or 2019-12-31 23:59:59+00:00
     private static final String VALIDITY_TIME_REGEX = "^(" + RELATIVE_TIME_REGEX + "|" + ISO_TIME_REGEX + ")$";
@@ -258,9 +263,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public void setProfiledata(final EndEntityProfile profiledata) {
         this.profiledata = profiledata;
     }
-    
+
     public String getEndEntityProfileName() {
         return profileName;
+    }
+
+    public int getEndEntityProfileId() {
+        return profileId;
     }
 
     // PASSWORD, USERNAME AND EMAIL
@@ -319,7 +328,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public List<SelectItem> getPasswordLengths() {
         final List<SelectItem> pwdLenListReturned = new ArrayList<>();
-        for (int len = 4; len < 17; len++) {//possible values: 4-16, hard coded here?
+        for (int len = PASSWORD_LIMIT_MIN; len <= PASSWORD_LIMIT_MAX; len++) {
             pwdLenListReturned.add(new SelectItem(len, String.valueOf(len)));
         }
         return pwdLenListReturned;
@@ -368,7 +377,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             profiledata.setMaxFailedLogins(-1);
         } else {
             int maxFail = profiledata.getMaxFailedLogins();
-            profiledata.setMaxFailedLogins(maxFail != -1 ? maxFail : 3);
+            profiledata.setMaxFailedLogins(maxFail != -1 ? maxFail : MAX_FAILED_LOGINS_DEFAULT);
         }
     }
 
@@ -495,12 +504,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public List<NameComponentGuiWrapper> getSubjectDnComponentList() {
         if (subjectDnComponentList == null) {
             final List<NameComponentGuiWrapper> components = new ArrayList<>();
-            final List<int[]> fielddatalist = new ArrayList<>();
+            final List<int[]> fieldDataList = new ArrayList<>();
             final int numberOfFields = profiledata.getSubjectDNFieldOrderLength();
             for (int i = 0; i < numberOfFields; i++) {
-                fielddatalist.add(profiledata.getSubjectDNFieldsInOrder(i));
+                fieldDataList.add(profiledata.getSubjectDNFieldsInOrder(i));
             }
-            for (int[] field : fielddatalist) {
+            for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
                 final boolean isEmailField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS);
                 components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField));
@@ -560,12 +569,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public List<NameComponentGuiWrapper> getSubjectAltNameComponentList() {
         if (subjectAltNameComponentList == null) {
             final List<NameComponentGuiWrapper> components = new ArrayList<>();
-            final List<int[]> fielddatalist = new ArrayList<>();
+            final List<int[]> fieldDataList = new ArrayList<>();
             final int numberOfFields = profiledata.getSubjectAltNameFieldOrderLength();
             for (int i = 0; i < numberOfFields; i++) {
-                fielddatalist.add(profiledata.getSubjectAltNameFieldsInOrder(i));
+                fieldDataList.add(profiledata.getSubjectAltNameFieldsInOrder(i));
             }
-            for (int[] field : fielddatalist) {
+            for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
                 final boolean isEmailField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
                 final NameComponentGuiWrapper guiWrapper = new NameComponentGuiWrapper(fieldName, field, isEmailField);
@@ -621,13 +630,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public List<NameComponentGuiWrapper> getSubjectDirectoryAttributeComponentList() {
         if (subjectDirectoryAttributesComponentList == null) {
-            List<NameComponentGuiWrapper> components = new ArrayList<>();
-            List<int[]> fielddatalist = new ArrayList<>();
+            final List<NameComponentGuiWrapper> components = new ArrayList<>();
+            final List<int[]> fieldDataList = new ArrayList<>();
             int numberOfSubjectDirectoryAttributeFields = profiledata.getSubjectDirAttrFieldOrderLength();
             for (int i = 0; i < numberOfSubjectDirectoryAttributeFields; i++) {
-                fielddatalist.add(profiledata.getSubjectDirAttrFieldsInOrder(i));
+                fieldDataList.add(profiledata.getSubjectDirAttrFieldsInOrder(i));
             }
-            for (int[] field : fielddatalist) {
+            for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
                 components.add(new NameComponentGuiWrapper(fieldName, field, false));
             }
