@@ -95,7 +95,6 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
@@ -113,7 +112,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * <p>
- * Semi-deprecated, we should try to move the methods here into session beans.
+ * Semi-deprecated, we should try to move the methods here into session beans or managed beans.
  *
  * @version $Id$
  */
@@ -135,7 +134,6 @@ public class CAInterfaceBean implements Serializable {
     private CertificateStoreSessionLocal certificatesession;
     private CertReqHistorySessionLocal certreqhistorysession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-    private PublisherQueueSessionLocal publisherqueuesession;
     private PublisherSessionLocal publishersession;
     
     private SignSession signsession; 
@@ -164,7 +162,6 @@ public class CAInterfaceBean implements Serializable {
           authorizationSession = ejbLocalHelper.getAuthorizationSession();
           signsession = ejbLocalHelper.getSignSession();
           publishersession = ejbLocalHelper.getPublisherSession();               
-          publisherqueuesession = ejbLocalHelper.getPublisherQueueSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
           authenticationToken = ejbcawebbean.getAdminObject();
           this.ejbcawebbean = ejbcawebbean;
@@ -205,14 +202,6 @@ public class CAInterfaceBean implements Serializable {
         return casession.getCAIdToNameMap().get(caId);
     }
 
-    public int getPublisherQueueLength(int publisherId) {
-    	return publisherqueuesession.getPendingEntriesCountForPublisher(publisherId);
-    }
-    
-    public int[] getPublisherQueueLength(int publisherId, int[] intervalLower, int[] intervalUpper) {
-    	return publisherqueuesession.getPendingEntriesCountForPublisherInIntervals(publisherId, intervalLower, intervalUpper);
-    }
-    
     public CADataHandler getCADataHandler(){
       return cadatahandler;
     }
@@ -1071,10 +1060,14 @@ public class CAInterfaceBean implements Serializable {
         return aliases;
     }
     
+    /** @deprecated Since EJBCA 7.0.0. Use  cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId) */
+    @Deprecated
 	public boolean isCryptoTokenActive(final int cryptoTokenId) throws AuthorizationDeniedException {
 	    return cryptoTokenManagementSession.isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
 	}
 	
+    /** @deprecated Since EJBCA 7.0.0. Use  cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId) */
+    @Deprecated
     public boolean isCryptoTokenPresent(final int cryptoTokenId) throws AuthorizationDeniedException {
         return cryptoTokenManagementSession.isCryptoTokenPresent(authenticationToken, cryptoTokenId);
     }

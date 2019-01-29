@@ -676,7 +676,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public List<SelectItem> getAllCas() {
         final List<SelectItem> list = new ArrayList<>();
         final Map<Integer, String> caidtonamemap = caSession.getCAIdToNameMap();
-        final List<Integer> authorizedcas = ejbcaWebBean.getAuthorizedCAIds();
+        final List<Integer> authorizedcas = caSession.getAuthorizedCaIds(getAdmin());
         for (Integer caid : authorizedcas) {
             final String caname = caidtonamemap.get(caid).toString();
             list.add(new SelectItem(caid, caname));
@@ -763,7 +763,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public List<SelectItem> getAllHardTokenIssuers() {
-        final TreeMap<String, HardTokenIssuerInformation> tokenIssuerMap = ejbcaWebBean.getHardTokenIssuers();
+        final TreeMap<String, HardTokenIssuerInformation> tokenIssuerMap = hardTokenSession.getHardTokenIssuers(getAdmin());
         final List<SelectItem> hardTokenIssuersReturned = new ArrayList<>();
         for (Entry<String, HardTokenIssuerInformation> hardTokenIssuer : tokenIssuerMap.entrySet()) {
             final int tokenIssuerId = hardTokenIssuer.getValue().getHardTokenIssuerId();
@@ -1026,7 +1026,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final UserNotification newNotification = new UserNotification();
         newNotification.setNotificationRecipient(UserNotification.RCPT_USER);
         newNotification.setNotificationEventsCollection(new ArrayList<>(Arrays.asList(
-                EndEntityConstants.STATUS_NEW+"", EndEntityConstants.STATUS_INITIALIZED+"")));
+                EndEntityConstants.STATUS_NEW, EndEntityConstants.STATUS_INITIALIZED)));
         userNotifications.add(0, newNotification);
     }
 
@@ -1045,7 +1045,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final String[] statustexts = ViewEndEntityHelper.statustexts;
         final List<SelectItem> allEvents = new ArrayList<>();
         for (int i = 0; i < statuses.length; i++) {
-            allEvents.add(new SelectItem(new Integer(statuses[i]).toString(), statustexts[i]));
+            allEvents.add(new SelectItem(statuses[i], statustexts[i]));
         }
         return allEvents;
     }
