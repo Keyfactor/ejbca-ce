@@ -40,7 +40,6 @@ public class RAAuthorization implements Serializable {
     private static final long serialVersionUID = -3195162814492440326L;
     private String authendentityprofilestring = null;
     private TreeMap<String, String> authprofilenames = null;
-    private List<String> authprofileswithmissingcas = null;
     private AuthenticationToken admin;
     private AuthorizationSessionLocal authorizationSession;
     private GlobalConfigurationSession globalConfigurationSession;
@@ -172,23 +171,9 @@ public class RAAuthorization implements Serializable {
     	return authprofilenames;
     }
 
-    /** @deprecated Since 7.0.0 */
-    @Deprecated
-    public List<String> getViewAuthorizedEndEntityProfilesWithMissingCAs() {
-	   if (authprofileswithmissingcas == null) {
-            authprofileswithmissingcas = new ArrayList<String>();
-            final List<Integer> entries = endEntityProfileSession.getAuthorizedEndEntityProfileIdsWithMissingCAs(admin);
-            for (final Integer entry : entries) {
-                authprofileswithmissingcas.add(String.valueOf(entry));
-            }
-	   }
-	   return authprofileswithmissingcas;
-	}
-
     public void clear(){
       authendentityprofilestring=null;
       authprofilenames = null;
-	  authprofileswithmissingcas = null;
     }
 }
 

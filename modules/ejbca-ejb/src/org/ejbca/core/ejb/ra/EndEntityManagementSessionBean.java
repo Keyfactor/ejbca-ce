@@ -1951,8 +1951,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
             String recipientEmail = userEmail; // Default value
             for (final UserNotification userNotification : userNotifications) {
-                final Collection<String> events = userNotification.getNotificationEventsCollection();
-                if (events.contains(String.valueOf(newstatus))) {
+                final Collection<Integer> events = userNotification.getNotificationEventsCollection();
+                if (events.contains(newstatus)) {
                     if (log.isDebugEnabled()) {
                         log.debug("Status is " + newstatus + ", notification sent for notificationevents: " + userNotification.getNotificationEvents());
                     }

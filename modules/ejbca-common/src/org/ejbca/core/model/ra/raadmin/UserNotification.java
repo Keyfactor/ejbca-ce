@@ -14,14 +14,13 @@
 package org.ejbca.core.model.ra.raadmin;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.util.StringTools;
 
 /**
  * Class holding information about user notification sent when a user transitions through
@@ -131,20 +130,13 @@ public class UserNotification implements Serializable, Cloneable {
      * 
      * @return A Collection with String values (String.valueOf(EndEntityConstants.STATUS_NEW etc), or an empty Collection, never null.
      */
-    public Collection<String> getNotificationEventsCollection(){
-    	String events = getNotificationEvents();
-    	ArrayList<String> ret = new ArrayList<>();
-    	if (StringUtils.isNotEmpty(events)) {
-    		StringTokenizer tokenizer = new StringTokenizer(events, ";", false);
-            while (tokenizer.hasMoreTokens()) {
-            	ret.add(tokenizer.nextToken());
-            }
-    	}
-    	return ret;
+    public Collection<Integer> getNotificationEventsCollection() {
+    	final String events = getNotificationEvents();
+    	return StringTools.idStringToListOfInteger(events, EndEntityProfile.SPLITCHAR);
     }
     
-    public void setNotificationEventsCollection(Collection<String> notificationEventsCollection){
-        String notificationEvents = StringUtils.join(notificationEventsCollection, ";");
+    public void setNotificationEventsCollection(final Collection<Integer> notificationEventsCollection){
+        final String notificationEvents = StringUtils.join(notificationEventsCollection, ";");
         data.put(NOTIFICATIONEVENTS, notificationEvents);
     }
 

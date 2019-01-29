@@ -48,7 +48,9 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 
 /**
  * A java bean handling the interface between EJBCA hard token module and JSP pages.
- *
+ * <p>
+ * Semi-deprecated since EJBCA 7.0.0. Try to use session beans directly from managed beans (GUI), rather than this extra layer.
+ * 
  * @version $Id$
  */
 public class HardTokenInterfaceBean implements Serializable {
