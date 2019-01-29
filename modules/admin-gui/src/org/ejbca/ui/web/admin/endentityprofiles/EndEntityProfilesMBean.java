@@ -166,6 +166,9 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         } else if (!StringTools.checkFieldForLegalChars(endEntityProfileName)) {
             addErrorMessage("ONLYCHARACTERS");
             return false;
+        } else if ("EMPTY".equals(endEntityProfileName)) {
+            addErrorMessage("EEPROFILENAMEFORBIDDEN");
+            return false;
         }
         return true;
     }
@@ -186,7 +189,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             }
         }
     }
-    
+
     public Integer getSelectedEndEntityProfileId() {
         return selectedEndEntityProfileId;
     }
@@ -196,7 +199,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     }
 
     public void actionDelete() {
-        if (selectedProfileExists()) {
+        if (!selectedProfileExists()) {
+            addErrorMessage("EEPROFILENOTSELECTED");
+        } else if (isEmptyProfile()) {
+            addErrorMessage("YOUCANTEDITEMPTYPROFILE");
+        } else {
             clearMessages();
             deleteInProgress = true;
         }
@@ -205,7 +212,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public boolean isDeleteInProgress() {
         return deleteInProgress;
     }
-    
+
     private boolean selectedProfileExists() {
         if (selectedEndEntityProfileId != null) {
             return endEntityProfileSession.getEndEntityProfile(selectedEndEntityProfileId) != null;
@@ -252,11 +259,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
 
     public void actionRename() {
         clearMessages();
-        if (!selectedProfileExists() || !validateEndEntityProfileName()) {
-            // Do nothing
-        } else if (isEmptyProfile()) {
-            addErrorMessage("YOUCANTEDITEMPTYPROFILE");
-        } else {
+        if (validateRenameOrClone()) {
             try {
                 endEntityProfileSession.renameEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
                 reset();
@@ -266,6 +269,19 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 addNonTranslatedErrorMessage("Not authorized to rename end entity profile.");
             }
         }
+    }
+
+    private boolean validateRenameOrClone() {
+        boolean ok = true;
+        if (!selectedProfileExists()) {
+            addErrorMessage("EEPROFILENOTSELECTED");
+            ok = false;
+        } else if (isEmptyProfile()) {
+            addErrorMessage("YOUCANTEDITEMPTYPROFILE");
+            ok = false;
+        }
+        // validateEndEntityProfileName adds error messages
+        return !validateEndEntityProfileName() && ok;
     }
 
     public void actionImportProfiles() throws IOException, NumberFormatException, AuthorizationDeniedException, EndEntityProfileExistsException {
@@ -453,23 +469,21 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     public Part getUploadFile() {
         return uploadFile;
     }
-    
-    public String actionEdit() {
+
+    public void actionEdit() {
         clearMessages();
-        if (isEmptyProfile()) {
+        if (!selectedProfileExists()) {
+            addErrorMessage("EEPROFILENOTSELECTED");
+        } else if (isEmptyProfile()) {
             addErrorMessage("YOUCANTEDITEMPTYPROFILE");
-            return "";
-        } else if (selectedProfileExists()) {
-            redirect("endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, selectedEndEntityProfileId);
-            return "";
         } else {
-            return "";
+            redirect("endentityprofilepage.xhtml", EndEntityProfileMBean.PARAMETER_PROFILE_ID, selectedEndEntityProfileId);
         }
     }
 
     public void actionCloneProfile() {
         clearMessages();
-        if (validateEndEntityProfileName()) {
+        if (validateRenameOrClone()) {
             try {
                 endEntityProfileSession.cloneEndEntityProfile(getAdmin(), getSelectedEndEntityProfileName(), endEntityProfileName);
                 reset();
