@@ -4,12 +4,12 @@
 		A CLI for exporting LogEntryData database table to file.
     </description>
 
-	<dirname property="this.dir" file="${ant.file.oldlogexport-cli}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="oldlogexport-cli.dir" file="${ant.file.oldlogexport-cli}"/>
+
+    <import file="${oldlogexport-cli.dir}/../build-helpers.xml"/>
 	
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
-	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="oldlogexport-cli.src.dir" location="${oldlogexport-cli.dir}/src"/>
+	<property name="oldlogexport-cli.build.dir" location="${oldlogexport-cli.dir}/build"/>
 
 	<path id="oldlogexport.lib.classpath">
 		<path refid="lib.jpa.classpath"/>
@@ -37,20 +37,20 @@
     			<attribute name="Class-path" value="${oldlogexport.dependencies} ./" />
     			<attribute name="Main-Class" value="org.ejbca.ui.cli.OldLogExportCli"/>
     		</manifest>
-            <fileset dir="${build.dir}"/>
+            <fileset dir="${oldlogexport-cli.build.dir}"/>
         </jar>
     </target>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
+		<delete dir="${oldlogexport-cli.build.dir}" />
 		<delete dir="${mod.oldlogexport.dist}" />
     </target>
 	
-    <target name="compile" depends="setup, cesecore-entity, with.clover">
-    	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="utf-8" target="${java.target.version}" classpathref="oldlogexport.lib.classpath">
+    <target name="compile" depends="setup, with.clover">
+    	<mkdir dir="${oldlogexport-cli.build.dir}" />
+        <javac destdir="${oldlogexport-cli.build.dir}" debug="on" includeantruntime="no" encoding="utf-8" target="${java.target.version}" classpathref="oldlogexport.lib.classpath">
             <src path="${ejbca.home}/modules/ejbca-ejb/src" />
-        	<src path="${src.dir}"/>
+        	<src path="${oldlogexport-cli.src.dir}"/>
             <include name="org/ejbca/ui/cli/OldLogExportCli.java" />
         </javac>
     </target>
@@ -66,9 +66,9 @@
     		<fileset dir="${ejbca.home}" includes="${lib.oldlogexport.classpath.property}"/>
     	</copy>
     	<!-- Copy scripts etc to mod.clientToolBox.dist -->
-        <copy todir="${mod.oldlogexport.dist}" file="${this.dir}/resources/README"/>
-        <copy todir="${build.dir}">
-            <fileset dir="${this.dir}/resources" includes="log4j.xml META-INF/*.*"/>
+        <copy todir="${mod.oldlogexport.dist}" file="${oldlogexport-cli.dir}/resources/README"/>
+        <copy todir="${oldlogexport-cli.build.dir}">
+            <fileset dir="${oldlogexport-cli.dir}/resources" includes="log4j.xml META-INF/*.*"/>
         </copy>
     	<!-- Specify Hibernate dialect -->
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>
@@ -83,7 +83,7 @@
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"><equals arg1="${database.name}" arg2="postgres"/></condition>
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.SybaseDialect"><equals arg1="${database.name}" arg2="sybase"/></condition>
     	<fail unless="hibernate.dialect" message="Unsupported database type '${database.name}'."/>
-        <copy tofile="${mod.oldlogexport.dist}/META-INF/persistence.xml" file="${this.dir}/resources/persistence-template.xml" failonerror="true" overwrite="true">
+        <copy tofile="${mod.oldlogexport.dist}/META-INF/persistence.xml" file="${oldlogexport-cli.dir}/resources/persistence-template.xml" failonerror="true" overwrite="true">
         	<filterchain><expandproperties/></filterchain>
         </copy>
     </target>

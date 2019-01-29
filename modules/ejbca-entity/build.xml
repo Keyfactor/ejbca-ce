@@ -20,16 +20,17 @@
             Contains all JPA entity classes.
     </description>
 
-	<dirname property="this.dir" file="${ant.file.ejbca-entity}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="ejbca-entity.dir" file="${ant.file.ejbca-entity}"/>
+
+    <import file="${ejbca-entity.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="build-cli.dir" location="${this.dir}/build-cli"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="src-test.dir" location="${this.dir}/src-test"/>
-	<property name="src-cli.dir" location="${this.dir}/src-cli"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="ejbca-entity.build.dir" location="${ejbca-entity.dir}/build"/>
+	<property name="ejbca-entity.build-test.dir" location="${ejbca-entity.dir}/build-test"/>
+	<property name="ejbca-entity.build-cli.dir" location="${ejbca-entity.dir}/build-cli"/>
+	<property name="ejbca-entity.src.dir" location="${ejbca-entity.dir}/src"/>
+	<property name="ejbca-entity.src-test.dir" location="${ejbca-entity.dir}/src-test"/>
+	<property name="ejbca-entity.src-cli.dir" location="${ejbca-entity.dir}/src-cli"/>
+	<property name="ejbca-entity.resources.dir" location="${ejbca-entity.dir}/resources"/>
 
 	<path id="common-compile.classpath">
 		<path refid="lib.utils.classpath"/>
@@ -50,8 +51,8 @@
 
 	<path id="compile-test.classpath">
 		<path refid="compile.classpath"/>
-		<path location="${build.dir}"/>
-		<path location="${build-cli.dir}"/>
+		<path location="${ejbca-entity.build.dir}"/>
+		<path location="${ejbca-entity.build-cli.dir}"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.xstream.classpath"/>
@@ -69,7 +70,7 @@
 	<path id="test.classpath-nojdbc">
 		<path refid="compile.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
-		<path location="${build-test.dir}"/>
+		<path location="${ejbca-entity.build-test.dir}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path refid="lib.junit.classpath"/>
 	</path>
@@ -91,37 +92,37 @@
 	<path id="generate.classpath">
 		<path refid="compile.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
-		<path location="${build-test.dir}"/>
-		<path location="${build.dir}"/>
+		<path location="${ejbca-entity.build-test.dir}"/>
+		<path location="${ejbca-entity.build.dir}"/>
 	</path>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
-		<delete dir="${build-test.dir}" />
-		<delete dir="${build-cli.dir}" />
+		<delete dir="${ejbca-entity.build.dir}" />
+		<delete dir="${ejbca-entity.build-test.dir}" />
+		<delete dir="${ejbca-entity.build-cli.dir}" />
 		<delete file="${mod.ejbca-entity.lib}" />
 		<delete dir="${mod.ejbca-db-cli.dist}" />
     </target>
 	
     <target name="build" description="Build this module" depends="compile, handlepersistence, handleorm">
-    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml" excludes="org/ejbca/util/DatabaseSchemaScriptCreator.class"/>
+    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${ejbca-entity.build.dir}" includes="**/*.class **/*.xml" excludes="org/ejbca/util/DatabaseSchemaScriptCreator.class"/>
     </target>
 
     <target name="handlepersistence">
-    	<mkdir dir="${build.dir}/META-INF"/>
-    	<copy file="${resources.dir}/persistence-ds-template.xml" tofile="${build.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
+    	<mkdir dir="${ejbca-entity.build.dir}/META-INF"/>
+    	<copy file="${ejbca-entity.resources.dir}/persistence-ds-template.xml" tofile="${ejbca-entity.build.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
     		<filterchain>
 				<expandproperties/>
     		</filterchain>
     	</copy>
-    	<mkdir dir="${build-test.dir}/META-INF" />
-    	<copy file="${resources.dir}/persistence-test-template.xml" tofile="${build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
+    	<mkdir dir="${ejbca-entity.build-test.dir}/META-INF" />
+    	<copy file="${ejbca-entity.resources.dir}/persistence-test-template.xml" tofile="${ejbca-entity.build-test.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
     		<filterchain>
 				<expandproperties/>
     		</filterchain>
     	</copy>
-    	<mkdir dir="${build-cli.dir}/META-INF" />
-    	<copy file="${resources.dir}/persistence-cli-template.xml" tofile="${build-cli.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
+    	<mkdir dir="${ejbca-entity.build-cli.dir}/META-INF" />
+    	<copy file="${ejbca-entity.resources.dir}/persistence-cli-template.xml" tofile="${ejbca-entity.build-cli.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
     		<filterchain>
 				<expandproperties/>
     		</filterchain>
@@ -129,20 +130,18 @@
     </target>
 
     <target name="handleorm">
-		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build.dir}/META-INF/" failonerror="true" overwrite="true"/>
-		<copy todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true">
-			<fileset dir="${resources.dir}" includes="orm-*.xml"/>
+		<copy file="${ejbca-entity.resources.dir}/orm-ejbca-${database.name}.xml" todir="${ejbca-entity.build.dir}/META-INF/" failonerror="true" overwrite="true"/>
+		<copy todir="${ejbca-entity.build-test.dir}/META-INF/" failonerror="true" overwrite="true">
+			<fileset dir="${ejbca-entity.resources.dir}" includes="orm-*.xml"/>
     	</copy>
-		<copy todir="${build-cli.dir}/META-INF/" failonerror="true" overwrite="true">
-			<fileset dir="${resources.dir}" includes="orm-*.xml"/>
+		<copy todir="${ejbca-entity.build-cli.dir}/META-INF/" failonerror="true" overwrite="true">
+			<fileset dir="${ejbca-entity.resources.dir}" includes="orm-*.xml"/>
     	</copy>
 	</target>
 
-    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common"/></target>
-	
-    <target name="compile" depends="with.clover, compile-external-deps">
-    	<mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
+    <target name="compile" depends="with.clover">
+    	<mkdir dir="${ejbca-entity.build.dir}" />
+        <javac srcdir="${ejbca-entity.src.dir}" destdir="${ejbca-entity.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile.classpath"/>
     </target>
 
@@ -150,14 +149,14 @@
     	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
 		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
-        <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
-    	<mkdir dir="${build-test.dir}/META-INF"/>
-		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
+        <copy file="${ejbca-entity.resources.dir}/log4j.xml" tofile="${ejbca-entity.build-test.dir}/log4j.xml" />
+    	<mkdir dir="${ejbca-entity.build-test.dir}/META-INF"/>
+		<copy file="${ejbca-entity.resources.dir}/orm-ejbca-${database.name}.xml" todir="${ejbca-entity.build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" fork="true" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
-				<pathelement location="${build-test.dir}"/>
+				<pathelement location="${ejbca-entity.build-test.dir}"/>
 			</classpath>
 			<formatter type="xml" />
 			<test name="org.ejbca.database.DatabaseSchemaTest" todir="${reports.dir}"/>
@@ -166,7 +165,7 @@
     	<echo message="If your test runs out of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
     </target>
 	
-	<target name="test-cli-commands" description="Test Database CLI commands." depends="compile-test, ejbca-db-cli">
+	<target name="test-cli-commands" description="Test Database CLI commands." depends="compile-test, build-cli-conditional">
 		
 	</target>
 
@@ -174,14 +173,14 @@
     	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
 		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
-        <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
-    	<mkdir dir="${build-test.dir}/META-INF"/>
-		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
+        <copy file="${ejbca-entity.resources.dir}/log4j.xml" tofile="${ejbca-entity.build-test.dir}/log4j.xml" />
+    	<mkdir dir="${ejbca-entity.build-test.dir}/META-INF"/>
+		<copy file="${ejbca-entity.resources.dir}/orm-ejbca-${database.name}.xml" todir="${ejbca-entity.build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
     	<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" fork="false" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
-				<pathelement location="${build-test.dir}"/>
+				<pathelement location="${ejbca-entity.build-test.dir}"/>
 			</classpath>
 			<formatter type="xml" />
 			<test name="org.ejbca.database.OcspMonitoringToolTest" todir="${reports.dir}"/>
@@ -189,32 +188,33 @@
     </target>
 
 	<target name="test" depends="compile-test" description="Run tests for this module">
-    	<antcall target="showtime"/>
+    	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 		<echo message=" ** Running EJBCA entity tests **"/>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-entity.dir}">
 			<classpath>
 	    		<path refid="test.classpath-nojdbc"/>
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/**Test.class">
+				<fileset dir="${ejbca-entity.build-test.dir}" includes="**/**Test.class">
 					<exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class"/>
 					<exclude name="org/ejbca/database/DatabaseSchemaTest.class"/>
 				</fileset>
 			</batchtest>
 		</junit>
-    	<antcall target="showtime"/>
+    	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
     </target>
 
-	 <target name="compile-test" depends="with.clover, ejbca-common, build, build-cli-conditional">
-	    	<mkdir dir="${build-test.dir}" />
-	        <javac destdir="${build-test.dir}" debug="on" includeantruntime="no"
+	<!-- ejbca-common,  -->
+	<target name="compile-test" depends="with.clover, build, build-cli-conditional">
+	    	<mkdir dir="${ejbca-entity.build-test.dir}" />
+	        <javac destdir="${ejbca-entity.build-test.dir}" debug="on" includeantruntime="no"
 	        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath">
-		    	<src path="${src-test.dir}"/>
+		    	<src path="${ejbca-entity.src-test.dir}"/>
 	        </javac>
-			<copy todir="${build-test.dir}" failonerror="true">
-				<fileset dir="${src-test.dir}">
+			<copy todir="${ejbca-entity.build-test.dir}" failonerror="true">
+				<fileset dir="${ejbca-entity.src-test.dir}">
 					<include name="**/*.xml"/>
 				</fileset>
 				<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
@@ -223,37 +223,37 @@
 	    </target>
 
     <condition property="cli-exists">
-   		<available file="${src-cli.dir}/org" type="dir"/>
+   		<available file="${ejbca-entity.src-cli.dir}/org" type="dir"/>
     </condition>
 	<!-- Only try to run the build-cli target if the directory exists.
 	     This is all needed because we can not specify a non existing (optional) path on the compile-tests above -->
     <target name="build-cli-conditional" if="${cli-exists}">
-    	<antcall target="build-cli"/>
+    	<antcall target="build-cli" inheritall="true" inheritrefs="true"/>
     </target>
 
 	<!-- Monolitic build of the EJBCA DB CLI -->
-    <target name="build-cli" depends="with.clover, handlepersistence, handleorm, build">
+    <target name="build-cli" depends="with.clover">
 		<fail message="Database CLI tool is not distributed with this version of EJBCA">
 		    <condition>
 		    	<not>
-		    		<available file="${src-cli.dir}/org" type="dir"/>
+		    		<available file="${ejbca-entity.src-cli.dir}/org" type="dir"/>
 		    	</not>
 		    </condition>
 		</fail>	
-    	<mkdir dir="${build-cli.dir}/META-INF"/>
+    	<mkdir dir="${ejbca-entity.build-cli.dir}/META-INF"/>
     	<!--
     	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
 		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
     	-->
-        <javac destdir="${build-cli.dir}" debug="on" includeantruntime="no"
+        <javac destdir="${ejbca-entity.build-cli.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-cli.classpath">
         	<include name="org/ejbca/database/**/*.java"/>
         	<!-- Include classes that are instantiated through reflection -->
         	<include name="org/cesecore/keys/token/SoftCryptoToken.java"/>
         	<include name="org/cesecore/keys/token/PKCS11CryptoToken.java"/>
-	    	<src path="${src-cli.dir}"/>
-	    	<src path="${src.dir}"/>
+	    	<src path="${ejbca-entity.src-cli.dir}"/>
+	    	<src path="${ejbca-entity.src.dir}"/>
         	<src path="${ejbca.home}/modules/ejbca-ejb/src"/>
         	<src path="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
         </javac>
@@ -274,28 +274,28 @@
     	    </path>
     		<map from="${mod.ejbca-db-cli.dist}/" to=""/>
     	</pathconvert>
-        <buildservicemanifest interface="org.ejbca.database.CliCommandPlugin" file="${build-cli.dir}" classpath="compile.classpath"/>
-    	<jar destfile="${mod.ejbca-db-cli.lib}" basedir="${build-cli.dir}" includes="**/*.*" excludes="META-INF/persistence.xml">
+        <buildservicemanifest interface="org.ejbca.database.CliCommandPlugin" file="${ejbca-entity.build-cli.dir}" classpath="compile.classpath"/>
+    	<jar destfile="${mod.ejbca-db-cli.lib}" basedir="${ejbca-entity.build-cli.dir}" includes="**/*.*" excludes="META-INF/persistence.xml">
             <manifest>
     			<attribute name="Class-path" value="${ejbca-db-cli.dependencies} ./" />
 				<attribute name="Main-Class" value="org.ejbca.database.DatabaseCli"/>
             </manifest>
 		</jar>
-        <copy file="${resources.dir}/log4j-cli.xml" tofile="${mod.ejbca-db-cli.dist}/log4j.xml"/>
-        <copy file="${build-cli.dir}/META-INF/persistence.xml" tofile="${mod.ejbca-db-cli.dist}/META-INF/persistence.xml" failonerror="true"/>
+        <copy file="${ejbca-entity.resources.dir}/log4j-cli.xml" tofile="${mod.ejbca-db-cli.dist}/log4j.xml"/>
+        <copy file="${ejbca-entity.build-cli.dir}/META-INF/persistence.xml" tofile="${mod.ejbca-db-cli.dist}/META-INF/persistence.xml" failonerror="true"/>
     	<copy todir="${mod.ejbca-db-cli.dist}/conf" failonerror="false">
     		<fileset dir="${ejbca.home}/conf">
     		      <include name="databaseprotection.properties"/>
     		    </fileset>
     	</copy>
-        <copy file="${resources.dir}/run.sh" tofile="${mod.ejbca-db-cli.dist}/run.sh" failonerror="true"/>
+        <copy file="${ejbca-entity.resources.dir}/run.sh" tofile="${mod.ejbca-db-cli.dist}/run.sh" failonerror="true"/>
         <chmod file="${mod.ejbca-db-cli.dist}/run.sh" perm="a+rx"/>
-        <copy file="${resources.dir}/run.bat" tofile="${mod.ejbca-db-cli.dist}/run.bat" failonerror="true"/>
+        <copy file="${ejbca-entity.resources.dir}/run.bat" tofile="${mod.ejbca-db-cli.dist}/run.bat" failonerror="true"/>
     </target>
 
 	<target name="runone" depends="compile-test">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
-        <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
+        <copy file="${log4j.test.file}" tofile="${ejbca-entity.build-test.dir}/log4j.xml" failonerror="true"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath-nojdbc"/>
@@ -303,7 +303,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${ejbca-entity.build-test.dir}">
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>

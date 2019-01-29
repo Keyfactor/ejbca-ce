@@ -4,13 +4,14 @@
     	Builds the Community Edition specific modules.
     </description>
 	
-	<dirname property="this.dir" file="${ant.file.edition-specific-interface}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="edition-specific-interface.dir" file="${ant.file.edition-specific-interface}"/>
+
+    <import file="${edition-specific-interface.dir}/../build-helpers.xml"/>
 	
-	<property name="build-interface.dir" location="${this.dir}/build-interface"/>
-	<property name="build-ejb.dir" location="${this.dir}/build-ejb"/>
-	<property name="src-interface.dir" location="${this.dir}/src-interface"/>
-	<property name="src-ejb.dir" location="${this.dir}/src-ejb"/>
+	<property name="edition-specific-interface.build-interface.dir" location="${edition-specific-interface.dir}/build-interface"/>
+	<property name="edition-specific-interface.build-ejb.dir" location="${edition-specific-interface.dir}/build-ejb"/>
+	<property name="edition-specific-interface.src-interface.dir" location="${edition-specific-interface.dir}/src-interface"/>
+	<property name="edition-specific-interface.src-ejb.dir" location="${edition-specific-interface.dir}/src-ejb"/>
 
 	<path id="compile.classpath">
         <path refid="lib.ejbca-common.classpath"/>
@@ -19,19 +20,19 @@
         <path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path location="${mod.cesecore-entity.lib}"/>
-		<path location="${build-interface.dir}/classes"/>
+		<path location="${edition-specific-interface.build-interface.dir}/classes"/>
         <path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 	
 	<target name="build" depends="with.clover">
-        <mkdir dir="${build-interface.dir}/classes"/>
-        <javac srcdir="${src-interface.dir}" destdir="${build-interface.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+        <mkdir dir="${edition-specific-interface.build-interface.dir}/classes"/>
+        <javac srcdir="${edition-specific-interface.src-interface.dir}" destdir="${edition-specific-interface.build-interface.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
             <classpath refid="compile.classpath"/>
         </javac>
-		<mkdir dir="${build-ejb.dir}/classes"/>
-		<javac srcdir="${src-ejb.dir}" destdir="${build-ejb.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+		<mkdir dir="${edition-specific-interface.build-ejb.dir}/classes"/>
+		<javac srcdir="${edition-specific-interface.src-ejb.dir}" destdir="${edition-specific-interface.build-ejb.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
 		            <classpath refid="compile.classpath"/>
 		</javac>
     </target>
@@ -39,18 +40,18 @@
     <target name="jar" depends="build">
         <mkdir dir="${mod.dist.path}"/>
         <jar destfile="${mod.edition-specific-interface.lib}">
-            <fileset dir="${this.dir}/build-interface/classes/" excludes="**/*.java"/>
-            <fileset dir="${this.dir}/src-interface/" excludes="**/*.java"/>
+            <fileset dir="${edition-specific-interface.dir}/build-interface/classes/" excludes="**/*.java"/>
+            <fileset dir="${edition-specific-interface.dir}/src-interface/" excludes="**/*.java"/>
         </jar>
         <jar destfile="${mod.edition-specific-ejb.lib}">
-            <fileset dir="${this.dir}/build-ejb/classes/" excludes="**/*.java"/>
-            <fileset dir="${this.dir}/src-ejb/" excludes="**/*.java"/>
+            <fileset dir="${edition-specific-interface.dir}/build-ejb/classes/" excludes="**/*.java"/>
+            <fileset dir="${edition-specific-interface.dir}/src-ejb/" excludes="**/*.java"/>
         </jar>
     </target>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build-interface.dir}" />
-		<delete dir="${build-ejb.dir}" />
+		<delete dir="${edition-specific-interface.build-interface.dir}" />
+		<delete dir="${edition-specific-interface.build-ejb.dir}" />
     </target>
 	
 </project>

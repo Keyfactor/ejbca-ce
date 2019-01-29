@@ -12,132 +12,53 @@
 	<import file="${modules.basedir}/build-helpers.xml"/>
 
 
-    <!-- =================================================================== -->
-    <!-- OpenClover 4.2 stuff                                                    -->
-    <!-- =================================================================== -->
-    <property name="clover.jar" location="${ejbca.home}/lib/ext/openclover-ant/clover.jar"/>
-	<taskdef resource="cloverlib.xml" classpath="${clover.jar}" onerror="ignore"/>
-	<property name="clover.out.dir" location="${ejbca.home}/reports/clover"/>
-	<property name="clover.testresults.dir" location="${ejbca.home}/reports/test"/>
-	<property name="clover.db" location="${clover.out.dir}/clover.db"/>
-	<target name="check.clover">
-		<property environment="env"/>
-		<condition property="clover.enabled">
-			<and>
-				<available classname="com.atlassian.clover.CloverInstr" />
-				<or>
-					<isset property="env.ENABLE_CLOVER"/>
-					<isset property="ENABLE_CLOVER"/>
-				</or>
-			</and>
-		</condition>
-	</target>
-	<target name="with.clover" depends="check.clover" if="clover.enabled">
-		<mkdir dir="${clover.out.dir}"/>
-		<clover-setup initstring="${clover.db}">
-			<fileset dir="${ejbca.home}">
-				<exclude name="**/org/apache/**/*.java"/>
-				<exclude name="**/com/novosec/**/*.java"/>
-				<exclude name="**/org/jboss/**/*.java"/>
-				<exclude name="**/org/owasp/**/*.java"/>
-				<exclude name="**/sun/security/**/*.java"/>
-			</fileset>
-			<testsources dir="${ejbca.home}">
-				<testclass name=".*Test"/>
-				<testclass name=".*UnitTest"/>
-			</testsources>
-		</clover-setup>
-	</target>
-	<target name="clover.xml" depends="check.clover" if="clover.enabled">
-	    <clover-report initstring="${clover.db}">
-	       <current outfile="${clover.out.dir}/clover.xml" title="EJBCA">
-			   <format type="xml"/>
-			   <testresults dir="${clover.testresults.dir}">
-				   <include name="TEST-*.xml"/>
-			   </testresults>
-	       </current>
-	    </clover-report>
-	 </target>
-	<target name="clover.html" depends="check.clover" if="clover.enabled">
-		<clover-report initstring="${clover.db}">
-			<current outfile="${clover.out.dir}/clover_html" title="EJBCA" summary="true">
-				<format type="html"/>
-				<testresults dir="${clover.testresults.dir}">
-					<include name="TEST-*.xml"/>
-				</testresults>
-			</current>
-		</clover-report>
-	 </target>
-	<target name="clover.clean" depends="check.clover" if="clover.enabled">
-		<clover-clean initstring="${clover.db}"/>
-	    <delete dir="${clover.out.dir}"/>
-	</target>
-	<!-- End Clover stuff -->
-
     <target name="showhelp">
         <echo message="Run 'ant -p' to see the available targets." />
     </target>
 
-	<target name="clean" description="Clean all modules">
-		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-common.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.cesecore-p11.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-common-web.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.batchenrollment-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.clearcache-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.va.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.cerstore.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.crlstore.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.renew-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.appserver-ext.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.oldlogexport.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-        <ant antfile="${mod.cesecore-common.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-        <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-        <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-        <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<antcall target="cmpproxyclean"/>
-		<antcall target="validationtoolclean"/>
-		<antcall target="statedumpclean"/>
-		<antcall target="configdumpclean"/>
-		<antcall target="unidfnrclean"/>
-		<antcall target="cmpclientclean"/>
-		<antcall target="ctclean"/>
-		<antcall target="edition-specific-clean"/>
-		<antcall target="edition-specific-ee-clean"/>
-		<antcall target="externalraclean"/>
-		<antcall target="externalra-guiclean"/>
-		<antcall target="externalra-scepclean"/>
-		<antcall target="peerconnectorclean"/>
-		<antcall target="acmeclean"/>
-		<antcall target="caaclean"/>
-		<antcall target="webtestclean"/>
-		<antcall target="estclean"/>
-		<antcall target="ejbca-rest-api-clean"/>
-		<antcall target="plugins-ee-clean"/>
-		<antcall target="clover.clean"/>
+	<target name="clean" depends="clean-optional" description="Clean all modules">
+		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="clean" inheritall="true"/>
+		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.cesecore-p11.path}/build.xml" target="clean"  inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-common-web.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.systemtests.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.batchenrollment-gui.path}/build-nonb.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.admin-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.clearcache-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.va.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.cerstore.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.crlstore.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.renew-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.appserver-ext.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.oldlogexport.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.cesecore-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+        <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
+	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, edition-specific-clean, edition-specific-ee-clean, 
+		externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, webtestclean, estclean, ejbca-rest-api-clean, plugins-ee-clean, clover.clean"/>
+	
 	<target name="externalraclean" if="${mod.externalra.exists}">
 		<echo message="Cleaning externalra"/>
-		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
     <condition property="externalra-gui.exists">
@@ -145,27 +66,27 @@
     </condition>
 	<target name="externalra-guiclean" if="${externalra-gui.exists}">
 		<echo message="Cleaning externalra-gui"/>
-		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="externalra-scepclean" if="${mod.externalra-scep.exists}">
 		<echo message="Cleaning externalra-scep"/>
-		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="statedumpclean" if="${mod.statedump.exists}">
 		<echo message="Cleaning statedump"/>
-		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="configdumpclean" if="${mod.configdump.exists}">
 			<echo message="Cleaning configdump"/>
-			<ant antfile="${mod.configdump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+			<ant antfile="${mod.configdump.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		</target>
 
 	<target name="unidfnrclean" if="${mod.unidfnr.exists}">
 			<echo message="Cleaning unidfnr"/>
-			<ant antfile="${mod.unidfnr.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+			<ant antfile="${mod.unidfnr.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		</target>
 		
 	<condition property="cmpclient.exists">
@@ -173,7 +94,7 @@
 	</condition>
 	<target name="cmpclientclean" if="${cmpclient.exists}">
 		<echo message="Cleaning cmpclient"/>
-		<ant antfile="${mod.cmpclient.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.cmpclient.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
     <condition property="cmpproxy.exists">
@@ -181,80 +102,80 @@
     </condition>
 	<target name="cmpproxyclean" if="${cmpproxy.exists}">
 		<echo message="Cleaning cmpProxy"/>
-		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
     <condition property="validationtool.exists">
     	<available file="${mod.validationtool.path}/build.xml" />
     </condition>
 	<target name="validationtoolclean" if="${validationtool.exists}">
 		<echo message="Cleaning validationtool"/>
-		<ant antfile="${mod.validationtool.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.validationtool.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
 
     <target name="ctclean" if="${mod.ct.exists}">
-        <ant antfile="${mod.ct.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.ct.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>	
     <target name="caaclean" if="${mod.caa.exists}">
-        <ant antfile="${mod.caa.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.caa.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>	
 	<target name="webtestclean" if="${mod.webtest.exists}">
-        <ant antfile="${mod.webtest.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.webtest.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
     <target name="estclean" if="${mod.est.exists}">
-		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.est-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>		
 	<condition property="mod.edition-specific-ee.exists">
 		<available file="${mod.edition-specific-ee-ejb.path}/build.xml" />
 	</condition>
 	<target name="edition-specific-ee-clean" if="${mod.edition-specific-ee.exists}">
-	    <ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	    <ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	<target name="edition-specific-clean">
-		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<condition property="mod.plugins-ee.exists">
 		<available file="${mod.plugins.path}/build.xml" />
 	</condition>
     <target name="plugins-ee-clean" if="${mod.plugins-ee.exists}">
-		<ant antfile="${mod.plugins.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.plugins.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 		
     <target name="peerconnectorclean" if="${mod.peerconnector.exists}">
-        <ant antfile="${mod.peerconnector.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.peerconnector.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="acmeclean" if="${mod.acme.exists}">
-        <ant antfile="${mod.acme.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.acme.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="ejbca-rest-api-clean" if="${mod.ejbca-rest-api.exists}">
-        <ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
         	
 	<target name="ejbca-entity" depends="ejbca-common" description="Build EJBCA JPA entity library">
-		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-db-cli" depends="ejbca-common" if="${ejbca-db-cli.available}" description="Build EJBCA JPA database CLI">
-		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="ejbca-db-cli" depends="ejbca-entity" if="${ejbca-db-cli.available}" description="Build EJBCA JPA database CLI">
+		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-ws-cli" description="Build EJBCA EJB interfaces library">
-		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-common, ejbca-ws-cli" description="Build EJBCA EJB interfaces library">
+		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="ejbca-ejb-cli" depends="cli-util, ejbca-ejb-interface, peerconnector-cli" description="Build EJBCA EJB CLI">
-		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common-web">
-		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="clientToolBox" description="Build EJBCA client toolbox" depends="ejbca-common-web, cesecore-p11">
+		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="cesecore-p11" description="Build the Sun P11 extension" if="build.cesecore.p11.jar">
-			<ant antfile="${mod.cesecore-p11.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+			<ant antfile="${mod.cesecore-p11.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
     <target name="cesecore-common" depends="-build-cesecore-common, -copy-cesecore-common"/>
@@ -264,19 +185,19 @@
         
         <target name="-build-cesecore-ejb" depends="cesecore-entity, cesecore-common, cesecore-ejb-interface">
             <!-- Builds cesecore-ejb which also builds all other cesecore modules -->
-            <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="jar" inheritall="false"/>
+            <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
         <target name="-build-cesecore-ejb-interface" depends="cesecore-entity, cesecore-common">
-            <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="false"/>
+            <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
         <target name="-build-cesecore-common" depends="cesecore-p11">
-            <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="false"/>
+            <ant antfile="${mod.cesecore-common.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
         <target name="-build-cesecore-entity" depends="cesecore-common">
-            <ant antfile="${mod.cesecore-entity.path}/build.xml" target="jar" inheritall="false"/>
+            <ant antfile="${mod.cesecore-entity.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
         </target>
         
         <target name="-copy-cesecore-entities">
@@ -371,8 +292,8 @@
         <chmod file="${mod.validationtool.srcdist}/modules/validationtool/bin/*.sh" perm="a+rx"/>
 	</target>
 
-	<target name="ejbca-cmp-tcp" description="Build EJBCA CMP TCP module">
-		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="ejbca-cmp-tcp" description="Build EJBCA CMP TCP module" depends="ejbca-common-web, cesecore-ejb-interface">
+		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="cmpTcpProxy" description="Build CMP TCP proxy" depends="ejbca-common">
@@ -384,10 +305,10 @@
 		    	</not>
 		    </condition>
 		</fail>	
-		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="cmpHttpProxy" description="Build CMP HTTP proxy, set SERVLET_ENGINE_HOME to Tomcat home" depends="ejbca-common">
+	<target name="cmpHttpProxy" description="Build CMP HTTP proxy, set SERVLET_ENGINE_HOME to Tomcat home" depends="ejbca-common, cesecore-ejb-interface, externalra-library">
 		<echo  message="${mod.cmpProxy.path}/build-http.xml" />
 		<fail message="CMP HTTP Proxy tool is not distributed with this version of EJBCA">
 		    <condition>
@@ -396,153 +317,154 @@
 		    	</not>
 		    </condition>
 		</fail>	
-		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="dist" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="dist" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-common" description="Build EJBCA Common library">
-		<ant antfile="${mod.ejbca-common.path}/build.xml" target="build-common" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="ejbca-common" description="Build EJBCA Common library" depends="cesecore-ejb-interface">
+		<ant antfile="${mod.ejbca-common.path}/build.xml" target="build-common" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="cli-util">
-		<ant antfile="${mod.cli-util.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="cli-util" depends="ejbca-ejb-interface">
+		<ant antfile="${mod.cli-util.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="ejbca-common-web" depends="ejbca-ejb-interface" description="Build EJBCA common web library">
-		<ant antfile="${mod.ejbca-common-web.path}/build.xml" target="build-common-web" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ejbca-common-web.path}/build.xml" target="build-common-web" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="ejbca-properties" description="Build EJBCA properties files">
-		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="build-jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="build-jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="ejbca-ws" depends="ejbca-common-web, ejbca-properties" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="ejbca-ws-wsdl" depends="ejbca-common-web" description="Generate the EJBCA Web Services WSDL">
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="ejbca-ws-common" depends="ejbca-common" description="Build the EJBCA Web Services common library">
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build-jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build-jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<!-- EJBCA WS Client must be built even if EJBCA WS is disabled, because some things, like OCSP renewal requires WS client -->
 	<target name="ejbca-ws-cli" depends="ejbca-ws-common" description="Build EJBCA Web Services CLI">
-		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ws-generate" depends="ejbca-common-web" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="false"><property name="external-deps-satfisfied" value="isset"/></ant>
-		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="generate" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="ejbca-ws-generate" depends="ejbca-common-web, ejbca-ws-wsdl" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="generate" inheritall="true" inheritrefs="true"/>
 	</target>
 
+	<!-- , eedition-ejb -->
 	<target name="peerconnector" depends="ejbca-common, edition-specific-interface" description="Build enabled PeerConnector modules" if="mod.peerconnector.exists">
-		<ant antfile="${mod.peerconnector.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.peerconnector.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="peerconnector-cli" depends="ejbca-common-web, edition-specific-interface" if="mod.peerconnector.exists">
-		<ant antfile="${mod.peerconnector.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.peerconnector.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="externalra-service" depends="ejbca-common-web" if="externalra.enabled.true" description="Build the EJBCA External RA Service">
-		<ant antfile="${mod.externalra.path}/build.xml" target="build-service" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.externalra.path}/build.xml" target="build-service" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="externalra-client" depends="ejbca-common" description="Build the EJBCA External RA Service CLI">
-		<ant antfile="${mod.externalra.path}/build.xml" target="build-client" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.externalra.path}/build.xml" target="build-client" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="externalra-library" depends="ejbca-common-web" description="Build the EJBCA External RA Service library">
-		<ant antfile="${mod.externalra.path}/build.xml" target="build-library" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.externalra.path}/build.xml" target="build-library" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="externalra-scep" description="Build the EJBCA External RA StandAlone SCEP WAR">
-		<ant antfile="${mod.externalra-scep.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="externalra-scep" depends="ejbca-common, externalra-library" description="Build the EJBCA External RA StandAlone SCEP WAR">
+		<ant antfile="${mod.externalra-scep.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="externalra-gui" description="Build the EJBCA External RA StandAlone GUI WAR">
-		<ant antfile="${mod.externalra-gui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="externalra-gui" depends="cesecore-ejb-interface, ejbca-common, externalra-library" description="Build the EJBCA External RA StandAlone GUI WAR">
+		<ant antfile="${mod.externalra-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI JAR">
-		<ant antfile="build.xml" dir="${mod.batchenrollment-gui.path}" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="batchenrollment-gui" depends="cesecore-common, ejbca-ws-cli, ejbca-ws-common, ejbca-common" description="Build the EJBCA Batch Enrollment StandAlone GUI JAR">
+		<ant antfile="build-nonb.xml" dir="${mod.batchenrollment-gui.path}" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="acme" if="${mod.acme.exists}" description="Build ACME protocol support">
-		<ant antfile="${mod.acme.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="acme" depends="ejbca-ejb" if="${mod.acme.exists}" description="Build ACME protocol support">
+		<ant antfile="${mod.acme.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="ejbca-rest-api" if="${mod.ejbca-rest-api.exists}" description="Build EJBCA rest api">
-		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
         	
 	<target name="admin-gui" depends="ejbca-common-web" description="Build the EJBCA Admin GUI WAR">
-		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="ra-gui" depends="ejbca-common-web" description="Build the EJBCA RA GUI WAR">
-		<ant antfile="${mod.ra-gui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.ra-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="publicweb-gui" depends="ejbca-common-web" description="Build the EJBCA Public Web GUI WAR">
-		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.publicweb-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="cmp-war" depends="ejbca-common-web" description="Build the CMP WAR">
-		<ant antfile="${mod.cmp-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.cmp-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="healthcheck-ejbca-war" depends="ejbca-common-web" description="Build the EJBCA Helthcheck WAR">
-		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="clearcache-ejbca-war" depends="ejbca-common-web" description="Build the EJBCA ClearCache WAR">
-		<ant antfile="${mod.clearcache-war.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.clearcache-war.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="va-ejbca-war" depends="ejbca-common-web, ejbca-common">
-		<ant antfile="${mod.va.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.va.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="certstore-war" depends="ejbca-common-web">
-		<ant antfile="${mod.cerstore.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.cerstore.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
 			
 	<target name="crlstore-war" depends="ejbca-common-web">
-		<ant antfile="${mod.crlstore.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.crlstore.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="renew-war" depends="ejbca-common-web" description="Build the Renew WAR">
-		<ant antfile="${mod.renew-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.renew-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="scep-war" depends="ejbca-common-web" description="Build the SCEP WAR">
-		<ant antfile="${mod.scep-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.scep-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="webdist-war" depends="ejbca-common-web" description="Build the WebDist WAR">
-		<ant antfile="${mod.webdist-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+		<ant antfile="${mod.webdist-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties, ejbca-ws-cli, edition-specific-interface, statedump-ejb, configdump-ejb" description="Build EJBCA EJB module">
-		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-ejb-interface, ejbca-properties, ejbca-ws-cli, edition-specific-interface, statedump-ejb, configdump-ejb" description="Build EJBCA EJB module">
+		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="appserver-ext-jbosslog4jsafer">
-		<ant antfile="${mod.appserver-ext.path}/build.xml" target="jbosslog4jsafer" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="appserver-ext-jbosslog4jsafer" depends="cesecore-common">
+		<ant antfile="${mod.appserver-ext.path}/build.xml" target="jbosslog4jsafer" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="appserver-ext-jbosslogsigning">
-		<ant antfile="${mod.appserver-ext.path}/build.xml" target="jbosslogsigning" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	<target name="appserver-ext-jbosslogsigning" depends="cesecore-common">
+		<ant antfile="${mod.appserver-ext.path}/build.xml" target="jbosslogsigning" inheritall="true" inheritrefs="true"/>
 	</target>
 
-    <target name="oldlogexport-cli" description="Creates a CLI for exporting the log generated by OldLogDevice.">
-		<ant antfile="${mod.oldlogexport.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+    <target name="oldlogexport-cli" depends="cesecore-entity" description="Creates a CLI for exporting the log generated by OldLogDevice.">
+		<ant antfile="${mod.oldlogexport.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
 	
-	<target name="systemtests.build.libs">
-		<ant dir="systemtests" target="build-libs"/>
+	<target name="systemtests.build.libs" depends="ejbca-properties, ejbca-ejb, ejbca-common, ejbca-ws-cli, ejbca-db-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
+		<ant antfile="${mod.systemtests.path}/build.xml" target="build-libs" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
@@ -552,61 +474,56 @@
 	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">
-		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="unidfnr" depends="ejbca-ejb-interface, ejbca-ejb" if="mod.unidfnr.enabled">
-	  <ant antfile="${mod.unidfnr.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	  <ant antfile="${mod.unidfnr.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="caa" if="mod.caa.exists" depends="ejbca-common-web, cesecore-common">
-		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="false"></ant>
+		<ant antfile="${mod.caa.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="ejbca-caa-cli" if="mod.caa.exists" depends="caa, cli-util" description="Creates a CLI jar for CAA lookups">
-		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="false"></ant>
+		<ant antfile="${mod.caa.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="ejbca-webtest" if="mod.webtest.exists" description="Builds EJBCA web test module">
-		<ant antfile="${mod.webtest.path}/build.xml" target="build" inheritall="false"></ant>
+		<ant antfile="${mod.webtest.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="edition-specific-interface" depends="ejbca-ejb-interface">
-		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="jar" inheritall="false"></ant>
+		<ant antfile="${mod.edition-specific-interface.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="eedition-ejb" depends="edition-specific-interface, peerconnector, acme" if="${mod.edition-specific-ee.exists}">
-			<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="false"></ant>
+		<ant antfile="${mod.edition-specific-ee-ejb.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="plugins-ee" description="Builds the EE plugin JAR" depends="ejbca-common-web, ejbca-common" if="${mod.plugins-ee.exists}">
-		<ant antfile="${mod.plugins.path}/build.xml" target="build" inheritall="false">
-			<property name="runoncesetup.hasrun" value="true"/>
-			<property name="external-deps-satfisfied" value="isset"/>
-		</ant>
+		<ant antfile="${mod.plugins.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="statedump" depends="ejbca-ejb-cli, plugins-ee, peerconnector">
-		<echo  message="${mod.statedump.path}/build.xml" />
+	<target name="statedump" depends="ejbca-ejb-cli, plugins-ee, peerconnector, ejbca-ejb-interface">
 		<fail message="StateDump tool is not distributed with this version of EJBCA" unless="${mod.statedump.exists}"/>
-		<ant antfile="${mod.statedump.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.statedump.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	
     <target name="statedump-ejb" depends="peerconnector" if="${mod.statedump.exists}">
-        <ant antfile="${mod.statedump.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.statedump.path}/build.xml" target="build-ejb" inheritall="true" inheritrefs="true"/>
     </target>
 	
-	<target name="configdump" depends="ejbca-ejb-cli, plugins-ee, peerconnector, caa">
-		<echo  message="${mod.configdump.path}/build.xml" />
+	<target name="configdump" depends="ejbca-ejb-interface, ejbca-ejb-cli, plugins-ee, peerconnector, caa">
 		<fail message="ConfigDump tool is not distributed with this version of EJBCA" unless="${mod.configdump.exists}"/>
-		<ant antfile="${mod.configdump.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.configdump.path}/build.xml" target="build-cli" inheritall="true" inheritrefs="true"/>
 	</target>
 	
     <target name="configdump-ejb" depends="ejbca-ejb-cli, plugins-ee, peerconnector, caa" if="${mod.configdump.exists}">
-        <ant antfile="${mod.configdump.path}/build.xml" target="build-ejb" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.configdump.path}/build.xml" target="build-ejb" inheritall="true" inheritrefs="true"/>
     </target>
     
-	<target name="cmpclient" depends="ejbca-ejb-cli">
+	<target name="cmpclient" depends="ejbca-ejb-interface, ejbca-ejb-cli">
 		<echo  message="${mod.cmpclient.path}/build.xml" />
 		<fail message="CMP client is not distributed with this version of EJBCA">
 		    <condition>
@@ -615,22 +532,15 @@
 		    	</not>
 		    </condition>
 		</fail>
-		<ant antfile="${mod.cmpclient.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.cmpclient.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="est-war" depends="ejbca-common-web" description="Build the EST WAR" if="${mod.est.exists}">
-		<ant antfile="${mod.est-war.path}/build.xml" target="build" inheritall="false">
-				<property name="runoncesetup.hasrun" value="true"/>
-				<property name="external-deps-satfisfied" value="isset"/>
-		</ant>
+	<target name="est-war" depends="ejbca-common-web, edition-specific-interface, eedition-ejb" description="Build the EST WAR" if="${mod.est.exists}">
+		<ant antfile="${mod.est-war.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-
     <target name="ejbca-rest-api-war" if="${mod.ejbca-rest-api.exists}" depends="ejbca-common-web" description="Build the Ejbca rest api WAR">
-		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="false">
-				<property name="runoncesetup.hasrun" value="true"/>
-				<property name="external-deps-satfisfied" value="isset"/>
-		</ant>
+		<ant antfile="${mod.ejbca-rest-api.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<!-- Helper to execute the EJBCA EJB CLI -->

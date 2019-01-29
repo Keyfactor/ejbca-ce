@@ -4,30 +4,32 @@
 		Standalone web tests interacting with EJBCA
 	</description>
 
-	<dirname property="this.dir" file="${ant.file.webtest}"/>
-	<import file="${this.dir}/../systemtests/build.xml"/>
+	<dirname property="webtest.dir" file="${ant.file.webtest}"/>
+
+    <import file="${webtest.dir}/../build-helpers.xml"/>
+	<import file="${webtest.dir}/../systemtests/build.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="src-test.dir" location="${this.dir}/src-test"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
-	<property name="conf.dir" location="${this.dir}/conf"/>
-	<property name="lib.webtest" value="${this.dir}/../../lib/ext/webtest"/>
+	<property name="webtest.build.dir" location="${webtest.dir}/build"/>
+	<property name="webtest.build-test.dir" location="${webtest.dir}/build-test"/>
+	<property name="webtest.src.dir" location="${webtest.dir}/src"/>
+	<property name="webtest.src-test.dir" location="${webtest.dir}/src-test"/>
+	<property name="webtest.resources.dir" location="${webtest.dir}/resources"/>
+	<property name="webtest.conf.dir" location="${webtest.dir}/conf"/>
+	<property name="webtest.lib.webtest" value="${webtest.dir}/../../lib/ext/webtest"/>
 	
 	<path id="compile.classpath">
 		<path refid="lib.commons-lang.classpath"/>
-		<fileset dir="${lib.webtest}" includes="**/*.jar"/>
+		<fileset dir="${webtest.lib.webtest}" includes="**/*.jar"/>
 		<path refid="systemtests.classpath.nojee"/>
 	</path>
 	
 	<path id="test.classpath">
 		<path refid="compile.classpath"/>
 		<path refid="common.classpath"/>
-		<path location="${build.dir}/classes"/>
-		<path location="${build-test.dir}"/>
-		<path location="${build.dir}/conf"/>
-		<path location="${build.dir}/resources"/>
+		<path location="${webtest.build.dir}/classes"/>
+		<path location="${webtest.build-test.dir}"/>
+		<path location="${webtest.build.dir}/conf"/>
+		<path location="${webtest.build.dir}/resources"/>
 	</path>
 
 	<condition property="isWindows">
@@ -36,47 +38,47 @@
 
 	<target name="make_directories">
 		<echo message="Came into make_directories target" />
-		<mkdir dir="${build.dir}/classes"/>
-		<mkdir dir="${build.dir}/conf"/>
-		<mkdir dir="${build.dir}/resources"/>
+		<mkdir dir="${webtest.build.dir}/classes"/>
+		<mkdir dir="${webtest.build.dir}/conf"/>
+		<mkdir dir="${webtest.build.dir}/resources"/>
 	</target>
 
 	<target name="build" depends="make_directories, copyWindows, copy, with.clover">
-        <javac srcdir="${src.dir}" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1">
+        <javac srcdir="${webtest.src.dir}" destdir="${webtest.build.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath"/>
         </javac>
-    	<copy todir="${build.dir}/conf" failonerror="true">
-            <fileset dir="${conf.dir}"/>
+    	<copy todir="${webtest.build.dir}/conf" failonerror="true">
+            <fileset dir="${webtest.conf.dir}"/>
 		</copy>
 	</target>
 
 	<target name="copyWindows" if="isWindows">
-		<copy file="${resources.dir}/geckodriver.exe" tofile="${build.dir}/resources/geckodriver" failonerror="true"/>
+		<copy file="${webtest.resources.dir}/geckodriver.exe" tofile="${webtest.build.dir}/resources/geckodriver" failonerror="true"/>
 	</target>
 
 	<target name="copy" unless="isWindows">
 		 <!--Copy and keep permissions for geckodriver in order to be executable-->
 		<exec executable="cp">
-			<arg line="-R ${resources.dir} ${build.dir}"/>
+			<arg line="-R ${webtest.resources.dir} ${webtest.build.dir}"/>
 		</exec>
 	</target>
 	
     <target name="compile-tests" depends="build, with.clover">
-    	<mkdir dir="${build-test.dir}"/>
-		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+    	<mkdir dir="${webtest.build-test.dir}"/>
+		<javac srcdir="${webtest.src-test.dir}" destdir="${webtest.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="test.classpath"/>
- <!--   	<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/> -->
+ <!--   	<copy file="${log4j.test.file}" tofile="${webtest.build-test.dir}/log4j.xml" failonerror="true"/> -->
     </target>
 
 	<target name="test" depends="compile-tests" description="Run all tests for this module">
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${webtest.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-                <fileset dir="${build-test.dir}" includes="**/EcaQa*.class" excludes="**/*EcaQa*$*"/>
+                <fileset dir="${webtest.build-test.dir}" includes="**/EcaQa*.class" excludes="**/*EcaQa*$*"/>
             </batchtest>
 		</junit>
     </target>
@@ -95,7 +97,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${webtest.build-test.dir}">
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
@@ -104,8 +106,8 @@
 	</target>
 	
 	<target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
-		<delete dir="${build-test.dir}"/>
+		<delete dir="${webtest.build.dir}" />
+		<delete dir="${webtest.build-test.dir}"/>
 	</target>
 
 </project>

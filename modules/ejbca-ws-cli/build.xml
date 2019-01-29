@@ -4,16 +4,17 @@
 		The EJBCA Web Services Command Line Interface
     </description>
 
-	<dirname property="this.dir" file="${ant.file.ejbca-ws-cli}"/>
-	<import file="${this.dir}/../build.xml"/>
-	<import file="${this.dir}/../systemtests/build.xml"/>
+	<dirname property="ejbca-ws-cli.dir" file="${ant.file.ejbca-ws-cli}"/>
+
+    <import file="${ejbca-ws-cli.dir}/../build-helpers.xml"/>
+	<import file="${ejbca-ws-cli.dir}/../systemtests/build.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="src-test.dir" location="${this.dir}/src-test"/>
-	<property name="src-gen.dir" location="${this.dir}/src-gen"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="ejbca-ws-cli.build.dir" location="${ejbca-ws-cli.dir}/build"/>
+	<property name="ejbca-ws-cli.build-test.dir" location="${ejbca-ws-cli.dir}/build-test"/>
+	<property name="ejbca-ws-cli.src.dir" location="${ejbca-ws-cli.dir}/src"/>
+	<property name="ejbca-ws-cli.src-test.dir" location="${ejbca-ws-cli.dir}/src-test"/>
+	<property name="ejbca-ws-cli.src-gen.dir" location="${ejbca-ws-cli.dir}/src-gen"/>
+	<property name="ejbca-ws-cli.resources.dir" location="${ejbca-ws-cli.dir}/resources"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.jee.classpath"/>
@@ -34,10 +35,10 @@
 		<path refid="compile.classpath"/>
 		<path refid="systemtests.classpath.nojee"/>
 		<path refid="common.classpath"/>
-		<path location="${build.dir}/classes"/>
-		<path location="${build-test.dir}"/>
-		<path location="${build.dir}/conf"/>
-		<path location="${build.dir}/resources"/>
+		<path location="${ejbca-ws-cli.build.dir}/classes"/>
+		<path location="${ejbca-ws-cli.build-test.dir}"/>
+		<path location="${ejbca-ws-cli.build.dir}/conf"/>
+		<path location="${ejbca-ws-cli.resources.dir}"/>
 	</path>
 	
 	<path id="compile-withws.classpath">
@@ -56,30 +57,30 @@
     			<attribute name="Class-path" value="${ejbca-ws-cli.dependencies} ./" />
 				<attribute name="Main-Class" value="org.ejbca.core.protocol.ws.client.ejbcawsracli"/>
             </manifest>
-        	<fileset dir="${build.dir}" includes="**"/>
+        	<fileset dir="${ejbca-ws-cli.build.dir}" includes="**"/>
     	</jar>
         <!-- Also make a jar file with no Class-path inside it, this is used when including the client lib in an ear file
              where the class path is set by the container -->
     	<jar destfile="${mod.ejbca-ws-client.lib}">
-        	<fileset dir="${build.dir}" includes="**"/>
+        	<fileset dir="${ejbca-ws-cli.build.dir}" includes="**"/>
     	</jar>
     </target>
 
 	<target name="compile-tests" depends="build, with.clover">
-    	<mkdir dir="${build-test.dir}"/>
-		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+    	<mkdir dir="${ejbca-ws-cli.build-test.dir}"/>
+		<javac srcdir="${ejbca-ws-cli.src-test.dir}" destdir="${ejbca-ws-cli.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" classpathref="test.classpath"/>
     </target>
 	
 	<target name="test" depends="compile-tests" description="Run all tests for this module">
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${this.dir}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-ws-cli.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-                <fileset dir="${build-test.dir}" includes="**/EcaQa*.class"/>
+                <fileset dir="${ejbca-ws-cli.build-test.dir}" includes="**/EcaQa*.class"/>
             </batchtest>
 		</junit>
     </target>
@@ -93,28 +94,26 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${ejbca-ws-cli.build-test.dir}">
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="clean"/>
 	</target>
 	
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
+		<delete dir="${ejbca-ws-cli.build.dir}" />
 		<delete dir="${mod.ejbca-ws-cli.dist}" />
 		<delete file="${mod.ejbca-ws.wsdl}" />
-		<delete dir="${build-test.dir}"/>
+		<delete dir="${ejbca-ws-cli.build-test.dir}"/>
     </target>
 	
-    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ws-common"/></target>
-    <target name="compile" depends="compile-external-deps, with.clover">
-    	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" includeantruntime="no"
+    <target name="compile" depends="with.clover">
+    	<mkdir dir="${ejbca-ws-cli.build.dir}" />
+        <javac destdir="${ejbca-ws-cli.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-withws.classpath">
-        	<src path="${src-gen.dir}"/>
-        	<src path="${src.dir}"/>
+        	<src path="${ejbca-ws-cli.src-gen.dir}"/>
+        	<src path="${ejbca-ws-cli.src.dir}"/>
     	</javac>
     </target>
 	
@@ -125,67 +124,66 @@
 	  		  failonerror="yes"
 	  		  fork="true">
 	  	    <arg value="${mod.ejbca-ws.path}/src/org/ejbca/core/protocol/ws/objects/${class}.java"/>
-	  	    <arg value="${src-gen.dir}/org/ejbca/core/protocol/ws/client/gen/${class}.java"/>
+	  	    <arg value="${ejbca-ws-cli.src-gen.dir}/org/ejbca/core/protocol/ws/client/gen/${class}.java"/>
 	  	</java>
 		<!-- It was, overwrite the generated class to get constants, JavaDoc and additional methods -->
 		<copy overwrite="true" 
 			  file="${mod.ejbca-ws.path}/src/org/ejbca/core/protocol/ws/objects/${class}.java" 
-			  todir="${src-gen.dir}/org/ejbca/core/protocol/ws/client/gen"/>
+			  todir="${ejbca-ws-cli.src-gen.dir}/org/ejbca/core/protocol/ws/client/gen"/>
 		<!-- Fix the package name -->
-		<replace file="${src-gen.dir}/org/ejbca/core/protocol/ws/client/gen/${class}.java"
+		<replace file="${ejbca-ws-cli.src-gen.dir}/org/ejbca/core/protocol/ws/client/gen/${class}.java"
 			     token="package org.ejbca.core.protocol.ws.objects;"
 			     value="package org.ejbca.core.protocol.ws.client.gen;"/>
 	</target>
 
-    <target name="generate-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ws-wsdl"/></target>
-    <target name="generate" depends="generate-external-deps" description="Generate WS client stubs from implementation">
+    <target name="generate" description="Generate WS client stubs from implementation">
 		<available file="${mod.ejbca-ws.wsdl}" property="wsdl.present"/>
 		<fail unless="wsdl.present" message="Generation of client side Web Services code requires ${mod.ejbca-ws.wsdl} to be present."/>
-		<delete><fileset dir="${src-gen.dir}" includes="**"></fileset></delete>
-		<mkdir dir="${build.dir}" />
+		<delete><fileset dir="${ejbca-ws-cli.src-gen.dir}" includes="**"></fileset></delete>
+		<mkdir dir="${ejbca-ws-cli.build.dir}" />
 		<exec command="${java.home}/../bin/wsimport" failonerror="true">
-			<arg line="-s ${src-gen.dir} -d ${build.dir} -p org.ejbca.core.protocol.ws.client.gen -keep ${mod.ejbca-ws.wsdl}"/>
+			<arg line="-s ${ejbca-ws-cli.src-gen.dir} -d ${ejbca-ws-cli.build.dir} -p org.ejbca.core.protocol.ws.client.gen -keep ${mod.ejbca-ws.wsdl}"/>
 		</exec>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="Certificate"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="CertificateResponse"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="HardTokenDataWS"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="KeyStore"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="NameAndId"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="PinDataWS"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
           <param name="class" value="RevokeStatus"/>
         </antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="TokenCertificateRequestWS"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="TokenCertificateResponseWS"/>
     	</antcall>
-    	<antcall target="overwritegenerated">
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="UserDataSourceVOWS"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="UserDataVOWS"/>
     	</antcall>
-        <antcall target="overwritegenerated">
+        <antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="UserMatch"/>
     	</antcall>
-    	<antcall target="overwritegenerated">
+    	<antcall target="overwritegenerated" inheritall="true" inheritrefs="true">
            <param name="class" value="ExtendedInformationWS"/>
     	</antcall>
-		<delete dir="${build.dir}" />	<!-- Since we cannot specify the target java version we have to recompile -->
+		<delete dir="${ejbca-ws-cli.build.dir}" />	<!-- Since we cannot specify the target java version we have to recompile -->
     </target>
 
     <target name="setup">
@@ -207,7 +205,7 @@
     	</copy>
     	-->
     	<copy todir="${mod.ejbca-ws-cli.dist}" flatten="true">
-    		<fileset dir="${this.dir}/resources" includes="**"/>
+    		<fileset dir="${ejbca-ws-cli.dir}/resources" includes="**"/>
     	</copy>
         <copy file="${log4j.cli.file}" tofile="${mod.ejbca-ws-cli.dist}/log4j.xml" failonerror="true"/>
         <copy file="${ejbca.home}/src/java/defaultvalues.properties" tofile="${mod.ejbca-ws-cli.dist}/defaultvalues.properties" failonerror="true"/>

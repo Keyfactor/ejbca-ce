@@ -4,12 +4,13 @@
             Build file for the CMP Web component
     </description>
 
-	<dirname property="this.dir" file="${ant.file.cmp-war}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="cmp-war.dir" file="${ant.file.cmp-war}"/>
+
+    <import file="${cmp-war.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="cmp-war.build.dir" location="${cmp-war.dir}/build"/>
+	<property name="cmp-war.src.dir" location="${cmp-war.dir}/src"/>
+	<property name="cmp-war.resources.dir" location="${cmp-war.dir}/resources"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
@@ -25,20 +26,19 @@
 	</path>
 	
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
+		<delete dir="${cmp-war.build.dir}" />
     	<delete file="${mod.cmp-war.war}" />
     </target>
 	
     <target name="build" description="Build this module" depends="compile">
-        <war destfile="${mod.cmp-war.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}">
-        	<fileset dir="${resources.dir}" excludes="WEB-INF/web.xml"/>
+        <war destfile="${mod.cmp-war.war}" webxml="${cmp-war.resources.dir}/WEB-INF/web.xml" basedir="${cmp-war.build.dir}">
+        	<fileset dir="${cmp-war.resources.dir}" excludes="WEB-INF/web.xml"/>
         </war>
     </target>
 
-    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
-    <target name="compile" depends="compile-external-deps, with.clover">
-    	<mkdir dir="${build.dir}/WEB-INF/classes" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+    <target name="compile" depends="with.clover">
+    	<mkdir dir="${cmp-war.build.dir}/WEB-INF/classes" />
+        <javac srcdir="${cmp-war.src.dir}" destdir="${cmp-war.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
 

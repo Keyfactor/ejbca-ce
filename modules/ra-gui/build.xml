@@ -4,12 +4,13 @@
             Build file for the Resgistration Authority GUI
     </description>
 
-	<dirname property="this.dir" file="${ant.file.ra-gui}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="ra-gui.dir" file="${ant.file.ra-gui}"/>
+
+    <import file="${ra-gui.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="ra-gui.build.dir" location="${ra-gui.dir}/build"/>
+	<property name="ra-gui.src.dir" location="${ra-gui.dir}/src"/>
+	<property name="ra-gui.resources.dir" location="${ra-gui.dir}/resources"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
@@ -31,21 +32,20 @@
 	</path>
 	
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
+		<delete dir="${ra-gui.build.dir}" />
     	<delete file="${mod.ra-gui.war}" />
     </target>
 	
     <target name="build" description="Build the RA WAR" depends="compile">
-    	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
-        <war destfile="${mod.ra-gui.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
+        <war destfile="${mod.ra-gui.war}" webxml="${ra-gui.resources.dir}/WEB-INF/web.xml" basedir="${ra-gui.build.dir}" excludes="WEB-INF/web.xml">
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
-        	<fileset dir="${resources.dir}"/>
+        	<fileset dir="${ra-gui.resources.dir}"/>
         </war>
     </target>
 
     <target name="compile" depends="with.clover">
-    	<mkdir dir="${build.dir}/WEB-INF/classes"/>
-        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+    	<mkdir dir="${ra-gui.build.dir}/WEB-INF/classes"/>
+        <javac srcdir="${ra-gui.src.dir}" destdir="${ra-gui.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
 	

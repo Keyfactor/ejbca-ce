@@ -4,11 +4,12 @@
     	Builds the EJB 3.0 interfaces.
     </description>
 	
-	<dirname property="this.dir" file="${ant.file.ejbca-interface}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="ejbca-interface.dir" file="${ant.file.ejbca-interface}"/>
+
+    <import file="${ejbca-interface.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="ejbca-interface.build.dir" location="${ejbca-interface.dir}/build"/>
+	<property name="ejbca-interface.src.dir" location="${ejbca-interface.dir}/src"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common.classpath"/>
@@ -24,19 +25,17 @@
 	</path>
 
     <target name="build" description="Build this module" depends="compile-ejb3">
-  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${build.dir}"/>
+  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${ejbca-interface.build.dir}"/>
     </target>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
+		<delete dir="${ejbca-interface.build.dir}" />
     	<delete file="${mod.ejbca-ejb-interface.lib}"/>
     </target>
 
-    <target name="compile-ejb3-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-entity"/></target>
-	
-    <target name="compile-ejb3" depends="with.clover, ejbca-common, ejbca-entity">
-        <mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+    <target name="compile-ejb3" depends="with.clover">
+        <mkdir dir="${ejbca-interface.build.dir}" />
+        <javac srcdir="${ejbca-interface.src.dir}" destdir="${ejbca-interface.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath">	
         </javac>
     </target>

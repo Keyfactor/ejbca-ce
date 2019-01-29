@@ -4,12 +4,13 @@
             Build file for the ClearCache Web components
     </description>
 
-	<dirname property="this.dir" file="${ant.file.clearcache-war}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="clearcache-war.dir" file="${ant.file.clearcache-war}"/>
+
+    <import file="${clearcache-war.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="clearcache-war.build.dir" location="${clearcache-war.dir}/build"/>
+	<property name="clearcache-war.src.dir" location="${clearcache-war.dir}/src"/>
+	<property name="clearcache-war.resources.dir" location="${clearcache-war.dir}/resources"/>
 
 	<path id="compile-ejbca.classpath">
 		<path refid="lib.servlet.classpath"/>
@@ -23,18 +24,17 @@
 	</path>
 	
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
+		<delete dir="${clearcache-war.build.dir}" />
     	<delete file="${mod.clearcache-war.war}" />
     </target>
 
     <target name="ejbca-build" description="Build this module" depends="ejbca-compile">
-        <war destfile="${mod.clearcache-war.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
+        <war destfile="${mod.clearcache-war.war}" webxml="${clearcache-war.resources.dir}/WEB-INF/web.xml" basedir="${clearcache-war.build.dir}"/>
     </target>
 
-    <target name="ejbca-compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
-    <target name="ejbca-compile" depends="ejbca-compile-external-deps, with.clover">
-    	<mkdir dir="${build.dir}/WEB-INF/classes" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+    <target name="ejbca-compile" depends="with.clover">
+    	<mkdir dir="${clearcache-war.build.dir}/WEB-INF/classes" />
+        <javac srcdir="${clearcache-war.src.dir}" destdir="${clearcache-war.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath"/>
     </target>
 

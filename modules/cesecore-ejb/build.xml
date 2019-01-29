@@ -3,11 +3,11 @@
 	<property environment="env" />
 	<dirname property="cesecore-ejb.dir" file="${ant.file.cesecore-ejb}"/>
 
-	<property name="build.dir" location="${cesecore-ejb.dir}/build"/>
-	<property name="build-test.dir" location="${cesecore-ejb.dir}/build-test"/>
-	<property name="src-test.dir" location="${cesecore-ejb.dir}/src-test"/>
+    <import file="${cesecore-ejb.dir}/../build-helpers.xml"/>
 
-	<import file="${cesecore-ejb.dir}/../build.xml"/>
+	<property name="cesecore-ejb.build.dir" location="${cesecore-ejb.dir}/build"/>
+	<property name="cesecore-ejb.build-test.dir" location="${cesecore-ejb.dir}/build-test"/>
+	<property name="cesecore-ejb.src-test.dir" location="${cesecore-ejb.dir}/src-test"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.jee.classpath" />
@@ -29,16 +29,16 @@
 	<path id="test.classpath">
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
-		<path location="${build.dir}/classes"/>
-		<path location="${build-test.dir}"/>
+		<path location="${cesecore-ejb.build.dir}/classes"/>
+		<path location="${cesecore-ejb.build-test.dir}"/>
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 	</path>
 
-	<target name="jar" depends = "cesecore-common, cesecore-ejb-interface, with.clover">
-		<mkdir dir="${build.dir}/classes"/>
-		<javac srcdir="${cesecore-ejb.dir}/src" destdir="${build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+	<target name="jar" depends="with.clover">
+		<mkdir dir="${cesecore-ejb.build.dir}/classes"/>
+		<javac srcdir="${cesecore-ejb.dir}/src" destdir="${cesecore-ejb.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 			<classpath refid="test.classpath"/>
 		</javac>
 		<mkdir dir="${cesecore-ejb.dir}/dist"/>
@@ -50,25 +50,25 @@
 
 	<target name="clean">
 		<delete dir="${cesecore-ejb.dir}/dist"/>
-		<delete dir="${build.dir}"/>
-		<delete dir="${build-test.dir}"/>
+		<delete dir="${cesecore-ejb.build.dir}"/>
+		<delete dir="${cesecore-ejb.build-test.dir}"/>
 	</target>
 
 	<target name="compile-tests" depends="jar, with.clover">
-		<mkdir dir="${build-test.dir}" />
-		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+		<mkdir dir="${cesecore-ejb.build-test.dir}" />
+		<javac srcdir="${cesecore-ejb.src-test.dir}" destdir="${cesecore-ejb.build-test.dir}" debug="on" includeantruntime="no"
 		        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
-		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
-		<copy todir="${build-test.dir}" failonerror="true">
+		<copy file="${log4j.test.file}" tofile="${cesecore-ejb.build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy todir="${cesecore-ejb.build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
 			<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
 		</copy>
 		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
-		<copy file="${systemtests.properties.file}" todir="${build-test.dir}" failonerror="false"/>
+		<copy file="${systemtests.properties.file}" todir="${cesecore-ejb.build-test.dir}" failonerror="false"/>
 	</target>
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
-		<antcall target="showtime"/>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cesecore-ejb.dir}">
 			<classpath>
 				<path refid="test.classpath"/>
@@ -76,11 +76,11 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}" includes="**/*Test.class">
+				<fileset dir="${cesecore-ejb.build-test.dir}" includes="**/*Test.class">
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="showtime"/>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="runone" depends="compile-tests">
@@ -92,7 +92,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${cesecore-ejb.build-test.dir}">
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>

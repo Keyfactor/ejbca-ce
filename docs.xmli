@@ -56,7 +56,7 @@
     <!-- Build doc part                                                                                                                             -->
     <!-- =================================================================== -->
 	 <target name="doc.war" if="doc.war.enabled">
-    	<antcall target="doc" />  	
+    	<antcall target="doc" inheritall="true" inheritrefs="true"/>  	
 		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
             <fileset dir="${docs.dest}" />
         </war>
@@ -103,8 +103,8 @@
     </condition>
     
 	<target name="doc-confluence">
-		<antcall target="doc-confluence-from-server"/>
-		<antcall target="doc-confluence-copy-local"/>
+		<antcall target="doc-confluence-from-server" inheritall="true" inheritrefs="true"/>
+		<antcall target="doc-confluence-copy-local" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="doc-confluence-from-server" if="${update.from.confluence}">	
@@ -143,8 +143,8 @@
         </copy>
 	</target>
 
-	<target name="doc-external-deps" unless="external-deps-satfisfied">
-		<antcall target="ejbca-common.jar"/>
+	<target name="doc-external-deps" unless="docs.external-deps-satfisfied">
+		<antcall target="ejbca-common.jar" inheritall="true" inheritrefs="true"/>
 	</target>
     
     <target name="site" if="site.present">

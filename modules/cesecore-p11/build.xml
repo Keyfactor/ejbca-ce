@@ -3,26 +3,26 @@
 	<property environment="env" />
 	<dirname property="cesecore-p11.dir" file="${ant.file.cesecore-p11}"/>
 
-	<import file="${cesecore-p11.dir}/../build.xml"/>
+    <import file="${cesecore-p11.dir}/../build-helpers.xml"/>
 
-	<property name="build.dir" location="${cesecore-p11.dir}/build"/>
-	<property name="src.dir" location="${cesecore-p11.dir}/src"/>
+	<property name="cesecore-p11.build.dir" location="${cesecore-p11.dir}/build"/>
+	<property name="cesecore-p11.src.dir" location="${cesecore-p11.dir}/src"/>
 	<property name="cesecore-p11.lib" location="${mod.cesecore-p11.dist}/cesecore-p11.jar"/>
 
 	<available classname="sun.security.pkcs11.SunPKCS11" property="SunPKCS11.present"/>
 
 	<target name="jar" if="SunPKCS11.present" description="Build sun p11 extra jar" depends="with.clover">
-		<mkdir dir="${build.dir}" />
-		<javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
-			<src path="${src.dir}"/>
+		<mkdir dir="${cesecore-p11.build.dir}" />
+		<javac destdir="${cesecore-p11.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+			<src path="${cesecore-p11.src.dir}"/>
 		</javac>
 		<jar jarfile="${cesecore-p11.lib}">
-			<fileset dir="${build.dir}"/>
+			<fileset dir="${cesecore-p11.build.dir}"/>
 		</jar>
 	</target>
 
-	<target name="clean" depends="">
-		<delete dir="${build.dir}"/>
+	<target name="clean">
+		<delete dir="${cesecore-p11.build.dir}"/>
 		<delete file="${cesecore-p11.lib}"/>
 	</target>
 </project>

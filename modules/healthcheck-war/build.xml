@@ -4,14 +4,15 @@
             Build file for the HealthCheck Web components
     </description>
 
-	<dirname property="this.dir" file="${ant.file.healthcheck-war}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="healthcheck-war.dir" file="${ant.file.healthcheck-war}"/>
+
+    <import file="${healthcheck-war.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="src-test.dir" location="${this.dir}/src-test"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="healthcheck-war.build.dir" location="${healthcheck-war.dir}/build"/>
+	<property name="healthcheck-war.build-test.dir" location="${healthcheck-war.dir}/build-test"/>
+	<property name="healthcheck-war.src.dir" location="${healthcheck-war.dir}/src"/>
+	<property name="healthcheck-war.src-test.dir" location="${healthcheck-war.dir}/src-test"/>
+	<property name="healthcheck-war.resources.dir" location="${healthcheck-war.dir}/resources"/>
 
 	<path id="compile-common.classpath">
 		<path refid="lib.servlet.classpath"/>
@@ -30,33 +31,32 @@
 	
 	<path id="test.classpath">
 		<path refid="compile-common.classpath"/>
-		<path location="${build-test.dir}" />
-		<path location="${build.dir}/WEB-INF/classes" />
+		<path location="${healthcheck-war.build-test.dir}" />
+		<path location="${healthcheck-war.build.dir}/WEB-INF/classes" />
 		<path refid="lib.junit.classpath"/>
 	</path>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
-		<delete dir="${build-test.dir}" />
+		<delete dir="${healthcheck-war.build.dir}" />
+		<delete dir="${healthcheck-war.build-test.dir}" />
     	<delete file="${mod.healthcheck-war.war}" />
     </target>
 
     <target name="ejbca-build" description="Build this module" depends="ejbca-compile">
-        <war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml" basedir="${build.dir}"/>
+        <war destfile="${mod.healthcheck-war.war}" webxml="${healthcheck-war.resources.dir}/WEB-INF/web-ejbca.xml" basedir="${healthcheck-war.build.dir}"/>
     </target>
 
-    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
-    <target name="ejbca-compile" depends="compile-external-deps, with.clover">
-    	<mkdir dir="${build.dir}/WEB-INF/classes" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+    <target name="ejbca-compile" depends="with.clover">
+    	<mkdir dir="${healthcheck-war.build.dir}/WEB-INF/classes" />
+        <javac srcdir="${healthcheck-war.src.dir}" destdir="${healthcheck-war.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java, org/ejbca/ui/web/pub/OCSPHealthServlet.java" classpathref="compile-ejbca.classpath"/>
     </target>
 
 	<target name="compile-tests" depends="with.clover, ejbca-compile">
-		<mkdir dir="${build-test.dir}" />
-		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+		<mkdir dir="${healthcheck-war.build-test.dir}" />
+		<javac srcdir="${healthcheck-war.src-test.dir}" destdir="${healthcheck-war.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
-		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy file="${log4j.test.file}" tofile="${healthcheck-war.build-test.dir}/log4j.xml" failonerror="true"/>
 	</target>
 
 	<target name="test" depends="compile-tests">
@@ -67,7 +67,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${healthcheck-war.build-test.dir}">
 					<include name="**/*Test.class" />
 				</fileset>
 			</batchtest>

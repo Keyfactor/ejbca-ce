@@ -61,7 +61,7 @@
             </or>
     	</condition>
         <!-- Notify user of any deprecations have been detected -->
-        <antcall target="deprecated:notify"/>
+        <antcall target="deprecated:notify" inheritall="true" inheritrefs="true"/>
     </target>
 
     <!--=================================================================================-->
@@ -70,40 +70,40 @@
     <target name="bootstrap">
         <property name="deprecated.detected" value="true" />
         <echo message="The use of 'bootstrap' target in EJBCA is deprecated. It has been superseded by the 'deploy' target. This was part of the rewrite of the installation procedure for EJBCA. Please read the accompanying installation documentation with current release of EJBCA in order to get acquainted with the new installation procedure. This target will be removed in the next release." level="warning" />
-        <antcall target="deprecated:notify" />
+        <antcall target="deprecated:notify" inheritall="true" inheritrefs="true"/>
         <antcall target="deploy" />
     </target>
 
     <target name="ocsp-deploy">
         <property name="deprecated.detected" value="true" />
         <echo message="The use of 'ocsp-deploy' target in EJBCA is deprecated. It has been superseded by the 'va-deploy' target. This target will be removed in the next release." />
-        <antcall target="deprecated:notify" />
+        <antcall target="deprecated:notify" inheritall="true" inheritrefs="true"/>
         <antcall target="va-deploy" />
     </target>
     	
     <target name="va-deploy">
         <property name="deprecated.detected" value="true" />
         <echo message="The use of 'va-deploy' target in EJBCA is deprecated. The VA is now deployed as a standard build. This target will be removed in the next release." />
-        <antcall target="deprecated:notify" />
+        <antcall target="deprecated:notify" inheritall="true" inheritrefs="true"/>
         <antcall target="deploy" />
 	</target>
 	
 	<target name="test:runocsp.setuptest">
 	        <property name="deprecated.detected" value="true" />
 	        <echo message="The use of 'runocsp.setuptest' target in EJBCA is deprecated. OCSP tests are no longer dependent on prerun setup" />
-	        <antcall target="deprecated:notify" />
+	        <antcall target="deprecated:notify" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="test:runocsp">
 		<property name="deprecated.detected" value="true" />
 		<echo message="The use of 'runocsp' target in EJBCA is deprecated. OCSP are now included the main run command" />
-		<antcall target="deprecated:notify" />
+		<antcall target="deprecated:notify" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="ejbca-util.jar">
 		<property name="deprecated.detected" value="true" />
 		<echo message="The use of 'ejbca-util.jar' target in EJBCA is deprecated. The command has been replaced by 'ejbca-common.jar" />
-		<antcall target="deprecated:notify" />
+		<antcall target="deprecated:notify" inheritall="true" inheritrefs="true"/>
 	</target>
 </project>
 
