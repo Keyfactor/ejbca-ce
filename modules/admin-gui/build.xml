@@ -4,14 +4,15 @@
             Build file for the Administration GUI
     </description>
 
-	<dirname property="this.dir" file="${ant.file.admin-gui}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="admin-gui.dir" file="${ant.file.admin-gui}"/>
+
+    <import file="${admin-gui.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-    <property name="build-test.dir" location="${this.dir}/build-test"/>
-    <property name="src-test.dir" location="${this.dir}/src-test"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="admin-gui.build.dir" location="${admin-gui.dir}/build"/>
+    <property name="admin-gui.build-test.dir" location="${admin-gui.dir}/build-test"/>
+    <property name="admin-gui.src-test.dir" location="${admin-gui.dir}/src-test"/>
+	<property name="admin-gui.src.dir" location="${admin-gui.dir}/src"/>
+	<property name="admin-gui.resources.dir" location="${admin-gui.dir}/resources"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
@@ -45,52 +46,50 @@
 	
     <path id="test.classpath">
         <path refid="compile.classpath"/>
-        <path location="${build-test.dir}" />
-        <path location="${build.dir}/WEB-INF/classes" />
+        <path location="${admin-gui.build-test.dir}" />
+        <path location="${admin-gui.build.dir}/WEB-INF/classes" />
         <path refid="lib.junit.classpath"/>
     </path>
 	
     <target name="clean" description="Clean up this module">
-        <delete dir="${build-test.dir}" />
-      	<delete dir="${build.dir}" />
+        <delete dir="${admin-gui.build-test.dir}" />
+      	<delete dir="${admin-gui.build.dir}" />
     	<delete file="${mod.admin-gui.war}" />
     </target>
 	
     <target name="build" description="Build this module" depends="compile">
-    	<copy file="${resources.dir}/WEB-INF/web.xml" tofile="${build.dir}/WEB-INF/web.xml"/>
-        <war destfile="${mod.admin-gui.war}" webxml="${build.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
+        <war destfile="${mod.admin-gui.war}" webxml="${admin-gui.resources.dir}/WEB-INF/web.xml" basedir="${admin-gui.build.dir}" excludes="WEB-INF/web.xml">
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.14.jar"/>
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-3.1.0.jar"/>
-        	<fileset dir="${resources.dir}" excludes="languages/*"/>
+        	<fileset dir="${admin-gui.resources.dir}" excludes="languages/*"/>
         </war>
     </target>
 
-    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
-    <target name="compile" depends="with.clover, setup, compile-external-deps">
-        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+    <target name="compile" depends="with.clover, setup">
+        <javac srcdir="${admin-gui.src.dir}" destdir="${admin-gui.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
 	
     <target name="setup">
-    	<mkdir dir="${build.dir}/WEB-INF/classes"/>
+    	<mkdir dir="${admin-gui.build.dir}/WEB-INF/classes"/>
     	<native2ascii encoding="UTF-8"
-    		src="${resources.dir}/languages"
-    		dest="${build.dir}/languages"
+    		src="${admin-gui.resources.dir}/languages"
+    		dest="${admin-gui.build.dir}/languages"
     		includes="languagefile.*.properties" 
     		excludes="languagefile.zh.properties" 
     	/>
     	<native2ascii encoding="GBK" 
-    		src="${resources.dir}/languages" 
-    		dest="${build.dir}/languages"
+    		src="${admin-gui.resources.dir}/languages" 
+    		dest="${admin-gui.build.dir}/languages"
     		includes="languagefile.zh.properties" 
     	/>
     </target>
 
     <target name="compile-tests" depends="with.clover, build">
-	     <mkdir dir="${build-test.dir}" />
-	     <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+	     <mkdir dir="${admin-gui.build-test.dir}" />
+	     <javac srcdir="${admin-gui.src-test.dir}" destdir="${admin-gui.build-test.dir}" debug="on" includeantruntime="no"
 	         encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
-	     <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
+	     <copy file="${log4j.test.file}" tofile="${admin-gui.build-test.dir}/log4j.xml" failonerror="true"/>
 	</target>
 
 	<target name="test:unit" depends="compile-tests">
@@ -101,7 +100,7 @@
 	         </classpath>
 	         <formatter type="xml" />
 	         <batchtest fork="yes" todir="${reports.dir}">
-	             <fileset dir="${build-test.dir}">
+	             <fileset dir="${admin-gui.build-test.dir}">
 	                 <include name="**/*Test.class" />
 	             </fileset>
 	         </batchtest>
@@ -117,7 +116,7 @@
 	        </classpath>
 	        <formatter type="xml" />
 	        <batchtest fork="yes" todir="${reports.dir}">
-	            <fileset dir="${build-test.dir}">
+	            <fileset dir="${admin-gui.build-test.dir}">
 	                <include name="**/${test.runone}.class" />
 	            </fileset>
 	        </batchtest>

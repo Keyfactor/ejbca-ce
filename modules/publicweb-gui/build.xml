@@ -4,12 +4,13 @@
             Build file for the Public Web GUI
     </description>
 
-	<dirname property="this.dir" file="${ant.file.publicweb-gui}"/>
-	<import file="${this.dir}/../build.xml"/>
+	<dirname property="publicweb-gui.dir" file="${ant.file.publicweb-gui}"/>
+
+    <import file="${publicweb-gui.dir}/../build-helpers.xml"/>
 	
-	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="publicweb-gui.build.dir" location="${publicweb-gui.dir}/build"/>
+	<property name="publicweb-gui.src.dir" location="${publicweb-gui.dir}/src"/>
+	<property name="publicweb-gui.resources.dir" location="${publicweb-gui.dir}/resources"/>
 
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
@@ -26,20 +27,19 @@
 	</path>
 	
     <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}"/>
+		<delete dir="${publicweb-gui.build.dir}"/>
     	<delete file="${mod.publicweb-gui.war}"/>
     </target>
 	
     <target name="build" description="Build this module" depends="compile">
-        <war destfile="${mod.publicweb-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
-            <fileset dir="${resources.dir}"/>
+        <war destfile="${mod.publicweb-gui.war}" webxml="${publicweb-gui.resources.dir}/WEB-INF/web.xml" basedir="${publicweb-gui.build.dir}" excludes="WEB-INF/web.xml">
+            <fileset dir="${publicweb-gui.resources.dir}"/>
         </war>
     </target>
 
-    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
-    <target name="compile" depends="with.clover, compile-external-deps">
-    	<mkdir dir="${build.dir}/WEB-INF/classes" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+    <target name="compile" depends="with.clover">
+    	<mkdir dir="${publicweb-gui.build.dir}/WEB-INF/classes" />
+        <javac srcdir="${publicweb-gui.src.dir}" destdir="${publicweb-gui.build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
 

@@ -2,13 +2,14 @@
 <project name="ejbca-common-web" basedir="../.." default="build-common-web">
     <property environment="env" />
     <dirname property="ejbca-common-web.dir" file="${ant.file.ejbca-common-web}"/>
-	<property name="build-common-web.dir" location="${ejbca-common-web.dir}/build-common-web"/>
-	<property name="src.dir" location="${ejbca-common-web.dir}/src"/>
-	<property name="src-test.dir" location="${ejbca-common-web.dir}/src-test"/>
-	<property name="build-test.dir" location="${ejbca-common-web.dir}/build-test"/>
 
-    <import file="${ejbca-common-web.dir}/../build.xml"/>
+    <import file="${ejbca-common-web.dir}/../build-helpers.xml"/>
     
+	<property name="ejbca-common-web.build.dir" location="${ejbca-common-web.dir}/build-common-web"/>
+	<property name="ejbca-common-web.src.dir" location="${ejbca-common-web.dir}/src"/>
+	<property name="ejbca-common-web.src-test.dir" location="${ejbca-common-web.dir}/src-test"/>
+	<property name="ejbca-common-web.build-test.dir" location="${ejbca-common-web.dir}/build-test"/>
+
 	<path id="compile-common-web.classpath">
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
@@ -53,7 +54,7 @@
 	</path>
 	
 	<path id="test.classpath">
-		<path location="${build-test.dir}" />
+		<path location="${ejbca-common-web.build-test.dir}" />
 		<path location="${mod.ejbca-ejb.lib}" />
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.junit.classpath"/>
@@ -63,49 +64,49 @@
 		<dirname file="${mod.ejbca-common-web.lib}" property="mod.ejbca-common-web.lib.dir"/>
 		<mkdir dir="${mod.ejbca-common-web.lib.dir}" />
 		<buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher;org.cesecore.keys.validation.Validator" 
-			file="${build-common-web.dir}" classpath="compile-common-web.classpath"/>
+			file="${ejbca-common-web.build.dir}" classpath="compile-common-web.classpath"/>
 		<jar destfile="${mod.ejbca-common-web.lib}">
 			<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>
 			</manifest>
-			<fileset dir="${build-common-web.dir}" includes="**/*.class,META-INF/**/*"/>
+			<fileset dir="${ejbca-common-web.build.dir}" includes="**/*.class,META-INF/**/*"/>
 		</jar>
 	</target>
 	
 	<target name="compile-common-web" depends="with.clover">
-		<mkdir dir="${build-common-web.dir}" />
-		<javac srcdir="${src.dir}" destdir="${build-common-web.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
+		<mkdir dir="${ejbca-common-web.build.dir}" />
+		<javac srcdir="${ejbca-common-web.src.dir}" destdir="${ejbca-common-web.build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	 classpathref="compile-common-web.classpath"/>
 	</target>
 	
 	<target name="test-common-web" depends="build-common-web,compile-tests-web" description="Run tests for this module, use -Dtest.includep11=true to include P11 tests">
-		<antcall target="showtime"/>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
     	<echo message="pkcs11-exclude=${p11exclude}"/>
 		<echo message=" ** Running unit tests in parallel chunks. Console output will be a bit scrambled.. **"/>
 		<parallel>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/ra/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/ra/*Test.class" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/util/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/core/protocol/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
-			<antcall target="test-subprocess">
+			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
 				<param name="test-subprocess.include-pattern" value="**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class org/ejbca/core/protocol/**/*Test.class ${p11exclude}" />
 			</antcall>
 		</parallel>
-		<antcall target="showtime"/>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="test-subprocess">
@@ -116,7 +117,7 @@
 				</classpath>
 				<formatter type="xml" />
 				<batchtest fork="yes" todir="${reports.dir}">
-					<fileset dir="${build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
+					<fileset dir="${ejbca-common-web.build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
 				</batchtest>
 			</junit>
 		</target>
@@ -130,7 +131,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
+				<fileset dir="${ejbca-common-web.build-test.dir}">
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
@@ -138,22 +139,22 @@
 	</target>
 	
 	<target name="compile-tests-web" depends="with.clover">
-		<mkdir dir="${build-test.dir}" />
-		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+		<mkdir dir="${ejbca-common-web.build-test.dir}" />
+		<javac srcdir="${ejbca-common-web.src-test.dir}" destdir="${ejbca-common-web.build-test.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>
-		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
-		<copy todir="${build-test.dir}" failonerror="true">
+		<copy file="${log4j.test.file}" tofile="${ejbca-common-web.build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy todir="${ejbca-common-web.build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
 			<fileset dir="${ejbca.home}" includes="conf/extendedkeyusage.properties"/>
 		</copy>
 		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
-		<copy file="${systemtests.properties.file}" todir="${build-test.dir}" failonerror="false"/>
+		<copy file="${systemtests.properties.file}" todir="${ejbca-common-web.build-test.dir}" failonerror="false"/>
 	</target>
         
     <target name="clean" depends="">
         <delete dir="${ejbca-common-web.dir}/dist"/>
-		<delete dir="${build-common-web.dir}" />
-		<delete dir="${build-test.dir}" />
+		<delete dir="${ejbca-common-web.build.dir}" />
+		<delete dir="${ejbca-common-web.build-test.dir}" />
 		<delete file="${mod.ejbca-common-web.lib}" />
     </target>
 
