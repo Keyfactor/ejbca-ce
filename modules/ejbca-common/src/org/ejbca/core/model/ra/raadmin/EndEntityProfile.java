@@ -408,7 +408,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	    // validation should be a map of a validator class name (excluding package name) and a validator-specific object.
     	    data.put(FIELDBOUNDRARY_VALIDATION + offset, validation);
     	} else {
-    	    data.remove(FIELDBOUNDRARY_VALIDATION + offset);
+    	    data.remove(Integer.valueOf(FIELDBOUNDRARY_VALIDATION + offset)); // must use Integer.valueOf to avoid calling remove(index)
     	}
     	if (DnComponents.isDnProfileField(parameterName)) {
     		@SuppressWarnings("unchecked")
@@ -454,28 +454,28 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		if (DnComponents.isDnProfileField(param)) {
     			@SuppressWarnings("unchecked")
                 final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
-    			final int value = (NUMBERBOUNDRARY*parameter) + size -1;
-    			fieldorder.remove(value);
+    			final Integer value = (NUMBERBOUNDRARY*parameter) + size -1;
+    			fieldorder.remove(value); // must use Integer type to avoid calling remove(index) method
     		}
     		// Remove last element from Subject AltName order list.
     		if (DnComponents.isAltNameField(param)) {
     			@SuppressWarnings("unchecked")
                 final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
-    			final int value = (NUMBERBOUNDRARY*parameter) + size -1;	//number;
+    			final Integer value = (NUMBERBOUNDRARY*parameter) + size -1;
     			fieldorder.remove(value);
     		}
     		// Remove last element from Subject DirAttr order list.
     		if (DnComponents.isDirAttrField(param)) {
     			@SuppressWarnings("unchecked")
                 final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
-    			final int value = (NUMBERBOUNDRARY*parameter) + size -1;	//number;
+    			final Integer value = (NUMBERBOUNDRARY*parameter) + size -1;
     			fieldorder.remove(value);
     		}
     		// Remove last element of the type from hashmap
-    		data.remove(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*(size-1)) + parameter);
-    		data.remove(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*(size-1)) + parameter);
-    		data.remove(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*(size-1)) + parameter);
-    		data.remove(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*(size-1)) + parameter);
+    		data.remove(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*(size-1)) + parameter));
+    		data.remove(Integer.valueOf(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*(size-1)) + parameter));
+    		data.remove(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*(size-1)) + parameter));
+    		data.remove(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*(size-1)) + parameter));
     		decrementFieldnumber(parameter);
     	}
     }
@@ -555,7 +555,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if (validation != null) {
             data.put(paramNum, new LinkedHashMap<>(validation));
         } else {
-            data.remove(paramNum);
+            data.remove(paramNum); // must use Integer for remove method
         }
     }
 
