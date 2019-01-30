@@ -687,7 +687,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         final Map<Integer, String> caidtonamemap = caSession.getCAIdToNameMap();
         final List<Integer> authorizedcas = caSession.getAuthorizedCaIds(getAdmin());
         for (Integer caid : authorizedcas) {
-            final String caname = caidtonamemap.get(caid).toString();
+            final String caname = caidtonamemap.get(caid);
             list.add(new SelectItem(caid, caname));
         }
         return list;
@@ -1312,26 +1312,23 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
     }
 
-    public String saveProfile() throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
+    public void saveProfile() throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
         log.trace(">saveProfile");
         clearMessages();
         profiledata.setUserNotifications(userNotifications);
         validateProfile();
         if (editerrors.isEmpty()) {
             cleanUpUnused();
-            final String profileName = endEntityProfileSession.getEndEntityProfileName(profileId);
             endEntityProfileSession.changeEndEntityProfile(getAdmin(), profileName, profiledata);
             log.debug("Successfully edited End Entity Profile");
             redirect("editendentityprofiles.xhtml", EndEntityProfilesMBean.PARAMETER_PROFILE_SAVED, true);
             log.trace("<saveProfile: success");
-            return "";
         } else {
             for (final String errorMessage : editerrors) {
                 addNonTranslatedErrorMessage(errorMessage);
             }
         }
         log.trace("<saveProfile: error");
-        return "";
     }
 
     public void cancel() {
