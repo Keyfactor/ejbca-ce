@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -403,15 +405,46 @@ public class Pkcs11SlotLabel {
      * @throws NoSuchMethodException
      */
     private static Provider getSunP11ProviderNoExceptionHandling(final InputStream is) throws ClassNotFoundException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        // Sun PKCS11 has InputStream as constructor argument
-        @SuppressWarnings("unchecked")
-        final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUN_PKCS11_CLASS);
-        if (log.isDebugEnabled()) {
-            log.debug("Using SUN PKCS11 provider: " + SUN_PKCS11_CLASS);
+        try {
+            // > JDK8
+            final Class[] paramString = new Class[1];    
+            paramString[0] = String.class;
+            final Method method = Provider.class.getDeclaredMethod("configure", paramString);
+            final String config = getSunP11ConfigStringFromInputStream(is);
+            return getSunP11Provider(method, config);
+        } catch (NoSuchMethodException e) {
+            // < JDK8
+            @SuppressWarnings("unchecked")
+            final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUN_PKCS11_CLASS);
+            if (log.isDebugEnabled()) {
+                log.debug("Using SUN PKCS11 provider: " + SUN_PKCS11_CLASS);
+            }
+            // Sun PKCS11 has InputStream as constructor argument
+            return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
+        } catch (IOException e) {
+            // re-throw an IllegalArgumentException to avoid to invasive changes, maybe not so elegant...
+            throw new IllegalArgumentException("Could not read InputStream", e);
         }
-        return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
     }
 
+    private static String getSunP11ConfigStringFromInputStream(final InputStream is) throws IOException {
+        final StringBuilder configBuilder = new StringBuilder();
+        
+        /* we need to prepend -- to indicate to the configure() method
+         * that the config is treated as a string
+         */
+        configBuilder.append("--").append(IOUtils.toString(is));
+        
+        return configBuilder.toString();
+    }
+    
+    private static Provider getSunP11Provider(final Method configMethod, final String config) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Provider prototype = Security.getProvider("SunPKCS11");
+        Provider provider = (Provider) configMethod.invoke(prototype, config);
+        
+        return provider;
+    }
+    
     /**
      * @param is InputStream for sun configuration file.
      * @return The Sun provider
