@@ -150,10 +150,10 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             final List<Integer> withMissingCAs = endEntityProfileSession.getAuthorizedEndEntityProfileIdsWithMissingCAs(getAdmin());
             for(Entry<String, String> entry : profiles.entrySet()) {
                 final String profileName = entry.getKey();
-                final String profileId = entry.getValue();
-                final boolean missingCa = withMissingCAs.contains(Integer.valueOf(profileId));
+                final Integer profileId = Integer.valueOf(entry.getValue());
+                final boolean missingCa = withMissingCAs.contains(profileId);
                 final String displayName = profileName + (missingCa ? " "+ejbcaWebBean.getText("MISSINGCAIDS") : "");
-                endEntityProfileItems.add(new SelectItem(Integer.valueOf(profileId), displayName));
+                endEntityProfileItems.add(new SelectItem(profileId, displayName));
             }
         }
          return endEntityProfileItems;

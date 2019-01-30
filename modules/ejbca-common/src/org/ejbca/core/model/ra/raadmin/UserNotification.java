@@ -117,15 +117,6 @@ public class UserNotification implements Serializable, Cloneable {
     	data.put(NOTIFICATIONRECIPIENT, rcpt);
     }
 
-    /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
-     * example 'String.valueOf(EndEntityConstants.STATUS_NEW)+";"+String.valueOf(EndEntityConstants.STATUS_KEYRECOVERY)'
-     * @return String with integer values separated by ;
-     * @see UserNotification.EVENTS_EDITUSER
-     */
-    public String getNotificationEvents() {
-    	return StringUtils.defaultString(data.get(NOTIFICATIONEVENTS));
-    }
-
     /** Returns a collection view of getNotificationEvents.
      * 
      * @return A Collection with String values (String.valueOf(EndEntityConstants.STATUS_NEW etc), or an empty Collection, never null.
@@ -140,12 +131,26 @@ public class UserNotification implements Serializable, Cloneable {
         data.put(NOTIFICATIONEVENTS, notificationEvents);
     }
 
+
     /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
      * example 'String.valueOf(EndEntityConstants.STATUS_NEW)+";"+String.valueOf(EndEntityConstants.STATUS_KEYRECOVERY)'
-     * @param String with integer values separated by ;
+     * <p>
+     * <strong>Note:</strong> In general, getNotificationEventsCollection should be used instead.
+     * @return String with integer values separated by ;
      * @see UserNotification.EVENTS_EDITUSER
      */
-    public void setNotificationEvents(String events){
+    public String getNotificationEvents() {
+        return StringUtils.defaultString(data.get(NOTIFICATIONEVENTS));
+    }
+
+    /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
+     * example 'String.valueOf(EndEntityConstants.STATUS_NEW)+";"+String.valueOf(EndEntityConstants.STATUS_KEYRECOVERY)'
+     * <p>
+     * <strong>Note:</strong> In general, setNotificationEventsCollection should be used instead.
+     * @param events String with integer values separated by ;
+     * @see UserNotification.EVENTS_EDITUSER
+     */
+    public void setNotificationEvents(final String events) {
     	data.put(NOTIFICATIONEVENTS, events);
     }
 
