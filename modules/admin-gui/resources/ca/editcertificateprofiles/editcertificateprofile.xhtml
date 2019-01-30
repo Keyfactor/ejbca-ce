@@ -1261,8 +1261,8 @@
 					<f:selectItems value="#{certProfileBean.availableCAsAvailable}"/>
 				</h:selectManyListbox>
 				
-				<h:outputLabel rendered="#{certProfileBean.typeEndEntity}" for="selectavailablepublishers" value="#{web.text.PUBLISHERS}"/>
-				<h:selectManyListbox styleClass="select-list" rendered="#{certProfileBean.typeEndEntity}" id="selectavailablepublishers" value="#{certProfileBean.certificateProfile.publisherList}"
+				<h:outputLabel rendered="#{certProfileBean.typeEndEntity or certProfileBean.typeSubCa}" for="selectavailablepublishers" value="#{web.text.PUBLISHERS}"/>
+				<h:selectManyListbox styleClass="select-list" rendered="#{certProfileBean.typeEndEntity or certProfileBean.typeSubCa}" id="selectavailablepublishers" value="#{certProfileBean.certificateProfile.publisherList}"
 					size="#{certProfileBean.publisherListAvailableSize}" converter="javax.faces.Integer" style="min-width: 280px;"
 					disabled="#{certProfilesBean.viewOnly}">
 					<f:selectItems value="#{certProfileBean.publisherListAvailable}"/>
