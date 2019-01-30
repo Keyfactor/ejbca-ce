@@ -288,17 +288,17 @@
     </target>
 
     <target name="test:externalra-scep.setuptest" description="setup some a basic environment for the stand-alone SCEP External RA tests" depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/externalra-scep" target="setuptest" />
+    	<ant antfile="build.xml" dir="modules/externalra-scep" target="setuptest" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:dbschema" description="run JUnit test to validate the schema of the configured database" depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test-dbschema" />
+    	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test-dbschema" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
     <target name="test:statedump" description="run JUnit Statedump test." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/statedump" target="test" />
+    	<ant antfile="build.xml" dir="modules/statedump" target="test" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
     
