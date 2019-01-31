@@ -44,19 +44,19 @@ public class EcaQa138_EEPAttributes extends WebTestBase {
         static final int SUBJECT_DN_ATTRIBUTE_INDEX = 1;
         static final String SUBJECT_DN_ATTRIBUTE_NAME = "O, Organization";
         static final String SUBJECT_DN_ATTRIBUTE_VALUE = "TestOrg";
-        static final String ALERT_MESSAGE_EMPTY_NONMODIFIABLE_DN_ATTRIBUTE = "Required Subject DN Attribute cannot be non-modifiable and empty for field O, Organization";
+        static final String ALERT_MESSAGE_EMPTY_NONMODIFIABLE_DN_ATTRIBUTE = "Required attribute cannot be non-modifiable and empty for field O, Organization";
         //
         static final String SUBJECT_ALT_NAME_ATTRIBUTE = "altName";
         static final int SUBJECT_ALT_NAME_ATTRIBUTE_INDEX = 0;
         static final String SUBJECT_ALT_NAME_ATTRIBUTE_NAME = "MS UPN, User Principal Name";
         static final String SUBJECT_ALT_NAME_ATTRIBUTE_VALUE = "testdomain.com";
-        static final String ALERT_MESSAGE_EMPTY_NONMODIFIABLE_ALTNAME_ATTRIBUTE = "Required Subject DN Attribute cannot be non-modifiable and empty for field MS UPN, User Principal Name";
+        static final String ALERT_MESSAGE_EMPTY_NONMODIFIABLE_ALTNAME_ATTRIBUTE = "Required attribute cannot be non-modifiable and empty for field MS UPN, User Principal Name";
         //
         static final String SUBJECT_DIR_ATTRIBUTE = "directory";
         static final int SUBJECT_DIR_ATTRIBUTE_INDEX = 0;
         static final String SUBJECT_DIR_ATTRIBUTE_NAME = "Place of birth";
         static final String SUBJECT_DIR_ATTRIBUTE_VALUE = "Stockholm";
-        static final String ALERT_MESSAGE_EMPTY_NONMODIFIABLE_DIRECTORY_ATTRIBUTE = "Required Subject DN Attribute cannot be non-modifiable and empty for field Place of birth";
+        static final String ALERT_MESSAGE_EMPTY_NONMODIFIABLE_DIRECTORY_ATTRIBUTE = "Required attribute cannot be non-modifiable and empty for field Place of birth";
     }
 
     @BeforeClass
