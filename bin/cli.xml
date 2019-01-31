@@ -167,7 +167,271 @@ appserver.home         : ${appserver.home}
 		<ejbca:cli name="${cli.name}" arg="${cli.args}"/>
 	</target>
 
-    
+    <!-- ejbca:setup:selenium-profiles -->
+    <target name="ejbca:setup:selenium-certificates">
+        <mkdir dir="${ejbca.home}/p12" />
+
+        <!-- Roles:
+        * Auditor - SeleniumAuditorRole;
+        * CA Administrator - SeleniumCaAdminRole;
+        * RA Administrator - SeleniumRaAdminRole;
+        * Super Administrators - SeleniumSuperAdminRole;
+        * Supervisors - SeleniumSupervisorRole.
+        -->
+        <antcall target="ejbca:setup:selenium-role">
+            <param name="roleName" value="SeleniumAuditorRole" />
+            <param name="ruleStrings" value="
+                /administrator/;
+                /ca_functionality/view_approval_profiles/;
+                /ca_functionality/view_ca/;
+                /ca_functionality/view_certificate/;
+                /ca_functionality/view_certificate_profiles/;
+                /ca_functionality/view_publisher/;
+                /ca_functionality/view_validator/;
+                /cryptotoken/view/;
+                /internalkeybinding/view/;
+                /peer/view/;
+                /ra_functionality/view_end_entity/;
+                /ra_functionality/view_end_entity_history/;
+                /ra_functionality/view_end_entity_profiles/;
+                /secureaudit/auditor/select/;
+                /services/view/;
+                /system_functionality/view_administrator_privileges/;
+                /system_functionality/view_available_custom_certificate_extensions/;
+                /system_functionality/view_available_extended_key_usages/;
+                /system_functionality/view_systemconfiguration/" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-role">
+            <param name="roleName" value="SeleniumCaAdminRole" />
+            <param name="ruleStrings" value="
+                /administrator/;
+                /ca_functionality/;
+                /cryptotoken/view/;
+                /ra_functionality/;
+                /system_functionality/edit_administrator_privileges/;
+                /system_functionality/view_administrator_privileges/" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-role">
+            <param name="roleName" value="SeleniumRaAdminRole" />
+            <param name="ruleStrings" value="
+                /administrator/;
+                /ca_functionality/create_certificate/;
+                /ca_functionality/view_certificate/;
+                /ra_functionality/approve_end_entity/;
+                /ra_functionality/create_end_entity/;
+                /ra_functionality/delete_end_entity/;
+                /ra_functionality/edit_end_entity/;
+                /ra_functionality/revoke_end_entity/;
+                /ra_functionality/view_approvals/;
+                /ra_functionality/view_end_entity/;
+                /ra_functionality/view_end_entity_history/;
+                /secureaudit/auditor/select/" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-role">
+            <param name="roleName" value="SeleniumSuperAdminRole" />
+            <param name="ruleStrings" value="/" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-role">
+            <param name="roleName" value="SeleniumSupervisorRole" />
+            <param name="ruleStrings" value="
+                /administrator/;
+                /ca_functionality/view_certificate/;
+                /ra_functionality/view_end_entity/;
+                /ra_functionality/view_end_entity_history/;
+                /secureaudit/auditor/select/" />
+        </antcall>
+
+        <!-- Users:
+        * SeleniumAuditor (SeleniumAuditorRole);
+        * SeleniumCaAdmin (SeleniumCaAdminRole);
+        * SeleniumRaAdmin (SeleniumRaAdminRole);
+        * SeleniumRaAdmin1 (SeleniumRaAdminRole);
+        * SeleniumSuperAdmin (SeleniumSuperAdminRole);
+        * SeleniumSupervisor (SeleniumSupervisorRole).
+        -->
+        <antcall target="ejbca:setup:selenium-endentity">
+            <param name="roleName" value="SeleniumAuditorRole" />
+            <param name="userName" value="SeleniumAuditor" />
+            <param name="dnName" value="CN=SeleniumAuditor" />
+            <param name="caName" value="ManagementCA" />
+            <param name="typeValue" value="1" />
+            <param name="tokenValue" value="P12" />
+            <param name="passwordValue" value="ejbca" />
+            <param name="eeProfileName" value="EMPTY" />
+            <param name="cProfileName" value="ENDUSER" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-endentity">
+            <param name="roleName" value="SeleniumCaAdminRole" />
+            <param name="userName" value="SeleniumCaAdmin" />
+            <param name="dnName" value="CN=SeleniumCaAdmin" />
+            <param name="caName" value="ManagementCA" />
+            <param name="typeValue" value="1" />
+            <param name="tokenValue" value="P12" />
+            <param name="passwordValue" value="ejbca" />
+            <param name="eeProfileName" value="EMPTY" />
+            <param name="cProfileName" value="ENDUSER" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-endentity">
+            <param name="roleName" value="SeleniumRaAdminRole" />
+            <param name="userName" value="SeleniumRaAdmin" />
+            <param name="dnName" value="CN=SeleniumRaAdmin" />
+            <param name="caName" value="ManagementCA" />
+            <param name="typeValue" value="1" />
+            <param name="tokenValue" value="P12" />
+            <param name="passwordValue" value="ejbca" />
+            <param name="eeProfileName" value="EMPTY" />
+            <param name="cProfileName" value="ENDUSER" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-endentity">
+            <param name="roleName" value="SeleniumRaAdminRole" />
+            <param name="userName" value="SeleniumRaAdmin1" />
+            <param name="dnName" value="CN=SeleniumRaAdmin1" />
+            <param name="caName" value="ManagementCA" />
+            <param name="typeValue" value="1" />
+            <param name="tokenValue" value="P12" />
+            <param name="passwordValue" value="ejbca" />
+            <param name="eeProfileName" value="EMPTY" />
+            <param name="cProfileName" value="ENDUSER" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-endentity">
+            <param name="roleName" value="SeleniumSuperAdminRole" />
+            <param name="userName" value="SeleniumSuperAdmin" />
+            <param name="dnName" value="CN=SeleniumSuperAdmin" />
+            <param name="caName" value="ManagementCA" />
+            <param name="typeValue" value="1" />
+            <param name="tokenValue" value="P12" />
+            <param name="passwordValue" value="ejbca" />
+            <param name="eeProfileName" value="EMPTY" />
+            <param name="cProfileName" value="ENDUSER" />
+        </antcall>
+        <antcall target="ejbca:setup:selenium-endentity">
+            <param name="roleName" value="SeleniumSupervisorRole" />
+            <param name="userName" value="SeleniumSupervisor" />
+            <param name="dnName" value="CN=SeleniumSupervisor" />
+            <param name="caName" value="ManagementCA" />
+            <param name="typeValue" value="1" />
+            <param name="tokenValue" value="P12" />
+            <param name="passwordValue" value="ejbca" />
+            <param name="eeProfileName" value="EMPTY" />
+            <param name="cProfileName" value="ENDUSER" />
+        </antcall>
+    </target>
+
+    <target name="ejbca:setup:selenium-role">
+        <ejbca:cli-hideargs arg="roles addrole --role ${roleName}" />
+        <!-- Add Rules -->
+        <script language="javascript"> <![CDATA[
+            var roleName = project.getProperty('roleName');
+	        var rulesArray = project.getProperty('ruleStrings').split(';');
+            for (i = 0; i < rulesArray.length; i++) {
+                var macro = project.createTask("ejbca:cli-hideargs");
+                macro.setDynamicAttribute("arg", "roles changerule --name " + roleName +" --rule " + rulesArray[i].trim() + " --state ACCEPT");
+                macro.execute();
+            }
+	    ]]></script>
+    </target>
+
+    <target name="ejbca:setup:selenium-endentity">
+        <ejbca:cli-hideargs arg="ra addendentity --username ${userName} --dn ${dnName} --caname ${caName} --type ${typeValue} --token ${tokenValue} --password ${passwordValue} --eeprofile ${eeProfileName} --certprofile ${cProfileName}" />
+        <ejbca:cli-hideargs arg="ra setclearpwd --username ${userName} --password ${passwordValue}" />
+        <ejbca:cli arg="batch --username ${userName} -dir ${ejbca.home}/p12" />
+        <ejbca:cli-hideargs arg="roles addrolemember --role ${roleName} --caname ${caName} --with WITH_COMMONNAME --value ${userName} --description 'Selenium Test User ${userName}'" />
+    </target>
+
+    <target name="ejbca:setup:selenium-firefox-profiles:update">
+        <property name="regexp" value="^Path=(.*?).${firefoxProfileName}$" />
+        <loadfile property="firefoxProfilePath" srcfile="${firefoxProfilesDir}/profiles.ini">
+            <filterchain>
+                <tokenfilter>
+                    <containsregex pattern="${regexp}" replace="\1" />
+                </tokenfilter>
+                <striplinebreaks />
+            </filterchain>
+        </loadfile>
+        <property name="firefoxProfileDir" value="${firefoxProfilesDir}${firefoxProfilePath}.${firefoxProfileName}" />
+        <ejbca:certutil arg="-N -d 'sql:${firefoxProfileDir}' --empty-password" />
+        <ejbca:pk12util arg="-i ${ejbca.home}/p12/${firefoxProfileName}.p12 -d 'sql:${firefoxProfileDir}' -W ejbca" />
+    </target>
+
+    <target name="ejbca:setup:selenium-firefox-profiles">
+        <condition property="isWindows">
+            <os family="windows" />
+        </condition>
+        <fail message="Windows OS is not supported for automated creation of Firefox profiles." if="isWindows" />
+        <condition property="isUnix">
+            <os family="unix" />
+        </condition>
+        <fail message="Cannot detect the OS." unless="isUnix" />
+
+        <property environment="env" />
+        <available file="firefox"
+                   filepath="${env.PATH}"
+                   property="hasFirefox" />
+        <fail message="Cannot find 'firefox' command in your PATH." unless="hasFirefox" />
+        <available file="certutil"
+                   filepath="${env.PATH}"
+                   property="hasCertutil" />
+        <fail message="Cannot find 'certutil' command in your PATH (Do you have Mozzila NSS Tools Installed?)." unless="hasCertutil" />
+        <available file="pk12util"
+                   filepath="${env.PATH}"
+                   property="hasPk12util" />
+        <fail message="Cannot find 'pk12util' command in your PATH (Do you have Mozzila NSS Tools Installed?)." unless="hasPk12util" />
+
+        <condition property="linuxProfilePath" value="${env.HOME}/.mozilla/firefox/" else="">
+            <available file="${env.HOME}/.mozilla/firefox/" type="dir" />
+        </condition>
+        <condition property="macProfilePath" value="${env.HOME}/Library/Application Support/Firefox/" else="">
+            <available file="${env.HOME}/Library/Application Support/Firefox/" type="dir" />
+        </condition>
+        <fail>
+            <condition>
+                <and>
+                    <equals arg1="${linuxProfilePath}" arg2="" />
+                    <equals arg1="${macProfilePath}" arg2=""/>
+                </and>
+            </condition>
+        </fail>
+        <condition property="firefoxProfilesDir" value="${linuxProfilePath}" else="${macProfilePath}">
+            <not>
+                <equals arg1="${linuxProfilePath}" arg2="" />
+            </not>
+        </condition>
+
+        <!-- Create profiles and folders -->
+        <ejbca:firefox arg="-CreateProfile SeleniumAuditor" />
+        <ejbca:firefox arg="-CreateProfile SeleniumCaAdmin" />
+        <ejbca:firefox arg="-CreateProfile SeleniumRaAdmin" />
+        <ejbca:firefox arg="-CreateProfile SeleniumRaAdmin1" />
+        <ejbca:firefox arg="-CreateProfile SeleniumSupervisor" />
+
+        <!-- Create certificate stores and import p12 -->
+        <!-- SeleniumAuditor -->
+        <antcall target="ejbca:setup:selenium-firefox-profiles:update">
+            <param name="firefoxProfilesDir" value="${firefoxProfilesDir}" />
+            <param name="firefoxProfileName" value="SeleniumAuditor" />
+        </antcall>
+        <!-- SeleniumCaAdmin -->
+        <antcall target="ejbca:setup:selenium-firefox-profiles:update">
+            <param name="firefoxProfilesDir" value="${firefoxProfilesDir}" />
+            <param name="firefoxProfileName" value="SeleniumCaAdmin" />
+        </antcall>
+        <!-- SeleniumRaAdmin -->
+        <antcall target="ejbca:setup:selenium-firefox-profiles:update">
+            <param name="firefoxProfilesDir" value="${firefoxProfilesDir}" />
+            <param name="firefoxProfileName" value="SeleniumRaAdmin" />
+        </antcall>
+        <!-- SeleniumRaAdmin1 -->
+        <antcall target="ejbca:setup:selenium-firefox-profiles:update">
+            <param name="firefoxProfilesDir" value="${firefoxProfilesDir}" />
+            <param name="firefoxProfileName" value="SeleniumRaAdmin1" />
+        </antcall>
+        <!-- SeleniumSupervisor -->
+        <antcall target="ejbca:setup:selenium-firefox-profiles:update">
+            <param name="firefoxProfilesDir" value="${firefoxProfilesDir}" />
+            <param name="firefoxProfileName" value="SeleniumSupervisor" />
+        </antcall>
+    </target>
+
     <!--
     ==============================================================================
         macro definitions
@@ -206,6 +470,35 @@ appserver.home         : ${appserver.home}
         <exec executable="${temp.keytoolhome}keytool" dir="${user.dir}">
             <arg line="@{arg}"/>
         </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="firefox" uri="ejbca">
+        <attribute name="arg"/>
+        <sequential>
+            <exec executable="firefox" failonerror="true">
+                <env key="USER" value="${env.USER}" />
+                <env key="HOME" value="${env.HOME}"/>
+                <arg line="@{arg}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="certutil" uri="ejbca">
+        <attribute name="arg"/>
+        <sequential>
+            <exec executable="certutil">
+                <arg line="@{arg}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="pk12util" uri="ejbca">
+        <attribute name="arg"/>
+        <sequential>
+            <exec executable="pk12util">
+                <arg line="@{arg}"/>
+            </exec>
         </sequential>
     </macrodef>
 
