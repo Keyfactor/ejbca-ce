@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /** Constants for End Entity types
@@ -67,52 +68,42 @@ public final class EndEntityConstants {
     // Names and language strings of statuses
     //
     /** These string values maps a status code to a language string in the admin GUI language property files */
-    private static final HashMap<Integer, String> STATUS_TEXT_TRANS = new HashMap<Integer, String>();
+    private static final LinkedHashMap<Integer, String> STATUS_TEXT_TRANS = new LinkedHashMap<>();
     static {
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_NEW),"STATUSNEW");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_FAILED),"STATUSFAILED");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INITIALIZED),"STATUSINITIALIZED");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INPROCESS),"STATUSINPROCESS");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_GENERATED),"STATUSGENERATED");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_REVOKED),"STATUSREVOKED");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_HISTORICAL),"STATUSHISTORICAL");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_KEYRECOVERY),"STATUSKEYRECOVERY");
-        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_WAITINGFORADDAPPROVAL),"STATUSWAITINGFORADDAPPROVAL");
+        STATUS_TEXT_TRANS.put(STATUS_NEW, "STATUSNEW");
+        STATUS_TEXT_TRANS.put(STATUS_FAILED, "STATUSFAILED");
+        STATUS_TEXT_TRANS.put(STATUS_INITIALIZED, "STATUSINITIALIZED");
+        STATUS_TEXT_TRANS.put(STATUS_INPROCESS, "STATUSINPROCESS");
+        STATUS_TEXT_TRANS.put(STATUS_GENERATED, "STATUSGENERATED");
+        STATUS_TEXT_TRANS.put(STATUS_REVOKED, "STATUSREVOKED");
+        STATUS_TEXT_TRANS.put(STATUS_HISTORICAL, "STATUSHISTORICAL");
+        STATUS_TEXT_TRANS.put(STATUS_KEYRECOVERY, "STATUSKEYRECOVERY");
+        STATUS_TEXT_TRANS.put(STATUS_WAITINGFORADDAPPROVAL, "STATUSWAITINGFORADDAPPROVAL");
     }
 
     public static String getTranslatableStatusText(int status) {
-        String ret = null;
-        Object o =  STATUS_TEXT_TRANS.get(Integer.valueOf(status));
-        if (o != null) {
-            ret = (String)o;
-        }
-        return ret;
+        return STATUS_TEXT_TRANS.get(status);
     }
 
     /** These string values maps a status code to a plain string */
-    private static final HashMap<Integer, String> STATUS_TEXT = new HashMap<Integer, String>();
+    private static final HashMap<Integer, String> STATUS_TEXT = new LinkedHashMap<>();
     static {
-        STATUS_TEXT.put(Integer.valueOf(STATUS_NEW),"NEW");
-        STATUS_TEXT.put(Integer.valueOf(STATUS_FAILED),"FAILED");
-        STATUS_TEXT.put(Integer.valueOf(STATUS_INITIALIZED),"INITIALIZED");
-        STATUS_TEXT.put(Integer.valueOf(STATUS_INPROCESS),"INPROCESS");
-        STATUS_TEXT.put(Integer.valueOf(STATUS_GENERATED),"GENERATED");
-        STATUS_TEXT.put(Integer.valueOf(STATUS_REVOKED),"REVOKED");
-        STATUS_TEXT.put(Integer.valueOf(STATUS_HISTORICAL),"HISTORICAL");
-        STATUS_TEXT.put(Integer.valueOf(STATUS_KEYRECOVERY),"KEYRECOVERY");
+        STATUS_TEXT.put(STATUS_NEW, "NEW");
+        STATUS_TEXT.put(STATUS_FAILED, "FAILED");
+        STATUS_TEXT.put(STATUS_INITIALIZED, "INITIALIZED");
+        STATUS_TEXT.put(STATUS_INPROCESS, "INPROCESS");
+        STATUS_TEXT.put(STATUS_GENERATED, "GENERATED");
+        STATUS_TEXT.put(STATUS_REVOKED, "REVOKED");
+        STATUS_TEXT.put(STATUS_HISTORICAL, "HISTORICAL");
+        STATUS_TEXT.put(STATUS_KEYRECOVERY, "KEYRECOVERY");
     }
 
     public static String getStatusText(int status) {
-        String ret = null;
-        Object o =  STATUS_TEXT.get(Integer.valueOf(status));
-        if (o != null) {
-            ret = (String)o;
-        }
-        return ret;
+        return STATUS_TEXT.get(status);
     }
 
     public static Collection<Integer> getAllStatusCodes() {
-        List<Integer> statuses = new ArrayList<Integer>(STATUS_TEXT.keySet());
+        final List<Integer> statuses = new ArrayList<>(STATUS_TEXT.keySet());
         Collections.sort(statuses);
         return statuses;
     }
