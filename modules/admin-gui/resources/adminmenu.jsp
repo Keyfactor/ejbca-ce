@@ -95,7 +95,6 @@ org.ejbca.util.HTMLTools
     <div id="header">
         <div id="banner">
             <a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>"><img src="<%= ejbcawebbean.getImagefileInfix("banner_"+InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<%= HTMLTools.htmlescape(InternalConfiguration.getAppNameCapital()) %>" /></a>
-            <span>Administration</span>
         </div>
 	</div>
 <% } %>
