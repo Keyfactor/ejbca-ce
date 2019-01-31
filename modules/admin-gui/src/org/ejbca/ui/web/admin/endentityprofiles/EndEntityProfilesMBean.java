@@ -185,7 +185,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             } catch (EndEntityProfileExistsException e) {
                 addErrorMessage("EEPROFILEALREADYEXISTS");
             } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage(e.getMessage());
+                addNonTranslatedErrorMessage(e);
             }
         }
     }
@@ -281,7 +281,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             ok = false;
         }
         // validateEndEntityProfileName adds error messages
-        return !validateEndEntityProfileName() && ok;
+        return validateEndEntityProfileName() && ok;
     }
 
     public void actionImportProfiles() throws IOException, AuthorizationDeniedException, EndEntityProfileExistsException {
@@ -483,7 +483,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
             } catch (EndEntityProfileExistsException e) {
                 addErrorMessage("EEPROFILEALREADYEXISTS");
             } catch (AuthorizationDeniedException e) {
-                addNonTranslatedErrorMessage(e.getMessage());
+                addNonTranslatedErrorMessage(e);
             }
         }
     }
