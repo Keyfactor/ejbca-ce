@@ -36,6 +36,19 @@
 		<os family="windows" />
 	</condition>
 
+	<condition property="isMac">
+		<os family="mac" />
+	</condition>
+
+	<condition property="isLinux">
+		<and>
+			<os family="unix"/>
+			<not>
+				<os family="mac"/>
+			</not>
+		</and>
+	</condition>
+
 	<target name="make_directories">
 		<echo message="Came into make_directories target" />
 		<mkdir dir="${webtest.build.dir}/classes"/>
@@ -43,7 +56,7 @@
 		<mkdir dir="${webtest.build.dir}/resources"/>
 	</target>
 
-	<target name="build" depends="make_directories, copyWindows, copy, with.clover">
+	<target name="build" depends="make_directories, copyWindows, copyMac, copyLinux, with.clover">
         <javac srcdir="${webtest.src.dir}" destdir="${webtest.build.dir}/classes" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath"/>
         </javac>
@@ -56,13 +69,18 @@
 		<copy file="${webtest.resources.dir}/geckodriver.exe" tofile="${webtest.build.dir}/resources/geckodriver" failonerror="true"/>
 	</target>
 
-	<target name="copy" unless="isWindows">
-		 <!--Copy and keep permissions for geckodriver in order to be executable-->
-		<exec executable="cp">
-			<arg line="-R ${webtest.resources.dir} ${webtest.build.dir}"/>
+	<target name="copyMac" if="isMac">
+		<exec executable="cp" failonerror="true">
+			<arg line="-R ${resources.dir}/geckodriver_mac ${build.dir}/resources/geckodriver"/>
 		</exec>
 	</target>
-	
+
+	<target name="copyLinux" if="isLinux">
+		<exec executable="cp" failonerror="true">
+			<arg line="-R ${resources.dir}/geckodriver ${build.dir}/resources/geckodriver"/>
+		</exec>
+	</target>
+
     <target name="compile-tests" depends="build, with.clover">
     	<mkdir dir="${webtest.build-test.dir}"/>
 		<javac srcdir="${webtest.src-test.dir}" destdir="${webtest.build-test.dir}" debug="on" includeantruntime="no"

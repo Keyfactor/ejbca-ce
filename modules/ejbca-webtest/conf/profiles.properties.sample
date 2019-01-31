@@ -6,9 +6,9 @@
 profile.firefox.default = default
 
 profile.firefox.superadmin = superadmin
-profile.firefox.raadmin = raadmin
-profile.firefox.raadminalt = raadminalt
-profile.firefox.caadmin = caadmin
-profile.firefox.auditor = auditor
+profile.firefox.raadmin = SeleniumRaAdmin
+profile.firefox.raadminalt = SeleniumRaAdmin1
+profile.firefox.caadmin = SeleniumCaAdmin
+profile.firefox.auditor = SeleniumAuditor
 profile.firefox.custom = custom
-profile.firefox.supervisor = supervisor
+profile.firefox.supervisor = SeleniumSupervisor
