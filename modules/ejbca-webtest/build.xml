@@ -71,13 +71,13 @@
 
 	<target name="copyMac" if="isMac">
 		<exec executable="cp" failonerror="true">
-			<arg line="-R ${resources.dir}/geckodriver_mac ${build.dir}/resources/geckodriver"/>
+			<arg line="-R ${webtest.resources.dir}/geckodriver_mac ${webtest.build.dir}/resources/geckodriver"/>
 		</exec>
 	</target>
 
 	<target name="copyLinux" if="isLinux">
 		<exec executable="cp" failonerror="true">
-			<arg line="-R ${resources.dir}/geckodriver ${build.dir}/resources/geckodriver"/>
+			<arg line="-R ${webtest.resources.dir}/geckodriver ${webtest.build.dir}/resources/geckodriver"/>
 		</exec>
 	</target>
 
