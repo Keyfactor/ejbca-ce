@@ -19,6 +19,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,6 +48,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -57,7 +60,6 @@ import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-import org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper;
 import org.ejbca.util.HttpTools;
 import org.ejbca.util.PrinterManager;
 
@@ -80,6 +82,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private static final int PASSWORD_LIMIT_MIN = 4;
     private static final int PASSWORD_LIMIT_MAX = 16;
     private static final int MAX_FAILED_LOGINS_DEFAULT = 3;
+    private static final int NUMBER_OF_REQUESTS_MAX = 6;
 
     private static final String RELATIVE_TIME_REGEX = "\\d+:\\d?\\d:\\d?\\d"; // example: 90:0:0 or 0:15:30
     private static final String ISO_TIME_REGEX = "\\d{4,}-(0\\d|10|11|12)-[0123]\\d( \\d\\d:\\d\\d(:\\d\\d)?)?([+-]\\d\\d:\\d\\d)?"; // example: 2019-12-31 or 2019-12-31 23:59:59+00:00
@@ -103,6 +106,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private String profileName;
     private boolean viewOnly;
     private final List<String> editerrors = new ArrayList<>();
+    private String validityStartTime;
+    private String validityEndTime;
 
     private Part templateFileUpload;
 
@@ -245,13 +250,20 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             if (StringUtils.isEmpty(profileIdParam)) {
                 throw new IllegalStateException("Internal error. Missing " + PARAMETER_PROFILE_ID + " HTTP request parameter.");
             }
-            profileId = Integer.valueOf(profileIdParam);
-            profileName = endEntityProfileSession.getEndEntityProfileName(profileId);
-            profiledata = endEntityProfileSession.getEndEntityProfile(profileId);
-            userNotifications = new ArrayList<>(profiledata.getUserNotifications());
+            loadProfile(Integer.valueOf(profileIdParam));
             viewOnly = !authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
         }
     }
+
+    private void loadProfile(final int id) {
+        profileId = id;
+        profileName = endEntityProfileSession.getEndEntityProfileName(id);
+        profiledata = endEntityProfileSession.getEndEntityProfile(id);
+        validityStartTime = ejbcaWebBean.getISO8601FromImpliedUTCOrRelative(profiledata.getValidityStartTime());
+        validityEndTime = ejbcaWebBean.getISO8601FromImpliedUTCOrRelative(profiledata.getValidityEndTime());
+        userNotifications = new ArrayList<>(profiledata.getUserNotifications());
+    }
+    
     public boolean isViewOnly() {
         return viewOnly;
     }
@@ -820,12 +832,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public String getValidityStartTime() {
-        return ejbcaWebBean.getISO8601FromImpliedUTCOrRelative(profiledata.getValidityStartTime());
+        return validityStartTime;
     }
 
-    public void setValidityStartTime(final String startTime) throws ParseException {
-        final String convertedStartTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(StringUtils.trim(startTime));
-        profiledata.setValidityStartTime(convertedStartTime);
+    public void setValidityStartTime(final String startTime) {
+        this.validityStartTime = StringUtils.trim(startTime);
     }
 
     public boolean isCertValidityStartTimeModifiable() {
@@ -853,12 +864,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public String getValidityEndTime() {
-        return ejbcaWebBean.getISO8601FromImpliedUTCOrRelative(profiledata.getValidityEndTime());
+        return validityEndTime;
     }
 
-    public void setValidityEndTime(final String endTime) throws ParseException {
-        final String convertedEndTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(StringUtils.trim(endTime));
-        profiledata.setValidityEndTime(convertedEndTime);
+    public void setValidityEndTime(final String endTime) {
+        this.validityEndTime = StringUtils.trim(endTime);
     }
 
     public String getValidityTimeExample() {
@@ -914,13 +924,6 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setNameConstraintsExcludedRequired(required);
     }
 
-    public boolean isUseCustomCertificateExtensionData() {
-        return profiledata.getUseExtensiondata();
-    }
-
-    public void setUseCustomCertificateExtensionData(boolean useCustomCertificateExtensionData) {
-        profiledata.setUseExtensiondata(useCustomCertificateExtensionData);
-    }
 
     // OTHER DATA
 
@@ -934,7 +937,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public List<SelectItem> getSelectableNumberOfAllowedRequests() {
         final List<SelectItem> numberOfAllowedRequestsListReturned = new ArrayList<>();
-        for (int numberOfRequests = 1; numberOfRequests < 6; numberOfRequests++) {
+        for (int numberOfRequests = 1; numberOfRequests < NUMBER_OF_REQUESTS_MAX; numberOfRequests++) {
             final String displayText = String.valueOf(numberOfRequests);
             numberOfAllowedRequestsListReturned.add(new SelectItem(numberOfRequests, displayText));
         }
@@ -1050,11 +1053,11 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public List<SelectItem> getAllNotificationEvents() {
-        final int[] statuses = ViewEndEntityHelper.statusids;
-        final String[] statustexts = ViewEndEntityHelper.statustexts;
         final List<SelectItem> allEvents = new ArrayList<>();
-        for (int i = 0; i < statuses.length; i++) {
-            allEvents.add(new SelectItem(statuses[i], statustexts[i]));
+        for (int eventCode : EndEntityConstants.getAllStatusCodes()) {
+            // for compatibility with existing manuals etc. the values are shown as "STATUSNEW" etc. rather than being translated to "New" 
+            final String displayText = EndEntityConstants.getTranslatableStatusText(eventCode);
+            allEvents.add(new SelectItem(eventCode, displayText));
         }
         return allEvents;
     }
@@ -1233,14 +1236,33 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
         }
         // Validity time
-        if (profiledata.isValidityStartTimeUsed() && !StringUtils.isEmpty(profiledata.getValidityStartTime())) {
-            if (!validityTimePattern.matcher(profiledata.getValidityStartTime()).matches()) {
-                editerrors.add("Invalid validity start time"); // validated with HTML5 pattern also, but everything should have a server-side check
+        final String startTime = profiledata.getValidityStartTime();
+        final String endTime = profiledata.getValidityEndTime();
+        boolean hasValidStartTime = false;
+        boolean hasValidEndTime = false;
+        if (profiledata.isValidityStartTimeUsed() && StringUtils.isNotEmpty(startTime)) {
+            if (!validityTimePattern.matcher(startTime).matches()) {
+                editerrors.add(ejbcaWebBean.getText("TIMEOFSTARTINVALID")); // validated with HTML5 pattern also, but everything should have a server-side check
+            } else {
+                hasValidStartTime = true;
             }
         }
-        if (profiledata.isValidityEndTimeUsed() && !StringUtils.isEmpty(profiledata.getValidityEndTime())) {
-            if (!validityTimePattern.matcher(profiledata.getValidityEndTime()).matches()) {
-                editerrors.add("Invalid validity end time");
+        if (profiledata.isValidityEndTimeUsed() && StringUtils.isNotEmpty(endTime)) {
+            if (!validityTimePattern.matcher(endTime).matches()) {
+                editerrors.add(ejbcaWebBean.getText("TIMEOFENDINVALID"));
+            } else {
+                hasValidEndTime = true;
+            }
+        }
+        if (hasValidStartTime && hasValidEndTime && !ejbcaWebBean.isRelativeDateTime(startTime) && !ejbcaWebBean.isRelativeDateTime(endTime)) {
+            try {
+                final Date startTimeDate = ValidityDate.parseAsIso8601(startTime);
+                final Date endTimeDate = ValidityDate.parseAsIso8601(endTime);
+                if (!endTimeDate.after(startTimeDate)) {
+                    editerrors.add(ejbcaWebBean.getText("TIMEOFSTARTAFTEREND"));
+                }
+            } catch (ParseException e) {
+                // Already validated in setSpecialFields and above
             }
         }
     }
@@ -1280,7 +1302,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public void cleanUpUnused() {
         if (profiledata.getAvailableCAs().contains(SecConst.ALLCAS)) {
-            profiledata.setAvailableCAs(new ArrayList<>(Arrays.asList(SecConst.ALLCAS)));
+            profiledata.setAvailableCAs(new ArrayList<>(Collections.singletonList(SecConst.ALLCAS)));
         }
         if (!profiledata.isEmailUsed()) {
             profiledata.setEmailRequired(false);
@@ -1291,6 +1313,12 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         if (!profiledata.isClearTextPasswordUsed()) {
             profiledata.setClearTextPasswordRequired(false);
             profiledata.setClearTextPasswordDefault(false);
+        }
+        if (!profiledata.isValidityStartTimeUsed()) {
+            profiledata.setValidityStartTime("");
+        }
+        if (!profiledata.isValidityEndTimeUsed()) {
+            profiledata.setValidityEndTime("");
         }
         if (!profiledata.isKeyRecoverableUsed()) {
             profiledata.setKeyRecoverableRequired(false);
@@ -1312,10 +1340,29 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
     }
 
+    /** Sets fields that need special handling */
+    public void setSpecialFields() {
+        profiledata.setUserNotifications(userNotifications);
+        try {
+            final String convertedTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(validityStartTime);
+            profiledata.setValidityStartTime(convertedTime);
+        } catch (ParseException e) {
+            editerrors.add(ejbcaWebBean.getText("TIMEOFSTARTINVALID"));
+            profiledata.setValidityStartTime(""); // or we will get more errors
+        }
+        try {
+            final String convertedTime = ejbcaWebBean.getImpliedUTCFromISO8601OrRelative(validityEndTime);
+            profiledata.setValidityEndTime(convertedTime);
+        } catch (ParseException e) {
+            editerrors.add(ejbcaWebBean.getText("TIMEOFENDINVALID"));
+            profiledata.setValidityEndTime("");
+        }
+    }
+
     public void saveProfile() throws EndEntityProfileNotFoundException, AuthorizationDeniedException {
         log.trace(">saveProfile");
         clearMessages();
-        profiledata.setUserNotifications(userNotifications);
+        setSpecialFields();
         validateProfile();
         if (editerrors.isEmpty()) {
             cleanUpUnused();
