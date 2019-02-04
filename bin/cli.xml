@@ -172,16 +172,17 @@ appserver.home         : ${appserver.home}
         <mkdir dir="${ejbca.home}/p12" />
 
         <!-- Roles:
-        * Auditor - SeleniumAuditorRole;
-        * CA Administrator - SeleniumCaAdminRole;
-        * RA Administrator - SeleniumRaAdminRole;
-        * Super Administrators - SeleniumSuperAdminRole;
-        * Supervisors - SeleniumSupervisorRole.
+        * Role Template 'Auditor' - SeleniumAuditorRole;
+        * Role Template 'CA Administrators' - SeleniumCaAdminRole;
+        * Role Template 'RA Administrators' - SeleniumRaAdminRole;
+        * Role Template 'Super Administrators' - SeleniumSuperAdminRole;
+        * Role Template 'Supervisors' - SeleniumSupervisorRole.
         -->
         <antcall target="ejbca:setup:selenium-role">
             <param name="roleName" value="SeleniumAuditorRole" />
             <param name="ruleStrings" value="
                 /administrator/;
+                /ca/;
                 /ca_functionality/view_approval_profiles/;
                 /ca_functionality/view_ca/;
                 /ca_functionality/view_certificate/;
@@ -205,6 +206,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumCaAdminRole" />
             <param name="ruleStrings" value="
                 /administrator/;
+                /ca/;
                 /ca_functionality/;
                 /cryptotoken/view/;
                 /ra_functionality/;
@@ -215,6 +217,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumRaAdminRole" />
             <param name="ruleStrings" value="
                 /administrator/;
+                /ca/;
                 /ca_functionality/create_certificate/;
                 /ca_functionality/view_certificate/;
                 /ra_functionality/approve_end_entity/;
@@ -235,6 +238,7 @@ appserver.home         : ${appserver.home}
             <param name="roleName" value="SeleniumSupervisorRole" />
             <param name="ruleStrings" value="
                 /administrator/;
+                /ca/;
                 /ca_functionality/view_certificate/;
                 /ra_functionality/view_end_entity/;
                 /ra_functionality/view_end_entity_history/;
@@ -353,7 +357,35 @@ appserver.home         : ${appserver.home}
         <ejbca:pk12util arg="-i ${ejbca.home}/p12/${firefoxProfileName}.p12 -d 'sql:${firefoxProfileDir}' -W ejbca" />
     </target>
 
-    <target name="ejbca:setup:selenium-firefox-profiles">
+    <target name="ejbca:setup:selenium-firefox-path-in-properties">
+        <available file="browser.properties"
+                   filepath="${ejbca.home}/modules/ejbca-webtest/conf/"
+                   property="firefox-path-is-in-properties" />
+    </target>
+
+    <target name="ejbca:setup:selenium-firefox-path-in-properties-read" depends="ejbca:setup:selenium-firefox-path-in-properties" if="firefox-path-is-in-properties">
+        <loadproperties srcFile="${ejbca.home}/modules/ejbca-webtest/conf/browser.properties" />
+    </target>
+
+    <target name="ejbca:setup:selenium-firefox" depends="ejbca:setup:selenium-firefox-path-in-properties-read">
+        <property environment="env" />
+        <condition property="hasFirefoxInPath" value="true" else="">
+            <available file="firefox" filepath="${env.PATH}/" />
+        </condition>
+        <fail message="Cannot find 'firefox' command in your browser.properties or in your PATH.">
+            <condition>
+                <and>
+                    <not>
+                        <isset property="browser.firefox.binary" />
+                    </not>
+                    <equals arg1="${hasFirefoxInPath}" arg2="" />
+                </and>
+            </condition>
+        </fail>
+        <property name="browser.firefox.binary" value="firefox" />
+    </target>
+
+    <target name="ejbca:setup:selenium-firefox-profiles" depends="ejbca:setup:selenium-firefox">
         <condition property="isWindows">
             <os family="windows" />
         </condition>
@@ -364,14 +396,13 @@ appserver.home         : ${appserver.home}
         <fail message="Cannot detect the OS." unless="isUnix" />
 
         <property environment="env" />
-        <available file="firefox"
-                   filepath="${env.PATH}"
-                   property="hasFirefox" />
-        <fail message="Cannot find 'firefox' command in your PATH." unless="hasFirefox" />
+
+        <!-- libnss3-tools utility -->
         <available file="certutil"
                    filepath="${env.PATH}"
                    property="hasCertutil" />
         <fail message="Cannot find 'certutil' command in your PATH (Do you have Mozzila NSS Tools Installed?)." unless="hasCertutil" />
+        <!-- libnss3-tools utility -->
         <available file="pk12util"
                    filepath="${env.PATH}"
                    property="hasPk12util" />
@@ -383,7 +414,7 @@ appserver.home         : ${appserver.home}
         <condition property="macProfilePath" value="${env.HOME}/Library/Application Support/Firefox/" else="">
             <available file="${env.HOME}/Library/Application Support/Firefox/" type="dir" />
         </condition>
-        <fail>
+        <fail message="Cannot find profiles.ini dir for Linux and Mac">
             <condition>
                 <and>
                     <equals arg1="${linuxProfilePath}" arg2="" />
@@ -398,11 +429,12 @@ appserver.home         : ${appserver.home}
         </condition>
 
         <!-- Create profiles and folders -->
-        <ejbca:firefox arg="-CreateProfile SeleniumAuditor" />
-        <ejbca:firefox arg="-CreateProfile SeleniumCaAdmin" />
-        <ejbca:firefox arg="-CreateProfile SeleniumRaAdmin" />
-        <ejbca:firefox arg="-CreateProfile SeleniumRaAdmin1" />
-        <ejbca:firefox arg="-CreateProfile SeleniumSupervisor" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumAuditor" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumCaAdmin" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumRaAdmin" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumRaAdmin1" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumSuperAdmin" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumSupervisor" />
 
         <!-- Create certificate stores and import p12 -->
         <!-- SeleniumAuditor -->
@@ -424,6 +456,11 @@ appserver.home         : ${appserver.home}
         <antcall target="ejbca:setup:selenium-firefox-profiles:update">
             <param name="firefoxProfilesDir" value="${firefoxProfilesDir}" />
             <param name="firefoxProfileName" value="SeleniumRaAdmin1" />
+        </antcall>
+        <!-- SeleniumSuperAdmin -->
+        <antcall target="ejbca:setup:selenium-firefox-profiles:update">
+            <param name="firefoxProfilesDir" value="${firefoxProfilesDir}" />
+            <param name="firefoxProfileName" value="SeleniumSuperAdmin" />
         </antcall>
         <!-- SeleniumSupervisor -->
         <antcall target="ejbca:setup:selenium-firefox-profiles:update">
@@ -474,9 +511,10 @@ appserver.home         : ${appserver.home}
     </macrodef>
 
     <macrodef name="firefox" uri="ejbca">
+        <attribute name="firefoxExecPath" />
         <attribute name="arg"/>
         <sequential>
-            <exec executable="firefox" failonerror="true">
+            <exec executable="@{firefoxExecPath}" failonerror="true">
                 <env key="USER" value="${env.USER}" />
                 <env key="HOME" value="${env.HOME}"/>
                 <arg line="@{arg}"/>
