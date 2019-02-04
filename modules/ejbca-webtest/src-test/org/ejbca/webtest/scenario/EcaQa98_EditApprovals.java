@@ -108,9 +108,15 @@ public class EcaQa98_EditApprovals extends WebTestBase {
             }
         }
         approvalSession.removeApprovalRequest(ADMIN_TOKEN, requestId);
-        webDriverAdmin1.quit();
-        webDriverAdmin2.quit();
-        webDriverSuperAdmin.quit();
+        if (webDriverAdmin1 != null) {
+            webDriverAdmin1.quit();
+        }
+        if (webDriverAdmin2 != null) {
+            webDriverAdmin2.quit();
+        }
+        if (webDriverSuperAdmin != null) {
+            webDriverSuperAdmin.quit();
+        }
     }
 
     @Test
