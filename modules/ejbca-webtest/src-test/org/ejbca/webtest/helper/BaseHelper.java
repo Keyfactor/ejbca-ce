@@ -100,6 +100,17 @@ public class BaseHelper {
     }
 
     /**
+     * Finds an element by locator using the built-in timeout. This method will find invisible elements (and only invisible elements).
+     *
+     * @param elementId locator.
+     * @return a web element.
+     */
+    protected WebElement findInvisibleElement(final By elementId) {
+        waitForInvisibleElementByLocator(elementId);
+        return findElementWithoutWait(elementId);
+    }
+
+    /**
      * Finds an element by locator.
      *
      * @param elementId locator.
@@ -363,6 +374,7 @@ public class BaseHelper {
      * @param dependentElementId  a dependent element, which appears/ reloads on option selection. Used to check visibility after option is selected to avoid StaleElementReferenceException
      */
     protected void selectOptionsByName(final By selectId, final List<String> selectionOptions, final boolean useDeselectAll, final By dependentElementId) {
+        waitForElementBecomeVisibleByLocator(selectId);
         final WebElement selectWebElement = findElement(selectId);
         assertNotNull("Page select was not found", selectWebElement);
         selectOptions(new Select(selectWebElement), selectionOptions, useDeselectAll, SELECT_BY.TEXT);
@@ -842,6 +854,13 @@ public class BaseHelper {
         // A bug in EJBCA requires a wait here, otherwise it results in an XML Parsing Error
         final WebDriverWait wait = new WebDriverWait(webDriver, DEFAULT_WAIT_TIMEOUT_SECONDS);
         wait.until(ExpectedConditions.visibilityOf(webElement));
+    }
+
+    // Add a delay-timeout for DOM object search to make sure the document is fully loaded and we don't get a stale exception
+    private void waitForInvisibleElementByLocator(final By objectBy) {
+        // A bug in EJBCA requires a wait here, otherwise it results in an XML Parsing Error
+        final WebDriverWait wait = new WebDriverWait(webDriver, DEFAULT_WAIT_TIMEOUT_SECONDS);
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(objectBy));
     }
 
     /**
