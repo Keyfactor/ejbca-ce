@@ -62,18 +62,18 @@ public class EcaQa196_MultiGroupPublisher extends WebTestBase {
         static final String EXPECTED_AVAILABLE_PUBLISHERS_PUB_THREE = "pub4";
         static final String SAVE_AND_TEST_CONNECTION_SUCCESS_MESSAGE = "Connection Tested Successfully";
         static final String NONEXISTING_PUBLISHER = "blabla";
-        static final String SAVE_PUBLISHER_NONEXISTING_MESSAGE = "Could not find publisher: \\\"blabla\\\"";
+        static final String SAVE_PUBLISHER_NONEXISTING_MESSAGE = "Could not find publisher: \"blabla\"";
         static final String PUBLISHERS_GROUP_FOR_PUB_ONE = "pub2\npub3";
         static final String PUBLISHERS_GROUP_FOR_PUB_TWO = "pub3";
         static final String SAVE_AND_TEST_CONNECTION_FAIL_MESSAGE = "Following error occurred when testing connection pub2: "
                                                                     + "Publishers [pub3] failed. First failure: LDAP ERROR: "
                                                                     + "Error binding to LDAP server. Connect Error";
         static final String PUBLISHER_DELETE_MESSAGE = "Are you sure you want to delete this?";
-        static final String DELETE_PUBLISHER_INUSE_ERROR_MESSAGE = "Couldn’t delete publisher, references to it exist.";
+        static final String DELETE_PUBLISHER_INUSE_ERROR_MESSAGE = "Couldn't delete publisher, references to it exist.";
     }
     
     @BeforeClass
-    public static void init() throws ReferencesToItemExistException, AuthorizationDeniedException {
+    public static void init() {
         beforeClass(true, null);
         webDriver = getWebDriver();
         publisherHelper = new PublisherHelper(webDriver);
