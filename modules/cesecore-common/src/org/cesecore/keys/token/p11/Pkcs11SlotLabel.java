@@ -422,7 +422,8 @@ public class Pkcs11SlotLabel {
             @SuppressWarnings("unchecked")
             final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUN_PKCS11_CLASS);
             if (log.isDebugEnabled()) {
-                log.debug("Using JDK8 SUN PKCS11 provider: " + SUN_PKCS11_CLASS);            }
+                log.debug("Using JDK8 SUN PKCS11 provider: " + SUN_PKCS11_CLASS);
+            }
             // The old (<=JDK8) Sun PKCS11 has InputStream as constructor argument
             return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
         } catch (IOException e) {
