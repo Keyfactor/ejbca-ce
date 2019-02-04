@@ -409,11 +409,13 @@ public class Pkcs11SlotLabel {
             // > JDK8
             final Class[] paramString = new Class[1];    
             paramString[0] = String.class;
+            // The configuration is loaded by the "confgure" method (only available since Java 9). JavaDoc for configure method: 
+            // "[...] Note that if this provider cannot be configured in-place, a new provider will be created and returned. Therefore, callers should always use the returned provider."
             final Method method = Provider.class.getDeclaredMethod("configure", paramString);
             final String config = getSunP11ConfigStringFromInputStream(is);
             return getSunP11Provider(method, config);
         } catch (NoSuchMethodException e) {
-            // < JDK8
+            // <= JDK8, configuration is loaded by InputStream containing a string of configuration parameters.
             @SuppressWarnings("unchecked")
             final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUN_PKCS11_CLASS);
             if (log.isDebugEnabled()) {
