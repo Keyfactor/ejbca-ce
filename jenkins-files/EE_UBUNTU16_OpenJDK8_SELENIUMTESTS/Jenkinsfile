@@ -8,6 +8,7 @@ pipeline {
                 sh "docker container rm mariadb_selenium -f || true"
                 sh "docker container rm seleniumtests -f || true"
                 sh "docker container rm mypeer -f || true"
+                sh "docker network rm selenium-network || true"
                 sh "rm -rf ear"
             }
         }
@@ -88,6 +89,8 @@ pipeline {
             
             sh "docker stop --time=1 mariadb_selenium"
             sh "docker rm -f mariadb_selenium"
+
+            sh "docker network rm selenium-network || true"
             cleanWs()
         }
     }
