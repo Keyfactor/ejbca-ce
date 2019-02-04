@@ -18,9 +18,7 @@ import org.openqa.selenium.WebElement;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 // TODO JavaDoc
 /**
@@ -40,19 +38,34 @@ public class RaWebHelper extends BaseHelper {
     public static class Page {
         public static final String PAGE_URI = "/ejbca/ra/";
         //
-        public static final By BUTTON_MAKE_NEW_REQUEST = By.id("makeRequestButton");
-        public static final By SELECT_CERTIFICATE_TYPE = By.id("requestTemplateForm:selectEEPOneMenu");
-        public static final By SELECT_CERTIFICATE_SUBTYPE = By.id("requestTemplateForm:selectCPOneMenu");
-        public static final By SELECT_KEY_ALGORITHM = By.id("requestInfoForm:selectAlgorithmOneMenu");
-        public static final By RADIO_BUTTON_KEY_PAIR_ON_SERVER = By.id("requestTemplateForm:selectKeyPairGeneration:0");
-        public static final By RADIO_BUTTON_KEY_PAIR_PROVIDED = By.id("requestTemplateForm:selectKeyPairGeneration:1");
-        public static final By LABELS_GROUP_PROVIDE_REQUEST_INFO = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
-        public static final By LABEL_COMMON_NAME = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
-        public static final By LABELS_GROUP_PROVIDE_USER_CREDENTIALS = By.xpath("//div[@id='requestInfoForm:userCredentialsOuterPanel']//label");
-        public static final By BUTTON_SHOW_DETAILS = By.xpath("//div[@id='requestTemplateForm:selectRequestTemplateOuterPanel']//input[@value='Show details']");
-        public static final By TEXTAREA_CERTIFICATE_REQUEST = By.id("keyPairForm:certificateRequest");
-        public static final By BUTTON_UPLOAD_CSR = By.id("keyPairForm:uploadCsrButton");
-        public static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
+        static final By BUTTON_MAKE_NEW_REQUEST = By.id("makeRequestButton");
+        static final By SELECT_CERTIFICATE_TYPE = By.id("requestTemplateForm:selectEEPOneMenu");
+        static final By SELECT_CERTIFICATE_SUBTYPE = By.id("requestTemplateForm:selectCPOneMenu");
+        static final By SELECT_KEY_ALGORITHM = By.id("requestInfoForm:selectAlgorithmOneMenu");
+        static final By RADIO_BUTTON_KEY_PAIR_ON_SERVER = By.id("requestTemplateForm:selectKeyPairGeneration:0");
+        static final By RADIO_BUTTON_KEY_PAIR_PROVIDED = By.id("requestTemplateForm:selectKeyPairGeneration:1");
+        static final By LABELS_GROUP_PROVIDE_REQUEST_INFO = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
+        static final By LABEL_COMMON_NAME = By.xpath("//div[@id='requestInfoForm:requestInfoRendered']//label");
+        static final By LABELS_GROUP_PROVIDE_USER_CREDENTIALS = By.xpath("//div[@id='requestInfoForm:userCredentialsOuterPanel']//label");
+        static final By BUTTON_SHOW_DETAILS = By.xpath("//div[@id='requestTemplateForm:selectRequestTemplateOuterPanel']//input[@value='Show details']");
+        static final By TEXTAREA_CERTIFICATE_REQUEST = By.id("keyPairForm:certificateRequest");
+        static final By BUTTON_UPLOAD_CSR = By.id("keyPairForm:uploadCsrButton");
+        static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
+        // Manage Requests
+        static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
+        static final By BUTTON_TAB_APPROVE_REQUESTS = By.id("manageRequestsForm:tabApproveRequests");
+        static final By BUTTON_TAB_PENDING_REQUESTS = By.id("manageRequestsForm:tabPendingRequests");
+        static final By TABLE_REQUESTS = By.id("manageRequestsForm:manageRequestTable");
+        static final By TABLE_REQUEST_ROWS = By.xpath("//tbody/tr");
+        static final By TABLE_REQUEST_ROW_CELLS = By.xpath(".//td");
+        static final By BUTTON_REQUEST_ROW_CELL_REVIEW = By.xpath(".//a[contains(@id, ':viewMoreButton')]");
+        static final By BUTTON_REQUEST_APPROVE = By.id("manageRequestForm:commandApprove");
+        static final By BUTTON_REQUEST_REJECT = By.id("manageRequestForm:commandReject");
+        static final By BUTTON_REQUEST_EDIT = By.id("manageRequestForm:commandEditData");
+        static final By INPUT_REQUEST_EDIT_FORM_CN = By.xpath("//label[contains(text(), 'CN, Common Name')]/../span/input");
+        static final By BUTTON_REQUEST_EDIT_SAVE = By.id("manageRequestForm:commandSaveData");
+        static final By TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME = By.xpath("//span[contains(@id, ':subjectdn')]");
+        static final By TEXT_REQUEST_FORM_APPROVE_MESSAGE = By.id("manageRequestForm:requestApproveMessage");
     }
 
     /**
@@ -66,6 +79,27 @@ public class RaWebHelper extends BaseHelper {
 
     public void makeNewCertificateRequest() {
         clickLink(Page.BUTTON_MAKE_NEW_REQUEST);
+    }
+
+    /**
+     * Clicks the link 'Manage Requests' in the top menu.
+     */
+    public void clickMenuManageRequests() {
+        clickLink(Page.BUTTON_MENU_MANAGE_REQUESTS);
+    }
+
+    /**
+     * Clicks the tab 'To Approve'.
+     */
+    public void clickTabApproveRequests() {
+        clickLink(Page.BUTTON_TAB_APPROVE_REQUESTS);
+    }
+
+    /**
+     * Clicks the tab 'Pending Approval'.
+     */
+    public void clickTabPendingRequests() {
+        clickLink(Page.BUTTON_TAB_PENDING_REQUESTS);
     }
 
     public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) {
@@ -131,6 +165,180 @@ public class RaWebHelper extends BaseHelper {
         final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
         assertNotNull("No/wrong error message displayed when uploading forbidden CSR.", errorMessageWebElement);
         assertTrue("Error message does not match.", errorMessageWebElement.getText().contains("The key algorithm 'RSA_2048' is not available"));
+    }
+
+    /**
+     * Returns a row of request (array of WebElements containing row cells) identified by caName (cell 3), actionType (cell 4),
+     * endEntityName (cell 5) and status (cell 7) or null if the row is not found.
+     *
+     * @param caName CA name.
+     * @param actionType type.
+     * @param endEntityName end entity name.
+     * @param status status.
+     *
+     * @return The row of request or null.
+     */
+    public List<WebElement> getRequestsTableRow(final String caName, final String actionType, final String endEntityName, final String status) {
+        final WebElement pendingApprovalRequestsTable = findElement(Page.TABLE_REQUESTS);
+        final List<WebElement> pendingApprovalRequestsRows = findElements(pendingApprovalRequestsTable, Page.TABLE_REQUEST_ROWS);
+        for(WebElement pendingRequestsTableRow : pendingApprovalRequestsRows) {
+            final List<WebElement> pendingApprovalRequestsRowCells = findElements(pendingRequestsTableRow, Page.TABLE_REQUEST_ROW_CELLS);
+            int pendingApprovalRequestsRowCellIndex = 0;
+            boolean foundCaName = false;
+            boolean foundActionType = false;
+            boolean foundEndEntityName = false;
+            boolean foundStatus = false;
+            for (WebElement pendingRequestsTableRowCell : pendingApprovalRequestsRowCells) {
+                final String pendingRequestsTableRowCellText = pendingRequestsTableRowCell.getText();
+                // CA
+                if(pendingApprovalRequestsRowCellIndex == 2 && caName.equals(pendingRequestsTableRowCellText)) {
+                    foundCaName = true;
+                }
+                // Type
+                else if(pendingApprovalRequestsRowCellIndex == 3 && actionType.equals(pendingRequestsTableRowCellText)) {
+                    foundActionType = true;
+                }
+                // Name
+                else if(pendingApprovalRequestsRowCellIndex == 4 && endEntityName.equals(pendingRequestsTableRowCellText)) {
+                    foundEndEntityName = true;
+                }
+                // Request Status
+                else if(pendingApprovalRequestsRowCellIndex == 6 && status.equals(pendingRequestsTableRowCellText)) {
+                    foundStatus = true;
+                }
+                if(foundCaName && foundActionType && foundEndEntityName && foundStatus) {
+                    return pendingApprovalRequestsRowCells;
+                }
+                pendingApprovalRequestsRowCellIndex++;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Asserts the row of request is not null.
+     *
+     * @param requestRow the row of pending approval requests (array of WebElements containing row cells).
+     */
+    public void assertHasRequestRow(final List<WebElement> requestRow) {
+        assertNotNull("Cannot find a row in Pending Approvals table.", requestRow);
+    }
+
+    /**
+     * Returns the id of request within the row.
+     *
+     * @param requestRow the row of request (array of WebElements containing row cells).
+     *
+     * @see #getRequestsTableRow(String, String, String, String)
+     *
+     * @return The id of approval request or -1.
+     */
+    public int getRequestIdFromRequestRow(final List<WebElement> requestRow) {
+        if(requestRow != null && !requestRow.isEmpty()) {
+            final String requestRowCellText = requestRow.get(0).getText();
+            return Integer.parseInt(requestRowCellText);
+        }
+        return -1;
+    }
+
+    /**
+     * Triggers the 'Review' link within the row.
+     *
+     * @param requestRow the row of request (array of WebElements containing row cells).
+     */
+    public void triggerRequestReviewLinkFromRequestRow(final List<WebElement> requestRow) {
+        if(requestRow != null && !requestRow.isEmpty()) {
+            final WebElement requestRowCellContainer = requestRow.get(7);
+            final WebElement reviewLink = findElement(requestRowCellContainer, Page.BUTTON_REQUEST_ROW_CELL_REVIEW);
+            clickLink(reviewLink);
+        }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
+        }
+    }
+
+    /**
+     * Asserts the 'Approve' button exists.
+     */
+    public void assertRequestApproveButtonExists() {
+        assertElementExists(Page.BUTTON_REQUEST_APPROVE, "Cannot find 'Approve' button.");
+    }
+
+    /**
+     * Asserts the 'Approve' button does not exist.
+     */
+    public void assertRequestApproveButtonDoesNotExist() {
+        assertElementDoesNotExist(Page.BUTTON_REQUEST_APPROVE, "Found 'Approve' button.");
+    }
+
+    /**
+     * Triggers the 'Approve' button.
+     */
+    public void triggerRequestApproveButton() {
+        clickLink(Page.BUTTON_REQUEST_APPROVE);
+    }
+
+    /**
+     * Asserts the 'Reject' button exists.
+     */
+    public void assertRequestRejectButtonExists() {
+        assertElementExists(Page.BUTTON_REQUEST_REJECT, "Cannot find 'Reject' button.");
+    }
+
+    /**
+     * Asserts the 'Reject' button does not exist.
+     */
+    public void assertRequestRejectButtonDoesNotExist() {
+        assertElementDoesNotExist(Page.BUTTON_REQUEST_REJECT, "Found 'Reject' button.");
+    }
+
+    /**
+     * Triggers the link 'Edit data' in request review form.
+     */
+    public void triggerRequestEditLink() {
+        clickLink(Page.BUTTON_REQUEST_EDIT);
+    }
+
+    /**
+     * Fills the 'CN, Common Name' with text in request edit form.
+     *
+     * @param cnText Common Name.
+     */
+    public void fillRequestEditCommonName(final String cnText) {
+        fillInput(Page.INPUT_REQUEST_EDIT_FORM_CN, cnText);
+    }
+
+    /**
+     * Triggers the link 'Save data' in request review form.
+     */
+    public void triggerRequestEditSaveForm() {
+        clickLink(Page.BUTTON_REQUEST_EDIT_SAVE);
+    }
+
+    /**
+     * Asserts the 'Subject Distinguished Name' text has text value.
+     *
+     * @param textValue text value.
+     */
+    public void assertSubjectDistinguishedNameHasText(final String textValue) {
+        assertEquals(
+                "'Subject Distinguished Name' mismatch.",
+                textValue,
+                getElementText(Page.TEXT_REQUEST_FORM_SUBJECT_DISTINGUISHED_NAME)
+        );
+    }
+
+    /**
+     * Asserts the 'Approve' text has text value.
+     *
+     * @param textValue text value.
+     */
+    public void assertApproveMessageHasText(final String textValue) {
+        assertEquals(
+                "'Approve' message mismatch.",
+                textValue,
+                getElementText(Page.TEXT_REQUEST_FORM_APPROVE_MESSAGE)
+        );
     }
 
 }
