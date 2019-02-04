@@ -404,13 +404,16 @@ public class Pkcs11SlotLabel {
      * @throws InvocationTargetException
      * @throws NoSuchMethodException
      */
-    private static Provider getSunP11ProviderNoExceptionHandling(final InputStream is) throws ClassNotFoundException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    private static Provider getSunP11ProviderNoExceptionHandling(final InputStream is) throws ClassNotFoundException, IllegalArgumentException,
+        SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         try {
             // > JDK8
+            @SuppressWarnings("rawtypes")
             final Class[] paramString = new Class[1];    
             paramString[0] = String.class;
-            // The configuration is loaded by the "confgure" method (only available since Java 9). JavaDoc for configure method: 
-            // "[...] Note that if this provider cannot be configured in-place, a new provider will be created and returned. Therefore, callers should always use the returned provider."
+            // The configuration is loaded by the "configure" method (only available since Java 9). JavaDoc for configure method: 
+            // "[...] Note that if this provider cannot be configured in-place, a new provider will be created and returned. 
+            // Therefore, callers should always use the returned provider."
             final Method method = Provider.class.getDeclaredMethod("configure", paramString);
             final String config = getSunP11ConfigStringFromInputStream(is);
             return getSunP11Provider(method, config);
@@ -419,31 +422,30 @@ public class Pkcs11SlotLabel {
             @SuppressWarnings("unchecked")
             final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUN_PKCS11_CLASS);
             if (log.isDebugEnabled()) {
-                log.debug("Using SUN PKCS11 provider: " + SUN_PKCS11_CLASS);
-            }
-            // Sun PKCS11 has InputStream as constructor argument
+                log.debug("Using JDK8 SUN PKCS11 provider: " + SUN_PKCS11_CLASS);            }
+            // The old (<=JDK8) Sun PKCS11 has InputStream as constructor argument
             return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
         } catch (IOException e) {
-            // re-throw an IllegalArgumentException to avoid to invasive changes, maybe not so elegant...
+            // re-throw an IllegalArgumentException to avoid too invasive changes, maybe not so elegant...
             throw new IllegalArgumentException("Could not read InputStream", e);
         }
     }
 
     private static String getSunP11ConfigStringFromInputStream(final InputStream is) throws IOException {
         final StringBuilder configBuilder = new StringBuilder();
-        
-        /* we need to prepend -- to indicate to the configure() method
-         * that the config is treated as a string
-         */
-        configBuilder.append("--").append(IOUtils.toString(is));
-        
+        // Since Java 9, we need to prepend -- to indicate to the configure() method
+        // that the config is treated as a string
+        configBuilder.append("--").append(IOUtils.toString(is, "UTF-8"));
         return configBuilder.toString();
     }
     
-    private static Provider getSunP11Provider(final Method configMethod, final String config) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private static Provider getSunP11Provider(final Method configMethod, final String config) throws IllegalAccessException, IllegalArgumentException, 
+        InvocationTargetException {
         Provider prototype = Security.getProvider("SunPKCS11");
+        if (log.isDebugEnabled()) {
+            log.debug("Using JDK9 (and later) SUN PKCS11 provider: SunPKCS11");
+        }
         Provider provider = (Provider) configMethod.invoke(prototype, config);
-        
         return provider;
     }
     
