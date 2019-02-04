@@ -63,7 +63,9 @@ public class AdminRolesHelper extends BaseHelper {
         static final By TABLES_ACCESS_RULES = By.xpath("//td/table[@class='fullwidth']");
         static final By CELL_ACCESS_RULE_GROUP_NAME = By.xpath(".//thead/tr/th");
         static final By CELL_ACCESS_RULE_TEXT = By.xpath(".//td[@class='rulesColumn1 alignmiddle']");
+        static final By CELL_ACCESS_RULE_RADIO_BUTTONS = By.xpath(".//td[@class='rulesColumn2 alignmiddle']/table[@class='selectStateRadio']");
         static final By TABLES_ACCESS_RULE_RADIO_BUTTONS = By.xpath("//table[@class='selectStateRadio']");
+        static final By INPUT_ACCESS_RULE_RADIO_BUTTONS = By.xpath(".//input[@type='radio']");
         static final By INPUT_ACCESS_RULE_RADIO_BUTTON_CHECKED = By.xpath(".//input[@checked='checked']");
         /**
          * Basic view / 'Role Template'
@@ -569,6 +571,61 @@ public class AdminRolesHelper extends BaseHelper {
                 Page.getMatchWithFromMembersTableRowContainingText(matchWith),
                 "'" + matchWith + "' was not found on 'Members' page."
         );
+    }
+
+    /**
+     * Triggers the access radio button by its value (ALLOW, DENY, UNDEFINED) for the given access path.
+     *
+     * @param rulePath access rule path.
+     * @param value radio button's trigger value (ALLOW, DENY, UNDEFINED).
+     */
+    public void setRuleCheckedRadioButton(final String rulePath, final String value) {
+        if(viewContext == ViewMode.VIEW_MODE_ADVANCED) {
+            boolean found = false;
+            int accessRulePathRowIndex = 0;
+            // Access Rule Groups
+            final List<WebElement> accessRuleGroups = findElements(Page.TABLES_ACCESS_RULES);
+            for (WebElement accessRuleGroup : accessRuleGroups) {
+                // Access Rule Groups' path
+                final List<WebElement> accessRuleRows = findElements(accessRuleGroup, Page.CELL_ACCESS_RULE_TEXT);
+                for (WebElement accessRuleRow : accessRuleRows) {
+                    final String accessRuleRowText = accessRuleRow.getText();
+                    if(rulePath.equals(accessRuleRowText)) {
+                        int accessRuleButtonsRowIndex = 0;
+                        // Access Rule Groups' Radio Buttons Tables
+                        final List<WebElement> radioButtonsTables = findElements(accessRuleGroup, Page.CELL_ACCESS_RULE_RADIO_BUTTONS);
+                        for (WebElement radioButtonsTable : radioButtonsTables) {
+                            if(accessRulePathRowIndex == accessRuleButtonsRowIndex) {
+                                final List<WebElement> radioButtons = findElements(radioButtonsTable, Page.INPUT_ACCESS_RULE_RADIO_BUTTONS);
+                                for(WebElement radioButton : radioButtons) {
+                                    final String radioButtonContainerValue = getElementValue(radioButton);
+                                    if (value.equals(radioButtonContainerValue)) {
+                                        radioButton.click();
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(found) {
+                                break;
+                            }
+                            accessRuleButtonsRowIndex++;
+                        }
+                    }
+                    if(found) {
+                        break;
+                    }
+                    accessRulePathRowIndex++;
+                }
+                accessRulePathRowIndex = 0;
+                if(found) {
+                    break;
+                }
+            }
+        }
+        else {
+            fail("Please check your test scenario action, this action cannot be applied.");
+        }
     }
 
     // Asserts the 'Manage Administrator Roles' add title exists.

@@ -50,12 +50,12 @@
             <h:form id="manageRequestsForm" class="pure-form">
                 
                 <h:panelGroup layout="block" styleClass="tabButtonBar">
-                    <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingNeedsApproval ? 'active' : ''}">
+                    <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingNeedsApproval ? 'active' : ''}" id="tabApproveRequests">
                         <f:param name="tab" value="to_approve"/>
                         <h:outputText value="#{msg.manage_requests_page_view_needs_approval}"/>
                     </h:outputLink>
                     
-                    <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingPendingApproval ? 'active' : ''}">
+                    <h:outputLink value="managerequests.xhtml" styleClass="tabButton #{raManageRequestsBean.viewingPendingApproval ? 'active' : ''}" id="tabPendingRequests">
                         <f:param name="tab" value="pending"/>
                         <h:outputText value="#{msg.manage_requests_page_view_pending_approval}"/>
                     </h:outputLink>
