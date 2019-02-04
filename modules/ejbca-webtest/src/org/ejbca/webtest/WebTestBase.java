@@ -107,6 +107,7 @@ public abstract class WebTestBase {
             firefoxProfile.setPreference("browser.download.folderList", 2);
             firefoxProfile.setPreference("browser.download.dir", downloadDir);
             firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream");
+            firefoxProfile.setPreference("intl.accept_languages", "en_US, en");
             
             firefoxOptions.setProfile(firefoxProfile);
             firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
