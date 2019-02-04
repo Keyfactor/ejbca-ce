@@ -15,7 +15,6 @@ package org.ejbca.webtest.helper;
 import java.util.List;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -77,7 +76,7 @@ public class CaHelper extends BaseHelper {
         /**
          * Approval Settings / Next CA key
          */
-        static final By SELECT_APPROVALPROFILE = By.xpath("//select[contains(@name, ':approvalprofile')]");
+        static final By SELECT_APPROVALPROFILES = By.xpath("//select[contains(@name, ':approvalProfile')]");
 
         static final By INPUT_CANAME = By.id("managecas:textfieldcaname");
         /**
@@ -358,8 +357,13 @@ public class CaHelper extends BaseHelper {
         }
     }
 
-    public void selectApprovalProfileName(final String approvalProfileName) {
-        List<WebElement> approvalDropDowns = webDriver.findElements(Page.SELECT_APPROVALPROFILE);
+    /**
+     * Selects the Approval Profile by name for all 'Add/Edit End Entity', 'Key Recovery', 'Revocation' and 'CA Service Activation'.
+     *
+     * @param approvalProfileName approval profile name.
+     */
+    public void selectAllApprovalProfileNames(final String approvalProfileName) {
+        final List<WebElement> approvalDropDowns = findElements(Page.SELECT_APPROVALPROFILES);
         for (WebElement approvalDropDown : approvalDropDowns) {
             selectOptionByName(approvalDropDown, approvalProfileName);
         }

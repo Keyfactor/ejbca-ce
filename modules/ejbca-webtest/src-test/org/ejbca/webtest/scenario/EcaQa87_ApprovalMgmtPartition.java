@@ -216,7 +216,7 @@ public class EcaQa87_ApprovalMgmtPartition extends WebTestBase {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
         caHelper.setValidity(TestData.CA_VALIDITY);
-        caHelper.selectApprovalProfileName(TestData.APPROVAL_PROFILE_NAME);
+        caHelper.selectAllApprovalProfileNames(TestData.APPROVAL_PROFILE_NAME);
         caHelper.createCa();
     }
 

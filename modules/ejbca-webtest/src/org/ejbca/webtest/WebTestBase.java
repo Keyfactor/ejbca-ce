@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.webtest;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +34,7 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -45,7 +48,6 @@ import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.internal.ProfilesIni;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * Base class to be used by all automated Selenium tests. Should be extended for each test case.
@@ -64,8 +66,7 @@ public abstract class WebTestBase {
     private static String downloadDir;
     private static String browserBinary; // null = don't override default
     private static String browserHeadless;
-    private static WebDriver webDriver;
-    private static WebDriverWait webDriverWait;
+    private static List<WebDriver> webDrivers = new ArrayList<>();
 
     /**
      * Authentication token to use.
@@ -118,22 +119,23 @@ public abstract class WebTestBase {
             firefoxOptions.setHeadless(true);
         }
         
-        
-        webDriver = new FirefoxDriver(firefoxOptions);
-
+        final WebDriver webDriver = new FirefoxDriver(firefoxOptions);
         webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-        webDriverWait = new WebDriverWait(webDriver, 5, 50);
+        // Add to array
+        webDrivers.add(webDriver);
     }
 
     /**
-     * Closes the firefox driver.
+     * Closes the firefox drivers.
      * <br/>
      * Corresponds to @AfterClass annotation in a Test scenario.
      */
     public static void afterClass() {
-        // Destroy web driver & close all windows
-        if (webDriver != null) {
-            webDriver.quit();
+        // Destroy web drivers & close all windows
+        if (!webDrivers.isEmpty()) {
+            for(WebDriver webDriver : webDrivers) {
+                webDriver.quit();
+            }
         }
     }
 
@@ -191,12 +193,28 @@ public abstract class WebTestBase {
         return downloadDir;
     }
 
+    /**
+     * Returns the first WebDriver or null.
+     *
+     * @return the first WebDriver or null.
+     */
     public static WebDriver getWebDriver() {
-        return webDriver;
+        if(webDrivers.isEmpty()) {
+            return null;
+        }
+        return webDrivers.get(0);
     }
 
-    public static WebDriverWait getWebDriverWait() {
-        return webDriverWait;
+    /**
+     * Returns the last WebDriver or null.
+     *
+     * @return the last WebDriver or null.
+     */
+    protected static WebDriver getLastWebDriver() {
+        if(webDrivers.isEmpty()) {
+            return null;
+        }
+        return webDrivers.get(webDrivers.size() - 1);
     }
 
     /**
@@ -340,5 +358,17 @@ public abstract class WebTestBase {
     protected static void removePublisherByName(final String publisherName) throws ReferencesToItemExistException, AuthorizationDeniedException {
         final PublisherSessionRemote publisherSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
         publisherSessionRemote.removePublisher(ADMIN_TOKEN, publisherName);
+    }
+
+    /**
+     * Removes the 'Approval Request' by its request id using EJB remote instance.
+     *
+     * @param requestId approval request id.
+     */
+    protected static void removeApprovalRequestByRequestId(final int requestId) {
+        if(requestId != -1) {
+            final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
+            approvalSession.removeApprovalRequest(ADMIN_TOKEN, requestId);
+        }
     }
 }

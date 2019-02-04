@@ -35,7 +35,8 @@ public class AddEndEntityHelper extends BaseHelper {
         // General
         static final String PAGE_URI = "/ejbca/adminweb/ra/addendentity.jsp";
         static final By PAGE_LINK = By.id("raAddendentity");
-        static final By INFO_MESSAGE = By.xpath("//div[@class='message info']");
+        static final By MESSAGE_INFO = By.xpath("//div[@class='message info']");
+        static final By MESSAGE_ALERT = By.xpath("//div[@class='message alert']");
         
         // Input fields
         static final By INPUT_NAME_CONSTRAINTS_PERMITTED = By.xpath("//textarea[@name='textarencpermitted']");
@@ -242,8 +243,6 @@ public class AddEndEntityHelper extends BaseHelper {
     }
     
     /**
-     * Note! Cannot use method in BaseHelper for this one since it's an old .jsp page
-     * 
      * Asserts the correct info message is displayed after adding end entity
      * 
      * @param endEntityName name of the end entity expected to have been added
@@ -251,10 +250,18 @@ public class AddEndEntityHelper extends BaseHelper {
     public void assertEndEntityAddedMessageDisplayed(final String endEntityName) {
         assertEquals("Unexpected info message while adding end entity",
                 "End Entity " + endEntityName + " added successfully.",
-                getElementText(Page.INFO_MESSAGE));
-        
+                getElementText(Page.MESSAGE_INFO));
     }
-    
+
+    /**
+     * Asserts the correct alert message is displayed after adding an end entity.
+     */
+    public void assertEndEntityAlertMessageDisplayed() {
+        assertEquals("Unexpected info message while saving end entity",
+                "Request has been sent for approval.",
+                getElementText(Page.MESSAGE_ALERT));
+    }
+
     /**
      * Asserts the given number of allowed requests is selected as first option 
      * @param expectedNumber to be selected
