@@ -7,6 +7,7 @@ pipeline {
             steps {
                 sh "docker container rm mariadb_1 -f || true"
                 sh "docker container rm ee_cos7_openjdk8_wf10_nohsm_mariadb -f || true"
+                sh "docker network rm bridge my_isolated_bridge_network || true"
                 sh "rm -rf ear"
             }
         }
@@ -37,6 +38,7 @@ pipeline {
             sh "docker rm -f ee_cos7_openjdk8_wf10_nohsm_mariadb || true"
             sh "docker stop --time=1 mariadb_1"
             sh "docker rm -f mariadb_1"
+            sh "docker network rm bridge my_isolated_bridge_network || true"
             cleanWs()
         }
     }
