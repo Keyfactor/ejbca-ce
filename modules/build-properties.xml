@@ -381,7 +381,18 @@
 
 	<path id="lib.jpa.classpath">
         <fileset dir="${ejbca.home}/lib/hibernate">
-            <include name="antlr-*.jar"/>
+        	<include name="classmate*.jar"/>
+        	<include name="byte-buddy*.jar"/>
+        	<include name="FastInfoset*.jar"/>
+        	<include name="istack-commons-runtime*.jar"/>
+        	<include name="jandex*.jar"/>
+        	<include name="javax.activation*.jar"/>
+        	<include name="javax.persistence*.jar"/>
+        	<include name="jaxb-api*.jar"/>
+        	<include name="jaxb-runtime*.jar"/>
+        	<include name="stax-ex*.jar"/>
+        	<include name="txw2*.jar"/>
+        	<include name="antlr-*.jar"/>
             <include name="dom4j-*.jar"/>
             <include name="hibernate-commons-annotations-*.jar"/>
             <include name="hibernate-core-*.jar"/>
