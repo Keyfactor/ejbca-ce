@@ -1,0 +1,135 @@
+Patched DNSSEC.java, with fix for leading zeroes in ECDSA parameters from:
+https://github.com/gryphius/dnsjava/commit/b4216b35a8386cf47e2c59a875c655d584624d1d#diff-85b1b7a22d7e187f33edad0b9e0e62a8
+
+Original file (DNSSEC.java) from xbill dnsjava:
+https://github.com/dnsjava/dnsjava
+
+This patch is submitted to dnsjava for inclusion. See discussion: https://github.com/ibauersachs/dnssecjava/issues/14
+
+The patch is included in /lib/dnsjava-2.1.8.jar but kept here as reference for future patching.
+
+
+
+--- DNSSEC.java	2018-11-08 18:48:05.000000000 +0100
++++ DNSSEC_patched.java	2019-02-05 13:21:09.117702831 +0100
+@@ -775,44 +775,69 @@
+ 	return signature;
+ }
+ 
+-private static byte []
+-ECDSASignaturefromDNS(byte [] signature, ECKeyInfo keyinfo)
+-	throws DNSSECException, IOException
++/**
++ * Convert a DNS standard ECDSA signature (defined in RFC 6605) into a
++ * JCE standard ECDSA signature, which is encoded in ASN.1.
++ * 
++ * The format of the ASN.1 signature is
++ * 
++ * ASN1_SEQ . seq_length . ASN1_INT . r_length . R . ANS1_INT . s_length . S
++ * 
++ * where R and S may have a leading zero byte if without it the values would
++ * be negative.
++ *
++ * The format of the DNSSEC signature is just R . S where R and S are both
++ * exactly "length" bytes.
++ * 
++ * @param signature
++ *          The binary signature data from an RRSIG record.
++ * @return signature data that may be used in a JCE Signature object for
++ *         verification purposes.
++ */
++public static byte[] convertECDSASignature(byte[] signature)
+ {
+-	if (signature.length != keyinfo.length * 2)
+-		throw new SignatureVerificationException();
+-
+-	DNSInput in = new DNSInput(signature);
+-	DNSOutput out = new DNSOutput();
+-
+-	byte [] r = in.readByteArray(keyinfo.length);
+-	int rlen = keyinfo.length;
+-	if (r[0] < 0)
+-		rlen++;
+-
+-	byte [] s = in.readByteArray(keyinfo.length);
+-	int slen = keyinfo.length;
+-	if (s[0] < 0)
+-		slen++;
+-
+-	out.writeU8(ASN1_SEQ);
+-	out.writeU8(rlen + slen + 4);
+-
+-	out.writeU8(ASN1_INT);
+-	out.writeU8(rlen);
+-	if (rlen > keyinfo.length)
+-		out.writeU8(0);
+-	out.writeByteArray(r);
+-
+-	out.writeU8(ASN1_INT);
+-	out.writeU8(slen);
+-	if (slen > keyinfo.length)
+-		out.writeU8(0);
+-	out.writeByteArray(s);
+-
+-	return out.toByteArray();
+-}
++  byte r_src_pos, r_src_len, r_pad, s_src_pos, s_src_len, s_pad, len;
+ 
++  r_src_len = s_src_len = (byte) (signature.length / 2);
++  r_src_pos = 0; r_pad = 0;
++  s_src_pos = (byte) (r_src_pos + r_src_len); s_pad = 0;
++  len = (byte) (6 + r_src_len + s_src_len);
++
++  // leading zeroes are forbidden
++  if (signature[r_src_pos] == 0) {
++     r_src_pos++; r_src_len--; len--;
++  }
++  if (signature[s_src_pos] == 0) {
++     s_src_pos++; s_src_len--; len--;
++  }
++
++  // except when they are mandatory
++  if (signature[r_src_pos] < 0) {
++      r_pad = 1; len++;
++  }
++  if (signature[s_src_pos] < 0) {
++    s_pad = 1; len++;
++  }
++  byte[] sig = new byte[len];
++  byte pos = 0;
++
++  sig[pos++] = ASN1_SEQ;
++  sig[pos++] = (byte) (len - 2);
++  sig[pos++] = ASN1_INT;
++  sig[pos++] = (byte) (r_src_len + r_pad);
++  pos += r_pad;
++  System.arraycopy(signature, r_src_pos, sig, pos, r_src_len);
++  pos += r_src_len;
++
++  sig[pos++] = ASN1_INT;
++  sig[pos++] = (byte) (s_src_len + s_pad);
++  pos += s_pad;
++  System.arraycopy(signature, s_src_pos, sig, pos, s_src_len);
++
++  return sig;
++  }
++  
++  
+ private static byte []
+ ECDSASignaturetoDNS(byte [] signature, ECKeyInfo keyinfo) throws IOException {
+ 	DNSInput in = new DNSInput(signature);
+@@ -869,12 +894,10 @@
+ 								   GOST);
+ 				break;
+ 			case Algorithm.ECDSAP256SHA256:
+-				signature = ECDSASignaturefromDNS(signature,
+-								  ECDSA_P256);
++				signature = convertECDSASignature(signature);
+ 				break;
+ 			case Algorithm.ECDSAP384SHA384:
+-				signature = ECDSASignaturefromDNS(signature,
+-								  ECDSA_P384);
++				signature = convertECDSASignature(signature);
+ 				break;
+ 			default:
+ 				throw new UnsupportedAlgorithmException(alg);
