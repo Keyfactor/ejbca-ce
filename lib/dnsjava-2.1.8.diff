@@ -6,7 +6,7 @@ https://github.com/dnsjava/dnsjava
 
 This patch is submitted to dnsjava for inclusion. See discussion: https://github.com/ibauersachs/dnssecjava/issues/14
 
-The patch is included in /lib/dnsjava-2.1.8.jar but kept here as reference for future patching.
+The patch is included in our patched /lib/dnsjava-2.1.8.jar here in EJBCA, but kept here as reference for future patching.
 
 
 
