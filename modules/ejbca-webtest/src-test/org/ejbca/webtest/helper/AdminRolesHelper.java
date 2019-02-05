@@ -622,6 +622,9 @@ public class AdminRolesHelper extends BaseHelper {
                     break;
                 }
             }
+            if(!found) {
+                fail("Please check your test scenario action, this action cannot be applied.");
+            }
         }
         else {
             fail("Please check your test scenario action, this action cannot be applied.");
