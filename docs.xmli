@@ -206,7 +206,7 @@
 	        </fileset>
 	       <link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
 	      <doctitle><![CDATA[<h1>EJBCA WS Support</h1>]]></doctitle>
-	      <bottom><![CDATA[<i>2018 PrimeKey Solutions AB.</i>]]></bottom>
+	      <bottom><![CDATA[<i>2019 PrimeKey Solutions AB.</i>]]></bottom>
 	    </javadoc>
         <mkdir dir="${docs.dest.logtypes}"/>
 	    <javadoc destdir="${docs.dest.logtypes}"
@@ -229,7 +229,7 @@
 	        </fileset>
 	       <link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
 	      <doctitle><![CDATA[<h1>EJBCA and CESeCore Audit Log types</h1>]]></doctitle>
-	      <bottom><![CDATA[<i>2018 PrimeKey Solutions AB.</i>]]></bottom>
+	      <bottom><![CDATA[<i>2019 PrimeKey Solutions AB.</i>]]></bottom>
 	    </javadoc>        
         <echo message="Local documentation is now available in file://${docs.dest}/index.html"/>
     </target>
