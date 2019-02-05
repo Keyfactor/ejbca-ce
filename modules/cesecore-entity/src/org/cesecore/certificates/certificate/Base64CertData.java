@@ -25,6 +25,7 @@ import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -186,7 +187,7 @@ public class Base64CertData extends ProtectedData implements Serializable {
         if (rowVersion != other.rowVersion) {
             return false;
         }
-        if (certificateRequest != other.certificateRequest) {
+        if (!StringUtils.equals(certificateRequest, other.certificateRequest)) {
             return false;
         }
         return true;
