@@ -896,8 +896,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public boolean isCheckboxAuthorityKeyIdentifierCriticalDisabled() {
         if (isEditCA && catype == CAInfo.CATYPE_X509) {
-            final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return !x509cainfo.getUseAuthorityKeyIdentifier() || isCaexternal;
+            return !getCheckboxAuthorityKeyIdentifier() || isCaexternal;
         }
         return false;
     }   
@@ -920,8 +919,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public boolean isCheckboxCrlNumberCriticalDisabled() {
         if (isEditCA && catype == CAInfo.CATYPE_X509) {
-            final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return !x509cainfo.getUseCRLNumber() || isCaexternal;
+            return !getCheckboxUseCrlNumber() || isCaexternal;
         }
         return false;
     }
@@ -944,8 +942,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     
     public boolean isCheckboxCrlDistributionPointOnCrlCriticalDisabled() {
         if (isEditCA && catype == CAInfo.CATYPE_X509) {
-            final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
-            return !x509cainfo.getUseCrlDistributionPointOnCrl() || isCaexternal;
+            return !getCheckboxUseCrlDistributiOnPointOnCrl() || isCaexternal;
         }
         return false;
     }
