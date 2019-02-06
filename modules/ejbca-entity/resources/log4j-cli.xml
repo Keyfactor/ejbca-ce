@@ -26,6 +26,20 @@
 		<priority value="FATAL"/>
 	</category>
 
+	<!-- The CLI is a simple single threaded CLI application, so ignore this warning about the connection pool:
+	     "HHH10001002: Using Hibernate built-in connection pool (not for production use!)" -->
+	<category name="org.hibernate.orm.connections.pooling">
+		<priority value="ERROR"/>
+	</category>
+
+	<!-- When generating schemas for other databases than the current one, this class complains about missing
+	     SequenceInformation for some databases. Most likely this happens because MySQL/MariaDB has AUTO_INCREMENT
+	     (which we aren't using in EJBCA), which most other databases doesn't have. The error is:
+	     "Could not fetch the SequenceInformation from the database" -->
+	<category name="org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentImpl">
+		<priority value="FATAL"/>
+	</category>
+
 	<category name="org.hibernate">
 		<priority value="WARN"/>
 	</category>
