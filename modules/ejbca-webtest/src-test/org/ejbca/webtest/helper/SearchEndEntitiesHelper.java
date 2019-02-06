@@ -189,26 +189,6 @@ public class SearchEndEntitiesHelper extends BaseHelper {
     }
 
     /**
-     * Operates with deletion confirmation alert dialog.
-     *
-     * @param expectedMessage expected message.
-     * @param isConfirmed     true to confirm, false otherwise.
-     */
-    public void confirmDeletionOfEndEntity(final String expectedMessage, final boolean isConfirmed) {
-        assertAndConfirmAlertPopUp(expectedMessage, isConfirmed);
-    }
-
-    /**
-     * Operates with revocation confirmation alert dialog.
-     *
-     * @param expectedMessage expected message.
-     * @param isConfirmed     true to confirm, false otherwise.
-     */
-    public void confirmRevocationOfEndEntity(final String expectedMessage, final boolean isConfirmed) {
-        assertAndConfirmAlertPopUp(expectedMessage, isConfirmed);
-    }
-
-    /**
      * Asserts the search resulting table contains the row 'No end entities found.'.
      */
     public void assertNoSearchResults() {
