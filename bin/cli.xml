@@ -429,12 +429,12 @@ appserver.home         : ${appserver.home}
         </condition>
 
         <!-- Create profiles and folders -->
-        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumAuditor" />
-        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumCaAdmin" />
-        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumRaAdmin" />
-        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumRaAdmin1" />
-        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumSuperAdmin" />
-        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-CreateProfile SeleniumSupervisor" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-no-remote -CreateProfile SeleniumAuditor" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-no-remote -CreateProfile SeleniumCaAdmin" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-no-remote -CreateProfile SeleniumRaAdmin" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-no-remote -CreateProfile SeleniumRaAdmin1" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-no-remote -CreateProfile SeleniumSuperAdmin" />
+        <ejbca:firefox firefoxExecPath="${browser.firefox.binary}" arg="-no-remote -CreateProfile SeleniumSupervisor" />
 
         <!-- Create certificate stores and import p12 -->
         <!-- SeleniumAuditor -->
