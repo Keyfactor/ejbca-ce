@@ -33,8 +33,9 @@
 	</category>
 
 	<!-- When generating schemas for other databases than the current one, this class complains about missing
-	     SequenceInformation for some databases. Most likely this happens because MySQL/MariaDB has AUTO_INCREMENT
-	     (which we aren't using in EJBCA), which most other databases doesn't have. The error is:
+	     SequenceInformation for some databases. This happens because Hibernate still establishes a connection
+	     to the database, and expects database type specific tables to be present. This does not appear to
+	     cause any problems, but generates the following error message with an exception:
 	     "Could not fetch the SequenceInformation from the database" -->
 	<category name="org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentImpl">
 		<priority value="FATAL"/>
