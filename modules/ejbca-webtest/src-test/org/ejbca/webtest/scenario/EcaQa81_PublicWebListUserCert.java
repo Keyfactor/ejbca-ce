@@ -59,12 +59,12 @@ public class EcaQa81_PublicWebListUserCert extends WebTestBase {
         backLink.click();
 
         WebElement subjectDnField = webDriver.findElement(By.id("subject"));
-        subjectDnField.sendKeys("NonExistensSubjectDN");
+        subjectDnField.sendKeys("CN=NonExistensSubjectDN");
         okButton = webDriver.findElement(By.id("ok"));
         okButton.click();
 
         title = webDriver.findElement(By.xpath("//h1[@class='title']"));
-        assertEquals(title.getText(), "Certificates for NonExistensSubjectDN");
+        assertEquals(title.getText(), "Certificates for CN=NonExistensSubjectDN");
 
         webDriver.get(getPublicWebUrl() + FETCHCACERT_URL);
         String firstCAName = webDriver.findElement(By.xpath("//div[@class='content']/div/div/p")).getText();
