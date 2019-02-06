@@ -884,7 +884,9 @@
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxauthoritykeyidentifier"
 						value="#{editCAsMBean.checkboxAuthorityKeyIdentifier}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" />
+						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+						<f:ajax render="checkboxauthoritykeyidentifiercritical"/>
+					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxauthoritykeyidentifier"
 						value="#{web.text.USE}" />
 					&nbsp;
@@ -902,8 +904,10 @@
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxusecrlnumber"
 						value="#{editCAsMBean.checkboxUseCrlNumber}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" />
-					<h:outputLabel for="checkboxusecrlnumber" value="#{web.text.USE}" />
+						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+					<f:ajax render="checkboxcrlnumbercritical"/>	
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkboxusecrlnumber" value="#{web.text.USE}" />	
 					&nbsp;
 					<h:selectBooleanCheckbox id="checkboxcrlnumbercritical"
 						value="#{editCAsMBean.checkboxCrlNumberCritical}"
@@ -917,12 +921,15 @@
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Issuing_Distribution_Point_on_CRLs')}"
 						escape="false" styleClass="helpReference"/>
-
 				</h:panelGroup>
+				
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl"
 						value="#{editCAsMBean.checkboxUseCrlDistributiOnPointOnCrl}"
-						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" />
+						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
+						<f:ajax render="checkboxcrldistributionpointoncrlcritical"/>
+					</h:selectBooleanCheckbox>
+					
 					<h:outputLabel for="checkboxusecrldistributionpointoncrl"
 						value="#{web.text.USE}" />
 					&nbsp;
