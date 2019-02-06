@@ -31,6 +31,8 @@ import java.util.Set;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.AuditLogHelper;
@@ -63,14 +65,13 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     
     // Test Data
     private static class TestData {
-        private static final Map<String,String> ADD_EE_FIELDMAP = new HashMap<>();
+        private static final Map<String, String> ADD_EE_FIELDMAP = new HashMap<>();
         static final String CA_NAME = "TestAuditLog";
         static final String CN_CHANGED = "testchangevalue";
-        static final String TEXT_CONFIRMATION_DELETE_SELECTED_END_ENTITIES = "Are you sure you want to delete selected end entities?";
-        static final String TEXT_CONFIRMATION_REVOKE_SELECTED_END_ENTITIES = "Are the selected end entities revoked?";
-        
+        static final String EE_NAME = "testauditlog";
+
         static {
-            ADD_EE_FIELDMAP.put("Username", "testauditlog");
+            ADD_EE_FIELDMAP.put("Username", EE_NAME);
             ADD_EE_FIELDMAP.put("Password (or Enrollment Code)", "foo123");
             ADD_EE_FIELDMAP.put("Confirm Password", "foo123");
             ADD_EE_FIELDMAP.put("CN, Common name", "testauditlog");
@@ -91,8 +92,9 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
         // Remove generated artifacts
+        removeEndEntityByUsername(TestData.EE_NAME);
         removeCaAndCryptoToken(TestData.CA_NAME);
         // super
         afterClass();
@@ -301,13 +303,5 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         searchEndEntitiesHelper.clickSearchByUsernameButton();
         searchEndEntitiesHelper.assertNumberOfSearchResults(1);
 
-        // Select the End Entity and delete
-        searchEndEntitiesHelper.triggerSearchResultFirstRowSelect();
-        searchEndEntitiesHelper.clickDeleteSelected();
-        searchEndEntitiesHelper.confirmDeletionOfEndEntity(TestData.TEXT_CONFIRMATION_DELETE_SELECTED_END_ENTITIES, true);
-        searchEndEntitiesHelper.confirmRevocationOfEndEntity(TestData.TEXT_CONFIRMATION_REVOKE_SELECTED_END_ENTITIES, true);
-
-        // Make sure that there are no End Entities in the list (have to wait for reload)
-        searchEndEntitiesHelper.assertNoSearchResults();
     }
 }

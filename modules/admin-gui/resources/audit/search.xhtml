@@ -91,7 +91,7 @@
 
 	<!-- Audit log: Conditions bar -->
 	<h:panelGroup styleClass="margin-top">
-		<h:commandButton rendered="#{not empty auditor.conditions}" action="#{auditor.clearConditions}" styleClass="commandLinkAudit remove" value="❌ #{web.text.CONDITIONS_CLEAR}"/>
+		<h:commandButton id="clearConditionsButton" rendered="#{not empty auditor.conditions}" action="#{auditor.clearConditions}" styleClass="commandLinkAudit remove" value="❌ #{web.text.CONDITIONS_CLEAR}"/>
 		<h:selectBooleanCheckbox immediate="true" value="#{auditor.automaticReload}"/><h:outputText value=" #{web.text.AUDIT_AUTORELOAD}"/>
 	</h:panelGroup>
 	</h:form>

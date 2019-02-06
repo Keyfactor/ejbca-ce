@@ -200,8 +200,8 @@ public class BaseHelper {
      * @param linkId locator.
      */
     protected void clickLinkIfExists(final By linkId) {
-        final WebElement linkWebElement = findElement(linkId);
-        if(linkWebElement != null) {
+        final WebElement linkWebElement = findElementWithoutWait(linkId);
+        if (linkWebElement != null) {
             linkWebElement.click();
         }
     }
@@ -776,20 +776,17 @@ public class BaseHelper {
      */
     protected void assertAndConfirmAlertPopUp(final String expectedAlertMessageText, boolean isConfirmed) {
         try {
-            final Alert alert = webDriver.switchTo().alert();
+            final Alert alert = waitForAlertIsPresent();
             // Assert that the correct alert message is displayed (if not null)
-            if(expectedAlertMessageText != null) {
+            if (expectedAlertMessageText != null) {
                 assertEquals("Unexpected alert message.", expectedAlertMessageText, alert.getText());
             }
-            if(isConfirmed) {
+            if (isConfirmed) {
                 alert.accept();
-            }
-            else {
+            } else {
                 alert.dismiss();
             }
-            webDriver.switchTo().defaultContent();
-        }
-        catch (NoAlertPresentException e) {
+        } catch (NoAlertPresentException e) {
             fail("Expected an alert but there was none");
         }
     }
@@ -861,6 +858,11 @@ public class BaseHelper {
         // A bug in EJBCA requires a wait here, otherwise it results in an XML Parsing Error
         final WebDriverWait wait = new WebDriverWait(webDriver, DEFAULT_WAIT_TIMEOUT_SECONDS);
         wait.until(ExpectedConditions.invisibilityOfElementLocated(objectBy));
+    }
+
+    private Alert waitForAlertIsPresent() {
+        final WebDriverWait wait = new WebDriverWait(webDriver, DEFAULT_WAIT_TIMEOUT_SECONDS);
+        return wait.until(ExpectedConditions.alertIsPresent());
     }
 
     /**

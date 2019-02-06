@@ -43,7 +43,7 @@ public class AuditLogHelper extends BaseHelper {
         static final String PAGE_URI = "/ejbca/adminweb/audit/search.xhtml";
         static final By PAGE_LINK = By.id("supervisionAuditsearch");
         // Audit Log View
-        static final By BUTTON_CLEAR_ALL_CONDITIONS = By.xpath("//input[contains(@value, 'Clear all conditions') and @type='submit']");
+        static final By BUTTON_CLEAR_ALL_CONDITIONS = By.id("search:clearConditionsButton");
         static final By BUTTON_ADD_COLUMN = By.xpath("//input[contains(@value, 'Add...') and @type='submit']");
         static final By SELECT_FILTER_COLUMN = By.xpath("//select[contains(@id, 'conditionColumn')]");
         static final By BUTTON_APPLY_FILTERING_CONDITION = By.xpath("//input[contains(@src, 'success') and @type='image']");
