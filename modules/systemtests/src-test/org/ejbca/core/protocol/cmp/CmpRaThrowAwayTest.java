@@ -59,6 +59,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -349,7 +350,8 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
 
     /** Change CA configuration for what to store and assert that the changes were made. 
      * @throws CADoesntExistsException */
-    private static void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException, CADoesntExistsException {
+    private static void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException, CADoesntExistsException, 
+            CmsCertificatePathMissingException {
         CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, TESTCA_NAME);
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);

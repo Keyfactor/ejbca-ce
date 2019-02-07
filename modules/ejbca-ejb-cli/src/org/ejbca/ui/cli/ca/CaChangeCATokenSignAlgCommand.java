@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -77,6 +78,10 @@ public class CaChangeCATokenSignAlgCommand extends BaseCaAdminCommand {
             log.error("CLI User was not authorized to modify CA " + caName);
             log.trace("<execute()");
             return CommandResult.AUTHORIZATION_FAILURE;
+        } catch (CmsCertificatePathMissingException e) {
+            log.error("CA " + caName + " could not be modified, CMS certificate path was missing");
+            log.trace("<execute()");
+            return CommandResult.FUNCTIONAL_FAILURE;
         } 
 
         log.trace("<execute()");

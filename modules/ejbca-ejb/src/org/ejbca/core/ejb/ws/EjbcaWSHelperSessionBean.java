@@ -53,6 +53,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
@@ -784,7 +785,7 @@ public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, Ejbc
 
     @Override
     public void updateCaCert(AuthenticationToken admin, String caname, byte[] certbytes)
-            throws AuthorizationDeniedException, CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException {
+            throws AuthorizationDeniedException, CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException, CmsCertificatePathMissingException {
         final Collection<CertificateWrapper> cachain = CertTools.bytesToListOfCertificateWrapperOrThrow(certbytes);
         final int caid = caSession.getCA(admin, caname).getCAId();
         caAdminSession.updateCACertificate(admin, caid, cachain);
