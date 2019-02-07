@@ -246,12 +246,23 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
 
         // Note: if data is null, a new empty keystore will be created
+        List<String> isSlotUsed = isCryptoTokenSlotUsed(authenticationToken, tokenName, className, properties);
         final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
         if (authenticationCode != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Activating new crypto token using supplied authentication code.");
             }
-            cryptoToken.activate(authenticationCode);
+            try {
+                cryptoToken.activate(authenticationCode);
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                // If we entered the wrong PIN, we may have installed the P11 provider (if it is a P11 token)
+                // In that case, remove it again, so we don't have to warn about already used slot when entering the correct PIN
+                // if it was not already used by anyone else that is
+                if (isSlotUsed.isEmpty() && cryptoToken instanceof PKCS11CryptoToken) {
+                    Security.removeProvider(cryptoToken.getSignProviderName());
+                }
+                throw e;
+            }
         }
 
         // This property is used only once during crypto token creation
