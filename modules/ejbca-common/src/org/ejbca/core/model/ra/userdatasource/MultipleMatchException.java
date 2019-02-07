@@ -30,14 +30,14 @@ public class MultipleMatchException extends EjbcaException {
     private static final long serialVersionUID = 5191918316722890271L;
 
     /**
-     * Creates a new instance of <code>MultipleMatchException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public MultipleMatchException() {
         super();
     }
  
     /**
-     * Constructs an instance of <code>MultipleMatchException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public MultipleMatchException(String msg) {

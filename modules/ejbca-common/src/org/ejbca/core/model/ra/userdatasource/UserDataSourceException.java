@@ -30,7 +30,7 @@ public class UserDataSourceException extends EjbcaException {
 
 
     /**
-     * Creates a new instance of <code>UserDataSourceException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public UserDataSourceException() {
         super();
@@ -38,7 +38,7 @@ public class UserDataSourceException extends EjbcaException {
     
     
     /**
-     * Constructs an instance of <code>UserDataSourceException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public UserDataSourceException(String msg) {
