@@ -51,6 +51,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -1089,7 +1090,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         }
     }
     
-    private CAInfo setUpThrowAwayPublishingTest(final boolean useQueue, final boolean useNoConflictCertificateData) throws PublisherExistsException, AuthorizationDeniedException, CertificateProfileExistsException {
+    private CAInfo setUpThrowAwayPublishingTest(final boolean useQueue, final boolean useNoConflictCertificateData) throws PublisherExistsException, AuthorizationDeniedException, 
+            CmsCertificatePathMissingException, CertificateProfileExistsException {
         // Set up publishing
         final CustomPublisherContainer publisher = new CustomPublisherContainer();
         publisher.setClassPath(MockedThrowAwayRevocationPublisher.class.getName());
@@ -1110,7 +1112,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         return cainfo;
     }
     
-    private void cleanUpThrowAwayPublishingTest() throws AuthorizationDeniedException {
+    private void cleanUpThrowAwayPublishingTest() throws AuthorizationDeniedException, CmsCertificatePathMissingException {
         final CAInfo cainfo = caSession.getCAInfo(admin, caid);
         cainfo.setUseCertificateStorage(true);
         cainfo.setUseUserStorage(true);
