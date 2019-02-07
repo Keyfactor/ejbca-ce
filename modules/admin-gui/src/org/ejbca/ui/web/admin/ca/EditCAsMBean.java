@@ -54,6 +54,7 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -1932,7 +1933,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return EditCaUtil.MANAGE_CA_NAV;
             }
             return "";
-        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+        } catch (CADoesntExistsException | AuthorizationDeniedException | CmsCertificatePathMissingException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
@@ -2088,7 +2089,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         try {
             cadatahandler.editCA(cainfo);
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+        } catch (CADoesntExistsException | AuthorizationDeniedException | CmsCertificatePathMissingException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }
