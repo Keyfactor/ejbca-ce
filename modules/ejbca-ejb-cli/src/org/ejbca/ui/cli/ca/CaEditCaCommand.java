@@ -20,6 +20,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -104,6 +105,9 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
         } catch (AuthorizationDeniedException e) {
             log.error("CLI User was not authorized to CA " + name);
             return CommandResult.AUTHORIZATION_FAILURE;
+        } catch (CmsCertificatePathMissingException e) {
+            log.error("CA " + name + " could not be modified, CMS certificate path was missing");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
 
     }

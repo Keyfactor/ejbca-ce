@@ -95,6 +95,7 @@ import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
@@ -862,7 +863,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException {
+    public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException {
         boolean cmsrenewcert = false;
         final int caid = cainfo.getCAId();
 
@@ -910,6 +911,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // No OCSP Certificate exists that can be renewed.
                 if (cmsrenewcert) {
                     CmsCAServiceInfo info = (CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE);
+                    if (info.getCertificatePath() == null) {
+                        String msg = intres.getLocalizedMessage("caadmin.errormissingcmscertpath", cainfo.getName());
+                        log.error(msg);
+                        throw new CmsCertificatePathMissingException(msg);
+                    }
                     if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
                         final ArrayList<Certificate> cmscertificate = new ArrayList<Certificate>();
                         cmscertificate.add(info.getCertificatePath().get(0));
@@ -1714,7 +1720,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void updateCACertificate(final AuthenticationToken authenticationToken, final int caId, Collection<CertificateWrapper> wrappedCerts)
-            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
+            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException, CmsCertificatePathMissingException {
         List<Certificate> certificates = EJBTools.unwrapCertCollection(wrappedCerts);
         // Re-order if needed and validate chain
         if (certificates.size() != 1) {

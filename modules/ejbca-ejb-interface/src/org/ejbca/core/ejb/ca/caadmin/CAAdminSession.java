@@ -33,6 +33,7 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -171,9 +172,10 @@ public interface CAAdminSession {
      * 
      * @param certificates contains the full certificate chain down to the leaf CA to be imported. Use {@link org.cesecore.util.EJBTools#wrapCertCollection} to convert to the wrapper type.
      * @throws CertificateImportException in the case the certificate was already imported or the provided certificates could not be used.
+     * @throws CmsCertificatePathMissingException 
      */
     void updateCACertificate(final AuthenticationToken authenticationToken, final int caId, final Collection<CertificateWrapper> wrappedCerts)
-            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException;
+            throws CADoesntExistsException, AuthorizationDeniedException, CertificateImportException, CmsCertificatePathMissingException;
 
     /**
      * Inits an external CA service. this means that a new key and certificate
@@ -524,7 +526,7 @@ public interface CAAdminSession {
      * @see org.ejbca.core.model.ca.caadmin.CAInfo
      * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
      */
-    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException;
+    void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CmsCertificatePathMissingException;
 
     /**
      * Method used to check if certificate profile id exists in any CA.

@@ -45,6 +45,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -259,7 +260,7 @@ public class CertificateRequestThrowAwayTest {
      * @throws CADoesntExistsException
      */
     private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException,
-            CADoesntExistsException {
+            CADoesntExistsException, CmsCertificatePathMissingException {
         CAInfo caInfo = caSession.getCAInfo(admin, TESTCA_NAME);
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);

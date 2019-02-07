@@ -35,6 +35,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -106,7 +107,8 @@ public class CADataHandler implements Serializable {
   /**
    * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
-  public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, AuthorizationDeniedException, CertificateImportException {
+  public void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException, AuthorizationDeniedException, CertificateImportException, 
+          CmsCertificatePathMissingException {
       Collection<Certificate> certs = null;
       try {
           certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
@@ -123,7 +125,7 @@ public class CADataHandler implements Serializable {
    *  @throws CADoesntExistsException 
  * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
-  public void editCA(CAInfo cainfo) throws AuthorizationDeniedException, CADoesntExistsException{
+  public void editCA(CAInfo cainfo) throws AuthorizationDeniedException, CADoesntExistsException, CmsCertificatePathMissingException {
 	  CAInfo oldinfo = caSession.getCAInfo(administrator, cainfo.getCAId());
 	  cainfo.setName(oldinfo.getName());
 	  if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {

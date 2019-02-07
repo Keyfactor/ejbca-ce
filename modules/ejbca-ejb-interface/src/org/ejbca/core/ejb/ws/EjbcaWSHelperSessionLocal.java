@@ -27,6 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -139,10 +140,11 @@ public interface EjbcaWSHelperSessionLocal extends EjbcaWSHelperSession {
      * @throws CertificateImportException
      * @throws EjbcaException
      * @throws CertificateParsingException
+     * @throws CmsCertificatePathMissingException 
      * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#updateCaCert
      */
      void updateCaCert(AuthenticationToken admin, String caname, byte[] certbytes) throws AuthorizationDeniedException, 
-         CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException; 
+         CADoesntExistsException, CertificateImportException, EjbcaException, CertificateParsingException, CmsCertificatePathMissingException; 
 
      /** Makes a CA certificate that has been created prior to its "not before" date active (CA rollover) */
      void rolloverCACert(AuthenticationToken admin, String caname) throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException;
