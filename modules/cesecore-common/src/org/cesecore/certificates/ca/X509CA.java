@@ -893,7 +893,7 @@ public class X509CA extends CA implements Serializable {
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException {
 
-    	// We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
+        // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
         if ((getStatus() != CAConstants.CA_ACTIVE) && ((getStatus() != CAConstants.CA_EXPIRED))) {
             final String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
@@ -1017,10 +1017,10 @@ public class X509CA extends CA implements Serializable {
         // Make sure the DN does not contain dangerous characters
         if (!StringTools.hasStripChars(subjectDNName.toString()).isEmpty()) {
             if (log.isTraceEnabled()) {
-            	log.trace("DN with illegal name: "+subjectDNName);
+                log.trace("DN with illegal name: "+subjectDNName);
             }
             final String msg = intres.getLocalizedMessage("createcert.illegalname");
-        	throw new IllegalNameException(msg);
+            throw new IllegalNameException(msg);
         }
         if (log.isDebugEnabled()) {
             log.debug("Using subjectDN: " + subjectDNName.toString());
@@ -1319,7 +1319,7 @@ public class X509CA extends CA implements Serializable {
                         new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
-                // ECA-6051 Re-Factor with Domain Service Layer.
+                // ECA-6051 Re-Factored with Domain Service Layer.
                 if (certGenParams.getAuthenticationToken() != null && certGenParams.getCertificateValidationDomainService() != null) {
                     try {
                         certGenParams.getCertificateValidationDomainService().validateCertificate(certGenParams.getAuthenticationToken(), IssuancePhase.PRE_CERTIFICATE_VALIDATION, this, subject, cert);
@@ -1411,6 +1411,10 @@ public class X509CA extends CA implements Serializable {
         }
         try {
             cert.verify(verifyKey);
+        } catch (SignatureException e) {
+            final String msg = "Public key in the CA certificate does not match the configured certSignKey, is the CA in renewal process? : " + e.getMessage();
+            log.warn(msg);
+            throw new CertificateCreateException(msg, e);
         } catch (InvalidKeyException e) {
             throw new CertificateCreateException("CA's public key was invalid,", e);
         } catch (NoSuchAlgorithmException e) {
@@ -1916,11 +1920,11 @@ public class X509CA extends CA implements Serializable {
             }
             // v21, AIA: Copy CA issuer URI to separated AIA field.
             if (data.get(CERTIFICATE_AIA_DEFAULT_CA_ISSUER_URI) == null) {
-            	if (null != getAuthorityInformationAccess()) {
-            	    setCertificateAiaDefaultCaIssuerUri( getAuthorityInformationAccess());
-            	} else {
-            		setCertificateAiaDefaultCaIssuerUri( new ArrayList<String>());
-            	}
+                if (null != getAuthorityInformationAccess()) {
+                    setCertificateAiaDefaultCaIssuerUri( getAuthorityInformationAccess());
+                } else {
+                    setCertificateAiaDefaultCaIssuerUri( new ArrayList<String>());
+                }
             }
             // v22, 'encodedValidity' is derived by the former long value!
             if (null == data.get(ENCODED_VALIDITY)  && null != data.get(VALIDITY)) {
