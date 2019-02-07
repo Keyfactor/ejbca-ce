@@ -246,7 +246,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
 
         // Note: if data is null, a new empty keystore will be created
-        List<String> isSlotUsed = isCryptoTokenSlotUsed(authenticationToken, tokenName, className, properties);
+        final List<String> isSlotUsed = isCryptoTokenSlotUsed(authenticationToken, tokenName, className, properties);
         final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName, false);
         if (authenticationCode != null) {
             if (log.isDebugEnabled()) {
