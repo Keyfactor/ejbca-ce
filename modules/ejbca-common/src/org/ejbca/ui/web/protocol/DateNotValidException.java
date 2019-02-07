@@ -20,8 +20,8 @@ import org.ejbca.core.EjbcaException;
 
 /**
  * Thrown when a string is not a valid date
+ * 
  * @version $Id: DateNotValidException.java 19902 2014-09-30 14:32:24Z anatom $
- *
  */
 @WebFault
 public class DateNotValidException extends EjbcaException {
