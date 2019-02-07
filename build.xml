@@ -1172,13 +1172,11 @@ Note that this zip is not standalone but needs to be unzipped inside an existing
         <!-- ======================================================================= -->
         <target name="ziprelease-cesecore-bin" description="Make a binary zip release of the CESeCore modules">
             <echo>Clean CESeCore modules</echo>
-            <subant target="clean" verbose="false">
+            <subant target="clean" verbose="false" inheritall="true" inheritrefs="true">
                 <fileset dir="${basedir}/modules/" includes="cesecore-*/build.xml"/>
             </subant>
             <echo>Build CESeCore modules</echo>
-            <subant target="jar" verbose="false">
-                <fileset dir="${basedir}/modules/" includes="cesecore-*/build.xml"/>
-            </subant>
+            <ant dir="modules" target="cesecore-ejb" />	
             <property name="cesecore.bin.basezipfile" value="cesecore-${edition}-${app.version.number}-bin"/>
 
             <property name="cesecore.bin.release.dir" location="${tmp}/cesecore-release-bin"/>
