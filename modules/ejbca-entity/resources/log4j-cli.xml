@@ -8,7 +8,7 @@
 		<param name="Target" value="System.out"/>
 		<!--param name="Threshold" value="INFO"/-->
 		<layout class="org.apache.log4j.PatternLayout"> 
-			<param name="ConversionPattern" value="%m%n"/> 
+			<param name="ConversionPattern" value="%m%n"/>
 			<!--param name="ConversionPattern" value="%d %-5p [%c] %m%n"/-->
 		</layout> 
 	</appender> 
@@ -39,6 +39,14 @@
 	     "Could not fetch the SequenceInformation from the database" -->
 	<category name="org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentImpl">
 		<priority value="FATAL"/>
+	</category>
+
+	<!-- Hibernate attempts to create foreign key constraints for the legacy AccessRulesData and AdminEntityData.
+	     This causes the warning below, which is harmless, since these tables are not written to.
+	     ECA-7772 exists to fix this properly at a later time, perhaps by disabling foreign key generation.
+             "GenerationTarget encountered exception accepting command : Error executing DDL "alter table AdminEntityData add constraint FKgxaatpstfnr3sx8frhueq9q2d foreign key (AdminGroupData_adminEntities) references AdminGroupData (pK)" via JDBC Statement" -->
+	<category name="org.hibernate.tool.schema.internal.ExceptionHandlerLoggedImpl">
+		<priority value="ERROR"/>
 	</category>
 
 	<category name="org.hibernate">
