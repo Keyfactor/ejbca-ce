@@ -27,7 +27,7 @@ public class CAOfflineException extends CesecoreException {
 
 
     /**
-     * Creates a new instance of <code>CAOfflineException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public CAOfflineException() {
         super();
@@ -36,7 +36,7 @@ public class CAOfflineException extends CesecoreException {
     
     
     /**
-     * Constructs an instance of <code>CAOfflineException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public CAOfflineException(String msg) {
