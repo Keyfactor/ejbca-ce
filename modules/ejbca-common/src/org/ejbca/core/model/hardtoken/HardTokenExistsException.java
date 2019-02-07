@@ -18,7 +18,6 @@ import javax.xml.ws.WebFault;
 /**
  * An exception thrown when someone tries to add a hard token that already exits
  *
- * @author  Philip Vendil 2003-01-20
  * @version $Id$
  */
 @WebFault
@@ -28,7 +27,7 @@ public class HardTokenExistsException extends java.lang.Exception {
 
 
     /**
-     * Creates a new instance of <code>HardTokenExistsException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public HardTokenExistsException() {
         super();
@@ -36,7 +35,7 @@ public class HardTokenExistsException extends java.lang.Exception {
     
     
     /**
-     * Constructs an instance of <code>HardTokenExistsException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public HardTokenExistsException(String msg) {

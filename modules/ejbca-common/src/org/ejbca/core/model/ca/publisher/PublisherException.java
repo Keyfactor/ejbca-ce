@@ -30,7 +30,7 @@ public class PublisherException extends EjbcaException {
 
 
     /**
-     * Creates a new instance of <code>PublisherException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public PublisherException() {
         super();
@@ -38,7 +38,7 @@ public class PublisherException extends EjbcaException {
     
     
     /**
-     * Constructs an instance of <code>PublisherException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public PublisherException(String msg) {

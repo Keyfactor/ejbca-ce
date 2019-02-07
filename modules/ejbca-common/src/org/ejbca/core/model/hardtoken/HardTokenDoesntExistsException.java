@@ -18,7 +18,6 @@ import javax.xml.ws.WebFault;
 /**
  * An exception thrown when someone tries to remove or change a hard token that doesn't exits
  *
- * @author  Philip Vendil 2003-01-20
  * @version $Id$
  */
 @WebFault
@@ -28,7 +27,7 @@ public class HardTokenDoesntExistsException extends java.lang.Exception {
 
 
     /**
-     * Creates a new instance of <code>HardTokenDoesntExistsException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public HardTokenDoesntExistsException() {
         super();
@@ -36,7 +35,7 @@ public class HardTokenDoesntExistsException extends java.lang.Exception {
     
     
     /**
-     * Constructs an instance of <code>HardTokenDoesntExistsException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public HardTokenDoesntExistsException(String msg) {
