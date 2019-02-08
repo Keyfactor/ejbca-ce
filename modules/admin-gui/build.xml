@@ -28,6 +28,7 @@
 		<path refid="lib.commons-io.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.tomahawk.classpath"/>
+		<path refid="lib.guava.classpath"/>
 		<path refid="lib.owaspcsrfguard.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>

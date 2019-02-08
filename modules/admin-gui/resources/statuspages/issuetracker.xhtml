@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/ xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html">
+
+<ui:remove>
+    <!--
+	/*************************************************************************
+	*                                                                       *
+	*  EJBCA: The OpenSource Certificate Authority                          *
+	*                                                                       *
+	*  This software is free software; you can redistribute it and/or       *
+	*  modify it under the terms of the GNU Lesser General Public           *
+	*  License as published by the Free Software Foundation; either         *
+	*  version 2.1 of the License, or any later version.                    *
+	*                                                                       *
+	*  See terms of license at gnu.org.                                     *
+	*                                                                       *
+	*************************************************************************/
+
+	$Id$
+	-->
+</ui:remove>
+<h:body>
+    <ui:composition>
+        <h:panelGroup layout="block" styleClass="status" id="issuetracker"
+            rendered="#{ejbcawebbean.adminPreference.issueTrackerOnFrontPage and issueTracker.issueTrackerEnabled}">
+            <h4>
+                <h:outputText value="#{web.text.ISSUE_TRACKER}" />
+                <!-- TODO Replace this with real documentation -->
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/foo')}" escape="false" />
+            </h4>
+            <ui:repeat value="#{issueTracker.tickets}" var="ticket">
+                <h:panelGroup layout="block" styleClass="card #{issueTracker.getStyleClass(ticket)}">
+                    <h:outputText value="#{issueTracker.getDescription(ticket)}" />
+                </h:panelGroup>
+            </ui:repeat>
+            
+            <h:outputText value="#{web.text.ISSUE_TRACKER_NO_TICKETS}" rendered="#{empty issueTracker.tickets}" />
+        </h:panelGroup>
+    </ui:composition>
+</h:body>
+</html>
