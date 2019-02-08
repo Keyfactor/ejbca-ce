@@ -299,14 +299,14 @@ public class RaEndEntityDetails {
     }
 
     public boolean isEmailEnabled() {
-        return getEndEntityProfile().isEmailUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isEmailUsed() : false;
     }
     public String getEmail() {
         return endEntityInformation.getEmail();
     }
 
     public boolean isLoginsMaxEnabled() {
-        return getEndEntityProfile().isMaxFailedLoginsUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isMaxFailedLoginsUsed() : false;
     }
     public String getLoginsMax() {
         return Integer.toString(extendedInformation.getMaxLoginAttempts());
@@ -316,14 +316,14 @@ public class RaEndEntityDetails {
     }
 
     public boolean isSendNotificationEnabled() {
-        return getEndEntityProfile().isSendNotificationUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isSendNotificationUsed() : false;
     }
     public boolean isSendNotification() {
         return endEntityInformation.getSendNotification();
     }
 
     public boolean isCertificateSerialNumberOverrideEnabled() {
-        return getEndEntityProfile().isCustomSerialNumberUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isCustomSerialNumberUsed() : false;
     }
     public String getCertificateSerialNumberOverride() {
         final BigInteger certificateSerialNumber = extendedInformation.certificateSerialNumber();
@@ -334,27 +334,27 @@ public class RaEndEntityDetails {
     }
 
     public boolean isOverrideNotBeforeEnabled() {
-        return getEndEntityProfile().isValidityStartTimeUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isValidityStartTimeUsed() : false;
     }
     public String getOverrideNotBefore() {
         return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
     }
     public boolean isOverrideNotAfterEnabled() {
-        return getEndEntityProfile().isValidityEndTimeUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isValidityEndTimeUsed() : false;
     }
     public String getOverrideNotAfter() {
         return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
     }
 
     public boolean isCardNumberEnabled() {
-        return getEndEntityProfile().isCardNumberUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isCardNumberUsed() : false;
     }
     public String getCardNumber() {
         return endEntityInformation.getCardNumber();
     }
 
     public boolean isNameConstraintsPermittedEnabled() {
-        return getEndEntityProfile().isNameConstraintsPermittedUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedUsed() : false;
     }
     public String getNameConstraintsPermitted() {
         final List<String> value = extendedInformation.getNameConstraintsPermitted();
@@ -364,7 +364,7 @@ public class RaEndEntityDetails {
         return "";
     }
     public boolean isNameConstraintsExcludedEnabled() {
-        return getEndEntityProfile().isNameConstraintsExcludedUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedUsed() : false;
     }
     /** @return true if CSR exists in EEI*/
     public boolean isCsrSet() {
@@ -379,10 +379,10 @@ public class RaEndEntityDetails {
     }
 
     public boolean isAllowedRequestsEnabled() {
-        return getEndEntityProfile().isAllowedRequestsUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isAllowedRequestsUsed() : false;
     }
     public String getAllowedRequests() {
-        return String.valueOf(getEndEntityProfile().getAllowedRequests());
+        return getEndEntityProfile() != null ? String.valueOf(getEndEntityProfile().getAllowedRequests()) : "";
     }
     public String getAllowedRequestsUsed() {
         final String value = extendedInformation.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
@@ -390,7 +390,7 @@ public class RaEndEntityDetails {
     }
 
     public boolean isIssuanceRevocationReasonEnabled() {
-        return getEndEntityProfile().isIssuanceRevocationReasonUsed();
+        return getEndEntityProfile() != null ? getEndEntityProfile().isIssuanceRevocationReasonUsed() : false;
     }
     public String getIssuanceRevocationReason() {
         final String reasonCode = extendedInformation.getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
