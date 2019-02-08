@@ -143,8 +143,11 @@
                     				<h:panelGroup layout="block" styleClass="approvalControl">    
                             			<h:outputLabel value="#{kvp.key}" styleClass="pure-u-lg-1-3"/>
                     					<h:panelGroup layout="block">
-                        					<h:outputText value="#{kvp.value}" rendered="#{not empty kvp.value}" styleClass="pure-u-lg-2-3 ra-outputText"/>
+                        					<h:outputText value="#{kvp.value}" rendered="#{not empty kvp.value and not raManageRequestBean.isValueUrl(kvp.value)}" styleClass="pure-u-lg-2-3 ra-outputText"/>
                         					<h:outputText value="&nbsp;" rendered="#{empty kvp.value}" styleClass="pure-u-lg-2-3 ra-outputText"/>
+                  					        <h:outputLink value="#{kvp.value}" target="_blank" rendered="#{raManageRequestBean.isValueUrl(kvp.value)}">
+  												<h:outputText value="#{kvp.value}"/>
+  											</h:outputLink>
                     					</h:panelGroup>
                     				</h:panelGroup>
                     			</ui:repeat>
