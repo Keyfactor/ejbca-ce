@@ -79,7 +79,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         INTEGER(intres.getLocalizedMessage("approval.profile.metadata.field.integer")),
         LONG(intres.getLocalizedMessage("approval.profile.metadata.field.long")),
         RADIOBUTTON(intres.getLocalizedMessage("approval.profile.metadata.field.radio.button")),
-        TEXT(intres.getLocalizedMessage("approval.profile.metadata.field.freetext"));
+        TEXT(intres.getLocalizedMessage("approval.profile.metadata.field.freetext")),
+        EXTURL(intres.getLocalizedMessage("approval.profile.metadata.field.exturl"));
 
        private static List<SelectItem> selectItems;
        private static Map<String, FieldType> nameLookupMap;
@@ -300,6 +301,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             break;
         case LONG:
             property = new DynamicUiProperty<>(fieldLabel, Long.valueOf(0L));
+            break;
+        case EXTURL:
+            property = new DynamicUiProperty<>(fieldLabel, new String(""));
             break;
         default:
             return "";
