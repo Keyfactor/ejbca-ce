@@ -52,7 +52,7 @@ public class BaseHelper {
     /**
      * Built-in timeout for WebElement find.
      */
-    public static final int DEFAULT_WAIT_TIMEOUT_SECONDS = 5;
+    public static final int DEFAULT_WAIT_TIMEOUT_SECONDS = 10;
 
     /**
      * Selector's switch to select an option by name or value.
@@ -100,7 +100,7 @@ public class BaseHelper {
     }
 
     /**
-     * Finds an element by locator using the built-in timeout. This method will find invisible elements (and only invisible elements).
+     * Finds an element by locator using the built-in timeout. This method will find invisible elements also.
      *
      * @param elementId locator.
      * @return a web element.
@@ -853,11 +853,9 @@ public class BaseHelper {
         wait.until(ExpectedConditions.visibilityOf(webElement));
     }
 
-    // Add a delay-timeout for DOM object search to make sure the document is fully loaded and we don't get a stale exception
     private void waitForInvisibleElementByLocator(final By objectBy) {
-        // A bug in EJBCA requires a wait here, otherwise it results in an XML Parsing Error
         final WebDriverWait wait = new WebDriverWait(webDriver, DEFAULT_WAIT_TIMEOUT_SECONDS);
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(objectBy));
+        wait.until(ExpectedConditions.presenceOfElementLocated(objectBy));
     }
 
     private Alert waitForAlertIsPresent() {

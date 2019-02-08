@@ -30,9 +30,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.AuditLogHelper;
@@ -83,6 +80,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     public static void init() {
         // super
         beforeClass(true, null);
+        cleanup(); // clean up data from aborted test runs
         webDriver = getWebDriver();
         // Init helpers
         caHelper = new CaHelper(webDriver);
@@ -92,12 +90,18 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
-        // Remove generated artifacts
-        removeEndEntityByUsername(TestData.EE_NAME);
-        removeCaAndCryptoToken(TestData.CA_NAME);
+    public static void exit() {
+        cleanup();
         // super
         afterClass();
+    }
+
+    /**
+     * Removes generated artifacts
+     */
+    private static void cleanup() {
+        removeEndEntityByUsername(TestData.EE_NAME);
+        removeCaAndCryptoToken(TestData.CA_NAME);
     }
 
     @Test
@@ -298,6 +302,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
     @Test
     public void stepH_search() {
         searchEndEntitiesHelper.openPage(getAdminWebUrl());
+        searchEndEntitiesHelper.switchViewModeFromAdvancedToBasic();
         // Search for End Entity, make sure there is exactly 1 result
         searchEndEntitiesHelper.fillSearchCriteria(TestData.ADD_EE_FIELDMAP.get("Username"), null, null, null);
         searchEndEntitiesHelper.clickSearchByUsernameButton();
