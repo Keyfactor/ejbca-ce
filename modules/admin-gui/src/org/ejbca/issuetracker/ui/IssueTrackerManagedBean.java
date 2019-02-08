@@ -30,7 +30,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Backing bean for the issue tracker displayed on the front screen.
  *
- * @version $Id: $
+ * @version $Id$
  */
 @ManagedBean(name = "issueTracker")
 @SessionScoped

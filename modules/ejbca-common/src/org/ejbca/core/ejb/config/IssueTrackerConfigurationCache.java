@@ -24,7 +24,7 @@ import org.ejbca.config.IssueTrackerConfiguration;
 /**
  * Class holding a cache variable for the EJBCA issue tracker configuration.
  *
- * @version $Id: $
+ * @version $Id$
  */
 public class IssueTrackerConfigurationCache implements ConfigurationCache {
     private volatile ConfigurationBase cachedConfiguration;
