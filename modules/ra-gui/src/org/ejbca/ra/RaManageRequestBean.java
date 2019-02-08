@@ -33,6 +33,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -373,6 +374,10 @@ public class RaManageRequestBean implements Serializable {
         return kvp;
     }
 
+    public boolean isValueUrl(final String string) {
+        return StringTools.isValidUri(string);
+    }
+    
     public String getStepInfoText() {
         final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
         if (!roles.isEmpty()) {

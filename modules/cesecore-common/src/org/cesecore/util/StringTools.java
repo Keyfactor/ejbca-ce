@@ -15,6 +15,10 @@ package org.cesecore.util;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -441,6 +445,20 @@ public final class StringTools {
       return m2.matches();
     }
 
+    /**
+     * Determines if the given string is a valid URI
+     * @param url to verify
+     * @return true if input is a valid URI
+     */
+    public static boolean isValidUri(final String uri) {
+        try {
+            new URL(uri).toURI();
+        } catch (MalformedURLException | URISyntaxException e) {
+            return false;
+        }
+        return true;
+    }
+    
     /**
      * Check if a string constitutes a valid hostname for the dNSName attribute of the Subject
      * Alternative Name X.509 certificate extension. This method does NOT check if the hostname

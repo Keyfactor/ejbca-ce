@@ -267,6 +267,18 @@ public class StringToolsTest {
     }
 
     @Test
+    public void testIsValidUrl() {
+        assertTrue(StringTools.isValidUri("http://primekey.com"));
+        assertTrue(StringTools.isValidUri("http://primekey.com/"));
+        assertTrue(StringTools.isValidUri("http://primekey.com/something.png"));
+        assertTrue(StringTools.isValidUri("https://192.168.1.100:8080/index.html"));
+        assertTrue(StringTools.isValidUri("ftp://192.168.1.100:8080/something.png"));
+        assertFalse(StringTools.isValidUri("primekey.com"));
+        assertFalse(StringTools.isValidUri("abc"));
+        assertFalse(StringTools.isValidUri(""));
+    }
+    
+    @Test
     public void testHasSqlStripChars() throws Exception {
         String str = "select * from Table";
         assertTrue(StringTools.hasSqlStripChars(str).isEmpty());
