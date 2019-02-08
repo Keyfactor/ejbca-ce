@@ -1396,6 +1396,23 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 .expandOnClick:focus { width: 100%; display: inline; overflow: auto; color:#000000; white-space: pre-wrap; cursor: pointer; }
 .expandOnClick:focus:after { content: ""; }
 
+/* 
+ * Cards for the EJBCA Issue Tracker. Based on the CSS template from WC3.
+ * https://www.w3schools.com/howto/howto_css_cards.asp
+ */
+.card {
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    border-radius: 3px;
+    margin-top: 10px;
+    padding: 10px;
+    width: 250px;
+}
+
+.card:hover { box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); }
+.card.prio-info { background-color: #b3ecff; }
+.card.prio-warn { background-color: #ffcc00; }
+.card.prio-error { background-color: ff8566; }
 
 /* Line break stack traces */
 .preformatted {
