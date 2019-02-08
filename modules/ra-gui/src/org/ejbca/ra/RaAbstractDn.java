@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
@@ -35,7 +36,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
  */
 public abstract class RaAbstractDn {
 
-    //private static final Logger log = Logger.getLogger(RaAbstractDn.class);
+    private static final Logger log = Logger.getLogger(RaAbstractDn.class);
     
     private final Collection<EndEntityProfile.FieldInstance> fieldInstances = new ArrayList<>();
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
@@ -67,6 +68,10 @@ public abstract class RaAbstractDn {
         DNFieldExtractor dnFieldExtractor = null;
         if (dn!=null) {
             dnFieldExtractor = new DNFieldExtractor(dn, getAbstractDnFieldExtractorType());
+        }
+        if (endEntityProfile == null) {
+            log.debug("End Entity Profile is missing. Fields will not be displayed correctly.");
+            return;
         }
         for (final String key : getAbstractDnFields()) {
             final Field field = endEntityProfile.new Field(key);
