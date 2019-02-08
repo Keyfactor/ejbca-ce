@@ -225,7 +225,7 @@ public abstract class WebTestBase {
      *
      * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeCaAndCryptoToken(final String caName) throws AuthorizationDeniedException {
+    protected static void removeCaAndCryptoToken(final String caName) {
         removeCaByName(caName);
         removeCryptoTokenByCaName(caName);
     }
@@ -237,11 +237,15 @@ public abstract class WebTestBase {
      *
      * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeCaByName(final String caName) throws AuthorizationDeniedException {
+    protected static void removeCaByName(final String caName) {
         final CaSessionRemote caSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        final CAInfo caInfo = caSessionRemote.getCAInfo(ADMIN_TOKEN, caName);
-        if(caInfo != null) {
-            caSessionRemote.removeCA(ADMIN_TOKEN, caInfo.getCAId());
+        try {
+            final CAInfo caInfo = caSessionRemote.getCAInfo(ADMIN_TOKEN, caName);
+            if (caInfo != null) {
+                caSessionRemote.removeCA(ADMIN_TOKEN, caInfo.getCAId());
+            }
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
         }
     }
 
@@ -249,86 +253,97 @@ public abstract class WebTestBase {
      * Removes the CMP alias (configuration) using EJB instance.
      * 
      * @param alias CMP alias to remove
-     * 
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeCmpAliasByName(final String alias) throws AuthorizationDeniedException {
+    protected static void removeCmpAliasByName(final String alias) {
         final GlobalConfigurationSessionRemote globalConfigRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-        CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigRemote.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        cmpConfiguration.removeAlias(alias);
-        globalConfigRemote.saveConfiguration(ADMIN_TOKEN, cmpConfiguration);
+        try {
+            CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigRemote.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+            cmpConfiguration.removeAlias(alias);
+            globalConfigRemote.saveConfiguration(ADMIN_TOKEN, cmpConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
+        }
     }
     
     /**
      * Removes the CryptoToken associated with CA using EJB instance.
      *
      * @param caName CA name.
-     *
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeCryptoTokenByCaName(final String caName) throws AuthorizationDeniedException {
+    protected static void removeCryptoTokenByCaName(final String caName) {
         final CryptoTokenManagementSessionRemote cryptoTokenManagementSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        final Integer cryptoTokenId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
-        if(cryptoTokenId == null) {
-            log.error("Cannot remove a crypto token for CA [" + caName + "]");
-            return;
+        try {
+            final Integer cryptoTokenId = cryptoTokenManagementSessionRemote.getIdFromName(caName);
+            if(cryptoTokenId == null) {
+                log.error("Cannot remove a crypto token for CA [" + caName + "]");
+                return;
+            }
+            cryptoTokenManagementSessionRemote.deleteCryptoToken(ADMIN_TOKEN, cryptoTokenId);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
         }
-        cryptoTokenManagementSessionRemote.deleteCryptoToken(ADMIN_TOKEN, cryptoTokenId);
     }
 
     /**
      * Removes the CertificateProfile using EJB instance.
      *
      * @param certificateProfileName Certificate profile name.
-     *
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeCertificateProfileByName(final String certificateProfileName) throws AuthorizationDeniedException {
+    protected static void removeCertificateProfileByName(final String certificateProfileName) {
         final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-        certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, certificateProfileName);
+        try {
+            certificateProfileSession.removeCertificateProfile(ADMIN_TOKEN, certificateProfileName);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
+        }
     }
 
     /**
      * Removes the EndEntityProfile using EJB instance.
      *
      * @param endEntityProfileName End entity profile name.
-     *
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeEndEntityProfileByName(final String endEntityProfileName) throws AuthorizationDeniedException {
+    protected static void removeEndEntityProfileByName(final String endEntityProfileName) {
         final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-        endEntityProfileSession.removeEndEntityProfile(ADMIN_TOKEN, endEntityProfileName);
+        try {
+            endEntityProfileSession.removeEndEntityProfile(ADMIN_TOKEN, endEntityProfileName);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
+        }
     }
 
     /**
-     * Removes the EndEntity using EJB instance.
+     * Removes the EndEntity using EJB instance, if it exists.
      *
      * @param username username for deletion.
-     *
-     * @throws CouldNotRemoveEndEntityException in case of referencing objects.
-     * @throws NoSuchEndEntityException in case of non-existing end entity.
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeEndEntityByUsername(final String username) throws CouldNotRemoveEndEntityException, NoSuchEndEntityException, AuthorizationDeniedException {
+    protected static void removeEndEntityByUsername(final String username) {
         final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        endEntityManagementSession.deleteUser(ADMIN_TOKEN, username);
+        try {
+            endEntityManagementSession.deleteUser(ADMIN_TOKEN, username);
+        } catch (NoSuchEndEntityException e) {
+            // NOPMD This is safe to ignore
+        } catch (CouldNotRemoveEndEntityException | AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
      * Removes the 'Administrator Role' by name using EJB instance.
      *
      * @param roleName role name for deletion.
-     *
-     * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeAdministratorRoleByName(final String roleName) throws AuthorizationDeniedException {
+    protected static void removeAdministratorRoleByName(final String roleName) {
         final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
-        final Role role = roleSession.getRole(ADMIN_TOKEN, null, roleName);
-        if(role != null) {
-            roleSession.deleteRoleIdempotent(ADMIN_TOKEN, role.getRoleId());
-        }
-        else {
-            log.error("Cannot remove Administrator Role [" + roleName + "].");
+        try {
+            final Role role = roleSession.getRole(ADMIN_TOKEN, null, roleName);
+            if (role != null) {
+                roleSession.deleteRoleIdempotent(ADMIN_TOKEN, role.getRoleId());
+            } else {
+                log.error("Cannot remove Administrator Role [" + roleName + "].");
+            }
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
         }
     }
 
@@ -339,13 +354,17 @@ public abstract class WebTestBase {
      *
      * @throws AuthorizationDeniedException in case of authorization problem.
      */
-    protected static void removeApprovalProfileByName(final String approvalProfileName) throws AuthorizationDeniedException {
+    protected static void removeApprovalProfileByName(final String approvalProfileName) {
         final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
-        final Map<Integer, String> approvalIdNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
-        for (Map.Entry<Integer, String> approvalProfile : approvalIdNameMap.entrySet()) {
-            if (approvalProfile.getValue().equals(approvalProfileName)) {
-                approvalProfileSession.removeApprovalProfile(ADMIN_TOKEN, approvalProfile.getKey());
+        try {
+            final Map<Integer, String> approvalIdNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
+            for (Map.Entry<Integer, String> approvalProfile : approvalIdNameMap.entrySet()) {
+                if (approvalProfile.getValue().equals(approvalProfileName)) {
+                    approvalProfileSession.removeApprovalProfile(ADMIN_TOKEN, approvalProfile.getKey());
+                }
             }
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
         }
     }
     
@@ -354,11 +373,14 @@ public abstract class WebTestBase {
      * 
      * @param publisherName name of the publisher to be removed
      * @throws ReferencesToItemExistException exception thrown in case the publisher in use.
-     * @throws AuthorizationDeniedException exception thrown in case of authorization problem.
      */
-    protected static void removePublisherByName(final String publisherName) throws ReferencesToItemExistException, AuthorizationDeniedException {
+    protected static void removePublisherByName(final String publisherName) throws ReferencesToItemExistException {
         final PublisherSessionRemote publisherSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
-        publisherSessionRemote.removePublisher(ADMIN_TOKEN, publisherName);
+        try {
+            publisherSessionRemote.removePublisher(ADMIN_TOKEN, publisherName);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
+        }
     }
 
     /**

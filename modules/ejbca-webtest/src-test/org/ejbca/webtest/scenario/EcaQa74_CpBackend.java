@@ -204,7 +204,7 @@ public class EcaQa74_CpBackend extends WebTestBase {
                         "subjectalternativenamecritical=true",
                         "issueralternativenamecritical=true",
                         "usecrldistributionpoint=true",
-                        "crldistributionpointuri=http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN=TestCA,O=AnaTom,C=SE",
+                        "crldistributionpointuri=" + getPublicWebUrl() +"publicweb/webdist/certdist?cmd=crl&issuer=CN=TestCA,O=AnaTom,C=SE",
                         "crlissuer=CN=TestCA,O=AnaTom,C=SE",
                         "usesubjectdirattributes=true",
                         "usenameconstraints=true",
