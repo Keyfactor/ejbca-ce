@@ -33,7 +33,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Backing bean for the 'Issue Tracker' tab in the System Configuration.
  *
- * @version $Id: $
+ * @version $Id$
  */
 @ManagedBean(name = "issueTrackerSettings")
 @ViewScoped
