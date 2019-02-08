@@ -336,21 +336,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 }
         }
     }
-    
+
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
         if (!FacesContext.getCurrentInstance().isPostback()) {
             final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
             getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
         }
     }
-    
+
     public void authorizeViewCertExtension(ComponentSystemEvent event) throws Exception {
         if (!FacesContext.getCurrentInstance().isPostback()) {
             final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
             getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource());
         }
     }
-    
+
     public SystemConfigMBean() {
         super();
     }
@@ -1009,7 +1009,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public boolean isRestAvailable() {
         return getEjbcaWebBean().isRunningEnterprise();
     }
-    
+
     /** @return true if ACME is enabled. Should be false for EJBCA CE */
     public boolean isAcmeAvailable() {
         return getEjbcaWebBean().isRunningEnterprise();
@@ -1681,7 +1681,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         return ret;
     }
-    
+
     public List<SelectItem> getAvailableLanguageSelectItems() {
         final List<SelectItem> selectItems = new ArrayList<>();
         final List<WebLanguage> availableWebLanguages = getEjbcaWebBean().getWebLanguages();
@@ -1736,6 +1736,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
             availableTabs.add("External Scripts");
+        }
+        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
+            availableTabs.add("Issue Tracker");
         }
         return availableTabs;
     }

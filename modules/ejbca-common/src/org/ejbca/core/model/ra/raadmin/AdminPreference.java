@@ -32,9 +32,25 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
 
     public static final float LATEST_VERSION = 1;
 
-    // Public constants
     public static final int FILTERMODE_BASIC = 0;
     public static final int FILTERMODE_ADVANCED = 1;
+
+    private static final String PREFEREDLANGUAGE = "preferedlanguage";
+    private static final String SECONDARYLANGUAGE = "secondarylanguage";
+    private static final String ENTRIESPERPAGE = "entriesperpage";
+    private static final String LOGENTRIESPERPAGE = "logentriesperpage";
+    private static final String THEME = "theme";
+    private static final String LASTPROFILE = "lastprofile";
+    private static final String LASTFILTERMODE = "lastfiltermode";
+    private static final String LASTLOGFILTERMODE = "lastlogfiltermode";
+    private static final String FRONTPAGECASTATUS = "frontpagecastatus";
+    private static final String FRONTPAGEPUBQSTATUS = "frontpagepubqstatus";
+    private static final String PREFEREDRALANGUAGE = "preferedRaLanguage";
+    private static final String PREFEREDRASTYLEID = "preferedRaStyleId";
+    private static final String ISSUE_TRACKER_ON_FRONT_PAGE = "issueTrackerOnFrontPage";
+
+    public static final boolean DEFAULT_FRONTPAGECASTATUS = true;
+    public static final boolean DEFAULT_FRONTPAGEPUBQSTATUS = true;
 
     /** Creates a new instance of AdminPreference */
     public AdminPreference() {
@@ -51,7 +67,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
         data.put(LASTLOGFILTERMODE, Integer.valueOf(FILTERMODE_BASIC));
         data.put(FRONTPAGECASTATUS, DEFAULT_FRONTPAGECASTATUS);
         data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
-
+        data.put(ISSUE_TRACKER_ON_FRONT_PAGE, false);
     }
 
     public int getPreferedLanguage() {
@@ -65,8 +81,9 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     public Locale getPreferedRaLanguage() {
         Locale locale = ((Locale) data.get(PREFEREDRALANGUAGE));
 
-        if (locale == null)
+        if (locale == null) {
             return null;
+        }
         return locale;
     }
 
@@ -78,8 +95,9 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
 
         Integer raStyleId = ((Integer) data.get(PREFEREDRASTYLEID));
 
-        if (raStyleId == null)
+        if (raStyleId == null) {
             return null;
+        }
         return raStyleId;
     }
 
@@ -88,7 +106,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     }
 
     /** Method taking a string, needs as input the available languages.
-     * 
+     *
      * @param languages available languages as retrieved from EjbcaWebBean.getAvailableLanguages
      * @param languagecode two letter language code (ISO 639-1), e.g. en, sv
      * @see org.ejbca.ui.web.admin.configuration.EjbcaWebBean#getAvailableLanguages()
@@ -112,7 +130,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     }
 
     /** Method taking a string, needs as input the available languages.
-     * 
+     *
      * @param languages available languages as retrieved from EjbcaWebBean.getAvailableLanguages
      * @param languagecode two letter language code (ISO 639-1), e.g. en, sv
      * @see org.ejbca.ui.web.admin.configuration.EjbcaWebBean#getAvailableLanguages()
@@ -192,6 +210,15 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
         data.put(FRONTPAGEPUBQSTATUS, Boolean.valueOf(frontpagepubqstatus));
     }
 
+    public boolean isIssueTrackerOnFrontPage() {
+        return Boolean.TRUE.equals(data.get(ISSUE_TRACKER_ON_FRONT_PAGE));
+    }
+
+    public void setIssueTrackerOnFrontPage(final boolean isIssueTrackerOnFrontPage) {
+        data.put(ISSUE_TRACKER_ON_FRONT_PAGE, Boolean.valueOf(isIssueTrackerOnFrontPage));
+    }
+
+    @Override
     public Object clone() throws CloneNotSupportedException {
         AdminPreference clone = new AdminPreference();
         @SuppressWarnings("unchecked")
@@ -208,14 +235,16 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
     public float getLatestVersion() {
         return LATEST_VERSION;
     }
 
     /** Implementation of UpgradableDataHashMap function upgrade. */
+    @Override
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            // New version of the class, upgrade  
+            // New version of the class, upgrade
 
             if (data.get(FRONTPAGECASTATUS) == null) {
                 data.put(FRONTPAGECASTATUS, DEFAULT_FRONTPAGECASTATUS);
@@ -227,22 +256,4 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
             data.put(VERSION, new Float(LATEST_VERSION));
         }
     }
-
-    // Private fields
-    private static final String PREFEREDLANGUAGE = "preferedlanguage";
-    private static final String SECONDARYLANGUAGE = "secondarylanguage";
-    private static final String ENTRIESPERPAGE = "entriesperpage";
-    private static final String LOGENTRIESPERPAGE = "logentriesperpage";
-    private static final String THEME = "theme";
-    private static final String LASTPROFILE = "lastprofile";
-    private static final String LASTFILTERMODE = "lastfiltermode";
-    private static final String LASTLOGFILTERMODE = "lastlogfiltermode";
-    private static final String FRONTPAGECASTATUS = "frontpagecastatus";
-    private static final String FRONTPAGEPUBQSTATUS = "frontpagepubqstatus";
-    private static final String PREFEREDRALANGUAGE = "preferedRaLanguage";
-    private static final String PREFEREDRASTYLEID = "preferedRaStyleId";
-
-    public static final boolean DEFAULT_FRONTPAGECASTATUS = true;
-    public static final boolean DEFAULT_FRONTPAGEPUBQSTATUS = true;
-
 }

@@ -104,6 +104,15 @@
                     <h:selectBooleanCheckbox id="frontpagePublisherQueueStatus" value="#{myPreferencesMBean.adminPreference.frontpagePublisherQueueStatus}"/>
                     <h:outputLabel value="#{web.text.SHOW}"/>
                 </h:panelGroup>
+                
+                <h:panelGroup rendered="#{issueTrackerSettings.issueTrackerEnabled}">
+                    <h3><h:outputLabel value="#{web.text.ISSUE_TRACKER_ON_FRONT_PAGE}"/></h3>
+                    <h:outputLabel styleClass="help" value="#{web.text.ISSUE_TRACKER_ON_FRONT_PAGE_HELP}"/>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{issueTrackerSettings.issueTrackerEnabled}">
+                    <h:selectBooleanCheckbox id="issueTrackerOnFrontPage" value="#{myPreferencesMBean.adminPreference.issueTrackerOnFrontPage}"/>
+                    <h:outputLabel value="#{web.text.SHOW}"/>
+                </h:panelGroup>
                                 
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>
