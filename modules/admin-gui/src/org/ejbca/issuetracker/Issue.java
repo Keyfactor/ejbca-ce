@@ -66,7 +66,8 @@ public abstract class Issue {
      * does not have to be, the name of the implementing class.
      *
      * <p><b>Implementation note:</b> The value returned by this function must be unique and is <u>not
-     * allowed to change</u> for compatibility reasons.
+     * allowed to change</u> for compatibility reasons. The return value of this method is also used
+     * as anchor in the Confluence documentation.
      *
      * @return the string representing this class in persistent storage.
      */
