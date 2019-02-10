@@ -1338,6 +1338,7 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
     margin-top: 10px;
     padding: 10px;
     width: 250px;
+    font-size: 0.8em;
 }
 
 .card:hover { box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); }
