@@ -72,5 +72,12 @@ public class IssueTrackerManagedBean extends BaseManagedBean {
                 .getCachedConfiguration(IssueTrackerConfiguration.CONFIGURATION_ID);
         return issueTrackerConfiguration.isIssueTrackerEnabled();
     }
+
+    public String getHelpReference(final Ticket ticket) {
+        if (!getEjbcaWebBean().isHelpEnabled()) {
+            return "#";
+        }
+        return getEjbcaWebBean().getHelpBaseURI() + "/Issues.html#" + ticket.getIssue().getDatabaseValue();
+    }
 }
 
