@@ -18,6 +18,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 import org.cesecore.util.ui.MultiLineString;
+import org.cesecore.util.ui.UrlString;
 
 /**
  * When using dynamic properties, JSF can't handle String conversions for some strange reason. This converter takes care of that. 
@@ -41,8 +42,11 @@ public class StringConverter implements Converter{
         if (value == null) {
             return "";
         }
-        if(value instanceof MultiLineString) {
+        if (value instanceof MultiLineString) {
             return ((MultiLineString) value).getValue();
+        }
+        if (value instanceof UrlString) {
+            return ((UrlString)value).getValue();
         }
         return (String) value;
     }
