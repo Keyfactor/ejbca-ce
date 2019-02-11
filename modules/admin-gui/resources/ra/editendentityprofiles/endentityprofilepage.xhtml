@@ -1008,7 +1008,7 @@
 							action="#{endEntityProfileMBean.removeAllNotifications}"
 							rendered="#{not empty endEntityProfileMBean.userNotifications and not endEntityProfileMBean.viewOnly}"
 							disabled="#{not endEntityProfileMBean.useSendNotification}">
-						<f:ajax render="userNotificationsWrapper sendNotificationsDeleteAllGroup"/>
+						<f:ajax render="userNotificationsWrapper sendNotificationsDeleteAllGroup sendNotificationGrid"/>
 					</h:commandButton>
 				</h:panelGroup>
 				<h:panelGroup id="sendNotificationGroup">
@@ -1041,11 +1041,11 @@
 					<h:outputLabel for="sendNotificationRequiredCheckBox" value="#{web.text.REQUIRED}"/>	
 					<h:commandButton
 						id="addButton"
-						value="#{web.text.ADD}"
+						value="#{endEntityProfileMBean.notificationAdded ? web.text.ADDANOTHER : web.text.ADD}"
 						action="#{endEntityProfileMBean.addNotification}"
 						rendered="#{not endEntityProfileMBean.viewOnly}"
 						disabled="#{not endEntityProfileMBean.useSendNotification}">
-						<f:ajax render="userNotificationsWrapper sendNotificationsDeleteAllGroup"/>
+						<f:ajax render="userNotificationsWrapper sendNotificationsDeleteAllGroup sendNotificationGrid"/>
 					</h:commandButton>
 				</h:panelGrid>			
 			</h:panelGrid>	
@@ -1059,7 +1059,7 @@
 							action="#{endEntityProfileMBean.removeNotification(userNotification)}"
 							rendered="#{not endEntityProfileMBean.viewOnly}"
 							disabled="#{not endEntityProfileMBean.useSendNotification}">
-							<f:ajax render=":eeProfiles:userNotificationsWrapper :eeProfiles:sendNotificationsDeleteAllGroup"/>  
+							<f:ajax render=":eeProfiles:userNotificationsWrapper :eeProfiles:sendNotificationsDeleteAllGroup :eeProfiles:sendNotificationGrid"/>  
 						</h:commandButton>
 					</h:column>
 					<h:outputLabel for="textFieldNotificationSender" value="#{web.text.NOTIFICATIONSENDER}"/>
