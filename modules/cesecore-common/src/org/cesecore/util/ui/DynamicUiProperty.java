@@ -282,6 +282,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         // The defaultValue of the old implementation MUST NOT be null, the one of the new can be!
         if (defaultValue instanceof MultiLineString) {
             return new MultiLineString(value);
+        } else if (defaultValue instanceof UrlString) {
+            return new UrlString(value);
         } else if (defaultValue instanceof String) {
             return value;
         } else if (defaultValue instanceof Boolean) {
@@ -325,6 +327,8 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         String result = StringUtils.EMPTY;
         if (value instanceof MultiLineString) {
             result = ((MultiLineString) value).getValue();
+        } else if (value instanceof UrlString) {
+            result = ((UrlString)value).getValue();
         } else if (value instanceof String) {
             result = (String) value;
         } else if (value instanceof RadioButton) {
