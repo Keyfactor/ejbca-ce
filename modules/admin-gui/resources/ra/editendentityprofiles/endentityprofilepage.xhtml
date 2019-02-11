@@ -468,12 +468,21 @@
 								</h:selectBooleanCheckbox>
 								<h:outputLabel for="altNameUseEndEntityEmail" value="#{web.text.USEENTITYEMAILFIELD}"/>
 							</h:panelGroup>
+							<h:panelGroup rendered="#{subjectAltNameComponent.dnsField}">
+								<h:selectBooleanCheckbox
+									id="altNameUseEndEntityCnAsDns"
+									value="#{subjectAltNameComponent.used}"
+									disabled="#{endEntityProfileMBean.viewOnly}">
+									<f:ajax render="subjectAltNameCheckBoxesGrid subjectAltNameTextField"/>
+								</h:selectBooleanCheckbox>
+								<h:outputLabel for="altNameUseEndEntityCnAsDns" value="#{web.text.USEENTITYECNFIELD}"/>
+							</h:panelGroup>
 							<h:inputText 
 								id="subjectAltNameTextField" 
 								value="#{subjectAltNameComponent.value}" 
 					   			size="45" 
 					   			maxlength="1024"
-								disabled="#{subjectAltNameComponent.useEndEntityEmail or endEntityProfileMBean.viewOnly}">
+								disabled="#{subjectAltNameComponent.useEndEntityEmail or subjectAltNameComponent.useEndEntityDns or endEntityProfileMBean.viewOnly}">
 								<f:ajax/> 
 							</h:inputText>
 							<h:panelGrid id="subjectAltNameCheckBoxesGrid" columns="7">
@@ -487,14 +496,14 @@
 				    			<h:selectBooleanCheckbox 
 				    				id="altNameModifiableCheckBox" 
 				    				value="#{subjectAltNameComponent.modifiable}" 
-				    				disabled="#{subjectAltNameComponent.useEndEntityEmail or endEntityProfileMBean.viewOnly}">
+				    				disabled="#{subjectAltNameComponent.subjectAltComponentPropertyDisabled}">
 				    				<f:ajax render="subjectAltNameCheckBoxesGrid"/>
 				    			</h:selectBooleanCheckbox>
 				    			<h:outputLabel for="altNameModifiableCheckBox"  value="#{web.text.MODIFYABLE}"/>
 				    			<h:selectBooleanCheckbox 
 				    				id="altNameValidationCheckBox" 
 				    				value="#{subjectAltNameComponent.useValidation}" 
-				    				disabled="#{not subjectAltNameComponent.modifiable or subjectAltNameComponent.useEndEntityEmail or endEntityProfileMBean.viewOnly}">
+				    				disabled="#{not subjectAltNameComponent.modifiable or subjectAltNameComponent.subjectAltComponentPropertyDisabled}">
 				    				<f:ajax render="subjectAltNameCheckBoxesGrid"/>
 				    			</h:selectBooleanCheckbox>
 				    			<h:outputLabel for="altNameValidationCheckBox"  value="#{web.text.VALIDATION}"/>
@@ -503,7 +512,7 @@
 				    				style="font-size: 9pt" 
 				    				value="#{subjectAltNameComponent.validationString}" 
 				    				title="#{web.text.FORMAT_REGEX}"
-					   				disabled="#{not subjectAltNameComponent.useValidation or not subjectAltNameComponent.modifiable or subjectAltNameComponent.useEndEntityEmail or endEntityProfileMBean.viewOnly}">
+					   				disabled="#{not subjectAltNameComponent.useValidation or not subjectAltNameComponent.modifiable or subjectAltNameComponent.subjectAltComponentPropertyDisabled}">
 								    <f:ajax/> 
 								</h:inputText>
 							</h:panelGrid>
