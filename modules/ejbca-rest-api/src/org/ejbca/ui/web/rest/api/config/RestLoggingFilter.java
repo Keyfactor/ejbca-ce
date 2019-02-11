@@ -16,11 +16,13 @@ import java.util.Enumeration;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.WriteListener;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -63,6 +65,16 @@ public class RestLoggingFilter implements Filter {
         @Override
         public void close() throws IOException {
             this.servletOutputStream.close();
+        }
+
+        @Override
+        public boolean isReady() {
+            return this.servletOutputStream.isReady();
+        }
+
+        @Override
+        public void setWriteListener(final WriteListener writeListener) {
+            this.servletOutputStream.setWriteListener(writeListener);            
         }       
     }
     
@@ -103,6 +115,21 @@ public class RestLoggingFilter implements Filter {
         @Override
         public void close() throws IOException {
             this.servletInputStream.close();
+        }
+
+        @Override
+        public boolean isFinished() {
+            return this.servletInputStream.isFinished();
+        }
+
+        @Override
+        public boolean isReady() {
+            return this.servletInputStream.isReady();
+        }
+
+        @Override
+        public void setReadListener(final ReadListener readListener) {
+            this.servletInputStream.setReadListener(readListener);
         }       
     }
     

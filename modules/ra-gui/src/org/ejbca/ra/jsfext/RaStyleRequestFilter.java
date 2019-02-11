@@ -26,6 +26,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -156,6 +157,24 @@ public class RaStyleRequestFilter implements Filter {
         @Override
         public void write(int writeByte) throws IOException {
             outStream.write(writeByte);
+        }
+
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+
+        @Override
+        public void setWriteListener(final WriteListener writeListener) {
+            try {
+                /*
+                 * "When an instance of the WriteListener is registered with a ServletOutputStream, this
+                 * method will be invoked by the container the first time when it is possible to write data."
+                 */
+                writeListener.onWritePossible();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     

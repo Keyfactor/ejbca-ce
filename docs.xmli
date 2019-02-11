@@ -42,7 +42,7 @@
     <property name="confluence.url"  value="none" />
     <property name="confluence.port"  value="-1" />
 	<path id="jdoc.classpath">
-        <path location="lib/jee/javaee-api-6.0-6.jar"/>
+        <path location="lib/jee/javaee-api-7.0-1.jar"/>
 		<path location="dist/ejbca-common.jar" />
 		<path location="modules/dist/ejbca-ejb.jar" />
         <path location="modules/dist/cesecore-common.jar"/>
@@ -276,7 +276,7 @@ piwikTracker.enableLinkTracking();
     	<mkdir dir="${gen-depgraph.dir}"/>
     	<path id="gen-dep.classpath">
     	    <!-- for javax.ejb.Stateless, Local and EJB-->
-    		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
+    		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
     		<fileset dir="${ejbca.home}/lib" includes="log4j*.jar" />
     	</path>
     	<javac srcdir="${ejbca.home}/modules/ejbca-ejb/src" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" encoding="UTF-8" debug="on" includeantruntime="false"
