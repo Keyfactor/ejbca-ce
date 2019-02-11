@@ -55,6 +55,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.math.ec.ECCurve;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -188,10 +189,10 @@ public abstract class AlgorithmTools {
         }
         return processedCurveNames;
     }
-    
+
     /**
      * Get unique available named elliptic curves and their aliases.
-     *  
+     *
      * @param hasToBeKnownByDefaultProvider if the curve name needs to be known by the default provider (e.g. so Sun PKCS#11 can use it)
      * @return a Map with elliptic curve names as key and the list of alias separated by '/' as the value.
      */
@@ -205,15 +206,15 @@ public abstract class AlgorithmTools {
         }
         return result;
     }
-    
+
     /**
      * Gets a list of allowed curves (see {@link http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf}.
-     * 
+     *
      * @return the list of allowed curves.
      */
     public static List<String> getNistCurves() {
         // Only apply most important conditions (sequence is Root-CA, Sub-CA, User-Certificate)!
-        // But this is not required at the time, because certificate validity conditions are before 
+        // But this is not required at the time, because certificate validity conditions are before
         // 2014 (now 2017). Allowed curves by NIST are NIST P 256, P 384, P 521
         // See http://csrc.nist.gov/groups/ST/toolkit/documents/dss/NISTReCur.pdf chapter 1.2
         final List<String> list = new ArrayList<String>();
@@ -329,7 +330,7 @@ public abstract class AlgorithmTools {
         }
         return ret;
     }
-    
+
     /**
      * Gets the key specification from a public key. Example: "2048" for a RSA
      * or DSA key or "secp256r1" for EC key. The EC curve is only detected
@@ -597,9 +598,9 @@ public abstract class AlgorithmTools {
                 throw new AlgorithmsToolRuntimeException("Certificate type neither X509 nor CVS.");
             }
             // Try to make it easier to display some signature algorithms that cert.getSigAlgName() does not have a good string for.
-            // We typically don't get here, since the x509cert.getSigAlgName handles id_RSASSA_PSS nowadays, this is old legacy code, 
-            // only triggered if the resulting signature algorithm returned above is an OID in stead of a sign alg name 
-            // (i.e. 1.2.840.113549.1.1.10 instead of SHA256WithRSAAndMGF1 
+            // We typically don't get here, since the x509cert.getSigAlgName handles id_RSASSA_PSS nowadays, this is old legacy code,
+            // only triggered if the resulting signature algorithm returned above is an OID in stead of a sign alg name
+            // (i.e. 1.2.840.113549.1.1.10 instead of SHA256WithRSAAndMGF1
             if (certSignatureAlgorithmTmp.equalsIgnoreCase(PKCSObjectIdentifiers.id_RSASSA_PSS.getId()) && cert instanceof X509Certificate) {
                 // Figure out the hash algorithm, it's hidden in the Signature Algorithm Parameters when using RSA PSS
                 // If we got this value we should have a x509 cert
@@ -957,5 +958,17 @@ public abstract class AlgorithmTools {
         }
 
         return null;
+    }
+
+    /**
+     * Determine if the certificate profile supports Elliptic Curve Cryptography (ECC).
+     *
+     * @param certificateProfile the certificate profile to check.
+     * @return true if the certificate profile supports a key algorithm which utilises ECC, false otherwise.
+     */
+    public static boolean isEccCapable(final CertificateProfile certificateProfile) {
+        return certificateProfile.getAvailableKeyAlgorithmsAsList().contains("ECDSA")
+                || certificateProfile.getAvailableKeyAlgorithmsAsList().contains("ECGOST3410")
+                || certificateProfile.getAvailableKeyAlgorithmsAsList().contains("DSTU4145");
     }
 }

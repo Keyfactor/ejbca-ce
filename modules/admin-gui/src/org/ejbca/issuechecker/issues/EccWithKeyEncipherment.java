@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuetracker.issues;
+package org.ejbca.issuechecker.issues;
 
 import java.util.AbstractMap;
 import java.util.List;
@@ -22,20 +22,21 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.ejbca.issuetracker.Issue;
-import org.ejbca.issuetracker.Ticket;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.ejbca.issuechecker.Issue;
+import org.ejbca.issuechecker.Ticket;
 
 /**
- * Warn whenever a certificate profile uses ECDSA as signature algorithm, but has the key usage
- * 'keyEncipehrment' enabled.  Section 3 of RFC 5480 defines the keyUsage bits allowed with
+ * Warn whenever a certificate profile uses an ECC-based signature scheme, and has the key usage
+ * 'keyEncipherment' enabled.  Section 3 of RFC 5480 defines the keyUsage bits allowed with
  * Elliptic Curve Cryptography Subject Public Key Information. Key Encipherment is not on the list.
  *
  * @version $Id$
  */
-public class EcdsaWithKeyEncipherment extends Issue {
+public class EccWithKeyEncipherment extends Issue {
     private final CertificateProfileSessionLocal certificateProfileSession;
 
-    public EcdsaWithKeyEncipherment(final CertificateProfileSessionLocal certificateProfileSession) {
+    public EccWithKeyEncipherment(final CertificateProfileSessionLocal certificateProfileSession) {
         this.certificateProfileSession = certificateProfileSession;
     }
 
@@ -47,9 +48,9 @@ public class EcdsaWithKeyEncipherment extends Issue {
                 /* Ignore built-in certificate profiles such as SERVER and ENDUSER */
                 .filter(idToName -> !CertificateProfileConstants.isFixedCertificateProfile(idToName.getKey()))
                 .map(idToName -> new AbstractMap.SimpleEntry<String, CertificateProfile>(idToName.getValue(), certificateProfileSession.getCertificateProfile(idToName.getKey())))
-                .filter(entry -> entry.getValue().getAvailableKeyAlgorithmsAsList().contains("ECDSA"))
+                .filter(entry -> AlgorithmTools.isEccCapable(entry.getValue()))
                 .filter(entry -> entry.getValue().getKeyUsage(CertificateConstants.KEYENCIPHERMENT))
-                .map(entry -> new Ticket(this, "ECDSA_WITH_KEY_ENCIPHERMENT_TICKET_DESCRIPTION", entry.getKey()))
+                .map(entry -> new Ticket(this, "ECC_WITH_KEY_ENCIPHERMENT_TICKET_DESCRIPTION", entry.getKey()))
                 .collect(Collectors.toList());
     }
 
@@ -60,11 +61,11 @@ public class EcdsaWithKeyEncipherment extends Issue {
 
     @Override
     public String getDescriptionLanguageKey() {
-        return "ECDSA_WITH_KEY_ENCIPHERMENT_ISSUE_DESCRIPTION";
+        return "ECC_WITH_KEY_ENCIPHERMENT_ISSUE_DESCRIPTION";
     }
 
     @Override
     public String getDatabaseValue() {
-        return "EcdsaWithKeyEncipherment";
+        return "EccWithKeyEncipherment";
     }
 }

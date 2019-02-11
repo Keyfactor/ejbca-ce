@@ -47,7 +47,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     private static final String FRONTPAGEPUBQSTATUS = "frontpagepubqstatus";
     private static final String PREFEREDRALANGUAGE = "preferedRaLanguage";
     private static final String PREFEREDRASTYLEID = "preferedRaStyleId";
-    private static final String ISSUE_TRACKER_ON_FRONT_PAGE = "issueTrackerOnFrontPage";
+    private static final String ISSUE_CHECKER_ON_FRONT_PAGE = "issueCheckerOnFrontPage";
 
     public static final boolean DEFAULT_FRONTPAGECASTATUS = true;
     public static final boolean DEFAULT_FRONTPAGEPUBQSTATUS = true;
@@ -67,7 +67,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
         data.put(LASTLOGFILTERMODE, Integer.valueOf(FILTERMODE_BASIC));
         data.put(FRONTPAGECASTATUS, DEFAULT_FRONTPAGECASTATUS);
         data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
-        data.put(ISSUE_TRACKER_ON_FRONT_PAGE, false);
+        data.put(ISSUE_CHECKER_ON_FRONT_PAGE, true);
     }
 
     public int getPreferedLanguage() {
@@ -210,12 +210,12 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
         data.put(FRONTPAGEPUBQSTATUS, Boolean.valueOf(frontpagepubqstatus));
     }
 
-    public boolean isIssueTrackerOnFrontPage() {
-        return Boolean.TRUE.equals(data.get(ISSUE_TRACKER_ON_FRONT_PAGE));
+    public boolean isIssueCheckerOnFrontPage() {
+        return Boolean.TRUE.equals(data.get(ISSUE_CHECKER_ON_FRONT_PAGE));
     }
 
-    public void setIssueTrackerOnFrontPage(final boolean isIssueTrackerOnFrontPage) {
-        data.put(ISSUE_TRACKER_ON_FRONT_PAGE, Boolean.valueOf(isIssueTrackerOnFrontPage));
+    public void setIssueCheckerOnFrontPage(final boolean isIssueCheckerOnFrontPage) {
+        data.put(ISSUE_CHECKER_ON_FRONT_PAGE, Boolean.valueOf(isIssueCheckerOnFrontPage));
     }
 
     @Override
