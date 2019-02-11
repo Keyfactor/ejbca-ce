@@ -19,9 +19,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.AddEndEntityHelper;
 import org.ejbca.webtest.helper.EndEntityProfileHelper;
@@ -35,6 +32,9 @@ import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
 /**
+ * This test uses "send notifications" and requires that e-mail is configured in the appserver at java:/EjbcaMail .
+ * You don't need an actual e-mail server, though. You can point it to some non-existent hostname.
+ *
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -93,7 +93,7 @@ public class EcaQa59_EEPHidden extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws NoSuchEndEntityException, AuthorizationDeniedException, CouldNotRemoveEndEntityException {
+    public static void exit() {
         removeEndEntityByUsername(TestData.END_ENTITY_NAME);
         removeEndEntityProfileByName(TestData.EEP_NAME);
         afterClass();
