@@ -86,7 +86,6 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.junit.After;
