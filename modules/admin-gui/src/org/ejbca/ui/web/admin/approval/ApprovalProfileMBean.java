@@ -46,6 +46,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.MultiLineString;
 import org.cesecore.util.ui.PropertyValidationException;
 import org.cesecore.util.ui.RadioButton;
+import org.cesecore.util.ui.UrlString;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalPartition;
@@ -303,7 +304,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             property = new DynamicUiProperty<>(fieldLabel, Long.valueOf(0L));
             break;
         case EXTURL:
-            property = new DynamicUiProperty<>(fieldLabel, new String(""));
+            property = new DynamicUiProperty<>(fieldLabel, new UrlString(""));
             break;
         default:
             return "";

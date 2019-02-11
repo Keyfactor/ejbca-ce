@@ -79,7 +79,15 @@
                                 value="#{property.value}" size="6">
                                <f:converter converterId="javax.faces.Integer"/>
                             </h:inputText>
-                        </h:panelGroup>             
+                        </h:panelGroup>   
+                        <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'UrlString' and !property.multiValued}">
+                            <h:inputText disabled="#{raManageRequestBean.isPartitionHandled(partition) 
+                                || !raManageRequestBean.canApproveParition(partition)
+                                || raManageRequestBean.isPropertyReadOnly(property.name)}" 
+                                value="#{property.value}">
+                               <f:converter converterId="stringConverter"/>
+                            </h:inputText>
+                        </h:panelGroup>           
                         <h:panelGroup layout="block" rendered="#{property.type.simpleName eq 'RadioButton'}">
                             <h:selectOneRadio disabled="#{raManageRequestBean.isPartitionHandled(partition) 
                                                             || !raManageRequestBean.canApproveParition(partition)
