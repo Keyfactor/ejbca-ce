@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuetracker.ejb;
+package org.ejbca.issuechecker.ejb;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -24,28 +24,28 @@ import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.IssueTrackerConfiguration;
-import org.ejbca.issuetracker.Issue;
-import org.ejbca.issuetracker.IssueSet;
-import org.ejbca.issuetracker.Ticket;
-import org.ejbca.issuetracker.issues.EcdsaWithKeyEncipherment;
-import org.ejbca.issuetracker.issues.NotInProductionMode;
-import org.ejbca.issuetracker.issuesets.CertificateTransparencyIssueSet;
-import org.ejbca.issuetracker.issuesets.EjbcaCommonIssueSet;
+import org.ejbca.config.IssueCheckerConfiguration;
+import org.ejbca.issuechecker.Issue;
+import org.ejbca.issuechecker.IssueSet;
+import org.ejbca.issuechecker.Ticket;
+import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
+import org.ejbca.issuechecker.issues.NotInProductionMode;
+import org.ejbca.issuechecker.issuesets.CertificateTransparencyIssueSet;
+import org.ejbca.issuechecker.issuesets.EjbcaCommonIssueSet;
 
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Session bean implementing business logic for the EJBCA issue tracker.
+ * Session bean implementing business logic for the EJBCA issue checker.
  *
- * <p>Responsible for instantiating issues and issue sets. It is also able to track
+ * <p>Responsible for instantiating issues and issue sets. It is also able to check for
  * and filter issues as well as creating tickets.
  *
  * @version $Id$
  */
 @Singleton
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class IssueTrackerSessionBean implements IssueTrackerSessionBeanLocal, IssueTrackerSessionBeanRemote {
+public class IssueCheckerSessionBean implements IssueCheckerSessionBeanLocal, IssueCheckerSessionBeanRemote {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -65,7 +65,7 @@ public class IssueTrackerSessionBean implements IssueTrackerSessionBeanLocal, Is
     public void instansiateIssuesAndIssueSets() {
         issues = new ImmutableSet.Builder<Issue>()
                 .add(new NotInProductionMode())
-                .add(new EcdsaWithKeyEncipherment(certificateProfileSession))
+                .add(new EccWithKeyEncipherment(certificateProfileSession))
                 .build();
         issueSets = new ImmutableSet.Builder<IssueSet>()
                 .add(new EjbcaCommonIssueSet())
@@ -77,7 +77,7 @@ public class IssueTrackerSessionBean implements IssueTrackerSessionBeanLocal, Is
     public Stream<Ticket> getTickets() {
         // TODO This is lazily evaluated but perhaps cache the result for performance?
         return issues.stream()
-                .filter(issue -> isTracking(issue))
+                .filter(issue -> isChecking(issue))
                 .map(issue -> issue.getTickets())
                 .flatMap(tickets -> tickets.stream())
                 .sorted();
@@ -100,19 +100,19 @@ public class IssueTrackerSessionBean implements IssueTrackerSessionBeanLocal, Is
      * @return true if the issue set is enabled, false otherwise.
      */
     private boolean isIssueSetEnabled(final IssueSet issueSet) {
-        final IssueTrackerConfiguration issueTrackerConfiguration = (IssueTrackerConfiguration)
-                globalConfigurationSession.getCachedConfiguration(IssueTrackerConfiguration.CONFIGURATION_ID);
+        final IssueCheckerConfiguration issueTrackerConfiguration = (IssueCheckerConfiguration)
+                globalConfigurationSession.getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
         return issueTrackerConfiguration.getEnabledIssueSets().contains(issueSet.getDatabaseValue());
     }
 
     /**
-     * Determine if an issue is being tracked or not by looking at whether
+     * Determine if an issue is being checked or not by looking at whether
      * the issue resides in any of the enabled issue sets.
      *
      * @param issue the issue to look for in one of the issue sets
      * @return true if the issue is being tracked, false otherwise
      */
-    private boolean isTracking(final Issue issue) {
+    private boolean isChecking(final Issue issue) {
         return issueSets.stream()
                 .filter(issueSet -> isIssueSetEnabled(issueSet))
                 .anyMatch(issueSet -> issueSet.getIssues().contains(issue.getClass()));

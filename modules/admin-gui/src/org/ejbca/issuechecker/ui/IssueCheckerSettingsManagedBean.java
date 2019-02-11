@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuetracker.ui;
+package org.ejbca.issuechecker.ui;
 
 import java.util.List;
 import java.util.Set;
@@ -25,51 +25,51 @@ import javax.faces.bean.ViewScoped;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.IssueTrackerConfiguration;
-import org.ejbca.issuetracker.IssueSet;
-import org.ejbca.issuetracker.ejb.IssueTrackerSessionBeanLocal;
+import org.ejbca.config.IssueCheckerConfiguration;
+import org.ejbca.issuechecker.IssueSet;
+import org.ejbca.issuechecker.ejb.IssueCheckerSessionBeanLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * Backing bean for the 'Issue Tracker' tab in the System Configuration.
+ * Backing bean for the 'Issue Checker' tab in the System Configuration.
  *
- * @version $Id$
+ * @version $Id: IssueTrackerSettingsManagedBean.java 31452 2019-02-08 18:35:25Z bastianf $
  */
-@ManagedBean(name = "issueTrackerSettings")
+@ManagedBean(name = "issueCheckerSettings")
 @ViewScoped
-public class IssueTrackerSettingsManagedBean extends BaseManagedBean {
-    private static final Logger log = Logger.getLogger(IssueTrackerManagedBean.class);
+public class IssueCheckerSettingsManagedBean extends BaseManagedBean {
+    private static final Logger log = Logger.getLogger(IssueCheckerManagedBean.class);
     private static final long serialVersionUID = 1L;
-    private boolean isIssueTrackerEnabled;
+    private boolean isIssueCheckerEnabled;
     private List<IssueSetStatus> allIssueSetsAndTheirStatus;
 
     @EJB
-    private IssueTrackerSessionBeanLocal issueTrackerSession;
+    private IssueCheckerSessionBeanLocal issueCheckerSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @PostConstruct
     public void loadConfiguration() {
-        final IssueTrackerConfiguration issueTrackerConfiguration = (IssueTrackerConfiguration)
-                globalConfigurationSession.getCachedConfiguration(IssueTrackerConfiguration.CONFIGURATION_ID);
-        final Set<String> enabledIssueSets = issueTrackerConfiguration.getEnabledIssueSets();
-        allIssueSetsAndTheirStatus = issueTrackerSession.getAllIssueSets()
+        final IssueCheckerConfiguration issueCheckerConfiguration = (IssueCheckerConfiguration)
+        globalConfigurationSession.getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
+        final Set<String> enabledIssueSets = issueCheckerConfiguration.getEnabledIssueSets();
+        allIssueSetsAndTheirStatus = issueCheckerSession.getAllIssueSets()
                 .stream()
                 .map(issueSet -> new IssueSetStatus(issueSet, enabledIssueSets.contains(issueSet.getDatabaseValue())))
                 .collect(Collectors.toList());
-        isIssueTrackerEnabled = issueTrackerConfiguration.isIssueTrackerEnabled();
+        isIssueCheckerEnabled = issueCheckerConfiguration.isIssueCheckerEnabled();
     }
 
     public List<IssueSetStatus> getAllIssueSetsAndTheirStatus() {
         return allIssueSetsAndTheirStatus;
     }
 
-    public boolean isIssueTrackerEnabled() {
-        return isIssueTrackerEnabled;
+    public boolean isIssueCheckerEnabled() {
+        return isIssueCheckerEnabled;
     }
 
-    public void setIssueTrackerEnabled(final boolean isIssueTrackerEnabled) {
-        this.isIssueTrackerEnabled = isIssueTrackerEnabled;
+    public void setIssueCheckerEnabled(final boolean isIssueTrackerEnabled) {
+        this.isIssueCheckerEnabled = isIssueTrackerEnabled;
     }
 
     public String getLabel(final IssueSet issueSet) {
@@ -83,20 +83,21 @@ public class IssueTrackerSettingsManagedBean extends BaseManagedBean {
 
     public void save() {
         try {
-            final IssueTrackerConfiguration issueTrackerConfiguration = (IssueTrackerConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(IssueTrackerConfiguration.CONFIGURATION_ID);
+            final IssueCheckerConfiguration issueCheckerConfiguration = (IssueCheckerConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
             final Set<String> enabledIssueSets = allIssueSetsAndTheirStatus
                     .stream()
-                    .filter(issueSetStatus -> issueSetStatus.isEnabled()).map(issueSetStatus -> issueSetStatus.getIssueSet().getDatabaseValue())
+                    .filter(issueSetStatus -> issueSetStatus.isEnabled())
+                    .map(issueSetStatus -> issueSetStatus.getIssueSet().getDatabaseValue())
                     .collect(Collectors.toSet());
-            issueTrackerConfiguration.isIssueTrackerEnabled(isIssueTrackerEnabled);
-            issueTrackerConfiguration.setEnabledIssueSets(enabledIssueSets);
-            globalConfigurationSession.saveConfiguration(getAdmin(), issueTrackerConfiguration);
-            addInfoMessage("ISSUE_TRACKER_SAVE_OK");
+            issueCheckerConfiguration.setIssueCheckerEnabled(isIssueCheckerEnabled);
+            issueCheckerConfiguration.setEnabledIssueSets(enabledIssueSets);
+            globalConfigurationSession.saveConfiguration(getAdmin(), issueCheckerConfiguration);
+            addInfoMessage("ISSUE_CHECKER_SAVE_OK");
         } catch (AuthorizationDeniedException e) {
-            log.error("Cannot save the configuration for the EJBCA Issue Tracker because the current "
+            log.error("Cannot save the configuration for the EJBCA Issue Checker because the current "
                     + "administrator is not authorized. Error description: " + e.getMessage());
-            addErrorMessage("ISSUE_TRACKER_CANNOT_SAVE");
+            addErrorMessage("ISSUE_CHECKER_CANNOT_SAVE");
         }
     }
 }
