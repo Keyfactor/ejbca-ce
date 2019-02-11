@@ -22,6 +22,7 @@ import org.cesecore.ErrorCode;
 /**
  * An exception thrown when someone tries to activate the CMS Service for a CA that does not have a CMS certificate path
  *
+ * @version $Id$
  */
 @WebFault
 @ApplicationException(rollback=true)
