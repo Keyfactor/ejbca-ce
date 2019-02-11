@@ -171,6 +171,10 @@
                                        	<f:converter converterId="javax.faces.Integer"/>
                                        	<f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/>
                                     </h:inputText>
+                                    <h:inputText id="inputUrl" disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'UrlString'}" value="#{property.value}" size="50">
+                                       	<f:converter converterId="stringConverter"/>
+                                       	<f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/>
+                                    </h:inputText>
                                     <h:selectBooleanCheckbox disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
                                 </h:panelGroup>
                                 <h:selectOneMenu disabled="#{approvalProfilesMBean.viewOnly}" 
