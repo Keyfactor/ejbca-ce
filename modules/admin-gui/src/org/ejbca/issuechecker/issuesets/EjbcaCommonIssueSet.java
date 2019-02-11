@@ -11,22 +11,26 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuetracker.issuesets;
+package org.ejbca.issuechecker.issuesets;
 
 import java.util.Set;
 
-import org.ejbca.issuetracker.Issue;
-import org.ejbca.issuetracker.IssueSet;
+import org.ejbca.issuechecker.Issue;
+import org.ejbca.issuechecker.IssueSet;
+import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
+import org.ejbca.issuechecker.issues.NotInProductionMode;
 
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Issue set containing issues related to Certificate Transparency.
+ * Issue set containing issues which should be checked on a typical EJBCA installation.
  *
  * @version $Id$
  */
-public class CertificateTransparencyIssueSet extends IssueSet {
+public class EjbcaCommonIssueSet extends IssueSet {
     private final Set<Class<? extends Issue>> issues = new ImmutableSet.Builder<Class<? extends Issue>>()
+            .add(NotInProductionMode.class)
+            .add(EccWithKeyEncipherment.class)
             .build();
 
     @Override
@@ -36,17 +40,17 @@ public class CertificateTransparencyIssueSet extends IssueSet {
 
     @Override
     public String getDatabaseValue() {
-        return "CertificateTransparencyIssueSet";
+        return "EjbcaCommonIssueSet";
     }
 
     @Override
     public String getTitleLanguageString() {
-        return "CT_ISSUESET_TITLE";
+        return "EJBCA_COMMON_ISSUESET_TITLE";
     }
 
     @Override
     public String getDescriptionLanguageString() {
-        return "CT_ISSUESET_DESCRIPTION";
+        return "EJBCA_COMMON_ISSUESET_DESCRIPTION";
     }
 
 }
