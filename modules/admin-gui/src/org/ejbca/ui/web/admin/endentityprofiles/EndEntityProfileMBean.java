@@ -118,20 +118,27 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         private String helpText;
         private final String name;
         private final boolean emailField;
+        private final boolean dnsField;
         /** Corresponds to the removal checkboxes on the left */
         private boolean shouldRemove = false;
         /** Stores the last used validation regex in case the user mis-clicks and wants to undo */
         private String lastUsedValidationString = "";
 
-        public NameComponentGuiWrapper(final String name, final int[] field, final boolean emailField) {
+        public NameComponentGuiWrapper(final String name, final int[] field, final boolean emailField, final boolean dnsField) {
             this.name = name;
             this.field = field;
             this.emailField = emailField;
+            this.dnsField = dnsField;
             lastUsedValidationString = getValidationString();
         }
 
         public boolean isEmailField() {
             return emailField;
+        }
+
+
+        public boolean isDnsField() {
+            return dnsField;
         }
 
         public String getName() {
@@ -177,6 +184,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
         public boolean getUseEndEntityEmail() {
             return emailField && isUsed();
+        }
+
+        public boolean getUseEndEntityDns() {
+            return dnsField && isUsed();
         }
 
         public boolean isRequired() {
@@ -234,6 +245,10 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
         public void setShouldRemove(final boolean shouldRemove) {
             this.shouldRemove = shouldRemove;
+        }
+
+        public boolean isSubjectAltComponentPropertyDisabled(){
+            return getUseEndEntityEmail() ||  getUseEndEntityDns()  || isViewOnly();
         }
     }
 
@@ -524,7 +539,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
                 final boolean isEmailField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS);
-                components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField));
+                components.add(new NameComponentGuiWrapper(fieldName, field, isEmailField, false));
             }
             subjectDnComponentList = components;
         }
@@ -589,7 +604,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
                 final boolean isEmailField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
-                final NameComponentGuiWrapper guiWrapper = new NameComponentGuiWrapper(fieldName, field, isEmailField);
+                final boolean isDnsField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
+                final NameComponentGuiWrapper guiWrapper = new NameComponentGuiWrapper(fieldName, field, isEmailField, isDnsField);
                 if (EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
                     guiWrapper.setHelpText(ejbcaWebBean.getText("ALT_MS_UPN_HELP"));
                 }
@@ -650,7 +666,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             }
             for (int[] field : fieldDataList) {
                 final String fieldName = ejbcaWebBean.getText(DnComponents.getLanguageConstantFromProfileId(field[EndEntityProfile.FIELDTYPE]));
-                components.add(new NameComponentGuiWrapper(fieldName, field, false));
+                components.add(new NameComponentGuiWrapper(fieldName, field, false, false));
             }
             subjectDirectoryAttributesComponentList = components;
         }
