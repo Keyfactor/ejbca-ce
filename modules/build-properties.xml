@@ -313,7 +313,7 @@
 	</path>
 
 	<path id="lib.javaxejb.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
 	</path>
 
 	<!-- Remote EJB requires application specific implementation to be available -->
@@ -334,7 +334,7 @@
 	</path>
 
 	<path id="lib.jee.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
 	</path>
 	
 	<path id="lib.servicemanifestbuilder.classpath">
@@ -342,7 +342,7 @@
 	</path>
 
 	<path id="lib.servlet.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
 	</path>
 
 	<path id="lib.jsf.classpath">
@@ -350,7 +350,7 @@
 	</path>
 	
 	<path id="lib.jsp.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-6.0-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
 	</path>
 	
 	<path id="lib.cesecore-common.classpath"><fileset file="${mod.cesecore-common.lib}"/></path>
