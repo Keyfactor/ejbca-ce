@@ -19,22 +19,22 @@ import java.util.Set;
 import org.cesecore.configuration.ConfigurationBase;
 
 /**
- * Configuration for the EJBCA issue tracker.
+ * Configuration for the EJBCA issue checker.
  *
  * @version $Id$
  */
-public class IssueTrackerConfiguration extends ConfigurationBase {
+public class IssueCheckerConfiguration extends ConfigurationBase {
     private static final long serialVersionUID = 1L;
     public static final String CONFIGURATION_ID = "ISSUE_TRACKER";
 
-    private static final String IS_ISSUE_TRACKER_ENABLED = "isIssueTrackerEnabled";
+    private static final String IS_ISSUE_CHECKER_ENABLED = "isIssueCheckerEnabled";
     private static final String ENABLED_ISSUE_SETS = "enabledIssueSets";
 
     /**
-     * Create a new issue tracker configuration with the default settings.
+     * Create a new issue checker configuration with the default settings.
      */
-    public IssueTrackerConfiguration() {
-        data.put(IS_ISSUE_TRACKER_ENABLED, false);
+    public IssueCheckerConfiguration() {
+        data.put(IS_ISSUE_CHECKER_ENABLED, false);
         data.put(ENABLED_ISSUE_SETS, new HashSet<String>());
     }
 
@@ -51,25 +51,25 @@ public class IssueTrackerConfiguration extends ConfigurationBase {
     }
 
     /**
-     * Retrieve a boolean indicating whether the EJBCA issue tracker is enabled or not.
-     * If the issue tracker is disabled, no issues are tracked and the issue tracker is
+     * Retrieve a boolean indicating whether the EJBCA issue checker is enabled or not.
+     * If the issue checker is disabled, no issues are checked and the issue checker is
      * invisible in the GUI.
      *
-     * @return true if the issue tracker is enabled, false otherwise.
+     * @return true if the issue checker is enabled, false otherwise.
      */
-    public boolean isIssueTrackerEnabled() {
-        return Boolean.TRUE.equals(data.get(IS_ISSUE_TRACKER_ENABLED));
+    public boolean isIssueCheckerEnabled() {
+        return Boolean.TRUE.equals(data.get(IS_ISSUE_CHECKER_ENABLED));
     }
 
     /**
-     * Set a boolean indicating whether the EJBCA issue tracker should be enabled or not.
-     * If the issue tracker is disabled, no issues will be tracked and the issue tracker
+     * Set a boolean indicating whether the EJBCA issue checker should be enabled or not.
+     * If the issue checker is disabled, no issues will be checked and the issue checker
      * will be invisible in the GUI.
      *
-     * @param isIssueTrackerEnabled a boolean indicating whether the issue tracker should be enabled or not.
+     * @param isIssueCheckerEnabled a boolean indicating whether the issue checker should be enabled or not.
      */
-    public void isIssueTrackerEnabled(final boolean isIssueTrackerEnabled) {
-        data.put(IS_ISSUE_TRACKER_ENABLED, Boolean.valueOf(isIssueTrackerEnabled));
+    public void setIssueCheckerEnabled(final boolean isIssueCheckerEnabled) {
+        data.put(IS_ISSUE_CHECKER_ENABLED, Boolean.valueOf(isIssueCheckerEnabled));
     }
 
     /**

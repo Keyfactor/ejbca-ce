@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuetracker;
+package org.ejbca.issuechecker;
 
 import java.util.Set;
 

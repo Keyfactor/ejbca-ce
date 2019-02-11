@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuetracker.issues;
+package org.ejbca.issuechecker.issues;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,8 +19,8 @@ import java.util.List;
 
 import org.apache.log4j.Priority;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.issuetracker.Issue;
-import org.ejbca.issuetracker.Ticket;
+import org.ejbca.issuechecker.Issue;
+import org.ejbca.issuechecker.Ticket;
 
 /**
  * Warn the user whenever EJBCA is not running in production mode.

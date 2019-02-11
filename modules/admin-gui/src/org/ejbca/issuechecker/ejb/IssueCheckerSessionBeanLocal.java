@@ -11,24 +11,24 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuetracker.ejb;
+package org.ejbca.issuechecker.ejb;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.ejb.Local;
 
-import org.ejbca.issuetracker.Issue;
-import org.ejbca.issuetracker.IssueSet;
-import org.ejbca.issuetracker.Ticket;
+import org.ejbca.issuechecker.Issue;
+import org.ejbca.issuechecker.IssueSet;
+import org.ejbca.issuechecker.Ticket;
 
 /**
- * Methods for the issue tracker available locally.
+ * Methods for the issue checker available locally.
  *
  * @version $Id$
  */
 @Local
-public interface IssueTrackerSessionBeanLocal {
+public interface IssueCheckerSessionBeanLocal {
 
     /**
      * Get a stream of tickets present on the system. The stream is filtered based

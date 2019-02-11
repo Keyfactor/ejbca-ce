@@ -11,14 +11,14 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuetracker;
+package org.ejbca.issuechecker;
 
 import java.util.List;
 
 import org.apache.log4j.Priority;
 
 /**
- * An issue is a type of problem which can be tracked by the EJBCA issue tracker. Each issue has
+ * An issue is a type of problem which can be checked by the EJBCA issue checker. Each issue has
  * a priority and a description. An issue can produce one or more tickets if present on the system.
  *
  * @version $Id$

@@ -23,21 +23,21 @@
 </ui:remove>
 <h:body>
     <ui:composition>
-        <h:panelGroup layout="block" styleClass="status" id="issuetracker"
-            rendered="#{ejbcawebbean.adminPreference.issueTrackerOnFrontPage and issueTracker.issueTrackerEnabled}">
+        <h:panelGroup layout="block" styleClass="status" id="issuechecker"
+            rendered="#{ejbcawebbean.adminPreference.issueCheckerOnFrontPage and issueChecker.issueCheckerEnabled}">
             <h4>
-                <h:outputText value="#{web.text.ISSUE_TRACKER}" />
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/EJBCA_Issue_Tracker.html')}" escape="false" />
+                <h:outputText value="#{web.text.ISSUE_CHECKER}" />
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Use_the_Issue_Checker.html')}" escape="false" />
             </h4>
-            <ui:repeat value="#{issueTracker.tickets}" var="ticket">
-                <h:outputLink value="#{issueTracker.getHelpReference(ticket)}" target="_blank"> 
-                    <h:panelGroup layout="block" styleClass="card #{issueTracker.getStyleClass(ticket)}">
-                        <h:outputText value="#{issueTracker.getDescription(ticket)}" />
+            <ui:repeat value="#{issueChecker.tickets}" var="ticket">
+                <h:outputLink value="#{issueChecker.getHelpReference(ticket)}" target="_blank"> 
+                    <h:panelGroup layout="block" styleClass="card #{issueChecker.getStyleClass(ticket)}">
+                        <h:outputText value="#{issueChecker.getDescription(ticket)}" />
                     </h:panelGroup>
                 </h:outputLink>
             </ui:repeat>
 
-            <h:outputText value="#{web.text.ISSUE_TRACKER_NO_TICKETS}" rendered="#{empty issueTracker.tickets}" />
+            <h:outputText value="#{web.text.ISSUE_CHECKER_NO_TICKETS}" rendered="#{empty issueChecker.tickets}" />
         </h:panelGroup>
     </ui:composition>
 </h:body>

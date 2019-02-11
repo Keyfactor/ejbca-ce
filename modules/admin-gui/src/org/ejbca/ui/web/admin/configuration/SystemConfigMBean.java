@@ -1738,7 +1738,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             availableTabs.add("External Scripts");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())) {
-            availableTabs.add("Issue Tracker");
+            availableTabs.add("Issue Checker");
         }
         return availableTabs;
     }
