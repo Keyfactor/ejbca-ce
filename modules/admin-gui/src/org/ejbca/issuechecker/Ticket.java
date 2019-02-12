@@ -15,7 +15,7 @@ package org.ejbca.issuechecker;
 
 import java.util.Optional;
 
-import org.apache.log4j.Priority;
+import org.apache.log4j.Level;
 
 /**
  * A ticket is the <i>realisation of an issue</i>. A ticket has a priority, a description
@@ -93,13 +93,13 @@ public class Ticket implements Comparable<Ticket> {
     }
 
     /**
-     * Get the priority of this ticket. The default implementation inherits the priority of the issue
-     * e.g. it returns <code>Ticket.getIssue().getPriority()</code>.
+     * Get the level of this ticket. The default implementation inherits the level of the issue,
+     * i.e. it returns <code>Ticket.getIssue().getLevel()</code>.
      *
-     * @return the Log4j priority of this ticket.
+     * @return the log level of this ticket.
      */
-    public Priority getPriority() {
-        return issue.getPriority();
+    public Level getLevel() {
+        return issue.getLevel();
     }
 
     /**
@@ -135,6 +135,6 @@ public class Ticket implements Comparable<Ticket> {
      */
     @Override
     public int compareTo(final Ticket ticket) {
-        return ticket.getPriority().toInt() - this.getPriority().toInt();
+        return ticket.getLevel().toInt() - this.getLevel().toInt();
     }
 }
