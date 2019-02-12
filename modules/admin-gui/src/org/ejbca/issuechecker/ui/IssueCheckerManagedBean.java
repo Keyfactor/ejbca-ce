@@ -21,7 +21,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.IssueCheckerConfiguration;
 import org.ejbca.issuechecker.Ticket;
@@ -38,7 +37,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 public class IssueCheckerManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1L;
     private static final int MAX_NUMBER_OF_TICKETS_TO_DISPLAY = 8;
-    private final Logger log = Logger.getLogger(IssueCheckerManagedBean.class);
 
     @EJB
     private IssueCheckerSessionBeanLocal issueCheckerSession;
@@ -72,8 +70,6 @@ public class IssueCheckerManagedBean extends BaseManagedBean {
     public boolean isIssueCheckerEnabled() {
         final IssueCheckerConfiguration issueCheckerConfiguration = (IssueCheckerConfiguration) globalConfigurationSession
                 .getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
-        log.error(issueCheckerConfiguration.isIssueCheckerEnabled());
-        log.error(issueCheckerConfiguration.getRawData().toString());
         return issueCheckerConfiguration.isIssueCheckerEnabled();
     }
 
