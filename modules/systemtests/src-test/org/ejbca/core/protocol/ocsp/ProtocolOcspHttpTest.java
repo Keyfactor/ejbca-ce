@@ -1059,7 +1059,7 @@ Content-Type: text/html; charset=iso-8859-1
     
     /**
      * This test tests that the OCSP response contains the extension "id_pkix_ocsp_archive_cutoff" if "ocsp.expiredcert.retentionperiod" 
-     * is set in the condfiguration file
+     * is set in the configuration file
      * 
      * @throws Exception
      */
