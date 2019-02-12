@@ -38,9 +38,13 @@ import javax.ejb.EJBException;
 import javax.faces.FacesException;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -216,8 +220,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private List<String> availableCryptoTokenAliases = null;
 
     private String viewCertLink;
-    
-    
 
     public UploadedFile getFileRecieveFileImportRenewal() {
         return fileRecieveFileImportRenewal;
@@ -2041,6 +2043,45 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             return "";
         }
     }
+
+    /**
+     * Exports the current ca crypto token if allowed be the configuration.
+     * 
+     */
+    public void exportCA() {
+        try {
+            FacesContext ctx = FacesContext.getCurrentInstance();
+            ExternalContext ectx = ctx.getExternalContext();
+            HttpServletRequest request = (HttpServletRequest) ectx.getRequest();
+            HttpServletResponse response = (HttpServletResponse) ectx.getResponse();
+            RequestDispatcher dispatcher = request.getRequestDispatcher(EditCaUtil.CA_EXPORT_PATH);
+            dispatcher.forward(request, response);
+            ctx.responseComplete();
+        } catch (ServletException | IOException ex) {
+            log.info("Error happened while trying to forward the request to ca export servlet!", ex);
+        }
+    }
+
+    /**
+     * Small utility function to return the current ca name used in export ca part of edit ca page.
+     */
+    public String getCaName() {
+        return cainfo.getName();
+    }
+    
+    /**
+     * Returns the text field name of the export ca password field.
+     */
+    public String getTextFieldExportCaPassword() {
+        return EditCaUtil.TEXTFIELD_EXPORTCA_PASSWORD;
+    }
+
+    /**
+     * Returns the hidden ca name used in export ca function in edit ca page.
+     */
+    public String getHiddenCaName() {
+        return EditCaUtil.HIDDEN_CANAME;
+    }
     
     // ======================================= Helpers ===================================================================//
     
@@ -2577,4 +2618,5 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         return approvalRequestItems;
     }
+
 }

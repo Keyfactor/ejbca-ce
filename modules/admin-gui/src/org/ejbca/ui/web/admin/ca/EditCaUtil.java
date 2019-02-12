@@ -35,6 +35,9 @@ public final class EditCaUtil {
     public static final int CERTGENMODE = 1;
     public static final String DEFAULT_KEY_SIZE = "2048";
     public static final String LINK_CERT_BASE_URI = "cacertreq?cmd=linkcert&";
+    public static final String CA_EXPORT_PATH = "/ca/exportca";
+    public static final String TEXTFIELD_EXPORTCA_PASSWORD = org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD;
+    public static final String HIDDEN_CANAME = org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME;
     
     public static String getTrimmedName(final String name) {
         if (name != null && !name.isEmpty()) {
