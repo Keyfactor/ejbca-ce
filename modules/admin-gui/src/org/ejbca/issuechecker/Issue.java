@@ -15,7 +15,7 @@ package org.ejbca.issuechecker;
 
 import java.util.List;
 
-import org.apache.log4j.Priority;
+import org.apache.log4j.Level;
 
 /**
  * An issue is a type of problem which can be checked by the EJBCA issue checker. Each issue has
@@ -33,24 +33,24 @@ public abstract class Issue {
     abstract public List<Ticket> getTickets();
 
     /**
-     * Get the Log4j priority of this issue, determining how this issue is displayed and logged.
+     * Get the Log4j level of this issue, determining how tickets caused by this issue are displayed and logged.
      *
-     * <p>As a rule of thumb, use the priority
+     * <p>As a rule of thumb, use the level:
      * <ul>
-     *     <li><b>Priority.INFO</b> for issues of an informative nature, i.e. issues which do not
+     *     <li><b>Level.INFO</b> for issues of an informative nature, i.e. issues which do not
      *     necessarily require any action being carried out by administrator. E.g. system information,
      *     statistics and advice for improving the usability, security and performance of the system.</li>
-     *     <li><b>Priority.WARNING</b> for issues which requires attention from an administrator,
+     *     <li><b>Level.WARNING</b> for issues which requires attention from an administrator,
      *     and should be fixed as soon as possible, e.g. editorial configuration errors, or malfunction
      *     in a part of the system where failover is possible.</li>
-     *     <li><b>Priority.ERROR</b> for issues which requires attention from an administrator, and
+     *     <li><b>Level.ERROR</b> for issues which requires attention from an administrator, and
      *     should be fixed immediately. E.g. serious configuration errors or malfunction in a part
      *     of the system where no failover is possible.
      * </ul>
      *
-     * @return the Log4j priority of this issue.
+     * @return the log level of this issue.
      */
-    abstract public Priority getPriority();
+    abstract public Level getLevel();
 
     /**
      * Get the description of this issue, as a language key. The description should be a short text

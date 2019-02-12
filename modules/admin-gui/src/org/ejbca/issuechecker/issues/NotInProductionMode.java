@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.log4j.Priority;
+import org.apache.log4j.Level;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.issuechecker.Issue;
 import org.ejbca.issuechecker.Ticket;
@@ -38,8 +38,8 @@ public class NotInProductionMode extends Issue {
     }
 
     @Override
-    public Priority getPriority() {
-        return Priority.INFO;
+    public Level getLevel() {
+        return Level.INFO;
     }
 
     @Override

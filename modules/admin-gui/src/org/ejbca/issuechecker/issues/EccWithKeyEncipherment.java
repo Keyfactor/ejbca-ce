@@ -17,7 +17,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.Priority;
+import org.apache.log4j.Level;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -55,8 +55,8 @@ public class EccWithKeyEncipherment extends Issue {
     }
 
     @Override
-    public Priority getPriority() {
-        return Priority.WARN;
+    public Level getLevel() {
+        return Level.WARN;
     }
 
     @Override
