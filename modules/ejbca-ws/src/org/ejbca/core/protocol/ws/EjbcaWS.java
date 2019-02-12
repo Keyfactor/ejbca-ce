@@ -57,7 +57,6 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
@@ -279,7 +278,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @param wsContext web service context that contains the SSL information
      * @return Admin object based on the SSL client certificate
      */
-    private AuthenticationToken getAdmin() throws AuthorizationDeniedException, EjbcaException {
+    private AuthenticationToken getAdmin() throws AuthorizationDeniedException {
           return getAdmin(false);
     }
 
@@ -2433,9 +2432,9 @@ public class EjbcaWS implements IEjbcaWS {
         return getEjbcaException( t, logger, ErrorCode.INTERNAL_ERROR, Level.ERROR);
     }
 
-    private static EjbcaException getEjbcaException(Throwable t, IPatternLogger logger, ErrorCode errorCode, Priority p) {
-        if (p!=null) {
-            log.log(p, "EJBCA WebService error", t);
+    private static EjbcaException getEjbcaException(final Throwable t, final IPatternLogger logger, final ErrorCode errorCode, final Level level) {
+        if (level !=null ) {
+            log.log(level, "EJBCA WebService error", t);
         }
         if (logger != null) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorCode.toString());
@@ -2443,9 +2442,9 @@ public class EjbcaWS implements IEjbcaWS {
         return new EjbcaException(errorCode, t.getMessage());
     }
 
-    private static EjbcaException getEjbcaException(String s, IPatternLogger logger, ErrorCode errorCode, Priority p) {
-        if ( p!=null ) {
-            log.log(p, s);
+    private static EjbcaException getEjbcaException(final String s, final IPatternLogger logger, final ErrorCode errorCode, final Level level) {
+        if (level !=null) {
+            log.log(level, s);
         }
         if (logger != null) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), s);
