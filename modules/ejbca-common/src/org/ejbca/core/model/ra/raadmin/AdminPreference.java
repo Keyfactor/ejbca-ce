@@ -30,7 +30,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
 
     private static final long serialVersionUID = -3408759285870979620L;
 
-    public static final float LATEST_VERSION = 1;
+    public static final float LATEST_VERSION = 2;
 
     public static final int FILTERMODE_BASIC = 0;
     public static final int FILTERMODE_ADVANCED = 1;
@@ -245,14 +245,15 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-
             if (data.get(FRONTPAGECASTATUS) == null) {
                 data.put(FRONTPAGECASTATUS, DEFAULT_FRONTPAGECASTATUS);
             }
             if (data.get(FRONTPAGEPUBQSTATUS) == null) {
                 data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
             }
-
+            if (data.get(ISSUE_CHECKER_ON_FRONT_PAGE) == null) {
+                data.put(ISSUE_CHECKER_ON_FRONT_PAGE, true);
+            }
             data.put(VERSION, new Float(LATEST_VERSION));
         }
     }
