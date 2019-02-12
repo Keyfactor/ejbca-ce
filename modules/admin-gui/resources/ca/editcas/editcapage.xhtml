@@ -261,7 +261,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu id="selectDefaultKey"
 						value="#{editCAsMBean.selectedCryptoTokenDefaultKey}">
-						<f:selectItems value="#{editCAsMBean.cryptotokenDefaultKeyList}" />
+						<f:selectItems value="#{editCAsMBean.keyAliasesList}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -274,7 +274,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu
 						value="#{editCAsMBean.selectedCryptoTokenCertSignKey}">
-						<f:selectItems value="#{editCAsMBean.cryptotokenCertSignKeyList}" />
+						<f:selectItems value="#{editCAsMBean.keyAliasesListWithDefault}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -297,7 +297,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu value="#{editCAsMBean.selectedKeyEncryptKey}">
 						<f:selectItems
-							value="#{editCAsMBean.cryptotokenkeyEncryptKeyList}" />
+							value="#{editCAsMBean.keyAliasesListWithDefault}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -310,7 +310,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu value="#{editCAsMBean.selectHardTokenEncrypt}">
 						<f:selectItems
-							value="#{editCAsMBean.cryptotokenHardTokenEncryptList}" />
+							value="#{editCAsMBean.keyAliasesListWithDefault}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -324,7 +324,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu name="selectkeytestkey"
 						value="#{editCAsMBean.selectTestKey}">
-						<f:selectItems value="#{editCAsMBean.cryptotokenTestKeyList}" />
+						<f:selectItems value="#{editCAsMBean.keyAliasesListWithDefault}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 

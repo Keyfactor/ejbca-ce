@@ -789,12 +789,6 @@ public class EjbcaWebBean implements Serializable {
         return ret;
     }
 
-    /** @deprecated Since EJBCA 7.0.0. Use CertificateProfileSession.getCertificateProfileName instead. */
-    @Deprecated
-    public String getCertificateProfileName(final int profileId) {
-        return certificateProfileSession.getCertificateProfileName(profileId);
-    }
-
     /**
      * Returns authorized end entity  profile names as a treemap of name (String) -> id (Integer)
      */
