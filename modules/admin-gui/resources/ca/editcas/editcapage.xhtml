@@ -1713,7 +1713,7 @@
 		<!-- ==================================================================== Form Buttons (End Of CA Form)  =============================================================== -->
 
 		<!-- ==================================================================== Export CA Header  ============================================================================ -->
-		<h:form>
+		<h:form prependId="false">
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
@@ -1725,7 +1725,7 @@
 
 				<h:panelGroup rendered="#{editCAsMBean.caExportable}">
 					<h:outputText value="#{web.text.EXPORTCA_AUTHCODE}" />
-					<input type="password" name="#{editCAsMBean.textFieldExportCaPassword}" value="" />
+					<h:inputSecret autocomplete="off" id="#{editCAsMBean.textFieldExportCaPassword}" required="true" label="Password is required for exporting CA!" />
 					<h:commandButton name="buttonexportca"
 						value="#{web.text.EXPORTCA} ..." 
 						action="#{editCAsMBean.exportCA}">
