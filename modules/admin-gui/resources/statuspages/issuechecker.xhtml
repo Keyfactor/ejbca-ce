@@ -30,7 +30,7 @@
                 <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Use_the_Issue_Checker.html')}" escape="false" />
             </h4>
             <ui:repeat value="#{issueChecker.tickets}" var="ticket">
-                <h:outputLink value="#{issueChecker.getHelpReference(ticket)}" target="_blank"> 
+                <h:outputLink value="#{issueChecker.getIssueHelpReference(ticket)}" target="_blank"> 
                     <h:panelGroup layout="block" styleClass="card #{issueChecker.getStyleClass(ticket)}">
                         <h:outputText value="#{issueChecker.getDescription(ticket)}" />
                     </h:panelGroup>
