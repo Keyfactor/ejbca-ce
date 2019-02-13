@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -43,6 +45,7 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -74,6 +77,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessageUtils;
@@ -355,10 +359,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final int certProfileId = endEntityInformation.getCertificateProfileId();
         final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
         
+        final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
+        
         // Validate ValidatorPhase.DATA_VALIDATION
         try {
             // Which public key to validate follows the criteria established in RequestAndPublicKeySelector, which is the same as used in the CA.
-            final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
             final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, ei);
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     pkSelector.getPublicKey());
@@ -394,7 +399,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             String cafingerprint = null;
             final boolean useCustomSN;
             {
-                final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
                 useCustomSN = ei != null && ei.certificateSerialNumber() != null;
             }
             final int maxRetrys;
@@ -469,11 +473,17 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 
                 cafingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
                 serialNo = CertTools.getSerialNumberAsString(cert);
+                
+                String certificateRequest = getCsrFromExtendedInformation(ei);
+                if (StringUtils.isEmpty(certificateRequest)) {
+                    certificateRequest = getCsrFromRequestMessage(request);
+                }
+                
                 // Store certificate in the database, if this CA is configured to do so.
                 if (!ca.isUseCertificateStorage() || !certProfile.getUseCertificateStorage()) {
                     // We still need to return a CertificateData object for publishers
-                    final CertificateData throwAwayCertData = new CertificateData(cert, cert.getPublicKey(), endEntityInformation.getUsername(),
-                            cafingerprint, CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId,
+                    final CertificateData throwAwayCertData = new CertificateData(cert, cert.getPublicKey(), endEntityInformation.getUsername(), 
+                            cafingerprint, null, CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId,
                             endEntityInformation.getEndEntityProfileId(), null, updateTime, false, certProfile.getStoreSubjectAlternativeName());
                     result = new CertificateDataWrapper(cert, throwAwayCertData, null);
                     // Always Store full certificate for OCSP signing certificates.
@@ -488,10 +498,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     assertSerialNumberForIssuerOk(ca, CertTools.getSerialNumber(cert));
                     // Tag is reserved for future use, currently only null
                     final String tag = null;
+                    
                     // Authorization was already checked by since this is a private method, the CA parameter should
                     // not be possible to get without authorization
-                    result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, CertificateConstants.CERT_ACTIVE,
-                            certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(), tag, updateTime);
+                    result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
+                            CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(), tag, updateTime);
                     storeEx = null;
                     break;
                 } catch (CertificateSerialNumberException e) {
@@ -517,7 +528,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
             // Finally we check if this certificate should not be issued as active, but revoked directly upon issuance
             int revreason = RevokedCertInfo.NOT_REVOKED;
-            final ExtendedInformation ei = endEntityInformation.getExtendedInformation();
+            
             if (ei != null) {
                 revreason = ei.getIssuanceRevocationReason();
                 if (revreason != RevokedCertInfo.NOT_REVOKED) {
@@ -599,9 +610,27 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             log.error("Error creating certificate", e);
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
+        } catch (IOException e) {
+            log.error("Error creating certificate", e);
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            // Rollback
+            throw new CertificateCreateException(e);
         }
     }
 
+    private String getCsrFromExtendedInformation(final ExtendedInformation ei) {
+        return (ei != null && ei.getCertificateRequest() != null) ? new String(Base64.encode(ei.getCertificateRequest()), StandardCharsets.UTF_8) : "";
+    }
+
+    private String getCsrFromRequestMessage(final RequestMessage request) throws IOException {
+        String certificateRequest = null;
+        if (request instanceof PKCS10RequestMessage) {
+            PKCS10CertificationRequest certificationRequest = ((PKCS10RequestMessage)request).getCertificationRequest();
+            certificateRequest = new String(Base64.encode(certificationRequest.getEncoded()), StandardCharsets.UTF_8);
+        }
+        return certificateRequest;
+    }
+    
     private void addCTLoggingCallback(CertificateGenerationParams certGenParams, final String authTokenName) {
         if (certGenParams != null) {
             certGenParams.setCTAuditLogCallback(new CTAuditLogCallback() {

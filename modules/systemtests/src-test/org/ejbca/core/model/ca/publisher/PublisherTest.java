@@ -13,9 +13,6 @@
 
 package org.ejbca.core.model.ca.publisher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -50,6 +47,9 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 
@@ -273,7 +273,7 @@ public class PublisherTest extends RoleUsingTestCase {
 		final ArrayList<Integer> publishers = new ArrayList<Integer>();
 		publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
 
-        final CertificateData cd = new CertificateData(cert, cert.getPublicKey(), "test05", null, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
+        final CertificateData cd = new CertificateData(cert, cert.getPublicKey(), "test05", null, "crt123", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, "foo", System.currentTimeMillis(), true, true);
         cd.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
         cd.setRevocationDate(-1L);
@@ -316,7 +316,7 @@ public class PublisherTest extends RoleUsingTestCase {
         }
         final Certificate testCertificate = CertTools.getCertfromByteArray(testcert, Certificate.class);
         final String cafp = "CA fingerprint could be anything in this test.";
-        final CertificateData cd = new CertificateData(testCertificate, testCertificate.getPublicKey(), "username", cafp, CertificateConstants.CERT_ACTIVE,
+        final CertificateData cd = new CertificateData(testCertificate, testCertificate.getPublicKey(), "username", cafp, "csr1234", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, "tag",
                 System.currentTimeMillis(), true, true);
         cd.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
