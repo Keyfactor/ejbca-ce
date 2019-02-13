@@ -193,6 +193,7 @@
             <basic fetch="EAGER" name="state"><column name="rule" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="recursiveBool"><column name="isRecursive" column-definition="BOOLEAN" nullable="false"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="adminGroupDataPrimaryKey"><column name="AdminGroupData_accessRules" column-definition="INTEGER"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <transient name="recursiveInt"/>
         </attributes>
@@ -216,6 +217,7 @@
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(255, 0)"/></basic>
+            <basic fetch="EAGER" name="adminGroupDataPrimaryKey"><column name="AdminGroupData_adminEntities" column-definition="INTEGER"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -254,8 +256,6 @@
             <basic fetch="EAGER" name="roleName"><column name="adminGroupName" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
-            <one-to-many name="accessRules" fetch="EAGER"><map-key name="primaryKey"/><join-column name="AdminGroupData_accessRules" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
-            <one-to-many name="accessUsers" fetch="EAGER"><map-key name="primaryKey"/><join-column name="AdminGroupData_adminEntities" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
         </attributes>
     </entity>
     <entity class="org.cesecore.audit.impl.integrityprotected.AuditRecordData" access="PROPERTY" metadata-complete="false">
