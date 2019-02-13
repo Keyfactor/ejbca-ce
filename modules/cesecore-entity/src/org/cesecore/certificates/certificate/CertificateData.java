@@ -114,7 +114,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
      * @param storeCertificate true if the certificate should be stored in this table in the base&4Cert column, false if certificate data isn't to be stored in this table. NOTE: If false and the data should be stored in Base64CertData then the caller must store the certificate in Base64CertData as well.
      * @param storeSubjectAltName true if the subjectAltName column should be populated with the Subject Alternative Name of the certificate
      */
-    public CertificateData(Certificate certificate, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid, int endEntityProfileId,
+    public CertificateData(Certificate certificate, PublicKey enrichedpubkey, String username, String cafp, String certificateRequest, int status, int type, int certprofileid, int endEntityProfileId,
             String tag, long updatetime, boolean storeCertificate, boolean storeSubjectAltName) {
         // Extract all fields to store with the certificate.
         try {
@@ -167,6 +167,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
             }
             setSubjectKeyId(keyId);
             setTag(tag);
+            setCertificateRequest(certificateRequest);
         } catch (CertificateEncodingException cee) {
             final String msg = "Can't extract DER encoded certificate information.";
             log.error(msg, cee);

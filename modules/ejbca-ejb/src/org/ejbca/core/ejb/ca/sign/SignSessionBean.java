@@ -1170,9 +1170,17 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     /** Finishes user, i.e. set status to generated, if it should do so.
      * The authentication session is responsible for determining if this should be done or not */
     private void finishUser(final CA ca, final EndEntityInformation data) {
+        
+        
         if (data == null) {
             return;
         }
+        
+        // CSR cleanup
+        if (data.getExtendedInformation() != null && data.getExtendedInformation().getCertificateRequest() != null) {
+            data.getExtendedInformation().setCertificateRequest(null);
+        }
+        
         if (!ca.getCAInfo().getFinishUser()) {
             cleanUserCertDataSN(data);
             return;

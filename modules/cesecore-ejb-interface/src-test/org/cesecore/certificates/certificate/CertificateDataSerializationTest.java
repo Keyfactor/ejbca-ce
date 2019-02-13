@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -33,6 +30,9 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Tests backwards and forwards compatibility with the CertificateData class,
@@ -100,7 +100,7 @@ public class CertificateDataSerializationTest {
         log.trace(">testSerializeCurrent");
         final KeyPair kp = KeyTools.genKeys("1024", "RSA");
         final Certificate cert = CertTools.genSelfCert("CN=certuser", 10*365, null, kp.getPrivate(), kp.getPublic(), "SHA256withRSA", false);
-        final CertificateData certData = new CertificateData(cert, kp.getPublic(), "certuser", "1234567812345678", CertificateConstants.CERT_ACTIVE,
+        final CertificateData certData = new CertificateData(cert, kp.getPublic(), "certuser", "1234567812345678", "CSR123456", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
                 null, new Date().getTime(), false, true);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
