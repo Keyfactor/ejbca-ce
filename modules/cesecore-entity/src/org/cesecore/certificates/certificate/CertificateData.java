@@ -697,43 +697,47 @@ public class CertificateData extends BaseCertificateData implements Serializable
     @Transient
     @Override
     protected String getProtectString(final int version) {
-    	final ProtectionStringBuilder build = new ProtectionStringBuilder(3000);
+    	final ProtectionStringBuilder protectionStringBuilder = new ProtectionStringBuilder(3000);
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getFingerprint()).append(getIssuerDN());
+        protectionStringBuilder.append(getFingerprint()).append(getIssuerDN());
+        if (version>=4) { 
+            // In version 4 for EJBCA 7.0.0 the certificateRequest column is added
+            protectionStringBuilder.append(getCertificateRequest());
+        }
         if (version>=3) {
             // From version 3 for EJBCA 6.7 we always use empty String here to allow future migration between databases when this value is unset
-            build.append(getSubjectDnNeverNull());
+            protectionStringBuilder.append(getSubjectDnNeverNull());
         } else {
-            build.append(getSubjectDN());
+            protectionStringBuilder.append(getSubjectDN());
         }
-        build.append(getCaFingerprint()).append(getStatus()).append(getType())
+        protectionStringBuilder.append(getCaFingerprint()).append(getStatus()).append(getType())
                 .append(getSerialNumber()).append(getExpireDate()).append(getRevocationDate()).append(getRevocationReason()).append(getBase64Cert())
                 .append(getUsername()).append(getTag()).append(getCertificateProfileId()).append(getUpdateTime()).append(getSubjectKeyId());
         if (version>=2) {
             // In version 2 for EJBCA 6.6 the following columns where added
-            build.append(String.valueOf(getNotBefore()));
-            build.append(String.valueOf(getEndEntityProfileId()));
+            protectionStringBuilder.append(String.valueOf(getNotBefore()));
+            protectionStringBuilder.append(String.valueOf(getEndEntityProfileId()));
             if (version>=3) {
                 // From version 3 for EJBCA 6.7 we always use empty String here to allow future migration between databases when this value is unset
-                build.append(getSubjectAltNameNeverNull());
+                protectionStringBuilder.append(getSubjectAltNameNeverNull());
             } else {
-                build.append(String.valueOf(getSubjectAltName()));
+                protectionStringBuilder.append(String.valueOf(getSubjectAltName()));
             }
         }
         if (log.isDebugEnabled()) {
             // Some profiling
-            if (build.length() > 3000) {
-                log.debug("CertificateData.getProtectString gives size: " + build.length());
+            if (protectionStringBuilder.length() > 3000) {
+                log.debug("CertificateData.getProtectString gives size: " + protectionStringBuilder.length());
             }
         }
-        return build.toString();
+        return protectionStringBuilder.toString();
     }
 
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 3;
+        return 4;
     }
 
     @PrePersist
