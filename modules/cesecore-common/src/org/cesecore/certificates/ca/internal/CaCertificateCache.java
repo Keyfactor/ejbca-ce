@@ -91,13 +91,13 @@ public enum CaCertificateCache  {
         return certValidTo < System.currentTimeMillis();
     }
 
-	/** Loads CA certificates but holds a cache so it's reloaded only every five minutes (configurable).
+	/** Loads the CA certificate cache  with a bunch of certificates.
 	 *
-	 * We keep this method as synchronized, it should not take more than a few microseconds to complete if the cache does not have
-	 * to be reloaded. If the cache must be reloaded, we must wait for it anyway to not have ConcurrentModificationException.
-	 * We also only want one single thread to do the rebuilding.
+	 * We keep this method as synchronized to avoid ConcurrentModificationException, it should not take more than a few microseconds to complete.
+	 * We also only want one single thread to do the cache rebuilding.
+	 * Only X509Certificates will be considered and other types, as well as invalid coded certificates, will be ignored.
 	 * 
-	 * @return true if the cache was reloaded, false if cache wasn't expired.
+	 * @param certs A collection of X509Certificates to put in the CA certificate cache, if empty or null the cache will be emptied
 	 */
     public synchronized void loadCertificates(final Collection<Certificate> certs) {
         if (log.isDebugEnabled()) {
@@ -108,67 +108,69 @@ public enum CaCertificateCache  {
         Map<Integer, Set<X509Certificate>> newCertsFromIssuerDN = new HashMap<Integer, Set<X509Certificate>>();
         Map<Integer, X509Certificate> newCertsFromSubjectKeyIdentifier = new HashMap<Integer, X509Certificate>();
         Set<X509Certificate> newRootCertificates = new HashSet<X509Certificate>();
-        for (final Certificate tmp : certs) {
-            if (!(tmp instanceof X509Certificate)) {
-                log.debug("Not adding CA certificate of type: " + tmp.getType());
-                continue;
-            }
-            final X509Certificate cert = (X509Certificate) tmp;
-            try { // test if certificate is OK. we have experienced that BC could decode a certificate that later on could not be used.
-                final Integer key = HashID.getFromKeyID(cert).getKey();
-                final X509Certificate pastCert = newCertsFromSubjectKeyIdentifier.get(key);
-                // Add the entry if it's the first, or if it is more recent than the one existing (in that case replace it)
-                if ( pastCert == null || (pastCert != null && CertTools.getNotBefore(cert).after(CertTools.getNotBefore(pastCert))) ) {
-                    newCertsFromSubjectKeyIdentifier.put(key, cert);
+        if (certs != null) {
+            for (final Certificate tmp : certs) {
+                if (!(tmp instanceof X509Certificate)) {
+                    log.debug("Not adding CA certificate of type: " + tmp.getType());
+                    continue;
                 }
-            } catch (Throwable t) { // NOPMD: catch all to not break with an error here.
-                if (log.isDebugEnabled()) {
-                    final StringWriter sw = new StringWriter();
-                    final PrintWriter pw = new PrintWriter(sw);
-                    pw.println("Erroneous certificate fetched from database.");
-                    pw.println("The public key can not be extracted from the certificate.");
-                    pw.println("Here follows a base64 encoding of the certificate:");
-                    try {
-                        final String b64encoded = new String(Base64.encode(cert.getEncoded()));
-                        pw.println(CertTools.BEGIN_CERTIFICATE);
-                        pw.println(b64encoded);
-                        pw.println(CertTools.END_CERTIFICATE);
-                    } catch (CertificateEncodingException e) {
-                        pw.println("Not possible to encode certificate.");
+                final X509Certificate cert = (X509Certificate) tmp;
+                try { // test if certificate is OK. we have experienced that BC could decode a certificate that later on could not be used.
+                    final Integer key = HashID.getFromKeyID(cert).getKey();
+                    final X509Certificate pastCert = newCertsFromSubjectKeyIdentifier.get(key);
+                    // Add the entry if it's the first, or if it is more recent than the one existing (in that case replace it)
+                    if ( pastCert == null || (pastCert != null && CertTools.getNotBefore(cert).after(CertTools.getNotBefore(pastCert))) ) {
+                        newCertsFromSubjectKeyIdentifier.put(key, cert);
                     }
-                    pw.flush();
-                    log.debug(sw.toString());
+                } catch (Throwable t) { // NOPMD: catch all to not break with an error here.
+                    if (log.isDebugEnabled()) {
+                        final StringWriter sw = new StringWriter();
+                        final PrintWriter pw = new PrintWriter(sw);
+                        pw.println("Erroneous certificate fetched from database.");
+                        pw.println("The public key can not be extracted from the certificate.");
+                        pw.println("Here follows a base64 encoding of the certificate:");
+                        try {
+                            final String b64encoded = new String(Base64.encode(cert.getEncoded()));
+                            pw.println(CertTools.BEGIN_CERTIFICATE);
+                            pw.println(b64encoded);
+                            pw.println(CertTools.END_CERTIFICATE);
+                        } catch (CertificateEncodingException e) {
+                            pw.println("Not possible to encode certificate.");
+                        }
+                        pw.flush();
+                        log.debug(sw.toString());
+                    }
+                    continue;
                 }
-                continue;
-            }
-            final Integer subjectDNKey = HashID.getFromSubjectDN(cert).getKey();
-            // Check if we already have a certificate from this issuer in the HashMap.
-            // We only want to store the latest cert from each issuer in this map
-            final X509Certificate pastCert = newCertsFromSubjectDN.get(subjectDNKey);
-            final boolean isLatest;
-            if (pastCert != null) {
-                if (CertTools.getNotBefore(cert).after(CertTools.getNotBefore(pastCert))) {
+                final Integer subjectDNKey = HashID.getFromSubjectDN(cert).getKey();
+                // Check if we already have a certificate from this issuer in the HashMap.
+                // We only want to store the latest cert from each issuer in this map
+                final X509Certificate pastCert = newCertsFromSubjectDN.get(subjectDNKey);
+                final boolean isLatest;
+                if (pastCert != null) {
+                    if (CertTools.getNotBefore(cert).after(CertTools.getNotBefore(pastCert))) {
+                        isLatest = true;
+                    } else {
+                        isLatest = false;
+                    }
+                } else {
                     isLatest = true;
-                } else {
-                    isLatest = false;
                 }
-            } else {
-                isLatest = true;
-            }
-            if (isLatest) {
-                newCertsFromSubjectDN.put(subjectDNKey, cert);
-                final Integer issuerDNKey = HashID.getFromIssuerDN(cert).getKey();
-                if (!issuerDNKey.equals(subjectDNKey)) { // don't add roots to themselves
-                    Set<X509Certificate> sIssuer = newCertsFromIssuerDN.get(issuerDNKey);
-                    if (sIssuer == null) {
-                        sIssuer = new HashSet<X509Certificate>();
-                        newCertsFromIssuerDN.put(issuerDNKey, sIssuer);
+                if (isLatest) {
+                    newCertsFromSubjectDN.put(subjectDNKey, cert);
+                    final Integer issuerDNKey = HashID.getFromIssuerDN(cert).getKey();
+                    if (!issuerDNKey.equals(subjectDNKey)) { // don't add roots to themselves
+                        Set<X509Certificate> sIssuer = newCertsFromIssuerDN.get(issuerDNKey);
+                        if (sIssuer == null) {
+                            sIssuer = new HashSet<X509Certificate>();
+                            newCertsFromIssuerDN.put(issuerDNKey, sIssuer);
+                        }
+                        sIssuer.add(cert);
+                        sIssuer.remove(pastCert);
+                    } else {
+                        newRootCertificates.add(cert);
+                        newRootCertificates.remove(pastCert);
                     }
-                    sIssuer.add(cert);
-                    sIssuer.remove(pastCert);
-                } else {
-                    newRootCertificates.add(cert);
-                    newRootCertificates.remove(pastCert);
                 }
             }
         }

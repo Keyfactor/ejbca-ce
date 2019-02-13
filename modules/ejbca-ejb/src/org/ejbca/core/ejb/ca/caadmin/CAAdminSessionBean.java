@@ -1570,7 +1570,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             // Create CVCCA
                             ca = CvcCA.getInstance(cvccainfo);
                         } else {
-                            ca = null;
+                            throw new IllegalArgumentException("CAInfo of type " + cainfo.getClass().getName() + " is not a supported CA type.");
                         }
                         ca.setCertificateChain(certchain);
                         CAToken token = new CAToken(ca.getCAId(), new NullCryptoToken().getProperties());
@@ -3199,7 +3199,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Set<Integer> getAuthorizedPublisherIds(final AuthenticationToken admin) {
-        return getAuthorizedPublisherIds(admin, Collections.EMPTY_LIST);
+        return getAuthorizedPublisherIds(admin, Collections.emptyList());
     }
 
     @Override
