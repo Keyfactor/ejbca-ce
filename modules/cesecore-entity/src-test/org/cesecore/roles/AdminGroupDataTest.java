@@ -15,8 +15,8 @@ package org.cesecore.roles;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -35,31 +35,29 @@ public class AdminGroupDataTest {
     public void testHasAccessToRule() {
         final String roleName = "role";
         AdminGroupData testRole = new AdminGroupData(1, roleName);
-        Map<Integer, AccessRuleData> accessRules = new HashMap<Integer, AccessRuleData>();
-        accessRules.put(1, new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, true));
-        accessRules.put(2, new AccessRuleData(roleName, "/foo/bar", AccessRuleState.RULE_DECLINE, true));
-        accessRules.put(3, new AccessRuleData(roleName, "/xyz", AccessRuleState.RULE_DECLINE, true));
-        accessRules.put(4, new AccessRuleData(roleName, "/xyz_abc", AccessRuleState.RULE_ACCEPT, true));
-        accessRules.put(5, new AccessRuleData(roleName, "/recursive", AccessRuleState.RULE_ACCEPT, true));
-        accessRules.put(6, new AccessRuleData(roleName, "/recursivewithdenied", AccessRuleState.RULE_ACCEPT, true));
-        accessRules.put(7, new AccessRuleData(roleName, "/recursivewithdenied/denied", AccessRuleState.RULE_DECLINE, false));
-        accessRules.put(8, new AccessRuleData(roleName, "/non_recursive", AccessRuleState.RULE_ACCEPT, false));
-
-
-        testRole.setAccessRules(accessRules);
-        assertFalse("Was incorrectly given access to a rule that should have state unknown", testRole.hasAccessToRule("/", false));
-        assertTrue("Should have been given access to a rule which was explicitly accepted.", testRole.hasAccessToRule("/fuu"));
-        assertFalse("Was incorrectly given access to a rule which was explicitly denied.",testRole.hasAccessToRule("/foo/bar"));
-        assertFalse("Was incorrectly given access to a rule which was denied in a subrule.",testRole.hasAccessToRule("/foo/bar/xyz"));  
-        assertTrue("Should have been given access to a rule with a similar name as one denied", testRole.hasAccessToRule("/xyz_abc"));
-        assertTrue("Should have been given access to a rule with recursive required", testRole.hasAccessToRule("/recursive", true));
-        assertTrue("Should have been given access to a rule with recursive allowed by parent", testRole.hasAccessToRule("/recursive/subrule", false));
-        assertTrue("Should have been given access to a rule with recursive required", testRole.hasAccessToRule("/recursive/subrule", true));
-        assertFalse("[Privilege escalation] Was incorrectly given access to a rule which was has declined in a subrule", testRole.hasAccessToRule("/recursivewithdenied", true));
-        assertFalse("Was incorrectly given access to a rule which was explicitly denied.", testRole.hasAccessToRule("/recursivewithdenied/denied", false));
-        assertFalse("Was incorrectly given access to a rule which was explicitly denied.", testRole.hasAccessToRule("/recursivewithdenied/denied", true));
-        assertFalse("Should not have been given access to a rule ", testRole.hasAccessToRule("/non_recursive", true));
-        assertFalse("Should not have been given access to a rule with recursive required", testRole.hasAccessToRule("/non_recursive", true));
+        List<AccessRuleData> accessRules = Arrays.asList(
+                new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, "/foo/bar", AccessRuleState.RULE_DECLINE, true),
+                new AccessRuleData(roleName, "/xyz", AccessRuleState.RULE_DECLINE, true),
+                new AccessRuleData(roleName, "/xyz_abc", AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, "/recursive", AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, "/recursivewithdenied", AccessRuleState.RULE_ACCEPT, true),
+                new AccessRuleData(roleName, "/recursivewithdenied/denied", AccessRuleState.RULE_DECLINE, false),
+                new AccessRuleData(roleName, "/non_recursive", AccessRuleState.RULE_ACCEPT, false)
+                );
+        assertFalse("Was incorrectly given access to a rule that should have state unknown", testRole.hasAccessToRule("/", false, accessRules));
+        assertTrue("Should have been given access to a rule which was explicitly accepted.", testRole.hasAccessToRule("/fuu", false, accessRules));
+        assertFalse("Was incorrectly given access to a rule which was explicitly denied.",testRole.hasAccessToRule("/foo/bar", false, accessRules));
+        assertFalse("Was incorrectly given access to a rule which was denied in a subrule.",testRole.hasAccessToRule("/foo/bar/xyz", false, accessRules));  
+        assertTrue("Should have been given access to a rule with a similar name as one denied", testRole.hasAccessToRule("/xyz_abc", false, accessRules));
+        assertTrue("Should have been given access to a rule with recursive required", testRole.hasAccessToRule("/recursive", true, accessRules));
+        assertTrue("Should have been given access to a rule with recursive allowed by parent", testRole.hasAccessToRule("/recursive/subrule", false, accessRules));
+        assertTrue("Should have been given access to a rule with recursive required", testRole.hasAccessToRule("/recursive/subrule", true, accessRules));
+        assertFalse("[Privilege escalation] Was incorrectly given access to a rule which was has declined in a subrule", testRole.hasAccessToRule("/recursivewithdenied", true, accessRules));
+        assertFalse("Was incorrectly given access to a rule which was explicitly denied.", testRole.hasAccessToRule("/recursivewithdenied/denied", false, accessRules));
+        assertFalse("Was incorrectly given access to a rule which was explicitly denied.", testRole.hasAccessToRule("/recursivewithdenied/denied", true, accessRules));
+        assertFalse("Should not have been given access to a rule ", testRole.hasAccessToRule("/non_recursive", true, accessRules));
+        assertFalse("Should not have been given access to a rule with recursive required", testRole.hasAccessToRule("/non_recursive", true, accessRules));
     }
     
     /**
@@ -69,12 +67,9 @@ public class AdminGroupDataTest {
     public void testHasAccessToRoot() {
         final String roleName = "role";
         AdminGroupData testRole = new AdminGroupData(1, roleName);
-        Map<Integer, AccessRuleData> accessRules = new HashMap<Integer, AccessRuleData>();
-        accessRules.put(1, new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, true));
-
-        testRole.setAccessRules(accessRules);
-        assertFalse("Was incorrectly given access to root.", testRole.hasAccessToRule("/", false));
-        
+        List<AccessRuleData> accessRules = Arrays.asList(
+                new AccessRuleData(roleName, "/fuu", AccessRuleState.RULE_ACCEPT, true)
+                );
+        assertFalse("Was incorrectly given access to root.", testRole.hasAccessToRule("/", false, accessRules));
     }
-
 }
