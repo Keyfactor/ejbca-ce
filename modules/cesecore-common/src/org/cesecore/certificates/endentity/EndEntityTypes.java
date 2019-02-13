@@ -69,10 +69,6 @@ public enum EndEntityTypes  {
         return description;
     }
     
-    public boolean equals(EndEntityTypes endEntityType) {
-        return hexCode == endEntityType.hexValue();
-    }
-    
     public static EndEntityTypes[] getTypesFromHexCode(int hexCode) {
         List<EndEntityTypes> result = new ArrayList<EndEntityTypes>();
         for(EndEntityTypes type : EndEntityTypes.values()) {

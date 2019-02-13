@@ -280,31 +280,26 @@ public class EccKeyValidator extends KeyValidatorBase {
             // --- Begin BC code
             // FSM_STATE:5.9, "FIPS 186-3/SP 800-89 ASSURANCES", "The module is performing FIPS 186-3/SP 800-89 Assurances self-test"
             // FSM_TRANS:5.14, "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "Invoke FIPS 186-3/SP 800-89 Assurances test"
-            if (q == null)
-            {
+            if (q == null) {
                 // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
                 messages.add("Invalid: EC key point has null value.");
             } else {
                 log.trace("EC point has value test passed");
+                if (q.isInfinity()) {
+                    // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
+                    messages.add("Invalid: EC key point at infinity.");
+                } else {
+                    log.trace("EC point not on infinity test passed");
+                }
+                q = q.normalize();
+                if (!q.isValid()) {
+                    // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
+                    messages.add("Invalid: EC key point not on curve.");
+                } else {
+                    log.trace("EC point not on curve test passed");
+                }
             }
 
-            if (q.isInfinity())
-            {
-                // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
-                messages.add("Invalid: EC key point at infinity.");
-            } else {
-                log.trace("EC point not on infinity test passed");
-            }
-
-            q = q.normalize();
-
-            if (!q.isValid())
-            {
-                // FSM_TRANS:5.16, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test failed"
-                messages.add("Invalid: EC key point not on curve.");
-            } else {
-                log.trace("EC point not on curve test passed");
-            }
         }
         // FSM_TRANS:5.15, "FIPS 186-3/SP 800-89 ASSURANCES CHECK", "CONDITIONAL TEST", "FIPS 186-3/SP 800-89 Assurances test successful"
         // --- End BC code
