@@ -68,6 +68,6 @@ public class UpgradeTestSessionBean implements UpgradeTestSessionRemote {
     @Override
     public List<AccessRuleData> getAccessRuleDatas(String readOnlyRoleName) {
         final AdminGroupData adminGroupData = roleManagementSession.getRole(readOnlyRoleName);
-        return new ArrayList<>(adminGroupData.getAccessRules().values());
+        return new ArrayList<>(roleManagementSession.getAccessRules(adminGroupData.getPrimaryKey()));
     }
 }

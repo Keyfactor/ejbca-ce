@@ -13,8 +13,7 @@
 package org.cesecore.roles;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.PostLoad;
@@ -25,7 +24,6 @@ import javax.persistence.Transient;
 
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
@@ -44,21 +42,16 @@ public class AdminGroupData extends ProtectedData implements Serializable, Compa
 
     private static final long serialVersionUID = -160810489638829430L;
     private Integer primaryKey;
-    private Map<Integer, AccessRuleData> accessRules;
-    private Map<Integer, AccessUserAspectData> accessUsers;
     private String roleName;
     private int rowVersion = 0;
     private String rowProtection;
 
     public AdminGroupData() {
-
     }
 
     public AdminGroupData(final Integer primaryKey, final String roleName) {
         this.primaryKey = primaryKey;
         this.roleName = roleName;
-        accessUsers = new HashMap<Integer, AccessUserAspectData>();
-        accessRules = new HashMap<Integer, AccessRuleData>();
     }
 
     // @Id @Column
@@ -99,42 +92,6 @@ public class AdminGroupData extends ProtectedData implements Serializable, Compa
         this.rowProtection = rowProtection;
     }
 
-    /*
-     * If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for
-     * Hibernate.
-     */
-    // @OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER) @JoinColumn(name = "RoleData_accessUsers")
-    public Map<Integer, AccessUserAspectData> getAccessUsers() {
-        return accessUsers;
-    }
-
-    public void setAccessUsers(Map<Integer, AccessUserAspectData> accessUsers) {
-        this.accessUsers = accessUsers;
-    }
-
-    /*
-     * If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for
-     * Hibernate.
-     */
-    // @OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER) @JoinColumn(name = "RoleData_accessRules")
-    public Map<Integer, AccessRuleData> getAccessRules() {
-        return accessRules;
-    }
-
-    public void setAccessRules(Map<Integer, AccessRuleData> accessRules) {
-        this.accessRules = accessRules;
-    }
-    
-    /**
-     * Utility method that makes a tree search of this Role's rules and checks for a positive match. 
-     * @param rule the rule to check
-     * @return true if this Role has access to the given rule. 
-     */
-    @Transient
-    public boolean hasAccessToRule(final String rule) {
-        return hasAccessToRule(rule, false);
-    }
-    
     /**
      * Utility method that makes a tree search of this Role's rules and checks for a positive match. 
      * 
@@ -143,12 +100,12 @@ public class AdminGroupData extends ProtectedData implements Serializable, Compa
      * @return true if this Role has access to the given rule. 
      */
     @Transient
-    public boolean hasAccessToRule(final String rule, boolean requireRecursive) {
+    public boolean hasAccessToRule(final String rule, boolean requireRecursive, List<AccessRuleData> accessRuleDatas) {
         if(!rule.startsWith("/")) {
             throw new IllegalArgumentException("Rule must start with a \"/\"");
         }
         boolean result = false;
-        for(AccessRuleData accessRuleData : accessRules.values()) {
+        for(AccessRuleData accessRuleData : accessRuleDatas) {
             String currentRule = accessRuleData.getAccessRuleName();
             if(rule.equals(currentRule)) {
                 if(accessRuleData.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
@@ -188,8 +145,6 @@ public class AdminGroupData extends ProtectedData implements Serializable, Compa
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((accessRules == null) ? 0 : accessRules.hashCode());
-        result = prime * result + ((accessUsers == null) ? 0 : accessUsers.hashCode());
         result = prime * result + ((primaryKey == null) ? 0 : primaryKey.hashCode());
         result = prime * result + ((roleName == null) ? 0 : roleName.hashCode());
         return result;
@@ -207,20 +162,6 @@ public class AdminGroupData extends ProtectedData implements Serializable, Compa
             return false;
         }
         AdminGroupData other = (AdminGroupData) obj;
-        if (accessRules == null) {
-            if (other.accessRules != null) {
-                return false;
-            }
-        } else if (!accessRules.equals(other.accessRules)) {
-            return false;
-        }
-        if (accessUsers == null) {
-            if (other.accessUsers != null) {
-                return false;
-            }
-        } else if (!accessUsers.equals(other.accessUsers)) {
-            return false;
-        }
         if (primaryKey == null) {
             if (other.primaryKey != null) {
                 return false;

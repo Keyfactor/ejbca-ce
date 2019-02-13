@@ -30,10 +30,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 /**
  * POJO that represents an access rule.
  * 
- * Adapted from AccessRule version $Id$ in EJBCA.
- * 
  * @version $Id$
- * 
  */
 @Deprecated //replaced with hashmap in Role (EJBCA 6.8.0)
 @Entity
@@ -49,6 +46,7 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
     private Integer recursiveInt;
     private int rowVersion = 0;
     private String rowProtection;
+    private int adminGroupDataPrimaryKey;
 
     /**
      * Default constructor private to prohibit default
@@ -240,6 +238,15 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 
     public void setState(int state) {
         this.internalState = AccessRuleState.matchDatabaseValue(state);
+    }
+
+    // @Column - Before EJBCA 7 this was a @OneToMany mapping from AdminGroupData
+    public int getAdminGroupDataPrimaryKey() {
+        return adminGroupDataPrimaryKey;
+    }
+
+    public void setAdminGroupDataPrimaryKey(final int adminGroupDataPrimaryKey) {
+        this.adminGroupDataPrimaryKey = adminGroupDataPrimaryKey;
     }
 
     @Transient

@@ -98,13 +98,6 @@ public interface LegacyRoleManagementSessionLocal {
      */
     AdminGroupData getRole(String roleName);
 
-
-    /**
-     * Creates a super administrator role and a default CLI user. A role and default CLI user is needed in order
-     * to do operations with the CLI (command line interface).  
-     */
-    void createSuperAdministrator();
-
     /**
      * Add the grantedAccessRules to the role when conditions are met.
      * 
@@ -130,4 +123,8 @@ public interface LegacyRoleManagementSessionLocal {
      * @param authenticationToken only used for audit logging
      */
     void deleteAllRoles(AuthenticationToken authenticationToken);
+
+    List<AccessUserAspectData> getAccessUsers(int adminGroupDataPrimaryKey);
+
+    List<AccessRuleData> getAccessRules(int adminGroupDataPrimaryKey);
 }

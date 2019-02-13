@@ -14,10 +14,7 @@ package org.ejbca.core.ejb.upgrade;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -25,9 +22,9 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -35,24 +32,15 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.QueryResultWrapper;
-import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
-import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
-import org.ejbca.core.ejb.ra.UserData;
 
 /**
  * Implementation of the legacy role management needed by upgrade.
@@ -65,7 +53,6 @@ import org.ejbca.core.ejb.ra.UserData;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSessionLocal {
 
-    private static final Logger log = Logger.getLogger(LegacyRoleManagementSessionBean.class);
     private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
 
     @EJB
@@ -105,14 +92,14 @@ public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSess
     public void addAccessRuleDataToRolesWhenAccessIsImplied(final AuthenticationToken authenticationToken, final String skipWhenRecursiveAccessTo,
             final List<String> requiredAccessRules, final List<String> grantedAccessRules, final boolean grantedAccessRecursive) {
         for (final AdminGroupData role : getAllRoles()) {
-            if (role.hasAccessToRule(skipWhenRecursiveAccessTo, true)) {
+            if (role.hasAccessToRule(skipWhenRecursiveAccessTo, true, getAccessRules(role.getPrimaryKey()))) {
                 // No need to grant extra privileges to if the specified recursive access is granted to the current role
                 continue;
             }
             boolean allGranted = true;
             for (final String requiredAccess : requiredAccessRules) {
                 // If a rule will be granted, we don't require access to it just as the legacy code
-                if (!grantedAccessRules.contains(requiredAccess) && !role.hasAccessToRule(requiredAccess)) {
+                if (!grantedAccessRules.contains(requiredAccess) && !role.hasAccessToRule(requiredAccess, false, getAccessRules(role.getPrimaryKey()))) {
                     allGranted = false;
                     break;
                 }
@@ -129,44 +116,33 @@ public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSess
 
     @Override
     public AdminGroupData addAccessRulesToRole(AuthenticationToken authenticationToken, final AdminGroupData adminGroupData, final Collection<AccessRuleData> accessRules) {
-        AdminGroupData result;
-        if (!entityManager.contains(adminGroupData)) {
-            result = entityManager.find(AdminGroupData.class, adminGroupData.getPrimaryKey());
-        } else {
-            result = adminGroupData;
-        }
-        Map<Integer, AccessRuleData> rules = result.getAccessRules();
-        Collection<AccessRuleData> rulesAdded = new ArrayList<AccessRuleData>();
-        Collection<AccessRuleData> rulesMerged = new ArrayList<AccessRuleData>();
-        for (AccessRuleData accessRule : accessRules) {
-            // If this rule isn't persisted, persist it.
-            if (entityManager.find(AccessRuleData.class, accessRule.getPrimaryKey()) == null) {
+        final List<AccessRuleData> accessRuleDatas = getAccessRules(adminGroupData.getPrimaryKey());
+        final Collection<AccessRuleData> rulesAdded = new ArrayList<AccessRuleData>();
+        final Collection<AccessRuleData> rulesMerged = new ArrayList<AccessRuleData>();
+        for (final AccessRuleData accessRule : accessRules) {
+            boolean found = false;
+            for (final AccessRuleData accessRuleData : accessRuleDatas) {
+                if (accessRuleData.getPrimaryKey()==accessRule.getPrimaryKey()) {
+                    found = true;
+                    accessRuleData.setInternalState(accessRule.getInternalState());
+                    accessRuleData.setRecursive(accessRule.getRecursive());
+                    rulesMerged.add(accessRuleData);
+                    break;
+                }
+            }
+            if (!found) {
+                accessRule.setAdminGroupDataPrimaryKey(adminGroupData.getPrimaryKey());
                 entityManager.persist(accessRule);
                 rulesAdded.add(accessRule);
             }
-            // If the rule exists, then merely update its values.
-            if (rules.containsKey(accessRule.getPrimaryKey())) {
-                rules.remove(accessRule.getPrimaryKey());
-                accessRule = setAccessRuleDataState(accessRule, accessRule.getInternalState(), accessRule.getRecursive());
-                rulesMerged.add(accessRule);
-            }
-            rules.put(accessRule.getPrimaryKey(), accessRule);
         }
-        result.setAccessRules(rules);
-        result = entityManager.merge(result);
         logAccessRulesAdded(authenticationToken, adminGroupData.getRoleName(), rulesAdded);
-        return result;
+        return adminGroupData;
     }
 
     @Override
     public AdminGroupData addSubjectsToRole(AuthenticationToken authenticationToken, final AdminGroupData adminGroupData, Collection<AccessUserAspectData> accessUserAspectDatas) {
-        final AdminGroupData role;
-        if (!entityManager.contains(adminGroupData)) {
-            role = entityManager.find(AdminGroupData.class, adminGroupData.getPrimaryKey());
-        } else {
-            role = adminGroupData;
-        }
-        Map<Integer, AccessUserAspectData> existingUsers = role.getAccessUsers();
+        final List<AccessUserAspectData> adminEntityDatas = getAccessUsers(adminGroupData.getPrimaryKey());
         final StringBuilder subjectsAdded = new StringBuilder();
         final StringBuilder subjectsChanged = new StringBuilder();
         for (AccessUserAspectData accessUserAspectData : accessUserAspectDatas) {
@@ -177,29 +153,31 @@ public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSess
             }
             if (getAccessUserAspectData(accessUserAspectData.getPrimaryKey()) == null) {
                 // if userAspect hasn't been persisted, do so.
+                accessUserAspectData.setAdminGroupDataPrimaryKey(adminGroupData.getPrimaryKey());
                 entityManager.persist(accessUserAspectData);
             }
-            if (existingUsers.containsKey(accessUserAspectData.getPrimaryKey())) {
-                existingUsers.remove(accessUserAspectData.getPrimaryKey());
-                subjectsChanged.append("[" + accessUserAspectData.toString() + "]");
-            } else {
-                subjectsAdded.append("[" + accessUserAspectData.toString() + "]");
+            for (AccessUserAspectData adminEntityData : adminEntityDatas) {
+                if (adminEntityData.getPrimaryKey()==accessUserAspectData.getPrimaryKey()) {
+                    subjectsChanged.append("[" + accessUserAspectData.toString() + "]");
+                    break;
+                } else {
+                    accessUserAspectData.setAdminGroupDataPrimaryKey(adminGroupData.getPrimaryKey());
+                    entityManager.persist(accessUserAspectData);
+                    subjectsAdded.append("[" + accessUserAspectData.toString() + "]");
+                }
             }
-            existingUsers.put(accessUserAspectData.getPrimaryKey(), accessUserAspectData);
         }
-        role.setAccessUsers(existingUsers);
-        AdminGroupData result = entityManager.merge(role);
         if (subjectsAdded.length() > 0) {
-            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminadded", subjectsAdded, role.getRoleName());
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminadded", subjectsAdded, adminGroupData.getRoleName());
             securityEventsLogger.log(EventTypes.ROLE_ACCESS_USER_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, msg);
         }
         if (subjectsChanged.length() > 0) {
-            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminchanged", subjectsChanged, role.getRoleName());
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminchanged", subjectsChanged, adminGroupData.getRoleName());
             securityEventsLogger.log(EventTypes.ROLE_ACCESS_USER_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, msg);
         }
-        return result;
+        return adminGroupData;
     }
     
     /** Finds an AccessUserAspectData by its primary key. A primary key can be generated statically from AccessUserAspectData. */
@@ -214,39 +192,16 @@ public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSess
                 addedRulesMsg.append("[" + addedRule.toString() + "]");
             }            
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesadded", rolename, addedRulesMsg);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                    authenticationToken.toString(), null, null, null, details);
+                    authenticationToken.toString(), null, null, null, msg);
         }
-    }
-
-    private void removeAccessRuleDatas(Collection<AccessRuleData> accessRules) {
-        for (final AccessRuleData accessRule : accessRules) {
-            entityManager.remove(getAccessRuleDataManaged(accessRule));
-        }
-    }
-
-    private AccessRuleData getAccessRuleDataManaged(final AccessRuleData accessRuleData) {
-        if (entityManager.contains(accessRuleData)) {
-            // If this was already managed, assume that rowVersion is proper
-            return accessRuleData;
-        }
-        return entityManager.find(AccessRuleData.class, accessRuleData.getPrimaryKey());
-    }
-
-    private AccessRuleData setAccessRuleDataState(final AccessRuleData rule, final AccessRuleState state, boolean isRecursive) {
-        AccessRuleData result = getAccessRuleDataManaged(rule);
-        result.setInternalState(state);
-        result.setRecursive(isRecursive);
-        return result;
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<AdminGroupData> getAllRoles() {
         final List<AdminGroupData> allRoles = entityManager.createQuery("SELECT a FROM AdminGroupData a", AdminGroupData.class).getResultList();
-        return allRoles != null ? allRoles : new ArrayList<AdminGroupData>();
+        return allRoles != null ? allRoles : new ArrayList<>();
     }
 
     @Override
@@ -257,79 +212,11 @@ public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSess
         return QueryResultWrapper.getSingleResult(query);
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    @Override
-    public void createSuperAdministrator() {
-        final String TEMPORARY_SUPERADMIN_ROLE = "Temporary Super Administrator Group";
-        final String SUPERADMIN_ROLE = AuthorizationSystemSession.SUPERADMIN_ROLE;
-        // Create the Super Admin
-        AdminGroupData role = getRole(SUPERADMIN_ROLE);
-        if (role == null) {
-            log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
-            role = new AdminGroupData(1, SUPERADMIN_ROLE);
-            entityManager.persist(role);
-        } else {
-            log.debug("'" + SUPERADMIN_ROLE + "' already exists, not creating new.");            
-        }
-        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
-        if (!role.getAccessRules().containsKey(rule.getPrimaryKey())) {
-            log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
-            Map<Integer, AccessRuleData> newrules = new HashMap<>();
-            newrules.put(rule.getPrimaryKey(), rule);
-            role.setAccessRules(newrules);
-        } else {
-            log.debug("rule '/' already exists in " + SUPERADMIN_ROLE + ".");
-        }
-        // Pick up the aspects from the old temp. super admin group and add them to the new one.
-        Map<Integer, AccessUserAspectData> newUsers = new HashMap<>();
-        AdminGroupData oldSuperAdminRole = getRole(TEMPORARY_SUPERADMIN_ROLE);
-        if (oldSuperAdminRole != null) {
-            Map<Integer, AccessUserAspectData> oldSuperAdminAspects = oldSuperAdminRole.getAccessUsers();
-            Map<Integer, AccessUserAspectData> existingSuperAdminAspects = role.getAccessUsers();
-            for (AccessUserAspectData aspect : oldSuperAdminAspects.values()) {
-                AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(
-                        X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, aspect.getMatchWith());
-                AccessUserAspectData superAdminUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, aspect.getCaId(), matchWith,
-                        aspect.getMatchTypeAsType(), aspect.getMatchValue());
-                if (existingSuperAdminAspects.containsKey(superAdminUserAspect.getPrimaryKey())) {
-                    log.debug(SUPERADMIN_ROLE + " already contains aspect matching " + aspect.getMatchValue() + " for CA with ID " + aspect.getCaId());
-                } else {
-                    newUsers.put(superAdminUserAspect.getPrimaryKey(), superAdminUserAspect);
-                }
-            }
-        }
-        // Create the CLI Default User
-        Map<Integer, AccessUserAspectData> users = role.getAccessUsers();
-        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, CliUserAccessMatchValue.USERNAME,
-                AccessMatchType.TYPE_EQUALCASE, EjbcaConfiguration.getCliDefaultUser());
-        if (!users.containsKey(defaultCliUserAspect.getPrimaryKey())) {
-            log.debug("Adding new AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' to " + SUPERADMIN_ROLE + ".");
-            newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
-            UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
-                    + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 0, 0, 0, null);
-            defaultCliUserData.setStatus(EndEntityConstants.STATUS_GENERATED);
-            if (entityManager.find(UserData.class, defaultCliUserData.getUsername())==null) {
-                entityManager.persist(defaultCliUserData);
-            }
-        } else {
-            log.debug("AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' already exists in " + SUPERADMIN_ROLE + ".");            
-        }
-        // Add all created aspects to role
-        role.setAccessUsers(newUsers);
-    }
-
     @Override
     public void setTokenTypeWhenNull(final AuthenticationToken authenticationToken) {
-        for (final AdminGroupData role : getAllRoles()) {
-            final Collection<AccessUserAspectData> updatedUsers = new ArrayList<>();
-            for (AccessUserAspectData userAspect : role.getAccessUsers().values()) {
-                if (userAspect.getTokenType() == null) {
-                    userAspect.setTokenType(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE);
-                    updatedUsers.add(userAspect);
-                }
-            }
-            addSubjectsToRole(authenticationToken, role, updatedUsers);
-        }
+        final Query query = entityManager.createQuery("UPDATE AccessUserAspectData a SET a.tokenType=:tokenType WHERE a.tokenType IS NULL");
+        query.setParameter("tokenType", X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE);
+        query.executeUpdate();
     }
 
     @Override
@@ -348,13 +235,31 @@ public class LegacyRoleManagementSessionBean implements LegacyRoleManagementSess
     }
 
     private void deleteRole(final AuthenticationToken authenticationToken, final AdminGroupData role) {
-        for (AccessUserAspectData userAspect : role.getAccessUsers().values()) {
-            entityManager.remove(userAspect);
-        }
-        removeAccessRuleDatas(role.getAccessRules().values());
+        final Query queryAdminEntityData = entityManager.createQuery("DELETE FROM AccessUserAspectData a WHERE a.adminGroupDataPrimaryKey=:adminGroupDataPrimaryKey");
+        queryAdminEntityData.setParameter("adminGroupDataPrimaryKey", role.getPrimaryKey());
+        queryAdminEntityData.executeUpdate();
+        final Query queryAccessRuleData = entityManager.createQuery("DELETE FROM AccessRuleData a WHERE a.adminGroupDataPrimaryKey=:adminGroupDataPrimaryKey");
+        queryAccessRuleData.setParameter("adminGroupDataPrimaryKey", role.getPrimaryKey());
+        queryAccessRuleData.executeUpdate();
         entityManager.remove(role);
         final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.roleremoved", role.getRoleName());
         securityEventsLogger.log(EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                 authenticationToken.toString(), null, null, null, msg);
+    }
+    
+    @Override
+    public List<AccessUserAspectData> getAccessUsers(final int adminGroupDataPrimaryKey) {
+        final TypedQuery<AccessUserAspectData> query = entityManager.createQuery(
+                "SELECT a FROM AccessUserAspectData a WHERE a.adminGroupDataPrimaryKey=:adminGroupDataPrimaryKey", AccessUserAspectData.class);
+        query.setParameter("adminGroupDataPrimaryKey", adminGroupDataPrimaryKey);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<AccessRuleData> getAccessRules(final int adminGroupDataPrimaryKey) {
+        final TypedQuery<AccessRuleData> query = entityManager.createQuery(
+                "SELECT a FROM AccessRuleData a WHERE a.adminGroupDataPrimaryKey=:adminGroupDataPrimaryKey", AccessRuleData.class);
+        query.setParameter("adminGroupDataPrimaryKey", adminGroupDataPrimaryKey);
+        return query.getResultList();
     }
 }
