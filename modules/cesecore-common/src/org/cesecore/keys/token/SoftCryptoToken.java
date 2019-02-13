@@ -211,6 +211,9 @@ public class SoftCryptoToken extends BaseCryptoToken {
         if (log.isDebugEnabled()) {
         	log.debug("Loading keystore data of size: "+ (ksdata == null ? "null" : ksdata.length));
         }
+        if (ksdata == null) {
+            throw new IOException("Keystore data is null and can not be used for a Soft Crypto Token");
+        }
         keystore.load(new ByteArrayInputStream(ksdata), keystorepass);
         return keystore;
     }
