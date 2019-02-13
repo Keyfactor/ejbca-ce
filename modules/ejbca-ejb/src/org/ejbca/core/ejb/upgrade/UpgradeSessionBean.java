@@ -1042,7 +1042,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         for (final AdminGroupData adminGroupData : adminGroupDatas) {
             // Convert AdminGroupData and linked AccessRuleDatas to RoleData
             final String roleName = adminGroupData.getRoleName();
-            final Collection<AccessRuleData> oldAccessRules = adminGroupData.getAccessRules().values();
+            final Collection<AccessRuleData> oldAccessRules = legacyRoleManagementSession.getAccessRules(adminGroupData.getPrimaryKey());
             HashMap<String, Boolean> newAccessRules = accessRulesMigrator.toNewAccessRules(oldAccessRules, roleName);
             //Migrate rules & rule states changed in 6.8.0.
             newAccessRules = migrate680Rules(newAccessRules, isInstalledOn660OrLater);
@@ -1058,9 +1058,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             role.minimizeAccessRules();
             roleDataSession.persistRole(role);
             // Convert the linked AccessUserAspectDatas to RoleMemberDatas
-            final Map<Integer, AccessUserAspectData> accessUsers = adminGroupData.getAccessUsers();
+            List<AccessUserAspectData> accessUsers = legacyRoleManagementSession.getAccessUsers(adminGroupData.getPrimaryKey());
             // Each AccessUserAspectData belongs to one and only one role, so retrieving them this way may be considered safe.
-            for (final AccessUserAspectData accessUserAspect : accessUsers.values()) {
+            for (final AccessUserAspectData accessUserAspect : accessUsers) {
                 final String tokenType = accessUserAspect.getTokenType();
                 // Only the X509CertificateAuthenticationToken actually uses the CA Id, so leave it unset for the rest
                 final int tokenIssuerId;
