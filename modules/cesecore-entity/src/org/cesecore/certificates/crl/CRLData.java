@@ -233,15 +233,17 @@ public class CRLData extends ProtectedData implements Serializable {
     public void setThisUpdate(Date thisUpdate) {
         if (thisUpdate == null) {
             setThisUpdate(-1L);
+        } else {
+            setThisUpdate(thisUpdate.getTime());
         }
-        setThisUpdate(thisUpdate.getTime());
     }
 
     public void setNextUpdate(Date nextUpdate) {
         if (nextUpdate == null) {
             setNextUpdate(-1L);
+        } else {
+            setNextUpdate(nextUpdate.getTime());
         }
-        setNextUpdate(nextUpdate.getTime());
     }
 
     //

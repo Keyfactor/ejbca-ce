@@ -67,8 +67,6 @@ public class BasicCertificateExtension extends CertificateExtension implements C
 
     private static final long serialVersionUID = 6896964791897238060L;
 
-    //private static final Logger log = Logger.getLogger(BasicCertificateExtension.class);
-
     private static final InternalResources intres = InternalResources.getInstance();
 
     private static final String DISPLAY_NAME = "Basic Certificate Extension";
@@ -102,13 +100,6 @@ public class BasicCertificateExtension extends CertificateExtension implements C
 
         public String value() {
             return value;
-        }
-
-        public boolean equals(Encoding otherValue) {
-            if(otherValue == null) {
-                return false;
-            }
-            return value.equalsIgnoreCase(otherValue.value());
         }
 
         public static final Encoding fromString(String value) {
