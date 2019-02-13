@@ -73,7 +73,7 @@ public class IssueCheckerManagedBean extends BaseManagedBean {
         return issueCheckerConfiguration.isIssueCheckerEnabled();
     }
 
-    public String getHelpReference(final Ticket ticket) {
+    public String getIssueHelpReference(final Ticket ticket) {
         if (!getEjbcaWebBean().isHelpEnabled()) {
             return "#";
         }
