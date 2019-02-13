@@ -550,7 +550,6 @@ class SCEPTest extends ClientToolBox {
                 final Store certstore = sd.getCertificates();
             	if (crlRep) {
             		// We got a reply with a requested CRL
-            		@SuppressWarnings("unchecked")
                     final Collection<X509CRL> crls = CertTools.convertToX509CRLList(sd.getCRLs().getMatches(null));
             		if (crls.size() != 1) {
             			StressTest.this.performanceTest.getLog().error("CRLS should be 1: "+crls.size());
@@ -632,7 +631,7 @@ class SCEPTest extends ClientToolBox {
             		usercert.verify(cacert.getPublicKey());
             	}
             	if ( !Arrays.equals(usercert.getKeyUsage(), keyUsage) ) {
-            	    StressTest.this.performanceTest.getLog().error("Key usage not OK. Is: '"+usercert.getKeyUsage()+"'. Should be '"+keyUsage+"'.");
+            	    StressTest.this.performanceTest.getLog().error("Key usage not OK. Is: '" + Arrays.toString(usercert.getKeyUsage()) + "'. Should be '" + Arrays.toString(keyUsage) + "'.");
             	    return false;
             	}
             	StressTest.this.performanceTest.getLog().result(CertTools.getSerialNumber(usercert));

@@ -613,7 +613,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                 if (sizes == null || sizes.length > 1) {
                     final String msg = "Certificate profile specified more than one key size, not possible to server generate keys";
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug(msg+": "+certProfileID+": "+Arrays.asList(sizes));
+                        LOG.debug(msg+": "+certProfileID+": " + Arrays.toString(sizes));
                     }
                     throw new InvalidKeyException(msg);                        
                 }

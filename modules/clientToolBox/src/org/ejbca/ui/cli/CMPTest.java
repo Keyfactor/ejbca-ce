@@ -94,6 +94,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
@@ -812,7 +813,7 @@ class CMPTest extends ClientToolBox {
                     return null;
                 }
                 if ( this.socket==null || this.socket.isClosed() || !this.socket.isBound() || !this.socket.isConnected() || this.socket.isInputShutdown() || this.socket.isOutputShutdown() ) {
-                    StressTest.this.performanceTest.getLog().info("New socket created for thread with '"+this.transid+"'.");
+                    StressTest.this.performanceTest.getLog().info("New socket created for thread with '" + Hex.toHexString(this.transid) + "'.");
                     this.socket = new Socket(StressTest.this.hostName, StressTest.this.port);
                     this.socket.setKeepAlive(true);
                 }
