@@ -118,13 +118,10 @@ public class CACertServlet extends HttpServlet {
         if (command == null) {
             command = "";
         }
+        String lev = req.getParameter(LEVEL_PROPERTY);
         if ((command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_JKSTRUSTSTORE)
-        		|| command.equalsIgnoreCase(COMMAND_CACERT)) && issuerdn != null ) {
-            String lev = req.getParameter(LEVEL_PROPERTY);
-            int level = 0;
-            if (StringUtils.isNumeric(lev)) {
-                level = Integer.parseInt(lev);
-            }
+        		|| command.equalsIgnoreCase(COMMAND_CACERT)) && issuerdn != null && StringUtils.isNumeric(lev)) {
+            final int level = Integer.parseInt(lev);
             // Root CA is level 0, next below root level 1 etc etc
             try {
                 Certificate[] chain = signSession.getCertificateChain(issuerdn.hashCode()).toArray(new Certificate[0]);
@@ -191,8 +188,7 @@ public class CACertServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
                 return;
             }
-        }
-        else {
+        } else {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request format");
             return;
         }
