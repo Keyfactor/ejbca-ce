@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -66,18 +67,25 @@ public class CryptoTokenDownloadServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         final String cryptoTokenIdParam = request.getParameter("cryptoTokenId");
-        final int cryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
-        final String aliasParam = request.getParameter("alias");
-        try {
-            final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(alwaysAllowAuthenticationToken, cryptoTokenId, aliasParam).getPublicKey();
-            response.setContentType("application/octet-stream");
-            response.setHeader("Content-disposition", " attachment; filename=\"" + StringTools.stripFilename(aliasParam + ".pem") + "\"");
-            response.getOutputStream().write(KeyTools.getAsPem(publicKey).getBytes());
-            response.flushBuffer();
-        } catch (CryptoTokenOfflineException e) {
-            throw new ServletException(e);
-        } catch (AuthorizationDeniedException e) {
-            throw new ServletException(e);
+        if (!StringUtils.isNumeric(cryptoTokenIdParam)) {
+            if (log.isDebugEnabled()) {
+                log.debug("No crypto token with id: " + cryptoTokenIdParam);                
+            }
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "No crypto token with id.");
+        } else {
+            final int cryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
+            final String aliasParam = request.getParameter("alias");
+            try {
+                final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(alwaysAllowAuthenticationToken, cryptoTokenId, aliasParam).getPublicKey();
+                response.setContentType("application/octet-stream");
+                response.setHeader("Content-disposition", " attachment; filename=\"" + StringTools.stripFilename(aliasParam + ".pem") + "\"");
+                response.getOutputStream().write(KeyTools.getAsPem(publicKey).getBytes());
+                response.flushBuffer();
+            } catch (CryptoTokenOfflineException e) {
+                throw new ServletException(e);
+            } catch (AuthorizationDeniedException e) {
+                throw new ServletException(e);
+            }            
         }
         log.trace("<doGet()");
     }   
