@@ -26,7 +26,7 @@ public class CertificateProfileDoesNotExistException extends CesecoreException {
 
 
     /**
-     * Creates a new instance of <code>CertificateProfileDoesNotExistException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public CertificateProfileDoesNotExistException() {
         super();
@@ -34,7 +34,7 @@ public class CertificateProfileDoesNotExistException extends CesecoreException {
     
     
     /**
-     * Constructs an instance of <code>CertificateProfileDoesNotExistException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public CertificateProfileDoesNotExistException(String msg) {
