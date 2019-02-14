@@ -16,7 +16,7 @@ import javax.ejb.ApplicationException;
 import javax.xml.ws.WebFault;
 
 /**
- * An exception thrown by the isauthorized method in the EjbcaAthorization bean.
+ * An exception thrown when admin is not authorized to a resource.
  *
  * @version $Id$
  */
@@ -29,7 +29,7 @@ public class AuthorizationDeniedException extends Exception {
 
 
     /**
-     * Creates a new instance of <code>AuthorizationDeniedException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public AuthorizationDeniedException() {
       super();  
@@ -37,7 +37,7 @@ public class AuthorizationDeniedException extends Exception {
     
     
     /**
-     * Constructs an instance of <code>AuthorizationDeniedException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public AuthorizationDeniedException(String msg) {
