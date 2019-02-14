@@ -1694,7 +1694,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableThemes() {
         final List<SelectItem> ret = new ArrayList<>();
-        final String[] themes = globalConfig.getAvailableThemes();
+        final String[] themes = getGlobalConfiguration().getAvailableThemes();
         for(String theme : themes) {
             ret.add(new SelectItem(theme, theme));
         }
@@ -1703,7 +1703,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getPossibleEntriesPerPage() {
         final List<SelectItem> ret = new ArrayList<>();
-        final String[] possibleValues = globalConfig.getPossibleEntiresPerPage();
+        final String[] possibleValues = getGlobalConfiguration().getPossibleEntiresPerPage();
         for(String value : possibleValues) {
             ret.add(new SelectItem(Integer.parseInt(value), value));
         }
