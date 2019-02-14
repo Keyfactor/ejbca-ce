@@ -52,7 +52,7 @@ public class CertificateHelper {
 	
 	/**
 	 * Method that builds a certificate from the data in the WS response.
-	 * @param byte array with base64 encoded Certificate type
+	 * @param certificateData byte array with base64 encoded Certificate type
 	 * @return Certificate
 	 */
 	public static Certificate getCertificate(byte[] certificateData) throws CertificateException{
@@ -63,7 +63,7 @@ public class CertificateHelper {
 	/**
 	 * Simple method that just returns raw PKCS7 data instead of the BASE64 encoded contained in
 	 * the WS response
-	 * @param byte array with base64 encoded data
+	 * @param pkcs7Data byte array with base64 encoded data
 	 * @return byte array with binary (decoded base64) data
 	 */
 	public static byte[] getPKCS7(byte[] pkcs7Data) {
