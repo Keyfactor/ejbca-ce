@@ -262,8 +262,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
         if (profiledata == null) {
             final String profileIdParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(PARAMETER_PROFILE_ID);
-            if (StringUtils.isEmpty(profileIdParam)) {
-                throw new IllegalStateException("Internal error. Missing " + PARAMETER_PROFILE_ID + " HTTP request parameter.");
+            if (!StringUtils.isNumeric(profileIdParam)) {
+                throw new IllegalStateException("Internal error. Missing or invalid " + PARAMETER_PROFILE_ID + " HTTP request parameter.");
             }
             loadProfile(Integer.valueOf(profileIdParam));
             viewOnly = !authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES);
