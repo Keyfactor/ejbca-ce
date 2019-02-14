@@ -77,11 +77,11 @@
 	            	<h:inputSecret id="inputhmacsecret" value="#{editCmpConfigMBean.hmacSecret}" 
 	            			disabled="#{editCmpConfigMBean.caSharedSecret or !editCmpConfigMBean.hmacSelected}"
 	            			rendered="#{editCmpConfigMBean.raMode and not editCmpConfigMBean.viewOnly}"
-	            			redisplay="true"/>
+	            			redisplay="true" autocomplete="off"/>
            			<h:inputSecret id="inputsecretviewonlydummy" value="******" 
            					disabled="true" 
            					rendered="#{editCmpConfigMBean.viewOnly}"
-           					redisplay="true"/>
+           					redisplay="true" autocomplete="off"/>
 	            	<br/>
 	            	<h:panelGroup id="endentitycertificategroup" rendered="#{editCmpConfigMBean.responseProtection ne 'pbe'}">
 	            		<h:selectBooleanCheckbox value="#{editCmpConfigMBean.eeCertSelected}" disabled="#{editCmpConfigMBean.viewOnly}">
