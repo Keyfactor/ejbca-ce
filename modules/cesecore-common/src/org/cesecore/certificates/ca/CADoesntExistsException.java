@@ -32,14 +32,14 @@ public class CADoesntExistsException extends CesecoreException {
     private static final long serialVersionUID = 1542504214401684378L;
 
     /**
-     * Creates a new instance of <code>CADoesntExistsException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public CADoesntExistsException() {
         super(ErrorCode.CA_NOT_EXISTS);
     }
         
     /**
-     * Constructs an instance of <code>CAProfileDoesntExistsException</code> with the specified detail message.
+     * Constructs an instance of with the specified detail message.
      * @param msg the detail message.
      */
     public CADoesntExistsException(String msg) {
@@ -47,7 +47,7 @@ public class CADoesntExistsException extends CesecoreException {
     }
 
     /**
-     * Constructs an instance of <code>CAProfileDoesntExistsException</code> with the specified cause.
+     * Constructs an instance of with the specified cause.
      * @param msg the detail message.
      */
     public CADoesntExistsException(Exception e) {

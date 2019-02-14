@@ -34,26 +34,23 @@ public class CesecoreException extends Exception {
     ErrorCode errorCode = null;
 
     /**
-     * Constructor used to create exception without an errormessage. Calls the same constructor in
-     * baseclass <code>Exception</code>.
+     * Constructor used to create exception without an error message. Calls the same constructor in Exception.
      */
     public CesecoreException() {
         super();
     }
 
     /**
-     * Constructor used to create exception with an errormessage. Calls the same constructor in
-     * baseclass <code>Exception</code>.
+     * Constructor used to create exception with an error message. Calls the same constructor in Exception.
      *
-     * @param message Human redable error message, can not be NULL.
+     * @param message Human readable error message, can not be NULL.
      */
     public CesecoreException(final String message) {
         super(message);
     }
 
     /**
-     * Constructor used to create exception with an errorCode. Calls the same default constructor
-     * in the base class <code>Exception</code>.
+     * Constructor used to create exception with an error code.
      *
      * @param errorCode defines the cause of the exception.
      */
@@ -63,8 +60,7 @@ public class CesecoreException extends Exception {
     }
 
     /**
-     * Constructor used to create exception with an errormessage. Calls the same constructor in
-     * baseclass <code>Exception</code>.
+     * Constructor used to create exception with an error code and message.
      *
      * @param errorCode defines the cause of the exception.
      * @param message Human readable error message, can not be NULL.
@@ -75,8 +71,7 @@ public class CesecoreException extends Exception {
     }
 
     /**
-     * Constructor used to create exception with an embedded exception. Calls the same constructor
-     * in baseclass <code>Exception</code>.
+     * Constructor used to create exception with an embedded exception.
      *
      * @param exception exception to be embedded.
      */
@@ -88,8 +83,7 @@ public class CesecoreException extends Exception {
     }
 
     /**
-     * Constructor used to create exception with an embedded exception. Calls the same constructor
-     * in baseclass <code>Exception</code>.
+     * Constructor used to create exception with an error code and an embedded exception.
      *
      * @param errorCode defines the cause of the exception.
      * @param exception exception to be embedded.
@@ -100,10 +94,10 @@ public class CesecoreException extends Exception {
     }
 
     /**
-     * Constructor used to create exception with an errormessage. Calls the same constructor in
-     * baseclass <code>Exception</code>.
+     * Constructor used to create exception with an error message and an embedded exception.
      *
      * @param message Human readable error message, can not be NULL.
+     * @param cause exception to be embedded.
      */
     public CesecoreException(final String message, final Throwable cause) {
 		super(message, cause);
@@ -112,6 +106,13 @@ public class CesecoreException extends Exception {
         }
 	}
 
+    /**
+     * Constructor used to create exception with an error code, an error message and an embedded exception. 
+     *
+     * @param message Human readable error message, can not be NULL.
+     * @param errorCode defines the cause of the exception.
+     * @param exception exception to be embedded.
+     */
 	public CesecoreException(final ErrorCode errorCode, final String message, final Throwable cause) {
 		super(message, cause);
         this.errorCode = errorCode;
