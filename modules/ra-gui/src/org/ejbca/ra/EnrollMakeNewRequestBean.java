@@ -1050,6 +1050,38 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
+
+    /**
+     * Update DNSNAME  with value from CN on change of 'dnsUsed' value
+     * @param dnsName
+     */
+    public void updateDnsField(EndEntityProfile.FieldInstance dnsName) {
+        if (dnsName != null) {
+            if (dnsName.isDnsUsed()) {
+                EndEntityProfile.FieldInstance cnName = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME).get(0);
+                if (cnName != null) {
+                    dnsName.setValue(cnName.getValue());
+                    return;
+                }
+            }
+            dnsName.setValue("");
+        }
+    }
+
+    /**
+     * Update DNSnames. With default CN value or with updated.
+     */
+    public final void updateDnsName(){
+        EndEntityProfile.FieldInstance cnName = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME).get(0);
+        if (cnName != null) {
+            for (EndEntityProfile.FieldInstance dnsName : subjectAlternativeName.getFieldInstancesMap().get(DnComponents.DNSNAME).values()) {
+                if (dnsName.isDnsUsed()) {
+                    dnsName.setValue(cnName.getValue());
+                }
+            }
+        }
+    }
+
     //-----------------------------------------------------------------------------------------------
     //Validators
 
@@ -1758,12 +1790,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     " modifiable=" + fieldInstance.isModifiable() + " selectableValues.size=" + (fieldInstance.getSelectableValues()==null?0:fieldInstance.getSelectableValues().size()));
         }
         // For the email fields "used" means use EE email address
-        if (fieldInstance.isUsed() || DnComponents.DNEMAILADDRESS.equals(fieldInstance.getName()) || DnComponents.RFC822NAME.equals(fieldInstance.getName())) {
+        if (fieldInstance.isUsed() || DnComponents.DNEMAILADDRESS.equals(fieldInstance.getName()) || DnComponents.RFC822NAME.equals(fieldInstance.getName())
+                || DnComponents.DNSNAME.equals(fieldInstance.getName()))  {
             if (isRenderNonModifiableFields()) {
                 return true;
             }
             if ((!fieldInstance.isSelectable() && fieldInstance.isModifiable()) || (fieldInstance.isSelectable() && fieldInstance.getSelectableValues().size() > 1)
-                    || (!fieldInstance.isModifiable() && (fieldInstance.getName().equals("RFC822NAME") || fieldInstance.getName().equals("UPN")))) {
+                    || (!fieldInstance.isModifiable() && (fieldInstance.getName().equals("RFC822NAME") || fieldInstance.getName().equals("UPN") || fieldInstance.getName().equals("DNSNAME")))) {
                 return true;
             }
         }
@@ -1850,6 +1883,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public RaRequestPreview getRequestPreview() {
         RaRequestPreview requestPreview = new RaRequestPreview();
         requestPreview.updateSubjectDn(getSubjectDn());
+        updateDnsName();
         requestPreview.updateSubjectAlternativeName(getSubjectAlternativeName());
         requestPreview.updateSubjectDirectoryAttributes(getSubjectDirectoryAttributes());
         requestPreview.setPublicKeyAlgorithm(getAlgorithm());
