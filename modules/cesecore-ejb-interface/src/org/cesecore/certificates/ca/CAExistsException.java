@@ -27,7 +27,7 @@ public class CAExistsException extends CesecoreException {
 
 
     /**
-     * Creates a new instance of <code>CAExistsException</code> without detail message.
+     * Creates a new instance without detail message.
      */
     public CAExistsException() {
         super();
@@ -35,7 +35,7 @@ public class CAExistsException extends CesecoreException {
     
     
     /**
-     * Constructs an instance of <code>CAExistsException</code> with the specified detail message.
+     * Constructs an instance with the specified detail message.
      * @param msg the detail message.
      */
     public CAExistsException(String msg) {
