@@ -234,7 +234,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Collection<Certificate> getCertificateChain(int caid) {
-        return caSession.getCAInfoInternal(caid).getCertificateChain();
+        final CAInfo cainfo = caSession.getCAInfoInternal(caid);
+        if (cainfo != null) {
+            return cainfo.getCertificateChain();
+        } else {
+            return new ArrayList<Certificate>();
+        }
     }
 
     @Override
