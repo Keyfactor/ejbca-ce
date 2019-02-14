@@ -28,7 +28,7 @@ public class AlreadyRevokedException extends EjbcaException {
 
 
     /**
-     * Creates a new instance of <code>AlreadyRevokedException</code> without detail message.
+     * Creates a new instance without detail message.
      */
 	public AlreadyRevokedException() {
 		super();
