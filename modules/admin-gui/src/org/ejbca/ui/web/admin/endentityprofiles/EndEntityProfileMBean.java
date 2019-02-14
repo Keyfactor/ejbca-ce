@@ -173,7 +173,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             this.helpText = helpText;
         }
 
-        /** Used for "Use End Entity E-mail" only */
+        /** Used for "Use End Entity E-mail" and for "Use entity CN field" */
         public boolean isUsed() {
             return profiledata.getUse(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
         }
@@ -1234,6 +1234,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         validateNameComponents(getSubjectDnComponentList());
         validateNameComponents(getSubjectAltNameComponentList());
         validateNameComponents(getSubjectDirectoryAttributeComponentList());
+        validateUseCnForDnsName(getSubjectAltNameComponentList(), getSubjectDnComponentList());
         // Available Certificate Profiles
         final List<Integer> availableCertProfs = profiledata.getAvailableCertificateProfileIds();
         if (!availableCertProfs.contains(profiledata.getDefaultCertificateProfile())) {
@@ -1304,7 +1305,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             final String name = component.getName();
             // empty value + non-modifiable + required = invalid
             // empty value + non-modifiable = could make sense in theory, but most likely a user error, so disallow it as well (consistent with 6.15.x behavior)
-            if (StringUtils.isBlank(component.getValue()) && !component.isModifiable()) {
+            if (StringUtils.isBlank(component.getValue()) && !component.isModifiable() && !component.isUsed()) {
                 if (component.isEmailField()) {
                     editerrors.add(ejbcaWebBean.getText("SUBJECTDNEMAILEMPTY"));
                 } else {
@@ -1322,6 +1323,27 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
                         editerrors.add(ejbcaWebBean.getText("VALIDATIONREGEXERROR", false, name, e.getMessage()));
                     }
                 }
+            }
+        }
+    }
+
+    private void validateUseCnForDnsName(final List<NameComponentGuiWrapper> subjectAltNameComponentList, final List<NameComponentGuiWrapper> subjectDnComponentList) {
+        boolean dnsIsUsed = false;
+        for (NameComponentGuiWrapper subjectAltNameComponent : subjectAltNameComponentList) {
+            if (subjectAltNameComponent.isDnsField() && subjectAltNameComponent.isUsed()) {
+                dnsIsUsed = true;
+                break;
+            }
+        }
+        if (dnsIsUsed) {
+            boolean commonNameIsPresent = false;
+            for (NameComponentGuiWrapper subjectDnComponent : subjectDnComponentList) {
+                if (EndEntityProfile.isFieldOfType(subjectDnComponent.getFieldType(), DnComponents.COMMONNAME)) {
+                    commonNameIsPresent = true;
+                }
+            }
+            if (!commonNameIsPresent) {
+                editerrors.add(ejbcaWebBean.getText("USECNFORDNSBUTCNEMPTY"));
             }
         }
     }
