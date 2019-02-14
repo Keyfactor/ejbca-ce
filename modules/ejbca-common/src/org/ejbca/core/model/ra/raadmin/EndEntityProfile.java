@@ -116,6 +116,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public static final String AUTOGENPASSWORDLENGTH = "AUTOGENPASSWORDLENGTH";
     
     public static final String EMAIL              = "EMAIL";
+    public static final String DESCRIPTION        = "DESCRIPTION";
     public static final String KEYRECOVERABLE     = "KEYRECOVERABLE";
     public static final String DEFAULTCERTPROFILE = "DEFAULTCERTPROFILE";
     /** A list of available certificate profile names can be retrieved with getAvailableCertificateProfileNames() */
@@ -1045,6 +1046,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setEmailRequired(final boolean required) {
         setRequired(EMAIL, 0, required);
+    }
+    
+    public String getDescription() {
+        return getValue(DESCRIPTION, 0);
+    }
+
+    public void setDescription(final String description) {
+        setValue(DESCRIPTION, 0, description);
     }
 
     public boolean isAllowedRequestsUsed() {

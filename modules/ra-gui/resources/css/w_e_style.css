@@ -819,6 +819,12 @@ label[for="requestTemplateForm:selectKeyPairGenerationOneMenu"] {
   border-color: #000;
   list-style: none;
   opacity: 0.8; }
+  
+#requestTemplateForm\:endEntityProfileDescription,
+#requestTemplateForm\:certificateProfileDescription {
+	color: white; 
+	font-size: 80%;
+}
 
 #contentForm > #contentForm\:more,
 #enrollWithRequestIdForm\:requestId,

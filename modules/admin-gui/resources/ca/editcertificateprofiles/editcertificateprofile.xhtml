@@ -174,6 +174,17 @@
 						</h:selectOneMenu>
 					</h:panelGroup>	
 				</h:panelGrid>
+				
+				<h:panelGroup id="descriptionGroup">
+                    <h:outputText value="#{web.text.CERTIFICATEPROFILEDESCRIPTION}"/>    
+                </h:panelGroup>
+                <h:panelGrid id="descriptionGrid" columns="1">          
+                    <h:panelGroup>
+                        <h:outputText id="description"/>
+                        <h:inputTextarea name="#{web.text.TEXTFIELD_DESCRIPTION}" cols="45" value="#{certProfileBean.certificateProfile.description}"
+                            rows="2" disabled="#{certProfilesBean.viewOnly}"/>
+                    </h:panelGroup>
+                </h:panelGrid>  
 			</h:panelGrid>
 		
 		

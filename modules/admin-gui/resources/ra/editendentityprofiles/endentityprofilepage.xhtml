@@ -246,7 +246,19 @@
 				    	</h:selectBooleanCheckbox>
 				    	<h:outputLabel for="emailModifiableCheckBox" value="#{web.text.MODIFYABLE}" />
 				    </h:panelGrid> 
-				</h:panelGrid>	
+				</h:panelGrid>
+				<h:panelGroup>
+                        &nbsp;
+                </h:panelGroup>
+				<h:panelGroup id="descriptionGroup">
+                    <h:outputText value="#{web.text.ENDENTITYPROFILEDESCRIPTION}"/>    
+                </h:panelGroup>
+                <h:panelGrid id="descriptionGrid" columns="1">			
+					<h:panelGroup>
+					    <h:outputText id="description"/>
+					    <h:inputTextarea name="#{web.text.TEXTFIELD_DESCRIPTION}" cols="45" value="#{endEntityProfileMBean.description}" rows="2"/>
+					</h:panelGroup>
+                </h:panelGrid>	
 			</h:panelGrid>
 			
 <!-- DIRECTIVES -->
