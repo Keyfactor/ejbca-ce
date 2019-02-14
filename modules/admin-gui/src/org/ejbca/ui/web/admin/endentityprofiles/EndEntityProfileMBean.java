@@ -481,6 +481,18 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     public void setEmailModifiable(final boolean emailModifyable) {
         profiledata.setEmailDomainModifiable(emailModifyable);
     }
+    
+    public String getDescription() {
+        String description = "";
+        if (profiledata.getDescription() != null) {
+            description = profiledata.getDescription();
+        }
+        return description;
+    }
+
+    public void setDescription(final String description) {
+        profiledata.setDescription(StringUtils.trim(description));
+    }
 
     // DIRECTIVES
 
