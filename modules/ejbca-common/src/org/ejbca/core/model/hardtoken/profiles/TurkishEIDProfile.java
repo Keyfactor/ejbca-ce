@@ -102,6 +102,7 @@ public class TurkishEIDProfile extends EIDProfile {
      * @deprecated
      * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.HardTokenProfile#isTokenSupported(java.lang.String)
      */
+    @Deprecated
     public boolean isTokenSupported(String tokenidentificationstring) {
         return false;
     }
