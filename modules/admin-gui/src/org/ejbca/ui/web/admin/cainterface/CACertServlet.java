@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -121,7 +122,7 @@ public class CACertServlet extends HttpServlet {
         		|| command.equalsIgnoreCase(COMMAND_CACERT)) && issuerdn != null ) {
             String lev = req.getParameter(LEVEL_PROPERTY);
             int level = 0;
-            if (lev != null) {
+            if (StringUtils.isNumeric(lev)) {
                 level = Integer.parseInt(lev);
             }
             // Root CA is level 0, next below root level 1 etc etc
