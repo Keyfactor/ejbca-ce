@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -117,7 +118,7 @@ public class EndEntityCertServlet extends HttpServlet {
             command = "";
         }
         if ((command.equalsIgnoreCase(COMMAND_NSCERT) || command.equalsIgnoreCase(COMMAND_IECERT) || command.equalsIgnoreCase(COMMAND_CERT)) 
-        	 && issuerdn != null && certificatesn != null) {
+        	 && issuerdn != null && StringUtils.isNumeric(certificatesn)) {
         	
         	BigInteger certsn = new BigInteger(certificatesn,16);
         	        	        
