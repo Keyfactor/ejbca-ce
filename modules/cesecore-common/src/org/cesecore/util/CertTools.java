@@ -855,7 +855,7 @@ public abstract class CertTools {
      * 
      * @param cert Certificate
      * 
-     * @return String containing the issuers DN.
+     * @return String containing the issuers DN, or null if cert is null.
      */
     public static String getIssuerDN(final Certificate cert) {
         return getDN(cert, 2);
@@ -867,7 +867,7 @@ public abstract class CertTools {
      * @param cert X509Certificate
      * @param which 1 = subjectDN, anything else = issuerDN
      * 
-     * @return String containing the DN.
+     * @return String containing the DN, or null if cert is null.
      */
     private static String getDN(final Certificate cert, final int which) {
         String ret = null;
@@ -1030,7 +1030,8 @@ public abstract class CertTools {
      * 
      * @param cert Certificate
      * 
-     * @return String to be displayed, or used in RoleMember objects
+     * @return String to be displayed or used in RoleMember objects
+     * @throws IllegalArgumentException if input is null or certificate type is not implemented
      */
     public static String getSerialNumberAsString(Certificate cert) {
         String ret = null;
