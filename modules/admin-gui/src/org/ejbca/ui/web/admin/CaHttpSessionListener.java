@@ -91,8 +91,16 @@ public class CaHttpSessionListener implements HttpSessionListener {
         
         final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
         final Certificate x509Certificate= getCertificate(admin);
-        final String issuerDn = Integer.toString(CertTools.getIssuerDN(x509Certificate).hashCode());
-        final String serialNr = CertTools.getSerialNumberAsString(x509Certificate);
+        final String caID;
+        final String serialNr;
+        if (x509Certificate != null) {
+            caID = Integer.toString(CertTools.getIssuerDN(x509Certificate).hashCode());
+            serialNr = CertTools.getSerialNumberAsString(x509Certificate);            
+        } else {
+            // there is no certificate, still destroy the session...but we log 0
+            caID = "0";
+            serialNr = "0";
+        }
         if (WebConfiguration.getAdminLogRemoteAddress()) {
             logDetails.put("remoteip", ejbcaWebBean.getCurrentRemoteIp());
         }
@@ -102,7 +110,7 @@ public class CaHttpSessionListener implements HttpSessionListener {
         }
         // Audit log the event
         auditLogSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDOUT, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, 
-                admin.toString(), issuerDn, serialNr, null, logDetails);
+                admin.toString(), caID, serialNr, null, logDetails);
     }
     
     private Certificate getCertificate(final AuthenticationToken admin) {
