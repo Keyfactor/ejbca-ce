@@ -39,6 +39,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * @version $Id$
  * @deprecated Use org.cesecore.certificates.endentity.ExtendedInformation instead. Deprecated since EJBCA 5.0.0
  */
+@Deprecated
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
     /** Internal localization of logs and errors */

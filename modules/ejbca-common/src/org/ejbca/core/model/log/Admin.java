@@ -33,6 +33,7 @@ import org.ejbca.core.model.authorization.AdminInformation;
  * @version $Id$
  * @deprecated Use org.cesecore.authentication.tokens.AuthenticationToken instead.
  */
+@Deprecated
 public class Admin implements Serializable {
 
     /**

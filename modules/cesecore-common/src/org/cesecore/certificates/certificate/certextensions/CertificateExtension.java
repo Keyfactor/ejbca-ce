@@ -160,6 +160,7 @@ public abstract class CertificateExtension implements Serializable {
      * @deprecated Callers should use the getValueEncoded method as this method might not be supported by all implementations. Implementors can
      * still implement this method if they prefer as it gets called from getValueEncoded.
 	 */
+	@Deprecated
     public abstract ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
             PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException;
 
