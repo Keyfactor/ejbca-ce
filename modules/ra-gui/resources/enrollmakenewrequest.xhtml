@@ -285,7 +285,7 @@
 											<f:attribute name="_required" value="#{instance.required}"/>
 											<f:attribute name="_label" value="#{instance.name}"/>
 											<f:ajax event="change" execute="@this" listener="#{enrollMakeNewRequestBean.checkSubjectDn}"
-                                                render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
+                                                render=":requestInfoForm:subjectDnMessage :requestInfoForm:requestPreviewOuterPanel"/>
                                             <f:ajax event="keyup" execute="@this"
                                                 render=":requestInfoForm:requestPreviewOuterPanel subjectDnFieldMessage"/>
 										</h:inputText>
@@ -319,7 +319,7 @@
 									<h:outputLabel for="subjectAltNameField"
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-                                    <h:panelGroup rendered="#{!instance.unModifiableUpnRfc and !instance.rfcUseEmail}">
+                                    <h:panelGroup rendered="#{!instance.unModifiableUpnRfc and !instance.rfcUseEmail and !instance.dnsUsed}">
                                         <h:inputText id="subjectAltNameField" value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
                                             rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
                                             <f:validator validatorId="extendedRegexValidator" />
@@ -361,6 +361,13 @@
                                         </h:selectOneMenu>
                                         <h:message for="upnRfcEmail" id="upnRfcEmailMessage" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
+									<h:panelGroup rendered="#{instance.useDns}">
+										<h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].dnsUsed}"
+																 disabled="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].required}">
+											<f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateDnsField(enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index])}"
+													execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
+										</h:selectBooleanCheckbox>
+									</h:panelGroup>
 								</h:panelGroup>
 							</ui:repeat>
 						</h:panelGroup>
