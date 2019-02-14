@@ -828,7 +828,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     private void flushCurrentCache() {
-        if ("0".equals(currentInternalKeyBindingId)) {
+        if (currentInternalKeyBindingId == null || "0".equals(currentInternalKeyBindingId) || !StringUtils.isNumeric(currentInternalKeyBindingId)) {
             // Show defaults for a new object
             currentName = "";
             getAvailableCryptoTokens();
