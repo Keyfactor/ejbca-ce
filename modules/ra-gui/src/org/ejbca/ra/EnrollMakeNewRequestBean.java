@@ -302,6 +302,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return StringUtils.isNotEmpty(getSelectedEndEntityProfile()) && (getAvailableCertificateProfiles().size()>1 ||
                 (getAvailableCertificateProfiles().size()==1 && isRenderNonModifiableTemplates()));
     }
+    /** @return true if the description of end entity profile ("certificate type") should be rendered */
+    public boolean isEndEntityProfileDescriptionRendered() {
+        return StringUtils.isNotEmpty(getSelectedCertificateProfile());
+    }
+    /** @return true if the description of certificate profile ("certificate sub-type") should be rendered */
+    public boolean isCertificateProfileDescriptionRendered() {
+        return StringUtils.isNotEmpty(getSelectedEndEntityProfile());
+    }
     /** @return true if the selection of certificate authority should be rendered */
     public boolean isSelectCertificateAuthorityRendered() {
         return StringUtils.isNotEmpty(getSelectedCertificateProfile()) && (getAvailableCertificateAuthorities().size()>1 ||
@@ -1215,7 +1223,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /** @return the current CertificateProfile as determined by state of dependencies */
-    private CertificateProfile getCertificateProfile() {
+    public CertificateProfile getCertificateProfile() {
         if (getSelectedCertificateProfile() != null) {
             KeyToValueHolder<CertificateProfile> temp = authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile()));
             if (temp != null) {
