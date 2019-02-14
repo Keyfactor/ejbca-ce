@@ -87,6 +87,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 	 * @return Returns the adminCertIssuerDN.
 	 * @deprecated Use the information from the Admin object instead
 	 */
+	@Deprecated
 	public String getAdminCertIssuerDN() {
 		return adminCertIssuerDN;
 	}
@@ -95,6 +96,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 	 * @return Returns the adminCertSerialNumber.
 	 * @deprecated Use the information from the Admin object instead
 	 */
+	@Deprecated
 	public BigInteger getAdminCertSerialNumber() {
 		if (adminCertSerialNumber == null) {
 			return null;

@@ -36,6 +36,7 @@ import org.cesecore.util.StringTools;
  * @version $Id$
  * @deprecated Use org.cesecore.certificates.endentity.EndEntityInformation instead. Since EJBCA 5.0.0.
  */
+@Deprecated
 public class UserDataVO implements Serializable {
 
     /**
@@ -202,6 +203,7 @@ public class UserDataVO implements Serializable {
     /**
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
      */
+    @Deprecated
     public boolean getAdministrator(){
       return type.contains(EndEntityTypes.ADMINISTRATOR);
     }
@@ -209,6 +211,7 @@ public class UserDataVO implements Serializable {
     /**
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
      */
+    @Deprecated
     public void setAdministrator(boolean administrator){
       if(administrator) {
         type.addType(EndEntityTypes.ADMINISTRATOR);
