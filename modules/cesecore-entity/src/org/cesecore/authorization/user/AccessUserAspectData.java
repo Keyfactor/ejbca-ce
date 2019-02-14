@@ -39,6 +39,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  */
 @Entity
 @Table(name = "AdminEntityData")
+@Deprecated
 public class AccessUserAspectData extends ProtectedData implements AccessUserAspect, Comparable<AccessUserAspectData> {
 
     private static final Logger log = Logger.getLogger(AccessUserAspectData.class);
