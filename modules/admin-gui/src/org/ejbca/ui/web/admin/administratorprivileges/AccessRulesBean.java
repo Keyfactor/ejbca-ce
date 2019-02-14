@@ -375,19 +375,22 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
         // Calculate available templates and the current best match
         getAvailableAccessRulesTemplates();
         // Select access rules that are allowed by the role
-        final LinkedHashMap<String, Boolean> accessRules = getRole().getAccessRules();
-        // Find CA access resources allowed by this role
-        setResourcesCaSelected(getSelectedRulesFromIdentifiers(accessRules, StandardRules.CAACCESS.resource(), caIdToNameMap.keySet()));
-        // Find RA resources allowed by this role
-        setResourcesEeSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesEe()));
-        // Find EEP resources allowed by this role
-        setResourcesEepSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.ENDENTITYPROFILEPREFIX, eepIdToNameMap.keySet(), getAvailableResourcesEe()));
-        // Find KV resources allowed by this role
-        setResourcesKeyValidatorsSelected(getSelectedRulesFromIdentifiers(accessRules, StandardRules.VALIDATORACCESS.resource(), keyValidatorsIdToNameMap.keySet()));
-        // Find IKB resources allowed by this role
-        setResourcesIkbSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesIkb()));
-        // Find Other resources allowed by this role
-        setResourcesOtherSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesOther()));
+        final Role role = getRole();
+        if (role != null) {
+            final LinkedHashMap<String, Boolean> accessRules = role.getAccessRules();
+            // Find CA access resources allowed by this role
+            setResourcesCaSelected(getSelectedRulesFromIdentifiers(accessRules, StandardRules.CAACCESS.resource(), caIdToNameMap.keySet()));
+            // Find RA resources allowed by this role
+            setResourcesEeSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesEe()));
+            // Find EEP resources allowed by this role
+            setResourcesEepSelected(getSelectedRulesFromIdentifiers(accessRules, AccessRulesConstants.ENDENTITYPROFILEPREFIX, eepIdToNameMap.keySet(), getAvailableResourcesEe()));
+            // Find KV resources allowed by this role
+            setResourcesKeyValidatorsSelected(getSelectedRulesFromIdentifiers(accessRules, StandardRules.VALIDATORACCESS.resource(), keyValidatorsIdToNameMap.keySet()));
+            // Find IKB resources allowed by this role
+            setResourcesIkbSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesIkb()));
+            // Find Other resources allowed by this role
+            setResourcesOtherSelected(getSelectedRulesFromSelectItems(accessRules, getAvailableResourcesOther()));            
+        }
     }
 
     /** @return minimal list of resources that the provided access rules grants */
