@@ -90,7 +90,7 @@
                 <h:panelGroup
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
                     rendered="#{cc.attrs.editMode}">
-                    <h:inputSecret id="enrollmentCode" value="#{cc.attrs.raEndEntityBean.enrollmentCode}">
+                    <h:inputSecret id="enrollmentCode" autocomplete="off" value="#{cc.attrs.raEndEntityBean.enrollmentCode}">
                         <f:ajax event="change" />
                     </h:inputSecret>
                 </h:panelGroup>
@@ -101,7 +101,7 @@
                 <h:panelGroup
                     styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
                     rendered="#{cc.attrs.editMode}">
-                    <h:inputSecret id="enrollmentCodeConfirm" value="#{cc.attrs.raEndEntityBean.enrollmentCodeConfirm}">
+                    <h:inputSecret id="enrollmentCodeConfirm" autocomplete="off" value="#{cc.attrs.raEndEntityBean.enrollmentCodeConfirm}">
                         <f:ajax event="change" />
                     </h:inputSecret>
                 </h:panelGroup>
