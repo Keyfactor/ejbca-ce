@@ -44,8 +44,8 @@
 						<fieldset>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectEndEntityProfileRendered}">
-								<h:outputLabel for="selectEEPOneMenu" value="#{msg.enroll_certificate_type}" />
-								<h:selectOneMenu id="selectEEPOneMenu" styleClass="jsAutoFocusLast"
+								<h:outputLabel for="selectEEPOneMenu" value="#{msg.enroll_certificate_type}"/>
+								<h:selectOneMenu id="selectEEPOneMenu" styleClass="jsAutoFocusLast" style="width: 30%; margin-right: 5%;"
 									value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"/>
@@ -55,12 +55,14 @@
 								<h:message for="selectEEPOneMenu" id="selectEEPOneMenuMessage" styleClass="showErrorMessage"/>
 								<h:outputText rendered="#{empty enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"
 									value="#{msg.enroll_no_available_certificate_types}" />
+								<h:outputText id="endEntityProfileDescription"
+								    styleClass="pure-u-lg-1-3" value="#{enrollMakeNewRequestBean.endEntityProfile.description}"/>
 							</h:panelGroup>
 
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectCertificateProfileRendered}">
 								<h:outputLabel for="selectCPOneMenu" value="#{msg.enroll_certificate_subtype}"/>
-								<h:selectOneMenu id="selectCPOneMenu" styleClass="jsAutoFocusLast"
+								<h:selectOneMenu id="selectCPOneMenu" styleClass="jsAutoFocusLast" style="width: 30%; margin-right: 5%;"
 									value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"/>
@@ -70,6 +72,8 @@
 								<h:message for="selectCPOneMenu" id="selectCPOneMenuMessage" styleClass="showErrorMessage"/>
                                 <h:outputText rendered="#{empty enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"
                                     value="#{msg.enroll_no_available_certificate_subtypes}" />
+                                <h:outputText id="certificateProfileDescription"
+                                    styleClass="pure-u-lg-1-3" value="#{enrollMakeNewRequestBean.certificateProfile.description}"/>
 							</h:panelGroup>
 
 							<h:panelGroup layout="block" styleClass="pure-control-group"
