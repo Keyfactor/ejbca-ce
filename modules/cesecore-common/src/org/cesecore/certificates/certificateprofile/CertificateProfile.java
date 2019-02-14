@@ -184,6 +184,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USESUBJECTALTNAMESUBSET = "usesubjectaltnamesubset";
     protected static final String SUBJECTALTNAMESUBSET = "subjectaltnamesubset";
     protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
+    protected static final String DESCRIPTION = "description";
     /**
      * @deprecated since 6.8.0, where approval settings and profiles became interlinked.
      */
@@ -420,6 +421,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setExpirationRestrictionForWeekdaysExpireBefore(true);
         setDefaultExpirationRestrictionWeekdays();
         setAllowValidityOverride(false);
+        setDescription("");
 
         setAllowExtensionOverride(false);
 
@@ -1935,6 +1937,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(OCSPSERVICELOCATORURI, "");
         } else {
             data.put(OCSPSERVICELOCATORURI, ocspservicelocatoruri);
+        }
+    }
+    
+    public String getDescription() {
+        return (String) data.get(DESCRIPTION);
+    }
+
+    public void setDescription(String description) {
+        if (description == null) {
+            data.put(DESCRIPTION, "");
+        } else {
+            data.put(DESCRIPTION, description);
         }
     }
 
