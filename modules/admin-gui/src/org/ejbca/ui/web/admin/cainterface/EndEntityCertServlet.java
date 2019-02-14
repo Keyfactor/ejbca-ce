@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -124,9 +125,10 @@ public class EndEntityCertServlet extends HttpServlet {
         	
         	try {
 				rabean.loadCertificates(certsn, issuerdn);
-
 				CertificateView certview = rabean.getCertificate(0);
-				
+				if (certview == null) {
+				    throw new NotFoundException("No certificate exists with issuerDN '" + issuerdn + "', serial " + certsn.toString(16));
+				}
 				Certificate cert = certview.getCertificate();
 				byte[] enccert = cert.getEncoded();
                 // We must remove cache headers for IE
@@ -155,12 +157,11 @@ public class EndEntityCertServlet extends HttpServlet {
 					return;
 				}
             } catch (Exception e) {
-                log.error("Error getting certificates: ", e);
+                log.info("Error getting certificates: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
                 return;
             }
-        }
-        else {
+        } else {
             res.setContentType("text/plain");
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request format");
             return;
