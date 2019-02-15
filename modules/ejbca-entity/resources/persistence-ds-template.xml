@@ -27,11 +27,6 @@
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
-            <!--
-            	We don't want Hibernate to go and change the database schema on it's own initiative, since we still use
-            	manual upgrade scripts. But we do want to create a database schema if this is a fresh install.
-            	It would be nice if we could drop manual schema changes and just let Hibernate update the schema...
-            -->
             <property name="hibernate.hbm2ddl.auto" value="update"/> <!-- validate | update | create | create-drop -->
             <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
             <!-- Debug options -->
