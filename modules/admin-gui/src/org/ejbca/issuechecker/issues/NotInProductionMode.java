@@ -25,6 +25,8 @@ import org.ejbca.issuechecker.Ticket;
 /**
  * Warn the user whenever EJBCA is not running in production mode.
  *
+ * <p>Tickets created by this issue can be viewed by anyone.
+ *
  * @version $Id$
  */
 public class NotInProductionMode extends Issue {
@@ -32,7 +34,7 @@ public class NotInProductionMode extends Issue {
     @Override
     public List<Ticket> getTickets() {
         if (!EjbcaConfiguration.getIsInProductionMode()) {
-            return Arrays.asList(new Ticket(this, "NOT_IN_PRODUCTION_MODE_TICKET_DESCRIPTION"));
+            return Arrays.asList(Ticket.builder(this, "NOT_IN_PRODUCTION_MODE_TICKET_DESCRIPTION").build());
         }
         return Collections.emptyList();
     }
