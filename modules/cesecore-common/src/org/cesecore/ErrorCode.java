@@ -93,6 +93,7 @@ public class ErrorCode implements Serializable {
     private static final String _CUSTOM_CERTIFICATE_EXTENSION_ERROR = "CUSTOM_CERTIFICATE_EXTENSION_ERROR";
     private static final String _REFERENCES_TO_ITEM_EXIST = "REFERENCES_TO_ITEM_EXIST";
     private static final String _CMS_CERTIFICATE_PATH_MISSING = "CMS_CERTIFICATE_PATH_MISSING";
+    private static final String _CAA_VALIDATION_FAILED = "CAA_VALIDATION_FAILED"; // CAA Validation Failed
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -204,7 +205,9 @@ public class ErrorCode implements Serializable {
     /** Trying to delete an item when references exist. For example, a deleting publisher when it's used by profiles. */
     public static final ErrorCode REFERENCES_TO_ITEM_EXIST = new ErrorCode(_REFERENCES_TO_ITEM_EXIST);
     public static final ErrorCode CMS_CERTIFICATE_PATH_MISSING = new ErrorCode(_CMS_CERTIFICATE_PATH_MISSING);
-
+    /** CAA Validation failed, not allowed too issue certificate to issuer. */ 
+    public static final ErrorCode CAA_VALIDATION_FAILED = new ErrorCode(_CAA_VALIDATION_FAILED);
+    
     /** Get the internal error code. */
     public String getInternalErrorCode() {
         return internalErrorCode;

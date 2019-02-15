@@ -39,6 +39,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -838,7 +839,12 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         } else if (KeyValidationFailedActions.LOG_ERROR.getIndex() == failedAction) {
             log.error(message);
         } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == failedAction) {
-            throw new ValidationException(shortMessage);
+         // In case calling this method with KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE for other reasons
+            if (shortMessage.startsWith("CAA Validator")) {
+                  throw new ValidationException(ErrorCode.CAA_VALIDATION_FAILED, shortMessage);
+            } else {
+                throw new ValidationException(shortMessage);
+            }
         } else {
             // NOOP
             log.debug(message);
