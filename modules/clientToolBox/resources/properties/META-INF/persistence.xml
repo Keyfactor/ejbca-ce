@@ -32,7 +32,7 @@
     <persistence-unit name="ca" transaction-type="RESOURCE_LOCAL">
         <class>org.cesecore.certificates.certificate.CertificateData</class>
         <properties>
-<!--        <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/> -->
+<!--        <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/> -->
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
@@ -45,7 +45,7 @@
     <persistence-unit name="ocsp1" transaction-type="RESOURCE_LOCAL">
         <class>org.cesecore.certificates.certificate.CertificateData</class>
         <properties>
-<!--        <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/> -->
+<!--        <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/> -->
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
