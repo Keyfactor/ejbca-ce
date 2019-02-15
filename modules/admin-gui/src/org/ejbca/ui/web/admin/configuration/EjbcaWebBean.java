@@ -14,7 +14,6 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -103,6 +102,10 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
+import org.ejbca.ui.web.configuration.WebLanguage;
+import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
+import org.ejbca.ui.web.configuration.exception.AdminExistsException;
+import org.ejbca.ui.web.configuration.exception.CacheClearException;
 import org.ejbca.util.HTMLTools;
 
 /**
@@ -112,7 +115,7 @@ import org.ejbca.util.HTMLTools;
  *
  * @version $Id$
  */
-public class EjbcaWebBean implements Serializable {
+public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWebBean {
 
     private static final long serialVersionUID = 1L;
 

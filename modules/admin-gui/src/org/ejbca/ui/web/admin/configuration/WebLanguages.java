@@ -24,6 +24,7 @@ import javax.servlet.ServletContext;
 import org.apache.log4j.Logger;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.ui.web.configuration.WebLanguage;
 
 
 /**
