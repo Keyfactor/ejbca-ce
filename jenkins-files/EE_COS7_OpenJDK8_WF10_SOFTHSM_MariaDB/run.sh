@@ -59,4 +59,3 @@ echo '=================== starting system tests ================================
 
 ant test:runone -Dtest.runone=PKCS11CryptoTokenTest
 
-sleep 10000000
