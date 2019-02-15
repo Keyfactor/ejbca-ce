@@ -64,7 +64,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
