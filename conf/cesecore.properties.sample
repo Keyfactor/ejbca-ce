@@ -59,7 +59,8 @@
 # It is a requirement of CA/B Forum (2017) to use at least 64 bits of entropy, so using 64 bit serial numbers is a corner case to support this.
 # 64 bit of entropy is gathered from the RNG, but limitation on the format of certificate serial numbers (positive numbers only for example) makes
 # the first bit (msb) always be 0. Setting the size to 16 makes the serial numbers 128 bits in size, but remember that this setting is global and affect existing CAs. 
-# Please leave as default unless you are really sure, and have a really good reason to change it.
+#
+# Do not change in existing systems unless you are really sure and have a really good reason to change it. This will affect all your existing CAs.
 # Possible values: between 4 and 20
 # Default: 8
 #ca.serialnumberoctetsize=8
