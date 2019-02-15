@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
 import javax.faces.application.Application;
@@ -16,9 +28,9 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * Class used to integrate the old jsp framework with the new JSF one.
  * Contains methods for such things as language, themes ext
  * 
- * $Id$
+ * @version $Id$
  */
-public class EjbcaJSFHelper implements org.ejbca.ui.web.configuration.EjbcaJSFHelper {
+public class EjbcaJSFHelper implements org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper {
 
 	private static final Logger log = Logger.getLogger(EjbcaJSFHelper.class);
 		
