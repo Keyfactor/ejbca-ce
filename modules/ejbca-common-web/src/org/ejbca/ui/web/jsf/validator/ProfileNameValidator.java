@@ -14,7 +14,7 @@ package org.ejbca.ui.web.jsf.validator;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.StringTools;
-import org.ejbca.ui.web.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -41,7 +41,7 @@ import javax.faces.validator.ValidatorException;
  * @see StringTools#checkFieldForLegalChars(String)
  * @see ValidationHelper#matchConditionalValidation(FacesContext, UIComponent)
  *
- * @version $Id: ProfileNameValidator.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
+ * @version $Id$
  */
 @FacesValidator("profileNameValidator")
 public class ProfileNameValidator implements Validator {

@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * A unit test for Validation Helper.
  *
- * @version $Id: ValidationHelperUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
+ * @version $Id$
  */
 public class ValidationHelperUnitTest {
 

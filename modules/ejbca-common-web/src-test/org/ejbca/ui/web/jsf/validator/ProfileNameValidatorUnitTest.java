@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.jsf.validator;
 
 import org.cesecore.util.StringTools;
-import org.ejbca.ui.web.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,7 +40,7 @@ import static org.easymock.EasyMock.verify;
 /**
  * A unit test for JSF validator.
  *
- * @version $Id: ProfileNameValidatorUnitTest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
+ * @version $Id$
  */
 @PrepareForTest({StringTools.class, FacesContext.class })
 @RunWith(PowerMockRunner.class)

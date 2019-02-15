@@ -1,4 +1,16 @@
-package org.ejbca.ui.web.configuration;
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.ui.web.jsf.configuration;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -9,6 +21,13 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 
+/**
+ * Interface  used to integrate the old jsp framework with the new JSF one.
+ *
+ * Contains methods for such things as language, themes ext
+ *
+ * @version $Id$
+ */
 public interface EjbcaJSFHelper {
 
     void setEjbcaWebBean(EjbcaWebBean ejbcawebbean);
