@@ -14,8 +14,10 @@
 package org.ejbca.issuechecker;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.apache.log4j.Level;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * A ticket is the <i>realisation of an issue</i>. A ticket has a priority, a description
@@ -36,28 +38,29 @@ public class Ticket implements Comparable<Ticket> {
     private final Issue issue;
     private final String descriptionLanguageKey;
     private final String target;
+    private final Predicate<AuthenticationToken> isAuthorizedToView;
 
     /**
-     * Construct a ticket without a target.
+     * Construct a new ticket.
      *
-     * @param issue the issue which caused this ticket.
-     * @param descriptionLanguageKey the description of this ticket, as a language key.
+     * @param ticketBuilder a builder of {@link Ticket} objects.
      */
-    public Ticket(final Issue issue, final String descriptionLanguageKey) {
-        this(issue, descriptionLanguageKey, null);
+    protected Ticket(final TicketBuilder ticketBuilder) {
+        this.issue = ticketBuilder.issue;
+        this.descriptionLanguageKey = ticketBuilder.descriptionLanguageKey;
+        this.target = ticketBuilder.target;
+        this.isAuthorizedToView = ticketBuilder.isAuthorizedToView;
     }
 
     /**
-     * Construct a ticket with a target.
+     * Get a builder for constructing instances of this class.
      *
-     * @param issue the issue which caused this ticket.
-     * @param descriptionLanguageKey the description of this ticket, as a language key.
-     * @param target the target of this ticket, as a string.
+     * @param issue the issue which caused the ticket.
+     * @param descriptionLanguageKey the description of the ticket, as a language key.
+     * @return a builder for this class.
      */
-    public Ticket(final Issue issue, final String descriptionLanguageKey, final String cause) {
-        this.issue = issue;
-        this.descriptionLanguageKey = descriptionLanguageKey;
-        this.target = cause;
+    public static TicketBuilder builder(final Issue issue, final String descriptionLanguageKey) {
+        return new TicketBuilder(issue, descriptionLanguageKey);
     }
 
     /**
@@ -103,7 +106,17 @@ public class Ticket implements Comparable<Ticket> {
     }
 
     /**
+     * TODO
+     *
+     * @return
+     */
+    public boolean isAuthorizedToView(final AuthenticationToken authenticationToken) {
+        return isAuthorizedToView.test(authenticationToken);
+    }
+
+    /**
      * Compare this object for equality against another object.
+     *
      * <p>This object is considered equal to the object given as argument iff the following is true:
      * <ul>
      *     <li>The object given as argument is an instance of {@link #Ticket}.</li>
@@ -127,7 +140,7 @@ public class Ticket implements Comparable<Ticket> {
         }
         final Ticket ticket = (Ticket) o;
         return this.getIssue().equals(ticket.getIssue()) &&
-                this.getTarget().equals(Optional.ofNullable(ticket.getTarget()));
+                this.getTarget().equals(ticket.getTarget());
     }
 
     /**

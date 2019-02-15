@@ -30,6 +30,9 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 /**
  * Backing bean for the issue checker displayed on the front screen.
  *
+ * <p>Is responsible for enforcing access control on individual tickets, i.e. hide
+ * tickets which is not authorized to be viewed by the current administrator.
+ *
  * @version $Id: IssueTrackerManagedBean.java 31453 2019-02-10 11:20:44Z bastianf $
  */
 @ManagedBean(name = "issueChecker")
@@ -63,6 +66,7 @@ public class IssueCheckerManagedBean extends BaseManagedBean {
 
     public List<Ticket> getTickets() {
         return issueCheckerSession.getTickets()
+            .filter(ticket -> ticket.isAuthorizedToView(getAdmin()))
             .limit(MAX_NUMBER_OF_TICKETS_TO_DISPLAY)
             .collect(Collectors.toList());
     }
