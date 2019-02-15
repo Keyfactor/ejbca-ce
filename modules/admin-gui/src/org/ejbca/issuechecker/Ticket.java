@@ -106,9 +106,12 @@ public class Ticket implements Comparable<Ticket> {
     }
 
     /**
-     * TODO
+     * Determine if the user with the authentication token given as argument is
+     * authorized to view this ticket. This function should be used to perform
+     * access control before the ticket is displayed in the GUI.
      *
-     * @return
+     * @param authenticationToken the authentication token to use for authentication
+     * @return true if the user has view access to this ticket.
      */
     public boolean isAuthorizedToView(final AuthenticationToken authenticationToken) {
         return isAuthorizedToView.test(authenticationToken);
