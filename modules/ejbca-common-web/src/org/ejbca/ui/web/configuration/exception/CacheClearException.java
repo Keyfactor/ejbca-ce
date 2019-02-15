@@ -15,14 +15,14 @@ package org.ejbca.ui.web.configuration.exception;
 /**
  * Thrown as a result of clearing the caches from the UI failing.
  *
- * @version $Id: CacheClearException.java 22945 2016-03-09 13:32:20Z mikekushner $
+ * @version $Id$
  */
 public class CacheClearException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     *
+     * Creates a new instance of <code>CacheClearException</code> without detail message.
      */
     public CacheClearException() {
     }

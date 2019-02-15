@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * A utility class for JSF validation.
  *
- * @version $Id: ValidationHelper.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
+ * @version $Id$
  */
 public class ValidationHelper {
 
