@@ -129,6 +129,12 @@
             <property name="hibernate.connection.password" value="${database.password}"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+            <!-- Debug options -->
+            <!-- 
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.use_sql_comments" value="true"/>
+             -->
         </properties>
     </persistence-unit>
     
