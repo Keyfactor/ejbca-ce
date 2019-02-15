@@ -43,8 +43,8 @@ import org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
  * A java bean handling the interface between EJBCA hard token module and JSP pages.

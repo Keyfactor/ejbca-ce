@@ -200,6 +200,11 @@
 
 	<path id="lib.junit.classpath">
 		<fileset dir="${ejbca.home}/lib/ext">
+			<!--
+			Include hamcrest-core before JUnit, as JUnit itself brings along its own version of Hamcrest as a transitive dependency.
+			Reference: https://tedvinke.wordpress.com/2013/12/17/mixing-junit-hamcrest-and-mockito-explaining-nosuchmethoderror/
+			-->
+			<include name="hamcrest-core-*.jar"/>
 			<include name="junit-*.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib">
@@ -224,6 +229,12 @@
 			<include name="*.jar"/>
 			<exclude name="*-javadoc.jar"/>
 			<exclude name="*-sources.jar"/>
+		</fileset>
+	</path>
+
+	<path id="lib.test.powermock.classpath">
+		<fileset dir="${ejbca.home}/lib/ext/test/powermock">
+			<include name="*.jar"/>
 		</fileset>
 	</path>
 

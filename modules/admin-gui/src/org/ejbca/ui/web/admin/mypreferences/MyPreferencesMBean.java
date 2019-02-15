@@ -26,9 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.configuration.AdminDoesntExistException;
-import org.ejbca.ui.web.admin.configuration.AdminExistsException;
-import org.ejbca.ui.web.admin.configuration.WebLanguage;
+import org.ejbca.ui.web.configuration.WebLanguage;
+import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
+import org.ejbca.ui.web.configuration.exception.AdminExistsException;
 
 /**
  * JavaServer Faces Managed Bean for managing MyPreferences.

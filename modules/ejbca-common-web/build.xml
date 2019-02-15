@@ -21,6 +21,7 @@
 		<path refid="lib.commons-io.classpath"/>		
 		<path refid="lib.jsf.classpath"/>
 		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.jee.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.mail.classpath"/>
 		<path refid="lib.batik.classpath"/>
@@ -42,6 +43,7 @@
 		<path refid="lib.ejbca-common.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.easymock.classpath"/>
+		<path refid="lib.test.powermock.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
@@ -57,7 +59,6 @@
 		<path location="${ejbca-common-web.build-test.dir}" />
 		<path location="${mod.ejbca-ejb.lib}" />
 		<path refid="compile-test.classpath"/>
-		<path refid="lib.junit.classpath"/>
 	</path>
 
 	<target name="build-common-web" description="Build the ejbca-common-web JAR" depends="compile-common-web">
@@ -110,17 +111,34 @@
 	</target>
 	
 	<target name="test-subprocess">
-			<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-common-web.dir}">
-				<classpath>
-					<path refid="test.classpath"/>
-					<pathelement path="${clover.jar}"/>
-				</classpath>
-				<formatter type="xml" />
-				<batchtest fork="yes" todir="${reports.dir}">
-					<fileset dir="${ejbca-common-web.build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
-				</batchtest>
-			</junit>
-		</target>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-common-web.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${ejbca-common-web.build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
+			</batchtest>
+		</junit>
+	</target>
+
+	<!--
+	<target name="test-common-web:unit" depends="build-common-web,compile-tests-web" description="Run unit tests for this module">
+		<antcall target="showtime"/>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-common-web.dir}" fork="true" forkmode="once">
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${ejbca-common-web.build-test.dir}" includes="**/*UnitTest.class" />
+			</batchtest>
+		</junit>
+		<antcall target="showtime"/>
+	</target>
+	-->
 
 	<target name="runone" depends="build-common-web, compile-tests-web">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />

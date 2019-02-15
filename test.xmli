@@ -365,6 +365,11 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
+    <target name="test:unit:common-web" description="run all JUnit tests for ejbca-common-web." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ejbca-common-web" target="test-common-web" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="createreport">
 		<junitreport todir="${reports.dir}">
 			<fileset dir="${reports.dir}">
