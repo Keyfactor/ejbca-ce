@@ -18,19 +18,20 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * 
  * $Id$
  */
-public class EjbcaJSFHelper {
+public class EjbcaJSFHelper implements org.ejbca.ui.web.configuration.EjbcaJSFHelper {
+
 	private static final Logger log = Logger.getLogger(EjbcaJSFHelper.class);
 		
-	private EjbcaJSFLanguageResource text = null;
-	private EjbcaJSFImageResource image = null;
-	private EjbcaWebBean ejbcawebbean;
+	private org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource text = null;
+	private org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource image = null;
+	private org.ejbca.ui.web.jsf.configuration.EjbcaWebBean ejbcawebbean;
     private Boolean legacyInternetExplorer = null;
 
 	private boolean initialized = false;
 	
 	public EjbcaJSFHelper(){}
 	
-    public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean){
+    public void setEjbcaWebBean(org.ejbca.ui.web.jsf.configuration.EjbcaWebBean ejbcawebbean){
     	if(!initialized){
     		this.ejbcawebbean = ejbcawebbean;
     		text = new EjbcaJSFLanguageResource(ejbcawebbean);
@@ -70,13 +71,13 @@ public class EjbcaJSFHelper {
     } 
     
    /** Used for language resources. */
-    public EjbcaJSFLanguageResource getText(){
+    public org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource getText(){
     	setEjbcaWebBean(getEjbcaWebBean());
     	return text;
     }
     
     /** Used for image resources. */
-     public EjbcaJSFImageResource getImage(){
+     public org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource getImage(){
         setEjbcaWebBean(getEjbcaWebBean());
      	return image;
      }
@@ -99,7 +100,7 @@ public class EjbcaJSFHelper {
     	 return getEjbcaWebBean().getEntriesPerPage();
      }
     
-     public EjbcaWebBean getEjbcaWebBean(){
+     public org.ejbca.ui.web.jsf.configuration.EjbcaWebBean getEjbcaWebBean(){
          FacesContext ctx = FacesContext.getCurrentInstance();    		    	
          HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
          synchronized (session) {
@@ -117,8 +118,8 @@ public class EjbcaJSFHelper {
          return ejbcawebbean;
      }
 
-     public EjbcaWebBean getEjbcaErrorWebBean(){
-         FacesContext ctx = FacesContext.getCurrentInstance();                  
+     public org.ejbca.ui.web.jsf.configuration.EjbcaWebBean getEjbcaErrorWebBean(){
+         FacesContext ctx = FacesContext.getCurrentInstance();
          HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
          synchronized (session) {
              ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) session.getAttribute("ejbcawebbean");

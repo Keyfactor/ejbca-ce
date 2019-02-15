@@ -1,3 +1,4 @@
+
 package org.ejbca.ui.web.admin.configuration;
 
 import java.util.Collection;
@@ -6,6 +7,7 @@ import java.util.Set;
 
 import javax.ejb.EJBException;
 
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HTMLTools;
 
 /**
@@ -14,7 +16,7 @@ import org.ejbca.util.HTMLTools;
  * Implements a Map used for retrieving resources.
  * @version $Id$
  */
-public class EjbcaJSFLanguageResource implements Map<String, String> {
+public class EjbcaJSFLanguageResource implements org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource {
 
 	private EjbcaWebBean ejbcawebbean;
 	
@@ -83,7 +85,5 @@ public class EjbcaJSFLanguageResource implements Map<String, String> {
         throw new EJBException("Method putAll not supported");
         
     }
-
-
 
 }

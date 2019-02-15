@@ -10,20 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.configuration;
+package org.ejbca.ui.web.configuration.exception;
 
 /**
  * Thrown as a result of clearing the caches from the UI failing.
- * 
- * @version $Id$
  *
+ * @version $Id: CacheClearException.java 22945 2016-03-09 13:32:20Z mikekushner $
  */
 public class CacheClearException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * 
+     *
      */
     public CacheClearException() {
     }
@@ -49,6 +48,5 @@ public class CacheClearException extends Exception {
     public CacheClearException(String message, Throwable cause) {
         super(message, cause);
     }
-
 
 }

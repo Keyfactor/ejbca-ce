@@ -107,7 +107,7 @@ import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -152,7 +152,7 @@ public class CAInterfaceBean implements Serializable {
     public CAInterfaceBean() { }
 
     // Public methods
-    public void initialize(EjbcaWebBean ejbcawebbean) {
+    public void initialize(final EjbcaWebBean ejbcawebbean) {
         if (!initialized) {
           certificatesession = ejbLocalHelper.getCertificateStoreSession();
           certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();

@@ -10,24 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-/*
- * AdminExistsException.java
- *
- * Created on den 28 mars 2002, 16:47
- */
-package org.ejbca.ui.web.admin.configuration;
+package org.ejbca.ui.web.configuration.exception;
 
 /**
- * An exception thown when trying to add a user to the database that already exists.
+ * An exception thrown when trying to add a user to the database that already exists.
  *
  * @author Philip Vendil
- * @version $Id$
+ * @version $Id: AdminExistsException.java 19902 2014-09-30 14:32:24Z anatom $
  */
-public class AdminExistsException extends java.lang.Exception {
-	private static final long serialVersionUID = 1L;
+public class AdminExistsException extends Exception {
 
-	/**
+    private static final long serialVersionUID = 1L;
+
+    /**
      * Creates a new instance of <code>AdminExistsException</code> without detail message.
      */
     public AdminExistsException() {

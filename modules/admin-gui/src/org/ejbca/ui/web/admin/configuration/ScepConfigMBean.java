@@ -241,7 +241,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final EndEntityProfileSessionLocal endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
-    private final EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession = getEjbcaWebBean().getEnterpriseEjb();
+    private final EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession = (EnterpriseEditionEjbBridgeSessionLocal)getEjbcaWebBean().getEnterpriseEjb();
     
     // Authentication check and audit log page access request
     public void initialize(ComponentSystemEvent event) throws Exception {

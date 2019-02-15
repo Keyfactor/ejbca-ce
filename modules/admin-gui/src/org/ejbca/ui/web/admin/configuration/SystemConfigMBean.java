@@ -83,6 +83,8 @@ import org.ejbca.statedump.ejb.StatedumpObjectKey;
 import org.ejbca.statedump.ejb.StatedumpResolution;
 import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.configuration.WebLanguage;
+import org.ejbca.ui.web.configuration.exception.CacheClearException;
 
 /**
  * Backing bean for the various system configuration pages.

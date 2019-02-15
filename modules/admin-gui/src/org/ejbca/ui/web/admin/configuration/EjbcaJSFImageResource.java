@@ -13,11 +13,11 @@ import javax.ejb.EJBException;
  * @version $Id$
  * @see org.ejbca.ui.web.admin.configuration.EjbcaWebBean#getImagefileInfix(String)
  */
-public class EjbcaJSFImageResource implements Map<String, String> {
+public class EjbcaJSFImageResource implements org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource {
 
-    private EjbcaWebBean ejbcawebbean;
+    private org.ejbca.ui.web.jsf.configuration.EjbcaWebBean ejbcawebbean;
     
-    public EjbcaJSFImageResource(EjbcaWebBean ejbcawebbean){
+    public EjbcaJSFImageResource(org.ejbca.ui.web.jsf.configuration.EjbcaWebBean ejbcawebbean){
         this.ejbcawebbean = ejbcawebbean;
     }
     
