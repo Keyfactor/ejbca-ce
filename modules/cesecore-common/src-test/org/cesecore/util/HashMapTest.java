@@ -91,7 +91,7 @@ public class HashMapTest {
         }
         String javaver = System.getProperty("java.version");
         System.out.println(javaver);
-        if (StringUtils.contains(javaver, "1.6") || StringUtils.contains(javaver, "1.7") || StringUtils.contains(javaver, "1.8")) {
+        if (StringUtils.contains(javaver, "1.6") || StringUtils.contains(javaver, "1.7") || StringUtils.contains(javaver, "1.8") || StringUtils.contains(javaver, "10")) {
         	// In java 1.6 the above does work because it encodes the special characters
         	//   <string><char code="#0"/>1<char code="#0"/>2fooString</string> 
             assertTrue(true);        	
