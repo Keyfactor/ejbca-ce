@@ -24,8 +24,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  */
 public class TicketBuilder {
     protected final Issue issue;
-    protected final String descriptionLanguageKey;
-    protected String target;
+    protected final TicketDescription ticketDescription;
     protected Predicate<AuthenticationToken> isAuthorizedToView;
 
     /**
@@ -34,21 +33,9 @@ public class TicketBuilder {
      * @param issue the issue to use when building the {@link Ticket} object.
      * @param descriptionLanguageKey the description language key to use when building the {@link Ticket} object.
      */
-    protected TicketBuilder(final Issue issue, final String descriptionLanguageKey) {
+    protected TicketBuilder(final Issue issue, final TicketDescription ticketDescription) {
         this.issue = issue;
-        this.descriptionLanguageKey = descriptionLanguageKey;
-    }
-
-    /**
-     * Build the {@link Ticket} object with a target (e.g. a peer connector, profile or alias)
-     * whose name will be a part of the ticket description.
-     *
-     * @param target the target to use when building the {@link Ticket} object.
-     * @return this builder.
-     */
-    public TicketBuilder withTarget(final String target) {
-        this.target = target;
-        return this;
+        this.ticketDescription = ticketDescription;
     }
 
     /**

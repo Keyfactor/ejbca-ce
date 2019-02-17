@@ -47,11 +47,7 @@ public class IssueCheckerManagedBean extends BaseManagedBean {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     public String getDescription(final Ticket ticket) {
-        if (ticket.getTarget().isPresent()) {
-            return getEjbcaWebBean().getText(ticket.getDescriptionLanguageKey(), /* unescape */ false, ticket.getTarget().get());
-        } else {
-            return getEjbcaWebBean().getText(ticket.getDescriptionLanguageKey());
-        }
+        return ticket.getTicketDescription().toString(getEjbcaWebBean().getWebLanguages());
     }
 
     public String getStyleClass(final Ticket ticket) {

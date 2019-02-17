@@ -27,6 +27,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.ejbca.issuechecker.Issue;
 import org.ejbca.issuechecker.Ticket;
+import org.ejbca.issuechecker.TicketDescription;
 
 /**
  * Warn whenever a certificate profile uses an ECC-based signature scheme, and has the key usage
@@ -69,8 +70,8 @@ public class EccWithKeyEncipherment extends Issue {
                 .filter(entry -> isCertificateProfileCreatedByUser(entry.certificateProfileId))
                 .filter(entry -> AlgorithmTools.isEccCapable(entry.certificateProfile))
                 .filter(entry -> entry.certificateProfile.getKeyUsage(CertificateConstants.KEYENCIPHERMENT))
-                .map(entry -> Ticket.builder(this, "ECC_WITH_KEY_ENCIPHERMENT_TICKET_DESCRIPTION")
-                        .withTarget(entry.certificateProfileName)
+                .map(entry -> Ticket
+                        .builder(this, TicketDescription.fromResource("ECC_WITH_KEY_ENCIPHERMENT_TICKET_DESCRIPTION", entry.certificateProfileName))
                         .withAccessControl(createAccessControlRule(entry.certificateProfile))
                         .build())
                 .collect(Collectors.toList());

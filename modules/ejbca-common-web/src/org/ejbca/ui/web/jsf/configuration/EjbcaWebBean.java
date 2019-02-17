@@ -1,5 +1,16 @@
 package org.ejbca.ui.web.jsf.configuration;
 
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -15,11 +26,6 @@ import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
 import org.ejbca.ui.web.configuration.exception.AdminExistsException;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
-import java.text.ParseException;
-import java.util.*;
 
 public interface EjbcaWebBean extends Serializable {
 
@@ -124,7 +130,9 @@ public interface EjbcaWebBean extends Serializable {
 
     public String getText(final String template);
 
-    public List<WebLanguage> getWebLanguages();
+    public List<WebLanguage> getWebLanguagesList();
+
+    public WebLanguages getWebLanguages();
 
     /**
      * @param template the entry in the language file to get

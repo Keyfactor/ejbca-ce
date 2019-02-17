@@ -160,7 +160,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     private String requestServerName;
     private int requestServerPort;
     private String currentRemoteIp;
-    
+
     /*
      * We should make this configurable, so GUI client can use their own time zone rather than the
      * servers. Using JavaScript's "new Date().getTimezoneOffset()" in a cookie will not work on
@@ -199,6 +199,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /* Sets the current user and returns the global configuration */
+    @Override
     public GlobalConfiguration initialize(final HttpServletRequest httpServletRequest, final String... resources) throws Exception {
         // Get some variables so we can detect if the TLS session and/or TLS client certificate changes within this session
         final X509Certificate certificate = getClientX509Certificate(httpServletRequest);
@@ -323,6 +324,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return globalconfiguration;
     }
 
+    @Override
     public GlobalConfiguration initialize_errorpage(final HttpServletRequest request) throws Exception {
         if (!errorpage_initialized) {
             if (administrator == null) {
@@ -342,71 +344,86 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /** Returns the current users common name */
+    @Override
     public String getUsersCommonName() {
         return usercommonname;
     }
 
     /** Returns the users certificate serialnumber, user to id the adminpreference. */
+    @Override
     public String getCertificateFingerprint() {
         return certificateFingerprint;
     }
 
     /** Return the admins selected theme including its trailing '.css' */
+    @Override
     public String getCssFile() {
         return globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme() + ".css";
     }
 
     /** Return the IE fixes CSS of the admins selected theme including it's trailing '.css' */
+    @Override
     public String getIeFixesCssFile() {
         return globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme()
                 + globalconfiguration.getIeCssFilenamePostfix() + ".css";
     }
 
     /** Returns the admins prefered language */
+    @Override
     public int getPreferedLanguage() {
         return currentAdminPreference.getPreferedLanguage();
     }
 
     /** Returns the admins secondary language. */
+    @Override
     public int getSecondaryLanguage() {
         return currentAdminPreference.getSecondaryLanguage();
     }
 
+    @Override
     public int getEntriesPerPage() {
         return currentAdminPreference.getEntriesPerPage();
     }
 
+    @Override
     public int getLogEntriesPerPage() {
         return currentAdminPreference.getLogEntriesPerPage();
     }
 
+    @Override
     public void setLogEntriesPerPage(final int logentriesperpage) throws AdminDoesntExistException, AdminExistsException {
         currentAdminPreference.setLogEntriesPerPage(logentriesperpage);
         saveCurrentAdminPreference();
     }
 
+    @Override
     public int getLastFilterMode() {
         return currentAdminPreference.getLastFilterMode();
     }
 
+    @Override
     public void setLastFilterMode(final int lastfiltermode) throws AdminDoesntExistException, AdminExistsException {
         currentAdminPreference.setLastFilterMode(lastfiltermode);
         saveCurrentAdminPreference();
     }
 
+    @Override
     public int getLastEndEntityProfile() {
         return currentAdminPreference.getLastProfile();
     }
 
+    @Override
     public void setLastEndEntityProfile(final int lastprofile) throws AdminDoesntExistException, AdminExistsException {
         currentAdminPreference.setLastProfile(lastprofile);
         saveCurrentAdminPreference();
     }
 
+    @Override
     public boolean existsAdminPreference() {
         return adminPreferenceSession.existsAdminPreference(certificateFingerprint);
     }
 
+    @Override
     public void addAdminPreference(final AdminPreference adminPreference) throws AdminExistsException {
         currentAdminPreference = adminPreference;
         if (administrator instanceof X509CertificateAuthenticationToken) {
@@ -420,6 +437,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
                 currentAdminPreference.getSecondaryLanguage());
     }
 
+    @Override
     public void changeAdminPreference(final AdminPreference adminPreference) throws AdminDoesntExistException {
         currentAdminPreference = adminPreference;
         if (administrator instanceof X509CertificateAuthenticationToken) {
@@ -434,6 +452,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /** @return the current admin's preference */
+    @Override
     public AdminPreference getAdminPreference() {
         if (currentAdminPreference==null) {
             currentAdminPreference = adminPreferenceSession.getAdminPreference(certificateFingerprint);
@@ -459,11 +478,19 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
             log.debug("Changes to admin preference will not be persisted for the currently logged in AuthenticationToken type and lost when the session ends.");
         }
     }
-    
+
+    @Override
     public AdminPreference getDefaultAdminPreference() {
         return adminPreferenceSession.getDefaultAdminPreference();
     }
-    
+
+    @Override
+    public WebLanguages getWebLanguages() {
+        return new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
+                currentAdminPreference.getSecondaryLanguage());
+    }
+
+    @Override
     public void saveDefaultAdminPreference(final AdminPreference adminPreference) throws AuthorizationDeniedException {
         adminPreferenceSession.saveDefaultAdminPreference(administrator, adminPreference);
         // Reload preferences
@@ -484,6 +511,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
      * @throws AuthorizationDeniedException is not authorized to resource
      */
+    @Override
     @Deprecated
     public boolean isAuthorizedNoLog(final String... resources) throws AuthorizationDeniedException { // still used by JSP/JSF code (viewcertificate.xhtml and viewtoken.jsp)
         if (!authorizationSession.isAuthorizedNoLogging(administrator, resources)) {
@@ -498,19 +526,23 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      *
      * @return true if is authorized to resource, false if not
      */
+    @Override
     public boolean isAuthorizedNoLogSilent(final String... resources) {
         return authorizationSession.isAuthorizedNoLogging(administrator, resources);
     }
 
+    @Override
     public String getBaseUrl() {
         return globalconfiguration.getBaseUrl(requestScheme, requestServerName, requestServerPort);
     }
 
+    @Override
     public String getReportsPath() {
         return globalconfiguration.getReportsPath();
     }
 
     /* Returns the global configuration */
+    @Override
     public GlobalConfiguration getGlobalConfiguration() {
         return globalconfiguration;
     }
@@ -518,14 +550,16 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     /**
      * @return Public application base URL (e.g. 'http://localhost:8080/ejbca')
      */
+    @Override
     public String getBaseUrlPublic() {
         return globalconfiguration.getBaseUrlPublic();
     }
-    
+
+    @Override
     public String getCurrentRemoteIp() {
         return currentRemoteIp;
     }
-    
+
     /**
      * A functions that returns wanted imagefile in preferred language and theme. If none of the language specific images are found the original
      * imagefilename will be returned.
@@ -537,6 +571,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * 'caimg.en.png' if English was the users preferred language. It's important that all letters in imagefilename is lowercase.
      */
 
+    @Override
     public String getImagefileInfix(final String imagefilename) {
         String returnedurl = null;
         final String[] strs = adminsweblanguage.getAvailableLanguages();
@@ -597,24 +632,28 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return returnedurl;
     }
 
+    @Override
     public String[] getAvailableLanguages() {
         return adminsweblanguage.getAvailableLanguages();
     }
 
+    @Override
     public String getText(final String template) {
         return adminsweblanguage.getText(template);
     }
 
-    public List<WebLanguage> getWebLanguages() {
+    @Override
+    public List<WebLanguage> getWebLanguagesList() {
         return adminsweblanguage.getWebLanguages();
     }
-    
+
     /**
      * @param template the entry in the language file to get
      * @param unescape true if html entities should be unescaped (&auml; converted to the real char)
      * @param params values of {0}, {1}, {2}... parameters
      * @return text string, possibly unescaped, or "template" if the template does not match any entry in the language files
      */
+    @Override
     public String getText(final String template, final boolean unescape, final Object... params) {
         String str = adminsweblanguage.getText(template, params);
         if (unescape == true) {
@@ -628,26 +667,31 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /** @return a more user friendly representation of a Date. */
+    @Override
     public String formatAsISO8601(final Date date) {
         return ValidityDate.formatAsISO8601(date, timeZone);
     }
 
     /** Parse a Date and reformat it as vailidation. */
+    @Override
     public String validateDateFormat(final String value) throws ParseException {
         return ValidityDate.formatAsUTC(ValidityDate.parseAsUTC(value));
     }
 
     /** Check if the argument is a relative date/time in the form days:min:seconds. */
+    @Override
     public boolean isRelativeDateTime(final String dateString) {
         return dateString.matches("^\\d+:\\d?\\d:\\d?\\d$");
     }
 
     /** To be used when giving format example. */
+    @Override
     public String getDateExample() {
         return "[" + ValidityDate.ISO8601_DATE_FORMAT + "]: '" + formatAsISO8601(new Date()) + "'";
     }
 
     /** Convert a the format "yyyy-MM-dd HH:mm:ssZZ" to "yyyy-MM-dd HH:mm" with implied TimeZone UTC used when storing. */
+    @Override
     public String getImpliedUTCFromISO8601(final String dateString) throws ParseException {
         return ValidityDate.getImpliedUTCFromISO8601(dateString);
     }
@@ -656,6 +700,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * Convert a the format "yyyy-MM-dd HH:mm:ssZZ" to "yyyy-MM-dd HH:mm" with implied TimeZone UTC used when storing. If it is a relative date we
      * return it as it was. Otherwise we try to parse it as a ISO8601 date time.
      */
+    @Override
     public String getImpliedUTCFromISO8601OrRelative(final String dateString) throws ParseException {
         if (StringUtils.isEmpty(dateString)) {
             return "";
@@ -667,6 +712,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /** Convert a the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC to a more user friendly "yyyy-MM-dd HH:mm:ssZZ". */
+    @Override
     public String getISO8601FromImpliedUTC(final String dateString) throws ParseException {
         return ValidityDate.getISO8601FromImpliedUTC(dateString, timeZone);
     }
@@ -676,6 +722,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * return it as it was. If we fail to parse the stored date we return an error-string followed by the stored value.
      * If the passed in value is empty, we return an empty string
      */
+    @Override
     public String getISO8601FromImpliedUTCOrRelative(final String dateString) {
         if (StringUtils.isEmpty(dateString)) {
             return "";
@@ -693,16 +740,19 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return dateString;
     }
 
+    @Override
     public void reloadGlobalConfiguration() {
         globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
         globalconfiguration.initializeAdminWeb();
     }
 
+    @Override
     public void saveGlobalConfiguration(final GlobalConfiguration gc) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, gc);
         reloadGlobalConfiguration();
     }
 
+    @Override
     public void saveGlobalConfiguration() throws Exception {
         globalConfigurationSession.saveConfiguration(administrator, globalconfiguration);
     }
@@ -713,6 +763,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param cmpconfiguration A CMPConfiguration
      * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
      */
+    @Override
     public void saveCmpConfiguration(final CmpConfiguration cmpconfiguration) throws AuthorizationDeniedException {
         this.cmpconfiguration = cmpconfiguration;
         globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration);
@@ -724,6 +775,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param estconfiguration A EstConfiguration
      * @throws AuthorizationDeniedException if the current admin doesn't have access to global configurations
      */
+    @Override
     public void saveEstConfiguration(final EstConfiguration estconfiguration) throws AuthorizationDeniedException {
         this.estconfiguration = estconfiguration;
         globalConfigurationSession.saveConfiguration(administrator, estconfiguration);
@@ -732,14 +784,17 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     /**
      * Reload the current configuration from the database.
      */
+    @Override
     public void reloadCmpConfiguration() {
         cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
     }
 
+    @Override
     public void reloadEstConfiguration() {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
     }
 
+    @Override
     public TreeMap<String,Integer> getHardTokenProfiles() {
         final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>();
         for (final Integer id : hardTokenSession.getAuthorizedHardTokenProfileIds(administrator)){
@@ -750,29 +805,34 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /** @deprecated Since EJBCA 7.0.0. Use HardTokenSession.getHardTokenIssuers instead. */
+    @Override
     @Deprecated
     public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
         return hardTokenSession.getHardTokenIssuers(administrator);
     }
 
     /** @deprecated Since EJBCA 7.0.0. Use CaSession.getCAIdToNameMap instead. */
+    @Override
     @Deprecated
     public Map<Integer,String> getCAIdToNameMap() {
         return caSession.getCAIdToNameMap();
     }
 
     /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaIds instead. */
+    @Override
     @Deprecated
     public List<Integer> getAuthorizedCAIds() {
         return caSession.getAuthorizedCaIds(administrator);
     }
 
     /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
+    @Override
     @Deprecated
     public TreeMap<String,Integer> getCANames() {
         return caSession.getAuthorizedCaNamesToIds(administrator);
     }
 
+    @Override
     public TreeMap<String,Integer> getExternalCANames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
         for (final CAInfo caInfo : caSession.getAuthorizedCaInfos(administrator)) {
@@ -783,6 +843,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return ret;
     }
 
+    @Override
     public TreeMap<String,Integer> getActiveCANames() {
         final TreeMap<String, Integer> ret = new TreeMap<>();
         final Map<Integer, String> idtonamemap = this.caSession.getActiveCAIdToNameMap(administrator);
@@ -795,6 +856,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     /**
      * Returns authorized end entity  profile names as a treemap of name (String) -> id (Integer)
      */
+    @Override
     public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
         final List<Integer> authorizedIds;
@@ -813,6 +875,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     /**
      * Returns authorized sub CA certificate profile names as a treemap of name (String) -> id (Integer)
      */
+    @Override
     public TreeMap<String, Integer> getAuthorizedSubCACertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
         final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_SUBCA);
@@ -826,6 +889,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     /**
      * Returns authorized root CA certificate profile names as a treemap of name (String) -> id (Integer)
      */
+    @Override
     public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames() {
         final TreeMap<String,Integer> ret = new TreeMap<>();
         final List<Integer> authorizedIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, CertificateConstants.CERTTYPE_ROOTCA);
@@ -841,12 +905,14 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      *
      * @return the approvalprofiles-id-to-name-map (HashMap)
      */
+    @Override
     public Map<Integer, String> getApprovalProfileIdToNameMap() {
         final Map<Integer, String> approvalProfileMap = approvalProfileSession.getApprovalProfileIdToNameMap();
         approvalProfileMap.put(-1, getText("NONE"));
         return approvalProfileMap;
     }
 
+    @Override
     public List<Integer> getSortedApprovalProfileIds() {
         final List<ApprovalProfile> sortedProfiles = new ArrayList<>(approvalProfileSession.getAllApprovalProfiles().values());
         Collections.sort(sortedProfiles);
@@ -861,13 +927,15 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     /**
      * @return all authorized publishers names as a list
      */
+    @Override
     public List<String> getAuthorizedPublisherNames() {
         return new ArrayList<String>(getAuthorizedPublisherNamesAndIds().keySet());
     }
-    
+
     /**
      * @return all authorized publishers names as a treemap of name (String) -> id (Integer).
      */
+    @Override
     public TreeMap<String,Integer> getAuthorizedPublisherNamesAndIds() {
         final TreeMap<String,Integer> result = new TreeMap<>();
         final Map<Integer, String> idToNameMap = publisherSession.getPublisherIdToNameMap();
@@ -882,6 +950,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      *
      * @return the publisheridtonamemap (HashMap) sorted by value
      */
+    @Override
     public Map<Integer, String> getPublisherIdToNameMapByValue() {
         final Map<Integer,String> publisheridtonamemap = publisherSession.getPublisherIdToNameMap();
         final List<Map.Entry<Integer, String>> publisherIdToNameMapList = new LinkedList<>(publisheridtonamemap.entrySet());
@@ -903,11 +972,13 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     /**
      * Returns authorized end entity profile names as a treemap of name (String) -> id (String)
      */
+    @Override
     public TreeMap<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
         final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
         return raAuthorization.getAuthorizedEndEntityProfileNames(endentityAccessRule);
     }
 
+    @Override
     public AuthenticationToken getAdminObject() {
         return this.administrator;
     }
@@ -917,10 +988,12 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      *
      * @return true if key strength is limited
      */
+    @Override
     public boolean isUsingExportableCryptography() {
         return KeyTools.isUsingExportableCryptography();
     }
 
+    @Override
     public boolean isPostUpgradeRequired() {
         return upgradeSession.isPostUpgradeNeeded();
     }
@@ -928,6 +1001,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     /**
      * @return The host's name or "unknown" if it could not be determined.
      */
+    @Override
     public String getHostName() {
         String hostname = "unknown";
         try {
@@ -941,6 +1015,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /** @return The current time on the server */
+    @Override
     public String getServerTime() {
         return ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER);
     }
@@ -950,6 +1025,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      *
      * @return the locale of the Admin GUI
      */
+    @Override
     public Locale getLocale() {
         final Locale[] locales = DateFormat.getAvailableLocales(); // TODO: Why not use Locale.getAvailableLocales()? Difference?
         Locale returnValue = null;
@@ -968,18 +1044,22 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return returnValue;
     }
 
+    @Override
     public boolean isSessionTimeoutEnabled() {
         return globalconfiguration.getUseSessionTimeout();
     }
-    
+
+    @Override
     public int getSessionTimeoutTime() {
         return globalconfiguration.getSessionTimeoutTime();
     }
-    
+
+    @Override
     public boolean isHelpEnabled() {
         return !"disabled".equalsIgnoreCase(WebConfiguration.getDocBaseUri());
     }
 
+    @Override
     public String getHelpBaseURI() {
         final String helpBaseURI = WebConfiguration.getDocBaseUri();
         if ("internal".equalsIgnoreCase(helpBaseURI)) {
@@ -988,7 +1068,8 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
             return helpBaseURI;
         }
     }
-    
+
+    @Override
     public String getHelpReference(final String lastPart) {
         if (!isHelpEnabled()) {
             return "";
@@ -997,6 +1078,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
                 + getText("OPENHELPSECTION") + "\" >?</a>]";
     }
 
+    @Override
     public String getExternalHelpReference(final String linkPart) {
         if (!isHelpEnabled()) {
             return "";
@@ -1004,6 +1086,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return "[<a href=\"" + linkPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW + "\" title=\"" + getText("OPENHELPSECTION") + "\" >?</a>]";
     }
 
+    @Override
     public String[] getCertSernoAndIssuerdn(final String certdata) {
         final String[] ret = StringTools.parseCertData(certdata);
         if (log.isDebugEnabled()) {
@@ -1012,6 +1095,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return ret;
     }
 
+    @Override
     public String getCleanOption(final String parameter, final String[] validOptions) {
         for (int i = 0; i < validOptions.length; i++) {
             if (parameter.equals(validOptions[i])) {
@@ -1021,6 +1105,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         throw new IllegalArgumentException("Parameter " + parameter + " not found among valid options.");
     }
 
+    @Override
     public void clearClusterCache(final boolean excludeActiveCryptoTokens) throws CacheClearException {
         if (log.isTraceEnabled()) {
             log.trace(">clearClusterCache");
@@ -1102,10 +1187,12 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return false;
     }
 
+    @Override
     public EjbLocalHelper getEjb() {
         return ejbLocalHelper;
     }
 
+    @Override
     public EnterpriseEjbLocalHelper getEnterpriseEjb() {
         return enterpriseEjbLocalHelper;
     }
@@ -1114,6 +1201,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     //     CMP
     //**********************
 
+    @Override
     public CmpConfiguration getCmpConfiguration() {
         if (cmpconfiguration == null) {
             reloadCmpConfiguration();
@@ -1129,6 +1217,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @return a clone of the current CMPConfiguration containing only the given alias. Will return an alias with only default values if the CmpConfiguration doesn't
      *          contain that alias.
      */
+    @Override
     public CmpConfiguration getCmpConfigForEdit(final String alias) {
         if (cmpConfigForEdit != null) {
             return cmpConfigForEdit;
@@ -1150,6 +1239,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param alias a CMP config alias.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void updateCmpConfigFromClone(final String alias) throws AuthorizationDeniedException {
         if (cmpconfiguration.aliasExists(alias) && cmpConfigForEdit.aliasExists(alias)) {
             for(final String key : CmpConfiguration.getAllAliasKeys(alias)) {
@@ -1166,6 +1256,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param alias the name of a CMP alias.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void addCmpAlias(final String alias) throws AuthorizationDeniedException {
         cmpconfiguration.addAlias(alias);
         saveCmpConfiguration(cmpconfiguration);
@@ -1178,6 +1269,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param newName the name of the new alias
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void cloneCmpAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
         cmpconfiguration.cloneAlias(oldName, newName);
         saveCmpConfiguration(cmpconfiguration);
@@ -1189,6 +1281,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param alias the name of the alias to delete.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void removeCmpAlias(final String alias) throws AuthorizationDeniedException {
         cmpconfiguration.removeAlias(alias);
         saveCmpConfiguration(cmpconfiguration);
@@ -1201,15 +1294,18 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param newName the new alias name
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void renameCmpAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
         cmpconfiguration.renameAlias(oldName, newName);
         saveCmpConfiguration(cmpconfiguration);
     }
 
+    @Override
     public void clearCmpConfigClone() {
         cmpConfigForEdit = null;
     }
 
+    @Override
     public void clearCmpCache() {
         globalConfigurationSession.flushConfigurationCache(CmpConfiguration.CMP_CONFIGURATION_ID);
         reloadCmpConfiguration();
@@ -1298,6 +1394,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param endEntityAccessRule the access rule used for authorization
      * @return a map {end entity profile name} => {end entity profile id} with authorized end entituy profiles
      */
+    @Override
     public Map<String, String> getAuthorizedEEProfileNamesAndIds(final String endEntityAccessRule) {
         final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
         final TreeMap<String, String> authorizedEEProfileNamesAndIds = new TreeMap<>(
@@ -1309,6 +1406,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return authorizedEEProfileNamesAndIds;
     }
 
+    @Override
     public Map<String, String> getAuthorizedEEProfilesAndIdsNoKeyId(final String endEntityAccessRule) {
         final RAAuthorization raAuthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
         return new TreeMap<>(raAuthorization.getAuthorizedEndEntityProfileNames(endEntityAccessRule));
@@ -1323,6 +1421,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @throws CADoesntExistsException if the certificate authority pointed to by an end entity profile does not exist
      * @throws AuthorizationDeniedException if we were denied access control
      */
+    @Override
     public Collection<String> getAvailableCAsOfEEProfile(final String endEntityProfileId)
             throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
@@ -1353,6 +1452,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param endEntityProfileId the end entity profile id for which we want to fetch certificate profiles
      * @return a sorted list of certificate profile names
      */
+    @Override
     public Collection<String> getAvailableCertProfilesOfEEProfile(final String endEntityProfileId) {
         if (StringUtils.equals(endEntityProfileId, CmpConfiguration.PROFILE_USE_KEYID)) {
             final List<Integer> allCertificateProfileIds = certificateProfileSession.getAuthorizedCertificateProfileIds(administrator, 0);
@@ -1388,6 +1488,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param endEntityProfileId the the end entity profile in which we want to find certificate profiles
      * @return a map (TreeMap so it's sorted by key) {certificate profile name, certificate profile id} with authorized certificate profiles
      */
+    @Override
     public Map<String, Integer> getCertificateProfilesNoKeyId(final String endEntityProfileId) {
         final Map<Integer, String> map = certificateProfileSession.getCertificateProfileIdToNameMap();
         final TreeMap<String, Integer> certificateProfiles = new TreeMap<>();
@@ -1403,6 +1504,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return certificateProfiles;
     }
 
+    @Override
     public Collection<String> getCertificateProfileIDsNoKeyId(final String endEntityProfileId) {
         final Collection<String> certificateProfiles = getAvailableCertProfilesOfEEProfile(endEntityProfileId);
         certificateProfiles.remove(CmpConfiguration.PROFILE_USE_KEYID);
@@ -1419,6 +1521,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /** @deprecated Since EJBCA 7.0.0. Use CaSession.getAuthorizedCaNamesToIds instead. */
+    @Override
     @Deprecated
     public TreeMap<String, Integer> getCAOptions() {
         return getCANames();
@@ -1431,6 +1534,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @throws NumberFormatException if a CA ID could not be parsed.
      * @throws AuthorizationDeniedException if authorization was denied.
      */
+    @Override
     public String getCaNamesString(final String idString) throws NumberFormatException, AuthorizationDeniedException {
         final TreeMap<String, Integer> availableCas = getCAOptions();
         final List<String> result = new ArrayList<>();
@@ -1449,10 +1553,12 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     }
 
     /** @return true if we are running in the enterprise mode otherwise false. */
+    @Override
     public boolean isRunningEnterprise() {
         return enterpriseEjbLocalHelper.isRunningEnterprise();
     }
 
+    @Override
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {
             reloadEstConfiguration();
@@ -1469,6 +1575,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @return a clone of the current EstConfiguration containing only the given alias. Will return an alias with only default values if the EstConfiguration doesn't
      *          contain that alias.
      */
+    @Override
     public EstConfiguration getEstConfigForEdit(final String alias) {
         if (estConfigForEdit != null) {
             return estConfigForEdit;
@@ -1490,6 +1597,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param alias a EST config alias.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void updateEstConfigFromClone(final String alias) throws AuthorizationDeniedException {
         if (estconfiguration.aliasExists(alias) && estConfigForEdit.aliasExists(alias)) {
             for(final String key : EstConfiguration.getAllAliasKeys(alias)) {
@@ -1506,6 +1614,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param alias the name of a EST alias.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void addEstAlias(final String alias) throws AuthorizationDeniedException {
         estconfiguration.addAlias(alias);
         saveEstConfiguration(estconfiguration);
@@ -1518,6 +1627,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param newName the name of the new alias
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void cloneEstAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
         estconfiguration.cloneAlias(oldName, newName);
         saveEstConfiguration(estconfiguration);
@@ -1529,6 +1639,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param alias the name of the alias to delete.
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void removeEstAlias(final String alias) throws AuthorizationDeniedException {
         estconfiguration.removeAlias(alias);
         saveEstConfiguration(estconfiguration);
@@ -1541,15 +1652,18 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      * @param newName the new alias name
      * @throws AuthorizationDeniedException if the current admin isn't authorized to edit configurations
      */
+    @Override
     public void renameEstAlias(final String oldName, final String newName) throws AuthorizationDeniedException {
         estconfiguration.renameAlias(oldName, newName);
         saveEstConfiguration(estconfiguration);
     }
 
+    @Override
     public void clearEstConfigClone() {
         estConfigForEdit = null;
     }
 
+    @Override
     public void clearEstCache() {
         globalConfigurationSession.flushConfigurationCache(EstConfiguration.EST_CONFIGURATION_ID);
         reloadEstConfiguration();
@@ -1601,6 +1715,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     //      AvailableExtendedKeyUsagesConfigration
     //*************************************************
 
+    @Override
     public AvailableExtendedKeyUsagesConfiguration getAvailableExtendedKeyUsagesConfiguration() {
         if (availableExtendedKeyUsagesConfig == null) {
             reloadAvailableExtendedKeyUsagesConfiguration();
@@ -1608,11 +1723,13 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return availableExtendedKeyUsagesConfig;
     }
 
+    @Override
     public void reloadAvailableExtendedKeyUsagesConfiguration() {
         availableExtendedKeyUsagesConfig = (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
     }
 
+    @Override
     public void saveAvailableExtendedKeyUsagesConfiguration(final AvailableExtendedKeyUsagesConfiguration ekuConfig) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, ekuConfig);
         availableExtendedKeyUsagesConfig = ekuConfig;
@@ -1622,6 +1739,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     //       AvailableCustomCertificateExtensionsConfiguration
     //*****************************************************************
 
+    @Override
     public AvailableCustomCertificateExtensionsConfiguration getAvailableCustomCertExtensionsConfiguration() {
         if (availableCustomCertExtensionsConfig == null) {
             reloadAvailableCustomCertExtensionsConfiguration();
@@ -1629,11 +1747,13 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
         return availableCustomCertExtensionsConfig;
     }
 
+    @Override
     public void reloadAvailableCustomCertExtensionsConfiguration() {
         availableCustomCertExtensionsConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
                 .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
     }
 
+    @Override
     public void saveAvailableCustomCertExtensionsConfiguration(final AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(administrator, cceConfig);
@@ -1647,6 +1767,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     private Boolean peerConnectorPresent = null;
 
     /** @return true if the PeerConnectors GUI implementation is present. */
+    @Override
     public boolean isPeerConnectorPresent() {
         if (peerConnectorPresent == null) {
             try {

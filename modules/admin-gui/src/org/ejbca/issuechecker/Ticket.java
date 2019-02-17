@@ -13,7 +13,6 @@
 
 package org.ejbca.issuechecker;
 
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.apache.log4j.Level;
@@ -36,8 +35,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  */
 public class Ticket implements Comparable<Ticket> {
     private final Issue issue;
-    private final String descriptionLanguageKey;
-    private final String target;
+    private final TicketDescription ticketDescription;
     private final Predicate<AuthenticationToken> isAuthorizedToView;
 
     /**
@@ -47,8 +45,8 @@ public class Ticket implements Comparable<Ticket> {
      * @param descriptionLanguageKey the description of the ticket, as a language key.
      * @return a builder for this class.
      */
-    public static TicketBuilder builder(final Issue issue, final String descriptionLanguageKey) {
-        return new TicketBuilder(issue, descriptionLanguageKey);
+    public static TicketBuilder builder(final Issue issue, final TicketDescription ticketDescription) {
+        return new TicketBuilder(issue, ticketDescription);
     }
 
     /**
@@ -58,8 +56,7 @@ public class Ticket implements Comparable<Ticket> {
      */
     protected Ticket(final TicketBuilder builder) {
         this.issue = builder.issue;
-        this.descriptionLanguageKey = builder.descriptionLanguageKey;
-        this.target = builder.target;
+        this.ticketDescription = builder.ticketDescription;
         this.isAuthorizedToView = builder.isAuthorizedToView;
     }
 
@@ -73,26 +70,12 @@ public class Ticket implements Comparable<Ticket> {
     }
 
     /**
-     * Get the description of this ticket, as a language key. The description should be a short text
-     * (typically around 20 words), describing what the problem is and how the ticket can be resolved,
-     * or if the ticket is informative only, what the ticket is about. E.g. "EJBCA is not running in
-     * production mode, system tests may run on this instance and additional tools for developers are
-     * available."
+     * Get the description of this ticket.
      *
-     * @return the description of this ticket, as a language key.
+     * @return the description of this ticket.
      */
-    public String getDescriptionLanguageKey() {
-        return descriptionLanguageKey;
-    }
-
-    /**
-     * Get an optional containing the cause of this ticket as a string, if this ticket has a cause,
-     * or an empty optional if this ticket has no cause.
-     *
-     * @return the cause of this ticket as a string, if any.
-     */
-    public Optional<String> getTarget() {
-        return Optional.ofNullable(target);
+    public TicketDescription getTicketDescription() {
+        return ticketDescription;
     }
 
     /**
@@ -143,7 +126,7 @@ public class Ticket implements Comparable<Ticket> {
         }
         final Ticket ticket = (Ticket) o;
         return this.getIssue().equals(ticket.getIssue()) &&
-                this.getTarget().equals(ticket.getTarget());
+               this.getTicketDescription().equals(ticket.getTicketDescription());
     }
 
     /**
