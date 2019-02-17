@@ -83,11 +83,11 @@ public class IssueCheckerSessionBean implements IssueCheckerSessionBeanLocal, Is
                 .filter(issue -> isChecking(issue))
                 .map(issue -> issue.getTickets())
                 .flatMap(tickets -> tickets.stream())
+                .sorted()
                 .filter(ticket -> ticket.isAuthorizedToView(request.getAuthenticationToken()))
                 .filter(ticket -> ticket.getLevel().isGreaterOrEqual(request.getMinimumLevel()))
                 .skip(request.getOffset())
-                .limit(request.getLimit())
-                .sorted();
+                .limit(request.getLimit());
     }
 
     @Override
