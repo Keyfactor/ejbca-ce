@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.FileInputStream;
@@ -33,7 +33,7 @@ import org.ejbca.ui.web.configuration.WebLanguage;
  *
  * @version $Id$
  */
-public class WebLanguages implements java.io.Serializable {
+public class WebLanguages implements java.io.Serializable, org.ejbca.ui.web.jsf.configuration.WebLanguages {
     private static final long serialVersionUID = -2381623760140383128L;
 
     private static final Logger log = Logger.getLogger(WebLanguages.class);
@@ -47,7 +47,7 @@ public class WebLanguages implements java.io.Serializable {
     private String[] availablelanguages;
     private LanguageProperties[] languages = null;
     private List<WebLanguage> webLanguages;
-    
+
     /** Constructor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
     /** Special constructor used by Ejbca web bean */
@@ -73,14 +73,14 @@ public class WebLanguages implements java.io.Serializable {
                 final String propsfile = "/" + globalconfiguration.getLanguagePath() + "/"
                 + globalconfiguration.getLanguageFilename() + "."
                 + availablelanguages[i] +".properties";
-                
+
                 InputStream is = null;
                 try {
                     try {
                         if (servletContext != null) {
                             is = servletContext.getResourceAsStream(propsfile);
                         } else {
-                            is = this.getClass().getResourceAsStream(propsfile);                	
+                            is = this.getClass().getResourceAsStream(propsfile);
                         }
                         if (is == null) {
                             //if not available as stream, try it as a file
@@ -96,21 +96,21 @@ public class WebLanguages implements java.io.Serializable {
                 } catch (final IOException e) {
                     throw new IllegalStateException("Properties file " + propsfile + " could not be read.", e);
                 }
-               
+
             }
-            
+
             webLanguages = new ArrayList<WebLanguage>();
-            
+
             for(int i = 0; i < availablelanguages.length; i++){
                 final String englishName = languages[i].getProperty("LANGUAGE_ENGLISHNAME");
                 final String nativeName = languages[i].getProperty("LANGUAGE_NATIVENAME");
                 final String abbreviation = availablelanguages[i];
-                
+
                 webLanguages.add(new WebLanguage(i, englishName, nativeName, abbreviation));
             }
         }
     }
-    
+
     public WebLanguages(final ServletContext servletContext, final GlobalConfiguration globalconfiguration, final int preferedlang, final int secondarylang) {
         init(servletContext, globalconfiguration);
         this.userspreferedlanguage=preferedlang;
@@ -118,7 +118,10 @@ public class WebLanguages implements java.io.Serializable {
     }
 
 
-    /** The main method that looks up the template text in the users preferred language. */
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.admin.configuration.IWebLanguages#getText(java.lang.String, java.lang.Object)
+     */
+    @Override
     public  String getText(final String template, final Object... params){
       String returnvalue = null;
       try{
@@ -128,7 +131,7 @@ public class WebLanguages implements java.io.Serializable {
         }
         if(returnvalue == null){
             returnvalue= intres.getLocalizedMessage(template, params);
-        }        
+        }
       }catch(final java.lang.NullPointerException e){}
       if(returnvalue == null) {
         returnvalue = template;
@@ -137,11 +140,19 @@ public class WebLanguages implements java.io.Serializable {
     }
 
     /* Returns a text string array containing the available languages */
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.admin.configuration.IWebLanguages#getAvailableLanguages()
+     */
+    @Override
     public String[] getAvailableLanguages(){
       return availablelanguages;
     }
 
     /* Returns a list of available languages for EJBCA */
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.admin.configuration.IWebLanguages#getWebLanguages()
+     */
+    @Override
     public List<WebLanguage> getWebLanguages() {
         return webLanguages;
     }
