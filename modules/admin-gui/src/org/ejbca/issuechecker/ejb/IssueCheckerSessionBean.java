@@ -28,6 +28,7 @@ import org.ejbca.config.IssueCheckerConfiguration;
 import org.ejbca.issuechecker.Issue;
 import org.ejbca.issuechecker.IssueSet;
 import org.ejbca.issuechecker.Ticket;
+import org.ejbca.issuechecker.db.TicketRequest;
 import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
 import org.ejbca.issuechecker.issues.NotInProductionMode;
 import org.ejbca.issuechecker.issuesets.CertificateTransparencyIssueSet;
@@ -36,10 +37,13 @@ import org.ejbca.issuechecker.issuesets.EjbcaCommonIssueSet;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Session bean implementing business logic for the EJBCA issue checker.
+ * Singleton session bean implementing business logic for the EJBCA issue checker.
  *
- * <p>Responsible for instantiating issues and issue sets. It is also able to check for
- * and filter issues as well as creating tickets.
+ * <p>This session bean is responsible for instantiating issues and issue sets. It is also able
+ * to check for issues and create the appropriate tickets.
+ *
+ * <p>This session bean is also responsible for enforcing access control on individual tickets as they are
+ * requested, i.e. filter out tickets to which a user does not have access.
  *
  * @version $Id$
  */
@@ -74,18 +78,16 @@ public class IssueCheckerSessionBean implements IssueCheckerSessionBeanLocal, Is
     }
 
     @Override
-    public Stream<Ticket> getTickets() {
-        // TODO This is lazily evaluated but perhaps cache the result for performance?
+    public Stream<Ticket> getTickets(final TicketRequest request) {
         return issues.stream()
                 .filter(issue -> isChecking(issue))
                 .map(issue -> issue.getTickets())
                 .flatMap(tickets -> tickets.stream())
+                .filter(ticket -> ticket.isAuthorizedToView(request.getAuthenticationToken()))
+                .filter(ticket -> ticket.getLevel().isGreaterOrEqual(request.getMinimumLevel()))
+                .skip(request.getOffset())
+                .limit(request.getLimit())
                 .sorted();
-    }
-
-    @Override
-    public Set<Issue> getAllIssues() {
-        return issues;
     }
 
     @Override

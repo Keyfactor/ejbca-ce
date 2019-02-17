@@ -18,9 +18,9 @@ import java.util.stream.Stream;
 
 import javax.ejb.Local;
 
-import org.ejbca.issuechecker.Issue;
 import org.ejbca.issuechecker.IssueSet;
 import org.ejbca.issuechecker.Ticket;
+import org.ejbca.issuechecker.db.TicketRequest;
 
 /**
  * Methods for the issue checker available locally.
@@ -31,20 +31,16 @@ import org.ejbca.issuechecker.Ticket;
 public interface IssueCheckerSessionBeanLocal {
 
     /**
-     * Get a stream of tickets present on the system. The stream is filtered based
-     * on the enabled issue sets and is sorted based on priority, with the most urgent
-     * issues first.
+     * Get a stream of tickets present on the system, matching the {@link TicketRequest} given as
+     * argument.
      *
+     * <p>The stream is always filtered based on the issue sets enabled in the system configuration,
+     * and is sorted based on level, with the most urgent issues first.
+     *
+     * @param request a request for tickets.
      * @return a filtered and sorted stream of tickets.
      */
-    Stream<Ticket> getTickets();
-
-    /**
-     * Get a set of all implemented issues.
-     *
-     * @return a set of all implemented issues.
-     */
-    Set<Issue> getAllIssues();
+    Stream<Ticket> getTickets(final TicketRequest request);
 
     /**
      * Get a set of all implemented issue sets.

@@ -34,7 +34,7 @@ public class TicketBuilder {
      * @param issue the issue to use when building the {@link Ticket} object.
      * @param descriptionLanguageKey the description language key to use when building the {@link Ticket} object.
      */
-    public TicketBuilder(final Issue issue, final String descriptionLanguageKey) {
+    protected TicketBuilder(final Issue issue, final String descriptionLanguageKey) {
         this.issue = issue;
         this.descriptionLanguageKey = descriptionLanguageKey;
     }
@@ -44,13 +44,21 @@ public class TicketBuilder {
      * whose name will be a part of the ticket description.
      *
      * @param target the target to use when building the {@link Ticket} object.
-     * @return this builder
+     * @return this builder.
      */
     public TicketBuilder withTarget(final String target) {
         this.target = target;
         return this;
     }
 
+    /**
+     * Build the ticket with an access control rule, determining whether the ticket will be visible
+     * to a user, based on the authentication token presented.
+     *
+     * @param isAuthorizedToView a predicate returning true iff the user whose authentication token is
+     * given as input should be allowed to view the ticket.
+     * @return this builder.
+     */
     public TicketBuilder withAccessControl(final Predicate<AuthenticationToken> isAuthorizedToView) {
         this.isAuthorizedToView = isAuthorizedToView;
         return this;
@@ -59,7 +67,7 @@ public class TicketBuilder {
     /**
      * Build the {@link Ticket} object.
      *
-     * @return the ticket object.
+     * @return a new instance of the {@link Ticket} class.
      */
     public Ticket build() {
         if (isAuthorizedToView == null) {

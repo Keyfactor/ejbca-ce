@@ -41,18 +41,6 @@ public class Ticket implements Comparable<Ticket> {
     private final Predicate<AuthenticationToken> isAuthorizedToView;
 
     /**
-     * Construct a new ticket.
-     *
-     * @param ticketBuilder a builder of {@link Ticket} objects.
-     */
-    protected Ticket(final TicketBuilder ticketBuilder) {
-        this.issue = ticketBuilder.issue;
-        this.descriptionLanguageKey = ticketBuilder.descriptionLanguageKey;
-        this.target = ticketBuilder.target;
-        this.isAuthorizedToView = ticketBuilder.isAuthorizedToView;
-    }
-
-    /**
      * Get a builder for constructing instances of this class.
      *
      * @param issue the issue which caused the ticket.
@@ -61,6 +49,18 @@ public class Ticket implements Comparable<Ticket> {
      */
     public static TicketBuilder builder(final Issue issue, final String descriptionLanguageKey) {
         return new TicketBuilder(issue, descriptionLanguageKey);
+    }
+
+    /**
+     * Construct a new ticket.
+     *
+     * @param builder a builder of {@link Ticket} objects.
+     */
+    protected Ticket(final TicketBuilder builder) {
+        this.issue = builder.issue;
+        this.descriptionLanguageKey = builder.descriptionLanguageKey;
+        this.target = builder.target;
+        this.isAuthorizedToView = builder.isAuthorizedToView;
     }
 
     /**

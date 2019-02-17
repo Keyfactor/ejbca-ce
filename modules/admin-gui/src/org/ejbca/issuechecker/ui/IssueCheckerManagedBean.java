@@ -24,14 +24,14 @@ import org.apache.log4j.Level;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.IssueCheckerConfiguration;
 import org.ejbca.issuechecker.Ticket;
+import org.ejbca.issuechecker.db.TicketRequest;
+import org.ejbca.issuechecker.ejb.IssueCheckerSessionBean;
 import org.ejbca.issuechecker.ejb.IssueCheckerSessionBeanLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * Backing bean for the issue checker displayed on the front screen.
- *
- * <p>Is responsible for enforcing access control on individual tickets, i.e. hide
- * tickets which is not authorized to be viewed by the current administrator.
+ * Backing bean for the issue checker displayed on the front screen. Some business logic is
+ * dispatched to {@link IssueCheckerSessionBean}.
  *
  * @version $Id: IssueTrackerManagedBean.java 31453 2019-02-10 11:20:44Z bastianf $
  */
@@ -65,9 +65,9 @@ public class IssueCheckerManagedBean extends BaseManagedBean {
     }
 
     public List<Ticket> getTickets() {
-        return issueCheckerSession.getTickets()
-            .filter(ticket -> ticket.isAuthorizedToView(getAdmin()))
-            .limit(MAX_NUMBER_OF_TICKETS_TO_DISPLAY)
+        return issueCheckerSession.getTickets(TicketRequest.builder(getAdmin())
+                .withLimit(MAX_NUMBER_OF_TICKETS_TO_DISPLAY)
+                .build())
             .collect(Collectors.toList());
     }
 
