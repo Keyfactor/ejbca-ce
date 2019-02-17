@@ -1686,7 +1686,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableLanguageSelectItems() {
         final List<SelectItem> selectItems = new ArrayList<>();
-        final List<WebLanguage> availableWebLanguages = getEjbcaWebBean().getWebLanguages();
+        final List<WebLanguage> availableWebLanguages = getEjbcaWebBean().getWebLanguagesList();
         for (final WebLanguage availableWebLanguage : availableWebLanguages) {
             final SelectItem languageSelectItem = new SelectItem(availableWebLanguage.getId(), availableWebLanguage.toString());
             selectItems.add(languageSelectItem);
