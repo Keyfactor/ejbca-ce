@@ -41,19 +41,19 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
     private static final long serialVersionUID = 2L;
 
     private AdminPreference adminPreference;
-    
+
     List<SelectItem> availableLanguages;
     List<SelectItem> availableThemes;
     List<SelectItem> possibleEntriesPerPage;
-    
-    
+
+
     // Authentication check and audit log page access request
     public void initialize(final ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
             final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
             getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR);
-            
+
             adminPreference = getEjbcaWebBean().getAdminPreference();
             initAvailableLanguages();
             initThemes();
@@ -63,13 +63,13 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
 
     private void initAvailableLanguages() {
         availableLanguages = new ArrayList<>();
-        final List<WebLanguage> availableWebLanguages = getEjbcaWebBean().getWebLanguages();
+        final List<WebLanguage> availableWebLanguages = getEjbcaWebBean().getWebLanguagesList();
         for (final WebLanguage availableWebLanguage : availableWebLanguages) {
             final SelectItem availableLanguage = new SelectItem(availableWebLanguage.getId(), availableWebLanguage.toString());
             availableLanguages.add(availableLanguage);
         }
     }
-    
+
     private void initThemes() {
         availableThemes = new ArrayList<>();
         final String[] themes = getEjbcaWebBean().getGlobalConfiguration().getAvailableThemes();
@@ -87,26 +87,26 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
             possibleEntriesPerPage.add(possibleEntryValue);
         }
     }
-    
+
     public AdminPreference getAdminPreference() {
         return adminPreference;
     }
-    
+
     public List<SelectItem> getAvailableLanguages() {
         return availableLanguages;
     }
-    
+
     public List<SelectItem> getAvailableThemes() {
         return availableThemes;
     }
-    
+
     public List<SelectItem> getPossibleEntriesPerPage() {
         return possibleEntriesPerPage;
     }
-    
+
     /**
      * Save and redirect to adminweb root page.
-     * @throws IOException 
+     * @throws IOException
      */
     public void save() throws IOException {
         try {
@@ -123,7 +123,7 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
         }
         redirectToAdminweb();
     }
-    
+
     /**
      * revert all values on page and redirect to adminweb root page
      * @throws IOException
@@ -132,12 +132,12 @@ public class MyPreferencesMBean extends BaseManagedBean implements Serializable 
         reset();
         redirectToAdminweb();
     }
-    
+
     private void redirectToAdminweb() throws IOException {
         final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
         ec.redirect(ec.getRequestContextPath());
     }
-    
+
     private void reset() {
         adminPreference = getEjbcaWebBean().getAdminPreference();
     }
