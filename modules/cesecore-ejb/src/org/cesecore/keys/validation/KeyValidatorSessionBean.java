@@ -426,6 +426,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     Entry<Boolean, List<String>> result = validator.validate(executorService, dnsNames.toArray(new String[dnsNames.size()]));
 
                     final String validatorName = validator.getProfileName();
+                    final String validatorType = validator.getValidatorTypeIdentifier();
                     final List<String> messages = result.getValue();
                     if (!result.getKey()) {
                         // Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
@@ -434,7 +435,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                                 validator.getIssuer(), messages);
                         log.info(EventTypes.VALIDATOR_VALIDATION_FAILED + ";" + EventStatus.FAILURE + ";" + ModuleTypes.VALIDATOR + ";" + ServiceTypes.CORE + ";msg=" + message);
                         final int index = validator.getFailedAction();
-                        performValidationFailedActions(index, message);
+                        performValidationFailedActions(index, message, validatorType);
                     } else {
                         // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
                         final String message = intres.getLocalizedMessage("validator.caa.validation_successful", validatorName,
@@ -500,7 +501,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             details.put("msg", message);
                             auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
                                     admin.toString(), String.valueOf(ca.getCAId()), fingerprint, endEntityInformation.getUsername(), details);
-                            performValidationFailedActions(index, message);
+                            performValidationFailedActions(index, message, validator.getValidatorTypeIdentifier());
                         } else {
                             final byte[] keyBytes = publicKey.getEncoded();
                             final String publicKeyEncoded = (keyBytes != null ? new String(Base64.encode(keyBytes)) : "null");
@@ -514,7 +515,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     } catch (ValidatorNotApplicableException e) {
                         // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
                         // use method performValidationFailedActions because it's the same actions
-                        performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage());
+                        performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage(), validator.getValidatorTypeIdentifier());
                     } catch (ValidationException e) {
                         throw e;
                     }
@@ -571,7 +572,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
                                     authenticationToken.toString(), String.valueOf(ca.getCAId()), fingerprint, endEntityInformation.getUsername(),
                                     details);
-                            performValidationFailedActions(validator.getFailedAction(), message);
+                            performValidationFailedActions(validator.getFailedAction(), message, validator.getValidatorTypeIdentifier());
                         } else {
                             final String message = intres.getLocalizedMessage("validator.certificate.validation_successful", name, fingerprint);
                             log.info(message);
@@ -583,7 +584,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     } catch (ValidatorNotApplicableException e) {
                         // This methods either throws a KeyValidationException, or just logs a message and validation should be considered successful
                         // use method performValidationFailedActions because it's the same actions
-                        performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage());
+                        performValidationFailedActions(validator.getNotApplicableAction(), e.getMessage(), validator.getValidatorTypeIdentifier());
                     } catch (CertificateException e) {
                         throw new ValidationException("Certificate to validate could not be parsed or decoded: " + e.getMessage(), e);
                     }
@@ -814,10 +815,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
      *
      * @param failedAction
      * @param message
+     * @param validatortype the type of validator that performed the failed validation
      * @throws ValidationException
      */
-    private void performValidationFailedActions(final int failedAction, final String message) throws ValidationException {
-        performValidationFailedActions(failedAction, message, message);
+    private void performValidationFailedActions(final int failedAction, final String message, final String validatorType) throws ValidationException {
+        performValidationFailedActions(failedAction, message, message, validatorType);
     }
 
     /**
@@ -826,9 +828,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
      * @param failedAction the failed action index (see {@link KeyValidationFailedActions}).
      * @param message the message to log.
      * @param shortMessage the error message to EJBCA Certificate Enrollment Error page
+     * @param validatorType the type of validator that performed the failed validation
      * @throws ValidationException if a failed validation has to be abort the certificate issuance.
      * */
-    private void performValidationFailedActions(final int failedAction, final String message, final String shortMessage) throws ValidationException {
+    private void performValidationFailedActions(final int failedAction, final String message, final String shortMessage, final String validatorType) throws ValidationException {
         if (log.isDebugEnabled()) {
             log.debug("Perform post action " + failedAction + " - " + message);
         }
@@ -839,11 +842,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         } else if (KeyValidationFailedActions.LOG_ERROR.getIndex() == failedAction) {
             log.error(message);
         } else if (KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() == failedAction) {
-         // In case calling this method with KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE for other reasons
-            if (shortMessage.startsWith("CAA Validator")) {
-                  throw new ValidationException(ErrorCode.CAA_VALIDATION_FAILED, shortMessage);
+            if (validatorType.equals("CAA_VALIDATOR")) {
+                throw new ValidationException(ErrorCode.CAA_VALIDATION_FAILED, shortMessage);
             } else {
-                throw new ValidationException(shortMessage);
+                throw new ValidationException(ErrorCode.NOT_AUTHORIZED, shortMessage);
             }
         } else {
             // NOOP
