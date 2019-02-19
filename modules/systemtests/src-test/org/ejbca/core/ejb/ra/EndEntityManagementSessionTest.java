@@ -711,15 +711,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 data = endEntityAccessSession.findUser(admin, username);
                 assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
                         data.getDN());
-                // Make sure altNames are not stripped, they shall actually be merged as well
-                // This returns slightly different between JDK 7 and JDK 8
-                String[] javaVersionElements = System.getProperty("java.version").split("\\.");
-                int major = Integer.parseInt(javaVersionElements[1]);
-                if (major > 7) {
-                    assertEquals("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
-                } else {
-                    assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
-                }        
+                // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
+                assertEquals("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
                 // Try with some altName value to merge
                 endEntityManagementSession.deleteUser(admin, username);
                 profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
@@ -732,14 +725,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 data = endEntityAccessSession.findUser(admin, username);
                 assertEquals("JurisdictionCountry=NO,JurisdictionState=California,JurisdictionLocality=Stockholm,CN=foo subject,OU=FooOrgUnit,O=Bar",
                         data.getDN());
-                // Make sure altNames are not stripped, they shall actually be merged as well. Ok cases are different but that does not matter.
-                // This returns slightly different between JDK 7 and JDK 8
-                if (major > 7) {
-                    assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
-                } else {
-                    assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",
-                            data.getSubjectAltName());
-                }        
+                // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
+                assertEquals("DNSNAME=server.superbad.com,DNSNAME=server.bad.com,rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
             } else {
                 log.debug("Skipped test related to Enterprise DN properties.");
             }
