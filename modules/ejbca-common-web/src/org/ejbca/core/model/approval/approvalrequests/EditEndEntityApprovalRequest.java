@@ -49,10 +49,11 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.validation.ValidationResult;
 
 /**
  * Approval Request created when trying to edit an end entity.
- * 
+ *
  * @version $Id$
  */
 public class EditEndEntityApprovalRequest extends ApprovalRequest {
@@ -60,28 +61,30 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	private static final long serialVersionUID = -1L;
 
 	private static final Logger log = Logger.getLogger(EditEndEntityApprovalRequest.class);
-	
+
 	private static final int LATEST_VERSION = 1;
-		
+
 	private EndEntityInformation newuserdata;
 	private boolean clearpwd;
 	private EndEntityInformation orguserdata;
 	private boolean useOrgUsername;
-	
+
 	/** Constructor used in externalization only */
 	public EditEndEntityApprovalRequest() {}
 
     public EditEndEntityApprovalRequest(EndEntityInformation newuserdata, boolean clearpwd, EndEntityInformation orguserdata,
-            AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
-        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile);
+            AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile,
+            final List<ValidationResult> validationResults) {
+        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile, validationResults);
         this.newuserdata = newuserdata;
         this.clearpwd = clearpwd;
         this.orguserdata = orguserdata;
     }
-    
+
     public EditEndEntityApprovalRequest(EndEntityInformation newuserdata, boolean clearpwd, EndEntityInformation orguserdata,
-            AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile, boolean useOrgUsername) {
-        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile);
+            AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile,
+            boolean useOrgUsername, final List<ValidationResult> validationResults) {
+        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile, validationResults);
         this.newuserdata = newuserdata;
         this.clearpwd = clearpwd;
         this.orguserdata = orguserdata;
@@ -92,11 +95,11 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	public void execute() throws ApprovalRequestExecutionException {
 		throw new IllegalStateException("This execution requires additional bean references.");
 	}
-	
-    public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, 
+
+    public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID,
             final AuthenticationToken lastApprovingAdmin) throws ApprovalRequestExecutionException {
         log.debug("Executing ChangeEndEntity for user:" + newuserdata.getUsername());
-        
+
         // Add the ID of the approval request to the end entity as extended information.
         ExtendedInformation ext = newuserdata.getExtendedInformation();
         if(ext == null) {
@@ -107,7 +110,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         }
         ext.addEditEndEntityApprovalRequestId(approvalRequestID);
         newuserdata.setExtendedInformation(ext);
-        
+
         try {
             if (newuserdata.getUsername().equals(orguserdata.getUsername())) {
         	    endEntityManagementSession.changeUserAfterApproval(getRequestAdmin(), newuserdata, clearpwd, approvalRequestID, lastApprovingAdmin);
@@ -139,7 +142,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
      * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
     @Override
-    public int generateApprovalId() {	
+    public int generateApprovalId() {
         if (useOrgUsername) {
             return new String(getApprovalType() + ";" + orguserdata.getUsername() + ";" + getApprovalProfile().getProfileName()).hashCode();
         } else {
@@ -148,10 +151,10 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
     }
 
     @Override
-	public int getApprovalType() {		
+	public int getApprovalType() {
 		return ApprovalDataVO.APPROVALTYPE_EDITENDENTITY;
 	}
-    
+
     public EndEntityInformation getNewEndEntityInformation() {
         return newuserdata;
     }
@@ -163,14 +166,14 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
         String passwordtext = "NOTSHOWN";
         if((newuserdata.getPassword() == null && !StringUtils.isEmpty(orguserdata.getPassword())) ||
-           (!StringUtils.isEmpty(newuserdata.getPassword()) && orguserdata.getPassword() == null)) {            
-            passwordtext = "NEWPASSWORD";           
-        }       
+           (!StringUtils.isEmpty(newuserdata.getPassword()) && orguserdata.getPassword() == null)) {
+            passwordtext = "NEWPASSWORD";
+        }
         if(newuserdata.getPassword() != null && orguserdata.getPassword() != null){
             if(!newuserdata.getPassword().equals(orguserdata.getPassword())){
                 passwordtext = "NEWPASSWORD";
             }
-        }               
+        }
         retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
         retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
         retval.add(getTextWithNoValueString("SUBJECTALTNAME",newuserdata.getSubjectAltName()));
@@ -189,14 +192,14 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
 		String passwordtext = "NOTSHOWN";
 		if((newuserdata.getPassword() == null && !StringUtils.isEmpty(orguserdata.getPassword())) ||
-		   (!StringUtils.isEmpty(newuserdata.getPassword()) && orguserdata.getPassword() == null)) {			
-			passwordtext = "NEWPASSWORD";			
-		}		
+		   (!StringUtils.isEmpty(newuserdata.getPassword()) && orguserdata.getPassword() == null)) {
+			passwordtext = "NEWPASSWORD";
+		}
 		if(newuserdata.getPassword() != null && orguserdata.getPassword() != null){
 			if(!newuserdata.getPassword().equals(orguserdata.getPassword())){
 				passwordtext = "NEWPASSWORD";
 			}
-		}				
+		}
 		retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",newuserdata.getSubjectAltName()));
@@ -211,7 +214,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 			caname = "NotExist";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(newuserdata.getEndEntityProfileId()),true,false));		
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(newuserdata.getEndEntityProfileId()),true,false));
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(newuserdata.getCertificateProfileId()),true,false));
 		final ExtendedInformation neweei = newuserdata.getExtendedInformation();
 		if (neweei != null && neweei.getKeyStoreAlgorithmType() != null) {
@@ -228,7 +231,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
 		return retval;
 	}
-	
+
 	private ApprovalDataText getTextWithNoValueString(String header, String data){
 		if(data==null || data.equals("")){
 			return new ApprovalDataText(header,"NOVALUE",true,true);
@@ -263,7 +266,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
             caname = "AuthDenied";
         }
 		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));		
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(orguserdata.getCertificateProfileId()), true, false));
 		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, orguserdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(orguserdata.getHardTokenIssuerId())));
@@ -274,10 +277,10 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	}
 
 	@Override
-	public boolean isExecutable() {		
+	public boolean isExecutable() {
 		return true;
 	}
-	
+
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
@@ -288,7 +291,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	}
 
 	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {        
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
         int version = in.readInt();
         if(version == 1){

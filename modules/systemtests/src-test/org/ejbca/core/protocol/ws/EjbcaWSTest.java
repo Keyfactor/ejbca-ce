@@ -196,7 +196,7 @@ import org.junit.runners.MethodSorters;
  * <li>That CA must be trusted in the appserver truststore.
  * <li>That CA must have issued the EJBCA server certificate.
  * <li>If EJBCA is not running on localhost, then target.hostname must be configured in systemtests.properties
- * 
+ *
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -205,11 +205,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private static final Logger log = Logger.getLogger(EjbcaWSTest.class);
 
     public final static String WS_TEST_ROLENAME = "WsTestRoleMgmt";
-    private final static String WS_TEST_CERTIFICATE_PROFILE_NAME = "WSTESTPROFILE"; 
+    private final static String WS_TEST_CERTIFICATE_PROFILE_NAME = "WSTESTPROFILE";
     private static final String KEY_RECOVERY_EEP = "KEYRECOVERY";
     private static final String BADCANAME = "BadCaName";
 
-  
+
     private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private final ApprovalProfileSessionRemote approvalProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalProfileSessionRemote.class);
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
@@ -234,7 +234,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
+
     private static String originalForbiddenChars;
     private final static SecureRandom secureRandom;
     private final static String forbiddenCharsKey = "forbidden.characters";
@@ -247,7 +247,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     private static List<File> fileHandles = new ArrayList<>();
-    
+
     private GlobalConfiguration originalGlobalConfiguration = null;
 
     @BeforeClass
@@ -264,7 +264,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         adminSetUpAdmin();
         originalGlobalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
     }
-    
+
     @AfterClass
     public static void afterClass() throws Exception {
         cleanUpAdmins(WS_ADMIN_ROLENAME);
@@ -299,12 +299,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
      * EJBCA Admin Web and verify returned security headers.
-     * @throws IOException 
-     * @throws CertificateException 
-     * @throws KeyStoreException 
-     * @throws NoSuchAlgorithmException 
-     * @throws KeyManagementException 
-     * @throws UnrecoverableKeyException 
+     * @throws IOException
+     * @throws CertificateException
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException
+     * @throws UnrecoverableKeyException
      */
     @Test
     public void testAdminWebSecurityHeaders() throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
@@ -337,7 +337,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             X509Certificate cacert = (X509Certificate) rootCA.getCACertificate();
             certificateStoreSession.storeCertificateRemote(intAdmin, EJBTools.wrap(cacert), "testuser", "1234",  CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, new Date().getTime());
-            //Create a SubCA for this test. 
+            //Create a SubCA for this test.
             subCA = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaSubjectDn, rootCA.getCAId());
             int cryptoTokenId = subCA.getCAToken().getCryptoTokenId();
             cryptoTokenManagementSession.createKeyPair(intAdmin, cryptoTokenId, "signKeyAlias", "1024");
@@ -355,7 +355,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(rolloverStartTime));
             ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, ValidityDate.formatAsUTC(rolloverStartTime+14L*24L*3600L*1000L));
             endentity.setExtendedInformation(ei);
-            
+
             //Make sure there is a rollover certificate in store
             final byte[] requestbytes = caAdminSessionRemote.makeRequest(intAdmin, subCA.getCAId(), null, null);
             final PKCS10RequestMessage req = new PKCS10RequestMessage(requestbytes);
@@ -363,7 +363,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             X509Certificate newCertificate =  (X509Certificate) respmsg.getCertificate();
             ejbcaraws.caCertResponseForRollover(subCaName, newCertificate.getEncoded(), null, "foo123");
 
-            //Check that sub CA has a rollover certificate 
+            //Check that sub CA has a rollover certificate
             Certificate rolloverCertificate = caSession.getFutureRolloverCertificate(subCA.getCAId());
             assertNotNull("No rollover certificate was found in subCA", rolloverCertificate);
             X509CAInfo subCAInfo = (X509CAInfo) caSession.getCAInfo(intAdmin, subCA.getCAId());
@@ -372,7 +372,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ejbcaraws.rolloverCACert(subCaName);
             subCAInfo = (X509CAInfo) caSession.getCAInfo(intAdmin, subCA.getCAId());
             assertTrue("CA was not rolled over.", subCAInfo.getCertificateChain().iterator().next().equals(rolloverCertificate));
-            
+
         } finally {
             if (subCA != null) {
                 CaTestUtils.removeCa(intAdmin, subCA.getCAInfo());
@@ -385,13 +385,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
         }
     }
-    
+
     @Test
     public void test01EditUser() throws Exception {
         super.editUser();
     }
 
-   
+
 
     @Test
     public void test03_1GeneratePkcs10() throws Exception {
@@ -436,7 +436,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test03_6EnforcementOfUniqueSubjectDN() throws Exception {   
+    public void test03_6EnforcementOfUniqueSubjectDN() throws Exception {
         enforcementOfUniqueSubjectDN();
     }
 
@@ -444,19 +444,19 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test03_7ThrowAwayConfiguration() throws Exception {
         certificateRequestThrowAway();
     }
-    
+
     @Test
     public void test03_8DontStoreFullCert() throws Exception {
         certificateRequestDontStoreFullCert();
     }
-    
+
     @Test
     public void test03_9CertificateRequestBadParameters() throws Exception {
         final UserDataVOWS userDataVOWS = new UserDataVOWS();
         userDataVOWS.setCaName("EjbcaWSTest_NonexistentCA");
         userDataVOWS.setEndEntityProfileName("EjbcaWSTest_NonexistentEEProfile");
         userDataVOWS.setEndEntityProfileName("EjbcaWSTest_NonexistentCertProfile");
-        
+
         try {
             ejbcaraws.certificateRequest(userDataVOWS, "junk", CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
             fail("Should have failed because CA is missing");
@@ -490,12 +490,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test04GeneratePkcs12() throws Exception {
-        // A: Generate P12 before key validation. 
+        // A: Generate P12 before key validation.
         generatePkcs12();
         // B: add RSA key validator with min. key size of 2048 bits -> P12 generation should fail.
         generatePkcs12WithFailedKeyValidation();
     }
-    
+
     private void generatePkcs12WithFailedKeyValidation() throws Exception {
         final UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
@@ -521,22 +521,22 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CUSTOM_SETTINGS.getOption());
         keyValidator.setBitLengths(RsaKeyValidator.getAvailableBitLengths(2048));
         int keyValidatorId = keyValidatorSession.addKeyValidator(intAdmin, keyValidator);
-        
+
         // Add key validator to CA.
         final CAInfo caInfo = caSession.getCAInfo(intAdmin, CA1);
         final Collection<Integer> keyValidatorIds = new ArrayList<>();
         keyValidatorIds.add(keyValidatorId);
         caInfo.setValidators(keyValidatorIds);
         caSession.editCA(intAdmin, caInfo);
-        
+
         try {
             ejbcaraws.pkcs12Req(CA1_WSTESTUSER1, userdatas.get(0).getPassword(), null, "1024", AlgorithmConstants.KEYALGORITHM_RSA); // generatePkcs12();
             fail("With a RSA key validator and a minimum key size of 2048 bits, the generation of P12 file with a 1024 bit RSA key should fail with an EjbcaException_Exception wrapping a KeyValidationException");
         } catch(Exception e) {
             Assert.assertTrue( "EjbcaException_Exception expected: " + e.getClass().getName(), e instanceof EjbcaException_Exception);
-            Assert.assertTrue( "EjbcaException_Exception with failed key validation must have message: " + e.getMessage(), (e.getMessage().startsWith("org.cesecore.keys.validation.ValidationException: Key Validator 'WSPKCS12-RsaKeyValidatorTest' could not validate sufficient key quality")));            
+            Assert.assertTrue( "EjbcaException_Exception with failed key validation must have message: " + e.getMessage(), (e.getMessage().startsWith("org.cesecore.keys.validation.ValidationException: Key Validator 'WSPKCS12-RsaKeyValidatorTest' could not validate sufficient key quality")));
         }
-        
+
         // Clean up.
         caInfo.setValidators(new ArrayList<Integer>());
         caSession.editCA(intAdmin, caInfo);
@@ -558,7 +558,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final X509Certificate cert = p12TestUser.getCertificate(null);
         final String issuerdn = cert.getIssuerDN().toString();
         final String serno = cert.getSerialNumber().toString(16);
-        
+
         this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         {
             final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -591,22 +591,22 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         try {
             this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
             fail("AlreadyRevokedException_Exception was expected.");
-        } catch (AlreadyRevokedException_Exception e){}    
+        } catch (AlreadyRevokedException_Exception e){}
     }
 
     @Test(expected=CADoesntExistsException_Exception.class)
     public void testRevokeCertFromNonExistingCA() throws Exception {
         final String issuerdn = "";
         final String serno = "";
-        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);   
+        this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
     }
-    
+
     @Test
     public void test0601RevokeThrowAwayCert () throws Exception {
         final String issuerDn = "CN=" + CA1;
         // This certificate doesn't exist in EJBCA Database. Though it should be possible to revoke with a throw away CA.
         final String serialNumber = "1a1a1a1a1a1a1a1a";
-        
+
         final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST-revokeThrowAwayCert"));
         // Use throw away CA mode (don't store UserData, CertificateData or CertReqHistoryData)
         final CAInfo caInfo = caSession.getCAInfo(authenticationToken, CA1);
@@ -620,7 +620,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             caInfo.setUseUserStorage(false);
             caInfo.setAcceptRevocationNonExistingEntry(true);
             caSession.editCA(authenticationToken, caInfo);
-            
+
             try {
                 this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                 {
@@ -631,7 +631,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                     assertEquals(issuerDn, revokestatus.getIssuerDN());
                     assertNotNull("Revocation date should not be null.", revokestatus.getRevocationDate());
                 }
-                
+
                 this.ejbcaraws.revokeCert(issuerDn, serialNumber, RevokedCertInfo.NOT_REVOKED);
                 {
                     final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerDn, serialNumber);
@@ -641,7 +641,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             } catch (NotFoundException_Exception e) {
                 fail("Unexpected behaviour: Revocation of throw away cert required certificate in database");
             }
-            
+
         } finally {
             final CAInfo caInfoToRestore = caSession.getCAInfo(authenticationToken, CA1);
             caInfoToRestore.setUseCertificateStorage(originalUseCertificateStorage);
@@ -650,9 +650,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             caInfoToRestore.setAcceptRevocationNonExistingEntry(originalAcceptRevokeNonExisting);
             caSession.editCA(authenticationToken, caInfoToRestore);
             internalCertificateStoreSession.removeCertificate(new BigInteger(serialNumber, 16));
-        }    
+        }
     }
-    
+
     @Test
     public void test061RevokeCertBackdated() throws Exception {
         revokeCertBackdated();
@@ -662,12 +662,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test07RevokeToken() throws Exception {
         revokeToken();
     }
-    
+
     @Test
     public void test08CheckRevokeStatus() throws Exception {
         checkRevokeStatus();
     }
-    
+
     @Test
     public void test09Utf8EditUser() throws Exception {
         utf8EditUser();
@@ -727,7 +727,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final String TOKENUSERNAME = "WSTESTTOKENUSER3";
         final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
         final String ERRORNOTSUPPORTEDSUCCEEDED = "Reactivation of users is not supported, but succeeded anyway.";
-        final String approvalProfileName = this.getClass().getName() + "-AccumulativeApprovalProfile";  
+        final String approvalProfileName = this.getClass().getName() + "-AccumulativeApprovalProfile";
         String caname = "wsRevocationCA";
         String username = "wsRevocationUser";
         int cryptoTokenId = 0;
@@ -735,7 +735,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(approvalProfileName);
         int partitionId = approvalProfile.getStep(AccumulativeApprovalProfile.FIXED_STEP_ID).getPartitions().values().iterator().next().getPartitionIdentifier();
         approvalProfile.setNumberOfApprovalsRequired(1);
-        final int approvalProfileId = createApprovalProfile(approvalProfile, true);        
+        final int approvalProfileId = createApprovalProfile(approvalProfile, true);
         try {
             cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(intAdmin, caname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -760,8 +760,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                     ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                     fail(ERRORNOTSENTFORAPPROVAL);
                 } catch (ApprovalException_Exception e1) {
-                }                
-                
+                }
+
                 RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
                 assertNotNull(revokestatus);
                 assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
@@ -822,7 +822,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 }
                 // Approve actions and verify success
                 approveRevocation(intAdmin, approvingAdmin, TOKENUSERNAME, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, caID, 
+                        ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, caID,
                         approvalProfile, AccumulativeApprovalProfile.FIXED_STEP_ID, partitionId);
             } finally {
                 hardTokenSessionRemote.removeHardToken(intAdmin, TOKENSERIALNUMBER);
@@ -839,7 +839,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         log.trace("<test19RevocationApprovals");
     }
-    
+
     private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {
         Set<Principal> principals = new HashSet<>();
         principals.add(certificate.getSubjectX500Principal());
@@ -847,7 +847,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         credentials.add(certificate);
         return new AuthenticationSubject(principals, credentials);
     }
-    
+
     @Test
     public void testGetNumberOfApprovals() throws Exception {
         log.trace(">testGetNumberOfApprovals");
@@ -893,7 +893,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                     new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.TOKEN_SOFT_P12, 0, null);
             ApprovalRequest approvalRequest = new AddEndEntityApprovalRequest(endEntityInformation, false, intAdmin, null, caId,
-                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfileSession.getApprovalProfile(approvalProfileId));
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfileSession.getApprovalProfile(approvalProfileId),
+                    /* validation results */ null);
             int approvalId = approvalSession.addApprovalRequest(intAdmin, approvalRequest);
             try {
                 assertEquals("There should be two approvals remaining.", 2,
@@ -1024,7 +1025,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertNotNull(ks2);
         en = ks2.aliases();
         alias = en.nextElement();
-        // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+        // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex
         if(!ks2.isKeyEntry(alias)) {
             alias = en.nextElement();
         }
@@ -1052,7 +1053,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             gc.setEnableEndEntityProfileLimitations(true);
             globalConfigurationSession.saveConfiguration(intAdmin, gc);
         }
-        
+
         if(endEntityProfileSession.getEndEntityProfile(KEY_RECOVERY_EEP) == null) {
             EndEntityProfile profile = new EndEntityProfile();
             profile.addField(DnComponents.COMMONNAME);
@@ -1064,7 +1065,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
             endEntityProfileSession.addEndEntityProfile(intAdmin, KEY_RECOVERY_EEP, profile);
         }
-        
+
         try {
             // Add a new user, set token to P12, status to new and end entity
             // profile to key recovery
@@ -1135,7 +1136,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             for (final java.security.KeyStore ks : keyStores){
                 Enumeration<String> en = ks.aliases();
                 String alias = en.nextElement();
-                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex
                 if(!ks.isKeyEntry(alias)) {
                     alias = en.nextElement();
                 }
@@ -1181,7 +1182,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 assertNotNull(ks2);
                 en = ks2.aliases();
                 alias = en.nextElement();
-                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex
                 if(!ks.isKeyEntry(alias)) {
                     alias = en.nextElement();
                 }
@@ -1200,7 +1201,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             for (final java.security.KeyStore ks : keyStores){
                 Enumeration<String> en = ks.aliases();
                 String alias = en.nextElement();
-                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex
                 if(!ks.isKeyEntry(alias)) {
                     alias = en.nextElement();
                 }
@@ -1215,7 +1216,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 assertNotNull(ks2);
                 en = ks2.aliases();
                 alias = en.nextElement();
-                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+                // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex
                 if(!ks.isKeyEntry(alias)) {
                     alias = en.nextElement();
                 }
@@ -1237,7 +1238,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
         log.trace("<test20bKeyRecoverAny");
     }
-    
+
     @Test
     public void test21GetAvailableCAs() throws Exception {
         log.trace(">getAvailableCAs");
@@ -1278,7 +1279,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertTrue("Unable to find profile '" + nameAndId.getName() + "' among authorized EEPs reported by Remote EJB call.", found);
         }
         assertTrue("Could not find " + KEY_RECOVERY_EEP + " end entity profile among authorized profiles.", foundkeyrec);
-        log.trace("<getAuthorizedEndEntityProfiles");    
+        log.trace("<getAuthorizedEndEntityProfiles");
     }
 
     @Test
@@ -1290,12 +1291,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void test24GetAvailableCAsInProfile() throws Exception {
         getAvailableCAsInProfile();
     }
-    
+
     @Test
     public void test25CreateandGetCRL() throws Exception {
         createAndGetCRL();
     }
-    
+
     @Test
     public void testEjbcaVersion() {
         final String version = ejbcaraws.getEjbcaVersion();
@@ -1386,13 +1387,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         } catch (CADoesntExistsException_Exception e) {
         } // Expected    }
     }
-    
+
     @Test
     public void test33CheckQueueLength() throws Exception {
         checkQueueLength();
     }
 
-    /** In EJBCA 4.0.0 we changed the date format to ISO 8601. This verifies the that we still accept old requests, but returns UserDataVOWS objects using the new DateFormat 
+    /** In EJBCA 4.0.0 we changed the date format to ISO 8601. This verifies the that we still accept old requests, but returns UserDataVOWS objects using the new DateFormat
      * @throws AuthorizationDeniedException */
     @Test
     public void testTimeFormatConversionFromUS() throws EjbcaException {
@@ -1422,8 +1423,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         // We expect that the server will respond using UTC
         assertEquals("CUSTOM_STARTTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getStartTime());
         assertEquals("CUSTOM_ENDTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getEndTime());
-    }   
-    
+    }
+
     @Test
     public void testTimeFormatConversionFromStandard() throws EjbcaException {
         final Date nowWithOutSeconds = new Date((new Date().getTime() / 60000) * 60000); // To avoid false negatives.. we will loose precision when we convert back and forth..
@@ -1439,7 +1440,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
         assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
     }
-    
+
     @Test
     public void testTimeFormatConversionFromCustom() throws EjbcaException {
         final String relativeTimeFormat = "0123:12:31";
@@ -1453,7 +1454,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 endEntityInformation3.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
         assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat,
                 endEntityInformation3.getExtendedInformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
-        
+
         // Convert from EndEntityInformation with relative date format to UserDataVOWS
         final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = ejbcaWSHelperSession.convertEndEntityInformation(endEntityInformation3, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
         assertEquals("CUSTOM_STARTTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getStartTime());
@@ -1509,7 +1510,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         endEntityInformation4 = ejbcaWSHelperSession.convertUserDataVOWSInternal(userDataVoWs, 1, 2, 3, 4, 5, true);
         assertEquals("Raw subject DN is not raw order", "CN=User U,C=SE,O=Foo", endEntityInformation4.getExtendedInformation().getRawSubjectDn());
     }
-    
+
     /** Simulate a simple SQL injection by sending the to-be-escaped char "'". */
     @Test
     public void test40EvilFind01() throws Exception {
@@ -1585,7 +1586,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                     "CN=test43CertificateRequestWithSpecialChars03" + rnd + ",O=foo\\+bar\\+123,C=SE");
             fail("Test should fail as badly formatted directory string due to non-escaped +");
         } catch (EjbcaException_Exception e) {
-            assertTrue("Exception must be about badly formatted directory string", e.getMessage().contains("badly formatted directory string"));            
+            assertTrue("Exception must be about badly formatted directory string", e.getMessage().contains("badly formatted directory string"));
         }
     }
 
@@ -1650,7 +1651,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             fail("Test should fail as unknown oid (b) passed as multi-value RDN");
         } catch (EjbcaException_Exception e) {
             assertTrue("Exception must be about Unknown object id", e.getMessage().contains("Unknown object id"));
-            
+
         }
     }
 
@@ -1714,21 +1715,21 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
 
     /**
-     * Tests that the provided cardnumber is stored in the EndEntityInformation 
-     * and that when querying for EndEntityInformation the cardnumber is 
+     * Tests that the provided cardnumber is stored in the EndEntityInformation
+     * and that when querying for EndEntityInformation the cardnumber is
      * returned.
      * @throws Exception in case of error
      */
     @Test
     public void test48CertificateRequestWithCardNumber() throws Exception {
         String userName = "wsRequestCardNumber" + new SecureRandom().nextLong();
-        
+
         // Generate a CSR
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
                 keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         final String csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
-        
+
         // Set some user data
         final UserDataVOWS userData = new UserDataVOWS();
         userData.setUsername(userName);
@@ -1745,15 +1746,15 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
         // Set the card number
         userData.setCardNumber("1234fa");
-        
+
         // Issue a certificate
         CertificateResponse response = ejbcaraws.certificateRequest(userData, csr, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
         assertNotNull("null response", response);
-        
+
         // Check that the cardnumber was stored in the EndEntityInformation
         EndEntityInformation endEntity = endEntityAccessSession.findUser(intAdmin, userName);
         assertEquals("stored cardnumber ejb", "1234fa", endEntity.getCardNumber());
-        
+
         // Check that the cardnumber is also available when querying using WS
         UserMatch criteria = new UserMatch();
         criteria.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
@@ -1762,7 +1763,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         UserDataVOWS user = ejbcaraws.findUser(criteria).get(0);
         assertEquals("stored cardnumber ws", "1234fa", user.getCardNumber());
     }
-    
+
     @Test
     public void testGetCertificateProfile() throws Exception {
         String profilename = "TESTPROFILEFORGETPROFILECOMMAND";
@@ -1796,7 +1797,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             certificateProfileSession.removeCertificateProfile(intAdmin, profilename);
         }
     }
-    
+
     @Test
     public void testGetEndEntityProfile() throws Exception {
         String profilename = "TESTPROFILEFORGETPROFILECOMMAND";
@@ -1832,10 +1833,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
         } finally {
             endEntityProfileSession.removeEndEntityProfile(intAdmin, profilename);
-        }    
-        
+        }
+
     }
-    
+
     @Test
     public void testGetProfileWithUnknownType() throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
         int profileid = 4711;
@@ -1947,21 +1948,21 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
     }
     */
-    
+
     @Test
     public void test70CreateSoftCryptoToken() throws Exception {
         log.trace(">test70CreateSoftCryptoToken()");
         log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
-        
+
         String ctname = "NewTestCryptoTokenThroughWS";
-        
+
         // Remove any residues from earlier test runs
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
         if(ctid != null) {
             cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
         }
-        
+
         try {
             ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<>();
             KeyValuePair allowExtract = new KeyValuePair();
@@ -1972,17 +1973,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
             nodefaultPwd.setValue(Boolean.TRUE.toString());
             cryptotokenProperties.add(nodefaultPwd);
-            
+
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
             assertNotNull("Creating a new SoftCryptoToken failed", ctid);
             CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid.intValue());
-            
+
             Properties ctproperties = token.getCryptoTokenProperties();
             assertEquals(3, ctproperties.keySet().size());
             assertTrue(ctproperties.containsKey(SoftCryptoToken.NODEFAULTPWD));
             assertEquals(ctproperties.getProperty(SoftCryptoToken.NODEFAULTPWD), Boolean.TRUE.toString());
-            
+
             assertEquals("SoftCryptoToken", token.getType());
             assertFalse(Boolean.getBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
             assertTrue(token.isActive());
@@ -2006,15 +2007,15 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
 
         String ctname = "NewTestCryptoTokenThroughWS";
-        
+
         // Remove any residues from earlier test runs
         Integer ctid = cryptoTokenManagementSession.getIdFromName(ctname);
         if(ctid != null) {
             cryptoTokenManagementSession.deleteCryptoToken(intAdmin, ctid.intValue());
         }
-        
+
         try {
-            ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<>();            
+            ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<>();
             KeyValuePair allowExtract = new KeyValuePair();
             allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
             allowExtract.setValue(Boolean.toString(false));
@@ -2023,10 +2024,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
             nodefaultPwd.setValue(Boolean.TRUE.toString());
             cryptotokenProperties.add(nodefaultPwd);
-            
+
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
-            
+
             String keyAlias = "testWSGeneratedKeys";
             ejbcaraws.generateCryptoTokenKeys(ctname, keyAlias, "RSA1024");
             List<String> keyAliases = cryptoTokenManagementSession.getKeyPairAliases(intAdmin, ctid.intValue());
@@ -2077,7 +2078,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, decKeyAlias));
             purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signKeyAlias));
             purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signKeyAlias));
-            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias));            
+            purposeKeyMapping.add(getKeyValuePair(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias));
             // Try to create a CA signed by an external CA. It should fail.
             try {
                 ejbcaraws.createCA(caName, "CN="+caName, "x509", 3L, null, "SHA256WithRSA", CAInfo.SIGNEDBYEXTERNALCA, cryptoTokenName, purposeKeyMapping, null);
@@ -2091,7 +2092,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             final String existingTestCA = "WSCreateCATestTestingExistingCA";
             CaTestCase.createTestCA(existingTestCA);
             try {
-                ejbcaraws.createCA(existingTestCA, caSession.getCAInfo(intAdmin, existingTestCA).getSubjectDN(), "x509", 3L, null, "SHA256WithRSA", 
+                ejbcaraws.createCA(existingTestCA, caSession.getCAInfo(intAdmin, existingTestCA).getSubjectDN(), "x509", 3L, null, "SHA256WithRSA",
                         CAInfo.SELFSIGNED, cryptoTokenName, purposeKeyMapping, null);
                 fail("It was possible to create a CA even though the CA already exists");
             } catch (EjbcaException_Exception e) {
@@ -2134,10 +2135,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         log.trace(">test73AddSubjectToRole()");
         log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
-        
+
         String rolename = "TestWSNewAccessRole";
         String testAdminUsername = "newWsAdminUserName";
-        
+
         // Remove any residues from earlier test runs
         final Role oldRole = roleSession.getRole(intAdmin, null, rolename);
         if (oldRole!=null) {
@@ -2147,7 +2148,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         try {
             CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
             assertNotNull("No CA with name " + getAdminCAName() + " was found.", cainfo);
-            
+
             // Create/update the admin end entity and issue its certificate
             EndEntityInformation adminUser = endEntityAccessSession.findUser(intAdmin, testAdminUsername);
             if(adminUser == null) {
@@ -2173,16 +2174,16 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             }
             fileHandle = BatchCreateTool.createUser(intAdmin, new File(P12_FOLDER_NAME), adminUser.getUsername());
             adminUser = endEntityAccessSession.findUser(intAdmin, testAdminUsername);
-        
+
             // Create a new role
             log.info("Creating new role: "+rolename);
             final Role role = roleSession.persistRole(intAdmin, new Role(null, rolename, Arrays.asList(StandardRules.ROLE_ROOT.resource()), null));
             List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(intAdmin, role.getRoleId());
             assertTrue("New role "+rolename+" should have been empty.", roleMembers.isEmpty());
-            
+
             // Add adminUser to a non-existing role. It should fail
             try {
-                ejbcaraws.addSubjectToRole("NoneExistingRole", getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
+                ejbcaraws.addSubjectToRole("NoneExistingRole", getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(),
                         AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
                 fail("Succeeded in adding subject to a non-existing role");
             } catch(EjbcaException_Exception e) {
@@ -2190,9 +2191,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                     throw e;
                 }
             }
-            
+
             // Add adminUser to the new role. It should succeed
-            ejbcaraws.addSubjectToRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
+            ejbcaraws.addSubjectToRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(),
                     AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
             // Verify the admin data
             final Role roleAfterAdd = roleSession.getRole(intAdmin, null, rolename);
@@ -2205,7 +2206,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertEquals(adminUser.getCertificateDN(), roleMember.getTokenMatchValue());
             // Remove adminUser specified by a non-existing CA. It should fail
             try {
-                ejbcaraws.removeSubjectFromRole(rolename, "NoneExistingCA", X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
+                ejbcaraws.removeSubjectFromRole(rolename, "NoneExistingCA", X500PrincipalAccessMatchValue.WITH_FULLDN.name(),
                         AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
                 fail("Succeeded in adding subject to a non-existing role");
             } catch(EjbcaException_Exception e) {
@@ -2214,7 +2215,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 }
             }
             // Remove adminUser from the new role. It should succeed
-            ejbcaraws.removeSubjectFromRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(), 
+            ejbcaraws.removeSubjectFromRole(rolename, getAdminCAName(), X500PrincipalAccessMatchValue.WITH_FULLDN.name(),
                     AccessMatchType.TYPE_EQUALCASE.name(), adminUser.getCertificateDN());
             final Role roleAfterRemove = roleSession.getRole(intAdmin, null, rolename);
             final List<RoleMember> roleMembersAfterRemove = roleMemberSession.getRoleMembersByRoleId(intAdmin, roleAfterRemove.getRoleId());
@@ -2307,14 +2308,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             }
         }
     }
-    
-    
+
+
     @Test
     public void test76ImportAndUpdateExternalCvcaCaCertificate() throws Exception {
         log.trace(">test76ImportAndUpdateExternalCvcaCaCertificate");
         log.debug("Enterprise Edition: " + enterpriseEjbBridgeSession.isRunningEnterprise());
         assumeTrue("Enterprise Edition only. Skipping the test", enterpriseEjbBridgeSession.isRunningEnterprise());
-        
+
         try {
             // A: Imports a CA certificate of an external CVCA (CVC certificate with at least C=${ISO-3166-2}, CN != null).
             log.debug("Test import a CA certificate of an external CVCA.");
@@ -2326,7 +2327,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
             assertEquals("CVCA must be a CVC CA.", cainfo.getCAType(), CAInfo.CATYPE_CVC);
             assertCertificateEquals("The imported CA certificate chain must match the CA certificate chain after import.", importFile, cainfo);
-            
+
             // Exceptions: Import of the same CA again must throw a CAExistsException.
             log.debug("Test import a CA certificate of an external CVCA again (one time too much).");
             caname = "Test-Import-CVCA";
@@ -2347,7 +2348,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 final int caid = caSession.getCAInfo(intAdmin, "Test-Import-CVCA").getCAId();
                 assertEjbcaException(e, ErrorCode.INTERNAL_ERROR, "CA with id " + caid + " already exists.");
             }
-            
+
             // B: Updates a CA certificate of an external CVCA (CVC certificate with at least C=${ISO-3166-2}, CN != null).
             log.debug("Test update a CA certificate of an external CVCA.");
             caname = "Test-Import-CVCA";
@@ -2355,7 +2356,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             ejbcaraws.updateCaCert(caname, updateFile);
             cainfo = caSession.getCAInfo(intAdmin, caname);
             assertCertificateEquals("The updated CA certificate chain must replace the existing CA certificate chain.", updateFile, cainfo);
-              
+
             // Exceptions: Update of the same CA again must throw a CertificateImportException.
             log.debug("Test update a CA certificate of an external CVCA again (one time to much).");
             caname = "Test-Import-CVCA";
@@ -2365,7 +2366,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             } catch(Exception e) {
                 assertEjbcaException(e, ErrorCode.CERTIFICATE_IMPORT, "The CA certificate chain is already imported.");
             }
-            
+
             // Exceptions: Import of technical invalid file must throw an EjbcaException with a CertificateParsingException.
             log.debug("Test import a CA certificate with an invalid PEM file.");
             try {
@@ -2388,7 +2389,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         log.trace("<test76ImportAndUpdateExternalCvcaCaCertificate");
     }
-    
+
     @Test
     public void test77ImportAndUpdateExternalCscaCaCertificate() throws Exception {
         log.trace(">test77ImportAndUpdateExternalCscaCaCertificate");
@@ -2397,14 +2398,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             log.debug("Test import a CA certificate of an external CSCA.");
             String caname = "Test-Import-CSCA";
             removeCaIfExists(caname);
-            
+
             final byte[] importFile = readPemFile("external_csca_certificate_for_import.pem").getBytes();
             ejbcaraws.importCaCert(caname, importFile);
             assertTrue("Imported CSCA must exists.", caSession.existsCa(caname));
             CAInfo cainfo = caSession.getCAInfo(intAdmin, caname);
             assertEquals("CSCA must be a X.509 CA.", cainfo.getCAType(), CAInfo.CATYPE_X509);
             assertCertificateEquals("The imported CA certificate chain must match the existing CA certificate chain after import.", importFile, cainfo);
-            
+
             // Exceptions: Import of the same CA again must throw a CAExistsException.
             log.debug("Test import a CA certificate of an external CSCA again (one time too much).");
             caname = "Test-Import-CSCA";
@@ -2429,13 +2430,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 log.debug("Remove CA " + caname + " before test.");
                 caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
             }
-            
+
             // B: Updates a CA certificate of an external CSCA (X.509 certificate with at least C=${ISO-3166-2}, CN != null and serialNumber != null).
             log.debug("Test update a CA certificate of an external CSCA.");
             caname = "Test-Import-CSCA";
             final byte[] updateFile = readDerFile("external_csca_certificate_for_update.der");
             ejbcaraws.updateCaCert(caname, updateFile);
-            // Optional change of serialNumber could be checked here, but is stored in the CVCs key sequence ... 
+            // Optional change of serialNumber could be checked here, but is stored in the CVCs key sequence ...
             cainfo = caSession.getCAInfo(intAdmin, caname);
             assertCertificateEquals("The updated CA certificate chain must replace the existing CA certificate chain.", updateFile, cainfo);
 
@@ -2457,7 +2458,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             } catch(Exception e) {
                 assertEjbcaException(e, ErrorCode.CERTIFICATE_IMPORT, "Only able to update imported CA certificate if Subject DN of the leaf CA certificate is the same.");
             }
-            
+
             // Exceptions: Import of technical invalid file must throw an EjbcaException with a CertificateParsingException.
             log.debug("Test import a CA certificate with an invalid PEM file.");
             try {
@@ -2480,23 +2481,23 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
         log.trace("<test77ImportAndUpdateExternalCscaCaCertificate");
     }
-    
-    private void assertCertificateEquals(final String label, final byte[] left, final CAInfo caInfo) 
+
+    private void assertCertificateEquals(final String label, final byte[] left, final CAInfo caInfo)
             throws CertificateParsingException, CertificateEncodingException {
         final List<CertificateWrapper> leftSide = CertTools.bytesToListOfCertificateWrapperOrThrow(left);
         final List<CertificateWrapper> rightSide = CertTools.bytesToListOfCertificateWrapperOrThrow(
                 caInfo.getCertificateChain().iterator().next().getEncoded());
         assertEquals(label, leftSide.get(0).getCertificate(), rightSide.get(0).getCertificate());
-        
+
     }
-    
+
     private void removeCaIfExists(final String caname ) throws Exception {
         if(caSession.existsCa(caname)) {
             log.debug("Remove CA " + caname + " after test.");
             caSession.removeCA(intAdmin, caSession.getCAInfo(intAdmin, caname).getCAId());
         }
     }
-    
+
     private void assertEjbcaException(final Exception exception, final ErrorCode errorCode, final String errorMessage) {
         assertTrue("EjbcaException expected.", exception instanceof EjbcaException_Exception);
         if (StringUtils.isNotEmpty(errorCode.getInternalErrorCode())) {
@@ -2506,7 +2507,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             assertEquals("Error message:", errorMessage, ((EjbcaException_Exception) exception).getMessage());
         }
     }
-    
+
     private void testCertificateRequestWithEeiDnOverride(boolean allowDNOverrideByEndEntityInformation, boolean useCsr, String requestedSubjectDN, String expectedSubjectDN) throws Exception {
         if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
@@ -2558,7 +2559,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
             String resultingSubjectDN = CeSecoreNameStyle.INSTANCE.toString(x500name);
             log.debug("x500name:           " + resultingSubjectDN);
-            assertEquals("Unexpected transformation.", expectedSubjectDN, resultingSubjectDN);     
+            assertEquals("Unexpected transformation.", expectedSubjectDN, resultingSubjectDN);
         } finally {
             try {
                 endEntityManagementSession.deleteUser(intAdmin, userName);
@@ -2596,7 +2597,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             alias = en.nextElement();
         }
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-        
+
         String resultingSubjectDN = cert.getSubjectDN().toString();
         // on RedHat 6.4 with OpenJDK-8 64-Bit '\r' symbol is automatically replaced with '\n'. So try to check again, if difference between expected and actual
         // is in that symbol then test succeeds, otherwise test fails
@@ -2699,13 +2700,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         final EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(PASSWORD);
-        endEntityManagementSession.addUser(intAdmin, userdata, true);        
+        endEntityManagementSession.addUser(intAdmin, userdata, true);
         fileHandles.addAll(BatchCreateTool.createAllNew(intAdmin, new File(P12_FOLDER_NAME)));
         final Collection<Certificate> userCerts = EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username));
         assertEquals("Certificates for user with username " + username + " wasn't exactly one.", 1, userCerts.size());
         return (X509Certificate) userCerts.iterator().next();
     }
-    
+
     /** Reads a PEM file by the class path. */
     private String readPemFile(final String filename) throws IOException {
         final InputStream stream = getClass().getResourceAsStream(filename);
@@ -2718,7 +2719,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     /** Reads a DER file by the class path. */
     private byte[] readDerFile(final String filename) throws IOException {
         final InputStream stream = getClass().getResourceAsStream(filename);
-        final byte[] data = new byte[stream.available()]; 
+        final byte[] data = new byte[stream.available()];
         stream.read(data);
         IOUtils.closeQuietly(stream);
         return data;

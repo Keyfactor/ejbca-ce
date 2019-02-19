@@ -33,10 +33,11 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.validation.ValidationResult;
 
 /**
  * Approval Request created when trying to edit an end entity.
- * 
+ *
  * @version $Id$
  */
 public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
@@ -48,13 +49,14 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	private String username;
 	private int oldstatus;
 	private int newstatus;
-	
+
 	/** Constructor used in externalization only */
 	public ChangeStatusEndEntityApprovalRequest() {}
 
     public ChangeStatusEndEntityApprovalRequest(String username, int oldstatus, int newstatus, AuthenticationToken requestAdmin,
-            String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
-        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile);
+            String requestSignature, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile,
+            final List<ValidationResult> validationResults) {
+        super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, cAId, endEntityProfileId, approvalProfile, validationResults);
 		this.username = username;
 		this.oldstatus = oldstatus;
 		this.newstatus = newstatus;
@@ -77,7 +79,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 				break;
 			default:
 				break;
-			}			
+			}
 		}
 		if (oldstatus == EndEntityConstants.STATUS_NEW) {
 			switch (newstatus) {
@@ -95,7 +97,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 				break;
 			default:
 				break;
-			}			
+			}
 		}
 		if (oldstatus == EndEntityConstants.STATUS_FAILED) {
 			switch (newstatus) {
@@ -110,7 +112,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 				break;
 			default:
 				break;
-			}			
+			}
 		}
 		if (oldstatus == EndEntityConstants.STATUS_INPROCESS) {
 			switch (newstatus) {
@@ -125,7 +127,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 				break;
 			default:
 				break;
-			}			
+			}
 		}
 		if (oldstatus == EndEntityConstants.STATUS_KEYRECOVERY) {
 			switch (newstatus) {
@@ -143,7 +145,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 				break;
 			default:
 				break;
-			}			
+			}
 		}
 		return ret;
 	}
@@ -152,11 +154,11 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public void execute() throws ApprovalRequestExecutionException {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
-	
-	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin) 
+
+	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, final AuthenticationToken lastApprovingAdmin)
 	        throws ApprovalRequestExecutionException {
 		log.debug("Executing Change Status  for user:" + username);
-		
+
 		try{
 			endEntityManagementSession.setUserStatusAfterApproval(getRequestAdmin(), username, newstatus, approvalRequestID, lastApprovingAdmin);
 		} catch (AuthorizationDeniedException e) {
@@ -167,60 +169,65 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
-		} 
+		}
 	}
 
     /**
      * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
-	public int generateApprovalId() {		
+	@Override
+    public int generateApprovalId() {
 		return new String(getApprovalType() + ";" + username + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
-	public int getApprovalType() {		
+	@Override
+    public int getApprovalType() {
 		return ApprovalDataVO.APPROVALTYPE_CHANGESTATUSENDENTITY;
 	}
-	
+
 	public String getUsername() {
 	    return username;
 	}
-	
+
 
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newstatus),true,true));		
+		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newstatus),true,true));
 		return retval;
 	}
-	
+
 	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(oldstatus),true,true));		
+		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(oldstatus),true,true));
 		return retval;
 	}
 
-	public boolean isExecutable() {		
+	@Override
+    public boolean isExecutable() {
 		return true;
 	}
-	
-	public void writeExternal(ObjectOutput out) throws IOException {
+
+	@Override
+    public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeInt(LATEST_VERSION);
 		out.writeObject(username);
 		out.writeInt(newstatus);
-		out.writeInt(oldstatus);		
+		out.writeInt(oldstatus);
 	}
 
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {        
+	@Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
         int version = in.readInt();
         if(version == 1){
     		username = (String) in.readObject();
     		newstatus = in.readInt();
-    		oldstatus = in.readInt();    		
+    		oldstatus = in.readInt();
         }
 	}
 }
