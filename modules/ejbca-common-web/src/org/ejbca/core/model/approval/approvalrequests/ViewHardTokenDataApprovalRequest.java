@@ -29,15 +29,13 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 /**
  * Approval Request created when an administrator wants
  * to view hard token data.
- * 
+ *
  * @version $Id$
  */
 public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
-
 	private static final long serialVersionUID = -1L;
-	//private static final Logger log = Logger.getLogger(ViewHardTokenDataApprovalRequest.class);
 	private static final int LATEST_VERSION = 1;
-		
+
 	private String dn;
 	private String username;
 	private String tokensn;
@@ -46,16 +44,16 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public ViewHardTokenDataApprovalRequest() {}
 
-	public ViewHardTokenDataApprovalRequest(String username, String userDN, String tokensn, boolean viewPUK, 
-	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, 
+	public ViewHardTokenDataApprovalRequest(String username, String userDN, String tokensn, boolean viewPUK,
+	        AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId,
 	        int endEntityProfileId, ApprovalProfile approvalProfile) {
-        super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
+        super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile, /* validation results */ null);
 		this.username = username;
 		this.dn = userDN;
 		this.tokensn = tokensn;
 		this.viewpuk = viewPUK;
 	}
-	
+
 	@Override
 	public void execute() throws ApprovalRequestExecutionException {
 		// This is a non-executable approval
@@ -64,39 +62,43 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
     /**
      * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
-	public int generateApprovalId() {		
-		return new String(getApprovalType() + ";" + username + ";" + tokensn +";"+ 
+	@Override
+    public int generateApprovalId() {
+		return new String(getApprovalType() + ";" + username + ";" + tokensn +";"+
 		            CertTools.getFingerprintAsString(getRequestAdminCert()) + ";" + getApprovalProfile().getProfileName()).hashCode();
 	}
 
-	public int getApprovalType() {		
+	@Override
+    public int getApprovalType() {
 		return ApprovalDataVO.APPROVALTYPE_VIEWHARDTOKENDATA;
 	}
 
 	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
-		retval.add(new ApprovalDataText("USERNAME",username,true,false));		
+		retval.add(new ApprovalDataText("USERNAME",username,true,false));
 		retval.add(new ApprovalDataText("SUBJECTDN",dn,true,false));
 		retval.add(new ApprovalDataText("HARDTOKENSN",tokensn,true,false));
 		if(viewpuk){
-			retval.add(new ApprovalDataText("VIEWPUKENDENTITYRULE","YES",true,true));		  
+			retval.add(new ApprovalDataText("VIEWPUKENDENTITYRULE","YES",true,true));
 		}else{
 			retval.add(new ApprovalDataText("VIEWPUKENDENTITYRULE","NO",true,true));
 		}
 		return retval;
 	}
-	
+
 	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		return null;
 	}
 
-	public boolean isExecutable() {		
+	@Override
+    public boolean isExecutable() {
 		return false;
 	}
-	
-	public void writeExternal(ObjectOutput out) throws IOException {
+
+	@Override
+    public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeInt(LATEST_VERSION);
 		out.writeObject(username);
@@ -105,7 +107,8 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 		out.writeBoolean(viewpuk);
 	}
 
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {        
+	@Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
         int version = in.readInt();
         if(version == 1){
