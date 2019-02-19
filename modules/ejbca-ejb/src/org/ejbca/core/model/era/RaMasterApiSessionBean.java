@@ -196,6 +196,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.validation.CaaValidator;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSessionLocal;
@@ -2527,7 +2528,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 continue;
             }
             if (validator.getValidatorTypeIdentifier().equals(DnsNameValidator.CAA_TYPE_IDENTIFIER)) {
-                caaIdentities.addAll(((DnsNameValidator) validator).getIssuers());
+                caaIdentities.addAll(((CaaValidator) validator).getIssuers());
             }
         }
         return caaIdentities;
