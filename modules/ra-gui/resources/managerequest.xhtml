@@ -164,9 +164,25 @@
                     <ui:repeat value="#{raManageRequestBean.partitions}" var="partition">     
                         <component:approvalmetadata id="currentMetaData" partition="#{partition}" rendered="#{raManageRequestBean.hasContent(partition)}" />
                     </ui:repeat>
-                    
+
+                    <h:panelGroup id="validationWarnings" layout="block" styleClass="internal-frame-black"
+                        rendered="#{raManageRequestBean.validationFailure}">
+                        <ui:repeat layout="block" value="#{raManageRequestBean.validationMessages}" var="validationMessage">
+                            <div class="keygeneration-button-group">
+                                <h:outputText value="#{validationMessage}" />
+                            </div>
+                        </ui:repeat>
+                        <div class="keygeneration-button-group">
+                            <h:selectBooleanCheckbox value="#{raManageRequestBean.validationWarningApproved}" id="ignoreValidationWarning" style="margin-right: 15px;">
+                                <f:ajax render="commandApprove" />
+                            </h:selectBooleanCheckbox>
+                            <h:outputLabel value="#{msg.manage_requests_ignore_validation_warnings}" for="ignoreValidationWarning" />
+                        </div>
+                    </h:panelGroup>
+
                     <h:panelGroup id="approvalButtonsPanel" layout="block">
-                        <h:commandButton id="commandApprove" action="#{raManageRequestBean.approve}" value="#{msg.view_request_page_approve_command}" styleClass="pure-button ra-button executeActionButton" />
+                        <h:commandButton id="commandApprove" action="#{raManageRequestBean.approve}" value="#{msg.view_request_page_approve_command}" 
+                            styleClass="pure-button ra-button executeActionButton" disabled="#{raManageRequestBean.validationFailure and !raManageRequestBean.validationWarningApproved}"/>
                         <h:commandButton id="commandReject" action="#{raManageRequestBean.reject}" value="#{msg.view_request_page_reject_command}" styleClass="pure-button ra-button executeActionButton" />
                     </h:panelGroup>
                 </h:panelGroup>
