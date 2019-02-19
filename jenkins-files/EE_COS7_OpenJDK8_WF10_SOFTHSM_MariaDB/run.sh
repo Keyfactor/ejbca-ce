@@ -55,7 +55,5 @@ sleep 10
 wait_for_deployment
 
 echo '=================== starting system tests ================================='
-#ant test:runsys
 
-ant test:runone -Dtest.runone=PKCS11CryptoTokenTest
-
+ant test:run -Dtest.includep11=true
