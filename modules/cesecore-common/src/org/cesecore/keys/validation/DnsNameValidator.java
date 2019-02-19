@@ -14,7 +14,6 @@ package org.cesecore.keys.validation;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.cesecore.util.ui.DynamicUiModelAware;
@@ -41,12 +40,10 @@ public interface DnsNameValidator extends Validator, DynamicUiModelAware {
     Entry<Boolean, List<String>> validate(final ExecutorService executorService, String... domainNames);
 
     /**
-     * @return a newline separated string of issuers. 
+     * Returns a human readable log message for this validator.
+     * @param successful true to get a message for a successful validation, false for an unsuccessful one.
+     * @param messages Human readable messages from the validate() method, to be included in the message.
+     * @return Log message.
      */
-    String getIssuer();
-
-    /**
-     * @return a set of issuer names for this validator
-     */
-    Set<String> getIssuers();
+    String getLogMessage(final boolean successful, final List<String> messages);
 }

@@ -544,7 +544,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         final List<T> newValues;
         if (CollectionUtils.isEmpty(objectsCopy)) {
             newValues = new ArrayList<>();
-            newValues.add(defaultValue);
+            if (defaultValue != null) {
+                newValues.add(defaultValue);
+            }
         } else {
             if (!CollectionUtils.isEmpty(possibleValues)) {
                 newValues = new ArrayList<>();
