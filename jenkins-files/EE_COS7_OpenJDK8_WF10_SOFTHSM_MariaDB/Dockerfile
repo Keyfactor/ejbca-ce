@@ -20,7 +20,9 @@ RUN cd $HOME \
 
 RUN yum -y install softhsm 
 
-RUN ln -sf /usr/lib64/libsofthsm2.so /opt/hsm_pkcs11.so
+# Initialize softhsm slots.
+RUN softhsm2-util --init-token --slot 0 --label Label1 --so-pin userpin1 --pin userpin1
+RUN softhsm2-util --init-token --slot 1 --label Label2 --so-pin userpin1 --pin userpin1
 
 #Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
