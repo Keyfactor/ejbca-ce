@@ -483,11 +483,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
     
     public String getDescription() {
-        String description = "";
-        if (profiledata.getDescription() != null) {
-            description = profiledata.getDescription();
-        }
-        return description;
+        return profiledata.getDescription();
     }
 
     public void setDescription(final String description) {
