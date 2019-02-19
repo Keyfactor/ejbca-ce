@@ -33,7 +33,7 @@ public class RaRequestsSearchResponse implements Serializable {
     private boolean mightHaveMoreResults = false;
 
     public List<RaApprovalRequestInfo> getApprovalRequests() { return approvalRequests; }
-    public void getApprovalRequests(final List<RaApprovalRequestInfo> approvalRequests) { this.approvalRequests = approvalRequests; }
+    public void setApprovalRequests(final List<RaApprovalRequestInfo> approvalRequests) { this.approvalRequests = approvalRequests; }
 
     public boolean isMightHaveMoreResults() { return mightHaveMoreResults; }
     public void setMightHaveMoreResults(boolean mightHaveMoreResults) { this.mightHaveMoreResults = mightHaveMoreResults; }
