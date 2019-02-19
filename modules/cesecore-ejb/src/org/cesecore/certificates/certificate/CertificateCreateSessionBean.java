@@ -373,11 +373,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         try {
             keyValidatorSession.validateDnsNames(admin, ca, endEntityInformation, request);
         } catch (ValidationException e) {
-            if (e.getErrorCode() != null && e.getErrorCode().equals(ErrorCode.CAA_VALIDATION_FAILED)) {
-                throw new CertificateCreateException(ErrorCode.CAA_VALIDATION_FAILED, e.getLocalizedMessage());
-            } else {
-                throw new CertificateCreateException(ErrorCode.NOT_AUTHORIZED, e.getLocalizedMessage());
-            }
+            throw new CertificateCreateException(e.getErrorCode(), e.getLocalizedMessage());
         }
         
         // Set up audit logging of CT pre-certificate
