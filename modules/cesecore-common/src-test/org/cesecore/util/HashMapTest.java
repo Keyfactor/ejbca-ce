@@ -13,19 +13,16 @@
 
 package org.cesecore.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
-import org.cesecore.util.Base64GetHashMap;
-import org.cesecore.util.Base64PutHashMap;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /** Tests Base64 HashMap XML encoding and decoding
  * 
@@ -89,17 +86,7 @@ public class HashMapTest {
         } catch (ArrayIndexOutOfBoundsException e) {
             return;
         }
-        String javaver = System.getProperty("java.version");
-        System.out.println(javaver);
-        if (StringUtils.contains(javaver, "1.6") || StringUtils.contains(javaver, "1.7") || StringUtils.contains(javaver, "1.8") || StringUtils.contains(javaver, "10")) {
-        	// In java 1.6 the above does work because it encodes the special characters
-        	//   <string><char code="#0"/>1<char code="#0"/>2fooString</string> 
-            assertTrue(true);        	
-        } else {
-        	// In java 1.5 the above does not work, because it will insert bad xml-characters 
-        	// so the test will fail if we got here.
-            assertTrue(false);        	        	
-        }
+        assertTrue(true);        	
     }
     @SuppressWarnings("rawtypes")
     @Test
