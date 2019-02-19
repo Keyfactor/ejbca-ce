@@ -90,16 +90,6 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     }
 
     @Override
-    public String getIssuer() {
-        return "";
-    }
-
-    @Override
-    public Set<String> getIssuers() {
-        return new HashSet<String>();
-    }
-
-    @Override
     protected Class<? extends Profile> getImplementationClass() {
         return DnsNameValidatorMock.class;
     }
@@ -133,5 +123,9 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
          data.putAll(transientObjects);
     }
 
+    @Override
+    public String getLogMessage(final boolean successful, final List<String> messages) {
+        return null;
+    }
 
 }
