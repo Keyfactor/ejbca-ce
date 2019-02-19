@@ -41,43 +41,45 @@ import org.junit.Test;
 
 public class AddEditEndEntityApprovalTest  extends CaTestCase {
 
-    
+
     //private static final Logger log = Logger.getLogger(AddEditEndEntityApprovalTest.class);
-    
+
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "AddEditEndEntityApprovalTest"));
-    
+
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
 
     private int caid = getTestCAId();
-    
+
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
 
     }
-    
+
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
     }
-    
+
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
     @Test
     public void test01testEndEntityExtendedInformation() throws Exception {
         String username = "test01extendedInfoUser";
-        
+
         // make sure that the end entity we are testing with does not already exist
         if(endEntityAccessSession.findUser(internalAdmin, username) != null) {
             endEntityManagementSession.deleteUser(internalAdmin, username);
         }
-        
+
         try {
 
             // Add an end entity through executing an AddEndEntityApprovalRequest
@@ -86,32 +88,34 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
                     SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            AddEndEntityApprovalRequest addAr = new AddEndEntityApprovalRequest(userdata, true, internalAdmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null);
+            AddEndEntityApprovalRequest addAr = new AddEndEntityApprovalRequest(userdata, true, internalAdmin, null, caid,
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null, /* validation results */ null);
             addAr.execute(endEntityManagementSession, 4711, null);
 
             // Verify that the end entity was added
             EndEntityInformation executeUser = endEntityAccessSession.findUser(internalAdmin, username);
             assertNotNull("Failed to execute AddEndEnitityApprovalRequest", executeUser);
-            
+
             // Verify that the end entity contains the approval request ID of the AddEndEntityApprovalRequest
             ExtendedInformation ext = executeUser.getExtendedInformation();
             assertNotNull("Newly created end entity does not contain extended information", ext);
             Integer addEEReqId = ext.getAddEndEntityApprovalRequestId();
             assertNotNull("Extended information does not contain the AddEndEntityApprovalRequestID", addEEReqId);
             assertEquals(Integer.valueOf(4711), addEEReqId);
-            
+
             // Edit the end entity through executing an EditEndEntityApprovalRequest
             EndEntityInformation editUserdata = userdata;
             assertEquals("CN=" + username, userdata.getDN());
             editUserdata.setDN("CN=" + username + ", C=SE");
-            EditEndEntityApprovalRequest editAr = new EditEndEntityApprovalRequest(editUserdata, true, userdata, internalAdmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null); 
+            EditEndEntityApprovalRequest editAr = new EditEndEntityApprovalRequest(editUserdata, true, userdata, internalAdmin, null, caid,
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null, /* validation results */ null);
             editAr.execute(endEntityManagementSession, 4712, null);
-            
+
             // Verify the the end entity has been edited
             executeUser = endEntityAccessSession.findUser(internalAdmin, username);
             assertNotNull("Somehow, the test end entity just disappeared", executeUser);
             assertEquals("CN=" + username + ",C=SE", executeUser.getDN());
-            
+
             // Verify that the end entity contains the approval request ID of the AddEndEntityApprovalRequest and the EditEndEntityApprovalRequest
             ext = executeUser.getExtendedInformation();
             assertNotNull("Newly edited end entity does not contain extended information", ext);
@@ -125,16 +129,17 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
 
             // Change the status of the end entity through executing a ChangeStatusEndEntityApprovalRequest
             assertEquals(EndEntityConstants.STATUS_NEW, executeUser.getStatus());
-            ChangeStatusEndEntityApprovalRequest statusAr = new ChangeStatusEndEntityApprovalRequest(username, EndEntityConstants.STATUS_NEW, 
-                    EndEntityConstants.STATUS_GENERATED, internalAdmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null);
+            ChangeStatusEndEntityApprovalRequest statusAr = new ChangeStatusEndEntityApprovalRequest(username, EndEntityConstants.STATUS_NEW,
+                    EndEntityConstants.STATUS_GENERATED, internalAdmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, null,
+                    /* validation results */ null);
             statusAr.execute(endEntityManagementSession, 4713, null);
-            
+
             // Verify that the end entity status has been changed
             executeUser = endEntityAccessSession.findUser(internalAdmin, username);
             assertNotNull("Somehow, the test end entity just disappeared", executeUser);
             assertEquals(EndEntityConstants.STATUS_GENERATED, executeUser.getStatus());
-            
-            // Verify that the end entity contains the approval request ID of the AddEndEntityApprovalRequest and the EditEndEntityApprovalRequest 
+
+            // Verify that the end entity contains the approval request ID of the AddEndEntityApprovalRequest and the EditEndEntityApprovalRequest
             // and ChangeStatusEndEntityApprovalRequest
             ext = executeUser.getExtendedInformation();
             assertNotNull("Newly edited end entity does not contain extended information", ext);
@@ -153,9 +158,9 @@ public class AddEditEndEntityApprovalTest  extends CaTestCase {
             }
         }
     }
-    
-    
-    
+
+
+
     @Override
     public String getRoleName() {
         return "AddEditEndEntityApprovalTest";

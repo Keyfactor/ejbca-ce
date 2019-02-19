@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
@@ -66,7 +67,6 @@ import org.ejbca.util.KeyValuePair;
 @ManagedBean
 @ViewScoped
 public class RaManageRequestBean implements Serializable {
-
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaManageRequestBean.class);
 
@@ -91,8 +91,9 @@ public class RaManageRequestBean implements Serializable {
     private boolean editing = false;
     private String extendDays;
     private Map<Integer, List<DynamicUiProperty<? extends Serializable>> > currentPartitionsProperties = null;
-    List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
-    Set<Integer> partitionsAuthorizedToApprove = null;
+    private List<ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject> partitionsAuthorizedToView = null;
+    private Set<Integer> partitionsAuthorizedToApprove = null;
+    private boolean isValidationWarningApproved;
 
     public String idParam;
     public String aidParam;
@@ -160,6 +161,24 @@ public class RaManageRequestBean implements Serializable {
     public boolean isStatusVisible() { return !editing; }
     public boolean isPreviousStepsVisible() { return !editing && !requestInfo.getPreviousSteps().isEmpty(); }
     public boolean isApprovalVisible() { return !editing; } // even if approval is not possible, we still show a message explaining why it's not.
+
+    /**
+     * Get a boolean indicating whether the administrator has approved any validation warnings (if present) by
+     * manually ticking a checkbox in the GUI.
+     *
+     * @return true if the administrator want to ignore validation warnings, false otherwise.
+     */
+    public boolean getValidationWarningApproved() {
+        return isValidationWarningApproved;
+    }
+
+    /**
+     * Set a value indicating whether the administrator has approved any validation warnings (if present) by
+     * manually ticking a checkbox in the GUI.
+     */
+    public void setValidationWarningApproved(final boolean isValidationWarningApproved) {
+        this.isValidationWarningApproved = isValidationWarningApproved;
+    }
 
     public String getExtendDays() { return extendDays; }
     public void setExtendDays(final String extendDays) { this.extendDays = extendDays; }
@@ -273,14 +292,14 @@ public class RaManageRequestBean implements Serializable {
     public boolean isPropertyReadOnly(String propertyName) {
         return requestInfo.request.getApprovalProfile().getReadOnlyProperties().contains(propertyName);
     }
-    
+
     private CertificateProfile getCertificateProfile() {
         if (certificateProfile == null) {
             certificateProfile = raMasterApiProxyBean.getCertificateProfile(requestInfo.getEndEntityInformation().getCertificateProfileId());
         }
         return certificateProfile;
     }
-    
+
     /** @return true if subject DN override by CSR is allowed */
     public boolean isDnOverrideRendered() {
         // In case of another request type than user generated enrollment, we do not want to show warning.
@@ -290,7 +309,7 @@ public class RaManageRequestBean implements Serializable {
         }
         return getCertificateProfile().getAllowDNOverride();
     }
-    
+
     /**
      * @return true if the default validity specified in the certificate profile has been changed during enrollment request.
      */
@@ -302,13 +321,13 @@ public class RaManageRequestBean implements Serializable {
         }
         return false;
     }
-    
+
     public String getValidityModifiedMessage() {
-        return raLocaleBean.getMessage("view_request_page_note_validityoverride", 
-                getCertificateProfile().getEncodedValidity(), 
+        return raLocaleBean.getMessage("view_request_page_note_validityoverride",
+                getCertificateProfile().getEncodedValidity(),
                 requestInfo.getEndEntityInformation().getExtendedInformation().getCertificateEndTime());
     }
-    
+
     /**
      * Extract the partition properties, and fill in all and any placeholders. Also cull any properties set to be hidden.
      *
@@ -377,7 +396,7 @@ public class RaManageRequestBean implements Serializable {
     public boolean isValueUrl(final String string) {
         return StringTools.isValidUri(string);
     }
-    
+
     public String getStepInfoText() {
         final List<String> roles = new ArrayList<>(requestData.getNextStepAllowedRoles());
         if (!roles.isEmpty()) {
@@ -604,6 +623,21 @@ public class RaManageRequestBean implements Serializable {
     public String getDN(final RequestDataRow dataRow) {
         // TODO validation (ECA-5235)
         return (String) dataRow.getEditValue();
+    }
+
+    public List<String> getValidationMessages() {
+        return requestData.getApprovalRequest()
+                .getValidationResults()
+                .stream()
+                .map(result -> result.getMessage())
+                .collect(Collectors.toList());
+    }
+
+    public boolean isValidationFailure() {
+        return requestData.getApprovalRequest()
+                .getValidationResults()
+                .stream()
+                .anyMatch(result -> !result.isSuccessful());
     }
 
     /** Logs the message of an exception, which usually contains some message. For example: "You may not approve an action which you requested yourself" */

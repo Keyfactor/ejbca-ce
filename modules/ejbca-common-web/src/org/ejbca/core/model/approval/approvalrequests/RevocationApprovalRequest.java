@@ -40,7 +40,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 
 /**
- * 
+ *
  * @version $Id$
  *
  */
@@ -49,14 +49,14 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
 	private static final Logger log = Logger.getLogger(RevocationApprovalRequest.class);
-	private static final int LATEST_VERSION = 1;	
+	private static final int LATEST_VERSION = 1;
 
 	private int approvalType = -1;
 	private String username = null;
 	private BigInteger certificateSerialNumber = null;
 	private String issuerDN = null;
 	private int reason = -2;
-	
+
 	/** Constructor used in externalization only */
 	public RevocationApprovalRequest() {}
 
@@ -65,12 +65,12 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 */
     public RevocationApprovalRequest(BigInteger certificateSerialNumber, String issuerDN, String username, int reason,
             AuthenticationToken requestAdmin, int cAId, int endEntityProfileId, ApprovalProfile approvalProfile) {
-		super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
+        super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile, /* validation results */ null);
 		this.approvalType = ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE;
 		this.username = username;
 		this.reason = reason;
 		this.certificateSerialNumber = certificateSerialNumber;
-		this.issuerDN = issuerDN; 
+		this.issuerDN = issuerDN;
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 */
     public RevocationApprovalRequest(boolean deleteAfterRevoke, String username, int reason, AuthenticationToken requestAdmin, int cAId,
             int endEntityProfileId, ApprovalProfile approvalProfile) {
-		super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile);
+        super(requestAdmin, null, REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile, /* validation results */ null);
 		if (deleteAfterRevoke) {
 			this.approvalType = ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY;
 		} else {
@@ -89,11 +89,11 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		this.certificateSerialNumber = null;
 		this.issuerDN = null;
 	}
-	
+
 	/**
 	 * A main function of the ApprovalRequest, the execute() method
 	 * is run when all required approvals have been made.
-	 * 
+	 *
 	 * execute should perform the action or nothing if the requesting admin
 	 * is supposed to try this action again.
 	 */
@@ -101,8 +101,8 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	public void execute() throws ApprovalRequestExecutionException {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
-	
-	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, final AuthenticationToken lastApprovalAdmin) 
+
+	public void execute(EndEntityManagementSession endEntityManagementSession, final int approvalRequestID, final AuthenticationToken lastApprovalAdmin)
 	        throws ApprovalRequestExecutionException {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[approvalType] + " (" + approvalType + ").");
 		try {
@@ -115,7 +115,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 					endEntityManagementSession.revokeAndDeleteUser(getRequestAdmin(), username, reason);
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
-					endEntityManagementSession.revokeCertAfterApproval(getRequestAdmin(), certificateSerialNumber, issuerDN, reason, approvalRequestID, 
+					endEntityManagementSession.revokeCertAfterApproval(getRequestAdmin(), certificateSerialNumber, issuerDN, reason, approvalRequestID,
 					        lastApprovalAdmin);
 					break;
 				default:
@@ -142,11 +142,12 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * approval, the same request i.e the same admin want's to do the
 	 * same thing twice should result in the same approvalId.
 	 */
-	public int generateApprovalId() {
+	@Override
+    public int generateApprovalId() {
 		return generateApprovalId(getApprovalType(), username, reason, certificateSerialNumber, issuerDN, getApprovalProfile().getProfileName());
 	}
 
-	static public int generateApprovalId(int approvalType, String username, int reason, BigInteger certificateSerialNumber, String issuerDN, 
+	static public int generateApprovalId(int approvalType, String username, int reason, BigInteger certificateSerialNumber, String issuerDN,
 	        String approvalProfileName) {
 		String idString = approvalType + ";" + username + ";" + reason +";";
 		if ( certificateSerialNumber != null && issuerDN != null ) {
@@ -156,7 +157,8 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		return idString.hashCode();
 	}
 
-	public int getApprovalType() {		
+	@Override
+    public int getApprovalType() {
 		return approvalType;
 	}
 
@@ -164,7 +166,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * This method should return the request data in text representation.
 	 * This text is presented for the approving administrator in order
 	 * for him to make a decision about the request.
-	 * 
+	 *
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
 	@Override
@@ -184,15 +186,15 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		}
 		return retval;
 	}
-	
+
 	/**
 	 * This method should return the original request data in text representation.
 	 * Should only be implemented by TYPE_COMPARING ApprovalRequests.
 	 * TYPE_SIMPLE requests should return null;
-	 * 
+	 *
 	 * This text is presented for the approving administrator for him to
 	 * compare of what will be done.
-	 * 
+	 *
 	 * Should return a Collection of ApprovalDataText, one for each row
 	 */
 	@Override
@@ -203,14 +205,16 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	/**
 	 * Should return true if the request if of the type that should be executed
 	 * by the last approver.
-	 * 
+	 *
 	 * False if the request admin should do a polling action to try again.
 	 */
-	public boolean isExecutable() {		
+	@Override
+    public boolean isExecutable() {
 		return true;
 	}
-	
-	public void writeExternal(ObjectOutput out) throws IOException {
+
+	@Override
+    public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 		out.writeInt(LATEST_VERSION);
 		out.writeObject(username);
@@ -220,7 +224,8 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		out.writeObject(issuerDN);
 	}
 
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {        
+	@Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
         int version = in.readInt();
         if(version == 1){
@@ -231,7 +236,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
     		issuerDN = (String) in.readObject();
         }
 	}
-	
+
 	public String getUsername() {
 	    return username;
 	}

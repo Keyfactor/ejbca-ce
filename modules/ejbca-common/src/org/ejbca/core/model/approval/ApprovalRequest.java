@@ -22,6 +22,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -41,22 +42,28 @@ import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenReferenceRegistry;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.validation.ValidationResult;
 
 /**
  * Abstract Base class representing one approval request created when an administrator performs an action that requires an approval.
- * 
- * Contains information like: Admin that performs the request Data necessary to display the request to the approver Eventual data necessary to execute
- * the request.
- * 
+ *
+ * Contains information like:
+ * <ul>
+ *     <li>Admin that performs the request.</li>
+ *     <li>Data necessary to display the request to the approver.</li>
+ *     <li>Eventual data necessary to execute the request.</li>
+ *     <li>Validation messages.</li>
+ * </ul>
+ *
  * @version $Id$
- */ 
+ */
 // Suppressing deprecation due to backwards compatibility
 @SuppressWarnings("deprecation")
 public abstract class ApprovalRequest implements Externalizable {
 
     private static final long serialVersionUID = -1L;
     private static final Logger log = Logger.getLogger(ApprovalRequest.class);
-    private static final int LATEST_BASE_VERSION = 5;
+    private static final int LATEST_BASE_VERSION = 6;
 
     /**
      * Constants indicating approval settings for viewing hard token through WS
@@ -67,7 +74,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * Constants indicating approval settings for generating token certificate through WS
      */
     public static final int REQ_APPROVAL_GENERATE_TOKEN_CERTIFICATE = 6;
-    
+
     /**
      * Simple request type means that the approver will only see new data about the action and will not compare it to old data
      */
@@ -75,11 +82,11 @@ public abstract class ApprovalRequest implements Externalizable {
 
     /**
      * Comparing request type means that the approving administrator have to compare old data with new data in the request.
-     * 
+     *
      */
     public static final int REQUESTTYPE_COMPARING = 2;
 
-    private AuthenticationToken requestAdmin = null; 
+    private AuthenticationToken requestAdmin = null;
     private String requestSignature = null;
     private int approvalRequestType = REQUESTTYPE_SIMPLE;
     /**
@@ -90,15 +97,16 @@ public abstract class ApprovalRequest implements Externalizable {
     private int cAId = 0;
     private int endEntityProfileId = 0;
     private boolean[] approvalSteps = { false };
-    
+
     private ApprovalProfile approvalProfile;
-    
+    private List<ValidationResult> validationResults;
+
     /** Admins who have edited the request, in order of time. The last admin will not be allowed to approve the request. */
     private List<TimeAndAdmin> editedByAdmins = new ArrayList<>();
-    
+
     /**
      * Main constructor of an approval request for standard one step approval request.
-     * 
+     *
      * @param requestAdminCert the certificate of the requesting admin
      * @param requestSignature signature of the requester (OPTIONAL, for future use)
      * @param approvalRequestType one of TYPE_ constants
@@ -106,21 +114,22 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable
      *            to any end entity profile
+     * @param validationResults a list of validation results.
      */
     protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType, int cAId, int endEntityProfileId,
-            ApprovalProfile approvalProfile) {
-        super();
+            ApprovalProfile approvalProfile, final List<ValidationResult> validationResults) {
         setRequestAdmin(requestAdmin);
         this.requestSignature = requestSignature;
         this.approvalRequestType = approvalRequestType;
         this.cAId = cAId;
         this.endEntityProfileId = endEntityProfileId;
         this.approvalProfile = approvalProfile;
+        this.validationResults = validationResults;
     }
 
     /**
      * Main constructor of an approval request.
-     * 
+     *
      * @param requestAdminCert the certificate of the requesting admin
      * @param requestSignature signature of the requester (OPTIONAL, for future use)
      * @param approvalRequestType one of TYPE_ constants
@@ -128,46 +137,46 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable
      *            to any end entity profile
      * @param numberOfSteps that this type approval request supports.
+     * @param validationResults a list of validation results.
      */
     protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType, int cAId, int endEntityProfileId,
-            int numberOfSteps, ApprovalProfile approvalProfile) {
-        super();
+            int numberOfSteps, ApprovalProfile approvalProfile, final List<ValidationResult> validationResults) {
         setRequestAdmin(requestAdmin);
         this.requestSignature = requestSignature;
         this.approvalRequestType = approvalRequestType;
         this.cAId = cAId;
         this.endEntityProfileId = endEntityProfileId;
-        
         this.approvalProfile = approvalProfile;
         this.approvalSteps = new boolean[numberOfSteps];
+        this.validationResults = validationResults;
     }
 
     /** Constructor used in externalization only */
     public ApprovalRequest() {
     }
-    
+
     /**
      * Should return true if the request if of the type that should be executed by the last approver.
-     * 
+     *
      * False if the request admin should do a polling action to try again.
      */
     public abstract boolean isExecutable();
 
     /**
      * A main function of the ApprovalRequest, the execute() method is run when all required approvals have been made.
-     * 
+     *
      * execute should perform the action or nothing if the requesting admin is supposed to try his action again.
      */
     public abstract void execute() throws ApprovalRequestExecutionException;
 
     /**
-     * Generate an approval hash (called ID which is confusing since there is a unique requestID as well) for this type of approval, the same request 
-     * i.e the same admin want's to do the same thing twice should result in the same approval hash. This is the value that will be stored in the 
+     * Generate an approval hash (called ID which is confusing since there is a unique requestID as well) for this type of approval, the same request
+     * i.e the same admin want's to do the same thing twice should result in the same approval hash. This is the value that will be stored in the
      * ApprovalData.approvalId column.
-     * This hash is not used to identify a specific request, but is used to be able to compare to requests if they are for the same thing. As an 
-     * example trying to add the exact same user twice will result in the same approval hash so it is possible to find an already existing request 
-     * for adding this user. 
-     * 
+     * This hash is not used to identify a specific request, but is used to be able to compare to requests if they are for the same thing. As an
+     * example trying to add the exact same user twice will result in the same approval hash so it is possible to find an already existing request
+     * for adding this user.
+     *
      * @return a hash code for the action the request is for, should be the same code every time the same action is performed.
      */
     public abstract int generateApprovalId();
@@ -175,8 +184,8 @@ public abstract class ApprovalRequest implements Externalizable {
     /**
      * This method should return the request data in text representation. This text is presented for the approving administrator in order for him to
      * make a decision about the request. The AddEndEntityApprovalRequest and EditEndEntityApprovalRequest classes have a more detailed overloaded version,
-     * that performs database queries to fill in the CA and profile names, etc. 
-     * 
+     * that performs database queries to fill in the CA and profile names, etc.
+     *
      * Should return a List of ApprovalDataText, one for each row
      */
     public abstract List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin);
@@ -184,9 +193,9 @@ public abstract class ApprovalRequest implements Externalizable {
     /**
      * This method should return the original request data in text representation. Should only be implemented by TYPE_COMPARING ApprovalRequests.
      * TYPE_SIMPLE requests should return null;
-     * 
+     *
      * This text is presented for the approving administrator for him to compare of what will be done.
-     * 
+     *
      * Should return a List of ApprovalDataText, one for each row
      */
     public abstract List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin);
@@ -194,9 +203,9 @@ public abstract class ApprovalRequest implements Externalizable {
     /**
      * This method is used to check if this is an allowed transition between two states, so that it does not require approval. Override this method to
      * add allowed transitions.
-     * 
+     *
      * @return true if this transition does not require approval, false by default.
-     * 
+     *
      */
     public boolean isAllowedTransition() {
         return false;
@@ -204,7 +213,7 @@ public abstract class ApprovalRequest implements Externalizable {
 
     /**
      * Should return the time in millisecond that the request should be valid or Long.MAX_VALUE if it should never expire
-     * 
+     *
      * Default if will return the value defined in the ejbca.properties
      */
     public long getRequestValidity() {
@@ -213,7 +222,7 @@ public abstract class ApprovalRequest implements Externalizable {
 
     /**
      * Should return the time in millisecond that the approval should be valid or Long.MAX_VALUE if it should never expire
-     * 
+     *
      * Default if will return the value defined in the ejbca.properties
      */
     public long getApprovalValidity() {
@@ -232,18 +241,18 @@ public abstract class ApprovalRequest implements Externalizable {
         return numOfRequiredApprovals;
     }
 
-    
+
     public ApprovalProfile getApprovalProfile() {
         return approvalProfile;
     }
-    
+
     public void setApprovalProfile(final ApprovalProfile approvalProfile) {
         this.approvalProfile = approvalProfile;
     }
-    
+
     /**
      * The type of request type, one of TYPE_ constants
-     * 
+     *
      */
     public int getApprovalRequestType() {
         return approvalRequestType;
@@ -262,12 +271,23 @@ public abstract class ApprovalRequest implements Externalizable {
     public int getCAId() {
         return cAId;
     }
-    
+
     /**
      * Returns the related end entity profile id. The approving administrator must be authorized to this profile in order to approve it.
      */
     public int getEndEntityProfileId() {
         return endEntityProfileId;
+    }
+
+    /**
+     * Get a list of validation results produced by any validators executed when this approval request was
+     * created. If no validators were executed or if validation is not supported for this type of approval
+     * request, an empty list is returned.
+     *
+     * @return a list of validation results, never null.
+     */
+    public List<ValidationResult> getValidationResults() {
+        return validationResults == null ? Collections.emptyList() : validationResults;
     }
 
     /**
@@ -278,8 +298,8 @@ public abstract class ApprovalRequest implements Externalizable {
     }
 
     /**
-     * Returns the certificate of the request admin, if there is any. 
-     * Walks through credentials of the request admins AuthenticationToken and returns the first certifciate encountered.
+     * Returns the certificate of the request admin, if there is any.
+     * Walks through credentials of the request admins AuthenticationToken and returns the first certificate encountered.
      * @return returns Certificate or null
      */
     public Certificate getRequestAdminCert() {
@@ -289,7 +309,7 @@ public abstract class ApprovalRequest implements Externalizable {
         		if (credential instanceof Certificate) {
     				return (Certificate) credential;
     			}
-        	}    		
+        	}
     	}
         return null;
     }
@@ -297,9 +317,9 @@ public abstract class ApprovalRequest implements Externalizable {
     public AuthenticationToken getRequestAdmin() {
         return requestAdmin;
     }
-    
-    /** 
-     * 
+
+    /**
+     *
      * @param admin the admin we want to check if has edited the request _last_
      * @return true if admin was the last of admins who edited this approval request, false otherwise
      */
@@ -312,17 +332,17 @@ public abstract class ApprovalRequest implements Externalizable {
             return lastEditedBy.equals(admin);
         }
     }
-    
+
     /** When an approval request is edited, we keep a list of which admin edited a request
-     * 
+     *
      * @param admin an admin that edited a request
      */
     public void addEditedByAdmin(final AuthenticationToken admin) {
         editedByAdmins.add(new TimeAndAdmin(new Date(), admin));
     }
-    
+
     /** When an approval request is edited, we keep a list of which admin edited a request
-     * 
+     *
      * @return a list of admins that has edited a request
      */
     public List<TimeAndAdmin> getEditedByAdmins() {
@@ -331,10 +351,10 @@ public abstract class ApprovalRequest implements Externalizable {
 
     /**
      * Returns true if this step have been executed before.
-     * 
+     *
      * @param step to query
-     * 
-     * @deprecated this method denotes a outdated feature pertaining to hard tokens, and should not be used. 
+     *
+     * @deprecated this method denotes a outdated feature pertaining to hard tokens, and should not be used.
      */
     @Deprecated
     public boolean isStepDone(int step) {
@@ -343,7 +363,7 @@ public abstract class ApprovalRequest implements Externalizable {
 
     /**
      * Marks the given step as done.
-     * 
+     *
      * @param step to query
      */
     public void markStepAsDone(int step) {
@@ -352,8 +372,8 @@ public abstract class ApprovalRequest implements Externalizable {
 
     /**
      * Returns the number of steps that this approval request supports.
-     * 
-     * @deprecated this method denotes a outdated feature pertaining to hard tokens, and should not be used. 
+     *
+     * @deprecated this method denotes a outdated feature pertaining to hard tokens, and should not be used.
      */
     @Deprecated
     public int getNumberOfApprovalSteps() {
@@ -373,9 +393,10 @@ public abstract class ApprovalRequest implements Externalizable {
         for (int i = 0; i < approvalSteps.length; i++) {
             out.writeBoolean(approvalSteps[i]);
         }
-        
+
         out.writeObject(approvalProfile);
         out.writeObject(editedByAdmins);
+        out.writeObject(validationResults);
     }
 
     @SuppressWarnings("unchecked")
@@ -472,7 +493,7 @@ public abstract class ApprovalRequest implements Externalizable {
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
             if (log.isTraceEnabled()) {
-                log.trace("ApprovalRequest have "+stepSize+" approval steps.");                
+                log.trace("ApprovalRequest have "+stepSize+" approval steps.");
             }
             this.approvalSteps = new boolean[stepSize];
             for (int i = 0; i < approvalSteps.length; i++) {
@@ -482,7 +503,7 @@ public abstract class ApprovalRequest implements Externalizable {
                 log.debug("ApprovalRequest (version 4) of type "+getApprovalType()+" read.");
             }
         }
-        if (version == 5) {
+        if (version >= 5) {
             // Version 5 after introducing approval profiles
             this.requestAdmin = (AuthenticationToken) in.readObject();
             if (log.isTraceEnabled()) {
@@ -506,7 +527,7 @@ public abstract class ApprovalRequest implements Externalizable {
             this.endEntityProfileId = in.readInt();
             final int stepSize = in.readInt();
             if (log.isTraceEnabled()) {
-                log.trace("ApprovalRequest have "+stepSize+" approval steps.");                
+                log.trace("ApprovalRequest have "+stepSize+" approval steps.");
             }
             this.approvalSteps = new boolean[stepSize];
             for (int i = 0; i < approvalSteps.length; i++) {
@@ -516,6 +537,12 @@ public abstract class ApprovalRequest implements Externalizable {
             this.editedByAdmins = (List<TimeAndAdmin>) in.readObject();
             if (log.isDebugEnabled()) {
                 log.debug("ApprovalRequest (version 5) of type "+getApprovalType()+" read.");
+            }
+        }
+        if (version >= 6) {
+            this.validationResults = (List<ValidationResult>) in.readObject();
+            if (log.isDebugEnabled()) {
+                log.debug("Validation results " + validationResults + " (version >= 6) read.");
             }
         }
     }

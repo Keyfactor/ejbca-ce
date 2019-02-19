@@ -13,6 +13,27 @@
 
 package org.ejbca.core.ejb.approval;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.security.KeyPair;
+import java.security.Principal;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -67,29 +88,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
-import java.security.KeyPair;
-import java.security.Principal;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.*;
-
 /**
  * Test of approvals.
  * <p>
  * Note/TODO:
  * A lot of tests in this class is written in such a way that they are sensitive to timing on a highly loaded test
  * server. This needs to rewritten in a more robust way at a future point in time to avoid false negatives.
- * The EXPIRATION_PERIOD constant can be adjusted depending on test server load/performance. 
+ * The EXPIRATION_PERIOD constant can be adjusted depending on test server load/performance.
  *
  * @version $Id$
  */
@@ -139,7 +144,7 @@ public class ApprovalSessionTest extends CaTestCase {
     private DummyApprovalRequest nonExecutableRequest;
     private String removeUserName = null;
     private static KeyPair externalAdminRsaKey;
-    
+
     private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private ApprovalSessionProxyRemote approvalSessionProxyRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionProxyRemote.class,
             EjbRemoteHelper.MODULE_TEST);
@@ -263,6 +268,7 @@ public class ApprovalSessionTest extends CaTestCase {
         removeApprovalIds.add(nonExecutableRequest.generateApprovalId());
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         // Reset profile
@@ -425,7 +431,7 @@ public class ApprovalSessionTest extends CaTestCase {
         userdata.setPassword("foo123");
         approvalProfile.setNumberOfApprovalsRequired(1);
         final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, caid,
-                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfile);
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, approvalProfile, /* validation results */ null);
         int approvalId = eeApprovalRequest.generateApprovalId();
         removeApprovalIds.add(approvalId);
         approvalSessionRemote.addApprovalRequest(cliReqAuthToken, eeApprovalRequest);
