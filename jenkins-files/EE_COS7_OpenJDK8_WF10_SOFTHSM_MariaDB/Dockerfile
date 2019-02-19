@@ -21,8 +21,8 @@ RUN cd $HOME \
 RUN yum -y install softhsm 
 
 # Initialize softhsm slots.
-RUN softhsm2-util --init-token --slot 0 --label Label1 --so-pin userpin1 --pin userpin1
-RUN softhsm2-util --init-token --slot 1 --label Label2 --so-pin userpin1 --pin userpin1
+RUN softhsm2-util --init-token --slot 0 --label ejbca --so-pin userpin1 --pin userpin1
+RUN softhsm2-util --init-token --slot 1 --label ejbca --so-pin userpin1 --pin userpin1
 
 #Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
