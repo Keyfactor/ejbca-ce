@@ -31,7 +31,7 @@ ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"
 
 #Setting Ant Params
-ENV ANT_OPTS="-Xms256M -Xmx512M"
+ENV ANT_OPTS="-Xms1024M -Xmx1024M"
 
 #Copy the run script and set execution privileges to it
 ADD run.sh /opt/
