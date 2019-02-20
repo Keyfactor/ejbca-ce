@@ -27,8 +27,7 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 
 /**
@@ -103,7 +102,7 @@ public class ViewEndEntityHelper implements Serializable{
     /**
      * Method that initialized the bean.
      */
-    public void initialize(EjbcaWebBean ejbcawebbean,  
+    public void initialize(EjbcaWebBean ejbcawebbean,
     		               RAInterfaceBean rabean, CAInterfaceBean cabean) throws Exception {
 
       if(!initialized){

@@ -22,7 +22,7 @@ import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Data class for custom publisher data used by edit publisher bean.
@@ -66,7 +66,7 @@ public final class CustomPublisherMBData implements Serializable {
         publisher.setClassPath(customPublisherCurrentClass);
         if (publisher.isCustomUiRenderingSupported()) {
             final StringBuilder sb = new StringBuilder();
-            for (final CustomPublisherProperty customPublisherProperty : publisher.getCustomUiPropertyList(EjbcaJSFHelper.getBean().getAdmin())) { 
+            for (final CustomPublisherProperty customPublisherProperty : publisher.getCustomUiPropertyList(EjbcaJSFHelper.getBean().getAdmin())) {
                 if (customPublisherProperty.getType() == CustomPublisherProperty.UI_BOOLEAN) {
                     if (((Boolean)customPublisherPropertyValues.get(customPublisherProperty.getName()))) {
                         sb.append(customPublisherProperty.getName()).append('=').append("true").append('\n');
