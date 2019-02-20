@@ -29,7 +29,7 @@ import org.ejbca.core.model.services.CustomServiceWorkerProperty;
 import org.ejbca.core.model.services.CustomServiceWorkerUiSupport;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.ui.web.admin.CustomLoader;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Class used to populate the fields in the customworker.xhtml subview page. 

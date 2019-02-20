@@ -46,7 +46,7 @@ import org.apache.myfaces.custom.fileupload.HtmlInputFileUpload;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiModelException;
 import org.cesecore.util.ui.DynamicUiProperty;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Factory for PSM JSF 2 HTML components.

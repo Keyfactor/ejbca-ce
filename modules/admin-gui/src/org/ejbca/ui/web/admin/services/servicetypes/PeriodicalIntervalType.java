@@ -20,7 +20,7 @@ import java.util.Properties;
 import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Class used to populate the fields in the custominterval.xhtml subview page. 

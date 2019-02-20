@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -23,13 +26,13 @@ import javax.ejb.EJBException;
  * 
  * Implements a Map used for retrieving resources.
  * @version $Id$
- * @see org.ejbca.ui.web.admin.configuration.EjbcaWebBean#getImagefileInfix(String)
+ * @see org.ejbca.ui.web.jsf.configuration.EjbcaWebBean#getImagefileInfix(String)
  */
-public class EjbcaJSFImageResource implements org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource {
+public class EjbcaJSFImageResourceImpl implements EjbcaJSFImageResource {
 
-    private org.ejbca.ui.web.jsf.configuration.EjbcaWebBean ejbcawebbean;
+    private EjbcaWebBean ejbcawebbean;
     
-    public EjbcaJSFImageResource(org.ejbca.ui.web.jsf.configuration.EjbcaWebBean ejbcawebbean){
+    public EjbcaJSFImageResourceImpl(EjbcaWebBean ejbcawebbean){
         this.ejbcawebbean = ejbcawebbean;
     }
     

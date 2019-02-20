@@ -27,7 +27,7 @@ import org.cesecore.keybind.InternalKeyBindingRules;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Backing bean for the menu on the left (in the default theme) in the AdminWeb.

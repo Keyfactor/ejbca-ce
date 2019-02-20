@@ -23,6 +23,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
  * Class used to integrate the old jsp framework with the new JSF one.
@@ -30,24 +33,24 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * 
  * @version $Id$
  */
-public class EjbcaJSFHelper implements org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper {
+public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
 
-	private static final Logger log = Logger.getLogger(EjbcaJSFHelper.class);
+	private static final Logger log = Logger.getLogger(EjbcaJSFHelperImpl.class);
 		
 	private org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource text = null;
-	private org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource image = null;
-	private org.ejbca.ui.web.jsf.configuration.EjbcaWebBean ejbcawebbean;
+	private EjbcaJSFImageResource image = null;
+	private EjbcaWebBean ejbcawebbean;
     private Boolean legacyInternetExplorer = null;
 
 	private boolean initialized = false;
 	
-	public EjbcaJSFHelper(){}
+	public EjbcaJSFHelperImpl(){}
 	
-    public void setEjbcaWebBean(org.ejbca.ui.web.jsf.configuration.EjbcaWebBean ejbcawebbean){
+    public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean){
     	if(!initialized){
     		this.ejbcawebbean = ejbcawebbean;
-    		text = new EjbcaJSFLanguageResource(ejbcawebbean);
-    		image = new EjbcaJSFImageResource(ejbcawebbean);
+    		text = new EjbcaJSFLanguageResourceImpl(ejbcawebbean);
+    		image = new EjbcaJSFImageResourceImpl(ejbcawebbean);
     		initialized = true;
     	}
     }
@@ -116,9 +119,9 @@ public class EjbcaJSFHelper implements org.ejbca.ui.web.jsf.configuration.EjbcaJ
          FacesContext ctx = FacesContext.getCurrentInstance();    		    	
          HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
          synchronized (session) {
-             ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) session.getAttribute("ejbcawebbean");
+             ejbcawebbean = (EjbcaWebBean) session.getAttribute("ejbcawebbean");
              if (ejbcawebbean == null){
-                 ejbcawebbean = new org.ejbca.ui.web.admin.configuration.EjbcaWebBean();
+                 ejbcawebbean = new EjbcaWebBeanImpl();
                  try {
                      ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), AccessRulesConstants.ROLE_ADMINISTRATOR);
                      session.setAttribute("ejbcawebbean", ejbcawebbean);
@@ -134,9 +137,9 @@ public class EjbcaJSFHelper implements org.ejbca.ui.web.jsf.configuration.EjbcaJ
          FacesContext ctx = FacesContext.getCurrentInstance();
          HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
          synchronized (session) {
-             ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) session.getAttribute("ejbcawebbean");
+             ejbcawebbean = (EjbcaWebBean) session.getAttribute("ejbcawebbean");
              if (ejbcawebbean == null){
-                 ejbcawebbean = new org.ejbca.ui.web.admin.configuration.EjbcaWebBean();
+                 ejbcawebbean = new EjbcaWebBeanImpl();
                  try {
                      ejbcawebbean.initialize_errorpage((HttpServletRequest) ctx.getExternalContext().getRequest());
                      session.setAttribute("ejbcawebbean", ejbcawebbean);
@@ -152,16 +155,15 @@ public class EjbcaJSFHelper implements org.ejbca.ui.web.jsf.configuration.EjbcaJ
     	 return getEjbcaWebBean().getAdminObject();
      }
 
-     public static EjbcaJSFHelper getBean(){    
+     public static EjbcaJSFHelper getBean(){
     	 FacesContext context = FacesContext.getCurrentInstance();    
     	 Application app = context.getApplication();   
-    	 EjbcaJSFHelper value = (EjbcaJSFHelper) app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
-    	 return value;
+    	 return (EjbcaJSFHelper) app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
      }
 
      /** @return true if the client browser has identified itself as a legacy Internet Explorer 10 (or earlier) */
      public boolean isLegacyInternetExplorer() {
-         if (legacyInternetExplorer==null) {
+         if (legacyInternetExplorer == null) {
              final HttpServletRequest httpServletRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
              final String userAgent = httpServletRequest.getHeader("User-Agent");
              if (log.isDebugEnabled()) {
@@ -169,8 +171,8 @@ public class EjbcaJSFHelper implements org.ejbca.ui.web.jsf.configuration.EjbcaJ
              }
              // Check stolen from org.ejbca.ui.web.pub.ApplyBean.detectBrowser(HttpServletRequest)
              // "Gecko"==Firefox, "MSIE"==Internet Exploder 10-, "Trident"==IE11
-             legacyInternetExplorer = Boolean.valueOf(userAgent != null && userAgent.contains("MSIE") && !userAgent.contains("Gecko"));
+             legacyInternetExplorer = userAgent != null && userAgent.contains("MSIE") && !userAgent.contains("Gecko");
          }
-         return legacyInternetExplorer.booleanValue();
+         return legacyInternetExplorer;
      }
 }

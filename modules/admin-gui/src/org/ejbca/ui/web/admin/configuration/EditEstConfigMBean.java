@@ -28,6 +28,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Backing bean for edit EST alias view.
