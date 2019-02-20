@@ -6,10 +6,10 @@
 %>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator, org.cesecore.certificates.endentity.EndEntityConstants,
-                 javax.ejb.CreateException, java.io.Serializable, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
+                 org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, javax.ejb.CreateException, java.io.Serializable, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation,org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils,
                  org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants,
-                 org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.CertificateExtensionException, org.cesecore.certificates.ca.IllegalNameException, org.ejbca.util.HTMLTools" %>
+                 org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.standard.QcStatement, org.cesecore.certificates.certificate.certextensions.CertificateExtensionException, org.cesecore.certificates.ca.IllegalNameException, org.ejbca.util.HTMLTools" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -40,7 +40,9 @@
     static final String TEXTFIELD_CERTSERIALNUMBER = "textfieldcertsn";
     static final String TEXTFIELD_CARDNUMBER = "textfieldcardnumber";
     static final String TEXTFIELD_MAXFAILEDLOGINS = "textfieldmaxfailedlogins";
-
+	static final String TEXTFIELD_NCANAME = "psd2ncaname";
+	static final String TEXTFIELD_NCAID = "psd2ncaid";
+    
     static final String TEXTAREA_EXTENSIONDATA = "textareaextensiondata";
     static final String TEXTAREA_NC_PERMITTED = "textarencpermitted"; // Name Constraints
     static final String TEXTAREA_NC_EXCLUDED = "textarencexcluded";
@@ -59,6 +61,7 @@
     static final String SELECT_CA = "selectca";
     static final String SELECT_ALLOWEDREQUESTS = "selectallowedrequests";
     static final String SELECT_ISSUANCEREVOCATIONREASON = "selectissuancerevocationreason";
+    static final String SELECT_PSD2_PSPROLE = "selectpsd2psprole";
 
     static final String CHECKBOX_CLEARTEXTPASSWORD = "checkboxcleartextpassword";
     static final String CHECKBOX_SUBJECTDN = "checkboxsubjectdn";
@@ -626,6 +629,29 @@
                 ei.setCertificateSerialNumber(new BigInteger(value.trim(), 16));
             } else {
                 ei.setCertificateSerialNumber(null);
+            }
+            newuser.setExtendedInformation(ei);
+        }
+        if (oldprofile.isPsd2QcStatementUsed()) {
+            ExtendedInformation ei = newuser.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+            }
+            value = request.getParameter(TEXTFIELD_NCANAME);
+            if (value != null && value.length() > 0) {
+                ei.setQCEtsiPSD2NcaName(value.trim());
+            }
+            value = request.getParameter(TEXTFIELD_NCAID);
+            if (value != null && value.length() > 0) {
+                ei.setQCEtsiPSD2NcaId(value.trim());
+            }
+            String[] pspRoleValues = request.getParameterValues(SELECT_PSD2_PSPROLE);
+            if (pspRoleValues != null && pspRoleValues.length > 0) {
+                final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
+                for (String role : pspRoleValues) {
+                    pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid(role), role));
+                }
+            	ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
             }
             newuser.setExtendedInformation(ei);
         }
@@ -1806,7 +1832,7 @@ function checkallfields(){
         </tr>
     <%  } %>
 
-        <%	if (profile.getUseExtensiondata()) { %>
+   	<% if (profile.getUseExtensiondata()) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"CERT_EXTENSIONDATA\") %>"/>
@@ -1817,6 +1843,48 @@ function checkallfields(){
 				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_EXTENSIONDATA %>" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
 			</td>
 		</tr>
+	<%	} %> 
+	
+	<% if (profile.isPsd2QcStatementUsed()) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<c:out value="<%= ejbcawebbean.getText(\"PSD2_NCANAME\") %>"/>
+			</td>
+			<td> 
+				<input type="text" name="<%= TEXTFIELD_NCANAME %>" size="30" maxlength="256" tabindex="<%=tabindex++%>" value="" />
+			</td>
+			<td>
+				<input type="checkbox" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
+			</td>
+		</tr>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<c:out value="<%= ejbcawebbean.getText(\"PSD2_NCAID\") %>"/>
+			</td>
+			<td> 
+				<input type="text" name="<%= TEXTFIELD_NCAID %>" size="30" maxlength="256" tabindex="<%=tabindex++%>" value="" />
+			</td>
+			<td>
+				<input type="checkbox" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
+			</td>
+		</tr>
+		
+	  <tr  id="Row<%=row++%2%>"> 
+      	<td align="right"> 
+        	<c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_ROLES\") %>" />
+      	</td>
+      	<td width="50%"> 
+        	<select class="select-list" name="<%=SELECT_PSD2_PSPROLE%>" size="4" multiple="multiple">
+      		   <option value="PSP_AS"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_AS\") %>"/></option>
+      		   <option value="PSP_PI"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_PI\") %>"/></option>
+      		   <option value="PSP_AI"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_AI\") %>"/></option>
+      		   <option value="PSP_IC"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_CI\") %>"/></option>
+        	</select>
+      	</td>
+      	<td>
+			<input type="checkbox" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
+		</td>
+    </tr>
 	<%	} %> 
 
     <!-- ---------- Other data -------------------- -->

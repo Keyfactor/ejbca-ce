@@ -948,6 +948,13 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setNameConstraintsExcludedRequired(required);
     }
 
+    public boolean getUsePsd2QcStatement() {
+        return profiledata.isPsd2QcStatementUsed();
+    }
+
+    public void setUsePsd2QcStatement(boolean usePsd2QcStatement) {
+        profiledata.setPsd2QcStatementUsed(usePsd2QcStatement);
+    } 
 
     // OTHER DATA
 

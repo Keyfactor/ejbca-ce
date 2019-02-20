@@ -381,7 +381,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         } else {
             // PSD2RoleOfPSPStatement.toString outputs oid;name
             data.put(QCETSIPSD2ROLESOFPSP, StringUtils.join(rolesOfPsp, ';'));
-            log.error("RolesOfPsp set: "+data.get(QCETSIPSD2ROLESOFPSP));
         }
     }
 

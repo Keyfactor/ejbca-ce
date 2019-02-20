@@ -923,6 +923,20 @@
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="useCustomCertificateExtensionDataCheckBox" value="#{web.text.USE}"/>
 	            </h:panelGrid>
+	           	&nbsp;
+	            <h:panelGroup id="psd2QcStatementGroup">
+					<h:outputText value="#{web.text.EXT_ETSI_QCS_PSD2}"/>
+					&nbsp;
+					<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#PSD2QualifiedCertificateStatement')}" escape="false"/>
+	       		</h:panelGroup>
+	       		<h:panelGrid id="psd2QcStatementSelectGroup" columns="2">
+	       			<h:selectBooleanCheckbox 
+	       				id="usePsd2QcStatementCheckBox" 
+	       				value="#{endEntityProfileMBean.usePsd2QcStatement}" 
+	       				disabled="#{endEntityProfileMBean.viewOnly}">
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="usePsd2QcStatementCheckBox" value="#{web.text.USE}"/>
+	            </h:panelGrid>
 			</h:panelGrid>
 				
 <!-- OTHER DATA -->		
