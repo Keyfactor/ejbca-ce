@@ -24,7 +24,7 @@
 
   <managed-bean>
     <managed-bean-name>web</managed-bean-name>
-    <managed-bean-class>org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper</managed-bean-class>
+    <managed-bean-class>org.ejbca.ui.web.admin.configuration.EjbcaJSFHelperImpl</managed-bean-class>
     <managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
   <managed-bean>

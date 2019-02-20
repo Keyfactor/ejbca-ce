@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.jsf.configuration;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public interface WebLanguages {
     /**
      * Lookup up a language string in the users preferred language.
      *
-     * @param template a language key, identifying a language string in the language file.
+     * @param languageKey a language key, identifying a language string in the language file.
      * @param params optional parameters to insert into the language string
      * @return a text in the users preferred language.
      */
@@ -42,7 +41,6 @@ public interface WebLanguages {
 
     /**
      *  Returns a list of available languages for EJBCA.
-     *  @param a list of {@link WebLanguages} objects.
      */
     List<WebLanguage> getWebLanguages();
 }
