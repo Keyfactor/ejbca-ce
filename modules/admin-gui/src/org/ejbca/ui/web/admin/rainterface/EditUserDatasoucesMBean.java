@@ -34,7 +34,7 @@ import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * @version $Id$
@@ -223,15 +223,10 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
             addInfoMessage("CONTESTEDSUCESSFULLY");
             reset();
             return "done";
-        } catch (UserDataSourceConnectionException pce) {
+        } catch (UserDataSourceConnectionException | RuntimeException pce) {
             String errorMessage = getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB");
             log.info(errorMessage, pce);
             addNonTranslatedErrorMessage(errorMessage + " : " + pce.getMessage());
-            return StringUtils.EMPTY;
-        } catch (RuntimeException e){
-            String errorMessage = getEjbcaWebBean().getText("ERRORCONNECTINGTOPUB");
-            log.info(errorMessage, e);
-            addNonTranslatedErrorMessage(errorMessage + " : " + e.getMessage());
             return StringUtils.EMPTY;
         }
     }

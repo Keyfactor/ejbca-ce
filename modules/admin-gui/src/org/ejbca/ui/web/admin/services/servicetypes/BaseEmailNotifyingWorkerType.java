@@ -22,7 +22,7 @@ import javax.faces.model.SelectItem;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Class managing the view of the Certificate Expiration Notifier Worker

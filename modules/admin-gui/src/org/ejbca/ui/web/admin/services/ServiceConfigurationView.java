@@ -32,7 +32,6 @@ import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.ui.web.admin.CustomLoader;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
@@ -42,6 +41,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.ServiceType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Class responsible for converting the data between the GUI and a
@@ -324,7 +324,7 @@ public class ServiceConfigurationView implements Serializable{
 		            final String labelKey = customClassSimpleName.toUpperCase()+"_TITLE";
 		            label = EjbcaJSFHelper.getBean().getText().get(labelKey);
 		            if (label.equals(labelKey)) {
-		                label = customClassSimpleName + " ("+EjbcaJSFHelper.getBean().getText().get(next.getName())+")";
+		                label = customClassSimpleName + " ("+ EjbcaJSFHelper.getBean().getText().get(next.getName())+")";
 		            }
 		            retval.add(new SelectItem(next.getName()+"-"+customClass, label));
 		        }
@@ -425,7 +425,7 @@ public class ServiceConfigurationView implements Serializable{
 
 	public List<SelectItem> getNodesInCluster() {
 		final List<SelectItem> ret = new LinkedList<>();
-		final Set<String> nodes = EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getNodesInCluster();  
+		final Set<String> nodes = EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getNodesInCluster();
 		for (String node : nodes) {
 			ret.add(new SelectItem(node));
 		}

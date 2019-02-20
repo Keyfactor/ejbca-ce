@@ -44,7 +44,7 @@ import org.ejbca.core.model.hardtoken.profiles.IVisualLayoutSettings;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
  * Contains help methods used to parse a hard token profile jsp page requests.

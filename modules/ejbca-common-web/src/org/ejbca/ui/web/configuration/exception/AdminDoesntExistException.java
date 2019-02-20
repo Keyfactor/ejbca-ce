@@ -15,7 +15,6 @@ package org.ejbca.ui.web.configuration.exception;
 /**
  * An exception thrown when trying to change or remove a user that does not exist in the database.
  *
- * @author Philip Vendil
  * @version $Id$
  */
 public class AdminDoesntExistException extends Exception {

@@ -14,15 +14,12 @@ package org.ejbca.ui.web.jsf.configuration;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource;
-import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 
 /**
- * Interface  used to integrate the old jsp framework with the new JSF one.
+ * Interface used to integrate the old jsp framework with the new JSF one.
  *
  * Contains methods for such things as language, themes ext
  *

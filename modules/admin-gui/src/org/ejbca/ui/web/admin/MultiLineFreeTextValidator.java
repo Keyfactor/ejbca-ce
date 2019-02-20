@@ -21,7 +21,7 @@ import javax.faces.validator.ValidatorException;
 
 import org.apache.commons.lang.CharSetUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * JSF validator that check that fields do no contain any ASCII control characters.

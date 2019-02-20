@@ -14,7 +14,7 @@
 package org.ejbca.ui.web.admin;
 
 import org.apache.log4j.Logger;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;

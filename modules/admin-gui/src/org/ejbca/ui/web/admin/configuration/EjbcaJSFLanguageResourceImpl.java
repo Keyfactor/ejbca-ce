@@ -18,6 +18,7 @@ import java.util.Set;
 
 import javax.ejb.EJBException;
 
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HTMLTools;
 
@@ -27,11 +28,11 @@ import org.ejbca.util.HTMLTools;
  * Implements a Map used for retrieving resources.
  * @version $Id$
  */
-public class EjbcaJSFLanguageResource implements org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource {
+public class EjbcaJSFLanguageResourceImpl implements EjbcaJSFLanguageResource {
 
 	private EjbcaWebBean ejbcawebbean;
 	
-	public EjbcaJSFLanguageResource(EjbcaWebBean ejbcawebbean){
+	public EjbcaJSFLanguageResourceImpl(EjbcaWebBean ejbcawebbean){
 		this.ejbcawebbean = ejbcawebbean;
 	}
 	

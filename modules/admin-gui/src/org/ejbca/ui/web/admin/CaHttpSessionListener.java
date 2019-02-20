@@ -35,7 +35,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
  * Listener detecting individual session timeouts. A session generally times out when after
@@ -125,9 +125,7 @@ public class CaHttpSessionListener implements HttpSessionListener {
         if (ejbcawebbean == null) {
             try {
                 ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(),
-                        org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
-            } catch (ClassNotFoundException e) {
-                log.error("Failed to audit log ended session with Id" + session.getId() + "\n" + e.getMessage());
+                        EjbcaWebBean.class.getName());
             } catch (Exception e) {
                 log.error("Failed to audit log ended session with Id" + session.getId() + "\n" + e.getMessage());
             }

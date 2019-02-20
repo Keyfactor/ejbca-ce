@@ -7,9 +7,10 @@ org.cesecore.keybind.InternalKeyBindingRules,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.config.InternalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
+org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,
 org.ejbca.util.HTMLTools
 "%>
-<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%
      // A jsp page that generates the menu after the users access rights 

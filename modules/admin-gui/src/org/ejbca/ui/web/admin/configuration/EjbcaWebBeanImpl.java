@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -106,6 +105,7 @@ import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
 import org.ejbca.ui.web.configuration.exception.AdminExistsException;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HTMLTools;
 
 /**
@@ -115,11 +115,11 @@ import org.ejbca.util.HTMLTools;
  *
  * @version $Id$
  */
-public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWebBean {
+public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     private static final long serialVersionUID = 1L;
 
-    private static Logger log = Logger.getLogger(EjbcaWebBean.class);
+    private static Logger log = Logger.getLogger(EjbcaWebBeanImpl.class);
 
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private final EnterpriseEjbLocalHelper enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
@@ -169,11 +169,11 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
      */
     private final TimeZone timeZone = ValidityDate.TIMEZONE_SERVER;
 
-    /** Creates a new instance of EjbcaWebBean */
-    public EjbcaWebBean() {
+    /** Creates a new instance of EjbcaWebBeanImpl */
+    public EjbcaWebBeanImpl() {
     }
 
-    private void commonInit() throws Exception {
+    private void commonInit() {
         reloadGlobalConfiguration();
         reloadCmpConfiguration();
         reloadAvailableExtendedKeyUsagesConfiguration();
@@ -656,7 +656,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     @Override
     public String getText(final String template, final boolean unescape, final Object... params) {
         String str = adminsweblanguage.getText(template, params);
-        if (unescape == true) {
+        if (unescape) {
             str = HTMLTools.htmlunescape(str);
             // log.debug("String after unescape: "+str);
             // If unescape == true it most likely means we will be displaying a javascript
@@ -798,7 +798,7 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     public TreeMap<String,Integer> getHardTokenProfiles() {
         final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>();
         for (final Integer id : hardTokenSession.getAuthorizedHardTokenProfileIds(administrator)){
-            final String name = hardTokenSession.getHardTokenProfileName(id.intValue());
+            final String name = hardTokenSession.getHardTokenProfileName(id);
             hardtokenprofiles.put(name, id);
         }
         return hardtokenprofiles;
@@ -954,11 +954,14 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
     public Map<Integer, String> getPublisherIdToNameMapByValue() {
         final Map<Integer,String> publisheridtonamemap = publisherSession.getPublisherIdToNameMap();
         final List<Map.Entry<Integer, String>> publisherIdToNameMapList = new LinkedList<>(publisheridtonamemap.entrySet());
-        Collections.sort(publisherIdToNameMapList, new Comparator<Map.Entry<Integer, String>>() {
+        publisherIdToNameMapList.sort(new Comparator<Entry<Integer, String>>() {
             @Override
-            public int compare(final Map.Entry<Integer, String> o1, final Map.Entry<Integer, String> o2) {
-                if (o1 == null) { return o2 == null ? 0 : -1; }
-                else if (o2 == null) { return 1; }
+            public int compare(final Entry<Integer, String> o1, final Entry<Integer, String> o2) {
+                if (o1 == null) {
+                    return o2 == null ? 0 : -1;
+                } else if (o2 == null) {
+                    return 1;
+                }
                 return o1.getValue().compareToIgnoreCase(o2.getValue());
             }
         });
@@ -1167,8 +1170,6 @@ public class EjbcaWebBean implements org.ejbca.ui.web.jsf.configuration.EjbcaWeb
                 return true;
             }
             log.info("Failed to clear caches for host: " + hostname + ", responseCode=" + responseCode);
-        } catch (final SocketException e) {
-            log.info("Failed to clear caches for host: " + hostname + ", message=" + e.getMessage());
         } catch (final IOException e) {
             log.info("Failed to clear caches for host: " + hostname + ", message=" + e.getMessage());
         }

@@ -22,7 +22,7 @@ import javax.faces.model.SelectItem;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Class holding data for active directory publisher used in edit publisher bean.

@@ -17,7 +17,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 
 /**
@@ -77,7 +77,7 @@ public class CAExportServlet extends HttpServlet {
 	      } catch (ClassNotFoundException e) {
 	    	  throw new ServletException(e.getMessage());
 	      } catch (Exception e) {
-	    	  throw new ServletException ("Cannot create bean of class org.ejbca.ui.web.admin.configuration.EjbcaWebBean", e);
+	    	  throw new ServletException ("Cannot create bean of class org.ejbca.ui.web.jsf.configuration.EjbcaWebBean", e);
 	      }
 	       req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
 	    }

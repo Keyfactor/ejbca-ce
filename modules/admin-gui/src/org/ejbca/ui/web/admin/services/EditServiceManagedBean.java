@@ -55,7 +55,6 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.CustomLoader;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.BaseEmailNotifyingWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.BaseWorkerType;
@@ -74,6 +73,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RolloverWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.UserPasswordExpireWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Class used to manage the GUI editing of a Service Configuration
@@ -235,8 +235,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
         if (log.isDebugEnabled()) {
             log.debug("Get baseWorkerType by name: " + name);
         }
-        BaseWorkerType ret = (BaseWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
-        return ret;
+        return  (BaseWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
     }
 
     /** Help method used to edit data in the notifying worker type. */
@@ -419,7 +418,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
             // Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
             availablePublisherNames.add(new SelectItem(String.valueOf(next), ejb.getPublisherSession().getPublisherName(next) + " (" + next + ")"));
         }
-        Collections.sort(availablePublisherNames, new Comparator<SelectItem>() {
+        availablePublisherNames.sort(new Comparator<SelectItem>() {
             @Override
             public int compare(SelectItem first, SelectItem second) {
                 return first.getLabel().compareToIgnoreCase(second.getLabel());
