@@ -78,7 +78,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     /** Default value or null. */
     private T defaultValue;
 
-    /** Property values (or value at index 0). */
+    /** Property values. For single-value properties, non-null values are stored at index 0, and null is represented as an empty list. */
     private List<T> values = new ArrayList<>();
 
     /** Value range or null. */
@@ -103,7 +103,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     private boolean labeled = false;
 
     /** List of I18N keys / labels if available. */
-    private Map<?,String> labels = new LinkedHashMap<Object,String>();
+    private Map<?,String> labels = new LinkedHashMap<>();
 
     /** Flag to indicate that the property is displayed as label in the label column only (there will be no validation if available, etc.).*/
     private boolean labelOnly = false;
@@ -157,9 +157,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public DynamicUiProperty(final String name, final T defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
-        this.values.add(defaultValue);
         this.possibleValues = null;
         if (defaultValue != null) {
+            this.values.add(defaultValue);
             this.type = defaultValue.getClass();
         }
     }
@@ -179,7 +179,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
             for (String value : StringUtils.split((String) defaultValue, LIST_SEPARATOR)) {
                 this.values.add((T) value);
             }
-        } else {
+        } else if (defaultValue != null) {
             this.values.add(defaultValue);
         }  
         this.possibleValues = null;
@@ -466,11 +466,11 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
         if (hasMultipleValues) {
             throw new IllegalStateException("Attempted to draw single value from a dynamic property with multiple value for " + getName());
         }
-        return values.get(0);
+        return values.isEmpty() ? null : values.get(0);
     }
 
     public List<String> getPossibleValuesAsStrings() {
-        final List<String> strings = new ArrayList<String>();
+        final List<String> strings = new ArrayList<>();
         for (final T possibleValue : getPossibleValues()) {
             strings.add(possibleValue.toString());
         }
@@ -478,7 +478,7 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     }
 
     public List<String> getValuesAsStrings() {
-        final List<String> strings = new ArrayList<String>();
+        final List<String> strings = new ArrayList<>();
         for (final T value : getValues()) {
             strings.add(value.toString());
         }
@@ -645,7 +645,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public void setValueGeneric(final Serializable object) {
         final List<T> newValues = new ArrayList<>();
         if (object == null) {
-            newValues.add(defaultValue);
+            if (defaultValue != null) {
+                newValues.add(defaultValue);
+            }
         } else {
             if (validator != null) {
                 try {
@@ -692,20 +694,16 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
     public void setValuesGeneric(final List<? extends Serializable> list) {
         final List<? extends Serializable> listCopy = new ArrayList<>(list); // extra safety in case list is modified during the function call
         final List<T> newValues = new ArrayList<>();
-        if (CollectionUtils.isEmpty(listCopy)) {
-            newValues.add(defaultValue);
-        } else {
-            for (final Serializable object : listCopy) {
-                if (validator != null) {
-                    try {
-                        validator.validate((T) object);
-                    } catch (PropertyValidationException e) {
-                        throw new IllegalStateException(
-                                "Generic setter is normally only used internally, so an incorrect value should not be passed.", e);
-                    }
+        for (final Serializable object : listCopy) {
+            if (validator != null) {
+                try {
+                    validator.validate((T) object);
+                } catch (PropertyValidationException e) {
+                    throw new IllegalStateException(
+                            "Generic setter is normally only used internally, so an incorrect value should not be passed.", e);
                 }
-                newValues.add((T) object);
             }
+            newValues.add((T) object);
         }
         this.values = newValues;
     }
