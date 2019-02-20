@@ -4571,4 +4571,20 @@ public abstract class CertTools {
             return null;
         }
     }
+
+    /**
+     * Get first commonName value from subjectDn. If none is present, return null
+     * @param subjectDn subjectDn value
+     * @return
+     */
+    public static String getCommonNameFromSubjectDn(String subjectDn) {
+        String commonName = null;
+        if(subjectDn != null) {
+            List<String> commonNames = getPartsFromDN(subjectDn, "CN");
+            if (!commonNames.isEmpty() && StringUtils.isNotEmpty(commonNames.get(0))) {
+                commonName = commonNames.get(0);
+            }
+        }
+        return commonName;
+    }
 }

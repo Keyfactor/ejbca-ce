@@ -52,6 +52,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -139,9 +140,6 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             throw new EjbcaException("Invalid certificate request");
         }
 
-        String altName = getSubjectAltName(pkcs10CertificateRequest);
-        endEntityInformation.setSubjectAltName(altName);
-
         String subjectDn = getSubjectDn(pkcs10CertificateRequest);
         endEntityInformation.setDN(subjectDn);
 
@@ -154,6 +152,17 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         endEntityInformation.setTimeModified(timecreated);
 
         EndEntityProfile endEntityProfile = getEndEntityProfile(endEntityProfileId);
+
+        String dnsNamesFromCn = EndEntityInformationFiller.copyDnsNameValueFromCn(endEntityProfile, subjectDn);
+        String altName = getSubjectAltName(pkcs10CertificateRequest);
+        if (StringUtils.isNotEmpty(dnsNamesFromCn)) {
+            if (altName == null) {
+                altName = dnsNamesFromCn;
+            } else {
+                altName = altName + ", " + dnsNamesFromCn;
+            }
+        }
+        endEntityInformation.setSubjectAltName(altName);
 
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         boolean isSendNotificationDefaultInProfile = EndEntityProfile.TRUE.equals(endEntityProfile.getValue(EndEntityProfile.SENDNOTIFICATION, 0));
