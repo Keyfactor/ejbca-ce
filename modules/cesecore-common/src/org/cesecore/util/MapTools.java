@@ -12,8 +12,11 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -137,5 +140,24 @@ public final class MapTools {
             sb.append('\'');
         }
     }
-    
+
+    /**
+     * Sorts a LinkedHashMap by values, using the given comparator
+     * @param map LinkedHashMap to sort by values.
+     * @param comparator Comparator to compare values using.
+     */
+    public static <K,V> void sortLinkedHashMap(final LinkedHashMap<K,V> map, final Comparator<V> comparator) {
+        final List<Entry<K,V>> entries = new ArrayList<>(map.entrySet());
+        Collections.sort(entries, new Comparator<Entry<K,V>>() {
+            @Override
+            public int compare(final Entry<K, V> o1, final Entry<K, V> o2) {
+                return comparator.compare(o1.getValue(), o2.getValue());
+            }
+        });
+        map.clear();
+        for (final Entry<K,V> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+    }
+
 }

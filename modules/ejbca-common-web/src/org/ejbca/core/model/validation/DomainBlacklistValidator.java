@@ -19,11 +19,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.validation.DnsNameValidator;
@@ -31,6 +33,7 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.profiles.Profile;
+import org.cesecore.util.MapTools;
 import org.cesecore.util.NameTranslatable;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
@@ -175,7 +178,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         uiModel.add(new DynamicUiProperty<String>("settings"));
         addClassSelection(DomainBlacklistNormalizer.class, NORMALIZATIONS_KEY,  false, getNormalizations(), null);
         addClassSelection(DomainBlacklistChecker.class, CHECKS_KEY, true, getChecks(), DomainBlacklistExactMatchChecker.class.getName());
-        // TODO list of blacklists
+        addBlacklistSelection();
     }
 
     private <T extends NameTranslatable> void addClassSelection(final Class<T> clazz, final String dataMapKey, final boolean required, final List<String> currentValues, final String defaultValue) {
@@ -190,19 +193,34 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             labels.put(name, displayName);
         }
         // TODO this should if possible be replaced with checkboxes / radio buttons. Can we add two new rendering hints for this?
-        final DynamicUiProperty<String> classes = new DynamicUiProperty<>(String.class, dataMapKey, defaultValue, labels.keySet());
-        classes.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
-        classes.setLabels(labels);
-        classes.setHasMultipleValues(true);
-        classes.setRequired(required);
-        if (!currentValues.isEmpty()) { // or the default value is added (which is not applicable, and is null)
-            try {
-                classes.setValues(currentValues);
-            } catch (PropertyValidationException e) {
-                throw new IllegalStateException(e);
-            }
+        final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, dataMapKey, defaultValue, labels.keySet());
+        uiProperty.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
+        uiProperty.setLabels(labels);
+        uiProperty.setHasMultipleValues(true);
+        uiProperty.setRequired(required);
+        try {
+            uiProperty.setValues(currentValues);
+        } catch (PropertyValidationException e) {
+            throw new IllegalStateException(e);
         }
-        uiModel.add(classes);
+        uiModel.add(uiProperty);
+    }
+
+    private void addBlacklistSelection() {
+        final LinkedHashMap<Integer,String> blacklists = new LinkedHashMap<>();
+        // TODO Get available blacklists here
+        MapTools.sortLinkedHashMap(blacklists, String.CASE_INSENSITIVE_ORDER);
+        final DynamicUiProperty<Integer> uiProperty = new DynamicUiProperty<>(Integer.class, BLACKLISTS_KEY, null, blacklists.keySet());
+        uiProperty.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
+        uiProperty.setLabels(blacklists);
+        uiProperty.setHasMultipleValues(true);
+        uiProperty.setRequired(true);
+        try {
+            uiProperty.setValues(getEnabledBlacklists());
+        } catch (PropertyValidationException e) {
+            throw new IllegalStateException(e);
+        }
+        uiModel.add(uiProperty);
     }
 
     @Override
@@ -267,12 +285,8 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         return getData(NORMALIZATIONS_KEY, Collections.emptyList());
     }
 
+    // The GUI sets NORMALIZATIONS_KEY directly in the data map
     public void setNormalizations(final List<String> normalizationClasses) {
-        for (final String className : normalizationClasses) {
-            if (StringUtils.isBlank(className)) {
-                throw new IllegalArgumentException("Attempted to set blank or null normalizer class name: " + className);
-            }
-        }
         putData(NORMALIZATIONS_KEY, normalizationClasses);
         clearCache();
     }
@@ -281,20 +295,17 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         return getData(CHECKS_KEY, Collections.emptyList());
     }
 
+    // The GUI sets CHECKS_KEY directly in the data map
     public void setChecks(final List<String> checks) {
-        for (final String className : checks) {
-            if (StringUtils.isBlank(className)) {
-                throw new IllegalArgumentException("Attempted to set blank or null checker class name: " + className);
-            }
-        }
         putData(CHECKS_KEY, checks);
         clearCache();
     }
-    
+
     public List<Integer> getEnabledBlacklists() {
         return getData(BLACKLISTS_KEY, Collections.emptyList());
     }
 
+    // The GUI sets BLACKLISTS_KEY directly in the data map
     public void setEnabledBlacklists(final List<Integer> blacklistId) {
         putData(BLACKLISTS_KEY, blacklistId);
         clearCache();
