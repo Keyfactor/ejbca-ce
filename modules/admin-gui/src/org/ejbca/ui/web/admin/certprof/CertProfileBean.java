@@ -215,6 +215,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                         prof.getUseQCEtsiSignatureDevice(),
                         prof.getUseQCEtsiValueLimit(),
                         prof.getUseQCEtsiRetentionPeriod(),
+                        prof.getUseQCPSD2(),
                         !StringUtils.isEmpty(prof.getQCEtsiType()),
                         prof.getQCEtsiPds() != null && prof.getQCEtsiPds().size() > 0 && !(prof.getQCEtsiPds().size() == 1 && prof.getQCEtsiPds().get(0).getUrl() == null),
                         prof.getUseQCCustomString() && !prof.getQCCustomStringOid().isEmpty() && !prof.getQCCustomStringText().isEmpty()
