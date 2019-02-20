@@ -14,8 +14,10 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -82,6 +84,19 @@ public class QcStatement extends StandardCertificateExtension {
     public static final String id_etsi_psd2_role_psp_pi = "0.4.0.19495.1.2";
     public static final String id_etsi_psd2_role_psp_ai = "0.4.0.19495.1.3";
     public static final String id_etsi_psd2_role_psp_ic = "0.4.0.19495.1.4";
+    
+    private static final Map<String, String> psd2RoleIdNameMap = new HashMap<>();
+    static {
+        psd2RoleIdNameMap.put("PSP_AS", id_etsi_psd2_role_psp_as);
+        psd2RoleIdNameMap.put("PSP_PI", id_etsi_psd2_role_psp_pi);
+        psd2RoleIdNameMap.put("PSP_AI", id_etsi_psd2_role_psp_ai);
+        psd2RoleIdNameMap.put("PSP_IC", id_etsi_psd2_role_psp_ic);
+    }
+    
+    /** @return the ETSI PSD2 role OID of the corresponding given role name */
+    public static String getPsd2Oid(final String roleName) {
+        return psd2RoleIdNameMap.get(roleName);
+    }
 
     @Override
 	public void init(final CertificateProfile certProf) {

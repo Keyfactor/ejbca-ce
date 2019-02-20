@@ -247,6 +247,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String PRINTINGSVGFILENAME    = "PRINTINGSVGFILENAME";
     private static final String PRINTINGSVGDATA        = "PRINTINGSVGDATA";
 
+    public static final String PSD2QCSTATEMENT    = "PSD2QCSTATEMENT";
+    
     /** 
      * If it should be possible to add/edit certificate extension data
      * when adding/editing an end entity using the admin web or not.
@@ -1147,6 +1149,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setCustomSerialNumberUsed(final boolean use) {
         setUse(CERTSERIALNR, 0, use);
     }
+    
+    public boolean isPsd2QcStatementUsed() {
+        return getValueDefaultFalse(PSD2QCSTATEMENT);
+    }
+    
+    public void setPsd2QcStatementUsed(final boolean use) {
+        data.put(PSD2QCSTATEMENT, use);
+    }
 
     public boolean isValidityStartTimeUsed() {
         return getUse(STARTTIME, 0);
@@ -1779,7 +1789,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		if ( (ei == null) || !getValue(MAXFAILEDLOGINS,0).equals(Integer.toString(ei.getMaxLoginAttempts())) ) {
     			throw new EndEntityProfileValidationException("Max failed logins is not modifyable.");
     		}
-    	}      
+    	}
+    	// Check if PSD2 QC Statement is allowed when requested
+    	if (ei != null && !isPsd2QcStatementUsed() && (ei.getQCEtsiPSD2NCAName() != null || ei.getQCEtsiPSD2NCAId() != null || ei.getQCEtsiPSD2RolesOfPSP() != null)) {
+    	    throw new EndEntityProfileValidationException("ETSI PSD2 QC Statements was requested but not permitted by end entity profile.");
+    	}
     	if (log.isTraceEnabled()) {
     		log.trace("<doesUserFulfillEndEntityProfileWithoutPassword()");
     	}
