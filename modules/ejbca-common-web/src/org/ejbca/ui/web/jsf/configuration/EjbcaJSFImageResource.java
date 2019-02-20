@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * Implements a Map used for retrieving resources.
  *
- * @version $Id: EjbcaJSFImageResource.java 31509 2019-02-15 12:30:22Z andrey_s_helmes $
+ * @version $Id: EjbcaJSFImageResourceImpl.java 31509 2019-02-15 12:30:22Z andrey_s_helmes $
  *
  * @see EjbcaWebBean#getImagefileInfix(String)
  */
