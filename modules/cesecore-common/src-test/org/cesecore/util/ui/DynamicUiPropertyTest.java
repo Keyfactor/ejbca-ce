@@ -13,9 +13,11 @@
 package org.cesecore.util.ui;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -76,6 +78,25 @@ public class DynamicUiPropertyTest {
         } catch (IllegalStateException e) {
             // NOPMD expected
         }
+    }
+
+    /**
+     * Tests a property with multiple values. Both none, one and two values should be allowed.
+     */
+    @Test
+    public void testGetMultiValue() throws PropertyValidationException {
+        final List<String> possibleValues = new ArrayList<>(Arrays.asList("ABC", "123"));
+        DynamicUiProperty<String> property = new DynamicUiProperty<>(String.class, "testproperty", null, possibleValues);
+        property.setHasMultipleValues(true);
+        assertNotNull("Should return an empty list, not null.", property.getValues());
+        assertEquals("Should return an empty list.", 0, property.getValues().size());
+        property.setValues(Arrays.asList("ABC"));
+        assertEquals("Should return {\"ABC\"}.", new ArrayList<>(Arrays.asList("ABC")), property.getValues());
+        property.setValues(Arrays.asList("ABC", "123"));
+        assertEquals("Should return {\"ABC\", \"123\"}.", new ArrayList<>(Arrays.asList("ABC", "123")), property.getValues());
+        property.setValues(new ArrayList<>());
+        assertNotNull("Should return an empty list, not null.", property.getValues());
+        assertEquals("Should return an empty list.", 0, property.getValues().size());
     }
 
 }
