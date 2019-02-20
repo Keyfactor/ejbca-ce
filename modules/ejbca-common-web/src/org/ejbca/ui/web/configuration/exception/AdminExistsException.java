@@ -15,7 +15,6 @@ package org.ejbca.ui.web.configuration.exception;
 /**
  * An exception thrown when trying to add a user to the database that already exists.
  *
- * @author Philip Vendil
  * @version $Id$
  */
 public class AdminExistsException extends Exception {
