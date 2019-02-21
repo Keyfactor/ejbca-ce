@@ -138,6 +138,10 @@
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" rendered="#{cc.attrs.raEndEntityDetails.csrSet}"/>
 			<h:outputText id="csrdn" value="#{cc.attrs.raEndEntityDetails.dnFromCsr}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" rendered="#{cc.attrs.raEndEntityDetails.csrSet}"/>
+            <h:outputLabel for="clearcsrcheckbox" value="#{msg.component_eedetails_field_clearcsr}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" rendered="#{cc.attrs.raEndEntityDetails.csrSet}"/>
+            <h:selectBooleanCheckbox id="clearcsrcheckbox" value="#{cc.attrs.raEndEntityBean.clearCsrChecked}" rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.csrSet}"
+                styleClass="ra-clearCsrCheckbox"/>
 			
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 

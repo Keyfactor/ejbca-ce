@@ -307,6 +307,10 @@ img.menu_logo {
     height: 40px !important;
 }
 
+.ra-clearCsrCheckbox {
+	margin-top: 1.2%;
+}
+
 .ra-csrDetailsLongText {
 	word-wrap:break-word; 
 	table-layout: fixed;
