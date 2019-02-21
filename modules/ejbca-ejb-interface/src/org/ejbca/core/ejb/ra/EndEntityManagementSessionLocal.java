@@ -62,17 +62,17 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     
     /**
      * Removes the certificate serial number from the user data.
-     * @param username the unique username.
+     * @param userName the unique username.
      * @throws NoSuchEndEntityException if the end entity was not found
      */
-    void cleanUserCertDataSN(String username) throws NoSuchEndEntityException;
+    void cleanUserCertDataSN(String userName) throws NoSuchEndEntityException;
     
     /**
      * Cleans the certificate serial number and certificate request (CSR) from database userData table.
-     * @param username the unique username.
+     * @param userName the unique username.
      * @throws NoSuchEndEntityException if the end entity was not found
      */
-    void cleanSerialnumberAndCsrFromUserData(String username) throws NoSuchEndEntityException;
+    void cleanSerialnumberAndCsrFromUserData(String userName) throws NoSuchEndEntityException;
 
     
     /**
