@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -30,6 +31,7 @@ import java.util.TimeZone;
 
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
@@ -55,6 +57,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -522,6 +525,55 @@ public class RaCertificateDetails {
                 fc.renderResponse();
             }
         }
+    }   
+    
+    /** Download CSR attached to certificate in .pem format */
+    public void downloadCsr() {
+        final CertificateData certificateData = cdw.getCertificateData();
+        if (certificateData != null) {
+            final String csr = certificateData.getCertificateRequest();
+            byte[] csrBytes = Base64.decode(csr.getBytes());
+            downloadToken(csrBytes, "application/octet-stream", ".pkcs10.pem", certificateData);
+        } else {
+            throw new IllegalStateException("Could not find CSR attached to end entity with username " + username + ". CSR is expected to be set at this point");
+        }
+    }
+    
+    private final void downloadToken(byte[] token, String responseContentType, String fileExtension, CertificateData certificateData) {
+        if (token == null) {
+            return;
+        }
+        //Download the CSR
+        FacesContext fc = FacesContext.getCurrentInstance();
+        ExternalContext ec = fc.getExternalContext();
+        ec.responseReset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
+        ec.setResponseContentType(responseContentType);
+        ec.setResponseContentLength(token.length);
+        String fileNameWithoutExtension = "request_csr";
+        if (certificateData.getSubjectDN() != null) {
+            fileNameWithoutExtension = CertTools.getPartFromDN(certificateData.getSubjectDN(), "CN");
+        }
+
+        final String filename = StringTools.stripFilename(fileNameWithoutExtension + fileExtension);
+        ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
+        OutputStream output = null;
+        try {
+            output = ec.getResponseOutputStream();
+            output.write(token);
+            output.flush();
+            fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
+        } catch (IOException e) {
+            log.info("Token " + filename + " could not be downloaded", e);
+            callbacks.getRaLocaleBean().getMessage("enroll_token_could_not_be_downloaded", filename);
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to close outputstream", e);
+                }
+            }
+        }
     }
 
     public final String getParamRequestId(){
@@ -568,12 +620,11 @@ public class RaCertificateDetails {
         renderConfirmRecovery = !renderConfirmRecovery;
     }
 
-    public boolean isRequestIdInfoRendered(){
+    public boolean isRequestIdInfoRendered() {
         return requestId != 0;
     }
+    
+    public boolean isDownloadCsrRendered() {
+        return cdw.getCertificateData() != null && StringUtils.isNotEmpty(cdw.getCertificateData().getCertificateRequest());
+    }
 }
-
-
-
-
-

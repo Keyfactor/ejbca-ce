@@ -274,6 +274,11 @@
                     <h:outputText value="#{msg.component_certdetails_link_download_pkcs7}"/>
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
+                <h:panelGroup>
+	                <h:commandLink action="#{cc.attrs.raCertificateDetails.downloadCsr}" value="#{msg.component_eedetails_link_downloadcsr}" styleClass="fineprint"
+	                    rendered="#{cc.attrs.raCertificateDetails.downloadCsrRendered}"/>
+                </h:panelGroup>
+                <h:outputText value=" " styleClass="pre"/>
                 <h:commandButton id="showMoreLessDetailsButton" value="#{cc.attrs.raCertificateDetails.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
                     styleClass="pure-button ra-button"
                     action="#{cc.attrs.raCertificateDetails.actionToggleMore}">
