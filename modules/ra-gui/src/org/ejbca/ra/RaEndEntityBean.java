@@ -27,6 +27,7 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -83,6 +84,7 @@ public class RaEndEntityBean implements Serializable {
     private int selectedStatus = -1;
     private String enrollmentCode = "";
     private String enrollmentCodeConfirm = "";
+    private boolean clearCsrChecked = false;
 
     /**
      * The SelectStatus class holds a status string/constant pair
@@ -164,6 +166,7 @@ public class RaEndEntityBean implements Serializable {
         issuedCerts = null;
         selectableStatuses = null;
         selectedStatus = -1;
+        clearCsrChecked = false;
     }
 
     public String getUsername() { return username; }
@@ -216,6 +219,12 @@ public class RaEndEntityBean implements Serializable {
                 endEntityInformation.setPassword(enrollmentCode);
                 changed = true;
             }
+        } 
+        if (clearCsrChecked) {
+            if (endEntityInformation.getExtendedInformation() != null) {
+                endEntityInformation.getExtendedInformation().setCertificateRequest(null);
+            }            
+            changed = true;
         }
         if (changed) {
             // Edit the End Entity if changes were made
@@ -358,5 +367,21 @@ public class RaEndEntityBean implements Serializable {
      */
     public boolean isApiEditCompatible() {
         return raMasterApiProxyBean.getApiVersion() >= 2;
+    }
+    
+    /**
+     * @return whether the Clear CSR checkbox is checked
+     */
+    public boolean getClearCsrChecked() {
+        return clearCsrChecked;
+    }
+    
+    /**
+     * Sets the CSR to be cleared after the save button is pressed
+     * 
+     * @param checked Whether the checkbox is checked
+     */
+    public void setClearCsrChecked(boolean checked) {
+        this.clearCsrChecked = checked;
     }
 }
