@@ -1159,45 +1159,21 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         return counter;
     }
-
+	
     @Override
-    public void cleanUserCertDataSN(EndEntityInformation data) throws NoSuchEndEntityException {
-        if (log.isTraceEnabled()) {
-            log.trace(">cleanUserCertDataSN: " + data.getUsername());
-        }
-        try {
-            cleanUserCertDataSN(data.getUsername());
-        } catch (NoSuchEndEntityException e) {
-            String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
-            log.info(msg);
-            throw new NoSuchEndEntityException(e.getMessage());
-        } catch (ApprovalException e) {
-            // Should never happen
-            log.error("ApprovalException: ", e);
-            throw new EJBException(e);
-        } catch (WaitingForApprovalException e) {
-            // Should never happen
-            log.error("WaitingForApprovalException: ", e);
-            throw new EJBException(e);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<cleanUserCertDataSN: " + data.getUsername());
-        }
-    }
-
-    @Override
-    public void cleanUserCertDataSN(String username) throws ApprovalException, WaitingForApprovalException, NoSuchEndEntityException {
+    public void cleanUserCertDataSN(String username) throws NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
             log.trace(">cleanUserCertDataSN(" + username + ")");
         }
+        UserData data1 = null;
         try {
             // Check if administrator is authorized to edit user.
-            UserData data1 = endEntityAccessSession.findByUsername(username);
+            data1 = endEntityAccessSession.findByUsername(username);
             if (data1 != null) {
                 final ExtendedInformation ei = data1.getExtendedInformation();
                 if (ei == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("No extended information exists for user: " + data1.getUsername());
+                        log.debug("No extended information exists for user: " + username);
                     }
                 } else {
                     ei.setCertificateSerialNumber(null);
@@ -1210,40 +1186,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 log.info(msg);
                 throw new NoSuchEndEntityException(msg);
             }
+        } catch (NoSuchEndEntityException e) {
+            String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
+            log.info(msg);
+            throw new NoSuchEndEntityException(e.getMessage());
         } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<cleanUserCertDataSN(" + username + ")");
             }
         }
     }
-
-    @Override
-    public void cleanSerialnumberAndCsrFromUserData(EndEntityInformation data) throws NoSuchEndEntityException {
-        if (log.isTraceEnabled()) {
-            log.trace(">cleanUserCertDataSN: " + data.getUsername());
-        }
-        try {
-            cleanSerialnumberAndCsrFromUserData(data.getUsername());
-        } catch (NoSuchEndEntityException e) {
-            String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
-            log.info(msg);
-            throw new NoSuchEndEntityException(e.getMessage());   
-        } catch (ApprovalException e) {
-            // Should never happen
-            log.error("ApprovalException: ", e);
-            throw new EJBException(e);
-        } catch (WaitingForApprovalException e) {
-            // Should never happen
-            log.error("WaitingForApprovalException: ", e);
-            throw new EJBException(e);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<cleanUserCertDataSN: " + data.getUsername());
-        }
-    }
     
     @Override
-    public void cleanSerialnumberAndCsrFromUserData(String username) throws ApprovalException, WaitingForApprovalException, NoSuchEndEntityException {
+    public void cleanSerialnumberAndCsrFromUserData(String username) throws NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
             log.trace(">cleanUserCertDataSN(" + username + ")");
         }
@@ -1268,6 +1223,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 log.info(msg);
                 throw new NoSuchEndEntityException(msg);
             }
+        } catch (NoSuchEndEntityException e) {
+            String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
+            log.info(msg);
+            throw new NoSuchEndEntityException(e.getMessage());
         } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<cleanUserCertDataSN(" + username + ")");
