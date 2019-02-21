@@ -126,6 +126,7 @@
 					<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}"
 						value="#{editCAsMBean.signatureAlgorithmParam}">
 						<f:selectItems value="#{editCAsMBean.availableSigningAlgList}" />
+						<f:ajax listener="#{editCAsMBean.resetCryptoTokenParam()}" render="@form" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -261,7 +262,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu id="selectDefaultKey"
 						value="#{editCAsMBean.selectedCryptoTokenDefaultKey}">
-						<f:selectItems value="#{editCAsMBean.keyAliasesList}" />
+						<f:selectItems value="#{editCAsMBean.getKeyAliasesList('defaultKey')}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -274,7 +275,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu
 						value="#{editCAsMBean.selectedCryptoTokenCertSignKey}">
-						<f:selectItems value="#{editCAsMBean.keyAliasesListWithDefault}" />
+						<f:selectItems value="#{editCAsMBean.getKeyAliasesListWithDefault('certSignKey')}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -297,7 +298,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu value="#{editCAsMBean.selectedKeyEncryptKey}">
 						<f:selectItems
-							value="#{editCAsMBean.keyAliasesListWithDefault}" />
+							value="#{editCAsMBean.getKeyAliasesListWithDefault('keyEncryptKey')}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -310,7 +311,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu value="#{editCAsMBean.selectHardTokenEncrypt}">
 						<f:selectItems
-							value="#{editCAsMBean.keyAliasesListWithDefault}" />
+							value="#{editCAsMBean.getKeyAliasesListWithDefault('hardTokenEncrypt')}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
@@ -324,7 +325,7 @@
 					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
 					<h:selectOneMenu name="selectkeytestkey"
 						value="#{editCAsMBean.selectTestKey}">
-						<f:selectItems value="#{editCAsMBean.keyAliasesListWithDefault}" />
+						<f:selectItems value="#{editCAsMBean.getKeyAliasesListWithDefault('testKey')}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 
