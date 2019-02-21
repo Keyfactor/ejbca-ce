@@ -1161,75 +1161,75 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 	
     @Override
-    public void cleanUserCertDataSN(String username) throws NoSuchEndEntityException {
+    public void cleanUserCertDataSN(String userName) throws NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
-            log.trace(">cleanUserCertDataSN(" + username + ")");
+            log.trace(">cleanUserCertDataSN(" + userName + ")");
         }
-        UserData data1 = null;
+        UserData data = null;
         try {
             // Check if administrator is authorized to edit user.
-            data1 = endEntityAccessSession.findByUsername(username);
-            if (data1 != null) {
-                final ExtendedInformation ei = data1.getExtendedInformation();
+            data = endEntityAccessSession.findByUsername(userName);
+            if (data != null) {
+                final ExtendedInformation ei = data.getExtendedInformation();
                 if (ei == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("No extended information exists for user: " + username);
+                        log.debug("No extended information exists for user: " + userName);
                     }
                 } else {
                     ei.setCertificateSerialNumber(null);
-                    data1.setExtendedInformation(ei);
+                    data.setExtendedInformation(ei);
                 }
             } else {
-                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", userName));
                 // This exception message is used to not leak information to the user
                 String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
                 log.info(msg);
                 throw new NoSuchEndEntityException(msg);
             }
         } catch (NoSuchEndEntityException e) {
-            String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
+            String msg = intres.getLocalizedMessage("authentication.usernotfound", userName);
             log.info(msg);
             throw new NoSuchEndEntityException(e.getMessage());
         } finally {
             if (log.isTraceEnabled()) {
-                log.trace("<cleanUserCertDataSN(" + username + ")");
+                log.trace("<cleanUserCertDataSN(" + userName + ")");
             }
         }
     }
     
     @Override
-    public void cleanSerialnumberAndCsrFromUserData(String username) throws NoSuchEndEntityException {
+    public void cleanSerialnumberAndCsrFromUserData(String userName) throws NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
-            log.trace(">cleanUserCertDataSN(" + username + ")");
+            log.trace(">cleanUserCertDataSN(" + userName + ")");
         }
         try {
             // Check if administrator is authorized to edit user.
-            UserData data1 = endEntityAccessSession.findByUsername(username);
-            if (data1 != null) {
-                final ExtendedInformation ei = data1.getExtendedInformation();
+            UserData data = endEntityAccessSession.findByUsername(userName);
+            if (data != null) {
+                final ExtendedInformation ei = data.getExtendedInformation();
                 if (ei == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("No extended information exists for user: " + data1.getUsername());
+                        log.debug("No extended information exists for user: " + data.getUsername());
                     }
                 } else {
                     ei.setCertificateSerialNumber(null);
                     ei.setCertificateRequest(null);
-                    data1.setExtendedInformationPrePersist(ei);
+                    data.setExtendedInformationPrePersist(ei);
                 }
             } else {
-                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", userName));
                 // This exception message is used to not leak information to the user
                 String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
                 log.info(msg);
                 throw new NoSuchEndEntityException(msg);
             }
         } catch (NoSuchEndEntityException e) {
-            String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
+            String msg = intres.getLocalizedMessage("authentication.usernotfound", userName);
             log.info(msg);
             throw new NoSuchEndEntityException(e.getMessage());
         } finally {
             if (log.isTraceEnabled()) {
-                log.trace("<cleanUserCertDataSN(" + username + ")");
+                log.trace("<cleanUserCertDataSN(" + userName + ")");
             }
         }
     }
