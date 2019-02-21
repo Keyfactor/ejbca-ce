@@ -1195,29 +1195,28 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     /** Finishes user, i.e. set status to generated, if it should do so.
      * The authentication session is responsible for determining if this should be done or not */
     private void finishUser(final CA ca, final EndEntityInformation data) {
-        
-        
         if (data == null) {
             return;
         }
         
-        // CSR cleanup
-        if (data.getExtendedInformation() != null && data.getExtendedInformation().getCertificateRequest() != null) {
-            data.getExtendedInformation().setCertificateRequest(null);
-        }
-        
         if (!ca.getCAInfo().getFinishUser()) {
-            cleanUserCertDataSN(data);
+            cleanSerialnumberAndCsrFromUserData(data);
             return;
         }
+        
         try {
+            // clean CSR
+            if (data.getExtendedInformation() != null && data.getExtendedInformation().getCertificateRequest() != null) {
+                data.getExtendedInformation().setCertificateRequest(null);
+            }
+            
             endEntityAuthenticationSession.finishUser(data);
         } catch (NoSuchEndEntityException e) {
             final String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
             log.info(msg);
         }
     }
-
+    
     /**
      * Clean the custom certificate serial number of user from database
      * @param data of user
@@ -1233,7 +1232,26 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.info(msg);
         }
     }
-
+    /**
+     * Clean the custom certificate serial number and CSR from database userData table
+     * @param data of user
+     */
+    private void cleanSerialnumberAndCsrFromUserData(final EndEntityInformation data) {
+        boolean serialNumberEmpty = data == null || data.getExtendedInformation() == null || data.getExtendedInformation().certificateSerialNumber() == null;  
+        boolean csrEmpty = data.getExtendedInformation() == null || data.getExtendedInformation().getCertificateRequest() == null;
+        
+        if (serialNumberEmpty && csrEmpty) {
+            return;
+        }
+        
+        try {
+            endEntityManagementSession.cleanSerialnumberAndCsrFromUserData(data);
+        } catch (NoSuchEndEntityException e) {
+            final String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
+            log.info(msg);
+        }
+    }
+    
     /**
      * Creates the certificate, uses the cesecore method with the same signature but in addition to that calls certreqsession and publishers, and fetches the CT configuration
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate

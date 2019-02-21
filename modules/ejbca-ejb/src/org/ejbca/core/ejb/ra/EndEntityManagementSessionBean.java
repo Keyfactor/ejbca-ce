@@ -1218,6 +1218,64 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
+    public void cleanSerialnumberAndCsrFromUserData(EndEntityInformation data) throws NoSuchEndEntityException {
+        if (log.isTraceEnabled()) {
+            log.trace(">cleanUserCertDataSN: " + data.getUsername());
+        }
+        try {
+            cleanSerialnumberAndCsrFromUserData(data.getUsername());
+        } catch (NoSuchEndEntityException e) {
+            String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
+            log.info(msg);
+            throw new NoSuchEndEntityException(e.getMessage());   
+        } catch (ApprovalException e) {
+            // Should never happen
+            log.error("ApprovalException: ", e);
+            throw new EJBException(e);
+        } catch (WaitingForApprovalException e) {
+            // Should never happen
+            log.error("WaitingForApprovalException: ", e);
+            throw new EJBException(e);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<cleanUserCertDataSN: " + data.getUsername());
+        }
+    }
+    
+    @Override
+    public void cleanSerialnumberAndCsrFromUserData(String username) throws ApprovalException, WaitingForApprovalException, NoSuchEndEntityException {
+        if (log.isTraceEnabled()) {
+            log.trace(">cleanUserCertDataSN(" + username + ")");
+        }
+        try {
+            // Check if administrator is authorized to edit user.
+            UserData data1 = endEntityAccessSession.findByUsername(username);
+            if (data1 != null) {
+                final ExtendedInformation ei = data1.getExtendedInformation();
+                if (ei == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No extended information exists for user: " + data1.getUsername());
+                    }
+                } else {
+                    ei.setCertificateSerialNumber(null);
+                    ei.setCertificateRequest(null);
+                    data1.setExtendedInformationPrePersist(ei);
+                }
+            } else {
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                // This exception message is used to not leak information to the user
+                String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+                log.info(msg);
+                throw new NoSuchEndEntityException(msg);
+            }
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<cleanUserCertDataSN(" + username + ")");
+            }
+        }
+    }
+    
+    @Override
     public void setUserStatus(final AuthenticationToken admin, final String username, final int status) throws AuthorizationDeniedException,
             ApprovalException, WaitingForApprovalException, NoSuchEndEntityException {
         setUserStatusAfterApproval(admin, username, status, 0, null);

@@ -75,6 +75,23 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
      */
     void cleanUserCertDataSN(String username) throws ApprovalException, WaitingForApprovalException, NoSuchEndEntityException;
 
+    
+    /**
+     * Cleans the certificate serial number and certificate request (CSR) from database userData table. Should be called
+     * after the data has been used.
+     * @throws NoSuchEndEntityException if no end entity was found
+     * 
+     */
+    void cleanSerialnumberAndCsrFromUserData(EndEntityInformation data) throws NoSuchEndEntityException;
+
+    /**
+     * Cleans the certificate serial number and certificate request (CSR) from database userData table.
+     * @param username the unique username.
+     * @throws NoSuchEndEntityException if the end entity was not found
+     */
+    void cleanSerialnumberAndCsrFromUserData(String username) throws ApprovalException, WaitingForApprovalException, NoSuchEndEntityException;
+
+    
     /**
      * Decreases (the optional) request counter by 1, until it reaches 0.
      * Returns the new value. If the value is already 0, -1 is returned, but the
