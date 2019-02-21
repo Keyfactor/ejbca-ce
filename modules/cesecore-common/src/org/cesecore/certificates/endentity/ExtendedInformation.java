@@ -185,6 +185,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * @param certificateRequest a CSR in binary asn.1 format
      */
     public void setCertificateRequest(byte[] certificateRequest) {
+        if (certificateRequest == null) {
+            this.data.remove(CERTIFICATE_REQUEST);
+            return;
+        }
         // Store it in the database in base64 encoded format, without CSR headers or linebreaks (or null)
         final String str = certificateRequest == null ? null : new String(Base64.encode(certificateRequest), StandardCharsets.UTF_8);
         data.put(CERTIFICATE_REQUEST, str);
