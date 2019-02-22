@@ -179,7 +179,7 @@ public abstract class DatabaseIndexUtil {
     /** @return a Map of index name and the index representations of each database index present for a schema and table */
     private static Map<String, DatabaseIndex> getDatabaseIndexMap(final DatabaseMetaData databaseMetaData, final String catalog, final String schemaName, final String tableName, final boolean requireUnique) throws SQLException {
         final Map<String,DatabaseIndex> tableIndexMap = new HashMap<>();
-        // http://docs.oracle.com/javase/7/docs/api/java/sql/DatabaseMetaData.html#getIndexInfo(java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean,%20boolean)
+        // https://docs.oracle.com/javase/8/docs/api/java/sql/DatabaseMetaData.html#getIndexInfo-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-
         try (final ResultSet resultSet = databaseMetaData.getIndexInfo(catalog, schemaName, tableName, requireUnique, /*approximate=*/true);) {
             while (resultSet.next()) {
                 final String indexName = resultSet.getString("INDEX_NAME");
