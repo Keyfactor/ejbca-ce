@@ -319,7 +319,7 @@
 									<h:outputLabel for="subjectAltNameField"
 										value="#{msg['subject_alternative_name_'.concat(instance.name)]} *"
 										rendered="#{instance.required}" />
-                                    <h:panelGroup rendered="#{!instance.unModifiableUpnRfc and !instance.rfcUseEmail and !instance.dnsUsed}">
+                                    <h:panelGroup rendered="#{!instance.unModifiableUpnRfc and !instance.rfcUseEmail and !instance.dnsCopy}">
                                         <h:inputText id="subjectAltNameField" value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].value}" styleClass="jsDelayKeyUp jsAutoFocusFirst #{component.valid?'':'jsAutoFocusError'}"
                                             rendered="#{!instance.selectable}" disabled="#{!instance.modifiable}">
                                             <f:validator validatorId="extendedRegexValidator" />
@@ -361,8 +361,8 @@
                                         </h:selectOneMenu>
                                         <h:message for="upnRfcEmail" id="upnRfcEmailMessage" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
-									<h:panelGroup rendered="#{instance.useDns}">
-										<h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].dnsUsed}"
+									<h:panelGroup rendered="#{instance.copyDns}">
+										<h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].dnsCopy}"
 																 disabled="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].required}">
 											<f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateDnsField(enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index])}"
 													execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />

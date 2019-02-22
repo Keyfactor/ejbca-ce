@@ -215,8 +215,8 @@ public class EndEntityInformationFiller {
             for (int i = 0; i < numberOfFields; i++) {
                 field = endEntityProfile.getSubjectAltNameFieldsInOrder(i);
                 final boolean isDnsField = EndEntityProfile.isFieldOfType(field[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
-                final boolean isUsed = endEntityProfile.getUse(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
-                if (isDnsField && isUsed) {
+                final boolean isCopy = endEntityProfile.getCopy(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+                if (isDnsField && isCopy) {
                     if (dnses.length() > 0) {
                         dnses.append(", ");
                     }

@@ -173,7 +173,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             this.helpText = helpText;
         }
 
-        /** Used for "Use End Entity E-mail" and for "Use entity CN field" */
+        /** Used for "Use End Entity E-mail"  */
         public boolean isUsed() {
             return profiledata.getUse(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
         }
@@ -182,12 +182,21 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             profiledata.setUse(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], use);
         }
 
+        /** Used for  "Use entity CN field" */
+        public boolean isCopy() {
+            return profiledata.getCopy(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER]);
+        }
+
+        public void setCopy(final boolean copy) {
+            profiledata.setCopy(field[EndEntityProfile.FIELDTYPE], field[EndEntityProfile.NUMBER], copy);
+        }
+
         public boolean getUseEndEntityEmail() {
             return emailField && isUsed();
         }
 
         public boolean getUseEndEntityDns() {
-            return dnsField && isUsed();
+            return dnsField && isCopy();
         }
 
         public boolean isRequired() {
@@ -1308,7 +1317,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             final String name = component.getName();
             // empty value + non-modifiable + required = invalid
             // empty value + non-modifiable = could make sense in theory, but most likely a user error, so disallow it as well (consistent with 6.15.x behavior)
-            if (StringUtils.isBlank(component.getValue()) && !component.isModifiable() && !component.isUsed()) {
+            if (StringUtils.isBlank(component.getValue()) && !component.isModifiable() && !component.isUsed() && !component.isCopy()) {
                 if (component.isEmailField()) {
                     editerrors.add(ejbcaWebBean.getText("SUBJECTDNEMAILEMPTY"));
                 } else {
@@ -1333,7 +1342,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     private void validateUseCnForDnsName(final List<NameComponentGuiWrapper> subjectAltNameComponentList, final List<NameComponentGuiWrapper> subjectDnComponentList) {
         boolean dnsIsUsed = false;
         for (NameComponentGuiWrapper subjectAltNameComponent : subjectAltNameComponentList) {
-            if (subjectAltNameComponent.isDnsField() && subjectAltNameComponent.isUsed()) {
+            if (subjectAltNameComponent.isDnsField() && subjectAltNameComponent.isCopy()) {
                 dnsIsUsed = true;
                 break;
             }

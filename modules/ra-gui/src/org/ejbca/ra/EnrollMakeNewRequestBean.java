@@ -1073,7 +1073,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public void updateDnsField(EndEntityProfile.FieldInstance dnsName) {
         if (dnsName != null) {
-            if (dnsName.isDnsUsed()) {
+            if (dnsName.isDnsCopy()) {
                 EndEntityProfile.FieldInstance cnName = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME).get(0);
                 if (cnName != null) {
                     dnsName.setValue(cnName.getValue());
@@ -1091,7 +1091,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         EndEntityProfile.FieldInstance cnName = subjectDn.getFieldInstancesMap().get(DnComponents.COMMONNAME).get(0);
         if (cnName != null) {
             for (EndEntityProfile.FieldInstance dnsName : subjectAlternativeName.getFieldInstancesMap().get(DnComponents.DNSNAME).values()) {
-                if (dnsName.isDnsUsed()) {
+                if (dnsName.isDnsCopy()) {
                     dnsName.setValue(cnName.getValue());
                 }
             }
