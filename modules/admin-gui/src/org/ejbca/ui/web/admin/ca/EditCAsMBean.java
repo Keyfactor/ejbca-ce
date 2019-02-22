@@ -142,7 +142,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String certSignKeyRequestValue;
     private boolean checkBoxFutureRollOver;
     private String createCaName;
-    private List<String> availableKeyAliases;
+    private List<String> availableCryptoTokenKeyAliases;
+    private List<String> availableCryptoTokenMixedAliases;
+    private List<String> availableCryptoTokenEncryptionAliases;
     private String cryptoTokenDefaultKey = StringUtils.EMPTY; // Initialize to empty
     private String cryptoTokenCertSignKey = StringUtils.EMPTY; // Initialize to empty
     private String selectedKeyEncryptKey = StringUtils.EMPTY; // Initialize to empty
@@ -1248,7 +1250,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getExtrAndCertSignKeyReNewList() {
         final List<SelectItem> resultList = new ArrayList<>();
         resultList.add(new SelectItem(StringUtils.EMPTY, getEjbcaWebBean().getText("RENEWCA_USINGKEYSEQUENCE")));
-        for (final String alias : availableKeyAliases) {
+        for (final String alias : availableCryptoTokenKeyAliases) {
             resultList.add(new SelectItem(alias, alias, ""));
         }
         return resultList;
@@ -1256,7 +1258,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getCertSignKeyRecieveReqList() {
         final List<SelectItem> resultList = new ArrayList<>();
-        for (final String alias : availableKeyAliases) {
+        for (final String alias : availableCryptoTokenKeyAliases) {
             resultList.add(new SelectItem(alias, alias, ""));
         }
         return resultList;
@@ -1505,7 +1507,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             // Make up defaults based on key alias names
             selectedKeyEncryptKey = "";
             hardTokenEncryptKey = "";
-            for (final String alias : availableKeyAliases) {
+            
+            for (final String alias : availableCryptoTokenEncryptionAliases) {
+                if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default")) {
+                    cryptoTokenDefaultKey = alias;
+                } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || alias.contains("sign") || alias.contains("Sign")) {
+                    cryptoTokenCertSignKey = alias;
+                } else if (alias.contains("test") || alias.contains("Test")) {
+                    testKey = alias;
+                }
+            }
+
+            for (final String alias : availableCryptoTokenKeyAliases) {
                 if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default")) {
                     cryptoTokenDefaultKey = alias;
                 } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || alias.contains("sign") || alias.contains("Sign")) {
@@ -1521,19 +1534,19 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> resultList = new ArrayList<>();
         switch (keyType) {
         case "defaultKey":
-            for (final String alias : caBean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
+            for (final String alias : availableCryptoTokenMixedAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
             return resultList;
         case "certSignKey":
         case "testKey":
-            for (final String alias : caBean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
+            for (final String alias : availableCryptoTokenKeyAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
             return resultList;    
         case "keyEncryptKey":
         case "hardTokenEncrypt":
-            for (final String alias : caBean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
+            for (final String alias : availableCryptoTokenEncryptionAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
             return resultList;    
@@ -2513,7 +2526,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (cryptoTokenIdParam != null && cryptoTokenIdParam.length() > 0 && Integer.parseInt(cryptoTokenIdParam) != 0) {
             currentCryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
         }
-        availableKeyAliases = new ArrayList<>(); // Avoids NPE in getters if the code below fails.
+        availableCryptoTokenKeyAliases = new ArrayList<>(); // Avoids NPE in getters if the code below fails.
+        availableCryptoTokenMixedAliases = new ArrayList<>(); 
+        availableCryptoTokenEncryptionAliases = new ArrayList<>();
         if (currentCryptoTokenId != 0) {
             try {
                 updateAvailableKeyAliasesList();
@@ -2526,14 +2541,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     private void updateAvailableKeyAliasesList() throws CryptoTokenOfflineException, AuthorizationDeniedException {
-        availableKeyAliases = caBean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam);
-        for (final String alias : Stream.concat(
-                caBean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam).stream(), 
-                caBean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam).stream()).collect(Collectors.toList())) {
-            if (!availableKeyAliases.contains(alias)) {
-                availableKeyAliases.add(alias);
-            }
-        }
+        availableCryptoTokenKeyAliases = caBean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam);
+        availableCryptoTokenMixedAliases = caBean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam);
+        availableCryptoTokenEncryptionAliases = caBean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam);
     }
     
     private void generateCryptoAlreadyInUseMap() throws CryptoTokenOfflineException, AuthorizationDeniedException {
