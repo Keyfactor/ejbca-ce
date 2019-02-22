@@ -1704,6 +1704,7 @@ function checkallfields(){
 		  || profile.getUse(EndEntityProfile.CARDNUMBER, 0)
 		  || profile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0)
 		  || profile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0)
+		  || profile.isPsd2QcStatementUsed()
 		   ) { %>
 	    <tr id="Row<%=(row++)%2%>" class="section">
 		<td align="right">
@@ -1878,7 +1879,7 @@ function checkallfields(){
       		   <option value="PSP_AS"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_AS\") %>"/></option>
       		   <option value="PSP_PI"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_PI\") %>"/></option>
       		   <option value="PSP_AI"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_AI\") %>"/></option>
-      		   <option value="PSP_IC"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_CI\") %>"/></option>
+      		   <option value="PSP_IC"><c:out value="<%= ejbcawebbean.getText(\"PSD2_PSP_IC\") %>"/></option>
         	</select>
       	</td>
       	<td>
