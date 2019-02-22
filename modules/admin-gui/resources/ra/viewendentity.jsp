@@ -5,7 +5,8 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.config.GlobalConfiguration, java.math.BigInteger,
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
                  org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
-                 org.cesecore.certificates.endentity.ExtendedInformation, org.apache.commons.lang.time.DateUtils, java.util.Locale,
+                 org.cesecore.certificates.endentity.ExtendedInformation, org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, 
+                 org.apache.commons.lang.time.DateUtils, java.util.Locale,
                  org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.crl.RevokedCertInfo,
                  org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.util.CertTools, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" %>
 <html>
@@ -301,6 +302,7 @@
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.STARTTIME, 0) 
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.ENDTIME, 0)
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.CARDNUMBER, 0)
+    	  || viewendentityhelper.profile.isPsd2QcStatementUsed()
     	  ) {
         %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="section">
@@ -380,6 +382,47 @@
 			<td><c:out value="<%= viewendentityhelper.userdata.getExtendedInformation().getRawSubjectDn() %>"/></td>
 			</tr> 
     <%  } %>
+	
+	<% if (viewendentityhelper.userdata.getExtendedInformation() != null && viewendentityhelper.userdata.getExtendedInformation().getQCEtsiPSD2NCAName() != null) { %>
+			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("PSD2_NCANAME") %></td>
+			<td><c:out value="<%= viewendentityhelper.userdata.getExtendedInformation().getQCEtsiPSD2NCAName() %>"/></td>
+			</tr> 
+    <%  } %>
+   	<% if (viewendentityhelper.userdata.getExtendedInformation() != null && viewendentityhelper.userdata.getExtendedInformation().getQCEtsiPSD2NCAName() != null) { %>
+		<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("PSD2_NCAID") %></td>
+		<td><c:out value="<%= viewendentityhelper.userdata.getExtendedInformation().getQCEtsiPSD2NCAId() %>"/></td>
+		</tr> 
+    <% } %>
+	
+	<% if (viewendentityhelper.userdata.getExtendedInformation() != null && viewendentityhelper.userdata.getExtendedInformation().getQCEtsiPSD2RolesOfPSP() != null
+			&& viewendentityhelper.userdata.getExtendedInformation().getQCEtsiPSD2RolesOfPSP().size() > 0) { %>
+		<tr id="Row<%=(viewendentityhelper.row++)%2%>"> 
+		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("PSD2_PSP_ROLES") %></td>
+      	<td width="50%"> 
+        	<select class="select-list" size="4" multiple="multiple" disabled="disabled">
+	        	<% 
+	        	String[] availableRoles = {"PSP_AS", "PSP_PI", "PSP_AI", "PSP_IC"};
+	        	for (String role : availableRoles) { %>
+	            <option 
+	            <% 
+	            if (viewendentityhelper.userdata.getExtendedInformation().getQCEtsiPSD2RolesOfPSP() != null) {
+		            for (PSD2RoleOfPSPStatement psd2role : viewendentityhelper.userdata.getExtendedInformation().getQCEtsiPSD2RolesOfPSP()) {
+			            if (role.equals(psd2role.getName())) {
+			            	out.write(" selected ");
+			            }
+	            	} 
+	            }
+	           	%>
+	            value="<%=role%>">
+	            <c:out value="<%= ejbcawebbean.getText(\"PSD2_\" + role) %>"/>
+	            </option>
+	            <%}%>
+        	</select>
+      	</td>
+      </tr>
+    <% } %>
 
     <!-- ---------- Other data -------------------- -->
 
