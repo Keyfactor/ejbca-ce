@@ -501,25 +501,29 @@
 		                    } else {
 		                        ei.setCertificateSerialNumber(null);
 		                    }
-		                    if (profile.isPsd2QcStatementUsed()) {
-		                    	value = request.getParameter(TEXTFIELD_NCANAME);
-								if (value != null && value.length() > 0) {
-			                    	ei.setQCEtsiPSD2NcaName(value.trim());
-								}
-								value = request.getParameter(TEXTFIELD_NCAID);
-					            if (value != null && value.length() > 0) {
-					                ei.setQCEtsiPSD2NcaId(value.trim());
-					            }
-					            String[] pspRoleValues = request.getParameterValues(SELECT_PSD2_PSPROLE);
-					            if (pspRoleValues != null && pspRoleValues.length > 0) {
-					                final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
-					                for (String role : pspRoleValues) {
-					                    pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid(role), role));
-					                }
-					            	ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
-					            }
-					            newuser.setExtendedInformation(ei);		                    	
-		                    }
+	                    	value = request.getParameter(TEXTFIELD_NCANAME);
+							if (value != null && value.length() > 0) {
+		                    	ei.setQCEtsiPSD2NcaName(value.trim());
+							} else {
+								ei.setQCEtsiPSD2NcaName(null);
+							}
+							value = request.getParameter(TEXTFIELD_NCAID);
+				            if (value != null && value.length() > 0) {
+				                ei.setQCEtsiPSD2NcaId(value.trim());
+				            } else {
+				            	ei.setQCEtsiPSD2NcaId(null);
+				            }
+				            String[] pspRoleValues = request.getParameterValues(SELECT_PSD2_PSPROLE);
+				            if (pspRoleValues != null && pspRoleValues.length > 0) {
+				                final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
+				                for (String role : pspRoleValues) {
+				                    pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid(role), role));
+				                }
+				            	ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
+				            } else {
+				            	ei.setQCEtsiPSD2RolesOfPSP(null);
+				            }
+				            newuser.setExtendedInformation(ei);		                    	
 		                    value = request.getParameter(TEXTAREA_NC_PERMITTED);
 		                    if (value != null && !value.trim().isEmpty()) {
 		                        ei.setNameConstraintsPermitted(NameConstraint.parseNameConstraintsList(value));
@@ -1572,6 +1576,7 @@ function checkUseInBatch(){
 		  || profile.getUse(EndEntityProfile.CARDNUMBER, 0)
 		  || profile.getUse(EndEntityProfile.NAMECONSTRAINTS_PERMITTED, 0)
           || profile.getUse(EndEntityProfile.NAMECONSTRAINTS_EXCLUDED, 0)
+          || profile.isPsd2QcStatementUsed()
 		   ) { %>
       <tr id="Row<%=(row++)%2%>" class="section">
 	<td align="right"><strong><%= ejbcawebbean.getText("OTHERCERTIFICATEDATA") %></strong></td>
@@ -1759,7 +1764,8 @@ function checkUseInBatch(){
 				<c:out value="<%= ejbcawebbean.getText(\"PSD2_NCANAME\") %>"/>
 			</td>
 			<td> 
-				<input type="text" name="<%= TEXTFIELD_NCANAME %>" size="30" maxlength="256" tabindex="<%=tabindex++%>" value="<%=ei.getQCEtsiPSD2NCAName()%>" />
+				<input type="text" name="<%= TEXTFIELD_NCANAME %>" size="30" maxlength="256" tabindex="<%=tabindex++%>" 
+					value="<%=ei.getQCEtsiPSD2NCAName() == null ? "" : ei.getQCEtsiPSD2NCAName()%>" />
 			</td>
 			<td>
 				<input type="checkbox" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
@@ -1770,7 +1776,8 @@ function checkUseInBatch(){
 				<c:out value="<%= ejbcawebbean.getText(\"PSD2_NCAID\") %>"/>
 			</td>
 			<td> 
-				<input type="text" name="<%= TEXTFIELD_NCAID %>" size="30" maxlength="256" tabindex="<%=tabindex++%>" value="<%=ei.getQCEtsiPSD2NCAId()%>" />
+				<input type="text" name="<%= TEXTFIELD_NCAID %>" size="30" maxlength="256" tabindex="<%=tabindex++%>" 
+					value="<%=ei.getQCEtsiPSD2NCAId() == null ? "" : ei.getQCEtsiPSD2NCAId()%>" />
 			</td>
 			<td>
 				<input type="checkbox" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
@@ -1788,11 +1795,13 @@ function checkUseInBatch(){
 	        	for (String role : availableRoles) { %>
 	            <option 
 	            <% 
-	            for (PSD2RoleOfPSPStatement psd2role : ei.getQCEtsiPSD2RolesOfPSP()) {
-		            if (role.equals(psd2role.getName())) {
-		            	out.write(" selected ");
-		            }
-	            } 
+	            if (ei.getQCEtsiPSD2RolesOfPSP() != null) {
+		            for (PSD2RoleOfPSPStatement psd2role : ei.getQCEtsiPSD2RolesOfPSP()) {
+			            if (role.equals(psd2role.getName())) {
+			            	out.write(" selected ");
+			            }
+	            	} 
+	            }
 	           	%>
 	            value="<%=role%>">
 	            <c:out value="<%= ejbcawebbean.getText(\"PSD2_\" + role) %>"/>
@@ -1803,7 +1812,7 @@ function checkUseInBatch(){
       	<td>
 			<input type="checkbox" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
 		</td>
-    </tr>
+      </tr>
     <%	} %> 
     
 
