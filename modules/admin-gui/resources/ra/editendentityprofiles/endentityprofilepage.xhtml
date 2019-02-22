@@ -482,7 +482,7 @@
 							<h:panelGroup rendered="#{subjectAltNameComponent.dnsField}">
 								<h:selectBooleanCheckbox
 									id="altNameUseEndEntityCnAsDns"
-									value="#{subjectAltNameComponent.used}"
+									value="#{subjectAltNameComponent.copy}"
 									disabled="#{endEntityProfileMBean.viewOnly}">
 									<f:ajax render="subjectAltNameCheckBoxesGrid subjectAltNameTextField"/>
 								</h:selectBooleanCheckbox>
