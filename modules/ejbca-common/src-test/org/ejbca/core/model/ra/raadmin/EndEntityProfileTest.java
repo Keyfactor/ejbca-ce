@@ -301,7 +301,7 @@ public class EndEntityProfileTest {
         // CommonName is allowed by default in an end entity profile
         profile.addField(DnComponents.DNSNAME);
         profile.setRequired(DnComponents.DNSNAME, 0, true);
-        profile.setUse(DnComponents.DNSNAME, 0, true);
+        profile.setCopy(DnComponents.DNSNAME, 0, true);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -316,7 +316,7 @@ public class EndEntityProfileTest {
         // CommonName is allowed by default in an end entity profile
         profile.addField(DnComponents.DNSNAME);
         profile.setRequired(DnComponents.DNSNAME, 0, true);
-        profile.setUse(DnComponents.DNSNAME, 0, true);
+        profile.setCopy(DnComponents.DNSNAME, 0, true);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "DNSNAME=UserDns", "", new EndEntityType(EndEntityTypes.ENDUSER),
                 123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -331,7 +331,7 @@ public class EndEntityProfileTest {
         // CommonName is allowed by default in an end entity profile
         profile.addField(DnComponents.DNSNAME);
         profile.setRequired(DnComponents.DNSNAME, 0, true);
-        profile.setUse(DnComponents.DNSNAME, 0, true);
+        profile.setCopy(DnComponents.DNSNAME, 0, true);
         profile.setModifyable(DnComponents.DNSNAME, 0, false);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         EndEntityInformation userdata = new EndEntityInformation("foo", "CN=UserDns", 123, "DNSNAME=wrong", "", new EndEntityType(EndEntityTypes.ENDUSER),
@@ -348,7 +348,7 @@ public class EndEntityProfileTest {
         // CommonName is allowed by default in an end entity profile
         profile.addField(DnComponents.DNSNAME);
         profile.setRequired(DnComponents.DNSNAME, 0, true);
-        profile.setUse(DnComponents.DNSNAME, 0, true);
+        profile.setCopy(DnComponents.DNSNAME, 0, true);
         profile.setModifyable(DnComponents.DNSNAME, 0, false);
 
         profile.addField(DnComponents.DNSNAME);
