@@ -204,6 +204,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final int ISREQUIRED = 2;
     private static final int MODIFYABLE = 3;
     private static final int VALIDATION = 4;
+    private static final int COPY       = 5;
 
     // Private Constants.
     private static final int FIELDBOUNDRARY  = 10000;
@@ -215,6 +216,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final int FIELDBOUNDRARY_ISREQUIRED  = FIELDBOUNDRARY * ISREQUIRED;
     private static final int FIELDBOUNDRARY_MODIFYABLE  = FIELDBOUNDRARY * MODIFYABLE;
     private static final int FIELDBOUNDRARY_VALIDATION  = FIELDBOUNDRARY * VALIDATION;
+    private static final int FIELDBOUNDRARY_COPY  = FIELDBOUNDRARY * COPY;
 
     public static final String SPLITCHAR       = ";";
 
@@ -390,16 +392,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	addField(parameter, getParameter(parameter));
     }
     
-    /** Add a field with value="", required=false, use=true, modifyable=true */
+    /** Add a field with value="", required=false, use=true, modifyable=true, copy =false  */
     private void addField(final int parameter, final String parameterName) {
-    	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, null);
+    	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE, null);
     }
     
     private void addFieldWithDefaults(final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable) {
-        addFieldWithDefaults(getParameterNumber(parameterName), parameterName, value, required, use, modifyable, null);
+        addFieldWithDefaults(getParameterNumber(parameterName), parameterName, value, required, use, modifyable, Boolean.FALSE, null);
     }
 
-    private void addFieldWithDefaults(final int parameter, final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable, final LinkedHashMap<String,Object> validation) {
+    private void addFieldWithDefaults(final int parameter, final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable, boolean copy, final LinkedHashMap<String,Object> validation) {
     	final int size = getNumberOfField(parameter);
     	// Perform operations directly on "data" to save some cycles..
     	final int offset = (NUMBERBOUNDRARY*size) + parameter;
@@ -407,6 +409,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	data.put(FIELDBOUNDRARY_ISREQUIRED + offset, required);
     	data.put(FIELDBOUNDRARY_USE + offset, use);
     	data.put(FIELDBOUNDRARY_MODIFYABLE + offset, modifyable);
+    	data.put(FIELDBOUNDRARY_COPY + offset, copy);
     	if (validation != null) {
     	    // validation should be a map of a validator class name (excluding package name) and a validator-specific object.
     	    data.put(FIELDBOUNDRARY_VALIDATION + offset, validation);
@@ -479,6 +482,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		data.remove(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*(size-1)) + parameter);
     		data.remove(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*(size-1)) + parameter);
     		data.remove(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*(size-1)) + parameter);
+    		data.remove(FIELDBOUNDRARY_COPY + (NUMBERBOUNDRARY*(size-1)) + parameter);
     		decrementFieldnumber(parameter);
     	}
     }
@@ -535,6 +539,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setUse(final String parameter, final int number, final boolean use){
     	setUse(getParameterNumber(parameter), number, use);
+    }
+
+    public void setCopy(final int parameter, final int number, final boolean copy){
+        data.put(FIELDBOUNDRARY_COPY + (NUMBERBOUNDRARY*number) + parameter, copy);
+    }
+
+    public void setCopy(final String parameter, final int number, final boolean copy){
+        setCopy(getParameterNumber(parameter), number, copy);
     }
 
     public void setRequired(final int parameter, final int number, final boolean required) {
@@ -606,6 +618,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      */
     public boolean getUse(final String parameter, final int number){
     	return getUse(getParameterNumber(parameter), number);
+    }
+
+    public boolean getCopy(final int parameter, final int number){
+        return getValueDefaultFalse(FIELDBOUNDRARY_COPY + (NUMBERBOUNDRARY*number) + parameter);
+    }
+
+    public boolean getCopy(final String parameter, final int number){
+        return getCopy(getParameterNumber(parameter), number);
     }
 
     public boolean isRequired(final int parameter, final int number) {
@@ -1934,7 +1954,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     //	Match with every value in field-array
                     for (int m = 0; m < subjectsToProcess.length; m++) {
                         if (subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD) {
-                            if (getUse(profileID, l)) {
+                            if (getCopy(profileID, l)) {
                                  /*
                                  * IF the component is DNSNAME and getUse is true, value from CN should be used
                                  */
@@ -2735,7 +2755,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         private String defaultValue;
         private int profileId;
         private boolean rfcEmailUsed;
-        private boolean dnsUsed;
+        private boolean dnsCopy;
         String regexPattern;
         public FieldInstance(String name, int number){
             this.name = name;
@@ -2744,14 +2764,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.value = isSelectable() ? getSelectableValues().get(0) : defaultValue;
             this.profileId = EndEntityProfile.dataConstants.get(name);
             this.rfcEmailUsed = name.equals("RFC822NAME") && isUsed();
-            this.dnsUsed = name.equals(DnComponents.DNSNAME) && isUsed();
-            if (dnsUsed) this.value = "";
+            this.dnsCopy = name.equals(DnComponents.DNSNAME) && isCopy();
+            if (dnsCopy) this.value = "";
             HashMap<String, Serializable> temp = EndEntityProfile.this.getValidation(name, number);
             if(temp != null){
                 this.regexPattern =  (String)temp.get(RegexFieldValidator.class.getName());
             }
         }
         public boolean isUsed() {return EndEntityProfile.this.getUse(name, number);}
+        public boolean isCopy() {return EndEntityProfile.this.getCopy(name, number);}
         public boolean isRequired() {return EndEntityProfile.this.isRequired(name, number);}
         public boolean isModifiable() {return EndEntityProfile.this.isModifyable(name, number);}
         public boolean isRegexPatternRequired() {return getRegexPattern() != null;}
@@ -2763,14 +2784,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
         public boolean getRfcEmailUsed() {return rfcEmailUsed;}
         public void setRfcEmailUsed(boolean rfcEmailUsed) {this.rfcEmailUsed = rfcEmailUsed;}
-        public boolean isUseDns() {
-            return name.equals(DnComponents.DNSNAME) && isUsed();
+        public boolean isCopyDns() {
+            return name.equals(DnComponents.DNSNAME) && isCopy();
         }
-        public boolean isDnsUsed() {
-            return dnsUsed;
+        public boolean isDnsCopy() {
+            return dnsCopy;
         }
-        public void setDnsUsed(boolean dnsUsed) {
-            this.dnsUsed = dnsUsed;
+        public void setDnsCopy(boolean dnsCopy) {
+            this.dnsCopy = dnsCopy;
         }
         public String getValue(){return value;}
         public void setValue(String value){this.value = value;}
