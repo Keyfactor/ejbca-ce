@@ -36,6 +36,8 @@ import java.security.spec.ECPoint;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
@@ -160,6 +162,27 @@ public class AlgorithmToolsTest {
                 AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA));
         assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA));
         assertEquals("Foobar", AlgorithmTools.getEncSigAlgFromSigAlg("Foobar"));
+    }
+    
+    @Test
+    public void testGetAlgorithmNameFromDigestAndKey() {
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, AlgorithmConstants.KEYALGORITHM_RSA));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, AlgorithmConstants.KEYALGORITHM_RSA));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA384, AlgorithmConstants.KEYALGORITHM_RSA));
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA512, AlgorithmConstants.KEYALGORITHM_RSA));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA1, AlgorithmConstants.KEYALGORITHM_EC));
+        assertEquals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA224, AlgorithmConstants.KEYALGORITHM_EC));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, AlgorithmConstants.KEYALGORITHM_EC));
+        assertEquals(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA384, AlgorithmConstants.KEYALGORITHM_EC));
+        assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA512, AlgorithmConstants.KEYALGORITHM_EC));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_256_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(NISTObjectIdentifiers.id_sha3_256.getId(), AlgorithmConstants.KEYALGORITHM_RSA));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(NISTObjectIdentifiers.id_sha3_384.getId(), AlgorithmConstants.KEYALGORITHM_RSA));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(NISTObjectIdentifiers.id_sha3_512.getId(), AlgorithmConstants.KEYALGORITHM_RSA));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_256_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(NISTObjectIdentifiers.id_sha3_256.getId(), AlgorithmConstants.KEYALGORITHM_EC));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(NISTObjectIdentifiers.id_sha3_384.getId(), AlgorithmConstants.KEYALGORITHM_EC));
+        assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(NISTObjectIdentifiers.id_sha3_512.getId(), AlgorithmConstants.KEYALGORITHM_EC));
+        // Default is SHA1 with RSA
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey("Foobar", "Foo"));
     }
 
     @Test

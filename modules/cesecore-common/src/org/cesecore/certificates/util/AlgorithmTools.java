@@ -788,6 +788,8 @@ public abstract class AlgorithmTools {
         if (digestAlg != null) {
             if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;
+            } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA384) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                    oid = PKCSObjectIdentifiers.sha384WithRSAEncryption;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA512) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 oid = PKCSObjectIdentifiers.sha512WithRSAEncryption;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_MD5) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
