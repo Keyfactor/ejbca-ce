@@ -66,20 +66,19 @@
                 size="46"/>
         </h:panelGrid>
         
-        <h3><h:outputLabel value="#{web.text.CONSTRAINTS}"/></h3>
+        <h3><h:outputLabel value="#{web.text.CTLOGTAB_SHARDED_LOG}"/></h3>
         <h:panelGroup class="block">
 	         <h:selectBooleanCheckbox id="enableExpirationYearAcceptanceRule"
 	             styleClass="checkbox"
 	             value="#{systemConfigMBean.ctLogManager.ctLogEditor.isAcceptingByExpirationYear}" /> 
 	         <h:outputLabel for="enableExpirationYearAcceptanceRule" 
-	             value="#{web.text.ACCEPTING_BASED_ON_YEAR_OF_EXPIRY}" />
+	             value="#{web.text.CTLOGTAB_USE_SHARDING}" />
 	    </h:panelGroup>
-	    <br/><br/>
+	    <br/>
 		<h:panelGroup class="block">
-	         <h:outputText value="#{web.text.YEAR}"
-	             styleClass="textLabel"/>
-             <h:inputText id="expirationYearRequired"
+			<h:inputText id="expirationYearRequired" maxLength="4" size="4"
                  value="#{systemConfigMBean.ctLogManager.ctLogEditor.expirationYearRequired}" />
+	         <h:outputText value="#{web.text.CTLOGTAB_SHARDING_YEAR}"/>        
 		</h:panelGroup>
 		<br/><br/>
         <h:commandButton action="#{systemConfigMBean.ctLogManager.saveCtLogBeingEdited}" value="#{web.text.SAVE}" />
