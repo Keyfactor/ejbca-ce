@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.validation.BlacklistEntry;
 import org.ejbca.core.model.validation.DomainBlacklistEntry;
+import org.ejbca.core.model.validation.DomainBlacklistEntryCache;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntryCache;
 
@@ -129,7 +130,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
         BlacklistData dataExists = BlacklistData.findByTypeAndValue(entityManager, entry.getType(), entry.getValue());
         if (dataExists != null) {
             log.debug("An entry with type and value already exists: "+entry.getType()+", "+entry.getValue());
-            final String message = intres.getLocalizedMessage("blacklist.errorchangepublickeyblacklist", entry.getValue());
+            final String message = intres.getLocalizedMessage("blacklist.errorchangeblacklist", entry.getValue());
             log.info(message);            
         }
         BlacklistData data = BlacklistData.findById(entityManager, entry.getID());
@@ -138,7 +139,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             data.setBlacklistEntry(entry);
             // Since loading a Blacklist is quite complex, we simple purge the cache here.
             PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
-            final String message = intres.getLocalizedMessage("blacklist.changedpublickeyblacklist", entry.getValue());
+            final String message = intres.getLocalizedMessage("blacklist.changedblacklist", entry.getValue());
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
             for (Map.Entry<Object, Object> mapEntry : diff.entrySet()) {
@@ -147,7 +148,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             auditSession.log(EjbcaEventTypes.BLACKLIST_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.BLACKLIST, ServiceTypes.CORE,
                     admin.toString(), null, null, null, details);
         } else {
-            final String message = intres.getLocalizedMessage("blacklist.errorchangepublickeyblacklist", entry.getValue());
+            final String message = intres.getLocalizedMessage("blacklist.errorchangeblacklist", entry.getValue());
             log.info(message);
         }
         if (log.isTraceEnabled()) {
@@ -162,7 +163,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             log.trace(">removeBlacklist(" + type+", "+value + ")");
         }
         assertIsAuthorizedToEditBlacklists(admin);
-        String message;
+        String message = null;
         BlacklistData data = BlacklistData.findByTypeAndValue(entityManager, type, value);
         if (data == null) {
             if (log.isDebugEnabled()) {
@@ -172,8 +173,13 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
         } else {
             entityManager.remove(data);
             // Purge the cache here.
-            PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
-            message = intres.getLocalizedMessage("blacklist.removedpublickeyblacklist", value);
+            if (type.equals(PublicKeyBlacklistEntry.TYPE)) {
+                PublicKeyBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
+                message = intres.getLocalizedMessage("blacklist.removedpublickeyblacklist", value);
+            } else if (type.equals(DomainBlacklistEntry.TYPE)){
+                DomainBlacklistEntryCache.INSTANCE.removeEntry(data.getId());
+                message = intres.getLocalizedMessage("blacklist.removeddomainblacklist", value);
+            }
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", message);
             auditSession.log(EjbcaEventTypes.BLACKLIST_REMOVAL, EventStatus.SUCCESS, EjbcaModuleTypes.BLACKLIST, ServiceTypes.CORE,
