@@ -19,13 +19,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.validation.DnsNameValidator;
@@ -72,9 +70,17 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
 
-    private transient boolean initializationFailure;
-    private transient List<DomainBlacklistNormalizer> normalizers;
-    private transient List<DomainBlacklistChecker> checkers;
+    private transient Cache cache = null;
+    private class Cache {
+        final boolean initializationFailure;
+        final List<DomainBlacklistNormalizer> normalizers;
+        final List<DomainBlacklistChecker> checkers;
+        public Cache(final boolean initializationFailure, final List<DomainBlacklistNormalizer> normalizers, final List<DomainBlacklistChecker> checkers) {
+            this.initializationFailure = initializationFailure;
+            this.normalizers = normalizers;
+            this.checkers = checkers;
+        }
+    }
 
     @Override
     public List<Integer> getApplicablePhases() {
@@ -90,10 +96,10 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     }
 
     private void loadBlacklistData() {
-        if (checkers == null) {
+        if (cache == null) {
             synchronized (this) { // wait
                 // Don't load if loaded while we waited for the synchronized block
-                if (checkers == null) {
+                if (cache == null) {
                     reloadBlacklistData();
                 }
             }
@@ -145,16 +151,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         for (final DomainBlacklistChecker checker : newCheckers) {
             checker.initialize(data, combinedBlacklist);
         }
-        // Now update with the new data, but make race conditions fail-safe (initializationFailure == true) 
-        if (newInitializationFailure) {
-            initializationFailure = true;
-            checkers = newCheckers;
-            normalizers = newNormalizers;
-        } else {
-            checkers = newCheckers;
-            initializationFailure = false;
-            normalizers = newNormalizers;
-        }
+        cache = new Cache(newInitializationFailure, newNormalizers, newCheckers); 
         log.trace("<reloadBlacklistData");
     }
 
@@ -167,9 +164,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
      */
     private void clearCache() {
         log.debug("Clearing domain blacklist cache for validator '" + getProfileName() + "'");
-        normalizers = null;
-        checkers = null;
-        initializationFailure = false;
+        cache = null;
     }
 
     @Override
@@ -185,14 +180,14 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         final LinkedHashMap<String,String> labels = new LinkedHashMap<>();
         final ServiceLoader<T> serviceLoader = ServiceLoader.load(clazz);
         for (final T implementation : serviceLoader) {
-            final String displayName = implementation.getClass().getSimpleName(); // TODO
+            final String displayName = implementation.getNameKey();
             final String name = implementation.getClass().getName();
             if (log.isDebugEnabled()) {
                 log.debug("Found implementation: " + name);
             }
             labels.put(name, displayName);
         }
-        // TODO this should if possible be replaced with checkboxes / radio buttons. Can we add two new rendering hints for this?
+        // TODO this should if possible be replaced with checkboxes / radio buttons. Can we add two new rendering hints for this? Investigate in ECA-6052.
         final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, dataMapKey, defaultValue, labels.keySet());
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
         uiProperty.setLabels(labels);
@@ -208,7 +203,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     private void addBlacklistSelection() {
         final LinkedHashMap<Integer,String> blacklists = new LinkedHashMap<>();
-        // TODO Get available blacklists here
+        // TODO Get available blacklists here (ECA-6052)
         MapTools.sortLinkedHashMap(blacklists, String.CASE_INSENSITIVE_ORDER);
         final DynamicUiProperty<Integer> uiProperty = new DynamicUiProperty<>(Integer.class, BLACKLISTS_KEY, null, blacklists.keySet());
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
@@ -259,7 +254,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     @Override
     public Entry<Boolean, List<String>> validate(final ExecutorService executorService, final String... domainNames) {
         loadBlacklistData();
-        if (initializationFailure) {
+        if (cache.initializationFailure) {
             final String message = "Validation cannot be performed due to a configuration problem with '" + getProfileName() + "'."; // getProfileName returns the validator name
             log.debug(message);
             return new AbstractMap.SimpleEntry<>(Boolean.FALSE, new ArrayList<>(Arrays.asList(message)));
@@ -267,11 +262,11 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         boolean result = true;
         final List<String> messages = new ArrayList<>();
         for (final String domainName : domainNames) {
-            final String normalizedDomain = normalizeDomain(normalizers, domainName);
+            final String normalizedDomain = normalizeDomain(cache.normalizers, domainName);
             if (log.isDebugEnabled()) {
                 log.debug("Normalized domain '" + domainName + "' to '" + normalizedDomain + "'");
             }
-            for (final DomainBlacklistChecker checker : checkers) {
+            for (final DomainBlacklistChecker checker : cache.checkers) {
                 if (!checker.check(normalizedDomain)) {
                     messages.add("Domain '" + domainName + "' is blacklisted.");
                     result = false;
