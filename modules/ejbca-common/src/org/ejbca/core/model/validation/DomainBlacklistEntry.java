@@ -1,15 +1,16 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General                  *
+ *  modify it under the terms of the GNU Lesser General Public           *
  *  License as published by the Free Software Foundation; either         *
  *  version 2.1 of the License, or any later version.                    *
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.core.model.validation;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -18,8 +19,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import org.apache.commons.lang.StringUtils;
-
-
 
 /**
  * Domain class representing a domain blacklist entry.
@@ -52,19 +51,19 @@ public class DomainBlacklistEntry extends BlacklistEntry implements Serializable
     }
     
     public String getBlackListFileName() {
-        return getData();
-    }
-    
-    public void setBlackListFileName(String fileName) {
-        setData(fileName);
-    }
-    
-    public String getBlacklistedDomains() {
         return getValue();
     }
     
+    public void setBlackListFileName(String fileName) {
+        setValue(fileName);
+    }
+    
+    public String getBlacklistedDomains() {
+        return getData();
+    }
+    
     public void setBlacklistedDomains(byte[] domainBlacklistByteArray) {
-        setValue(createValueFromFile(domainBlacklistByteArray));
+        setData(createValueFromFile(domainBlacklistByteArray));
     }
     
     public String createValueFromFile(byte[] domainBlacklistByteArray) {
