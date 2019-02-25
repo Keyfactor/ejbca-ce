@@ -530,9 +530,16 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     public boolean authorizedToProfileWithResource(AuthenticationToken admin, CertificateProfile profile, boolean logging, String... resources) {
         // We need to check that admin also have rights to the passed in resources
         final List<String> rules = new ArrayList<>(Arrays.asList(resources));
-        // Check that admin is authorized to all CAids
-        for (final Integer caid : profile.getAvailableCAs()) {
-            rules.add(StandardRules.CAACCESS.resource() + caid);
+        if (profile.isApplicableToAnyCA()) {
+            if (resources.length != 1 || !StandardRules.CERTIFICATEPROFILEVIEW.resource().equals(resources[0])) {
+                // If not just viewing, we require /ca/ access
+                rules.add(StandardRules.CAACCESS.resource());
+            }
+        } else {
+            // Check that admin is authorized to all CAids
+            for (final Integer caid : profile.getAvailableCAs()) {
+                rules.add(StandardRules.CAACCESS.resource() + caid);
+            }
         }
         // Perform authorization check
         boolean ret = false;
