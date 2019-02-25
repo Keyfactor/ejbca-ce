@@ -165,7 +165,7 @@
                         <component:approvalmetadata id="currentMetaData" partition="#{partition}" rendered="#{raManageRequestBean.hasContent(partition)}" />
                     </ui:repeat>
 
-                    <h:panelGroup id="validationWarnings" layout="block" styleClass="internal-frame-black"
+                    <h:panelGroup id="validationWarnings" layout="block" styleClass="internal-frame-warning"
                         rendered="#{raManageRequestBean.validationFailure}">
                         <ui:repeat layout="block" value="#{raManageRequestBean.validationMessages}" var="validationMessage">
                             <div class="keygeneration-button-group">
