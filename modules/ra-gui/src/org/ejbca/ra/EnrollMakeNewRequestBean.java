@@ -1455,7 +1455,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         final List<SelectItem> pspRoles = new ArrayList<>();
         pspRoles.add(new SelectItem("PSP_AS", raLocaleBean.getMessage("enroll_psd2_psp_as")));
         pspRoles.add(new SelectItem("PSP_PI", raLocaleBean.getMessage("enroll_psd2_psp_pi")));
-        pspRoles.add(new SelectItem("PSP_AS", raLocaleBean.getMessage("enroll_psd2_psp_ai")));
+        pspRoles.add(new SelectItem("PSP_AI", raLocaleBean.getMessage("enroll_psd2_psp_ai")));
         pspRoles.add(new SelectItem("PSP_IC", raLocaleBean.getMessage("enroll_psd2_psp_ic")));
         return pspRoles;
     }
