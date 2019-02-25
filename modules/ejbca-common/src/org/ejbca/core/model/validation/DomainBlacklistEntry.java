@@ -18,15 +18,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+
 
 
 /**
  * Domain class representing a domain blacklist entry.
- *  
- *
  * @version $Id$
  */
+
 public class DomainBlacklistEntry extends BlacklistEntry implements Serializable, Cloneable {
     
     private static final long serialVersionUID = 542785977370630861L;
