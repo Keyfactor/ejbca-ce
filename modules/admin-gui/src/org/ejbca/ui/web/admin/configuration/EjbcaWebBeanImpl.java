@@ -149,7 +149,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private ServletContext servletContext = null;
-    private WebLanguages adminsweblanguage;
+    private WebLanguagesImpl adminsweblanguage;
     private String usercommonname = "";
     private String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
     private String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
@@ -317,7 +317,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             if (currentAdminPreference == null) {
                 currentAdminPreference = getDefaultAdminPreference();
             }
-            adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
+            adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
             initialized = true;
         }
 
@@ -337,7 +337,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             if (currentAdminPreference == null) {
                 currentAdminPreference = getDefaultAdminPreference();
             }
-            adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
+            adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(), currentAdminPreference.getSecondaryLanguage());
             errorpage_initialized = true;
         }
         return globalconfiguration;
@@ -433,7 +433,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         } else {
             log.debug("Changes to admin preference will not be persisted for the currently logged in AuthenticationToken type and lost when the session ends.");
         }
-        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
+        adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
                 currentAdminPreference.getSecondaryLanguage());
     }
 
@@ -447,7 +447,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         } else {
             log.debug("Changes to admin preference will not be persisted for the currently logged in AuthenticationToken type and lost when the session ends.");
         }
-        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
+        adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
                 currentAdminPreference.getSecondaryLanguage());
     }
 
@@ -485,8 +485,8 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     @Override
-    public WebLanguages getWebLanguages() {
-        return new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
+    public WebLanguagesImpl getWebLanguages() {
+        return new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
                 currentAdminPreference.getSecondaryLanguage());
     }
 
@@ -498,7 +498,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         if (currentAdminPreference == null) {
             currentAdminPreference = getDefaultAdminPreference();
         }
-        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
+        adminsweblanguage = new WebLanguagesImpl(servletContext, globalconfiguration, currentAdminPreference.getPreferedLanguage(),
                 currentAdminPreference.getSecondaryLanguage());
     }
 

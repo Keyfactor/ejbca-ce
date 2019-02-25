@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.configuration.WebLanguage;
-
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ejbca.ui.web.jsf.configuration.WebLanguages;
 
 /**
  * An class interpreting the language properties files. I contains one method getText that returns
@@ -33,10 +35,10 @@ import org.ejbca.ui.web.configuration.WebLanguage;
  *
  * @version $Id$
  */
-public class WebLanguages implements java.io.Serializable, org.ejbca.ui.web.jsf.configuration.WebLanguages {
+public class WebLanguagesImpl implements Serializable, WebLanguages {
     private static final long serialVersionUID = -2381623760140383128L;
 
-    private static final Logger log = Logger.getLogger(WebLanguages.class);
+    private static final Logger log = Logger.getLogger(WebLanguagesImpl.class);
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -48,9 +50,12 @@ public class WebLanguages implements java.io.Serializable, org.ejbca.ui.web.jsf.
     private LanguageProperties[] languages = null;
     private List<WebLanguage> webLanguages;
 
-    /** Constructor used to load static content. An instance must be declared with this constructor before
-     *  any WebLanguage object can be used. */
-    /** Special constructor used by Ejbca web bean */
+    /** 
+     * Constructor used to load static content. An instance must be declared with this constructor
+     * before any WebLanguage object can be used.
+     * 
+     * <p>Special constructor used by {@link EjbcaWebBean}.
+     */
     private void init(final ServletContext servletContext, final GlobalConfiguration globalconfiguration) {
         if(languages == null){
             // Get available languages.
@@ -111,16 +116,13 @@ public class WebLanguages implements java.io.Serializable, org.ejbca.ui.web.jsf.
         }
     }
 
-    public WebLanguages(final ServletContext servletContext, final GlobalConfiguration globalconfiguration, final int preferedlang, final int secondarylang) {
+    public WebLanguagesImpl(final ServletContext servletContext, final GlobalConfiguration globalconfiguration, final int preferedlang, final int secondarylang) {
         init(servletContext, globalconfiguration);
         this.userspreferedlanguage=preferedlang;
         this.userssecondarylanguage=secondarylang;
     }
 
 
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.admin.configuration.IWebLanguages#getText(java.lang.String, java.lang.Object)
-     */
     @Override
     public  String getText(final String template, final Object... params){
       String returnvalue = null;
@@ -139,18 +141,16 @@ public class WebLanguages implements java.io.Serializable, org.ejbca.ui.web.jsf.
       return returnvalue;
     }
 
-    /* Returns a text string array containing the available languages */
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.admin.configuration.IWebLanguages#getAvailableLanguages()
+    /**
+     * @return a text string array containing the available languages.
      */
     @Override
     public String[] getAvailableLanguages(){
       return availablelanguages;
     }
 
-    /* Returns a list of available languages for EJBCA */
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.admin.configuration.IWebLanguages#getWebLanguages()
+    /** 
+     * @return a list of available languages for EJBCA.
      */
     @Override
     public List<WebLanguage> getWebLanguages() {
