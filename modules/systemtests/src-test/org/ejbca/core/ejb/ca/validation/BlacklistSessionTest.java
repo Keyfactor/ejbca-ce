@@ -92,6 +92,7 @@ public class BlacklistSessionTest extends RoleUsingTestCase {
             Map<Integer, String> map = listSession.getBlacklistEntryIdToValueMap();
             int initialSize = map.size(); // perhaps we run this test on a system that has some data so we can not assume 0
             PublicKeyBlacklistEntry entry = new PublicKeyBlacklistEntry();
+            
             //TODO: create separate test for domain black list entries
             Map<Integer, String> blacklistEntryMap = listSession.getBlacklistEntryIdToValueMap();
             DomainBlacklistEntry domainBlacklistEntry = new DomainBlacklistEntry();
@@ -101,16 +102,20 @@ public class BlacklistSessionTest extends RoleUsingTestCase {
             listSession.addBlacklistEntry(internalAdmin, domainBlacklistEntry);
             blacklistEntryMap = listSession.getBlacklistEntryIdToValueMap();
             assertEquals("map should contain a new entry", initialSize+1, blacklistEntryMap.size());
-            String expectedEntry = "domain1.domain1;domain2.domain2;domain3.domain3;domain4.domain4";
-            BlacklistEntry domainBlacklistEntryReturned = listSession.getBlacklistEntry(DomainBlacklistEntry.TYPE, expectedEntry);
+            String expectedEntry1 = "TestfileName"; //value
+            String expectedEntry2 = "domain5.domain5"; //data
+            BlacklistEntry domainBlacklistEntryReturned = listSession.getBlacklistEntry(DomainBlacklistEntry.TYPE, expectedEntry1);
             assertNotNull("an entry should have been returned as we just added it", domainBlacklistEntryReturned);
-            assertEquals("entry should have the value added, domain1.domain1;domain2.domain2;domain3.domain3;domain4.domain4", expectedEntry, domainBlacklistEntryReturned.getValue());
+            assertEquals("entry should have the value added, TestfileName", expectedEntry1, domainBlacklistEntryReturned.getValue());
+            domainBlacklistEntryReturned.setData("domain5.domain5");
             listSession.changeBlacklistEntry(internalAdmin, domainBlacklistEntryReturned);
+            assertEquals("entry should have a new domain in the data field, domain5.domain5", expectedEntry2, domainBlacklistEntryReturned.getData());
             try {
-                listSession.removeBlacklistEntry(internalAdmin, DomainBlacklistEntry.TYPE, expectedEntry);
+                listSession.removeBlacklistEntry(internalAdmin, DomainBlacklistEntry.TYPE, expectedEntry1);//value
             } catch (BlacklistDoesntExistsException e) {
                 // NOOMD: do nothing
             }
+            
             //TODO:
             entry.setFingerprint("abc123");
             listSession.addBlacklistEntry(internalAdmin, entry);
