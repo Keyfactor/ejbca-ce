@@ -1507,21 +1507,21 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             hardTokenEncryptKey = "";
             
             for (final String alias : availableCryptoTokenEncryptionAliases) {
-                if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default")) {
+                if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
                     cryptoTokenDefaultKey = alias;
-                } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || alias.contains("sign") || alias.contains("Sign")) {
+                } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "sign")) {
                     cryptoTokenCertSignKey = alias;
-                } else if (alias.contains("test") || alias.contains("Test")) {
+                } else if (StringUtils.containsIgnoreCase(alias, "test")) {
                     testKey = alias;
                 }
             }
 
             for (final String alias : availableCryptoTokenKeyAliases) {
-                if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default")) {
+                if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "default")) {
                     cryptoTokenDefaultKey = alias;
-                } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || alias.contains("sign") || alias.contains("Sign")) {
+                } else if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || StringUtils.containsIgnoreCase(alias, "sign"))  {
                     cryptoTokenCertSignKey = alias;
-                } else if (alias.contains("test") || alias.contains("Test")) {
+                } else if (StringUtils.containsIgnoreCase(alias, "test")) {
                     testKey = alias;
                 }
             }
