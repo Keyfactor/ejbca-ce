@@ -33,7 +33,7 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -474,7 +474,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                         String msg = "The P11 slot is already used by other crypto token(s)";
                         for (String cryptoTokenName : usedBy) {
                             String usedByName = cryptoTokenName;
-                            if (StringUtils.isNumeric(usedByName)) {
+                            if (NumberUtils.isNumber(usedByName)) {
                                 // if the crypto token name is purely numeric, it is likely to be a database protection token
                                 usedByName = usedByName + " (database protection?)";
                             }

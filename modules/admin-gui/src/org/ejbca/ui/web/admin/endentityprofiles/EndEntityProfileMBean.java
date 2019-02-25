@@ -41,6 +41,7 @@ import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -271,7 +272,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         }
         if (profiledata == null) {
             final String profileIdParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(PARAMETER_PROFILE_ID);
-            if (!StringUtils.isNumeric(profileIdParam)) {
+            if (!NumberUtils.isNumber(profileIdParam)) {
                 throw new IllegalStateException("Internal error. Missing or invalid " + PARAMETER_PROFILE_ID + " HTTP request parameter.");
             }
             loadProfile(Integer.valueOf(profileIdParam));

@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -59,7 +58,7 @@ public class EndEntityCertServlet extends HttpServlet {
     private static final String COMMAND_CERT = "cert";
    
     private static final String ISSUER_PROPERTY = "issuer";
-    private static final String CERTIFICATEDN_PROPERTY = "certificatesn";
+    private static final String CERTIFICATESN_PROPERTY = "certificatesn";
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
@@ -107,7 +106,7 @@ public class EndEntityCertServlet extends HttpServlet {
         
         RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = req.getParameter(ISSUER_PROPERTY);        
-        String certificatesn = req.getParameter(CERTIFICATEDN_PROPERTY);
+        String certificatesn = req.getParameter(CERTIFICATESN_PROPERTY);
 
         String command;
         // Keep this for logging.
@@ -117,7 +116,7 @@ public class EndEntityCertServlet extends HttpServlet {
             command = "";
         }
         if ((command.equalsIgnoreCase(COMMAND_NSCERT) || command.equalsIgnoreCase(COMMAND_IECERT) || command.equalsIgnoreCase(COMMAND_CERT)) 
-        	 && issuerdn != null && StringUtils.isNumeric(certificatesn)) {
+        	 && issuerdn != null && certificatesn != null) {
         	
         	BigInteger certsn = new BigInteger(certificatesn,16);
         	        	        
