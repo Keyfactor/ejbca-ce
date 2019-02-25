@@ -23,7 +23,7 @@ import org.cesecore.util.NameTranslatable;
  *
  * @version $Id$
  */
-public interface DomainBlacklistNormalizer extends NameTranslatable /*extends DynamicUiModelAware*/ {
+public interface DomainBlacklistNormalizer extends NameTranslatable {
 
     /**
      * Initializes this blacklist normalizer.
@@ -33,8 +33,7 @@ public interface DomainBlacklistNormalizer extends NameTranslatable /*extends Dy
 
     /**
      * Normalizes a domain name, for example "examp1e.com" might be transformed to "example.com"
-     * @param configData Data hash map with configuration options (if the normalizer is configurable)
-     * @param domain
+     * @param domain Domain name to normalize.
      * @return Normalized domain name
      */
     String normalize(final String domain);
