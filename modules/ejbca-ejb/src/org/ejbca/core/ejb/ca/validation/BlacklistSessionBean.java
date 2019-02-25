@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.validation.BlacklistEntry;
+import org.ejbca.core.model.validation.DomainBlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntryCache;
 
@@ -102,9 +103,14 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             log.trace(">addBlacklist(value: " + entry.getValue() + ", id: " + id + ")");
         }
         addBlacklistEntryInternal(admin, id, entry);
-        final String message = intres.getLocalizedMessage("blacklist.addedpublickeyblacklist", entry.getValue());
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", message);
+        if(entry.getType().equals(PublicKeyBlacklistEntry.TYPE)) {
+            final String message = intres.getLocalizedMessage("blacklist.addedpublickeyblacklist", entry.getValue());
+            details.put("msg", message);
+        } else if (entry.getType().equals(DomainBlacklistEntry.TYPE)) {
+            final String message = intres.getLocalizedMessage("blacklist.addeddomainblacklist", entry.getData());    
+            details.put("msg", message);
+        }
         auditSession.log(EjbcaEventTypes.BLACKLIST_CREATION, EventStatus.SUCCESS, EjbcaModuleTypes.BLACKLIST, ServiceTypes.CORE,
                 admin.toString(), null, null, null, details);
         if (log.isTraceEnabled()) {
@@ -119,6 +125,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             log.trace(">changeBlacklist(value: " + entry.getValue() + ")");
         }
         assertIsAuthorizedToEditBlacklists(admin);
+
         BlacklistData dataExists = BlacklistData.findByTypeAndValue(entityManager, entry.getType(), entry.getValue());
         if (dataExists != null) {
             log.debug("An entry with type and value already exists: "+entry.getType()+", "+entry.getValue());
@@ -176,7 +183,7 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             log.trace("<removeBlacklist()");
         }
     }
-
+        
     @Override
     public void flushBlacklistEntryCache() {
         PublicKeyBlacklistEntryCache.INSTANCE.flush();
@@ -233,9 +240,17 @@ public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSes
             final BlacklistData entity = new BlacklistData(blacklist);
             entityManager.persist(entity);
         } else {
-            final String message = intres.getLocalizedMessage("blacklist.erroraddpublickeyblacklist", blacklist.getValue());
-            log.info(message);
-            throw new BlacklistExistsException("Blacklist entry already exists: "+blacklist.getValue());
+            String messageComponent = null;
+            if (blacklist.getType().equals(PublicKeyBlacklistEntry.TYPE)) {
+                messageComponent = blacklist.getValue();
+                final String message = intres.getLocalizedMessage("blacklist.erroraddblacklist", messageComponent);
+                log.info(message);
+            } else if (blacklist.getType().equals(DomainBlacklistEntry.TYPE)) {
+                messageComponent = blacklist.getData();
+                final String message = intres.getLocalizedMessage("blacklist.erroraddblacklist", messageComponent);
+                log.info(message);
+            }
+            throw new BlacklistExistsException("Blacklist entry already exists: " +messageComponent);
         }
     }
 
