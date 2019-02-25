@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -67,7 +67,7 @@ public class CryptoTokenDownloadServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         final String cryptoTokenIdParam = request.getParameter("cryptoTokenId");
-        if (!StringUtils.isNumeric(cryptoTokenIdParam)) {
+        if (!NumberUtils.isNumber(cryptoTokenIdParam)) {
             if (log.isDebugEnabled()) {
                 log.debug("No crypto token with id: " + cryptoTokenIdParam);                
             }
