@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -828,7 +829,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     private void flushCurrentCache() {
-        if (!StringUtils.isNumeric(currentInternalKeyBindingId) || "0".equals(currentInternalKeyBindingId)) {
+        if (!NumberUtils.isNumber(currentInternalKeyBindingId) || "0".equals(currentInternalKeyBindingId)) {
             // Show defaults for a new object
             currentName = "";
             getAvailableCryptoTokens();
