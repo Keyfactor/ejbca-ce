@@ -50,22 +50,43 @@ public class DomainBlacklistEntry extends BlacklistEntry implements Serializable
         return DomainBlacklistEntry.TYPE;
     }
     
+    /**
+     * Get the file name
+     * @return the file name
+     */
     public String getBlackListFileName() {
         return getValue();
     }
     
+    /**
+     * Set the file name
+     * @param fileName the file name
+     */
     public void setBlackListFileName(String fileName) {
         setValue(fileName);
     }
     
+    /**
+     * Get the blacklist domains
+     * @return a string containing the blacklisted domains
+     */
     public String getBlacklistedDomains() {
         return getData();
     }
     
+    /**
+     * Set the blacklisted domains
+     * @param domainBlacklistByteArray containing the blacklisted domains to be parsed
+     */
     public void setBlacklistedDomains(byte[] domainBlacklistByteArray) {
         setData(createValueFromFile(domainBlacklistByteArray));
     }
     
+    /**
+     * Parsing a byte array to set blacklisted domains 
+     * @param domainBlacklistByteArray the byte array to parse
+     * @return the String representation of the domain blacklist
+     */
     public String createValueFromFile(byte[] domainBlacklistByteArray) {
         String valueString = null;
         try {
