@@ -100,7 +100,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
         registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Username for the new end entity."));
         registerParameter(new Parameter(PASSWORD_KEY, "Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Password for the new end entity. Will be prompted for if not set."));
+                "Password for the new end entity. Will be prompted for if not set. Set to 'null' for empty password (used for auto-generated passwords)."));
         registerParameter(new Parameter(DN_KEY, "DN", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc. " + "\nAn LDAP escaped DN is for example:\n"
                         + "DN: CN=Tomas Gustavsson, O=PrimeKey Solutions, C=SE\n"
@@ -367,12 +367,14 @@ public class AddEndEntityCommand extends BaseRaCommand {
     }
 
     private String getAuthenticationCode(final String commandLineArgument) {
-
         final String authenticationCode;
-        if (commandLineArgument == null || "null".equalsIgnoreCase(commandLineArgument)) {
+        if (commandLineArgument == null) {
             getLogger().info("Enter password: ");
             getLogger().info("");
             authenticationCode = StringTools.passwordDecryption(String.valueOf(System.console().readPassword()), "End Entity Password");
+        } else if ("null".equalsIgnoreCase(commandLineArgument)) {
+            getLogger().error("Using no End Entity Password.");
+            authenticationCode = null;
         } else {
             authenticationCode = StringTools.passwordDecryption(commandLineArgument, "End Entity Password");
         }
