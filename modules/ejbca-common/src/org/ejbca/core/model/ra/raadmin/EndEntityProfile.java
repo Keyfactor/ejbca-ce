@@ -1956,7 +1956,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                         if (subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD) {
                             if (getCopy(profileID, l)) {
                                  /*
-                                 * IF the component is DNSNAME and getUse is true, value from CN should be used
+                                 * IF the component is DNSNAME and getCopy is true, value from CN should be used
                                  */
                                 if (fields.getField(dnFieldExtractorID, m).equals(commonName)) {
                                     subjectsToProcess[m] = null;
