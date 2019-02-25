@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -90,7 +91,7 @@ public class EccWithKeyEncipherment extends Issue {
 
     private Predicate<AuthenticationToken> createAccessControlRule(final CertificateProfile certificateProfile) {
         return authenticationToken -> certificateProfileSession.authorizedToProfileWithResource(authenticationToken,
-                certificateProfile, /* logging */ false);
+                certificateProfile, /* logging */ false, StandardRules.CERTIFICATEPROFILEVIEW.resource());
     }
 
     @Override
