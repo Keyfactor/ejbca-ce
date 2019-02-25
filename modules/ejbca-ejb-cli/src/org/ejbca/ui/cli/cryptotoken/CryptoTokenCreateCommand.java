@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.BaseCryptoToken;
@@ -172,7 +173,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 if (!usedBy.isEmpty() && !ignoreslotwarning) {
                     for (String usedByName : usedBy) {
                         String name = usedByName;
-                        if (StringUtils.isNumeric(name)) {
+                        if (NumberUtils.isNumber(name)) {
                             // if the crypto token name is purely numeric, it is likely to be a database protection token
                             name = name + " (database protection?)";
                         }
