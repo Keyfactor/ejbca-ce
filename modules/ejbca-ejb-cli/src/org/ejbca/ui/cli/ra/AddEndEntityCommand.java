@@ -373,7 +373,7 @@ public class AddEndEntityCommand extends BaseRaCommand {
             getLogger().info("");
             authenticationCode = StringTools.passwordDecryption(String.valueOf(System.console().readPassword()), "End Entity Password");
         } else if ("null".equalsIgnoreCase(commandLineArgument)) {
-            getLogger().error("Using no End Entity Password.");
+            getLogger().info("Using no End Entity Password.");
             authenticationCode = null;
         } else {
             authenticationCode = StringTools.passwordDecryption(commandLineArgument, "End Entity Password");
