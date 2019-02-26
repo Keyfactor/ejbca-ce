@@ -63,7 +63,8 @@
 							 rendered="#{editPublisher.customPublisherMBData.renderCustomTextInput(property)}"/>
 				<h:inputSecret value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
 							   autocomplete="off" size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
-							   rendered="#{editPublisher.customPublisherMBData.renderCustomInputPassword(property)}"/>
+							   rendered="#{editPublisher.customPublisherMBData.renderCustomInputPassword(property)}"
+							   redisplay="true"/>
 				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
 										  disabled="#{editPublisher.readOnly}" rendered="#{editPublisher.customPublisherMBData.renderCustomCheckbox(property)}"/> 
 				<h:outputLabel value="#{web.text.USE}" rendered="#{editPublisher.customPublisherMBData.renderCustomCheckbox(property)}"/>
