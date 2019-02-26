@@ -19,14 +19,11 @@ import org.apache.log4j.Level;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
- * A ticket is the <i>realisation of an issue</i>. A ticket has a priority, a description
- * and optionally a target. An issue may only produce one ticket, in which case the ticket
- * may have a target, or multiple tickets, in which case each individual ticket must have
- * a unique target.
- *
- * <p>For example, one issue could be a specific misconfiguration in a certificate profile.
- * The issue would then produce one ticket per misconfigured certificate profile, where the
- * certificate profile is the target of the ticket.
+ * A ticket is the <i>realisation of an issue</i>. Each ticket is associated with an
+ * issue, a ticket description, and a piece of access control logic.
+ * 
+ * <p>Tickets can be compared for equality and compared to each other, based on their
+ * priority.
  *
  * <p>Tickets can be displayed in the GUI, logged to disk, propagated to a separate
  * log management solution or exposed through an API for monitoring purposes.
@@ -131,6 +128,10 @@ public class Ticket implements Comparable<Ticket> {
 
     /**
      * Compare this ticket to another ticket in ascending order based on priority.
+     * 
+     * @return a negative integer if this ticket has higher priority than the ticket given as 
+     * argument, zero if both tickets have the same priority, or a positive integer if this 
+     * ticket has a lower priority than the ticket given as argument.
      */
     @Override
     public int compareTo(final Ticket ticket) {
