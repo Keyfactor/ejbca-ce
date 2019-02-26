@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
@@ -33,6 +34,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 public final class CustomPublisherMBData implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    public static final String PASSWORD_PLACEHOLDER = "placeholder";
     
     private String customPublisherPropertyData;
     private String customPublisherCurrentClass;
@@ -75,6 +78,11 @@ public final class CustomPublisherMBData implements Serializable {
                     }
                 } else {
                     if (customPublisherPropertyValues.get(customPublisherProperty.getName()) != null) {
+                        if (customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD && customPublisherPropertyValues.get(customPublisherProperty.getName()).equals(PASSWORD_PLACEHOLDER)) {
+                            sb.append(customPublisherProperty.getName()).append('=')
+                            .append(customPublisherProperty.getValue()).append('\n');
+                            continue;
+                        }
                         sb.append(customPublisherProperty.getName()).append('=')
                                 .append(customPublisherPropertyValues.get(customPublisherProperty.getName())).append('\n');
                     }
@@ -122,9 +130,13 @@ public final class CustomPublisherMBData implements Serializable {
 
         customPublisherPropertyValues = new HashMap<>();
 
-        for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher).
-                getCustomUiPropertyList(EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject())) {
-                customPublisherPropertyValues.put(customPublisherProperty.getName(), customPublisherProperty.getValue());
+        for (final CustomPublisherProperty customPublisherProperty : ((CustomPublisherContainer) publisher)
+                .getCustomUiPropertyList(EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject())) {
+            if (customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD && !StringUtils.isBlank(customPublisherProperty.getValue())) {
+                customPublisherPropertyValues.put(customPublisherProperty.getName(), PASSWORD_PLACEHOLDER); // Should show a plcaeholder in gui instead of actual password!
+                continue;
+            }
+            customPublisherPropertyValues.put(customPublisherProperty.getName(), customPublisherProperty.getValue());
         }
     }    
 }
