@@ -246,7 +246,7 @@ public class EjbcaRestHelperUnitTest {
 
         CAInfo caInfo = new X509CAInfo(subjectDn, name, status, certificateProfileId, encodedValidity, signedby, certificatechain, caToken);
 
-        EndEntityProfile endEntityProfile = mock(EndEntityProfile.class);
+        EndEntityProfile endEntityProfile = EasyMock.createNiceMock(EndEntityProfile.class);
 
         AuthenticationToken authenticationToken = EasyMock.mock(AuthenticationToken.class);
 
