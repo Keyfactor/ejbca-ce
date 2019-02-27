@@ -27,7 +27,7 @@
             <h1>
                 <h:outputText value="#{web.text.MANAGEROLES}" rendered="#{rolesBean.authorizedToEditRoles}"/>
                 <h:outputText value="#{web.text.VIEWROLES}" rendered="#{!rolesBean.authorizedToEditRoles}"/>
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Roles.html')}" escape="false"/>
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Roles_and_Access_Rules.html')}" escape="false"/>
             </h1>
             <h:outputText styleClass="alert" rendered="#{!rolesBean.authorizedToViewRoles}" value="#{web.text.ROLES_ERROR_UNAUTH}"/>
             
