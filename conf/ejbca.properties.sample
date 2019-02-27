@@ -16,9 +16,11 @@
 # - ca.cmskeystorepass
 
 # Application server home directory used during development. The path can not end with a slash or backslash.
+# On windows use / instead of \
 # Default: $APPSRV_HOME
 #appserver.home=/opt/jboss-as-7.1.1.Final
 #appserver.home=/opt/glassfish3/glassfish
+#appserver.home=/Program Files/wildfly-10.1.0Final
 #appserver.home=${env.APPSRV_HOME}
 
 # See also the section 'cluster configuration' for other JBoss options, for example
