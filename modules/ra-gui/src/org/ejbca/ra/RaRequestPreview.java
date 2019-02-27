@@ -18,6 +18,8 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.ejbca.core.model.ra.EndEntityInformationFiller;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /** 
  * UI representation of a certificate preview to be confirmed before enrollment.
@@ -76,11 +78,34 @@ public class RaRequestPreview {
         this.subjectDn = subjectDn.getUpdatedValue();
     }
     
-    public final void updateSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName){
+    public final void updateSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName, final EndEntityProfile profile){
         if(subjectAlternativeName == null){
             return;
         }
-        this.subjectAlternativeName = subjectAlternativeName.getUpdatedValue();
+        if(profile ==null) {
+            this.subjectAlternativeName =subjectAlternativeName.getUpdatedValue();
+        } else {
+            this.subjectAlternativeName = getAddDnsFromCnToAltName(subjectDn, subjectAlternativeName.getUpdatedValue(), profile);
+        }
+    }
+
+    /**
+     * Update subjectAltName with dns fields with value from CN
+     * @param subjectDn subjectDn
+     * @param altName altName
+     * @param profile EEProfile
+     * @return altName updated with dns copied from CN
+     */
+    private String getAddDnsFromCnToAltName(final String subjectDn, String altName, final EndEntityProfile profile) {
+        String dnsNameValueFromCn = EndEntityInformationFiller.copyDnsNameValueFromCn(profile, subjectDn);
+        if (altName == null) {
+            altName = "";
+        }
+        if (StringUtils.isNotEmpty(altName) && StringUtils.isNotEmpty(dnsNameValueFromCn)) {
+            altName += ", ";
+        }
+        altName += dnsNameValueFromCn;
+        return altName;
     }
     
     public final void updateSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes){

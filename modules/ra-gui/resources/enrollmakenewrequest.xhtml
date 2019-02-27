@@ -364,8 +364,7 @@
 									<h:panelGroup rendered="#{instance.copyDns}">
 										<h:selectBooleanCheckbox value="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].dnsCopyCheckbox}"
 																 disabled="#{enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index].required}">
-											<f:ajax event="click" listener="#{enrollMakeNewRequestBean.updateDnsField(enrollMakeNewRequestBean.subjectAlternativeName.fieldInstances[loop.index])}"
-													execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
+											<f:ajax event="click" execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
 										</h:selectBooleanCheckbox>
 									</h:panelGroup>
 								</h:panelGroup>
