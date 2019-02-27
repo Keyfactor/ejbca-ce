@@ -125,6 +125,6 @@ public class EndEntityInformationFillerTest {
         profile.addField(DnComponents.DNSNAME);
         profile.setCopy(DnComponents.DNSNAME, 0, true);
         String altName = EndEntityInformationFiller.copyDnsNameValueFromCn(profile, "CN=commonName");
-        assertEquals("Alt name should be empty", "DNSNAME=commonName", altName);
+        assertEquals("Alt name should contain DNSNAME copied from CN", "DNSNAME=commonName", altName);
     }
 }
