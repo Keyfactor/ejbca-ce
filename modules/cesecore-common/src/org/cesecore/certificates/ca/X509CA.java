@@ -1522,6 +1522,7 @@ public class X509CA extends CA implements Serializable {
                     nrOfRecactedLables.add(new ASN1Integer(0));
                 }
             }
+            // Look for rfc822Name
             if(generalName.getTagNo() == 1) {
                 final String str = CertTools.getGeneralNameString(1, generalName.getName());
                 if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
