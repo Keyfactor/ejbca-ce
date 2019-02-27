@@ -28,9 +28,7 @@
 </f:metadata>
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:define name="content">
-        <h1><h:outputText value="#{web.text.MANAGEUSERDATASOURCES}"/>
-            <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Framework_for_External_User_Data_Sources.html')}" escape="false"/>
-        </h1>
+        <h1><h:outputText value="#{web.text.MANAGEUSERDATASOURCES}"/></h1>
         <h:form>
             <h:panelGrid rendered="#{!userDatasoucesMBean.deleteInProgress}">
                 <h:panelGrid styleClass="list" columns="2" columnClasses="listColumn1,listColumn2">
