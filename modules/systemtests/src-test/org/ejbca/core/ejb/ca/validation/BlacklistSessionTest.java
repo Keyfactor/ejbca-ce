@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -41,7 +40,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.validation.BlacklistEntry;
-import org.ejbca.core.model.validation.DomainBlacklistEntry;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
 import org.junit.After;
 import org.junit.Before;
@@ -127,40 +125,6 @@ public class BlacklistSessionTest extends RoleUsingTestCase {
             }
         }
         log.trace("<testAddGetChangeRemove()");
-    }
-    
-    @Test
-    public void testAddGetChangeRemoveDomainBlacklist() throws Exception {
-        log.trace(">testAddGetChangeRemoveDomainBlacklist()");
-        String valueEntry = "TestfileName";
-        String parsedDataEntry = "domain1.domain1;domain2.domain2;domain3.domain3;domain4.domain4";
-        String newDataEntry = "domain5.domain5";
-        try {
-            assertNull("foo should not return an entry", listSession.getBlacklistEntry(PublicKeyBlacklistEntry.TYPE, "foo"));
-            Map<Integer, String> map = listSession.getBlacklistEntryIdToValueMap();
-            int initialSize = map.size();    
-            Map<Integer, String> blacklistEntryMap = listSession.getBlacklistEntryIdToValueMap();
-            DomainBlacklistEntry domainBlacklistEntry = new DomainBlacklistEntry();
-            domainBlacklistEntry.setBlackListFileName("TestfileName");
-            byte[] byteArrayfromString = "domain1.domain1\n domain2.domain2 \n#comment_to_ignore\ndomain3.domain3\n domain4.domain4 ".getBytes(StandardCharsets.UTF_8);
-            domainBlacklistEntry.setBlacklistedDomains(byteArrayfromString);
-            listSession.addBlacklistEntry(internalAdmin, domainBlacklistEntry);
-            blacklistEntryMap = listSession.getBlacklistEntryIdToValueMap();
-            assertEquals("map should contain a new entry", initialSize+1, blacklistEntryMap.size());
-            BlacklistEntry domainBlacklistEntryReturned = listSession.getBlacklistEntry(DomainBlacklistEntry.TYPE, valueEntry);
-            assertNotNull("an entry should have been returned as we just added it", domainBlacklistEntryReturned);
-            assertEquals("entry should have the value added, TestfileName", valueEntry, domainBlacklistEntryReturned.getValue());
-            assertEquals("entry should have data parsed and added", parsedDataEntry, domainBlacklistEntryReturned.getData());   
-            domainBlacklistEntryReturned.setData("domain5.domain5");
-            listSession.changeBlacklistEntry(internalAdmin, domainBlacklistEntryReturned);
-            assertEquals("entry should have a new domain in the data field, domain5.domain5", newDataEntry, domainBlacklistEntryReturned.getData());
-        } finally {
-            try {
-                listSession.removeBlacklistEntry(internalAdmin, DomainBlacklistEntry.TYPE, valueEntry);//value
-            } catch (BlacklistDoesntExistsException e) {
-                // NOOMD: do nothing
-            }
-        }
     }
     
     @Test
