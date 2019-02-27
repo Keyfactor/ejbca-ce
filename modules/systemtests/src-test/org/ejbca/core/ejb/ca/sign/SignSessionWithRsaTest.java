@@ -1448,7 +1448,49 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             returnNames = Arrays.asList(retAltNames.split(", "));
             assertTrue(originalNames.containsAll(returnNames));
             // check cert policies, should be there
-            assertNotNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));            
+            assertNotNull(cert.getExtensionValue(Extension.certificatePolicies.getId()));
+            
+            // Check IPv6 extension override
+            //
+            // Create a P10 with extensions, in this case altNames with a lot of DNS names
+            extensionattr = new ASN1EncodableVector();
+            extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            san = CertTools.getGeneralNamesFromAltName("ipAddress=10.1.1.2, iPAddress=FE80:0000:0000:0000:0202:B3FF:FE1E:8329");
+            extgen = new ExtensionsGenerator();
+            extgen.addExtension(Extension.subjectAlternativeName, false, san);            
+            exts = extgen.generate();        
+            extensionattr.add(new DERSet(exts));
+            // Complete the Attribute section of the request, the set (Attributes)
+            // contains one sequence (Attribute)
+            v = new ASN1EncodableVector();
+            v.add(new DERSequence(extensionattr));
+            attributes = new DERSet(v);
+            // Create PKCS#10 certificate request
+            req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
+                    rsakeys.getPrivate(), null);
+            bOut = new ByteArrayOutputStream();
+            dOut = new DEROutputStream(bOut);
+            dOut.writeObject(req.toASN1Structure());
+            dOut.close();
+            p10bytes = bOut.toByteArray();
+            p10 = new PKCS10RequestMessage(p10bytes);
+            p10.setUsername(RSA_USERNAME);
+            p10.setPassword("foo123");
+            // See if the request message works...
+            p10exts = p10.getRequestExtensions();
+            assertNotNull(p10exts);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+            cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+            issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
+            assertNotNull("Failed to create certificate", cert);
+            assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+            // check altNames, should be one altName
+            c = cert.getSubjectAlternativeNames();
+            assertNotNull(c);
+            assertEquals(2, c.size());
+            retAltNames = CertTools.getSubjectAlternativeName(cert);
+            assertEquals("Altnames should have proper IP adresses, ipv4 and ipv6", "iPAddress=10.1.1.2, iPAddress=fe80:0:0:0:202:b3ff:fe1e:8329", retAltNames);
         } finally {
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
