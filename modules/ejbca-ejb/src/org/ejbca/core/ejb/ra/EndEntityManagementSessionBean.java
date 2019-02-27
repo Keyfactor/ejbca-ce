@@ -22,6 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -40,6 +41,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -59,6 +61,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -85,6 +88,10 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.validation.IssuancePhase;
+import org.cesecore.keys.validation.KeyValidatorSessionLocal;
+import org.cesecore.keys.validation.ValidationException;
+import org.cesecore.keys.validation.ValidationResult;
 import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
@@ -137,7 +144,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
-import org.ejbca.core.model.validation.ValidationResult;
 import org.ejbca.util.PrinterManager;
 import org.ejbca.util.dn.DistinguishedName;
 import org.ejbca.util.mail.MailException;
@@ -181,6 +187,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private KeyValidatorSessionLocal keyValidatorSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
@@ -399,10 +407,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Get CAInfo, to be able to read configuration
         // No need to access control on the CA here just to get these flags, we have already checked above that we are authorized to the CA
-        final CAInfo caInfo = caSession.getCAInfoInternal(caid, null, true);
-        if(caInfo == null) {
+        final CA ca = caSession.getCAInternal(caid, null, true);
+        if (ca == null) {
             throw new CADoesntExistsException("CA with ID " + caid + " does not exist.");
         }
+        final CAInfo caInfo = ca.getCAInfo();
 
         // Check name constraints
         if (caInfo instanceof X509CAInfo && caInfo.getCertificateChain() != null && !caInfo.getCertificateChain().isEmpty()) {
@@ -439,11 +448,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, caInfo,
                     certProfile);
             if (approvalProfile != null) {
-                // TODO Run validators to be executed during the "Approval" phase and inject a list of validation results instead of this hardcoded list.
-                final List<ValidationResult> validationResults = Arrays.asList(
-                        new ValidationResult("The domain 'foo.com' is on the blacklist 'ECAQA'. Issuing certificates for blacklisted domains is discouraged.", false),
-                        new ValidationResult("The domain 'foo2.com' is on the blacklist 'ECAQA'. Issuing certificates for blacklisted domains is discouraged.", false));
-                AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(endEntity, clearpwd, admin, null, caid,
+                final List<ValidationResult> validationResults = runApprovalRequestValidation(admin, endEntity, ca);
+                final AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(endEntity, clearpwd, admin, null, caid,
                         endEntityProfileId, approvalProfile, validationResults);
                 // How come we pass through here when the request is actually approved?
                 // When the approval request is finally executed, it is executed through AddEndEntityApprovalRequest.execute, which is
@@ -532,6 +538,28 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.trace("<addUser(" + username + ", password, " + dn + ", " + email + ")");
         }
         return endEntity;
+    }
+
+    private List<ValidationResult> runApprovalRequestValidation(final AuthenticationToken admin, final UserData userdata, final CA ca) throws ApprovalException {
+        if (ca == null || CollectionUtils.isEmpty(ca.getValidators())) {
+            return Collections.emptyList();
+        }
+        final EndEntityInformation endEntity = userdata.toEndEntityInformation();
+        try {
+            return keyValidatorSession.validateDnsNames(admin, IssuancePhase.APPROVAL_VALIDATION, ca, endEntity, null);
+        } catch (ValidationException e) {
+            // TODO perhaps we should throw ValidationException
+            throw new ApprovalException(ErrorCode.CAA_VALIDATION_FAILED, e.getMessage(), e); // FIXME should we use another error code?
+        }
+    }
+
+    private List<ValidationResult> runApprovalRequestValidation(final AuthenticationToken admin, final EndEntityInformation endEntity, final CA ca) throws EndEntityProfileValidationException {
+        try {
+            return keyValidatorSession.validateDnsNames(admin, IssuancePhase.APPROVAL_VALIDATION, ca, endEntity, null);
+        } catch (ValidationException e) {
+            // TODO perhaps we should throw ValidationException
+            throw new EndEntityProfileValidationException(e);
+        }
     }
 
     /* Does not check authorization. Calling code is responsible for this. */
@@ -1268,18 +1296,25 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     private void setUserStatus(final AuthenticationToken admin, final UserData data1, final int status, final int approvalRequestID,
             final AuthenticationToken lastApprovingAdmin) throws ApprovalException, WaitingForApprovalException {
         final int caid = data1.getCaId();
-        CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
+        // Get CAInfo, to be able to read configuration of approval proiles and validators.
+        // No need to access control on the CA here just to get these flags, we have already checked above that we are authorized to the CA
+        final CA ca = caSession.getCAInternal(caid, null, true);
+        final CAInfo caInfo = ca != null ? ca.getCAInfo() : null;
 
         final String username = data1.getUsername();
         final int endEntityProfileId = data1.getEndEntityProfileId();
         // Check if approvals is required.
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(data1.getCertificateProfileId());
-        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, cainfo,
+        final ApprovalProfile approvalProfile = approvalProfileSession.getApprovalProfileForAction(ApprovalRequestType.ADDEDITENDENTITY, caInfo,
                 certProfile);
         if (approvalProfile != null) {
-            // TODO Run validators to be executed during the "Approval" phase and inject a list of validation results instead of null.
+            List<ValidationResult> validationResults = null;
+            if (status != EndEntityConstants.STATUS_GENERATED && status != EndEntityConstants.STATUS_FAILED && status != EndEntityConstants.STATUS_REVOKED) {
+                // Run validators when changing to NEW or similar, but not when revoking or after cert generation. 
+                validationResults = runApprovalRequestValidation(admin, data1, ca);
+            }
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
-                    null, data1.getCaId(), endEntityProfileId, approvalProfile, /* validation results */ null);
+                    null, data1.getCaId(), endEntityProfileId, approvalProfile, validationResults);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
                 final int requestId = approvalSession.addApprovalRequest(admin, ar);
                 String msg = intres.getLocalizedMessage("ra.approvaledit");
