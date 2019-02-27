@@ -312,6 +312,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException, WaitingForApprovalException,
             CADoesntExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
+        endEntity.setSubjectAltName(getAddDnsFromCnToAltName(endEntity.getDN(), endEntity.getSubjectAltName(), endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId)));
         final int caid = endEntity.getCAId();
         // Check if administrator is authorized to add user to CA.
         assertAuthorizedToCA(admin, caid);
