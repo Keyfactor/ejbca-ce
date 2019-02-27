@@ -35,6 +35,7 @@ public final class CustomPublisherMBData implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
+    // This will be used in the gui to guide the user that he/she has already set a password
     public static final String PASSWORD_PLACEHOLDER = "placeholder";
     
     private String customPublisherPropertyData;
@@ -78,6 +79,7 @@ public final class CustomPublisherMBData implements Serializable {
                     }
                 } else {
                     if (customPublisherPropertyValues.get(customPublisherProperty.getName()) != null) {
+                        // Save the actual password instead of placeholder.
                         if (customPublisherProperty.getType() == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD && customPublisherPropertyValues.get(customPublisherProperty.getName()).equals(PASSWORD_PLACEHOLDER)) {
                             sb.append(customPublisherProperty.getName()).append('=')
                             .append(customPublisherProperty.getValue()).append('\n');
