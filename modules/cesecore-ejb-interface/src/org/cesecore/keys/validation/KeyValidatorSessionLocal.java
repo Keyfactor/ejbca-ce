@@ -165,10 +165,10 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
      * @param ca the issuing CA
      * @param endEntityInformation the end entity object
      * @param the incoming request message
-     *
+     * @return List of validation messages, or an empty list for a successful result without any messages.
      * @throws ValidationException if validation failed
      */
-    void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
+    List<ValidationResult> validateDnsNames(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca, final EndEntityInformation endEntityInformation,
             final RequestMessage requestMessage) throws ValidationException;
 
     /**
@@ -183,6 +183,7 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
      *          {@link KeyValidationFailedActions#ABORT_CERTIFICATE_ISSUANCE} and validation fails, message is NOT null. Exception of any technical 
      *          errors are stored in the cause, and message is null.
      */
+    @Override
     void validateCertificate(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca,
             final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException;
 

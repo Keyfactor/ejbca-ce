@@ -561,7 +561,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(req));
             setKeyValidatorsForCa(testCA, validatorId);
             try {
-                keyValidatorProxySession.validateDnsNames(internalAdmin, testCA, endEntityInformation, requestMessage);
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformation, requestMessage);
             } catch(ValidationException e) {
                 throw e;
             } catch (Exception e) {
@@ -629,7 +629,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(req));
             setKeyValidatorsForCa(testCA, validatorId);
             try {
-                keyValidatorProxySession.validateDnsNames(internalAdmin, testCA, endEntityInformation, requestMessage);
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformation, requestMessage);
             } catch(ValidationException e) {
                 throw e;
             } catch (Exception e) {

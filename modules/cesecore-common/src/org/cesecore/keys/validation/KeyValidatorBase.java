@@ -16,6 +16,7 @@ package org.cesecore.keys.validation;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -34,14 +35,6 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
     private static final Logger log = Logger.getLogger(KeyValidatorBase.class);
     
     private static final long serialVersionUID = 1L;
-    
-    /** List of applicable issuance phases (see {@link IssuancePhase}). */ 
-    protected static List<Integer> APPLICABLE_PHASES;
-    
-    static {
-        APPLICABLE_PHASES = new ArrayList<Integer>();
-        APPLICABLE_PHASES.add(IssuancePhase.DATA_VALIDATION.getIndex());
-    }
     
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
@@ -80,7 +73,7 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
 
     @Override
     public List<Integer> getApplicablePhases() {
-        return APPLICABLE_PHASES;
+        return new ArrayList<>(Arrays.asList(IssuancePhase.DATA_VALIDATION.getIndex()));
     }
     
     @Override

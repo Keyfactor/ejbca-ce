@@ -172,9 +172,9 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     }
 
     @Override
-    public void validateDnsNames(AuthenticationToken authenticationToken, CA ca, EndEntityInformation endEntityInformation,
+    public List<ValidationResult> validateDnsNames(AuthenticationToken authenticationToken, IssuancePhase issuancePhase, CA ca, EndEntityInformation endEntityInformation,
             RequestMessage requestMessage) throws ValidationException {
-        keyValidatorSession.validateDnsNames(authenticationToken, ca, endEntityInformation, requestMessage);
+        return keyValidatorSession.validateDnsNames(authenticationToken, issuancePhase, ca, endEntityInformation, requestMessage);
     }
 
     @Override

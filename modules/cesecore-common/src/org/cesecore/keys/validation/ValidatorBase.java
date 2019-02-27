@@ -44,10 +44,10 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     protected static final InternalResources intres = InternalResources.getInstance();
 
     /** List of applicable issuance phases (see {@link IssuancePhase}). */ 
-    protected static List<Integer> APPLICABLE_PHASES;
+    private static List<Integer> APPLICABLE_PHASES;
     
     /** List of applicable CA types (see {@link #getApplicableCaTypes()}. */ 
-    protected static List<Integer> APPLICABLE_CA_TYPES;
+    private static List<Integer> APPLICABLE_CA_TYPES;
         
     public static final float LATEST_VERSION = 7F;
 
@@ -65,12 +65,13 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     protected static final String NOT_APPLICABLE_ACTION = "notApplicableAction";
         
     static {
-        APPLICABLE_PHASES = new ArrayList<Integer>();
+        APPLICABLE_PHASES = new ArrayList<>();
+        // Only DNS validators work with Approval Validation, so don't add it here.
         APPLICABLE_PHASES.add(IssuancePhase.DATA_VALIDATION.getIndex());
         APPLICABLE_PHASES.add(IssuancePhase.PRE_CERTIFICATE_VALIDATION.getIndex());
         APPLICABLE_PHASES.add(IssuancePhase.CERTIFICATE_VALIDATION.getIndex());
         
-        APPLICABLE_CA_TYPES = new ArrayList<Integer>();
+        APPLICABLE_CA_TYPES = new ArrayList<>();
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_CVC);
     }
