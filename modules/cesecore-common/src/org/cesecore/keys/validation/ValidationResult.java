@@ -11,18 +11,16 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.model.validation;
+package org.cesecore.keys.validation;
 
 import java.io.Serializable;
-
-import org.ejbca.core.model.approval.ApprovalRequest;
 
 /**
  * Contains the result of a validation performed by a validator executed
  * during the "Approval" phase.
  *
  * <p><b>Implementation note:</b> This object is serialised as a part of
- * the {@link ApprovalRequest} object. Care should be taken when making
+ * ApprovalRequest objects in EJBCA. Care should be taken when making
  * changes to ensure backwards compatibility.
  *
  * @version $Id$

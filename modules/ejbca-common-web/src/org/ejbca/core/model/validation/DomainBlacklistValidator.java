@@ -91,7 +91,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     @Override
     public List<Integer> getApplicablePhases() {
-        return new ArrayList<>(Arrays.asList(IssuancePhase.DATA_VALIDATION.getIndex()));
+        return new ArrayList<>(Arrays.asList(IssuancePhase.DATA_VALIDATION.getIndex(), IssuancePhase.APPROVAL_VALIDATION.getIndex()));
     }
 
     @Override
