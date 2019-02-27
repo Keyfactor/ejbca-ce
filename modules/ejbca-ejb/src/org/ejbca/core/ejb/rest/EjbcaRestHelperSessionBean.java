@@ -111,7 +111,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
     @Override
     public EndEntityInformation convertToEndEntityInformation(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollcertificateRequest)
-            throws AuthorizationDeniedException, EndEntityProfileNotFoundException, EjbcaException, CertificateProfileDoesNotExistException, CADoesntExistsException {
+            throws AuthorizationDeniedException, EjbcaException, CertificateProfileDoesNotExistException, CADoesntExistsException {
 
         EndEntityInformation endEntityInformation = new EndEntityInformation();
         ExtendedInformation extendedInformation = new ExtendedInformation();
@@ -152,16 +152,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         endEntityInformation.setTimeModified(timecreated);
 
         EndEntityProfile endEntityProfile = getEndEntityProfile(endEntityProfileId);
-
-        String dnsNamesFromCn = EndEntityInformationFiller.copyDnsNameValueFromCn(endEntityProfile, subjectDn);
         String altName = getSubjectAltName(pkcs10CertificateRequest);
-        if (StringUtils.isNotEmpty(dnsNamesFromCn)) {
-            if (altName == null) {
-                altName = dnsNamesFromCn;
-            } else {
-                altName = altName + ", " + dnsNamesFromCn;
-            }
-        }
         endEntityInformation.setSubjectAltName(altName);
 
         endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
