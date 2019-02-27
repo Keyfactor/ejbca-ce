@@ -1946,21 +1946,23 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     } // checkIfFieldsMatch
 
-    private void verifyDnsNameFieldMatchesCnValue(DNFieldExtractor fields, String commonName, int MATCHED_FIELD, int profileID, int dnFieldExtractorID, String[] subjectsToProcess, int[] profileCrossOffList) {
+    private void verifyDnsNameFieldMatchesCnValue(final DNFieldExtractor fields, String commonName, final int matchedField, final int profileID,
+                                                  final int dnFieldExtractorID, String[] subjectsToProcess, int[] profileCrossOffList) {
+        //0,1,2,3 are combinations of modifiable and required
         for (int k = 3; k >= 0; k--) {
             //	For every value in profile
             for (int l = 0; l < profileCrossOffList.length; l++) {
                 if (profileCrossOffList[l] == k) {
                     //	Match with every value in field-array
                     for (int m = 0; m < subjectsToProcess.length; m++) {
-                        if (subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD) {
+                        if (subjectsToProcess[m] != null && profileCrossOffList[l] != matchedField) {
                             if (getCopy(profileID, l)) {
                                  /*
                                  * IF the component is DNSNAME and getCopy is true, value from CN should be used
                                  */
                                 if (fields.getField(dnFieldExtractorID, m).equals(commonName)) {
                                     subjectsToProcess[m] = null;
-                                    profileCrossOffList[l] = MATCHED_FIELD;
+                                    profileCrossOffList[l] = matchedField;
                                 }
                             }
                         }
@@ -2755,7 +2757,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         private String defaultValue;
         private int profileId;
         private boolean rfcEmailUsed;
-        private boolean dnsCopy;
+        private boolean dnsCopyCheckbox;
         String regexPattern;
         public FieldInstance(String name, int number){
             this.name = name;
@@ -2764,8 +2766,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             this.value = isSelectable() ? getSelectableValues().get(0) : defaultValue;
             this.profileId = EndEntityProfile.dataConstants.get(name);
             this.rfcEmailUsed = name.equals("RFC822NAME") && isUsed();
-            this.dnsCopy = name.equals(DnComponents.DNSNAME) && isCopy();
-            if (dnsCopy) this.value = "";
+            this.dnsCopyCheckbox = name.equals(DnComponents.DNSNAME) && isCopy();
+            if (dnsCopyCheckbox) this.value = "";
             HashMap<String, Serializable> temp = EndEntityProfile.this.getValidation(name, number);
             if(temp != null){
                 this.regexPattern =  (String)temp.get(RegexFieldValidator.class.getName());
@@ -2787,11 +2789,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         public boolean isCopyDns() {
             return name.equals(DnComponents.DNSNAME) && isCopy();
         }
-        public boolean isDnsCopy() {
-            return dnsCopy;
+        public boolean isDnsCopyCheckbox() {
+            return dnsCopyCheckbox;
         }
-        public void setDnsCopy(boolean dnsCopy) {
-            this.dnsCopy = dnsCopy;
+        public void setDnsCopyCheckbox(boolean dnsCopyCheckbox) {
+            this.dnsCopyCheckbox = dnsCopyCheckbox;
         }
         public String getValue(){return value;}
         public void setValue(String value){this.value = value;}
