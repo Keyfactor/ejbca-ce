@@ -35,12 +35,16 @@
 					<h:panelGroup rendered="#{!validatorsBean.operationInProgress}">
 					<h3><h:outputText value="#{web.text.LISTOFVALIDATORS}"/></h3>
 					<h:outputText value="#{validatorsBean.resetValidatorsTrigger}"/>
-					<h:dataTable value="#{validatorsBean.availableValidators}" var="validatoritem" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
+					<h:dataTable id="listValidatorsDataTable" value="#{validatorsBean.availableValidators}" var="validatoritem" styleClass="grid" columnClasses="gridColumn1,gridColumn2">
 						<h:column headerClass="gridColumn1">
 							<f:facet name="header"><h:outputText value="#{web.text.VALIDATORNAME}" title="#{validatoritem.id}"/></f:facet>
 							<h:outputText value="#{''.concat(validatoritem.name).concat(' (').concat(validatoritem.label).concat(')')} "/>
 							<f:facet name="footer">
-					  			<h:inputText value="#{validatorsBean.newValidatorName}" title="#{web.text.FORMAT_ID_STR}" size="45" maxlength="255" disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
+					  			<h:inputText id="validatorNameInputField" 
+					  				value="#{validatorsBean.newValidatorName}" 
+					  				title="#{web.text.FORMAT_ID_STR}" 
+					  				size="45" maxlength="255" 
+					  				disabled="#{!validatorsBean.authorizedToView or !validatorsBean.authorizedToEdit}"/>
 							</f:facet>
 						</h:column>
 						<h:column headerClass="gridColumn2">
