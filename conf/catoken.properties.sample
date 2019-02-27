@@ -16,6 +16,8 @@
 #
 
 # Utimaco HSM Crypto Token example:
+# On windows use / instead of \ in paths
+#sharedLibrary C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll
 sharedLibrary /opt/utimaco/p11/libcs2_pkcs11.so
 slotLabelType=SLOT_NUMBER
 slotLabelValue=1
