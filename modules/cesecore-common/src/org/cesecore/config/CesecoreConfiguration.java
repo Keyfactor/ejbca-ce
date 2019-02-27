@@ -197,13 +197,6 @@ public final class CesecoreConfiguration {
     public static long getCachePublicKeyBlacklistTime() {
         return getLongValue("blacklist.cachetime", 30000L, "milliseconds to cache public key blacklist entries");
     }
-    
-    /**
-     * Parameter to specify if retrieving DomainBlacklist objects from DomainBlacklistSession should be cached, and in that case for how long.
-     */
-    public static long getCacheDomainBlacklistTime() {
-        return getLongValue("blacklist.cachetime", 30000L, "milliseconds to cache domain blacklist entries");
-    }
 
     /**
      * Parameter to specify if retrieving KeyValidator objects from KeyValidatorSession should be cached, and in that case for how long.
