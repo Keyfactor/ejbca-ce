@@ -403,7 +403,7 @@
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="ra-gui" depends="ejbca-common-web" description="Build the EJBCA RA GUI WAR">
+	<target name="ra-gui" depends="ejbca-common-web, ejbca-ejb" description="Build the EJBCA RA GUI WAR">
 		<ant antfile="${mod.ra-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
