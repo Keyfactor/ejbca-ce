@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
@@ -384,8 +385,9 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     }
 
     @Override
-    public void validateDnsNames(final AuthenticationToken authenticationToken, final CA ca, final EndEntityInformation endEntityInformation,
-            final RequestMessage requestMessage) throws ValidationException {
+    public List<ValidationResult> validateDnsNames(final AuthenticationToken authenticationToken, final IssuancePhase phase,
+            final CA ca, final EndEntityInformation endEntityInformation, final RequestMessage requestMessage) throws ValidationException {
+        final List<ValidationResult> allResults = new ArrayList<>(); 
         if (!CollectionUtils.isEmpty(ca.getValidators())) {
             Validator baseValidator;
             DnsNameValidator validator;
@@ -394,16 +396,16 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 if (baseValidator != null && baseValidator.getValidatorSubType().equals(DnsNameValidator.class)) {
                     validator = (DnsNameValidator) baseValidator;
                     // Filter for validator criteria.
-                    if (baseValidator instanceof CertificateProfileAwareValidator
-                            && !filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId())) {
+                    if (!filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId()) ||
+                            phase.getIndex() != validator.getPhase()) {
                         continue;
                     }
                     CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
                     final String subjectAltName = endEntityInformation.getSubjectAltName();
                     final List<String> dnsNames = new ArrayList<>();
-                    for (String split : subjectAltName.split(",")) {
-                        if (split.trim().toLowerCase().startsWith(CertTools.DNS.toLowerCase())) {
+                    for (String split : subjectAltName.toLowerCase(Locale.ROOT).split(",")) {
+                        if (split.trim().startsWith(CertTools.DNS.toLowerCase())) {
                             dnsNames.add(split.trim().substring(CertTools.DNS.length() + 1));
                         }
                     }
@@ -414,8 +416,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             Extension extension = extensions.getExtension(Extension.subjectAlternativeName);
                             if (extension != null) {
                                 String extendedSubjectAltName = CertTools.getAltNameStringFromExtension(extension);
-                                for (String split : extendedSubjectAltName.split(",")) {
-                                    if (split.trim().toLowerCase().startsWith(CertTools.DNS.toLowerCase())) {
+                                for (String split : extendedSubjectAltName.toLowerCase(Locale.ROOT).split(",")) {
+                                    if (split.trim().startsWith(CertTools.DNS.toLowerCase())) {
                                         dnsNames.add(split.trim().substring(CertTools.DNS.length() + 1));
                                     }
                                 }
@@ -423,11 +425,15 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         }
                     }
 
-                    Entry<Boolean, List<String>> result = validator.validate(executorService, dnsNames.toArray(new String[dnsNames.size()]));
+                    final Entry<Boolean, List<String>> result = validator.validate(executorService, dnsNames.toArray(new String[dnsNames.size()]));
+                    final boolean successful = result.getKey();
+                    for (final String message : result.getValue()) {
+                        allResults.add(new ValidationResult(message, successful));
+                    }
 
                     final String validatorType = validator.getValidatorTypeIdentifier();
                     final List<String> messages = result.getValue();
-                    if (!result.getKey()) {
+                    if (!successful) {
                         // Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
                         // We want thorough logging in order to trouble shoot though
                         final String message = validator.getLogMessage(false, messages);
@@ -450,6 +456,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                 log.debug("No validators configured for CA " + ca.getName() + " (ID=" + ca.getCAId() + ").");
             }
         }
+        return allResults;
     }
 
     @Override
@@ -478,12 +485,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     }
                     try {
                         // Filter for validator criteria.
-                        if (validator instanceof CertificateProfileAwareValidator
-                                && !filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId())) {
+                        if (!filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId())) {
                             continue;
                         }
-                        if (validator instanceof ValidityAwareValidator
-                                && !filterValidityAwareValidator(validator, certificateValidity.getNotBefore(), certificateValidity.getNotAfter())) {
+                        if (!filterValidityAwareValidator(validator, certificateValidity.getNotBefore(), certificateValidity.getNotAfter())) {
                             continue;
                         }
                         final String fingerprint = CertTools.createPublicKeyFingerprint(publicKey, "SHA-256");
@@ -541,14 +546,6 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     validator = (CertificateValidator) baseValidator;
                     name = validator.getProfileName();
                     if (phase.getIndex() != validator.getPhase()) {
-                        continue;
-                    }
-                    if (validator instanceof CertificateProfileAwareValidator
-                            && !filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId())) {
-                        continue;
-                    }
-                    if (validator instanceof ValidityAwareValidator
-                            && !filterValidityAwareValidator(validator, certificate.getNotBefore(), certificate.getNotAfter())) {
                         continue;
                     }
                     try {
