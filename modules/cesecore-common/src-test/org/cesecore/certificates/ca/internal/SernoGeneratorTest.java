@@ -12,12 +12,6 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +20,12 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -39,14 +39,14 @@ public class SernoGeneratorTest {
     /** Test min and max values for different serial number sizes. */
     @Test
     public void testSernoValidationChecker() throws NoSuchAlgorithmException {
-        // Default serno size 8 bytes (64 bits)
+        // Default serno size 20 bytes (160 bits)
         SernoGeneratorRandom gen = new SernoGeneratorRandom();
-        BigInteger lowest = new BigInteger("0080000000000000", 16);
-        BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFF", 16);
+        BigInteger lowest = new BigInteger("0080000000000000000000000000000000000000", 16);
+        BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
         assertTrue(gen.checkSernoValidity(lowest));
         assertTrue(gen.checkSernoValidity(highest));
-        BigInteger toolow = new BigInteger("007FFFFFFFFFFFFF", 16);
-        BigInteger toohigh = new BigInteger("8000000000000000", 16);
+        BigInteger toolow = new BigInteger("007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+        BigInteger toohigh = new BigInteger("8000000000000000000000000000000000000000", 16);
         assertFalse(gen.checkSernoValidity(toolow));
         assertFalse(gen.checkSernoValidity(toohigh));
 
@@ -64,14 +64,15 @@ public class SernoGeneratorTest {
         assertEquals(1, someSerno.compareTo(lowest));
         assertEquals(-1, someSerno.compareTo(highest));
         assertTrue(gen.checkSernoValidity(someSerno));
-        // Set serno size 20 bytes (160 bits)
+        
+        // Set serno size 8 bytes (64 bits)
         gen.setSernoOctetSize(20);
-        lowest = new BigInteger("0080000000000000000000000000000000000000", 16);
-        highest = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+        lowest = new BigInteger("0080000000000000", 16);
+        highest = new BigInteger("7FFFFFFFFFFFFFFF", 16);
         assertTrue(gen.checkSernoValidity(lowest));
         assertTrue(gen.checkSernoValidity(highest));
-        toolow = new BigInteger("007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
-        toohigh = new BigInteger("8000000000000000000000000000000000000000", 16);
+        toolow = new BigInteger("007FFFFFFFFFFFFF", 16);
+        toohigh = new BigInteger("8000000000000000", 16);
         assertFalse(gen.checkSernoValidity(toolow));
         assertFalse(gen.checkSernoValidity(toohigh));
     }
