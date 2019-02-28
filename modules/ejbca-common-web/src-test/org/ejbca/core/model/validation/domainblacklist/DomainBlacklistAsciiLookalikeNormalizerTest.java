@@ -79,4 +79,15 @@ public class DomainBlacklistAsciiLookalikeNormalizerTest  {
         assertEquals("Expexted normalized unicode", "котикgooglevvчеширик", normilizedUnicode);
     }
 
+    @Test
+    public void testNormalizePunicodeDots() throws ParseException {
+        String punycode = IDN.toASCII("чеширик.g009leмяуvv.vv0rid");
+        String punycodeNormalized = normalizer.normalize(punycode);
+
+        String normilizedUnicode = IDN.toUnicode(punycodeNormalized);
+        assertEquals("Expexted normalized punicode", "xn--e1agai2a3bi.xn--googlevv-99g4exg.world", punycodeNormalized);
+        assertEquals("Expexted normalized unicode", "чеширик.googleмяуvv.world", normilizedUnicode);
+    }
+
+
 }
