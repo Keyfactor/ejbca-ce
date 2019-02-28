@@ -237,6 +237,7 @@ public class X509CA extends CA implements Serializable {
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
         data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_X509));
         data.put(VERSION, new Float(LATEST_VERSION));
+        setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
     }
 
     /**
