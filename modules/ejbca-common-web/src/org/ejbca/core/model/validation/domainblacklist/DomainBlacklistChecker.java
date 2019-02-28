@@ -36,7 +36,7 @@ public interface DomainBlacklistChecker extends NameTranslatable {
     /**
      * Checks a domain name against this blacklist. Must be thread safe.
      * @param domain Domain to check
-     * @return True if the domain name matched against the blacklist.
+     * @return Return false if blocked by blacklist.
      */
     boolean check(final String domain);
 
