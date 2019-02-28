@@ -35,11 +35,11 @@ public class DomainBlacklistExactMatchCheckerTest {
     }
 
     @Test
-    public void checkNotInBlackList() throws Exception {
+    public void checkEmptyBlackList() throws Exception {
         DomainBlacklistExactMatchChecker checker = new DomainBlacklistExactMatchChecker();
         checker.initialize(null, Collections.emptySet());
         boolean result = checker.check("something");
-        assertTrue("Domain should be accepted", result);
+        assertTrue("'something' domain should be accepted by Exact Match checker", result);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class DomainBlacklistExactMatchCheckerTest {
         Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
         checker.initialize(null, blacklist);
         boolean result = checker.check("something.com");
-        assertFalse("Domain should not be accepted", result);
+        assertFalse("'something.com' domain should not be accepted by Exact Match checker", result);
     }
 
     @Test
@@ -57,7 +57,7 @@ public class DomainBlacklistExactMatchCheckerTest {
         Set<String> blacklist = new HashSet<>(Arrays.asList("something", "bank", "paypal.com"));
         checker.initialize(null, blacklist);
         boolean result = checker.check("something.com");
-        assertTrue("Domain should be accepted", result);
+        assertTrue("'something.com' domain should be accepted by Exact Match checker", result);
     }
 
 }
