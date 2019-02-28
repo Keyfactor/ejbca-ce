@@ -1204,7 +1204,7 @@ public class CAInterfaceBean implements Serializable {
     /** Returns true if any CVC CA implementation is available, false otherwise.
      * Used to hide/give warning when no CVC CA implementation is available.
      */
-    public boolean isCVCAvailable() {
+    public boolean isCvcAvailable() {
         boolean ret = false;
         ServiceLoader<? extends CvcPlugin> loader = CvcCA.getImplementationClasses();
         if (loader.iterator().hasNext()) {

@@ -1714,12 +1714,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return resultList;
     }
     
-    public boolean isRenderCVCAvailalble() {
-        return (catype == CAInfo.CATYPE_CVC) && (!caBean.isCVCAvailable() || caBean.isUniqueIssuerDNSerialNoIndexPresent());
+    public boolean isRenderCvcAvailable() {
+        return (catype == CAInfo.CATYPE_CVC) && (!caBean.isCvcAvailable() || caBean.isUniqueIssuerDNSerialNoIndexPresent());
     }
     
-    public boolean isCVCAvailable() {
-        return caBean.isCVCAvailable();
+    public boolean isCvcAvailable() {
+        return caBean.isCvcAvailable();
     }
     
     

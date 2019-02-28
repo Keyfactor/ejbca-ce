@@ -95,34 +95,34 @@
 				</h:panelGroup>
 
 				<!-- "IF CVC NOT AVAILABLE"  -->
-				<h:panelGroup rendered="#{editCAsMBean.renderCVCAvailalble}" />
-				<h:panelGroup rendered="#{editCAsMBean.renderCVCAvailalble}">
+				<h:panelGroup rendered="#{editCAsMBean.renderCvcAvailable}" />
+				<h:panelGroup rendered="#{editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="#{web.text.CVCCANOTAVAILABLE}"
-						rendered="#{not editCAsMBean.cVCAvailable}" />
+						rendered="#{not editCAsMBean.cvcAvailable}" />
 					<h:outputText value="#{web.text.CVCCANOTAVAILABLEUNIQUEINDEX}"
-						rendered="#{editCAsMBean.cVCAvailable}" />
+						rendered="#{editCAsMBean.cvcAvailable}" />
 				</h:panelGroup>
 
 				<!-- "IF CVC AVAILABLE"  -->
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="getsigningalgorithm"
 						value="#{web.text.SIGNINGALGORITHM}" style="font-weight: bold;" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText id="getsigningalgorithm"
 						value="#{editCAsMBean.currentCaSigningAlgorithm}"
 						rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and not editCAsMBean.caExternal}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel value="#{web.text.SIGNINGALGORITHM}"
 						style="font-weight: bold;" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu name="#{web.text.SELECT_SIGNATUREALGORITHM}"
 						value="#{editCAsMBean.signatureAlgorithmParam}">
 						<f:selectItems value="#{editCAsMBean.availableSigningAlgList}" />
@@ -131,7 +131,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel value="#{web.text.CRYPTOTOKEN}"
 						style="font-weight: bold;" />
 					<h:outputText
@@ -140,7 +140,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLink value="#{editCAsMBean.currentCaCryptoTokenLink}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}">
 						<h:outputText value="#{editCAsMBean.currentCaCryptoTokenName}" />
@@ -150,7 +150,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="#{web.text.CRYPTOTOKEN_NOSUITABLE}"
 						rendered="#{not editCAsMBean.cryptoTokenSuitable}" />
 					<h:selectOneMenu name="selectcryptotoken"
@@ -163,15 +163,15 @@
 					<br />
 					<h:outputLabel value="#{web.text.CRYPTOTOKEN_NEED_EXISTING_OR_GEN}"
 						style="font-weight: bold;" 
-						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.cryptoTokenNeedExistingOrGen}" />
+						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenNeedExistingOrGen}" />
 					<h:outputLabel
 						value="You need to select a Crypto Token that exists, or generate keys if it exists, before you can initialize!"
 						style="font-weight: bold;" 
-						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.cryptoTokenIdParamNull}" />
+						rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenIdParamNull}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.failedCryptoTokenExist}">
+					rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.failedCryptoTokenExist}">
 					<h:outputLabel value="Failed to access these CryptoTokens:"
 						style="font-weight: bold;" />
 					<ui:repeat var="failedCrypto"
@@ -185,67 +185,67 @@
 
 				<!-- Edit CA -->
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputLabel for="defaultKey" value="defaultKey" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputText id="defaultKey"
 						value="#{editCAsMBean.currentCaCryptoTokenDefaultKey}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputLabel for="certSignKey" value="certSignKey" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputText id="certSignKey"
 						value="#{editCAsMBean.currentCaCryptoTokenCertSignKey}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputLabel for="crlSignKey" value="crlSignKey" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputText id="crlSignKey"
 						value="#{editCAsMBean.currentCaCryptoTokenCrlSignKey}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputLabel for="keyEncryptKey" value="keyEncryptKey" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputText id="keyEncryptKey"
 						value="#{editCAsMBean.currentCaCryptoTokenKeyEncryptKey}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputLabel for="hardTokenEncrypt" value="hardTokenEncrypt" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputText id="hardTokenEncrypt"
 						value="#{editCAsMBean.currentCaCryptoTokenHardTokenEncrypt}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputLabel for="testKey" value="testKey" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCVCAvailalble and editCAsMBean.currentCaCryptoTokenPresent}">
+					rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
 					<h:outputText id="testKey"
 						value="#{editCAsMBean.currentCaCryptoTokenTestKey}"
 						rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
@@ -254,12 +254,12 @@
 
 				<!-- Create CA -->
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="defaultKey" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu id="selectDefaultKey"
 						value="#{editCAsMBean.selectedCryptoTokenDefaultKey}">
 						<f:selectItems value="#{editCAsMBean.getKeyAliasesList('defaultKey')}" />
@@ -267,12 +267,12 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="certSignKey" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu
 						value="#{editCAsMBean.selectedCryptoTokenCertSignKey}">
 						<f:selectItems value="#{editCAsMBean.getKeyAliasesListWithDefault('certSignKey')}" />
@@ -280,22 +280,22 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="crlSignKey" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="#{web.text.CRYPTOTOKEN_USECERTSIGN}" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="keyEncryptKey" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu value="#{editCAsMBean.selectedKeyEncryptKey}">
 						<f:selectItems
 							value="#{editCAsMBean.getKeyAliasesListWithDefault('keyEncryptKey')}" />
@@ -303,12 +303,12 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="hardTokenEncrypt" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu value="#{editCAsMBean.selectHardTokenEncrypt}">
 						<f:selectItems
 							value="#{editCAsMBean.getKeyAliasesListWithDefault('hardTokenEncrypt')}" />
@@ -317,12 +317,12 @@
 
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputText value="testKey" />
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu name="selectkeytestkey"
 						value="#{editCAsMBean.selectTestKey}">
 						<f:selectItems value="#{editCAsMBean.getKeyAliasesListWithDefault('testKey')}" />
@@ -331,7 +331,7 @@
 
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="selectsize"
 						value="#{web.text.EXTSERVICESKEYSPEC}" />
 					<h:outputText
@@ -340,7 +340,7 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu id="selectsize"
 						value="#{editCAsMBean.signKeySpec}">
 						<f:selectItems value="#{editCAsMBean.exTServicesKeySpecList}" />
@@ -349,7 +349,7 @@
 
 
 				<h:panelGroup
-					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="keysequenceformat"
 						value="#{web.text.KEYSEQUENCEFORMAT}" />
 					<h:outputText
@@ -357,7 +357,7 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:selectOneMenu id="keysequenceformat"
 						value="#{editCAsMBean.keySequenceFormat}"
 						disabled="#{not editCAsMBean.hasEditRight}">
@@ -366,24 +366,24 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="keysequence" value="#{web.text.KEYSEQUENCE}" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Key_Sequence')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCVCAvailalble}">
+					rendered="#{not editCAsMBean.editCA or editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.renderCvcAvailable}">
 					<h:inputText id="keysequence" size="6" maxlength="10"
 						value="#{editCAsMBean.keySequence}"
 						disabled="#{not editCAsMBean.hasEditRight}" />
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{not editCAsMBean.renderCVCAvailalble}">
+				<h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
 					<h:outputLabel for="description" value="#{web.text.DESCRIPTION}" />
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{not editCAsMBean.renderCVCAvailalble}">
+				<h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
 					<h:outputText id="description" value="#{editCAsMBean.description}"
 						rendered="#{editCAsMBean.caExternal}" />
 					<h:inputTextarea name="#{web.text.TEXTFIELD_DESCRIPTION}" cols="45"
@@ -393,10 +393,10 @@
 				</h:panelGroup>
 
 
-                <h:panelGroup rendered="#{not editCAsMBean.renderCVCAvailalble}">
+                <h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
                     <h:outputLabel for="caSerialnNumberOctetSize" value="#{web.text.SERIALNUMBER_OCTET_SIZE}" />
                 </h:panelGroup>
-                <h:panelGroup rendered="#{not editCAsMBean.renderCVCAvailalble}">
+                <h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
                     <h:inputText id="caSerialNumberOctetSize" size="4" maxlength="2"
                         value="#{editCAsMBean.caSerialNumberOctetSize}"
                         disabled="#{not editCAsMBean.hasEditRight}" />
@@ -409,7 +409,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel for="header_directives"
 					value="#{web.text.DIRECTIVES}" style="font-weight: bold;" />
 				<h:panelGroup id="header_directives" />
@@ -577,7 +577,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{not editCAsMBean.renderCvcAvailable}">
 
 				<h:outputLabel for="header_ca_certificate_data"
 					value="#{web.text.CACERTIFICATEDATA}" style="font-weight: bold;" />
@@ -871,7 +871,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.renderCvcAvailable}">
 
 				<h:outputLabel for="header_crl_specific_data"
 					value="#{web.text.CRLSPECIFICDATA}" style="font-weight: bold;" />
@@ -1102,7 +1102,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA}"
 					style="font-weight: bold;" />
 				<h:outputLabel value="#{web.text.DEFAULT_VALIDATION_DATA_HELP}"
@@ -1238,7 +1238,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel for="approvals" value="#{web.text.APPROVALSETTINGS}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="approvals" />
@@ -1247,7 +1247,7 @@
 				var="requestItem" cellspacing="1" cellpadding="3" border="0"
 				width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2" style="padding-right: 4px;"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 				<h:column>
 					<h:outputText value="#{requestItem.displayText}" />
 				</h:column>
@@ -1268,7 +1268,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel for="otherdata" value="#{web.text.OTHERDATA}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="otherdata" />
@@ -1374,7 +1374,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.renderCaLifeCycle and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{editCAsMBean.renderCaLifeCycle and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel for="califecycle" value="#{web.text.CALIFECYCLE}"
 					style="font-weight: bold;" />
 				<h:panelGroup id="califecycle"
@@ -1518,7 +1518,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.renderExternallySignedCaCreationRenewal and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{editCAsMBean.renderExternallySignedCaCreationRenewal and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel for="externallysignedcacreaterenew"
 					value="#{web.text.EXTERNALLYSIGNED_CA_CREATERENEW}"
 					style="font-weight: bold;" />
@@ -1617,7 +1617,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.editCA and editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{editCAsMBean.editCA and editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel for="importcarenewal"
 					value="#{web.text.IMPORTED_CA_RENEWAL}" style="font-weight: bold;" />
 				<h:panelGroup id="importcarenewal" />
@@ -1651,7 +1651,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel />
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
@@ -1728,7 +1728,7 @@
 			<h:panelGrid columns="2" styleClass="edit-top lone-edit-heading"
 				cellspacing="3" cellpadding="3" border="0" width="100%"
 				rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
-				rendered="#{editCAsMBean.editCA and not editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCVCAvailalble}">
+				rendered="#{editCAsMBean.editCA and not editCAsMBean.caExternal and editCAsMBean.hasEditRight and not editCAsMBean.renderCvcAvailable}">
 				<h:outputLabel for="exportcaheader"
 					value="#{web.text.EXPORTCA_HEADER}" style="font-weight: bold;" />
 				<h:panelGroup id="exportcaheader" />
