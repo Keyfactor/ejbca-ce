@@ -12,24 +12,23 @@
  *************************************************************************/
 package org.ejbca.core.model.validation.domainblacklist;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Splits the domain into peices by "." and checks if any piece is present in the blacklist
+ * Removes subdomain one by one, and checks if subdomain is present in the blacklist
  *
  * @version $Id$
  */
-public class DomainBlacklistComponentChecker implements DomainBlacklistChecker {
-
-
+public class DomainBlacklistTopDomainChecker implements DomainBlacklistChecker {
     private Set<String> blacklist;
 
     @Override
     public String getNameKey() {
-        return "DOMAINBLACKLISTVALIDATOR_CHECK_COMPONENT";
+        return "DOMAINBLACKLISTVALIDATOR_CHECK_TOPDOMAIN";
     }
-
 
     @Override
     public void initialize(Map<Object, Object> configData, Set<String> blacklist) {
@@ -41,13 +40,18 @@ public class DomainBlacklistComponentChecker implements DomainBlacklistChecker {
         if (blacklist == null) {
             throw new IllegalStateException("Blacklist not configured!");
         }
-        String[] domainParts = domain.split("\\.");
-
-        for (int i = 0; i < domainParts.length; i++) {
+        String checkingString = domain;
+        while (StringUtils.isNotEmpty(checkingString)) {
             for (String blackListedDomain : blacklist) {
-                if (blackListedDomain.equals(domainParts[i])) {
+                if (blackListedDomain.equals(checkingString)) {
                     return false;
                 }
+            }
+            int indexOfPoint = checkingString.indexOf(".");
+            if (indexOfPoint > 0) {
+                checkingString = checkingString.substring(indexOfPoint + 1);
+            } else {
+                checkingString = null;
             }
         }
         return true;
