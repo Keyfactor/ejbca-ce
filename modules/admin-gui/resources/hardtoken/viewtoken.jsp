@@ -6,7 +6,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenView,org.ejbca.core.model.SecConst,org.cesecore.authorization.AuthorizationDeniedException,
                  org.ejbca.ui.web.RevokedInfoView, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
 <jsp:setProperty name="tokenbean" property="*" /> 
