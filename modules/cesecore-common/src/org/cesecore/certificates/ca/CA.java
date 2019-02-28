@@ -115,6 +115,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String EXTENDEDCASERVICES = "extendedcaservices";
     protected static final String EXTENDEDCASERVICE = "extendedcaservice";
     protected static final String USENOCONFLICTCERTIFICATEDATA = "usenoconflictcertificatedata";
+    protected static final String SERIALNUMBEROCTETSIZE = "serialnumberoctetsize";
 
     /**
      * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
@@ -440,7 +441,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             String signaturealg = (String)tokendata.get(CAToken.SIGNATUREALGORITHM);
             String encryptionalg = (String)tokendata.get(CAToken.ENCRYPTIONALGORITHM);
             String keysequence = CAToken.DEFAULT_KEYSEQUENCE;
-            Object seqo = (String)tokendata.get(CAToken.SEQUENCE);
+            Object seqo = tokendata.get(CAToken.SEQUENCE);
             if (seqo != null) {
                 keysequence = (String)seqo;
             }
