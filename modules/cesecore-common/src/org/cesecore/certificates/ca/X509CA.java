@@ -275,7 +275,7 @@ public class X509CA extends CA implements Serializable {
                 .setCertificateChain(getCertificateChain())
                 .setCaToken(getCAToken())
                 .setDescription(getDescription())
-                .setCaSerialNumberOctetSize(getSerialNumberOctetSize().toString())
+                .setCaSerialNumberOctetSize(getSerialNumberOctetSize())
                 .setRevocationReason(getRevocationReason())
                 .setRevocationDate(getRevocationDate())
                 .setPolicies(getPolicies())
