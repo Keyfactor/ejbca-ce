@@ -83,7 +83,7 @@ public class SernoGeneratorRandom implements SernoGenerator {
             log.trace(">SernoGenerator()");
         }
         this.algorithm = CesecoreConfiguration.getCaSerialNumberAlgorithm();
-        setSernoOctetSize(CesecoreConfiguration.getCaSerialNumberOctetSize());
+        setSernoOctetSize(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa());
         init();
         if (log.isTraceEnabled()) {
             log.trace("<SernoGenerator()");

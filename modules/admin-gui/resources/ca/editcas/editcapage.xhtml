@@ -392,6 +392,16 @@
 						rendered="#{not editCAsMBean.caExternal}" />
 				</h:panelGroup>
 
+
+                <h:panelGroup rendered="#{not editCAsMBean.renderCVCAvailalble}">
+                    <h:outputLabel for="caSerialnNumberOctetSize" value="#{web.text.SERIALNUMBER_OCTET_SIZE}" />
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.renderCVCAvailalble}">
+                    <h:inputText id="caSerialNumberOctetSize" size="4" maxlength="2"
+                        value="#{editCAsMBean.caSerialNumberOctetSize}"
+                        disabled="#{not editCAsMBean.hasEditRight}" />
+                </h:panelGroup>
+                
 			</h:panelGrid>
 
 			<!-- ==================================================================== Directives =================================================================================== -->
