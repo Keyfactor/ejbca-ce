@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
  * @version $Id$
  */
 public class DomainBlacklistAsciiLookalikeNormalizer implements DomainBlacklistNormalizer {
-    private static Pattern pattern = Pattern.compile("(xn--)(.*?)(-.*)");
+    private static Pattern patternMixedUnicodeAndAsci = Pattern.compile("(xn--)(.*?)(-.*)");
+    private static Pattern patternOnlyUnicode = Pattern.compile("(xn--)([^-]*)");
 
     private Map<String, Character> replacementMap;
 
@@ -64,23 +65,38 @@ public class DomainBlacklistAsciiLookalikeNormalizer implements DomainBlacklistN
         if (StringUtils.isNotEmpty(domain)) {
             String normalizeString = domain.toLowerCase();
             StringBuilder sb = new StringBuilder(domain.length());
-            Matcher matcher = pattern.matcher(normalizeString);
-            boolean isPuny = false;
-            if (matcher.matches()) {
-                sb.append(matcher.group(1));
-                isPuny = true;
-                normalizeString = matcher.group(2);
-            }
-
-            for (Map.Entry<String, Character> entry : getReplacementMap().entrySet()) {
-                if (!isPuny || entry.getKey().length() == 1) {
-                    normalizeString = normalizeString.replace(entry.getKey(), String.valueOf(entry.getValue()));
+            String[] domainParts = normalizeString.split("\\.");
+            for (int i = 0; i < domainParts.length; i++) {
+                normalizeString = domainParts[i];
+                Matcher matcher = patternOnlyUnicode.matcher(normalizeString);
+                if (matcher.matches()) {
+                    sb.append(normalizeString);
+                    if (i < domainParts.length - 1) {
+                        sb.append(".");
+                    }
+                    continue;
                 }
-            }
+                matcher = patternMixedUnicodeAndAsci.matcher(normalizeString);
+                boolean isPuny = false;
+                if (matcher.matches()) {
+                    sb.append(matcher.group(1));
+                    isPuny = true;
+                    normalizeString = matcher.group(2);
+                }
 
-            sb.append(normalizeString);
-            if (isPuny) {
-                sb.append(matcher.group(3));
+                for (Map.Entry<String, Character> entry : getReplacementMap().entrySet()) {
+                    if (!isPuny || entry.getKey().length() == 1) {
+                        normalizeString = normalizeString.replace(entry.getKey(), String.valueOf(entry.getValue()));
+                    }
+                }
+
+                sb.append(normalizeString);
+                if (isPuny) {
+                    sb.append(matcher.group(3));
+                }
+                if (i < domainParts.length - 1) {
+                    sb.append(".");
+                }
             }
             return sb.toString();
         }
