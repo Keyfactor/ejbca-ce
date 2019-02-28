@@ -37,7 +37,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
 /**
- * Adds a user to the database.
+ * Adds a user to the database and issues a certificate, all in one CLI call but using two WS calls in the background.
  *
  * @version $Id$
  */
@@ -276,7 +276,9 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 		getPrintStream().println("Usage : generatenewuser <username> <password> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias (or NONE)> <pkcs10path> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)>\n\n");
         getPrintStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
         getPrintStream().println(
-            "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>\"");
+            "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>, directoryName=<LDAP escaped DN>,"
+                + " permanentIdentifier=<Permanent Identifier values>, subjectIdentificationMethod=<Subject Identification Method values or parameters>, "
+                + " registeredID=<object identifier>, xmppAddr=<RFC6120 XmppAddr>, srvName=<RFC4985 SRVName>, fascN=<FIPS 201-2 PIV FASC-N>\"");
 
         getPrintStream().println("Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
 		
