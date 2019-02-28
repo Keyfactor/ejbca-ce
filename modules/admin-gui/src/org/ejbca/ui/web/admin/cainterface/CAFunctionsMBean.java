@@ -22,12 +22,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.SelectItem;
@@ -61,7 +60,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  * @version $Id$
  */
 @ManagedBean
-@RequestScoped
+@ViewScoped
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
@@ -83,10 +82,13 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     public void initialize(final ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
-        final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        globalConfiguration = getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
-        final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
-        extCaNameList = new ArrayList<String>(externalCANames.keySet());
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            final HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            globalConfiguration = getEjbcaWebBean().initialize(req, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
+
+            final TreeMap<String, Integer> externalCANames = getEjbcaWebBean().getExternalCANames();
+            extCaNameList = new ArrayList<String>(externalCANames.keySet());
+        }
     }
 
 
