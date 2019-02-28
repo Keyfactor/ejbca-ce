@@ -8,7 +8,7 @@
                  org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.cesecore.certificates.endentity.EndEntityConstants,org.ejbca.core.model.ra.raadmin.AdminPreference, org.cesecore.certificates.util.DNFieldExtractor,
                  javax.ejb.CreateException, org.ejbca.util.query.*, java.util.*, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
 
 <%! // Declarations
