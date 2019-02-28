@@ -534,7 +534,7 @@ public class X509CA extends CA implements Serializable {
     }
     
     public Integer getSerialNumberOctetSize() {
-        return (Integer)getMapValueWithDefault(SERIALNUMBEROCTETSIZE, null);
+        return (Integer)getMapValueWithDefault(SERIALNUMBEROCTETSIZE, CesecoreConfiguration.getSerialNumberOctetSizeForNewCa());
     }
 
     public void setCaSerialNumberOctetSize(int serialNumberOctetSize) {
