@@ -579,7 +579,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public TreeMap<String,Integer> getAuthorizedCaNamesToIds(final AuthenticationToken admin) {
         final Collection<Integer> availableCaIds = getAllCaIds();
-        final TreeMap<String,Integer> names = new TreeMap<>();
+        final TreeMap<String,Integer> names = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (Integer caid : availableCaIds) {
             if (authorizedToCANoLogging(admin, caid)) {
                 final CAInfo caInfo = getCAInfoInternal(caid);
