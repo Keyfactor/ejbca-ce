@@ -110,7 +110,10 @@ public class AddEndEntityCommand extends BaseRaCommand {
         registerParameter(new Parameter(SUBJECT_ALT_NAME_KEY, "Subject Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>,"
                         + " ipaddress=<address>, upn=<MS UPN>, guid=<MS globally unique id>, directoryName=<LDAP escaped DN>,"
-                        + " krb5principal=<Krb5 principal name>\""));
+                        + " krb5principal=<Krb5 principal name>, permanentIdentifier=<Permanent Identifier values>,"
+                        + " subjectIdentificationMethod=<Subject Identification Method values or parameters>,"
+                        + " registeredID=<object identifier>,"
+                        + " xmppAddr=<RFC6120 XmppAddr>, srvName=<RFC4985 SRVName>, fascN=<FIPS 201-2 PIV FASC-N>\""));
         registerParameter(new Parameter(EMAIL_KEY, "E-Mail", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "E-Mail of the new end entity."));
         registerParameter(new Parameter(TYPE_KEY, "Type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,

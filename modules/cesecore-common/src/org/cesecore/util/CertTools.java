@@ -2559,7 +2559,9 @@ public abstract class CertTools {
      * Name, ediPartyName [5] EDIPartyName, uniformResourceIdentifier [6] IA5String, iPAddress [7] OCTET STRING, registeredID [8] OBJECT IDENTIFIER}
      * 
      * SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uniformResourceIdentifier=<http://host.com/>, iPAddress=<address>,
-     * guid=<globally unique id>, directoryName=<CN=testDirName|dir|name>, permanentIdentifier=<identifierValue/assigner|identifierValue|/assigner|/>
+     * guid=<globally unique id>, directoryName=<LDAP escaped DN>, permanentIdentifier=<identifierValue/assigner|identifierValue|/assigner|/>,
+     * subjectIdentificationMethod=<Subject Identification Method values or parameters>, registeredID=<object identifier>,
+     * xmppAddr=<RFC6120 XmppAddr>, srvName=<RFC4985 SRVName>, fascN=<FIPS 201-2 PIV FASC-N>
      * 
      * Supported altNames are upn, krb5principal, rfc822Name, uniformResourceIdentifier, dNSName, iPAddress, directoryName, permanentIdentifier
      * 
