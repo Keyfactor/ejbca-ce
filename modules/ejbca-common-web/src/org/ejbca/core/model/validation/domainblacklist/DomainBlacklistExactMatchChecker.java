@@ -16,11 +16,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Performs an exact string match against a blacklist. 
- * 
+ * Performs an exact string match against a blacklist.
+ *
  * @version $Id$
  */
 public class DomainBlacklistExactMatchChecker implements DomainBlacklistChecker {
+
+    private Set<String> blacklist;
 
     @Override
     public String getNameKey() {
@@ -29,14 +31,20 @@ public class DomainBlacklistExactMatchChecker implements DomainBlacklistChecker 
 
     @Override
     public void initialize(final Map<Object, Object> configData, final Set<String> blacklist) {
-        // TODO ECA-6052
-
+        this.blacklist = blacklist;
     }
 
     @Override
     public boolean check(final String domain) {
-        // TODO ECA-6052
-        return false;
+        if (blacklist == null) {
+            throw new IllegalStateException("Blacklist not configured!");
+        }
+        for (String blackListedDomain : blacklist) {
+            if (blackListedDomain.equals(domain)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
