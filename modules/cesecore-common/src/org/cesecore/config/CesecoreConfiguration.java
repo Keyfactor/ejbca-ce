@@ -67,7 +67,7 @@ public final class CesecoreConfiguration {
         String value = ConfigurationHolder.getConfiguredString("ca.serialnumberoctetsize");
         if (value == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Using default value of " + DEFAULT_SERIAL_NUMBER_OCTET_SIZE_EXISTINGCA + " for ca.serialnumberoctetsize");
+                log.debug("Using default value of " + DEFAULT_SERIAL_NUMBER_OCTET_SIZE_EXISTINGCA + " for existing CA's ca.serialnumberoctetsize");
             }
             value = DEFAULT_SERIAL_NUMBER_OCTET_SIZE_EXISTINGCA;
         }
@@ -81,7 +81,7 @@ public final class CesecoreConfiguration {
         String value = ConfigurationHolder.getConfiguredString("ca.serialnumberoctetsize"); 
         if (value == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Using default value of " + DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA + " for ca.serialnumberoctetsize");
+                log.debug("Using default value of " + DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA + " for new CA's ca.serialnumberoctetsize");
             }
             value = DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA;
         }
