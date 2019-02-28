@@ -847,12 +847,12 @@
 				</h:panelGroup>
 
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCA and not editCAsMBean.waitingResponse and not editCAsMBean.caUninitialized and editCAsMBean.caTypeX509}">
+					rendered="#{editCAsMBean.editCA and not editCAsMBean.waitingResponse and not editCAsMBean.caUninitialized}">
 					<h:outputLabel for="checkboxuseldapdnorder"
 						value="#{web.text.CACERTIFICATE}" style="font-weight: bold;" />
 				</h:panelGroup>
 				<h:panelGroup
-					rendered="#{editCAsMBean.editCA and not editCAsMBean.waitingForResponse and not editCAsMBean.caUninitialized and editCAsMBean.caTypeX509}">
+					rendered="#{editCAsMBean.editCA and not editCAsMBean.waitingForResponse and not editCAsMBean.caUninitialized}">
 					<h:commandButton type="button"
 						onclick="viewcacert('#{editCAsMBean.caCertLink}')"
 						title="#{web.text.VIEW_CACERTIFICATE_TITLE} #{web.text.POPUP_WINDOW}"
