@@ -15,6 +15,8 @@ package org.ejbca.ui.web.admin;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -73,6 +75,13 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
         public boolean isCrlStatus() { return crlStatus; }
     }
 
+    private class CaCrlStatusInfoComparator implements Comparator<CaCrlStatusInfo> {
+        @Override
+        public int compare(CaCrlStatusInfo o1, CaCrlStatusInfo o2) {
+            return o1.getCaName().compareToIgnoreCase(o2.getCaName());
+        }
+    }
+    
     public void initialize(ComponentSystemEvent event) throws Exception {
         // Invoke on initial request only
         if (!FacesContext.getCurrentInstance().isPostback()) {
@@ -115,7 +124,8 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
             }
             ret.add(new CaCrlStatusInfo(caName, caService, crlStatus));
         }
-
+        
+        Collections.sort(ret, new CaCrlStatusInfoComparator());
         return ret;
     }
 
