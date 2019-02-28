@@ -120,6 +120,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.ca.internal.RequestAndPublicKeySelector;
+import org.cesecore.certificates.ca.internal.SernoGenerator;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
@@ -175,7 +176,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 23;
+    public static final float LATEST_VERSION = 24;
 
     // protected fields for properties specific to this type of CA.
     protected static final String POLICIES = "policies";
@@ -274,6 +275,7 @@ public class X509CA extends CA implements Serializable {
                 .setCertificateChain(getCertificateChain())
                 .setCaToken(getCAToken())
                 .setDescription(getDescription())
+                .setCaSerialNumberOctetSize(getSerialNumberOctetSize().toString())
                 .setRevocationReason(getRevocationReason())
                 .setRevocationDate(getRevocationDate())
                 .setPolicies(getPolicies())
@@ -530,6 +532,14 @@ public class X509CA extends CA implements Serializable {
     public void setExternalCdp(final String externalCdp) {
         data.put(EXTERNALCDP, externalCdp);
     }
+    
+    public Integer getSerialNumberOctetSize() {
+        return (Integer)getMapValueWithDefault(SERIALNUMBEROCTETSIZE, null);
+    }
+
+    public void setCaSerialNumberOctetSize(int serialNumberOctetSize) {
+        data.put(SERIALNUMBEROCTETSIZE, serialNumberOctetSize);
+    }
 
     private Object getMapValueWithDefault(final String key, final Object defaultValue) {
         final Object o = data.get(key);
@@ -579,6 +589,7 @@ public class X509CA extends CA implements Serializable {
         setNameConstraintsExcluded(info.getNameConstraintsExcluded());
         setExternalCdp(info.getExternalCdp());
         setSubjectAltName(info.getSubjectAltName());
+        setCaSerialNumberOctetSize(new Integer(info.getCaSerialNumberOctetSize()));
     }
 
     /**
@@ -937,14 +948,20 @@ public class X509CA extends CA implements Serializable {
         // Or a custom serial number defined in the end entity object
         final BigInteger serno;
         {
+            
             if (certProfile.getAllowCertSerialNumberOverride()) {
                 if (ei != null && ei.certificateSerialNumber()!=null) {
                     serno = ei.certificateSerialNumber();
                 } else {
-                    serno = SernoGeneratorRandom.instance().getSerno();
+                    SernoGenerator instance = SernoGeneratorRandom.instance();
+                    instance.setSernoOctetSize(getSerialNumberOctetSize());
+                    serno = instance.getSerno();
                 }
             } else {
-                serno = SernoGeneratorRandom.instance().getSerno();
+                SernoGenerator instance = SernoGeneratorRandom.instance();
+                instance.setSernoOctetSize(getSerialNumberOctetSize());
+                serno = instance.getSerno();
+                
                 if ((ei != null) && (ei.certificateSerialNumber() != null)) {
                     final String msg = intres.getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override_using_normal", ei.certificateSerialNumber().toString(16));
                     log.info(msg);
@@ -1587,6 +1604,8 @@ public class X509CA extends CA implements Serializable {
         return gen;
     }
 
+    
+    
     /**
      * Generate a CRL or a deltaCRL
      *
@@ -1934,6 +1953,10 @@ public class X509CA extends CA implements Serializable {
             // v23 'keyValidators' new empty list.
             if (null == data.get(VALIDATORS)) {
                 setValidators(new ArrayList<Integer>());
+            }
+            // v24 'serial number octet size' assign configured value (or default value if not configured)
+            if (data.get(SERIALNUMBEROCTETSIZE) == null) {
+                setCaSerialNumberOctetSize(CesecoreConfiguration.getSerialNumberOctetSizeForExistingCa());
             }
 
             data.put(VERSION, new Float(LATEST_VERSION));
