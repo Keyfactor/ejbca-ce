@@ -39,6 +39,4 @@ public interface DomainBlacklistChecker extends NameTranslatable {
      * @return Return false if blocked by blacklist.
      */
     boolean check(final String domain);
-
-    // TODO configurable checkers (ECA-6052). might not be needed for 7.0.1
 }

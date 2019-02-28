@@ -37,11 +37,4 @@ public interface DomainBlacklistNormalizer extends NameTranslatable {
      * @return Normalized domain name
      */
     String normalize(final String domain);
-
-    // TODO configurable normalizers (ECA-6052). might not be needed for 7.0.1
-//    /**
-//     * Adds configuration controls needed for this normalizer.
-//     * @param uiModel
-//     */
-//    void addToUiModel(final Map<String,Object> data, final DynamicUiModel uiModel);
 }
