@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -29,11 +28,14 @@ import org.apache.log4j.Logger;
  */
 public final class CesecoreConfiguration {
 
+
     private static final Logger log = Logger.getLogger(CesecoreConfiguration.class);
 
     /** NOTE: diff between EJBCA and CESeCore */
     public static final String PERSISTENCE_UNIT = "ejbca";
     public static final String AVAILABLE_CIPHER_SUITES_SPLIT_CHAR = ";";
+    private static final String DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA = "20";
+    private static final String DEFAULT_SERIAL_NUMBER_OCTET_SIZE_EXISTINGCA = "8";
 
     /** This is a singleton so it's not allowed to create an instance explicitly */
     private CesecoreConfiguration() {
@@ -59,19 +61,34 @@ public final class CesecoreConfiguration {
     }
 
     /**
-     * The length in octets of certificate serial numbers generated. 8 octets is a 64 bit serial number.
+     * The length in octets of certificate serial numbers generated for legacy CAs. (8 octets is a 64 bit serial number.)
      */
-    public static int getCaSerialNumberOctetSize() {
-        String value = ConfigurationHolder.getString("ca.serialnumberoctetsize");
-        if (StringUtils.isEmpty(value)) {
+    public static int getSerialNumberOctetSizeForExistingCa() {
+        String value = ConfigurationHolder.getConfiguredString("ca.serialnumberoctetsize");
+        if (value == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Using default value of 8 for ca.serialnumberoctetsize");
+                log.debug("Using default value of " + DEFAULT_SERIAL_NUMBER_OCTET_SIZE_EXISTINGCA + " for ca.serialnumberoctetsize");
             }
-            value = "8";
+            value = DEFAULT_SERIAL_NUMBER_OCTET_SIZE_EXISTINGCA;
         }
         return Integer.parseInt(value);
     }
 
+    /**
+     * The length in octets of certificate serial numbers generated for new CAs.
+     */
+    public static int getSerialNumberOctetSizeForNewCa() {
+        String value = ConfigurationHolder.getConfiguredString("ca.serialnumberoctetsize"); 
+        if (value == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Using default value of " + DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA + " for ca.serialnumberoctetsize");
+            }
+            value = DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA;
+        }
+        return Integer.parseInt(value);
+    }
+    
+        
     /**
      * The algorithm that should be used to generate random numbers (Random Number Generator Algorithm)
      */
