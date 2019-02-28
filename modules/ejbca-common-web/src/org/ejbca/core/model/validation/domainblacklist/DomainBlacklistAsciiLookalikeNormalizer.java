@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 public class DomainBlacklistAsciiLookalikeNormalizer implements DomainBlacklistNormalizer {
     private static Pattern pattern = Pattern.compile("(xn--)(.*?)(-.*)");
 
-
     private Map<String, Character> replacementMap;
 
     private Map<String, Character> getReplacementMap() {
@@ -42,7 +41,6 @@ public class DomainBlacklistAsciiLookalikeNormalizer implements DomainBlacklistN
             replacementMap.put("6", 'b');
             replacementMap.put("q", 'g');
             replacementMap.put("9", 'g');
-            replacementMap.put("|", 'l');
             replacementMap.put("1", 'l');
             replacementMap.put("i", 'l');
             replacementMap.put("5", 's');
@@ -59,8 +57,6 @@ public class DomainBlacklistAsciiLookalikeNormalizer implements DomainBlacklistN
 
     @Override
     public void initialize(final Map<Object, Object> configData) {
-        // TODO ECA-6052
-
     }
 
     @Override
