@@ -14,32 +14,37 @@ package org.ejbca.core.model.validation;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.profiles.Profile;
-
+import org.cesecore.util.CertTools;
 import org.cesecore.util.NameTranslatable;
+import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -66,14 +71,19 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     /** The domain blacklist validator type. */
     private static final String TYPE_IDENTIFIER = "DOMAIN_BLACKLIST_VALIDATOR";
 
+    /** Normalizations to perform (e.g. ASCII looklike). List of Java class names */
     private static final String NORMALIZATIONS_KEY = "normalizations";
+    /** Checks to perform (e.g. exact match, domain component). List of Java class names */
     private static final String CHECKS_KEY = "checks";
+    /** Current blacklist. Set of strings (blacklisted domains and/or domain components) */
     private static final String BLACKLISTS_KEY = "blacklists";
-    private static final String BLACKLIST_FILE_KEY = "blacklist_file_key";
-    private static final String FILE_INFO_KEY = "blacklist_file";
-    private static final String BLACKLISTS_TEXT = "blacklists_text";
-    
-    
+    /** Information about the existing blacklist: Filename, date, SHA-256 */
+    private static final String BLACKLIST_INFO_KEY = "blacklist_info"; // Used in GUI
+    private static final String BLACKLIST_DATE_KEY = "blacklist_date";         // Persisted
+    private static final String BLACKLIST_SHA256_KEY = "blacklist_sha256";     // Persisted
+    /** File upload of new existing blacklist. Not persisted */
+    private static final String BLACKLIST_UPLOAD_KEY = "blacklist_upload";
+
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
 
@@ -112,38 +122,38 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
         }
     }
-    
-    public void changeBlacklistEntry() {}
-    
-    // Test method start
-    public void addDomainBlacklistEntry(/*String fileName, byte[] domainBlacklistByteArray*/) {
-        byte[] domainBlacklistByteArray = "domain1.domain1\n domain2.domain2 \n#comment_to_ignore\ndomain3.domain3\n domain4.domain4 ".getBytes(StandardCharsets.UTF_8);
-        String fileName = "blFileName";
-        Set<String> domainSet = new HashSet<String>();
+
+    /** Replaces the existing domain blacklist with the uploaded one */
+    private void setDomainBlacklist(final File file) {
+        final Set<String> domainSet = new HashSet<>();
         try {
-            InputStream domainBlacklistInputStream = new ByteArrayInputStream(domainBlacklistByteArray);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(domainBlacklistInputStream));
-            String blacklistFileline;
-            while ((blacklistFileline = bufferedReader.readLine()) != null) {
-                if (blacklistFileline.contains("#") || blacklistFileline.isEmpty()) {
-                    continue;
+            final byte[] bytes = FileUtils.readFileToByteArray(file);
+            try (final InputStream domainBlacklistInputStream = new ByteArrayInputStream(bytes);
+                 final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(domainBlacklistInputStream, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    final int comment = line.indexOf('#');
+                    if (comment != -1) {
+                        line = line.substring(0, comment);
+                    }
+                    line = line.trim();
+                    if (!line.isEmpty()) {
+                        domainSet.add(line);
+                    }
                 }
-                blacklistFileline = StringUtils.deleteWhitespace(blacklistFileline);
-                domainSet.add(blacklistFileline);
+                setBlacklist(domainSet);
+                setBlacklistDate(new Date());
+                final String sha256 = new String(Hex.encode(CertTools.generateSHA256Fingerprint(bytes)), StandardCharsets.US_ASCII);
+                setBlacklistSha256(sha256);
             }
-            setBlacklists(domainSet);
-            setBlacklistName(fileName);
-            bufferedReader.close();
         } catch (IOException e) {
-            throw new RuntimeException("Unable to parse domain black lists. ", e);
-        }  
+            throw new IllegalStateException("Unable to parse domain black list.", e);
+        }
     }
-    
+
     private synchronized void reloadBlacklistData() {
         log.trace(">reloadBlacklistData");
         boolean newInitializationFailure = false;
-        //Test add method, remove later:
-        addDomainBlacklistEntry();//Remove
         // Instantiate classes
         final List<DomainBlacklistNormalizer> newNormalizers = new ArrayList<>();
         for (final String normalizerName : getNormalizations())  {
@@ -170,7 +180,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
         // Create combined blacklist
         final Set<String> combinedBlacklist = new HashSet<>();
-        Set<String> domainSetNotNormalized = getBlacklists(); 
+        Set<String> domainSetNotNormalized = getBlacklist(); 
         for (String domain : domainSetNotNormalized) {
             // Normalize before adding to combined list
             final String normalizedDomain = normalizeDomain(newNormalizers, domain);
@@ -197,12 +207,29 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     @Override
     public void initDynamicUiModel() {
-        uiModel = new DynamicUiModel(data);
+        uiModel = new DynamicUiModel(data) {
+            @Override
+            public Map<String, Object> getRawData() {
+                final Map<String, Object> rawData = super.getRawData();
+                // Parse file data
+                final DynamicUiProperty<?> uploadUiProperty = getProperties().get(BLACKLIST_UPLOAD_KEY);
+                final File uploadedFile = (File) uploadUiProperty.getValue();
+log.warn("XXX UPLOADED FILE: " + uploadedFile); // TODO removeme
+                if (uploadedFile != null) {
+                    try {
+                        log.debug("Parsing uploaded file: " + uploadedFile.getName());
+                        setDomainBlacklist(uploadedFile);
+                    } finally {
+                        uploadedFile.delete();
+                    }
+                }
+                return rawData;
+            }
+        };
         uiModel.add(new DynamicUiProperty<String>("settings"));
         addClassSelection(DomainBlacklistNormalizer.class, NORMALIZATIONS_KEY,  false, getNormalizations(), null);
         addClassSelection(DomainBlacklistChecker.class, CHECKS_KEY, true, getChecks(), DomainBlacklistExactMatchChecker.class.getName());
-        addBlacklistSelection();
-        addBlacklistFileName();
+        addBlacklistInfo();
         uploadBlacklistFile();
     }
 
@@ -217,7 +244,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
             labels.put(name, displayName);
         }
-        // TODO this should if possible be replaced with checkboxes / radio buttons. Can we add two new rendering hints for this? Investigate in ECA-6052.
         final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, dataMapKey, defaultValue, labels.keySet());
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
         uiProperty.setLabels(labels);
@@ -230,49 +256,32 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
         uiModel.add(uiProperty);
     }
-     
-    
-    private void addBlacklistFileName() {
-        final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, FILE_INFO_KEY, null);
+
+    private void addBlacklistInfo() {
+        final Date blacklistDate = getBlacklistDate();
+        if (blacklistDate == null) {
+            log.debug("No file has been uploaded previously");
+            return;
+        }
+        final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, BLACKLIST_INFO_KEY, null);
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_LABEL);
-        uiProperty.setHasMultipleValues(false);
-        uiProperty.setRequired(true);
         try {
-            uiProperty.setValue(getBlacklistName());
+            final String text = intres.getLocalizedMessage("validator.domainblacklist.info_text",
+                    ValidityDate.formatAsUTC(blacklistDate), getBlacklistSha256());
+            uiProperty.setValue(text);
         } catch (PropertyValidationException e) {
             throw new IllegalStateException(e);
         }
         uiModel.add(uiProperty);
     }
-    
+
     private void uploadBlacklistFile() {
-        final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, BLACKLIST_FILE_KEY, null);
+        final DynamicUiProperty<File> uiProperty = new DynamicUiProperty<>(File.class, BLACKLIST_UPLOAD_KEY, null);
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_FILE_CHOOSER);
-        uiProperty.setHasMultipleValues(false);
-        uiProperty.setRequired(true);
-        try {
-            uiProperty.setValue("");
-        } catch (PropertyValidationException e) {
-            // TODO Auto-generated catch block
-            //e.printStackTrace();
-        }
+        uiProperty.setTransientValue(true);
         uiModel.add(uiProperty);
     }
-    
-     
-   private void addBlacklistSelection() {
-        final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, BLACKLISTS_KEY, null, getBlacklists());
-        uiProperty.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
-        uiProperty.setHasMultipleValues(true);
-        uiProperty.setRequired(true);
-        try {
-            uiProperty.setValues(new ArrayList<>(getBlacklists()));
-        } catch (PropertyValidationException e) {
-            throw new IllegalStateException(e);
-        }
-        uiModel.add(uiProperty);
-    }
-    
+
     @Override
     public DynamicUiModel getDynamicUiModel() {
         return uiModel;
@@ -328,6 +337,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 }
             }
         }
+//boolean result = domainNames.length == 0 || "evil.example.com".equals(domainNames[0]);
+//final List<String> messages = new ArrayList<>();
+//messages.add("TEST VALIDATION " + result + " : " + StringUtils.join(domainNames));
         return new AbstractMap.SimpleEntry<>(result, messages);
     }
 
@@ -351,20 +363,32 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         clearCache();
     }
 
-    
-    public Set<String> getBlacklists() {return getData(BLACKLISTS_KEY,Collections.emptySet());} 
-    
-    public void setBlacklists(Set<String> domainMap) {putData(BLACKLISTS_KEY, domainMap); clearCache();}
-    
-    
-    public String getBlacklistName() {
-        return getData(FILE_INFO_KEY, new String());//??*****************
+
+    public Set<String> getBlacklist() {
+        return getData(BLACKLISTS_KEY, Collections.emptySet());
     }
-    
-    public void setBlacklistName(String s) {
-        putData(FILE_INFO_KEY, s);
+
+    public void setBlacklist(final Set<String> domainMap) {
+        putData(BLACKLISTS_KEY, new TreeSet<>(domainMap));
+        clearCache();
     }
-    
+
+    public Date getBlacklistDate() {
+        return getData(BLACKLIST_DATE_KEY, null);
+    }
+
+    public void setBlacklistDate(final Date date) {
+        putData(BLACKLIST_DATE_KEY, date);
+    }
+
+    public String getBlacklistSha256() {
+        return getData(BLACKLIST_SHA256_KEY, "");
+    }
+
+    public void setBlacklistSha256(final String sha256) {
+        putData(BLACKLIST_SHA256_KEY, sha256);
+    }
+
     @Override
     public String getLogMessage(final boolean successful, final List<String> messages) {
         final String validatorName = getProfileName();
