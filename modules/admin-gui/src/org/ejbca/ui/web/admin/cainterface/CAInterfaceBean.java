@@ -336,7 +336,7 @@ public class CAInterfaceBean implements Serializable {
             String extendedServiceSignatureKeySpec,
             String keySequenceFormat, String keySequence, int catype, String subjectdn,
             String certificateProfileIdString, String defaultCertificateProfileIdString, boolean useNoConflictCertificateData, 
-            String signedByString, String description, String validityString,
+            String signedByString, String description, String caSerialNumberOctetSizeString, String validityString,
             Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
             boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
             boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationsNonExistingEntry, String subjectaltname,
@@ -407,7 +407,7 @@ public class CAInterfaceBean implements Serializable {
             return actionCreateCaMakeRequestInternal(caName, signatureAlgorithm, extendedServiceSignatureKeySpec,
                     keySequenceFormat, keySequence, catype, subjectdn, certificateProfileIdString, defaultCertificateProfileIdString, 
                     useNoConflictCertificateData, signedByString,
-                    description, validityString, approvals, finishUser,
+                    description, caSerialNumberOctetSizeString, validityString, approvals, finishUser,
                     isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
                     useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationsNonExistingEntry, subjectaltname, policyid,
                     useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
@@ -437,7 +437,7 @@ public class CAInterfaceBean implements Serializable {
 	        String extendedServiceSignatureKeySpec,
 	        String keySequenceFormat, String keySequence, int caType, String subjectDn,
 	        String certificateProfileIdString, String defaultCertificateProfileIdString, boolean useNoConflictCertificateData, 
-	        String signedByString, String description, String validityString,
+	        String signedByString, String description, String caSerialNumberOctetSizeString, String validityString,
 	        Map<ApprovalRequestType, Integer> approvals, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
 	        boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationsNonExistingEntry, String subjectAltName,
@@ -567,7 +567,9 @@ public class CAInterfaceBean implements Serializable {
 	            if (hasNameConstraints && !isNameConstraintAllowedInProfile(certprofileid)) {
 	               throw new ParameterException(ejbcawebbean.getText("NAMECONSTRAINTSNOTENABLED"));
 	            }
-
+	            
+	            final int caSerialNumberOctetSize = (caSerialNumberOctetSizeString != null) ? Integer.parseInt(caSerialNumberOctetSizeString) : CesecoreConfiguration.getSerialNumberOctetSizeForNewCa();
+	            
 	            if (crlPeriod != 0 && !illegaldnoraltname) {
 	                if (buttonCreateCa) {
 	                    List<ExtendedCAServiceInfo> extendedCaServiceInfos = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectDn, serviceCmsActive);
@@ -585,6 +587,7 @@ public class CAInterfaceBean implements Serializable {
                                 .setCertificateChain(null)
                                 .setCaToken(caToken)
                                 .setDescription(description)
+                                .setCaSerialNumberOctetSize(caSerialNumberOctetSize)
                                 .setPolicies(policies)
                                 .setCrlPeriod(crlPeriod)
                                 .setCrlIssueInterval(crlIssueInterval)

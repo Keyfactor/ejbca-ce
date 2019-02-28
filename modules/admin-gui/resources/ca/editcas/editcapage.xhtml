@@ -394,12 +394,17 @@
 
 
                 <h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
-                    <h:outputLabel for="caSerialnNumberOctetSize" value="#{web.text.SERIALNUMBER_OCTET_SIZE}" />
+                    <h:outputLabel for="caSerialNumberOctetSize" value="#{web.text.SERIALNUMBER_OCTET_SIZE}" />
+                    <h:outputText
+                        value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Ca_Serial_Number_Octet_Size')}"
+                        escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
                     <h:inputText id="caSerialNumberOctetSize" size="4" maxlength="2"
                         value="#{editCAsMBean.caSerialNumberOctetSize}"
-                        disabled="#{not editCAsMBean.hasEditRight}" />
+                        disabled="#{not editCAsMBean.hasEditRight}">
+                        <f:validator validatorId="org.ejbca.ui.web.admin.ca.validators.OctetSizeValidator"/>
+                    </h:inputText>
                 </h:panelGroup>
                 
 			</h:panelGrid>
