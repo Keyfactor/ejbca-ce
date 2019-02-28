@@ -131,7 +131,8 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isAuthorizedToViewLog() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AuditLogRules.VIEW.resource());
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AuditLogRules.VIEW.resource()) &&
+                !getEjbcaWebBean().getEjb().getSecurityEventsAuditorSession().getQuerySupportingLogDevices().isEmpty();
     }
     
     public boolean isAuthorizedToViewSupervisionFunctionsHeader() {
