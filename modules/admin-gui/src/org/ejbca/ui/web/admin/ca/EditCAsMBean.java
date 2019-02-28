@@ -2346,7 +2346,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         
         this.signedByString = String.valueOf(CAInfo.SELFSIGNED);
-        this.caSerialNumberOctetSize = new Integer(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa()).toString();
+        this.caSerialNumberOctetSize = String.valueOf(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa());
     }
     
     private void initEditCaPage() {
@@ -2430,7 +2430,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             defaultCRLIssuer = x509cainfo.getDefaultCRLIssuer();
             caDefinedFreshestCRL = x509cainfo.getCADefinedFreshestCRL();
             defaultOCSPServiceLocator = x509cainfo.getDefaultOCSPServiceLocator();
-            caSerialNumberOctetSize = x509cainfo.getCaSerialNumberOctetSize();
+            caSerialNumberOctetSize = String.valueOf(x509cainfo.getCaSerialNumberOctetSize());
             
             if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().size() == 0)) {
                 policyId = getEjbcaWebBean().getText("NONE");

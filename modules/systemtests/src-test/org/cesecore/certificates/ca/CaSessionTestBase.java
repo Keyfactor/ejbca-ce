@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -63,6 +56,13 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the CA session bean.
@@ -208,7 +208,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals("SE002", ca.getCAInfo().getCAToken().getKeySequence());
 
         // Test edit using a new "edit" CAInfo
-        X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getEncodedValidity(), cainfo.getCAToken(), "new description", 
+        X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getEncodedValidity(), cainfo.getCAToken(), "new description", 20, 
         		cainfo.getCRLPeriod(), cainfo.getCRLIssueInterval(), cainfo.getCRLOverlapTime(), cainfo.getDeltaCRLPeriod(), 
         		cainfo.getCRLPublishers(), new ArrayList<Integer>(), true, false, true, false, null, null, null, null, null, null, null, null, cainfo.getFinishUser(), 
         		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovals(), false, true, 

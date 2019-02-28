@@ -62,7 +62,7 @@ public class X509CAInfo extends CAInfo {
 	private List<String> nameConstraintsExcluded;
 	private String externalCdp;
 	private boolean nameChanged;
-	private String caSerialNumberOctetSize;
+	private int caSerialNumberOctetSize;
 
     /**
      * This constructor can be used when creating a CA.
@@ -84,7 +84,7 @@ public class X509CAInfo extends CAInfo {
              certificatechain, // Certificate chain
              catoken, // CA Token
              "", // Description
-             new Integer(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa()).toString(), // serial number octet size
+             CesecoreConfiguration.getSerialNumberOctetSizeForNewCa(), // serial number octet size
              -1, // Revocation reason
              null, // Revocation date
              null, // PolicyId
@@ -188,7 +188,7 @@ public class X509CAInfo extends CAInfo {
     private X509CAInfo(final String subjectDn, final String name, final int status, final Date updateTime, final String subjectaltname,
             final int certificateprofileid, final int defaultCertprofileId, final boolean useNoConflictCertificateData, final String encodedValidity, final Date expiretime, final int catype, final int signedBy,
             final Collection<Certificate> certificatechain, final CAToken catoken,
-    		final String description, final String caSerialNumberOctetSize, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
+    		final String description, final int caSerialNumberOctetSize, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
     		final Collection<Integer> crlpublishers, final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
@@ -276,7 +276,7 @@ public class X509CAInfo extends CAInfo {
     }
 
     /** Constructor that should be used when updating CA data. */
-    public X509CAInfo(final int caid, final String encodedValidity, final CAToken catoken, final String description, final String caSerialNumberOctetSize, 
+    public X509CAInfo(final int caid, final String encodedValidity, final CAToken catoken, final String description, final int caSerialNumberOctetSize, 
             final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, final Collection<Integer> crlpublishers,
             final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
             final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
@@ -469,11 +469,11 @@ public class X509CAInfo extends CAInfo {
         nameChanged = value;
     }
 
-    public String getCaSerialNumberOctetSize() {
+    public int getCaSerialNumberOctetSize() {
         return caSerialNumberOctetSize;
     }
 
-    public void setCaSerialNumberOctetSize(String caSerialNumberOctetSize) {
+    public void setCaSerialNumberOctetSize(int caSerialNumberOctetSize) {
         this.caSerialNumberOctetSize = caSerialNumberOctetSize;
     }
     
@@ -494,7 +494,7 @@ public class X509CAInfo extends CAInfo {
         private Date expireTime = null;
         private int caType = CAInfo.CATYPE_X509;
         private String description = "";
-        private String caSerialNumberOctetSize = null;
+        private int caSerialNumberOctetSize = -1;
         private int revocationReason = -1;
         private Date revocationDate = null;
         private List<CertificatePolicy> policies = null;
@@ -805,7 +805,7 @@ public class X509CAInfo extends CAInfo {
             return this;
         }
         
-        public X509CAInfoBuilder setCaSerialNumberOctetSize(String caSerialNumberOctetSize) {
+        public X509CAInfoBuilder setCaSerialNumberOctetSize(int caSerialNumberOctetSize) {
             this.caSerialNumberOctetSize = caSerialNumberOctetSize;
             return this;
         }
