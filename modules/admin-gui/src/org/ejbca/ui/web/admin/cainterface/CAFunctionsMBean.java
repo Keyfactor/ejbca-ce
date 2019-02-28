@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
@@ -101,12 +102,13 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         private final Boolean caStatusActive;
         private final boolean showJksDownloadForm[];
 
-        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<Certificate> certificatechain, final CRLInfo crlinfo, final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive) {
+        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<Certificate> certificatechain, final CRLInfo crlinfo,
+                final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive) {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
-            Collections.reverse(certificatechain);
-            this.certificatechain = certificatechain;
+            this.certificatechain = new ArrayList<Certificate>(certificatechain); 
+            Collections.reverse(this.certificatechain);
             this.crlinfo = crlinfo;
             this.deltacrlinfo = deltacrlinfo;
             this.deltaPeriodEnabled = deltaPeriodEnabled;
