@@ -540,17 +540,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         try {
             return keyValidatorSession.validateDnsNames(admin, IssuancePhase.APPROVAL_VALIDATION, ca, endEntity, null);
         } catch (ValidationException e) {
-            // TODO perhaps we should throw ValidationException
-            throw new ApprovalException(ErrorCode.CAA_VALIDATION_FAILED, e.getMessage(), e); // FIXME should we use another error code?
+            // Only configurations with "Approval Request" issuance phase and "Abort issuance" failure action will go here.
+            // Since this is a very unlikely configuration, we do not use a separate exception.
+            throw new ApprovalException(ErrorCode.VALIDATION_FAILED, e.getMessage(), e);
         }
     }
 
-    private List<ValidationResult> runApprovalRequestValidation(final AuthenticationToken admin, final EndEntityInformation endEntity, final CA ca) throws EndEntityProfileValidationException {
+    private List<ValidationResult> runApprovalRequestValidation(final AuthenticationToken admin, final EndEntityInformation endEntity, final CA ca) throws ApprovalException {
         try {
             return keyValidatorSession.validateDnsNames(admin, IssuancePhase.APPROVAL_VALIDATION, ca, endEntity, null);
         } catch (ValidationException e) {
-            // TODO perhaps we should throw ValidationException
-            throw new EndEntityProfileValidationException(e);
+            // Only configurations with "Approval Request" issuance phase and "Abort issuance" failure action will go here.
+            // Since this is a very unlikely configuration, we do not use a separate exception.
+            throw new ApprovalException(ErrorCode.VALIDATION_FAILED, e.getMessage(), e);
         }
     }
 
@@ -844,7 +846,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Check name constraints
-        final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
+        final CA ca = caSession.getCAInternal(caid, null, true);
+        final CAInfo cainfo = ca != null ? ca.getCAInfo() : null;
         final boolean nameChanged = // only check when name is changed so existing end-entities can be changed even if they violate NCs
                 !userData.getSubjectDnNeverNull().equals(CertTools.stringToBCDNString(dn)) ||
                 (userData.getSubjectAltName() != null && !userData.getSubjectAltName().equals(altName));
@@ -886,8 +889,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             if (newUsername != null && !newUsername.equals(username)) {
                 requestInfo.setUsername(newUsername);
             }
+            final List<ValidationResult> validationResults = runApprovalRequestValidation(admin, requestInfo, ca);
             final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(requestInfo, clearpwd, orguserdata, admin, null,
-                    caid, endEntityProfileId, approvalProfile, true, null);
+                    caid, endEntityProfileId, approvalProfile, true, validationResults);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
                 final int requestId = approvalSession.addApprovalRequest(admin, ar);
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"), requestId);

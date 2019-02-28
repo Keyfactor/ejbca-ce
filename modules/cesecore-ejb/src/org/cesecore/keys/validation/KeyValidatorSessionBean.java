@@ -838,7 +838,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             if (validatorType.equals("CAA_VALIDATOR")) {
                 throw new ValidationException(ErrorCode.CAA_VALIDATION_FAILED, shortMessage);
             } else {
-                throw new ValidationException(ErrorCode.NOT_AUTHORIZED, shortMessage);
+                throw new ValidationException(ErrorCode.VALIDATION_FAILED, shortMessage);
             }
         } else {
             // NOOP
