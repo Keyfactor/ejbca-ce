@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Helper class for handling 'Administrator Roles' page in automated web tests.
+ * Helper class for handling 'Roles and Access Rules' page in automated web tests.
  *
  * @version $Id$
  */
@@ -46,7 +46,7 @@ public class AdminRolesHelper extends BaseHelper {
         // General
         static final String PAGE_URI = "/ejbca/adminweb/administratorprivileges/roles.xhtml";
         static final By PAGE_LINK = By.id("sysFuncsRoles");
-        // Manage Administrator Roles
+        // Manage Roles and Access Rules
         static final By BUTTON_ADD = By.id("roles:list:addRoleButton");
         static final By INPUT_MODAL_ROLE_NAME = By.id("modal:roleNameInputField");
         static final By BUTTON_MODAL_ADD = By.id("modal:confirmAddRoleButton");
@@ -134,7 +134,7 @@ public class AdminRolesHelper extends BaseHelper {
     }
 
     /**
-     * Opens the page 'Administrator Roles' by clicking menu link on home page and asserts the correctness of resulting URI.
+     * Opens the page 'Roles and Access Rules' by clicking menu link on home page and asserts the correctness of resulting URI.
      *
      * @param webUrl home page URL.
      */
@@ -330,10 +330,10 @@ public class AdminRolesHelper extends BaseHelper {
     }
 
     /**
-     * Asserts the link 'Back to Administrator Roles' exists.
+     * Asserts the link 'Back to Roles and Access Rules' exists.
      */
     public void assertExistsBackToAdministratorRolesLink() {
-        assertElementExists(Page.BUTTON_BACK_TO_ADMINISTRATOR_ROLES, "Link 'Back to Administrator Roles' does not exist.");
+        assertElementExists(Page.BUTTON_BACK_TO_ADMINISTRATOR_ROLES, "Link 'Back to Role Management' does not exist.");
     }
 
     /**
