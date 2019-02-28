@@ -71,6 +71,7 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -149,6 +150,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String hardTokenEncryptKey = StringUtils.EMPTY; // Initialize to empty
     private String testKey = StringUtils.EMPTY;// Initialize to empty;
     private String description;
+    private String caSerialNumberOctetSize;
     private boolean useNoConflictCertificateData;
     private boolean acceptRevocationsNonExistingEntry;
     private boolean createLinkCertificate = true;
@@ -631,6 +633,14 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         this.description = description;
     }
     
+    public String getCaSerialNumberOctetSize() {
+        return caSerialNumberOctetSize;
+    }
+
+    public void setCaSerialNumberOctetSize(String caSerialNumberOctetSize) {
+        this.caSerialNumberOctetSize = caSerialNumberOctetSize;
+    }
+
     public boolean isDoEnforceUniquePublickeys() {
         return this.doEnforceUniquePublickeys;
     }
@@ -2121,8 +2131,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final String keySequenceFormatParam = getKeySequenceFormatParam();
 
         try {
-            cainfo = caBean.createCaInfo(caid, editCaName, getSubjectDn(), catype, keySequenceFormatParam, keySequence, signedByString, description,
-                    caEncodedValidity, getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), finishUser,
+            cainfo = caBean.createCaInfo(caid, editCaName, getSubjectDn(), catype, keySequenceFormatParam, keySequence, signedByString, description, 
+                    caSerialNumberOctetSize, caEncodedValidity, getCrlPeriod(), getCrlIssueInterval(), getcrlOverlapTime(), getDeltaCrlPeriod(), finishUser,
                     doEnforceUniquePublickeys, doEnforceUniqueDN, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage,
                     useCertificateStorage, acceptRevocationsNonExistingEntry, getDefaultCertProfileId(), useNoConflictCertificateData, getApprovals(),
                     getAvailablePublisherValues(), getAvailableKeyValidatorValues(), useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
@@ -2336,6 +2346,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         
         this.signedByString = String.valueOf(CAInfo.SELFSIGNED);
+        this.caSerialNumberOctetSize = new Integer(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa()).toString();
     }
     
     private void initEditCaPage() {
@@ -2419,6 +2430,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             defaultCRLIssuer = x509cainfo.getDefaultCRLIssuer();
             caDefinedFreshestCRL = x509cainfo.getCADefinedFreshestCRL();
             defaultOCSPServiceLocator = x509cainfo.getDefaultOCSPServiceLocator();
+            caSerialNumberOctetSize = x509cainfo.getCaSerialNumberOctetSize();
             
             if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().size() == 0)) {
                 policyId = getEjbcaWebBean().getText("NONE");

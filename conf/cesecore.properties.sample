@@ -62,8 +62,8 @@
 #
 # Do not change in existing systems unless you are really sure and have a really good reason to change it. This will affect all your existing CAs.
 # Possible values: between 4 and 20
-# Default: 8
-#ca.serialnumberoctetsize=8
+# Default: 20
+#ca.serialnumberoctetsize=20
 
 # The date and time from which an expire date of a certificate is to be considered to be too far in the future.
 # The time could be specified in two ways:

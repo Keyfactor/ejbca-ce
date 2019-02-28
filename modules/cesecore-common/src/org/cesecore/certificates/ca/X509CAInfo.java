@@ -26,6 +26,7 @@ import java.util.Map;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
@@ -61,6 +62,7 @@ public class X509CAInfo extends CAInfo {
 	private List<String> nameConstraintsExcluded;
 	private String externalCdp;
 	private boolean nameChanged;
+	private String caSerialNumberOctetSize;
 
     /**
      * This constructor can be used when creating a CA.
@@ -82,6 +84,7 @@ public class X509CAInfo extends CAInfo {
              certificatechain, // Certificate chain
              catoken, // CA Token
              "", // Description
+             new Integer(CesecoreConfiguration.getSerialNumberOctetSizeForNewCa()).toString(), // serial number octet size
              -1, // Revocation reason
              null, // Revocation date
              null, // PolicyId
@@ -141,6 +144,7 @@ public class X509CAInfo extends CAInfo {
      * @param certificatechain the certificate chain containing the CA certificate of this CA
      * @param catoken the CA token for this CA, containing e.g. a reference to the crypto token
      * @param description a text describing this CA
+     * @param caSerialNumberOctetSize serial number octet size for this CA
      * @param revocationReason the reason why this CA was revoked, or -1 if not revoked
      * @param revocationDate the date of revocation, or null if not revoked
      * @param policies a policy OID
@@ -184,7 +188,7 @@ public class X509CAInfo extends CAInfo {
     private X509CAInfo(final String subjectDn, final String name, final int status, final Date updateTime, final String subjectaltname,
             final int certificateprofileid, final int defaultCertprofileId, final boolean useNoConflictCertificateData, final String encodedValidity, final Date expiretime, final int catype, final int signedBy,
             final Collection<Certificate> certificatechain, final CAToken catoken,
-    		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
+    		final String description, final String caSerialNumberOctetSize, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
     		final Collection<Integer> crlpublishers, final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
@@ -268,11 +272,12 @@ public class X509CAInfo extends CAInfo {
         this.nameConstraintsPermitted = nameConstraintsPermitted;
         this.nameConstraintsExcluded = nameConstraintsExcluded;
         this.useNoConflictCertificateData = useNoConflictCertificateData;
+        this.caSerialNumberOctetSize = caSerialNumberOctetSize;
     }
 
     /** Constructor that should be used when updating CA data. */
-    public X509CAInfo(final int caid, final String encodedValidity, final CAToken catoken, final String description, final long crlperiod,
-            final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, final Collection<Integer> crlpublishers,
+    public X509CAInfo(final int caid, final String encodedValidity, final CAToken catoken, final String description, final String caSerialNumberOctetSize, 
+            final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, final Collection<Integer> crlpublishers,
             final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
             final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
             final String defaultocspservicelocator, final List<String> crlAuthorityInformationAccess,
@@ -289,6 +294,7 @@ public class X509CAInfo extends CAInfo {
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
         this.description = description;
+        this.caSerialNumberOctetSize = caSerialNumberOctetSize;
         this.crlperiod = crlperiod;
         this.crlIssueInterval = crlIssueInterval;
         this.crlOverlapTime = crlOverlapTime;
@@ -463,7 +469,15 @@ public class X509CAInfo extends CAInfo {
         nameChanged = value;
     }
 
+    public String getCaSerialNumberOctetSize() {
+        return caSerialNumberOctetSize;
+    }
 
+    public void setCaSerialNumberOctetSize(String caSerialNumberOctetSize) {
+        this.caSerialNumberOctetSize = caSerialNumberOctetSize;
+    }
+    
+    
     public static class X509CAInfoBuilder {
         private String subjectDn;
         private String name;
@@ -480,6 +494,7 @@ public class X509CAInfo extends CAInfo {
         private Date expireTime = null;
         private int caType = CAInfo.CATYPE_X509;
         private String description = "";
+        private String caSerialNumberOctetSize = null;
         private int revocationReason = -1;
         private Date revocationDate = null;
         private List<CertificatePolicy> policies = null;
@@ -519,7 +534,7 @@ public class X509CAInfo extends CAInfo {
         private boolean acceptRevocationNonExistingEntry = false;
         private String cmpRaAuthSecret = null;
         private boolean keepExpiredCertsOnCRL = false;
-
+        
         public X509CAInfoBuilder setSubjectDn(String subjectDn) {
             this.subjectDn = subjectDn;
             return this;
@@ -789,10 +804,15 @@ public class X509CAInfo extends CAInfo {
             this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
             return this;
         }
+        
+        public X509CAInfoBuilder setCaSerialNumberOctetSize(String caSerialNumberOctetSize) {
+            this.caSerialNumberOctetSize = caSerialNumberOctetSize;
+            return this;
+        }
 
         public X509CAInfo build() {
             return new X509CAInfo(subjectDn, name, status, updateTime, subjectAltName, certificateProfileId, defaultCertProfileId, useNoConflictCertificateData,
-                    encodedValidity, expireTime, caType, signedBy, certificateChain, caToken, description, revocationReason, revocationDate, policies, crlPeriod,
+                    encodedValidity, expireTime, caType, signedBy, certificateChain, caToken, description, caSerialNumberOctetSize, revocationReason, revocationDate, policies, crlPeriod,
                     crlIssueInterval, crlOverlapTime, deltaCrlPeriod, crlPublishers, validators, useAuthorityKeyIdentifier, authorityKeyIdentifierCritical,
                     useCrlNumber, crlNumberCritical, defaultCrlDistPoint, defaultCrlIssuer,
                     defaultOcspCerviceLocator,

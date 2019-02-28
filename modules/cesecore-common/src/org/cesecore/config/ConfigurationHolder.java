@@ -221,7 +221,7 @@ public final class ConfigurationHolder {
      * @return String configured for property, or the default value defined in defaultvalues.properties, or null if no such value exists
      */
     public static String getString(final String property) {
-        // Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
+     // Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
         final StringBuilder str = new StringBuilder();
         String rets[] = instance().getStringArray(property);
         if (rets.length == 0) {
@@ -242,6 +242,27 @@ public final class ConfigurationHolder {
         return ret;
     }
 
+    /**
+     * @param property the property to look for
+     * @return String configured for property. If the value is not configured, return null. (DOES NOT LOOK FOR FALLBACK VALUE FROM defaultvalues.properties)
+     */
+    public static String getConfiguredString(final String property) {
+        // Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
+        final StringBuilder str = new StringBuilder();
+        String rets[] = instance().getStringArray(property);
+        for (int i = 0; i < rets.length; i++) {
+            if (i != 0) {
+                str.append(',');
+            }
+            str.append(rets[i]);
+        }
+        String ret = null;
+        if (str.length() != 0) {
+            ret = str.toString();
+        }
+        return ret;
+    }
+    
     public static String getDefaultValue(final String property) {
         instance();
         return defaultValues.getString(property);

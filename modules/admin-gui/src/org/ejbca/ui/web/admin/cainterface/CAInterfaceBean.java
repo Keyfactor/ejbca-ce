@@ -842,8 +842,8 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public CAInfo createCaInfo(int caid, String caname, String subjectDn, int catype,
-	        String keySequenceFormat, String keySequence, String signedByString, String description, String validityString,
-	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
+	        String keySequenceFormat, String keySequence, String signedByString, String description, String caSerialNumberOctetSize, 
+	        String validityString, long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean acceptRevocationNonExistingEntry,
             int defaultCertprofileId, boolean useNoConflictCertificateData, 
@@ -923,7 +923,7 @@ public class CAInterfaceBean implements Serializable {
                extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false)); 
                // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
                // is not need to update them.
-                cainfo = new X509CAInfo(caid, validityString, catoken, description, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod,
+                cainfo = new X509CAInfo(caid, validityString, catoken, description, caSerialNumberOctetSize, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod,
                         crlpublishers, keyValidators, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber, crlnumbercritical,
                         defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess, certificateAiaDefaultCaIssuerUri,
                         parseNameConstraintsInput(nameConstraintsPermittedString), parseNameConstraintsInput(nameConstraintsExcludedString),
