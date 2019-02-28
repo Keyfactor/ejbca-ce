@@ -1,6 +1,6 @@
 <%@page import="org.ejbca.core.model.SecConst, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean"%>
 
-<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 
 <%! // Declarations
 static final String TEXTFIELD_EMAIL                       = "textfieldemail";
