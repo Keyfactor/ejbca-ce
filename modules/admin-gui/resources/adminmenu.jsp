@@ -10,7 +10,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants,
 org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,
 org.ejbca.util.HTMLTools
 "%>
-<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%
      // A jsp page that generates the menu after the users access rights 

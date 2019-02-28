@@ -10,7 +10,7 @@
                  org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.crl.RevokedCertInfo,
                  org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.util.CertTools, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" %>
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" type="org.ejbca.ui.web.jsf.configuration.EjbcaWebBean" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
