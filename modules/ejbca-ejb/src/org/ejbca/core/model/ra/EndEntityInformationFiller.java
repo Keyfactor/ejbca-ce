@@ -207,6 +207,9 @@ public class EndEntityInformationFiller {
      * @return String with comma separated DNSNames
      */
     public static String copyDnsNameValueFromCn(final EndEntityProfile endEntityProfile, String subjectDn) {
+        if (endEntityProfile == null) {
+            return StringUtils.EMPTY;
+        }
         StringBuilder dnses = new StringBuilder();
         String commonName = CertTools.getCommonNameFromSubjectDn(subjectDn);
         if (StringUtils.isNotEmpty(commonName)) {
