@@ -24,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Validator used in validating CA Serial Number Octet Size field.
  * 
- * @version $Id: OctetSizeValidator.java 30439 2018-11-08 13:35:31Z tarmor $
+ * @version $Id$
  *
  */
 @FacesValidator("org.ejbca.ui.web.admin.ca.validators.OctetSizeValidator")
