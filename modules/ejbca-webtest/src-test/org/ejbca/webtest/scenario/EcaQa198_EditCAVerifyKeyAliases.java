@@ -133,6 +133,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
     @Test(timeout=10000)
     public void stepI_cleanDumps() throws IOException {
+        //Remove statedump module and test statedump
         new RemoveDir("test-statedump").deleteDirectoryStream();
         new RemoveDir("dist/statedump").deleteDirectoryStream();
     }
