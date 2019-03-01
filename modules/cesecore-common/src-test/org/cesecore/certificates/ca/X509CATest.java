@@ -1183,7 +1183,59 @@ public class X509CATest {
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
     }
 
-
+    /**
+     * Testing that the certificate's serial number is generated with the correct length, according to "CA serial number octet size" that is configured to CA.
+     * "CA serial number octet size" is left to be default 20 bytes here
+     */ 
+    @Test
+    public void testCaSerialNumberWithDefaultOctetSize20() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+        
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+        cp.setUseCertificatePolicies(true);
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, user, null, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+        BigInteger serialNumber = CertTools.getSerialNumber(usercert);
+        
+        BigInteger lowestBound = new BigInteger("0080000000000000000000000000000000000000", 16);
+        BigInteger highestBound = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+        assertTrue(serialNumber.compareTo(lowestBound) >= 0 && serialNumber.compareTo(highestBound) <= 0);
+    }
+    
+    /**
+     * Testing that the certificate's serial number is generated with the correct length, according to "CA serial number octet size" that is configured to CA.
+     * "CA serial number octet size" is configured to be 4 bytes here
+     */
+    @Test
+    public void testCaSerialNumberWithOctetSize4() throws Exception {
+        final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
+        
+        // set the octet size to 4 (overwriting the default value 20)
+        x509ca.setCaSerialNumberOctetSize(4);
+        
+        KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+        cp.setUseCertificatePolicies(true);
+        Certificate usercert = x509ca.generateCertificate(cryptoToken, user, null, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
+        assertNotNull(usercert);
+        BigInteger serialNumber = CertTools.getSerialNumber(usercert);
+        
+        BigInteger lowestBound = new BigInteger("00800000", 16);
+        BigInteger highestBound = new BigInteger("7FFFFFFF", 16);
+        assertTrue(serialNumber.compareTo(lowestBound) >= 0 && serialNumber.compareTo(highestBound) <= 0);
+    }
+    
     /**
      * Testing generating certificate with public key from providedRequestMessage (providedPublicKey and endEntityInformation.extendedInformation.certificateRequest must be null).
      */
