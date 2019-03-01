@@ -39,12 +39,7 @@ public class DomainBlacklistExactMatchChecker implements DomainBlacklistChecker 
         if (blacklist == null) {
             throw new IllegalStateException("Blacklist not configured!");
         }
-        for (String blackListedDomain : blacklist) {
-            if (blackListedDomain.equals(domain)) {
-                return false;
-            }
-        }
-        return true;
+        return !blacklist.contains(domain);
     }
 
 }
