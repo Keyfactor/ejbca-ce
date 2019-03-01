@@ -403,7 +403,7 @@ public class CaHelper extends BaseHelper {
         assertEquals(
                 "Unexpected value for DefaultKey",
                 value,
-                getElementText(Page.TEXT_CERTSIGNKEY)
+                getElementText(Page.TEXT_DEFAULTSIGNKEY)
         );
     }
 
@@ -417,7 +417,7 @@ public class CaHelper extends BaseHelper {
         assertEquals(
                 "Unexpected value for TestKey",
                 value,
-                getElementText(Page.TEXT_CERTSIGNKEY)
+                getElementText(Page.TEXT_TESTSIGNKEY)
         );
     }
 
