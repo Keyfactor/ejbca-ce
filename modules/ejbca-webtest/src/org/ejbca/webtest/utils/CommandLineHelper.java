@@ -32,9 +32,8 @@ public class CommandLineHelper {
                         .exec("cmd.exe " + cmd);
 
             } else {
-                System.out.println("I am running: sh " + cmd);
                 process = Runtime.getRuntime()
-                        .exec("sh " + cmd);
+                        .exec(cmd);
             }
 
             StreamGobbler streamGobbler =
