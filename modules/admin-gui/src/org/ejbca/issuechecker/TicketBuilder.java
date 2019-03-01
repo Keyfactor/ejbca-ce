@@ -23,7 +23,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * @version $Id$
  */
 public class TicketBuilder {
-    protected final Issue issue;
+    protected final ConfigurationIssue issue;
     protected final TicketDescription ticketDescription;
     protected Predicate<AuthenticationToken> isAuthorizedToView;
 
@@ -33,7 +33,7 @@ public class TicketBuilder {
      * @param issue the issue to use when building the {@link Ticket} object.
      * @param descriptionLanguageKey the description language key to use when building the {@link Ticket} object.
      */
-    protected TicketBuilder(final Issue issue, final TicketDescription ticketDescription) {
+    protected TicketBuilder(final ConfigurationIssue issue, final TicketDescription ticketDescription) {
         this.issue = issue;
         this.ticketDescription = ticketDescription;
     }
