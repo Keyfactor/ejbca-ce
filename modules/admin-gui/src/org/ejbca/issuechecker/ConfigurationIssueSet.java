@@ -16,14 +16,15 @@ package org.ejbca.issuechecker;
 import java.util.Set;
 
 /**
- * An issue set groups issues that belong together. Each issue set contains a set of issues,
- * a title and a description. Issue sets can be enabled and disabled in the system configuration.
+ * A configuration issue set groups configuration issues that belong together. Each configuration issue set
+ * contains a set of configuration issues, a title and a description. Configuration issue sets can be enabled
+ * and disabled in the system configuration.
  *
- * <p>Each issue set can contain any number of issues, and an issue may reside in more than one
- * issue set.
+ * <p>Each configuration issue set can contain any number of configuration issues, and a configuration issue
+ * may reside in more than one configuration issue set.
  *
- * <p>An example of an issue set could be "Certificate Transparency" enabled by CAs publishing
- * to CT logs, or the issue set "CA/B Forum Baseline Requirements" enabled by CAs adhering to the
+ * <p>An example of a configuration issue set could be "Certificate Transparency" enabled by CAs publishing
+ * to CT logs, or the configuration issue set "CA/B Forum Baseline Requirements" enabled by CAs adhering to the
  * Baseline Requirements.
  *
  * @version $Id$
