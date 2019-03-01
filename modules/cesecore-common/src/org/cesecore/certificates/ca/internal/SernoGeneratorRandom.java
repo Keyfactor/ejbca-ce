@@ -71,9 +71,9 @@ public class SernoGeneratorRandom implements SernoGenerator {
     private static SernoGeneratorRandom instance = null;
 
     /** lowest possible value we should deliver when getSerno is called */
-    private BigInteger lowest = new BigInteger("0080000000000000000000000000000000000000", 16); // Default value for 64 bit serials
+    private BigInteger lowest = new BigInteger("0080000000000000000000000000000000000000", 16); // Default value for 160 bit serials
     /** highest possible value we should deliver when getSerno is called */
-    private BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16); // Default value for 64 bit serials
+    private BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16); // Default value for 160 bit serials
 
     /**
      * Creates a serial number generator using SecureRandom
