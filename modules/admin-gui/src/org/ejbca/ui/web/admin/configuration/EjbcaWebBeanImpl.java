@@ -796,7 +796,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public TreeMap<String,Integer> getHardTokenProfiles() {
-        final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>();
+        final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (final Integer id : hardTokenSession.getAuthorizedHardTokenProfileIds(administrator)){
             final String name = hardTokenSession.getHardTokenProfileName(id);
             hardtokenprofiles.put(name, id);
