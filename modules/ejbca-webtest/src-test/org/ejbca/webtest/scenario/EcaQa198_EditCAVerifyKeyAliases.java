@@ -10,6 +10,12 @@ import org.junit.runners.MethodSorters;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+
 /**
  * The CA can be both edited and restored.  When a CA is restored,
  * the key alias values should restore correctly.
@@ -30,6 +36,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
     // Test Data
     private static class TestData {
+        private static final String EJBCA_HOME = System.getenv("EJBCA_HOME");
         static final String CA_NAME = "StatedumpExportTest";
         private static final String CA_VALIDITY = "1y";
         static final String TEXT_CA_RENEWAL_ALERT_MESSAGE = "Are you sure you want to renew this CA?";
@@ -63,12 +70,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     }
 
     @Test
-    public void stepA2_createProfile() {
-
-    }
-
-    @Test
-    public void stepC_createCAUsingCryptoToken() {
+    public void stepB_createCAUsingCryptoToken() {
         //Verify CA using cryptotoken exists
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
@@ -78,48 +80,57 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
     }
 
-    @Test
-    public void stepD_buildStatedump() {
+    @Test(timeout=20000)
+    public void stepC_buildStatedump() {
         //Run the designated ant command
         Assert.assertTrue(commandLineHelper.runCommand("ant statedump"));
-        //To Do
-        //Add File lines to check the creation of the directory
+
+        //Verify statedump directory created
+        File statedumpDir = new File("dist/statedump");
+        Assert.assertTrue(statedumpDir.exists());
     }
 
-    @Test
-    public void stepE_exportCAssertStatedump() {
+    @Test(timeout=20000)
+    public void stepD_exportCAssertStatedump() {
         //Export the CA
-        commandLineHelper.runCommand("{$ejbca_home}/dist/statedump/statedump.sh export -l eca-7758-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
+        commandLineHelper.runCommand("sh dist/statedump/statedump.sh export -l eca-7758-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
+
+        //Verify exported CA directory created
+        File dumpCaDir = new File("eca-7758-statedump");
+        Assert.assertTrue(dumpCaDir.exists());
     }
 
-    @Test
-    public void stepF_deleteCA() {
-        //Remove the CA
-        caHelper.openPage(getAdminWebUrl());
-        caHelper.deleteCaAndAssert(deleteAlert, false, null, EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
-    }
 
-    @Test
-    public void stepG_importCA() {
+    @Test(timeout=20000)
+    public void stepE_importCA() {
         //Reimport the CA
         caHelper.openPage(getAdminWebUrl());
-        //To Do
-        commandLineHelper.runCommand("{$ejbca_home}/dist/statedump/statedump.sh import -l eca-7758-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
+        commandLineHelper.runCommand("sh dist/statedump/statedump.sh import -l eca-7758-statedump");
     }
 
     @Test
-    public void stepH_editCA() {
+    public void stepF_editCA() {
         //Edit the reimported CA
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(TestData.CA_NAME);
     }
 
+
     @Test
-    public void stepI_assertKeyAliasesRestored() {
+    public void stepG_assertKeyAliasesRestored() {
         //Assert Key values are restored.
         caHelper.assertCrlSignKeyValue("signKey");
         caHelper.assertDefaultKeyValue("defaultKey");
         caHelper.assertTestKeyValue("testKey");
     }
+
+
+    @Test
+    public void stepH_deleteCA() {
+        //Remove the CA
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.deleteCaAndAssert(deleteAlert, false, null, EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
+    }
+
 
 }
