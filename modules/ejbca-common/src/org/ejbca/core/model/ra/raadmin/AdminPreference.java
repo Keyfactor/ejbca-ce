@@ -47,7 +47,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     private static final String FRONTPAGEPUBQSTATUS = "frontpagepubqstatus";
     private static final String PREFEREDRALANGUAGE = "preferedRaLanguage";
     private static final String PREFEREDRASTYLEID = "preferedRaStyleId";
-    private static final String ISSUE_CHECKER_ON_FRONT_PAGE = "issueCheckerOnFrontPage";
+    private static final String CONFIGURATION_CHECKER_ON_FRONT_PAGE = "issueCheckerOnFrontPage";
 
     public static final boolean DEFAULT_FRONTPAGECASTATUS = true;
     public static final boolean DEFAULT_FRONTPAGEPUBQSTATUS = true;
@@ -67,7 +67,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
         data.put(LASTLOGFILTERMODE, Integer.valueOf(FILTERMODE_BASIC));
         data.put(FRONTPAGECASTATUS, DEFAULT_FRONTPAGECASTATUS);
         data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
-        data.put(ISSUE_CHECKER_ON_FRONT_PAGE, true);
+        data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, true);
     }
 
     public int getPreferedLanguage() {
@@ -209,11 +209,11 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     }
 
     public boolean isIssueCheckerOnFrontPage() {
-        return Boolean.TRUE.equals(data.get(ISSUE_CHECKER_ON_FRONT_PAGE));
+        return Boolean.TRUE.equals(data.get(CONFIGURATION_CHECKER_ON_FRONT_PAGE));
     }
 
     public void setIssueCheckerOnFrontPage(final boolean isIssueCheckerOnFrontPage) {
-        data.put(ISSUE_CHECKER_ON_FRONT_PAGE, Boolean.valueOf(isIssueCheckerOnFrontPage));
+        data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, Boolean.valueOf(isIssueCheckerOnFrontPage));
     }
 
     @Override
@@ -249,8 +249,8 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
             if (data.get(FRONTPAGEPUBQSTATUS) == null) {
                 data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
             }
-            if (data.get(ISSUE_CHECKER_ON_FRONT_PAGE) == null) {
-                data.put(ISSUE_CHECKER_ON_FRONT_PAGE, true);
+            if (data.get(CONFIGURATION_CHECKER_ON_FRONT_PAGE) == null) {
+                data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, true);
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }

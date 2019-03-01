@@ -26,25 +26,25 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.IssueCheckerConfiguration;
-import org.ejbca.issuechecker.IssueSet;
-import org.ejbca.issuechecker.ejb.IssueCheckerSessionBeanLocal;
+import org.ejbca.issuechecker.ConfigurationIssueSet;
+import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * Backing bean for the 'Issue Checker' tab in the System Configuration.
+ * Backing bean for the 'Configuration Checker' tab in the System Configuration.
  *
  * @version $Id: IssueTrackerSettingsManagedBean.java 31452 2019-02-08 18:35:25Z bastianf $
  */
 @ManagedBean(name = "issueCheckerSettings")
 @ViewScoped
-public class IssueCheckerSettingsManagedBean extends BaseManagedBean {
-    private static final Logger log = Logger.getLogger(IssueCheckerManagedBean.class);
+public class ConfigurationCheckerSettingsManagedBean extends BaseManagedBean {
+    private static final Logger log = Logger.getLogger(ConfigurationCheckerManagedBean.class);
     private static final long serialVersionUID = 1L;
     private boolean isIssueCheckerEnabled;
-    private List<IssueSetStatus> allIssueSetsAndTheirStatus;
+    private List<ConfigurationStatus> allIssueSetsAndTheirStatus;
 
     @EJB
-    private IssueCheckerSessionBeanLocal issueCheckerSession;
+    private ConfigurationCheckerSessionLocal configurationCheckerSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
@@ -53,14 +53,14 @@ public class IssueCheckerSettingsManagedBean extends BaseManagedBean {
         final IssueCheckerConfiguration issueCheckerConfiguration = (IssueCheckerConfiguration)
         globalConfigurationSession.getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
         final Set<String> enabledIssueSets = issueCheckerConfiguration.getEnabledIssueSets();
-        allIssueSetsAndTheirStatus = issueCheckerSession.getAllIssueSets()
+        allIssueSetsAndTheirStatus = configurationCheckerSession.getAllIssueSets()
                 .stream()
-                .map(issueSet -> new IssueSetStatus(issueSet, enabledIssueSets.contains(issueSet.getDatabaseValue())))
+                .map(issueSet -> new ConfigurationStatus(issueSet, enabledIssueSets.contains(issueSet.getDatabaseValue())))
                 .collect(Collectors.toList());
         isIssueCheckerEnabled = issueCheckerConfiguration.isIssueCheckerEnabled();
     }
 
-    public List<IssueSetStatus> getAllIssueSetsAndTheirStatus() {
+    public List<ConfigurationStatus> getAllIssueSetsAndTheirStatus() {
         return allIssueSetsAndTheirStatus;
     }
 
@@ -72,12 +72,12 @@ public class IssueCheckerSettingsManagedBean extends BaseManagedBean {
         this.isIssueCheckerEnabled = isIssueTrackerEnabled;
     }
 
-    public String getLabel(final IssueSet issueSet) {
+    public String getLabel(final ConfigurationIssueSet issueSet) {
         final String issueSetTitle = getEjbcaWebBean().getText(issueSet.getTitleLanguageString());
         return getEjbcaWebBean().getText("ISSUE_SET_LABEL", false /* unescape */, issueSetTitle, issueSet.size());
     }
 
-    public String getDescription(final IssueSet issueSet) {
+    public String getDescription(final ConfigurationIssueSet issueSet) {
         return getEjbcaWebBean().getText(issueSet.getDescriptionLanguageString());
     }
 
@@ -93,11 +93,11 @@ public class IssueCheckerSettingsManagedBean extends BaseManagedBean {
             issueCheckerConfiguration.setIssueCheckerEnabled(isIssueCheckerEnabled);
             issueCheckerConfiguration.setEnabledIssueSets(enabledIssueSets);
             globalConfigurationSession.saveConfiguration(getAdmin(), issueCheckerConfiguration);
-            addInfoMessage("ISSUE_CHECKER_SAVE_OK");
+            addInfoMessage("CONFIGURATION_CHECKER_SAVE_OK");
         } catch (AuthorizationDeniedException e) {
-            log.error("Cannot save the configuration for the EJBCA Issue Checker because the current "
+            log.error("Cannot save the configuration for the EJBCA Configuration Checker because the current "
                     + "administrator is not authorized. Error description: " + e.getMessage());
-            addErrorMessage("ISSUE_CHECKER_CANNOT_SAVE");
+            addErrorMessage("CONFIGURATION_CHECKER_CANNOT_SAVE");
         }
     }
 }

@@ -15,8 +15,8 @@ package org.ejbca.issuechecker.issuesets;
 
 import java.util.Set;
 
-import org.ejbca.issuechecker.Issue;
-import org.ejbca.issuechecker.IssueSet;
+import org.ejbca.issuechecker.ConfigurationIssue;
+import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
 import org.ejbca.issuechecker.issues.NotInProductionMode;
 
@@ -27,14 +27,14 @@ import com.google.common.collect.ImmutableSet;
  *
  * @version $Id$
  */
-public class EjbcaCommonIssueSet extends IssueSet {
-    private final Set<Class<? extends Issue>> issues = new ImmutableSet.Builder<Class<? extends Issue>>()
+public class EjbcaCommonIssueSet extends ConfigurationIssueSet {
+    private final Set<Class<? extends ConfigurationIssue>> issues = new ImmutableSet.Builder<Class<? extends ConfigurationIssue>>()
             .add(NotInProductionMode.class)
             .add(EccWithKeyEncipherment.class)
             .build();
 
     @Override
-    public Set<Class<? extends Issue>> getIssues() {
+    public Set<Class<? extends ConfigurationIssue>> getConfigurationIssues() {
         return issues;
     }
 
