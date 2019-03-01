@@ -33,6 +33,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -70,6 +71,8 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(DomainBlacklistValidator.class);
+
+    private static final Pattern allowedDomainCharacters = Pattern.compile("^[a-zA-Z0-9._-]+$");
 
     /** The domain blacklist validator type. */
     private static final String TYPE_IDENTIFIER = "DOMAIN_BLACKLIST_VALIDATOR";
@@ -126,23 +129,36 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
     }
 
-    /** Replaces the existing domain blacklist with the uploaded one */
-    private void setDomainBlacklist(final File file) {
-        final Set<String> domainSet = new HashSet<>();
+    /** Replaces the existing domain blacklist with the uploaded one. Takes a File object. */
+    private void changeBlacklist(final File file) {
         try {
             final byte[] bytes = FileUtils.readFileToByteArray(file);
+            changeBlacklist(bytes);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to parse domain black list.", e);
+        }
+    }
+
+    /** Replaces the existing domain blacklist with the uploaded one. Takes a byte array. */
+    protected void changeBlacklist(final byte[] bytes) {
+        final Set<String> domainSet = new HashSet<>();
+        try {
             try (final InputStream domainBlacklistInputStream = new ByteArrayInputStream(bytes);
                  final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(domainBlacklistInputStream, StandardCharsets.UTF_8))) {
                 String line;
+                int lineNumber = 0;
                 while ((line = bufferedReader.readLine()) != null) {
+                    lineNumber++;
                     final int comment = line.indexOf('#');
                     if (comment != -1) {
                         line = line.substring(0, comment);
                     }
                     line = line.trim();
-                    if (!line.isEmpty()) {
-                        domainSet.add(line);
+                    if (line.isEmpty()) {
+                        continue;
                     }
+                    validateDomain(line, lineNumber);
+                    domainSet.add(line);
                 }
                 setBlacklist(domainSet);
                 setBlacklistDate(new Date());
@@ -151,6 +167,19 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
         } catch (IOException e) {
             throw new IllegalStateException("Unable to parse domain black list.", e);
+        }
+    }
+
+    /**
+     * Performs a basic validation of a domain, just to prevent mistakes.
+     * Given that we may want to block fraud domains, we should not be too strict with standards compliance here.
+     * Otherwise, we could have used StringTools.isValidSanDnsName
+     */
+    private void validateDomain(final String domain, final int lineNumber) {
+        if (!allowedDomainCharacters.matcher(domain).matches()) {
+            final String message = "Invalid syntax of domain at line " + lineNumber + (lineNumber < 5 ? ". The file must be a plain text file in ASCII format, or UTF-8 format (without Byte Order Mark). Please put one domain per line. IDN domains must be in Punycode format." : "");
+            log.info(message);
+            throw new IllegalArgumentException(message);
         }
     }
 
@@ -222,7 +251,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                         if (log.isDebugEnabled()) {
                             log.debug("Parsing uploaded file: " + uploadedFile.getName());
                         }
-                        setDomainBlacklist(uploadedFile);
+                        changeBlacklist(uploadedFile);
                     } finally {
                         uploadedFile.delete();
                     }
