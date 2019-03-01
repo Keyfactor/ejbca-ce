@@ -387,6 +387,18 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
+    public ApprovalDataVO findApprovalDataByRequestId(int requestId) {
+        if (log.isTraceEnabled()) {
+            log.trace(">findApprovalDataByRequestId: id="+requestId);
+        }
+        final ApprovalData approvalData = findById(requestId);
+        final ApprovalDataVO result = approvalData.getApprovalDataVO();
+        log.trace("<findApprovalDataByRequestId");
+        return result;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public List<ApprovalDataVO> query(final Query query, int index, int numberofrows, String caAuthorizationString,
             String endEntityProfileAuthorizationString) throws IllegalQueryException {
         log.trace(">query()");

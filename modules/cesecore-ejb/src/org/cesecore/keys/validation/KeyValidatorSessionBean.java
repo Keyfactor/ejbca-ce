@@ -393,7 +393,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             DnsNameValidator validator;
             for (Integer id : ca.getValidators()) {
                 baseValidator = getValidatorInternal(id, true);
-                if (baseValidator != null && baseValidator.getValidatorSubType().equals(DnsNameValidator.class)) {
+                if (baseValidator == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA " + ca.getName() + " references a non-existent validator: " + id);
+                    }
+                } else if (baseValidator.getValidatorSubType().equals(DnsNameValidator.class)) {
                     validator = (DnsNameValidator) baseValidator;
                     // Filter for validator criteria.
                     if (!filterCertificateProfileAwareValidator(validator, endEntityInformation.getCertificateProfileId()) ||
