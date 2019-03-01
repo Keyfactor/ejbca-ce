@@ -61,8 +61,8 @@ public class SernoGeneratorRandom implements SernoGenerator {
     /** random generator algorithm, default SHA1PRNG */
     private String algorithm = "SHA1PRNG";
 
-    /** number of bytes serial number to generate, default 8 */
-    private int noOctets = 8;
+    /** number of bytes serial number to generate, default value taken from CesecoreConfiguration */
+    private int noOctets = Integer.parseInt(CesecoreConfiguration.DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA);
 
     /** random generator */
     private SecureRandom random;

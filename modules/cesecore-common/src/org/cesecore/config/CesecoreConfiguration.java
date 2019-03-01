@@ -34,7 +34,7 @@ public final class CesecoreConfiguration {
     /** NOTE: diff between EJBCA and CESeCore */
     public static final String PERSISTENCE_UNIT = "ejbca";
     public static final String AVAILABLE_CIPHER_SUITES_SPLIT_CHAR = ";";
-    private static final String DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA = "20";
+    public static final String DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA = "20";
     private static final String DEFAULT_SERIAL_NUMBER_OCTET_SIZE_EXISTINGCA = "8";
 
     /** This is a singleton so it's not allowed to create an instance explicitly */
