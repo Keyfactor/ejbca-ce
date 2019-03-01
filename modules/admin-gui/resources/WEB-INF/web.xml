@@ -102,7 +102,8 @@
         <url-pattern>/ca/editcas/importca.xhtml</url-pattern>
         <url-pattern>/ca/editcas/editcapage.xhtml</url-pattern>
         <url-pattern>/ca/editcas/recievefile.xhtml</url-pattern>
-        <url-pattern>/ca/editcas/importcacert.xhtml</url-pattern> 
+        <url-pattern>/ca/editcas/importcacert.xhtml</url-pattern>
+        <url-pattern>/ca/editvalidators/editvalidator.xhtml</url-pattern>
         <url-pattern>/ca/cafunctions.xhtml</url-pattern>
         <url-pattern>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</url-pattern>
     </filter-mapping>

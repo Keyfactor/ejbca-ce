@@ -53,8 +53,8 @@ public class JsfDynamicUiHtmlSelectBooleanCheckbox extends HtmlSelectBooleanChec
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
         if (log.isTraceEnabled()) {
-            log.trace("Property change event for dynamic UI property " + dynamicUiProperty != null ? dynamicUiProperty.getName()
-                    : null + " fired: " + event);
+            log.trace("Property change event for dynamic UI property " + (dynamicUiProperty != null ? dynamicUiProperty.getName()
+                    : null) + " fired: " + event);
         }
         if (event.getOldValue() != event.getNewValue()) {
             setValue(event.getNewValue());
