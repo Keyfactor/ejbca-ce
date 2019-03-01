@@ -89,6 +89,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     /** If the UI widget is supposed to be disabled. */
     private boolean disabled = false;
+    
+    /** If the value of a DynamicUiProperty of label type should be escaped. Inverted so "escape" defaults to true when deserializing old objects */
+    private boolean noEscape = false;
 
     /** If the value has to be stored in the domain object properties. */
     private boolean transientValue = false;
@@ -377,6 +380,22 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
      */
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    /**
+     * Gets if the value should be escaped. Applies to label components only. Default is true.
+     * @return true if the value should be escaped.
+     */
+    public boolean isEscape() {
+        return !noEscape;
+    }
+
+    /**
+     * Sets if the value should be escaped. Applies to label components only. Default is true.
+     * @param escape true if the value should be escaped.
+     */
+    public void setEscape(final boolean escape) {
+        this.noEscape = !escape;
     }
 
     /**

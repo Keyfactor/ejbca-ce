@@ -188,6 +188,7 @@ public class JsfDynamicUiPsmFactory {
         final JsfDynamicUiHtmlOutputLabel result = new JsfDynamicUiHtmlOutputLabel();
         result.setDynamicUiProperty(property);
         setUIOutputAttributes(result, property);
+        result.setEscape(property.isEscape());
         return result;
     }
 
