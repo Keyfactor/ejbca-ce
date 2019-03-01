@@ -21,7 +21,7 @@ RUN cd $HOME \
 RUN apk --update add openjdk8
 
 #Setting Ant Params
-ENV ANT_OPTS="-Xms256M -Xmx512M"
+ENV ANT_OPTS="-Xms768M -Xmx768M"
 
 #Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
