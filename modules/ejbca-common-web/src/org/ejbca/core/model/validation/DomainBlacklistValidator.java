@@ -44,6 +44,7 @@ import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.MapTools;
 import org.cesecore.util.NameTranslatable;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ui.DynamicUiModel;
@@ -249,6 +250,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
             labels.put(name, displayName);
         }
+        MapTools.sortLinkedHashMap(labels, String.CASE_INSENSITIVE_ORDER);
         final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, dataMapKey, defaultValue, labels.keySet());
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_SELECT_MANY);
         uiProperty.setLabels(labels);
@@ -271,6 +273,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, BLACKLIST_INFO_KEY, null);
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_LABEL);
         uiProperty.setEscape(false);
+        uiProperty.setTransientValue(true);
         try {
             final String text = intres.getLocalizedMessage("validator.domainblacklist.info_text",
                     CollectionUtils.size(getBlacklist()), ValidityDate.formatAsUTC(blacklistDate), getBlacklistSha256());
