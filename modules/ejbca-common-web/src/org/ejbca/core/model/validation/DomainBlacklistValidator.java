@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -51,6 +52,7 @@ import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistChecker;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistExactMatchChecker;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistNormalizer;
+import org.ejbca.util.HTMLTools;
 
 /**
  * A Domain Blacklist Validator checks DNSName fields against a set of blacklists.
@@ -78,9 +80,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     /** Current blacklist. Set of strings (blacklisted domains and/or domain components) */
     private static final String BLACKLISTS_KEY = "blacklists";
     /** Information about the existing blacklist: Filename, date, SHA-256 */
-    private static final String BLACKLIST_INFO_KEY = "blacklist_info"; // Used in GUI
-    private static final String BLACKLIST_DATE_KEY = "blacklist_date";         // Persisted
-    private static final String BLACKLIST_SHA256_KEY = "blacklist_sha256";     // Persisted
+    private static final String BLACKLIST_INFO_KEY = "blacklist_info"; // Used in GUI only
+    private static final String BLACKLIST_DATE_KEY = "blacklist_date";     // Persisted
+    private static final String BLACKLIST_SHA256_KEY = "blacklist_sha256"; // Persisted
     /** File upload of new existing blacklist. Not persisted */
     private static final String BLACKLIST_UPLOAD_KEY = "blacklist_upload";
 
@@ -214,14 +216,17 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 // Parse file data
                 final DynamicUiProperty<?> uploadUiProperty = getProperties().get(BLACKLIST_UPLOAD_KEY);
                 final File uploadedFile = (File) uploadUiProperty.getValue();
-log.warn("XXX UPLOADED FILE: " + uploadedFile); // TODO removeme
                 if (uploadedFile != null) {
                     try {
-                        log.debug("Parsing uploaded file: " + uploadedFile.getName());
+                        if (log.isDebugEnabled()) {
+                            log.debug("Parsing uploaded file: " + uploadedFile.getName());
+                        }
                         setDomainBlacklist(uploadedFile);
                     } finally {
                         uploadedFile.delete();
                     }
+                } else {
+                    log.debug("No new blacklist file was uploaded.");
                 }
                 return rawData;
             }
@@ -265,10 +270,12 @@ log.warn("XXX UPLOADED FILE: " + uploadedFile); // TODO removeme
         }
         final DynamicUiProperty<String> uiProperty = new DynamicUiProperty<>(String.class, BLACKLIST_INFO_KEY, null);
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_LABEL);
+        uiProperty.setEscape(false);
         try {
             final String text = intres.getLocalizedMessage("validator.domainblacklist.info_text",
-                    ValidityDate.formatAsUTC(blacklistDate), getBlacklistSha256());
-            uiProperty.setValue(text);
+                    CollectionUtils.size(getBlacklist()), ValidityDate.formatAsUTC(blacklistDate), getBlacklistSha256());
+            final String html = HTMLTools.htmlescape(text).replace("|", "<br />");
+            uiProperty.setValue(html);
         } catch (PropertyValidationException e) {
             throw new IllegalStateException(e);
         }
@@ -337,9 +344,6 @@ log.warn("XXX UPLOADED FILE: " + uploadedFile); // TODO removeme
                 }
             }
         }
-//boolean result = domainNames.length == 0 || "evil.example.com".equals(domainNames[0]);
-//final List<String> messages = new ArrayList<>();
-//messages.add("TEST VALIDATION " + result + " : " + StringUtils.join(domainNames));
         return new AbstractMap.SimpleEntry<>(result, messages);
     }
 
