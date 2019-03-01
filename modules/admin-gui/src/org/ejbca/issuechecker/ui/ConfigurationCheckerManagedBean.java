@@ -25,24 +25,24 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.IssueCheckerConfiguration;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.db.TicketRequest;
-import org.ejbca.issuechecker.ejb.IssueCheckerSessionBean;
-import org.ejbca.issuechecker.ejb.IssueCheckerSessionBeanLocal;
+import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionBean;
+import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
- * Backing bean for the issue checker displayed on the front screen. Some business logic is
- * dispatched to {@link IssueCheckerSessionBean}.
+ * Backing bean for the Configuration checker displayed on the front screen. Some business logic is
+ * dispatched to {@link ConfigurationCheckerSessionBean}.
  *
  * @version $Id: IssueTrackerManagedBean.java 31453 2019-02-10 11:20:44Z bastianf $
  */
 @ManagedBean(name = "issueChecker")
 @SessionScoped
-public class IssueCheckerManagedBean extends BaseManagedBean {
+public class ConfigurationCheckerManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1L;
     private static final int MAX_NUMBER_OF_TICKETS_TO_DISPLAY = 8;
 
     @EJB
-    private IssueCheckerSessionBeanLocal issueCheckerSession;
+    private ConfigurationCheckerSessionLocal configurationCheckerSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
@@ -61,7 +61,7 @@ public class IssueCheckerManagedBean extends BaseManagedBean {
     }
 
     public List<Ticket> getTickets() {
-        return issueCheckerSession.getTickets(TicketRequest.builder(getAdmin())
+        return configurationCheckerSession.getTickets(TicketRequest.builder(getAdmin())
                 .withLimit(MAX_NUMBER_OF_TICKETS_TO_DISPLAY)
                 .build())
             .collect(Collectors.toList());

@@ -18,12 +18,12 @@ import java.util.List;
 import org.apache.log4j.Level;
 
 /**
- * An issue is a type of problem which can be checked by the EJBCA issue checker. Each issue has
+ * An Configuration Issue is a type of problem which can be checked by the EJBCA Configuration Checker. Each issue has
  * a priority and a description. An issue can produce one or more tickets if present on the system.
  *
  * @version $Id$
  */
-public abstract class Issue {
+public abstract class ConfigurationIssue {
     /**
      * Get a list of tickets caused by this issue. Returns an empty list of tickets if this issue
      * is not present on the system, or at least one ticket if present.

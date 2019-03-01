@@ -26,8 +26,8 @@
         <h:panelGroup layout="block" styleClass="status" id="issuechecker"
             rendered="#{ejbcawebbean.adminPreference.issueCheckerOnFrontPage and issueChecker.issueCheckerEnabled}">
             <h4>
-                <h:outputText value="#{web.text.ISSUE_CHECKER}" />
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Use_the_Issue_Checker.html')}" escape="false" />
+                <h:outputText value="#{web.text.CONFIGURATION_CHECKER}" />
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Use_the_CONFIGURATION_CHECKER.html')}" escape="false" />
             </h4>
             <ui:repeat value="#{issueChecker.tickets}" var="ticket">
                 <h:outputLink value="#{issueChecker.getIssueHelpReference(ticket)}" target="_blank"> 
@@ -37,7 +37,7 @@
                 </h:outputLink>
             </ui:repeat>
 
-            <h:outputText value="#{web.text.ISSUE_CHECKER_NO_TICKETS}" rendered="#{empty issueChecker.tickets}" />
+            <h:outputText value="#{web.text.CONFIGURATION_CHECKER_NO_TICKETS}" rendered="#{empty issueChecker.tickets}" />
         </h:panelGroup>
     </ui:composition>
 </h:body>

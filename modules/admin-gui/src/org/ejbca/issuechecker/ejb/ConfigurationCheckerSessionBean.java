@@ -25,8 +25,8 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.ejbca.config.IssueCheckerConfiguration;
-import org.ejbca.issuechecker.Issue;
-import org.ejbca.issuechecker.IssueSet;
+import org.ejbca.issuechecker.ConfigurationIssue;
+import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.db.TicketRequest;
 import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
@@ -37,7 +37,7 @@ import org.ejbca.issuechecker.issuesets.EjbcaCommonIssueSet;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Singleton session bean implementing business logic for the EJBCA issue checker.
+ * Singleton session bean implementing business logic for the EJBCA Configuration Checker.
  *
  * <p>This session bean is responsible for instantiating issues and issue sets. It is also able
  * to check for issues and create the appropriate tickets.
@@ -49,7 +49,7 @@ import com.google.common.collect.ImmutableSet;
  */
 @Singleton
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class IssueCheckerSessionBean implements IssueCheckerSessionBeanLocal, IssueCheckerSessionBeanRemote {
+public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSessionLocal, ConfigurationCheckerSessionRemote {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -58,20 +58,20 @@ public class IssueCheckerSessionBean implements IssueCheckerSessionBeanLocal, Is
     /**
      * A set of all implemented issue sets. If you create a new issue set, add it to this set.
      */
-    private Set<IssueSet> issueSets;
+    private Set<ConfigurationIssueSet> issueSets;
 
     /**
      * A set of all implemented issues. If you create a new issue, add it to this set.
      */
-    private Set<Issue> issues;
+    private Set<ConfigurationIssue> issues;
 
     @PostConstruct
     public void instansiateIssuesAndIssueSets() {
-        issues = new ImmutableSet.Builder<Issue>()
+        issues = new ImmutableSet.Builder<ConfigurationIssue>()
                 .add(new NotInProductionMode())
                 .add(new EccWithKeyEncipherment(certificateProfileSession))
                 .build();
-        issueSets = new ImmutableSet.Builder<IssueSet>()
+        issueSets = new ImmutableSet.Builder<ConfigurationIssueSet>()
                 .add(new EjbcaCommonIssueSet())
                 .add(new CertificateTransparencyIssueSet())
                 .build();
@@ -91,7 +91,7 @@ public class IssueCheckerSessionBean implements IssueCheckerSessionBeanLocal, Is
     }
 
     @Override
-    public Set<IssueSet> getAllIssueSets() {
+    public Set<ConfigurationIssueSet> getAllIssueSets() {
         return issueSets;
     }
 
@@ -101,7 +101,7 @@ public class IssueCheckerSessionBean implements IssueCheckerSessionBeanLocal, Is
      * @param issueSet the issue set to check.
      * @return true if the issue set is enabled, false otherwise.
      */
-    private boolean isIssueSetEnabled(final IssueSet issueSet) {
+    private boolean isIssueSetEnabled(final ConfigurationIssueSet issueSet) {
         final IssueCheckerConfiguration issueTrackerConfiguration = (IssueCheckerConfiguration)
                 globalConfigurationSession.getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
         return issueTrackerConfiguration.getEnabledIssueSets().contains(issueSet.getDatabaseValue());
@@ -114,9 +114,9 @@ public class IssueCheckerSessionBean implements IssueCheckerSessionBeanLocal, Is
      * @param issue the issue to look for in one of the issue sets
      * @return true if the issue is being tracked, false otherwise
      */
-    private boolean isChecking(final Issue issue) {
+    private boolean isChecking(final ConfigurationIssue issue) {
         return issueSets.stream()
                 .filter(issueSet -> isIssueSetEnabled(issueSet))
-                .anyMatch(issueSet -> issueSet.getIssues().contains(issue.getClass()));
+                .anyMatch(issueSet -> issueSet.getConfigurationIssues().contains(issue.getClass()));
     }
 }
