@@ -16,11 +16,9 @@ package org.ejbca.ui.web.admin.configuration;
 import javax.faces.model.SelectItem;
 
 /**
- * An extension to the SelectItem class that is
- * sortable, used by select lists that should be alphabetic
- * order. 
- * 
- *
+ * An extension to the SelectItem class that is sortable.
+ * Used by select lists that should be alphabetic order, ignoring case.
+ *  
  * @version $Id$
  */
 
@@ -42,7 +40,7 @@ public class SortableSelectItem extends SelectItem implements Comparable<SelectI
 
 	@Override
 	public int compareTo(final SelectItem other) {
-		return this.getLabel().compareTo(other.getLabel());
+		return this.getLabel().compareToIgnoreCase(other.getLabel());
 	}
 
 }
