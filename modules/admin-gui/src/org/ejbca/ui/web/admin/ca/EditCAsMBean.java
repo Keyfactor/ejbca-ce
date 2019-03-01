@@ -1129,7 +1129,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }     
     
     public List<ApprovalRequestItem> getApprovalRequestItems() {
-        if (approvalRequestItems == null) {
+        if (approvalRequestItems == null || approvalRequestItems.isEmpty()) {
             approvalRequestItems = new ArrayList<>();
             final Map<ApprovalRequestType, Integer> approvals = getApprovals();
             for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
@@ -2591,6 +2591,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             for (final ApprovalRequestType approvalRequestType : ApprovalRequestType.values()) {
                 if (approvals.containsKey(approvalRequestType)) {
                     approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, approvals.get(approvalRequestType)));
+                } else {
+                    approvalRequestItems.add(new ApprovalRequestItem(approvalRequestType, -1));
                 }
             }
         }
