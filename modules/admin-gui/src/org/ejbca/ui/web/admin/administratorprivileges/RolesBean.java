@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.administratorprivileges;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -101,7 +102,13 @@ public class RolesBean extends BaseManagedBean implements Serializable {
                 }
             }
             this.onlyEmptyNameSpaceInUse = onlyEmptyNameSpaceInUse;
-            Collections.sort(roles);
+            // Sort case insensitive
+            Collections.sort(roles, new Comparator<Role>() {
+                @Override
+                public int compare(Role o1, Role o2) {
+                    return o1.getRoleName().compareToIgnoreCase(o2.getRoleName());
+                }
+            });
             rolesAvailable = new ListDataModel<>(roles);
         }
         return rolesAvailable;
