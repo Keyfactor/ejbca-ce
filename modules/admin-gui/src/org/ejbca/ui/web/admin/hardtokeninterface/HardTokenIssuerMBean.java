@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.hardtokeninterface;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -33,6 +34,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.util.SelectItemComparator;
 
 /**
  * @version $Id$
@@ -70,7 +72,7 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
         try {
             tokenbean.initialize(req, getEjbcaWebBean());
         } catch (Exception e) {
-            throw new java.io.IOException("Error initializing AdminIndexMBean");
+            throw new java.io.IOException("Error initializing HardTokenIssuerMBean");
         }
     }
 
@@ -82,6 +84,7 @@ public class HardTokenIssuerMBean extends BaseManagedBean implements Serializabl
             String label = hardTokenIssuer.getKey() + ", " + adminIdToNameMap.get(hardTokenIssuer.getValue().getRoleDataId());
             ret.add(new SelectItem(hardTokenIssuer.getKey(), label));
         }
+        Collections.sort(ret, new SelectItemComparator());
         return ret;
     }
 
