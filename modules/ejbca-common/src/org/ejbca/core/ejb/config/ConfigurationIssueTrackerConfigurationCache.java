@@ -19,7 +19,7 @@ import java.util.Properties;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.ConfigurationCache;
-import org.ejbca.config.IssueCheckerConfiguration;
+import org.ejbca.config.ConfigurationCheckerConfiguration;
 
 /**
  * Class holding a cache variable for the EJBCA Configuration Checker configuration.
@@ -65,7 +65,7 @@ public class ConfigurationIssueTrackerConfigurationCache implements Configuratio
 
     @Override
     public ConfigurationBase getNewConfiguration() {
-        return new IssueCheckerConfiguration();
+        return new ConfigurationCheckerConfiguration();
     }
 
     @Override
