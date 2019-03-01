@@ -22,11 +22,11 @@ import org.cesecore.configuration.ConfigurationCache;
 import org.ejbca.config.IssueCheckerConfiguration;
 
 /**
- * Class holding a cache variable for the EJBCA issue checker configuration.
+ * Class holding a cache variable for the EJBCA Configuration Checker configuration.
  *
  * @version $Id$
  */
-public class IssueTrackerConfigurationCache implements ConfigurationCache {
+public class ConfigurationIssueTrackerConfigurationCache implements ConfigurationCache {
     private volatile ConfigurationBase cachedConfiguration;
     private volatile long lastUpdateTime = -1;
 

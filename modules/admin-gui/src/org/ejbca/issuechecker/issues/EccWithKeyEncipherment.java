@@ -26,7 +26,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.ejbca.issuechecker.Issue;
+import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.TicketDescription;
 
@@ -40,7 +40,7 @@ import org.ejbca.issuechecker.TicketDescription;
  *
  * @version $Id$
  */
-public class EccWithKeyEncipherment extends Issue {
+public class EccWithKeyEncipherment extends ConfigurationIssue {
     private final CertificateProfileSessionLocal certificateProfileSession;
 
     /**

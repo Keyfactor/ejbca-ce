@@ -1397,7 +1397,7 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 .expandOnClick:focus:after { content: ""; }
 
 /* 
- * Cards for the EJBCA Issue Checker. Based on the CSS template from WC3.
+ * Cards for the EJBCA Configuration Checker. Based on the CSS template from WC3.
  * https://www.w3schools.com/howto/howto_css_cards.asp
  */
 .card {
