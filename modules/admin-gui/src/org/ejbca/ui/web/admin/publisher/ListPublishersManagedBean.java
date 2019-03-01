@@ -14,6 +14,7 @@ package org.ejbca.ui.web.admin.publisher;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -83,6 +84,7 @@ public class ListPublishersManagedBean extends BaseManagedBean implements Serial
     public List<SortableSelectItem> getAvailablePublishers() {
         List<SortableSelectItem> availablePublishers = new ArrayList<>();
         getEjbcaWebBean().getAuthorizedPublisherNames().forEach(publisher -> availablePublishers.add(new SortableSelectItem(publisher, publisher)));
+        Collections.sort(availablePublishers);
         return availablePublishers;
     }
     
