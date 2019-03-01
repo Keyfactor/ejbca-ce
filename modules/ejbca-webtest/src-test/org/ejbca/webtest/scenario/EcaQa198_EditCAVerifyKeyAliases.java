@@ -7,6 +7,7 @@ import org.ejbca.webtest.helper.CryptoTokenHelper;
 import org.ejbca.webtest.utils.CommandLineHelper;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -62,13 +63,19 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     }
 
     @Test
+    public void stepA2_createProfile() {
+
+    }
+
+    @Test
     public void stepC_createCAUsingCryptoToken() {
         //Verify CA using cryptotoken exists
         caHelper.openPage(getAdminWebUrl());
-        caHelper.addCa("StatedumpExportTest");
+        caHelper.addCa(TestData.CA_NAME);
         caHelper.setValidity(EcaQa198_EditCAVerifyKeyAliases.TestData.CA_VALIDITY);
-        caHelper.setCryptoToken("ManagementCA");
         caHelper.createCa();
+        caHelper.assertExists(EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
+
     }
 
     @Test
@@ -82,8 +89,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     @Test
     public void stepE_exportCAssertStatedump() {
         //Export the CA
-        //To Do
-        commandLineHelper.runCommand("");
+        commandLineHelper.runCommand("{$ejbca_home}/dist/statedump/statedump.sh export -l eca-7758-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
     }
 
     @Test
@@ -98,22 +104,22 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         //Reimport the CA
         caHelper.openPage(getAdminWebUrl());
         //To Do
-        commandLineHelper.runCommand("{$ejbca_home}/dist/statedump/statedump.sh export -l eca-7758-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
+        commandLineHelper.runCommand("{$ejbca_home}/dist/statedump/statedump.sh import -l eca-7758-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
     }
 
     @Test
     public void stepH_editCA() {
         //Edit the reimported CA
         caHelper.openPage(getAdminWebUrl());
-        caHelper.edit("StatedumpExportTest");
+        caHelper.edit(TestData.CA_NAME);
     }
 
     @Test
     public void stepI_assertKeyAliasesRestored() {
         //Assert Key values are restored.
-        caHelper.assertCertSignKeyValue("defaultKey");
-        caHelper.assertCertSignKeyValue("testKey");
-        caHelper.assertCertSignKeyValue("signKey");
+        caHelper.assertCrlSignKeyValue("signKey");
+        caHelper.assertDefaultKeyValue("defaultKey");
+        caHelper.assertTestKeyValue("testKey");
     }
 
 }
