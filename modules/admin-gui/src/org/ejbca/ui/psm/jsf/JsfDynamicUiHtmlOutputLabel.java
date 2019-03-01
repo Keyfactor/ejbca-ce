@@ -59,4 +59,9 @@ public class JsfDynamicUiHtmlOutputLabel extends HtmlOutputText implements Dynam
     public void setDisabled(boolean disabled) {
         // NOOP.   
     }
+
+    /** Dummy method to prevent NPE in JSF core code. Always returns false. */
+    public boolean isDisabled() {
+        return false;
+    }
 }
