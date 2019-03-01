@@ -66,7 +66,7 @@ public class SernoGeneratorTest {
         assertTrue(gen.checkSernoValidity(someSerno));
         
         // Set serno size 8 bytes (64 bits)
-        gen.setSernoOctetSize(20);
+        gen.setSernoOctetSize(8);
         lowest = new BigInteger("0080000000000000", 16);
         highest = new BigInteger("7FFFFFFFFFFFFFFF", 16);
         assertTrue(gen.checkSernoValidity(lowest));
