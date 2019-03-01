@@ -41,13 +41,10 @@ public class DomainBlacklistComponentChecker implements DomainBlacklistChecker {
         if (blacklist == null) {
             throw new IllegalStateException("Blacklist not configured!");
         }
-        String[] domainParts = domain.split("\\.");
-
-        for (int i = 0; i < domainParts.length; i++) {
-            for (String blackListedDomain : blacklist) {
-                if (blackListedDomain.equals(domainParts[i])) {
-                    return false;
-                }
+        final String[] domainParts = domain.split("\\.");
+        for (final String domainPart : domainParts) {
+            if (blacklist.contains(domainPart)) {
+                return false; // Backlisted
             }
         }
         return true;
