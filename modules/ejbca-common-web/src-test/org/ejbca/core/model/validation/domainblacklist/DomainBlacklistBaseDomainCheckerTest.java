@@ -21,69 +21,69 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 /**
- * Tests DomainBlacklistTopDomainChecker functions.
+ * Tests DomainBlacklistBaseDomainChecker functions.
  * @version $Id$
  */
-public class DomainBlacklistTopDomainCheckerTest {
+public class DomainBlacklistBaseDomainCheckerTest {
 
     @Test(expected = IllegalStateException.class)
     public void checkNotInitialized() throws Exception {
-        DomainBlacklistTopDomainChecker checker = new DomainBlacklistTopDomainChecker();
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
         checker.check("something");
     }
 
     @Test
     public void checkPartInBlackList() throws Exception {
-        DomainBlacklistTopDomainChecker checker = new DomainBlacklistTopDomainChecker();
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
         Set<String> blacklist = new HashSet<>(Arrays.asList("bank", "paypal.com"));
         checker.initialize(null, blacklist);
         boolean result = checker.check("bank.com");
-        assertTrue("'bank.com' domain should be accepted by Top Domain checker", result);
+        assertTrue("'bank.com' domain should be accepted by Base Domain checker", result);
     }
 
     @Test
     public void checkInMiddlePartBlackList() throws Exception {
-        DomainBlacklistTopDomainChecker checker = new DomainBlacklistTopDomainChecker();
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
         Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
         checker.initialize(null, blacklist);
         boolean result = checker.check("test.bank.com");
-        assertTrue("'test.bank.com' domain should be accepted  by Top Domain checker", result);
+        assertTrue("'test.bank.com' domain should be accepted by Base Domain checker", result);
     }
 
     @Test
     public void checkWordPartInBlackList() throws Exception {
-        DomainBlacklistTopDomainChecker checker = new DomainBlacklistTopDomainChecker();
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
         Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
         checker.initialize(null, blacklist);
         boolean result = checker.check("memorybank.com");
-        assertTrue("'memorybank.com' domain should be accepted by Top Domain checker", result);
+        assertTrue("'memorybank.com' domain should be accepted by Base Domain checker", result);
     }
 
     @Test
     public void checkFullDomainBlackList() throws Exception {
-        DomainBlacklistTopDomainChecker checker = new DomainBlacklistTopDomainChecker();
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
         Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
         checker.initialize(null, blacklist);
         boolean result = checker.check("paypal.com");
-        assertFalse("'paypal.com' domain should be not accepted by Top Domain checker", result);
+        assertFalse("'paypal.com' domain should be not accepted by Base Domain checker", result);
     }
 
     @Test
     public void checkDomainPartWithDotInBlackList() throws Exception {
-        DomainBlacklistTopDomainChecker checker = new DomainBlacklistTopDomainChecker();
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
         Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
         checker.initialize(null, blacklist);
         boolean result = checker.check("login.paypal.com");
-        assertFalse("'login.paypal.com' domain should not be accepted by Top Domain checker", result);
+        assertFalse("'login.paypal.com' domain should not be accepted by Base Domain checker", result);
     }
 
     @Test
-    public void checkDomainWithDifferentTopInBlackList() throws Exception {
-        DomainBlacklistTopDomainChecker checker = new DomainBlacklistTopDomainChecker();
+    public void checkDomainWithDifferentBaseInBlackList() throws Exception {
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
         Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
         checker.initialize(null, blacklist);
         boolean result = checker.check("paypal.org");
-        assertTrue("'login.paypal.com' domain should be accepted by Top Domain checker", result);
+        assertTrue("'login.paypal.com' domain should be accepted by Base Domain checker", result);
     }
 
 }

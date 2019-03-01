@@ -22,12 +22,12 @@ import java.util.Set;
  *
  * @version $Id$
  */
-public class DomainBlacklistTopDomainChecker implements DomainBlacklistChecker {
+public class DomainBlacklistBaseDomainChecker implements DomainBlacklistChecker {
     private Set<String> blacklist;
 
     @Override
     public String getNameKey() {
-        return "DOMAINBLACKLISTVALIDATOR_CHECK_TOPDOMAIN";
+        return "DOMAINBLACKLISTVALIDATOR_CHECK_BASEDOMAIN";
     }
 
     @Override
@@ -42,16 +42,14 @@ public class DomainBlacklistTopDomainChecker implements DomainBlacklistChecker {
         }
         String checkingString = domain;
         while (StringUtils.isNotEmpty(checkingString)) {
-            for (String blackListedDomain : blacklist) {
-                if (blackListedDomain.equals(checkingString)) {
-                    return false;
-                }
+            if (blacklist.contains(checkingString)) {
+                return false; // Blacklisted
             }
             int indexOfPoint = checkingString.indexOf(".");
             if (indexOfPoint > 0) {
                 checkingString = checkingString.substring(indexOfPoint + 1);
             } else {
-                checkingString = null;
+                break; // No more subdomains
             }
         }
         return true;
