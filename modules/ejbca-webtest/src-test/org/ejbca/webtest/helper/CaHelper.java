@@ -115,6 +115,17 @@ public class CaHelper extends BaseHelper {
          * certSignKey
          */
         static final By TEXT_CERTSIGNKEY = By.id("editcapage:certSignKey");
+
+        /**
+         * defaultKey
+         */
+        static final By TEXT_DEFAULTSIGNKEY = By.id("editcapage:defaultKey");
+
+        /**
+         * defaultKey
+         */
+        static final By TEXT_TESTSIGNKEY = By.id("editcapage:testKey");
+
         /**
          * crlSignKey
          */
@@ -377,6 +388,34 @@ public class CaHelper extends BaseHelper {
     public void assertCertSignKeyValue(final String value) {
         assertEquals(
                 "Unexpected value for certSignKey",
+                value,
+                getElementText(Page.TEXT_CERTSIGNKEY)
+        );
+    }
+
+
+    /**
+     * Asserts the element 'defaultKey' value is correct.
+     *
+     * @param value expected value.
+     */
+    public void assertDefaultKeyValue(final String value) {
+        assertEquals(
+                "Unexpected value for DefaultKey",
+                value,
+                getElementText(Page.TEXT_CERTSIGNKEY)
+        );
+    }
+
+
+    /**
+     * Asserts the element 'testKey' value is correct.
+     *
+     * @param value expected value.
+     */
+    public void assertTestKeyValue(final String value) {
+        assertEquals(
+                "Unexpected value for TestKey",
                 value,
                 getElementText(Page.TEXT_CERTSIGNKEY)
         );
