@@ -62,7 +62,7 @@ public class SernoGeneratorRandom implements SernoGenerator {
     private String algorithm = "SHA1PRNG";
 
     /** number of bytes serial number to generate, default value taken from CesecoreConfiguration */
-    private int noOctets = Integer.parseInt(CesecoreConfiguration.DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA);
+    private int noOctets = Integer.parseInt(CesecoreConfiguration.DEFAULT_SERIAL_NUMBER_OCTET_SIZE_NEWCA); 
 
     /** random generator */
     private SecureRandom random;
@@ -71,9 +71,9 @@ public class SernoGeneratorRandom implements SernoGenerator {
     private static SernoGeneratorRandom instance = null;
 
     /** lowest possible value we should deliver when getSerno is called */
-    private BigInteger lowest = new BigInteger("0080000000000000", 16); // Default value for 64 bit serials
+    private BigInteger lowest = new BigInteger("0080000000000000000000000000000000000000", 16); // Default value for 64 bit serials
     /** highest possible value we should deliver when getSerno is called */
-    private BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFF", 16); // Default value for 64 bit serials
+    private BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16); // Default value for 64 bit serials
 
     /**
      * Creates a serial number generator using SecureRandom
