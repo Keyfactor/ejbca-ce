@@ -105,12 +105,12 @@
                     <h:outputLabel value="#{web.text.SHOW}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup rendered="#{issueCheckerSettings.issueCheckerEnabled}">
+                <h:panelGroup rendered="#{configurationCheckerSettings.configurationCheckerEnabled}">
                     <h3><h:outputLabel value="#{web.text.CONFIGURATION_CHECKER_ON_FRONT_PAGE}"/></h3>
                     <h:outputLabel styleClass="help" value="#{web.text.CONFIGURATION_CHECKER_ON_FRONT_PAGE_HELP}"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{issueCheckerSettings.issueCheckerEnabled}">
-                    <h:selectBooleanCheckbox id="issueCheckerOnFrontPage" value="#{myPreferencesMBean.adminPreference.issueCheckerOnFrontPage}"/>
+                <h:panelGroup rendered="#{configurationCheckerSettings.configurationCheckerEnabled}">
+                    <h:selectBooleanCheckbox id="configurationCheckerOnFrontPage" value="#{myPreferencesMBean.adminPreference.configurationCheckerOnFrontPage}"/>
                     <h:outputLabel value="#{web.text.SHOW}"/>
                 </h:panelGroup>
                                 

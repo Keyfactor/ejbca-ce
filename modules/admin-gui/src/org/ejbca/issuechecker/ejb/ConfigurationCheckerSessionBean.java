@@ -24,14 +24,14 @@ import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.IssueCheckerConfiguration;
+import org.ejbca.config.ConfigurationCheckerConfiguration;
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.db.TicketRequest;
 import org.ejbca.issuechecker.issues.EccWithKeyEncipherment;
 import org.ejbca.issuechecker.issues.NotInProductionMode;
-import org.ejbca.issuechecker.issuesets.CertificateTransparencyIssueSet;
+import org.ejbca.issuechecker.issuesets.CertificateTransparencyConfigurationIssueSet;
 import org.ejbca.issuechecker.issuesets.EjbcaCommonIssueSet;
 
 import com.google.common.collect.ImmutableSet;
@@ -39,8 +39,8 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Singleton session bean implementing business logic for the EJBCA Configuration Checker.
  *
- * <p>This session bean is responsible for instantiating issues and issue sets. It is also able
- * to check for issues and create the appropriate tickets.
+ * <p>This session bean is responsible for instantiating configuration issues and configuration issue sets. It is also able
+ * to check for configuration issues and create the appropriate tickets.
  *
  * <p>This session bean is also responsible for enforcing access control on individual tickets as they are
  * requested, i.e. filter out tickets to which a user does not have access.
@@ -58,28 +58,28 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
     /**
      * A set of all implemented issue sets. If you create a new issue set, add it to this set.
      */
-    private Set<ConfigurationIssueSet> issueSets;
+    private Set<ConfigurationIssueSet> configurationIssueSets;
 
     /**
      * A set of all implemented issues. If you create a new issue, add it to this set.
      */
-    private Set<ConfigurationIssue> issues;
+    private Set<ConfigurationIssue> configurationIssues;
 
     @PostConstruct
-    public void instansiateIssuesAndIssueSets() {
-        issues = new ImmutableSet.Builder<ConfigurationIssue>()
+    public void instansiateConfigurationIssuesAndConfigurationIssueSets() {
+        configurationIssues = new ImmutableSet.Builder<ConfigurationIssue>()
                 .add(new NotInProductionMode())
                 .add(new EccWithKeyEncipherment(certificateProfileSession))
                 .build();
-        issueSets = new ImmutableSet.Builder<ConfigurationIssueSet>()
+        configurationIssueSets = new ImmutableSet.Builder<ConfigurationIssueSet>()
                 .add(new EjbcaCommonIssueSet())
-                .add(new CertificateTransparencyIssueSet())
+                .add(new CertificateTransparencyConfigurationIssueSet())
                 .build();
     }
 
     @Override
     public Stream<Ticket> getTickets(final TicketRequest request) {
-        return issues.stream()
+        return configurationIssues.stream()
                 .filter(issue -> isChecking(issue))
                 .map(issue -> issue.getTickets())
                 .flatMap(tickets -> tickets.stream())
@@ -91,32 +91,32 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
     }
 
     @Override
-    public Set<ConfigurationIssueSet> getAllIssueSets() {
-        return issueSets;
+    public Set<ConfigurationIssueSet> getAllConfigurationIssueSets() {
+        return configurationIssueSets;
     }
 
     /**
      * Check whether the issue set given as parameter is enabled or not.
      *
-     * @param issueSet the issue set to check.
+     * @param configurationIssueSet the issue set to check.
      * @return true if the issue set is enabled, false otherwise.
      */
-    private boolean isIssueSetEnabled(final ConfigurationIssueSet issueSet) {
-        final IssueCheckerConfiguration issueTrackerConfiguration = (IssueCheckerConfiguration)
-                globalConfigurationSession.getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
-        return issueTrackerConfiguration.getEnabledIssueSets().contains(issueSet.getDatabaseValue());
+    private boolean isConfigurationIssueSetEnabled(final ConfigurationIssueSet configurationIssueSet) {
+        final ConfigurationCheckerConfiguration configurationCheckerConfiguration = (ConfigurationCheckerConfiguration)
+                globalConfigurationSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID);
+        return configurationCheckerConfiguration.getEnabledIssueSets().contains(configurationIssueSet.getDatabaseValue());
     }
 
     /**
      * Determine if an issue is being checked or not by looking at whether
      * the issue resides in any of the enabled issue sets.
      *
-     * @param issue the issue to look for in one of the issue sets
+     * @param configurationIssue the issue to look for in one of the issue sets
      * @return true if the issue is being tracked, false otherwise
      */
-    private boolean isChecking(final ConfigurationIssue issue) {
-        return issueSets.stream()
-                .filter(issueSet -> isIssueSetEnabled(issueSet))
-                .anyMatch(issueSet -> issueSet.getConfigurationIssues().contains(issue.getClass()));
+    private boolean isChecking(final ConfigurationIssue configurationIssue) {
+        return configurationIssueSets.stream()
+                .filter(configurationIssueSet -> isConfigurationIssueSetEnabled(configurationIssueSet))
+                .anyMatch(configurationIssueSet -> configurationIssueSet.getConfigurationIssues().contains(configurationIssue.getClass()));
     }
 }

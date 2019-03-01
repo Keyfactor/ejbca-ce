@@ -19,8 +19,9 @@ import org.apache.log4j.Level;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
- * A ticket is the <i>realisation of an issue</i>. Each ticket is associated with an
- * issue, a ticket description, and a piece of access control logic.
+ * A ticket is the <i>realisation of a configuration issue</i>. Each ticket is associated with a
+ * configuration issue. A ticket has a ticket description and a optionally a chunk of access 
+ * control logic attached to it.
  * 
  * <p>Tickets can be compared for equality and compared to each other, based on their
  * priority.

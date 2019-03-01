@@ -25,7 +25,7 @@ import javax.faces.bean.ViewScoped;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.IssueCheckerConfiguration;
+import org.ejbca.config.ConfigurationCheckerConfiguration;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -35,13 +35,13 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  *
  * @version $Id: IssueTrackerSettingsManagedBean.java 31452 2019-02-08 18:35:25Z bastianf $
  */
-@ManagedBean(name = "issueCheckerSettings")
+@ManagedBean(name = "configurationCheckerSettings")
 @ViewScoped
 public class ConfigurationCheckerSettingsManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(ConfigurationCheckerManagedBean.class);
     private static final long serialVersionUID = 1L;
-    private boolean isIssueCheckerEnabled;
-    private List<ConfigurationStatus> allIssueSetsAndTheirStatus;
+    private boolean isConfigurationCheckerEnabled;
+    private List<ConfigurationIssueSetStatus> allConfigurationIssueSetsAndTheirStatus;
 
     @EJB
     private ConfigurationCheckerSessionLocal configurationCheckerSession;
@@ -50,49 +50,50 @@ public class ConfigurationCheckerSettingsManagedBean extends BaseManagedBean {
 
     @PostConstruct
     public void loadConfiguration() {
-        final IssueCheckerConfiguration issueCheckerConfiguration = (IssueCheckerConfiguration)
-        globalConfigurationSession.getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
+        final ConfigurationCheckerConfiguration issueCheckerConfiguration = (ConfigurationCheckerConfiguration)
+        globalConfigurationSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID);
         final Set<String> enabledIssueSets = issueCheckerConfiguration.getEnabledIssueSets();
-        allIssueSetsAndTheirStatus = configurationCheckerSession.getAllIssueSets()
+        allConfigurationIssueSetsAndTheirStatus = configurationCheckerSession.getAllConfigurationIssueSets()
                 .stream()
-                .map(issueSet -> new ConfigurationStatus(issueSet, enabledIssueSets.contains(issueSet.getDatabaseValue())))
+                .map(issueSet -> new ConfigurationIssueSetStatus(issueSet, enabledIssueSets.contains(issueSet.getDatabaseValue())))
                 .collect(Collectors.toList());
-        isIssueCheckerEnabled = issueCheckerConfiguration.isIssueCheckerEnabled();
+        isConfigurationCheckerEnabled = issueCheckerConfiguration.isConfigurationCheckerEnabled();
     }
 
-    public List<ConfigurationStatus> getAllIssueSetsAndTheirStatus() {
-        return allIssueSetsAndTheirStatus;
+    public List<ConfigurationIssueSetStatus> getAllConfigurationIssueSetsAndTheirStatus() {
+        return allConfigurationIssueSetsAndTheirStatus;
     }
 
-    public boolean isIssueCheckerEnabled() {
-        return isIssueCheckerEnabled;
+    public boolean isConfigurationCheckerEnabled() {
+        return isConfigurationCheckerEnabled;
     }
 
-    public void setIssueCheckerEnabled(final boolean isIssueTrackerEnabled) {
-        this.isIssueCheckerEnabled = isIssueTrackerEnabled;
+    public void setConfigurationCheckerEnabled(final boolean isConfigurationCheckerEnabled) {
+        this.isConfigurationCheckerEnabled = isConfigurationCheckerEnabled;
     }
 
-    public String getLabel(final ConfigurationIssueSet issueSet) {
-        final String issueSetTitle = getEjbcaWebBean().getText(issueSet.getTitleLanguageString());
-        return getEjbcaWebBean().getText("ISSUE_SET_LABEL", false /* unescape */, issueSetTitle, issueSet.size());
+    public String getLabel(final ConfigurationIssueSet configurationIssueSet) {
+        final String configurationIssueSetTitle = getEjbcaWebBean().getText(configurationIssueSet.getTitleLanguageString());
+        return getEjbcaWebBean().getText("CONFIGURATION_ISSUESET_LABEL", false /* unescape */, configurationIssueSetTitle,
+                configurationIssueSet.size());
     }
 
-    public String getDescription(final ConfigurationIssueSet issueSet) {
-        return getEjbcaWebBean().getText(issueSet.getDescriptionLanguageString());
+    public String getDescription(final ConfigurationIssueSet configurationIssueSet) {
+        return getEjbcaWebBean().getText(configurationIssueSet.getDescriptionLanguageString());
     }
 
     public void save() {
         try {
-            final IssueCheckerConfiguration issueCheckerConfiguration = (IssueCheckerConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
-            final Set<String> enabledIssueSets = allIssueSetsAndTheirStatus
+            final ConfigurationCheckerConfiguration configurationCheckerConfiguration = (ConfigurationCheckerConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID);
+            final Set<String> configurationIssueSets = allConfigurationIssueSetsAndTheirStatus
                     .stream()
-                    .filter(issueSetStatus -> issueSetStatus.isEnabled())
-                    .map(issueSetStatus -> issueSetStatus.getIssueSet().getDatabaseValue())
+                    .filter(configurationIssueSetStatus -> configurationIssueSetStatus.isEnabled())
+                    .map(configurationIssueSetStatus -> configurationIssueSetStatus.getConfigurationIssueSet().getDatabaseValue())
                     .collect(Collectors.toSet());
-            issueCheckerConfiguration.setIssueCheckerEnabled(isIssueCheckerEnabled);
-            issueCheckerConfiguration.setEnabledIssueSets(enabledIssueSets);
-            globalConfigurationSession.saveConfiguration(getAdmin(), issueCheckerConfiguration);
+            configurationCheckerConfiguration.setConfigurationCheckerEnabled(isConfigurationCheckerEnabled);
+            configurationCheckerConfiguration.setEnabledConfigurationIssueSets(configurationIssueSets);
+            globalConfigurationSession.saveConfiguration(getAdmin(), configurationCheckerConfiguration);
             addInfoMessage("CONFIGURATION_CHECKER_SAVE_OK");
         } catch (AuthorizationDeniedException e) {
             log.error("Cannot save the configuration for the EJBCA Configuration Checker because the current "

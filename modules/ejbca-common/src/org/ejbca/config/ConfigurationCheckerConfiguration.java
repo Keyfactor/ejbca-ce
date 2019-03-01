@@ -23,7 +23,7 @@ import org.cesecore.configuration.ConfigurationBase;
  *
  * @version $Id$
  */
-public class IssueCheckerConfiguration extends ConfigurationBase {
+public class ConfigurationCheckerConfiguration extends ConfigurationBase {
     private static final long serialVersionUID = 1L;
     public static final String CONFIGURATION_ID = "ISSUE_TRACKER";
 
@@ -33,7 +33,7 @@ public class IssueCheckerConfiguration extends ConfigurationBase {
     /**
      * Create a new Configuration Checker configuration with the default settings.
      */
-    public IssueCheckerConfiguration() {
+    public ConfigurationCheckerConfiguration() {
         data.put(IS_CONFIGURATION_CHECKER_ENABLED, false);
         data.put(ENABLED_ISSUE_SETS, new HashSet<String>());
     }
@@ -57,7 +57,7 @@ public class IssueCheckerConfiguration extends ConfigurationBase {
      *
      * @return true if the Configuration Checker is enabled, false otherwise.
      */
-    public boolean isIssueCheckerEnabled() {
+    public boolean isConfigurationCheckerEnabled() {
         return Boolean.TRUE.equals(data.get(IS_CONFIGURATION_CHECKER_ENABLED));
     }
 
@@ -68,7 +68,7 @@ public class IssueCheckerConfiguration extends ConfigurationBase {
      *
      * @param isIssueCheckerEnabled a boolean indicating whether the Configuration Checker should be enabled or not.
      */
-    public void setIssueCheckerEnabled(final boolean isIssueCheckerEnabled) {
+    public void setConfigurationCheckerEnabled(final boolean isIssueCheckerEnabled) {
         data.put(IS_CONFIGURATION_CHECKER_ENABLED, Boolean.valueOf(isIssueCheckerEnabled));
     }
 
@@ -87,7 +87,7 @@ public class IssueCheckerConfiguration extends ConfigurationBase {
      *
      * @param enabledIssueSets a set of database values, indicating which issue sets should be enabled.
      */
-    public void setEnabledIssueSets(final Set<String> enabledIssueSets) {
+    public void setEnabledConfigurationIssueSets(final Set<String> enabledIssueSets) {
         data.put(ENABLED_ISSUE_SETS, enabledIssueSets);
     }
 }

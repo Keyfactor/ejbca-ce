@@ -11,33 +11,41 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuechecker.ui;
+package org.ejbca.issuechecker.issuesets;
 
+import java.util.Set;
+
+import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 
+import com.google.common.collect.ImmutableSet;
+
 /**
- * Represents a mutable pair (issueSet, status) rendered in the GUI.
+ * Configuration issue set containing configuration issues related to Certificate Transparency.
  *
- * @version $Id: IssueSetStatus.java 31452 2019-02-08 18:35:25Z bastianf $
+ * @version $Id$
  */
-public class ConfigurationStatus {
-    private ConfigurationIssueSet issueSet;
-    private boolean isEnabled;
+public class CertificateTransparencyConfigurationIssueSet extends ConfigurationIssueSet {
+    private final Set<Class<? extends ConfigurationIssue>> configurationIssues = new ImmutableSet.Builder<Class<? extends ConfigurationIssue>>()
+            .build();
 
-    public ConfigurationStatus(final ConfigurationIssueSet issueSet, final boolean isEnabled) {
-        this.issueSet = issueSet;
-        this.isEnabled = isEnabled;
+    @Override
+    public Set<Class<? extends ConfigurationIssue>> getConfigurationIssues() {
+        return configurationIssues;
     }
 
-    public boolean isEnabled() {
-        return isEnabled;
+    @Override
+    public String getDatabaseValue() {
+        return "CertificateTransparencyConfigurationIssueSet";
     }
 
-    public void setEnabled(final boolean isEnabled) {
-        this.isEnabled = isEnabled;
+    @Override
+    public String getTitleLanguageString() {
+        return "CT_ISSUESET_TITLE";
     }
 
-    public ConfigurationIssueSet getIssueSet() {
-        return issueSet;
+    @Override
+    public String getDescriptionLanguageString() {
+        return "CT_ISSUESET_DESCRIPTION";
     }
 }

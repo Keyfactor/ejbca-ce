@@ -23,7 +23,7 @@ import org.ejbca.issuechecker.issues.NotInProductionMode;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * Issue set containing issues which should be checked on a typical EJBCA installation.
+ * Configuration issue set containing configuration issues which should be checked on a typical EJBCA installation.
  *
  * @version $Id$
  */

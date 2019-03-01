@@ -47,5 +47,5 @@ public interface ConfigurationCheckerSessionLocal {
      *
      * @return a set of all implemented issue sets.
      */
-    Set<ConfigurationIssueSet> getAllIssueSets();
+    Set<ConfigurationIssueSet> getAllConfigurationIssueSets();
 }
