@@ -702,7 +702,11 @@
                     addedusername = endEntityInformation.getUsername();
                     useradded = true;
                 } catch (org.ejbca.core.model.approval.ApprovalException e) {
-                    approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
+                    if (e.getErrorCode().equals(ErrorCode.VALIDATION_FAILED)){
+                        approvalmessage = ejbcawebbean.getText("DOMAINBLACKLISTVALIDATOR_VALIDATION_FAILED");
+                    }else{
+                        approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
+                    }
                 } catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
                     approvalmessage = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
                 } catch (org.ejbca.core.EjbcaException e) {
