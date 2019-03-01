@@ -19,7 +19,7 @@ import java.util.Set;
 import org.cesecore.configuration.ConfigurationBase;
 
 /**
- * Configuration for the EJBCA issue checker.
+ * Configuration for the EJBCA Configuration Checker.
  *
  * @version $Id$
  */
@@ -27,14 +27,14 @@ public class IssueCheckerConfiguration extends ConfigurationBase {
     private static final long serialVersionUID = 1L;
     public static final String CONFIGURATION_ID = "ISSUE_TRACKER";
 
-    private static final String IS_ISSUE_CHECKER_ENABLED = "isIssueCheckerEnabled";
+    private static final String IS_CONFIGURATION_CHECKER_ENABLED = "isIssueCheckerEnabled";
     private static final String ENABLED_ISSUE_SETS = "enabledIssueSets";
 
     /**
-     * Create a new issue checker configuration with the default settings.
+     * Create a new Configuration Checker configuration with the default settings.
      */
     public IssueCheckerConfiguration() {
-        data.put(IS_ISSUE_CHECKER_ENABLED, false);
+        data.put(IS_CONFIGURATION_CHECKER_ENABLED, false);
         data.put(ENABLED_ISSUE_SETS, new HashSet<String>());
     }
 
@@ -51,25 +51,25 @@ public class IssueCheckerConfiguration extends ConfigurationBase {
     }
 
     /**
-     * Retrieve a boolean indicating whether the EJBCA issue checker is enabled or not.
-     * If the issue checker is disabled, no issues are checked and the issue checker is
+     * Retrieve a boolean indicating whether the EJBCA Configuration Checker is enabled or not.
+     * If the Configuration Checker is disabled, no issues are checked and the Configuration Checker is
      * invisible in the GUI.
      *
-     * @return true if the issue checker is enabled, false otherwise.
+     * @return true if the Configuration Checker is enabled, false otherwise.
      */
     public boolean isIssueCheckerEnabled() {
-        return Boolean.TRUE.equals(data.get(IS_ISSUE_CHECKER_ENABLED));
+        return Boolean.TRUE.equals(data.get(IS_CONFIGURATION_CHECKER_ENABLED));
     }
 
     /**
-     * Set a boolean indicating whether the EJBCA issue checker should be enabled or not.
-     * If the issue checker is disabled, no issues will be checked and the issue checker
+     * Set a boolean indicating whether the EJBCA Configuration Checker should be enabled or not.
+     * If the Configuration Checker is disabled, no issues will be checked and the Configuration Checker
      * will be invisible in the GUI.
      *
-     * @param isIssueCheckerEnabled a boolean indicating whether the issue checker should be enabled or not.
+     * @param isIssueCheckerEnabled a boolean indicating whether the Configuration Checker should be enabled or not.
      */
     public void setIssueCheckerEnabled(final boolean isIssueCheckerEnabled) {
-        data.put(IS_ISSUE_CHECKER_ENABLED, Boolean.valueOf(isIssueCheckerEnabled));
+        data.put(IS_CONFIGURATION_CHECKER_ENABLED, Boolean.valueOf(isIssueCheckerEnabled));
     }
 
     /**

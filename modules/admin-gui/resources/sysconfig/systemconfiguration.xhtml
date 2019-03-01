@@ -842,21 +842,21 @@
         </h:panelGrid>
     </h:form>
     
-    <!-- Issue Checker -->
+    <!-- Configuration Checker -->
     
-    <h:form id="issueCheckerForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Issue Checker'}">        
+    <h:form id="issueCheckerForm" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Configuration Checker'}">        
         <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row1" columnClasses="editColumnSystem1,editColumn2">
             
             <h:panelGroup>
-                <h:outputText value="#{web.text.ISSUE_CHECKER}" style="font-weight: bold; font-size:1.2em;"/>
-                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/EJBCA_Issue_Checker.html')}" style="font-weight: bold; font-size:1.2em;" escape="false"/>
+                <h:outputText value="#{web.text.CONFIGURATION_CHECKER}" style="font-weight: bold; font-size:1.2em;"/>
+                <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/EJBCA_CONFIGURATION_CHECKER.html')}" style="font-weight: bold; font-size:1.2em;" escape="false"/>
             </h:panelGroup>
             <h:panelGroup />
             
             <h:panelGroup>
-                <h:outputLabel value="#{web.text.TOGGLE_ISSUE_CHECKER}" styleClass="titles"/>
+                <h:outputLabel value="#{web.text.TOGGLE_CONFIGURATION_CHECKER}" styleClass="titles"/>
                 <br/>
-                <h:outputText value="#{web.text.TOGGLE_ISSUE_CHECKER_HELP}" styleClass="help"/>
+                <h:outputText value="#{web.text.TOGGLE_CONFIGURATION_CHECKER_HELP}" styleClass="help"/>
             </h:panelGroup>
             <h:panelGroup>
                 <div>
@@ -866,7 +866,7 @@
                     <h:outputLabel for="toggleIssueChecker" value="#{web.text.ACTIVATE}" />
                 </div>
                 <h:panelGroup styleClass="card prio-warn" layout="block" id="notice" rendered="#{issueCheckerSettings.issueCheckerEnabled}">
-                    <h:outputText value="#{web.text.ISSUE_CHECKER_NOTICE}"/>
+                    <h:outputText value="#{web.text.CONFIGURATION_CHECKER_NOTICE}"/>
                 </h:panelGroup>
                 <div style="margin: 10px;"/>
             </h:panelGroup>

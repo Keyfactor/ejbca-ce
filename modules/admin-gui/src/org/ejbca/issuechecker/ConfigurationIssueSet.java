@@ -28,14 +28,14 @@ import java.util.Set;
  *
  * @version $Id$
  */
-public abstract class IssueSet {
+public abstract class ConfigurationIssueSet {
 
     /**
      * Get the set of classes representing the issues contained in this issue set.
      *
      * @return the classes for the issues contained in this issue set.
      */
-    public abstract Set<Class<? extends Issue>> getIssues();
+    public abstract Set<Class<? extends ConfigurationIssue>> getConfigurationIssues();
 
     /**
      * Get the title of this issue set, as a language key. The title should be a short
@@ -72,7 +72,7 @@ public abstract class IssueSet {
      * @return the number of issues.
      */
     public int size() {
-        return getIssues().size();
+        return getConfigurationIssues().size();
     }
 
     @Override

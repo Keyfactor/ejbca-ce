@@ -15,8 +15,8 @@ package org.ejbca.issuechecker.issuesets;
 
 import java.util.Set;
 
-import org.ejbca.issuechecker.Issue;
-import org.ejbca.issuechecker.IssueSet;
+import org.ejbca.issuechecker.ConfigurationIssue;
+import org.ejbca.issuechecker.ConfigurationIssueSet;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -25,12 +25,12 @@ import com.google.common.collect.ImmutableSet;
  *
  * @version $Id$
  */
-public class CertificateTransparencyIssueSet extends IssueSet {
-    private final Set<Class<? extends Issue>> issues = new ImmutableSet.Builder<Class<? extends Issue>>()
+public class CertificateTransparencyIssueSet extends ConfigurationIssueSet {
+    private final Set<Class<? extends ConfigurationIssue>> issues = new ImmutableSet.Builder<Class<? extends ConfigurationIssue>>()
             .build();
 
     @Override
-    public Set<Class<? extends Issue>> getIssues() {
+    public Set<Class<? extends ConfigurationIssue>> getConfigurationIssues() {
         return issues;
     }
 

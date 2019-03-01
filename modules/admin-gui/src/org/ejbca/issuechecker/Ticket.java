@@ -31,7 +31,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * @version $Id$
  */
 public class Ticket implements Comparable<Ticket> {
-    private final Issue issue;
+    private final ConfigurationIssue issue;
     private final TicketDescription ticketDescription;
     private final Predicate<AuthenticationToken> isAuthorizedToView;
 
@@ -42,7 +42,7 @@ public class Ticket implements Comparable<Ticket> {
      * @param descriptionLanguageKey the description of the ticket, as a language key.
      * @return a builder for this class.
      */
-    public static TicketBuilder builder(final Issue issue, final TicketDescription ticketDescription) {
+    public static TicketBuilder builder(final ConfigurationIssue issue, final TicketDescription ticketDescription) {
         return new TicketBuilder(issue, ticketDescription);
     }
 
@@ -62,7 +62,7 @@ public class Ticket implements Comparable<Ticket> {
      *
      * @return the issue which caused this ticket.
      */
-    public Issue getIssue() {
+    public ConfigurationIssue getIssue() {
         return issue;
     }
 

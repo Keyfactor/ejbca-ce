@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.issuechecker.Issue;
+import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.TicketDescription;
 
@@ -30,7 +30,7 @@ import org.ejbca.issuechecker.TicketDescription;
  *
  * @version $Id$
  */
-public class NotInProductionMode extends Issue {
+public class NotInProductionMode extends ConfigurationIssue {
 
     @Override
     public List<Ticket> getTickets() {

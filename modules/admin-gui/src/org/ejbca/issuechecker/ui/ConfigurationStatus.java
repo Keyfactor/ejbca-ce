@@ -11,16 +11,33 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuechecker.ejb;
+package org.ejbca.issuechecker.ui;
 
-import javax.ejb.Remote;
+import org.ejbca.issuechecker.ConfigurationIssueSet;
 
 /**
- * Methods for the issue checker available remotely.
+ * Represents a mutable pair (issueSet, status) rendered in the GUI.
  *
- * @version $Id$
+ * @version $Id: IssueSetStatus.java 31452 2019-02-08 18:35:25Z bastianf $
  */
-@Remote
-public interface IssueCheckerSessionBeanRemote {
+public class ConfigurationStatus {
+    private ConfigurationIssueSet issueSet;
+    private boolean isEnabled;
 
+    public ConfigurationStatus(final ConfigurationIssueSet issueSet, final boolean isEnabled) {
+        this.issueSet = issueSet;
+        this.isEnabled = isEnabled;
+    }
+
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(final boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+    public ConfigurationIssueSet getIssueSet() {
+        return issueSet;
+    }
 }
