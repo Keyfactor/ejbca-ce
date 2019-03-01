@@ -22,7 +22,7 @@ import javax.faces.bean.SessionScoped;
 
 import org.apache.log4j.Level;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.ejbca.config.IssueCheckerConfiguration;
+import org.ejbca.config.ConfigurationCheckerConfiguration;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.db.TicketRequest;
 import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionBean;
@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
  *
  * @version $Id: IssueTrackerManagedBean.java 31453 2019-02-10 11:20:44Z bastianf $
  */
-@ManagedBean(name = "issueChecker")
+@ManagedBean(name = "configurationChecker")
 @SessionScoped
 public class ConfigurationCheckerManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1L;
@@ -56,8 +56,9 @@ public class ConfigurationCheckerManagedBean extends BaseManagedBean {
         }
         if (ticket.getLevel().isGreaterOrEqual(Level.WARN)) {
             return "prio-warn";
+        } else {
+            return "prio-info";
         }
-        return "prio-info";
     }
 
     public List<Ticket> getTickets() {
@@ -67,17 +68,17 @@ public class ConfigurationCheckerManagedBean extends BaseManagedBean {
             .collect(Collectors.toList());
     }
 
-    public boolean isIssueCheckerEnabled() {
-        final IssueCheckerConfiguration issueCheckerConfiguration = (IssueCheckerConfiguration) globalConfigurationSession
-                .getCachedConfiguration(IssueCheckerConfiguration.CONFIGURATION_ID);
-        return issueCheckerConfiguration.isIssueCheckerEnabled();
+    public boolean isConfigurationCheckerEnabled() {
+        final ConfigurationCheckerConfiguration configurationCheckerConfiguration = (ConfigurationCheckerConfiguration) globalConfigurationSession
+                .getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID);
+        return configurationCheckerConfiguration.isConfigurationCheckerEnabled();
     }
 
-    public String getIssueHelpReference(final Ticket ticket) {
+    public String getConfigurationIssueHelpReference(final Ticket ticket) {
         if (!getEjbcaWebBean().isHelpEnabled()) {
             return "#";
         }
-        return getEjbcaWebBean().getHelpBaseURI() + "/Issues.html#" + ticket.getIssue().getDatabaseValue();
+        return getEjbcaWebBean().getHelpBaseURI() + "/Configuration_Issues.html#" + ticket.getIssue().getDatabaseValue();
     }
 }
 

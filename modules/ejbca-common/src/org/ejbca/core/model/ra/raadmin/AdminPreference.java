@@ -47,7 +47,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     private static final String FRONTPAGEPUBQSTATUS = "frontpagepubqstatus";
     private static final String PREFEREDRALANGUAGE = "preferedRaLanguage";
     private static final String PREFEREDRASTYLEID = "preferedRaStyleId";
-    private static final String CONFIGURATION_CHECKER_ON_FRONT_PAGE = "issueCheckerOnFrontPage";
+    private static final String CONFIGURATION_CHECKER_ON_FRONT_PAGE = "configurationCheckerOnFrontPage";
 
     public static final boolean DEFAULT_FRONTPAGECASTATUS = true;
     public static final boolean DEFAULT_FRONTPAGEPUBQSTATUS = true;
@@ -208,12 +208,12 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
         data.put(FRONTPAGEPUBQSTATUS, Boolean.valueOf(frontpagepubqstatus));
     }
 
-    public boolean isIssueCheckerOnFrontPage() {
+    public boolean isConfigurationCheckerOnFrontPage() {
         return Boolean.TRUE.equals(data.get(CONFIGURATION_CHECKER_ON_FRONT_PAGE));
     }
 
-    public void setIssueCheckerOnFrontPage(final boolean isIssueCheckerOnFrontPage) {
-        data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, Boolean.valueOf(isIssueCheckerOnFrontPage));
+    public void setConfigurationCheckerOnFrontPage(final boolean isConfigurationCheckerOnFrontPage) {
+        data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, Boolean.valueOf(isConfigurationCheckerOnFrontPage));
     }
 
     @Override
