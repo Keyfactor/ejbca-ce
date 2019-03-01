@@ -162,7 +162,33 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             getValidator().setProfileName(validatorsBean.getValidatorName());
         }
     }
-    
+    /**
+     * Processes the issuance phase changed event and renders the concrete validator view. 
+     * 
+     * @param e the event.
+     * @throws DynamicUiModelException if the PSM could not be initialized.
+     */
+    public void validatorPhaseChanged(final AjaxBehaviorEvent e) throws DynamicUiModelException {
+        setIssuancePhase((int) ((HtmlSelectOneMenu) e.getComponent()).getValue());
+        FacesContext.getCurrentInstance().renderResponse();
+    }
+
+    public int getIssuancePhase() {
+        return getValidator().getPhase();
+    }
+
+    public void setIssuancePhase(final int issuancePhase) {
+        if (issuancePhase != getValidator().getPhase()) {
+            getValidator().setPhase(issuancePhase);
+            if (getValidator().getFailedAction() == KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() && isApprovalRequestPhase()) {
+                getValidator().setFailedAction(KeyValidationFailedActions.LOG_INFO.getIndex());
+            }
+            if (getValidator().getNotApplicableAction() == KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() && isApprovalRequestPhase()) {
+                getValidator().setNotApplicableAction(KeyValidationFailedActions.LOG_INFO.getIndex());
+            }
+        }
+    }
+
     /**
      * Gets the selected validator.
      * @return the  validator.
@@ -546,9 +572,16 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> result = new ArrayList<>();
         final KeyValidationFailedActions[] items = KeyValidationFailedActions.values();
         for (int i = 0, j = items.length; i < j; i++) {
+            if (i == KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex() && isApprovalRequestPhase()) {
+                continue;
+            }
             result.add(new SelectItem(items[i].getIndex(), getEjbcaWebBean().getText(items[i].getLabel())));
         }
         return result;
+    }
+
+    private boolean isApprovalRequestPhase() {
+        return validator != null && validator.getPhase() == IssuancePhase.APPROVAL_VALIDATION.getIndex();
     }
 
     /**

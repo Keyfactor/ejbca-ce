@@ -64,7 +64,8 @@
 				<h:outputLabel for="description" value="#{web.text.DESCRIPTION}"/>
 				<h:inputTextarea id="description" value="#{validatorBean.validator.description}" validator="#{validatorBean.validateDescription}" cols="45" rows="3" required="false" disabled="#{validatorsBean.viewOnly}" />
 				<h:outputLabel for="applicablePhase" value="#{web.text.VALIDATORAPPLICABLEPHASE}"/>
-				<h:selectOneMenu id="applicablePhase" value="#{validatorBean.validator.phase}" required="true" disabled="#{validatorsBean.viewOnly}">
+				<h:selectOneMenu id="applicablePhase" value="#{validatorBean.issuancePhase}" required="true" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax listener="#{validatorBean.validatorPhaseChanged}" render="selectfailedaction selectnotapplicableaction"/>
 					<f:selectItems value="#{validatorBean.applicablePhases}" />
 				</h:selectOneMenu>
 				<h:outputLabel for="allcertificateprofiles" value="#{web.text.VALIDATORALLCERTIFICATEPROFILES}"/>
@@ -78,10 +79,12 @@
 				</h:selectManyListbox>
 				<h:outputLabel for="selectfailedaction" value="#{web.text.VALIDATORFAILEDACTION}"/>
 				<h:selectOneMenu id="selectfailedaction" value="#{validatorBean.validator.failedAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax/>
 					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
 				</h:selectOneMenu>	
 				<h:outputLabel for="selectnotapplicableaction" value="#{web.text.VALIDATORNOTAPPLICABLEACTION}"/>
 				<h:selectOneMenu id="selectnotapplicableaction" value="#{validatorBean.validator.notApplicableAction}" validator="#{validatorBean.validateFailedAction}" disabled="#{validatorsBean.viewOnly}">
+					<f:ajax/>
 					<f:selectItems value="#{validatorBean.availableFailedActions}"/>
 				</h:selectOneMenu>
 				<h:panelGroup>&nbsp;</h:panelGroup>
