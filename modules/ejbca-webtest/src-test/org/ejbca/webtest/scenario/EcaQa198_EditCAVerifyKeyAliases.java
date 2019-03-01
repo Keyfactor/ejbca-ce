@@ -5,6 +5,7 @@ import org.ejbca.webtest.WebTestBase;
 import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
 import org.ejbca.webtest.utils.CommandLineHelper;
+import org.ejbca.webtest.utils.RemoveDir;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.Keys;
@@ -39,8 +40,6 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         private static final String EJBCA_HOME = System.getenv("EJBCA_HOME");
         static final String CA_NAME = "StatedumpExportTest";
         private static final String CA_VALIDITY = "1y";
-        static final String TEXT_CA_RENEWAL_ALERT_MESSAGE = "Are you sure you want to renew this CA?";
-        static final String TEXT_CA_RENEWAL_SUCCESS_MESSAGE = "CA Renewed Successfully";
     }
 
     @BeforeClass
@@ -93,10 +92,10 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     @Test(timeout=20000)
     public void stepD_exportCAssertStatedump() {
         //Export the CA
-        commandLineHelper.runCommand("sh dist/statedump/statedump.sh export -l eca-7758-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
+        commandLineHelper.runCommand("sh dist/statedump/statedump.sh export -l test-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
 
         //Verify exported CA directory created
-        File dumpCaDir = new File("eca-7758-statedump");
+        File dumpCaDir = new File("test-statedump");
         Assert.assertTrue(dumpCaDir.exists());
     }
 
@@ -105,7 +104,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     public void stepE_importCA() {
         //Reimport the CA
         caHelper.openPage(getAdminWebUrl());
-        commandLineHelper.runCommand("sh dist/statedump/statedump.sh import -l eca-7758-statedump");
+        commandLineHelper.runCommand("sh dist/statedump/statedump.sh import -l test-statedump");
     }
 
     @Test
@@ -132,5 +131,10 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         caHelper.deleteCaAndAssert(deleteAlert, false, null, EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
     }
 
+    @Test(timeout=10000)
+    public void stepI_cleanDumps() throws IOException {
+        new RemoveDir("test-statedump").deleteDirectoryStream();
+        new RemoveDir("dist/statedump").deleteDirectoryStream();
+    }
 
 }
