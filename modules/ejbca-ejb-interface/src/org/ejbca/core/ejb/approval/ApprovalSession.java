@@ -149,11 +149,21 @@ public interface ApprovalSession {
 
     /**
      * Method that takes an approvalId and returns all approval requests for this.
+     * To search by ID, use {@link #findApprovalDataByRequestId} instead.
      * 
      * @param approvalId the approvalID (hash) of the request
      * @return and list of ApprovalDataVO, empty if no approvals exists.
      */
     List<ApprovalDataVO> findApprovalDataVO(int approvalId);
+
+    /**
+     * Method that returns a given approval, by ID.
+     * To search by hash, use {@link #findApprovalDataVO} instead.
+     * 
+     * @param requestId ID of approval request (not an approvalID, which is a hash) 
+     * @return ApprovalDataVO, or null if non-existent
+     */
+    ApprovalDataVO findApprovalDataByRequestId(int requestId);
 
 
 }
