@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
@@ -37,6 +38,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.validation.DnsNameValidator;
@@ -54,7 +56,6 @@ import org.cesecore.util.ui.PropertyValidationException;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistChecker;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistExactMatchChecker;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistNormalizer;
-import org.ejbca.util.HTMLTools;
 
 /**
  * A Domain Blacklist Validator checks DNSName fields against a set of blacklists.
@@ -140,7 +141,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     }
 
     /** Replaces the existing domain blacklist with the uploaded one. Takes a byte array. */
-    protected void changeBlacklist(final byte[] bytes) {
+    public void changeBlacklist(final byte[] bytes) {
         final Set<String> domainSet = new HashSet<>();
         try {
             try (final InputStream domainBlacklistInputStream = new ByteArrayInputStream(bytes);
@@ -158,12 +159,13 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                         continue;
                     }
                     validateDomain(line, lineNumber);
-                    domainSet.add(line);
+                    domainSet.add(line.toLowerCase(Locale.ROOT));
                 }
                 setBlacklist(domainSet);
                 setBlacklistDate(new Date());
                 final String sha256 = new String(Hex.encode(CertTools.generateSHA256Fingerprint(bytes)), StandardCharsets.US_ASCII);
                 setBlacklistSha256(sha256);
+                // The Validator cache is reloaded after saving, so that will trigger a reload of the cache here in DomainBlacklistValidator 
             }
         } catch (IOException e) {
             throw new IllegalStateException("Unable to parse domain black list.", e);
@@ -224,6 +226,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         // Initialize checkers
         for (final DomainBlacklistChecker checker : newCheckers) {
             checker.initialize(data, combinedBlacklist);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Initialized cache with " + combinedBlacklist.size() + " domains, " + newCheckers.size() + " checkers, " + newNormalizers.size() + " normalizers.");
         }
         cache = new Cache(newInitializationFailure, newNormalizers, newCheckers); 
         log.trace("<reloadBlacklistData");
@@ -306,7 +311,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         try {
             final String text = intres.getLocalizedMessage("validator.domainblacklist.info_text",
                     CollectionUtils.size(getBlacklist()), ValidityDate.formatAsUTC(blacklistDate), getBlacklistSha256());
-            final String html = HTMLTools.htmlescape(text).replace("|", "<br />");
+            final String html = StringEscapeUtils.escapeHtml(text).replace("|", "<br />");
             uiProperty.setValue(html);
         } catch (PropertyValidationException e) {
             throw new IllegalStateException(e);
@@ -367,7 +372,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         for (final String domainName : domainNames) {
             final String normalizedDomain = normalizeDomain(cache.normalizers, domainName);
             if (log.isDebugEnabled()) {
-                log.debug("Normalized domain '" + domainName + "' to '" + normalizedDomain + "'");
+                log.debug("Normalized domain '" + domainName + "' to '" + normalizedDomain + "'. Checking with " + cache.checkers.size() + " checkers.");
             }
             for (final DomainBlacklistChecker checker : cache.checkers) {
                 if (!checker.check(normalizedDomain)) {
