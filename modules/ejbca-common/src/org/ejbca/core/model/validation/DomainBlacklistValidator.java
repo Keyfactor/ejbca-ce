@@ -253,7 +253,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     @Override
     public void initDynamicUiModel() {
-        uiModel = new DynamicUiModel(data) {
+        uiModel = new DynamicUiModel(data, getFilteredDataMapForLogging()) {
             @Override
             public Map<String, Object> getRawData() {
                 final Map<String, Object> rawData = super.getRawData();
