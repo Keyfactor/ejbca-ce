@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -213,22 +214,22 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
         }
         // Create combined blacklist
-        final Set<String> combinedBlacklist = new HashSet<>();
+        final HashMap<String,String> domainMap = new HashMap<>(); // keys: normalized domains. values: unmodified blacklisted domains
         Set<String> domainSetNotNormalized = getBlacklist(); 
         for (String domain : domainSetNotNormalized) {
             // Normalize before adding to combined list
             final String normalizedDomain = normalizeDomain(newNormalizers, domain);
-            combinedBlacklist.add(normalizedDomain);
+            domainMap.put(normalizedDomain, domain);
             if (log.isTraceEnabled()) {
                 log.trace("Normalized domain '" + domain + "' to '" + normalizedDomain + "'");
             }
         }
         // Initialize checkers
         for (final DomainBlacklistChecker checker : newCheckers) {
-            checker.initialize(data, combinedBlacklist);
+            checker.initialize(data, domainMap);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Initialized cache with " + combinedBlacklist.size() + " domains, " + newCheckers.size() + " checkers, " + newNormalizers.size() + " normalizers.");
+            log.debug("Initialized cache with " + domainMap.size() + " domains, " + newCheckers.size() + " checkers, " + newNormalizers.size() + " normalizers.");
         }
         cache = new Cache(newInitializationFailure, newNormalizers, newCheckers); 
         log.trace("<reloadBlacklistData");
@@ -375,8 +376,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                 log.debug("Normalized domain '" + domainName + "' to '" + normalizedDomain + "'. Checking with " + cache.checkers.size() + " checkers.");
             }
             for (final DomainBlacklistChecker checker : cache.checkers) {
-                if (!checker.check(normalizedDomain)) {
-                    messages.add("Domain '" + domainName + "' is blacklisted.");
+                final String matchingBlacklistedDomain = checker.check(normalizedDomain);
+                if (matchingBlacklistedDomain != null) {
+                    messages.add("Domain '" + domainName + "' is blacklisted. Matching domain on blacklist: '" + matchingBlacklistedDomain +"'");
                     result = false;
                 }
             }
