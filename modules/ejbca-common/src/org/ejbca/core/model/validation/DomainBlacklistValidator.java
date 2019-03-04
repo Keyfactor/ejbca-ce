@@ -92,6 +92,8 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     /** File upload of new existing blacklist. Not persisted */
     private static final String BLACKLIST_UPLOAD_KEY = "blacklist_upload";
 
+    private static final int MAX_LOG_DOMAINS = 100;
+
     /** Dynamic UI model extension. */
     protected DynamicUiModel uiModel;
 
@@ -436,6 +438,19 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     public void setBlacklistSha256(final String sha256) {
         putData(BLACKLIST_SHA256_KEY, sha256);
+    }
+
+    @Override
+    public LinkedHashMap<Object,Object> getFilteredDataMapForLogging() {
+        LinkedHashMap<Object,Object> map = getDataMap();
+        final Set<?> blacklists = (Set<?>) map.get(BLACKLISTS_KEY);
+        if (blacklists == null || blacklists.size() <= MAX_LOG_DOMAINS) {
+            return map; // Just log as is
+        } else {
+            map = new LinkedHashMap<>(map);
+            map.put(BLACKLISTS_KEY, "(" + blacklists.size() + " entries, not shown in the log)");
+            return map;
+        }
     }
 
     @Override
