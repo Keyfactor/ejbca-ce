@@ -29,7 +29,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import io.swagger.annotations.ApiParam;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -47,13 +46,15 @@ import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * JAX-RS resource handling CA related requests.
  *
  * @version $Id$
  */
-@Api(tags = "v1/ca")
+@Api(tags = {"v1/ca"}, value = "Certificate Rest Management API")
+/* Swagger description etc is available in the CertificateRestResource */
 @Path("/v1/ca")
 @Produces(MediaType.APPLICATION_JSON)
 @Stateless

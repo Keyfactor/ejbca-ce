@@ -151,7 +151,8 @@ public class ExceptionHandlerUnitTest {
         // given
         final long expectedCode = Status.NOT_FOUND.getStatusCode();
         final String expectedMessage = "The requested path was not found";
-        final String expectedErrorMessage = "java.lang.Exception: " + expectedMessage;
+        // WebApplicationException will be apparently reach our custom ExceptionHandler unwrapped, but the message and code seems to be set already
+        final String expectedErrorMessage = "HTTP 404 Not Found";
         expect(dummyMock.throwException(anyInt())).andThrow(new WebApplicationException(new Exception(expectedMessage), (int) expectedCode));
         replay(dummyMock);
         // when
