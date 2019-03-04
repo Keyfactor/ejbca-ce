@@ -15,6 +15,7 @@ package org.ejbca.core.model.approval.approvalrequests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -157,6 +158,7 @@ public class ApprovalPhaseValidationSystemTest extends CaTestCase {
 
     private void initialize() throws Exception {
         log.trace(">initialize");
+        final int caId = getTestCAId();
         // Create Approval Profile
         final AccumulativeApprovalProfile approvalProfile = new AccumulativeApprovalProfile(TEST_APPROVALPROFILE);
         approvalProfile.setNumberOfApprovalsRequired(1);
@@ -166,12 +168,12 @@ public class ApprovalPhaseValidationSystemTest extends CaTestCase {
         final Map<ApprovalRequestType,Integer> approvalSettings = new LinkedHashMap<>();
         approvalSettings.put(ApprovalRequestType.ADDEDITENDENTITY, approvalProfileId);
         certificateProfile.setApprovals(approvalSettings);
-        certificateProfile.setAvailableCAs(new ArrayList<>(Arrays.asList(getTestCAId())));
+        certificateProfile.setAvailableCAs(new ArrayList<>(Arrays.asList(caId)));
         certificateProfileId = certificateProfileSession.addCertificateProfile(admin, TEST_CERTIFICATEPROFILE, certificateProfile);
         // Create End Entity Profile
         final EndEntityProfile endEntityProfile = new EndEntityProfile();
-        endEntityProfile.setDefaultCA(getTestCAId());
-        endEntityProfile.setAvailableCAs(new ArrayList<>(Arrays.asList(getTestCAId())));
+        endEntityProfile.setDefaultCA(caId);
+        endEntityProfile.setAvailableCAs(new ArrayList<>(Arrays.asList(caId)));
         endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
         endEntityProfile.setAvailableCertificateProfileIds(new ArrayList<>(Arrays.asList(certificateProfileId)));
         endEntityProfile.addField(DnComponents.COMMONNAME);
@@ -190,7 +192,7 @@ public class ApprovalPhaseValidationSystemTest extends CaTestCase {
         validator.setProfileName(TEST_VALIDATOR);
         final int validatorId = validatorSession.addKeyValidator(admin, validator);
         // Enabled validator in CA
-        final CAInfo caInfo = caSession.getCAInfo(admin, getTestCAId());
+        final CAInfo caInfo = caSession.getCAInfo(admin, caId);
         caInfo.setValidators(new ArrayList<>(Arrays.asList(validatorId)));
         caAdminSession.editCA(admin, caInfo);
         log.trace("<initialize");
@@ -206,7 +208,7 @@ public class ApprovalPhaseValidationSystemTest extends CaTestCase {
      * @throws Exception
      */
     @Test
-    public void validationInApprovalPhase() throws Exception {
+    public void failedValidationInApprovalPhase() throws Exception {
         log.trace(">validationInApprovalPhase");
         // given
         final EndEntityInformation endEntity = new EndEntityInformation();
@@ -238,6 +240,48 @@ public class ApprovalPhaseValidationSystemTest extends CaTestCase {
             final ValidationResult validationResult = validationResults.get(0);
             assertFalse("Validation should be unsuccessful", validationResult.isSuccessful());
             assertTrue("Message should contain failed domain name.", validationResult.getMessage().contains(BLACKLISTED_DOMAIN));
+            // TEST_APPROVAL_HASH needs to match or cleanup before the test won't work.
+            assertEquals("Please update TEST_APPROVAL_HASH (to " + advo.getApprovalId() + ") in the test.", advo.getApprovalId(), TEST_APPROVAL_HASH);
+        } finally {
+            approvalSession.removeApprovalRequest(admin, requestId);
+        }
+        log.trace("<validationInApprovalPhase");
+    }
+
+    /**
+     * Performs an addUser call that requires approval, but is successfully validated. 
+     * @throws Exception
+     */
+    @Test
+    public void successfulValidationInApprovalPhase() throws Exception {
+        log.trace(">validationInApprovalPhase");
+        // given
+        final EndEntityInformation endEntity = new EndEntityInformation();
+        endEntity.setUsername(TEST_ENDENTITY);
+        endEntity.setPassword("foo123");
+        endEntity.setCAId(getTestCAId());
+        endEntity.setCertificateProfileId(certificateProfileId);
+        endEntity.setEndEntityProfileId(endEntityProfileId);
+        endEntity.setTokenType(EndEntityConstants.TOKEN_SOFT_P12);
+        endEntity.setDN("CN=" + TEST_ENDENTITY);
+        endEntity.setSubjectAltName("DNSNAME=good.example.org"); // allowed domain
+        endEntity.setType(EndEntityTypes.ENDUSER.toEndEntityType());
+        // when
+        final int requestId;
+        try {
+            endEntityManagementSession.addUser(admin, endEntity, false);
+            fail("Certificate Profile is configured to require approval. This should throw");
+            throw new IllegalStateException(); // make compiler happy
+        } catch (WaitingForApprovalException e) {
+            requestId = e.getRequestId();
+        }
+        // then
+        try {
+            final ApprovalDataVO advo = approvalSession.findApprovalDataByRequestId(requestId);
+            final ApprovalRequest approvalRequest = advo.getApprovalRequest();
+            final List<ValidationResult> validationResults = approvalRequest.getValidationResults();
+            assertNotNull("Approval request should contain ValidationResults, not null.", validationResults);
+            assertEquals("There should be no validation results.", 0, validationResults.size());
             // TEST_APPROVAL_HASH needs to match or cleanup before the test won't work.
             assertEquals("Please update TEST_APPROVAL_HASH (to " + advo.getApprovalId() + ") in the test.", advo.getApprovalId(), TEST_APPROVAL_HASH);
         } finally {
