@@ -220,9 +220,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
         // Create combined blacklist
         final Set<String> domainSetNotNormalized = getBlacklist(); 
-        final HashMap<String,String> domainMap = new HashMap<>(domainSetNotNormalized.size()); // keys: normalized domains. values: unmodified blacklisted domains
+        final HashMap<String,String> domainMap = new HashMap<>((int)(domainSetNotNormalized.size()/0.75)); // keys: normalized domains. values: unmodified blacklisted domains
         if (log.isDebugEnabled()) {
-            log.debug("Normalizing " + domainSetNotNormalized.size() + " domains");
+            log.debug("Normalizing " + domainSetNotNormalized.size() + " domains for Validator '" + getProfileName() + "'");
         }
         for (final String domain : domainSetNotNormalized) {
             // Normalize before adding to combined list
@@ -237,7 +237,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             checker.initialize(data, domainMap);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Initialized cache with " + domainMap.size() + " domains, " + newCheckers.size() + " checkers, " + newNormalizers.size() + " normalizers.");
+            log.debug("Initialized cache for Validator '" + getProfileName() + "' with " + domainMap.size() + " domains, " + newCheckers.size() + " checkers, " + newNormalizers.size() + " normalizers.");
         }
         cache = new Cache(newInitializationFailure, newNormalizers, newCheckers); 
         log.trace("<reloadBlacklistData");
@@ -247,7 +247,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
      *  Clears caches. This will trigger a re-build of the combined in-memory blacklist.
      */
     private void clearCache() {
-        log.debug("Clearing domain blacklist cache for validator '" + getProfileName() + "'");
+        if (log.isDebugEnabled()) {
+            log.debug("Clearing domain blacklist cache for validator '" + getProfileName() + "'");
+        }
         cache = null;
     }
 
