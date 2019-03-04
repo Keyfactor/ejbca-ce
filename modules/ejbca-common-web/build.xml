@@ -64,7 +64,7 @@
 	<target name="build-common-web" description="Build the ejbca-common-web JAR" depends="compile-common-web">
 		<dirname file="${mod.ejbca-common-web.lib}" property="mod.ejbca-common-web.lib.dir"/>
 		<mkdir dir="${mod.ejbca-common-web.lib.dir}" />
-		<buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher;org.cesecore.keys.validation.Validator;org.ejbca.core.model.validation.domainblacklist.DomainBlacklistNormalizer;org.ejbca.core.model.validation.domainblacklist.DomainBlacklistChecker"
+		<buildservicemanifest interface="org.ejbca.core.model.ca.publisher.ICustomPublisher;org.cesecore.keys.validation.Validator"
 			file="${ejbca-common-web.build.dir}" classpath="compile-common-web.classpath"/>
 		<jar destfile="${mod.ejbca-common-web.lib}">
 			<manifest>
