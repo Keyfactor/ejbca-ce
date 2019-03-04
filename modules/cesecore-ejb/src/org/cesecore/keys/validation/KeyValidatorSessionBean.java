@@ -700,7 +700,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             if (data != null) {
                 result = (Validator) data.getProfile();
                 if (log.isDebugEnabled()) {
-                    log.debug("Load validator: " + result.getDataMap());
+                    log.debug("Load validator: " + result.getFilteredDataMapForLogging());
                 }
                 final int digest = data.getProtectString(0).hashCode();
                 // The cache compares the database data with what is in the cache

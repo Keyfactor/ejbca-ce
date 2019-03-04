@@ -213,7 +213,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
                 ((DynamicUiModelAware) validator).initDynamicUiModel();
                 uiModel = ((DynamicUiModelAware) validator).getDynamicUiModel();
                 if (log.isDebugEnabled()) {
-                    log.debug("Request dynamic UI properties for validator with (id=" + validator.getProfileId() + ") with properties " + validator.getDataMap());
+                    log.debug("Request dynamic UI properties for validator with (id=" + validator.getProfileId() + ") with properties " + validator.getFilteredDataMapForLogging());
                 }
                 try {
                     initGrid(uiModel, validator.getClass().getSimpleName());

@@ -57,7 +57,14 @@ public interface Profile extends Serializable{
     LinkedHashMap<Object, Object> getDataMap();
     
     void setDataMap(LinkedHashMap<Object, Object> dataMap);
-    
+
+    /**
+     * @return data map (see {@link #getDataMap()}), with very large values filtered.
+     */
+    default LinkedHashMap<Object,Object> getFilteredDataMapForLogging() {
+        return getDataMap();
+    }
+
     /**
      * 
      * @return the implementing class
