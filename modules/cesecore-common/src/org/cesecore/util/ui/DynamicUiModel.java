@@ -69,12 +69,21 @@ public class DynamicUiModel {
      * @param data the map.
      */
     public DynamicUiModel(final LinkedHashMap<Object, Object> data) {
+        this(data, data);
+    }
+
+    /**
+     * Constructor with reference to the entity backing map.
+     * @param data the map.
+     * @param filteredDataToLog data to debug log, with large values removed.
+     */
+    public DynamicUiModel(final LinkedHashMap<Object, Object> data, final LinkedHashMap<Object, Object> filteredDataToLog) {
         super();
         propertyChangeSupport = new PropertyChangeSupport(this);
         viewComponents = new HashMap<String,List<DynamicUiComponent>>();
         this.data = data;
         if (log.isDebugEnabled()) {
-            log.debug("Create dynmic UI model with data: " + data);
+            log.debug("Create dynmic UI model with data: " + filteredDataToLog);
         }
     }
 
