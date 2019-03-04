@@ -24,14 +24,6 @@
 
 	<description><![CDATA[External interface for the EJBCA rest api]]></description>
 	<display-name>ejbca-rest-api</display-name>
-	<context-param>
-		<param-name>javax.ws.rs.Application</param-name>
-		<param-value>org.ejbca.ui.web.rest.api.RestApiApplication</param-value>
-	</context-param>
-	<context-param>
-		<param-name>resteasy.scan</param-name>
-		<param-value>true</param-value>
-	</context-param>
 
     <filter>
         <filter-name>ServiceControlFilter</filter-name>
@@ -47,24 +39,6 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-	<servlet>
-		<servlet-name>Resteasy</servlet-name>
-		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
-		    <init-param>     
-		         <param-name>swagger.scanner.id</param-name> 
-			     <param-value>restapi</param-value> 
-			</init-param> 
-			
-			<init-param> 
-			     <param-name>swagger.config.id</param-name> 
-			     <param-value>restapi</param-value> 
-			</init-param>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>Resteasy</servlet-name>
-		<url-pattern>/*</url-pattern>
-	</servlet-mapping>
- 
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>restricted methods</web-resource-name>
