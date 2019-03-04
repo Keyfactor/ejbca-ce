@@ -12,14 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.model.validation.domainblacklist;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
-import static org.junit.Assert.*;
+import org.cesecore.util.MapTools;
+import org.junit.Test;
 
 /**
  * Tests DomainBlacklistExactMatchChecker functions.
@@ -27,6 +27,18 @@ import static org.junit.Assert.*;
  * @version $Id$
  */
 public class DomainBlacklistExactMatchCheckerTest {
+
+    private static final Map<String,String> BLACKLIST1 = MapTools.unmodifiableMap(
+            "something.com", "somethingORIG.com", // normalized -> original, un-normalized, domain
+            "bank", "bankORIG",
+            "paypal.com", "paypalORIG.com"
+            );
+
+    private static final Map<String,String> BLACKLIST2 = MapTools.unmodifiableMap(
+            "something", "somethingORIG", // normalized -> original, un-normalized, domain
+            "bank", "bankORIG",
+            "paypal.com", "paypalORIG.com"
+            );
 
     @Test(expected = IllegalStateException.class)
     public void checkNotInitialized() throws Exception {
@@ -37,27 +49,25 @@ public class DomainBlacklistExactMatchCheckerTest {
     @Test
     public void checkEmptyBlackList() throws Exception {
         DomainBlacklistExactMatchChecker checker = new DomainBlacklistExactMatchChecker();
-        checker.initialize(null, Collections.emptySet());
-        boolean result = checker.check("something");
-        assertTrue("'something' domain should be accepted by Exact Match checker", result);
+        checker.initialize(null, Collections.emptyMap());
+        final String result = checker.check("something");
+        assertNull("'something' domain should be accepted by Exact Match checker", result);
     }
 
     @Test
     public void checkInBlackList() throws Exception {
         DomainBlacklistExactMatchChecker checker = new DomainBlacklistExactMatchChecker();
-        Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
-        checker.initialize(null, blacklist);
-        boolean result = checker.check("something.com");
-        assertFalse("'something.com' domain should not be accepted by Exact Match checker", result);
+        checker.initialize(null, BLACKLIST1);
+        final String result = checker.check("something.com");
+        assertEquals("'something.com' domain should not be accepted by Exact Match checker", "somethingORIG.com", result);
     }
 
     @Test
     public void checkPartInBlackList() throws Exception {
         DomainBlacklistExactMatchChecker checker = new DomainBlacklistExactMatchChecker();
-        Set<String> blacklist = new HashSet<>(Arrays.asList("something", "bank", "paypal.com"));
-        checker.initialize(null, blacklist);
-        boolean result = checker.check("something.com");
-        assertTrue("'something.com' domain should be accepted by Exact Match checker", result);
+        checker.initialize(null, BLACKLIST2);
+        final String result = checker.check("something.com");
+        assertNull("'something.com' domain should be accepted by Exact Match checker", result);
     }
 
 }
