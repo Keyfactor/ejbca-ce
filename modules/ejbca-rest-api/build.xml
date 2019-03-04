@@ -42,7 +42,6 @@
         <path location="${mod.cesecore-common.lib}"/>
         <path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>
-		<path refid="lib.resteasy-jaxrs.classpath"/>
 		<path refid="lib.hibernate-validator.classpath"/>
 		<path refid="lib.jboss-logging.classpath"/>
 	</path>
@@ -56,11 +55,11 @@
 		<path location="${ejbca-rest-api.dir}/../dist/systemtests-ejb.jar"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.test.classpath"/>
+        <path refid="lib.resteasy-jaxrs.classpath"/>
 	</path>
 
 	<path id="test.classpath">
-        <path refid="lib.jee-client.classpath"/>
-		<path refid="compile-test.classpath"/>
+        <path refid="compile-test.classpath"/>
 		<path location="${ejbca-rest-api.build-test.dir}"/>
 		<pathelement path="${clover.jar}"/>
 	</path>
@@ -78,7 +77,9 @@
 		<copy file="${ejbca-rest-api.resources.dir}/WEB-INF/ValidationMessages.properties" tofile="${ejbca-rest-api.build.dir}/WEB-INF/classes/ValidationMessages.properties"/>
 		<copy file="${ejbca-rest-api.resources.dir}/META-INF/validation.xml" tofile="${ejbca-rest-api.build.dir}/META-INF/validation.xml"/>
 		<copy file="${ejbca-rest-api.resources.dir}/META-INF/validation-mapping.xml" tofile="${ejbca-rest-api.build.dir}/META-INF/validation-mapping.xml"/>
-    	<war destfile="${mod.ejbca-rest-api.war}" webxml="${ejbca-rest-api.resources.dir}/WEB-INF/web.xml" basedir="${ejbca-rest-api.build.dir}"/>
+    	<war destfile="${mod.ejbca-rest-api.war}" webxml="${ejbca-rest-api.resources.dir}/WEB-INF/web.xml" basedir="${ejbca-rest-api.build.dir}">
+            <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
+    	</war>
     </target>
 
 	<target name="compile" depends="with.clover, setup">

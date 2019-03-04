@@ -557,20 +557,15 @@
                 <include name="ctlog-*.jar" />
                 <include name="protobuf-java-*.jar" />
             </zipfileset>
-			<zipfileset prefix="lib" dir="${lib}/ext/swagger" erroronmissingdir="false">
-				<include name="*.jar"/>
-				<exclude name="*-javadoc.jar"/>
-				<exclude name="*-sources.jar"/>
-			</zipfileset>
+        	<!-- Swagger is included in each module.war/WEB-INF/lib/ instead,
+        	     since it is not designed for multiple APIs in the same class loader.
+			<zipfileset prefix="lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
+			-->
 			<zipfileset prefix="lib" dir="${lib}/ext/jackson2" erroronmissingdir="false">
-				<include name="*.jar"/>
-				<exclude name="*-javadoc.jar"/>
-				<exclude name="*-sources.jar"/>
-			</zipfileset>
-			<!-- JAX-RS and Jackson2 provider to support old application servers -->
-			<zipfileset prefix="lib" dir="${lib}/ext/resteasy-jaxrs-lib" erroronmissingdir="false">
-				<include name="resteasy-jackson2-provider-3.0.1.Final.jar"/>
-				<include name="jaxrs-api-3.0.1.Final.jar"/>
+				<include name="jackson-annotations-2.9.8.jar"/>
+				<include name="jackson-core-2.9.8.jar"/>
+				<include name="jackson-databind-2.9.8.jar"/>
+				<include name="jackson-dataformat-yaml-2.9.8.jar"/>
 			</zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <fileset dir="${dist.dir}" includes="doc*.war"/>

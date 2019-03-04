@@ -3,14 +3,6 @@
   
     <deployment>
 
-        <!--
-        In order to support old application servers (eg. JBoss EAP 6.4) we disable Jackson2 support for modern one.
-        We ship the needed jar-s within ear
-        -->
-        <exclusions>
-            <module name="org.jboss.resteasy.resteasy-jackson2-provider"/>
-        </exclusions>
-
         <!-- Make sun/security/pkcs11/wrapper and sun/security/action exported, so we don't need to edit 
         modules/system/layers/base/sun/jdk/main/module.xml.
         pkcs11/wrapper is needed for HSM support and security/action is needed for CMP TCP (which is deprecated but still used) -->

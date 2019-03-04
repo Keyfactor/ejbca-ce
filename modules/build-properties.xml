@@ -241,27 +241,31 @@
     <mkdir dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
-			<include name="*.jar"/>
-			<exclude name="*-javadoc.jar"/>
-			<exclude name="*-sources.jar"/>
+			<include name="geronimo-osgi-locator-1.1.jar"/>
+			<include name="resteasy-jackson2-provider-3.0.26.Final.jar"/>
+			<include name="resteasy-jaxrs-3.0.26.Final.jar"/>
+			<include name="scannotation-1.0.3.jar"/>
+			<include name="tjws-3.0.26.Final.jar"/>
+		</fileset>
+		<fileset dir="${ejbca.home}/lib/ext/jackson2">
+			<include name="jackson-jaxrs-base-2.9.8.jar"/>
+			<include name="jackson-jaxrs-json-provider-2.9.8.jar"/>
+			<include name="jackson-module-jaxb-annotations-2.9.8.jar"/>
 		</fileset>
 	</path>
 
 	<mkdir dir="${ejbca.home}/lib/ext/swagger"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.swagger.classpath">
-		<fileset dir="${ejbca.home}/lib/ext/swagger">
-			<include name="*.jar"/>
-			<exclude name="*-javadoc.jar"/>
-			<exclude name="*-sources.jar"/>
-		</fileset>
+		<fileset dir="${ejbca.home}/lib/ext/swagger" includes="*.jar"/>
 	</path>
 
     <mkdir dir="${ejbca.home}/lib/ext/jackson2"/> <!-- Avoid failure when this directory is excluded from a release. -->
 	<path id="lib.jackson2.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
-			<include name="*.jar"/>
-			<exclude name="*-javadoc.jar"/>
-			<exclude name="*-sources.jar"/>
+			<include name="jackson-annotations-2.9.8.jar"/>
+			<include name="jackson-databind-2.9.8.jar"/>
+			<include name="jackson-core-2.9.8.jar"/>
+			<include name="jackson-dataformat-yaml-2.9.8.jar"/>
 		</fileset>
 	</path>
 
