@@ -84,12 +84,12 @@
         <init-param>
             <description>Maximum size of uploads</description>
             <param-name>uploadMaxFileSize</param-name>
-            <param-value>1000k</param-value>
+            <param-value>50m</param-value>
         </init-param>
         <init-param>
             <description>Maximum size of uploads before using disk</description>
             <param-name>uploadThresholdSize</param-name>
-            <param-value>100k</param-value>
+            <param-value>1m</param-value>
         </init-param>
     </filter>
     <filter-mapping>
@@ -196,7 +196,7 @@
             <!-- Upload file size limit. 52428800 = 50 MB -->
             <max-file-size>52428800</max-file-size>
             <max-request-size>52428800</max-request-size>
-            <file-size-threshold>2048</file-size-threshold>
+            <file-size-threshold>1048576</file-size-threshold>
         </multipart-config>
     </servlet>
     <servlet-mapping>
