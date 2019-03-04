@@ -220,7 +220,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         }
         // Create combined blacklist
         final Set<String> domainSetNotNormalized = getBlacklist(); 
-        final HashMap<String,String> domainMap = new HashMap<>((int)(domainSetNotNormalized.size()/0.75)); // keys: normalized domains. values: unmodified blacklisted domains
+        final HashMap<String,String> domainMap = new HashMap<>((int)(domainSetNotNormalized.size()/0.75)+1); // keys: normalized domains. values: unmodified blacklisted domains
         if (log.isDebugEnabled()) {
             log.debug("Normalizing " + domainSetNotNormalized.size() + " domains for Validator '" + getProfileName() + "'");
         }
