@@ -13,6 +13,7 @@
 package org.ejbca.core.model.validation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -23,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistAsciiLookalikeNormalizer;
 import org.ejbca.core.model.validation.domainblacklist.DomainBlacklistBaseDomainChecker;
 import org.junit.Test;
@@ -99,5 +101,19 @@ public class DomainBlacklistValidatorUnitTest {
     private void tryValidator(final DomainBlacklistValidator validator, final String domain, final boolean expectedResult) {
         final Entry<Boolean,List<String>> result = validator.validate(null, domain);
         assertEquals("Unexpected validator result for " + domain + ". ",  expectedResult, result.getKey());
+    }
+
+    /** Checks that the exception message contains both the requested and the blacklisted domain. */
+    @Test
+    public void checkExceptionMessage() {
+        final DomainBlacklistValidator validator = new DomainBlacklistValidator();
+        validator.changeBlacklist(BLACKLIST);
+        validator.setNormalizations(Arrays.asList(DomainBlacklistAsciiLookalikeNormalizer.class.getName()));
+        validator.setChecks(Arrays.asList(DomainBlacklistBaseDomainChecker.class.getName()));
+        validator.setFailedAction(KeyValidationFailedActions.LOG_INFO.getIndex());
+        final Entry<Boolean,List<String>> result = validator.validate(null, "f0rbiclclen2.example.com");
+        assertFalse("Domain should be blacklsted", result.getKey());
+        final String expectedMessage = "Domain 'f0rbiclclen2.example.com' is blacklisted. Matching domain on blacklist: 'forbidden2.example.com'";
+        assertEquals("Wrong exception message.", expectedMessage, result.getValue().get(0));
     }
 }
