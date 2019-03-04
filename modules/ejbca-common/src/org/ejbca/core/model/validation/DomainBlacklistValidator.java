@@ -162,6 +162,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
                     validateDomain(line, lineNumber);
                     domainSet.add(line.toLowerCase(Locale.ROOT));
                 }
+                if (log.isDebugEnabled()) {
+                    log.debug("Parsed domain blacklist with " + domainSet.size() + " entries (" + lineNumber + " lines)");
+                }
                 setBlacklist(domainSet);
                 setBlacklistDate(new Date());
                 final String sha256 = new String(Hex.encode(CertTools.generateSHA256Fingerprint(bytes)), StandardCharsets.US_ASCII);
@@ -214,9 +217,12 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
         }
         // Create combined blacklist
-        final HashMap<String,String> domainMap = new HashMap<>(); // keys: normalized domains. values: unmodified blacklisted domains
-        Set<String> domainSetNotNormalized = getBlacklist(); 
-        for (String domain : domainSetNotNormalized) {
+        final Set<String> domainSetNotNormalized = getBlacklist(); 
+        final HashMap<String,String> domainMap = new HashMap<>(domainSetNotNormalized.size()); // keys: normalized domains. values: unmodified blacklisted domains
+        if (log.isDebugEnabled()) {
+            log.debug("Normalizing " + domainSetNotNormalized.size() + " domains");
+        }
+        for (final String domain : domainSetNotNormalized) {
             // Normalize before adding to combined list
             final String normalizedDomain = normalizeDomain(newNormalizers, domain);
             domainMap.put(normalizedDomain, domain);
