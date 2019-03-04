@@ -99,13 +99,25 @@ import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.Info;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.SwaggerDefinition.Scheme;
 
 /**
  * JAX-RS resource handling certificate-related requests.
  *
  * @version $Id$
  */
-@Api(tags = "v1/certificate")
+@Api(tags = {"v1/certificate"}, value = "Certificate Rest Management API")
+@SwaggerDefinition(info =
+    @Info(
+        title = "Certificate Management REST Interface",
+        version = "1.0.0",
+        description = "API reference documentation."
+        ),
+    basePath="/ejbca/ejbca-rest-api",
+    schemes={Scheme.HTTPS}
+)
 @Path("v1/certificate")
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

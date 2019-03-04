@@ -9,50 +9,56 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.SwaggerDefinition;
+import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.util.swagger.SnakeCaseConverter;
 
 import io.swagger.converter.ModelConverters;
-import io.swagger.jaxrs.config.BeanConfig;
 
 /**
  * EJBCA rest api application based on RESTEasy
  *  
  * @version $Id$
- *
  */
 @ApplicationPath("/")
-@Api(value = "Certificate Rest Management API")
-@SwaggerDefinition(info =
-@Info(
-        title = "Certificate Management REST Interface",
-        version = "1.0.0",
-        description = "API reference documentation."
-)
-)
 public class RestApiApplication extends Application {
-    // Nothing here for now so RESTEasy takes care of registering end points automatically.
-    // Later if manual control over some resources required those could be added here.
 
+    private static final Logger log = Logger.getLogger(RestApiApplication.class);
 
     public RestApiApplication() {
-        super();
-        
-        ModelConverters.getInstance().addConverter(new SnakeCaseConverter());
-        
-        BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion("1.0.0");
-        beanConfig.setSchemes(new String[]{"https"});
+        if (!EjbcaConfiguration.getIsInProductionMode()) {
+            ModelConverters.getInstance().addConverter(new SnakeCaseConverter());
+        }
+        /*
+        // Configure what can't be configured with annotations using a BeanConfig
+        final io.swagger.jaxrs.config.BeanConfig beanConfig = new io.swagger.jaxrs.config.BeanConfig();
+        beanConfig.setPrettyPrint(true);
         beanConfig.setBasePath("/ejbca/ejbca-rest-api");
         beanConfig.setResourcePackage("org.ejbca.ui.web.rest.api");
-        beanConfig.setScannerId("restapi");
-        beanConfig.setConfigId("restapi");
         beanConfig.setScan(true);
+        */
     }
 
+    /* In order to use swagger which requires manual registration, we also need to manually register out @Provider annotated classes now. */
+    @Override
+    public Set<Class<?>> getClasses() {
+        final Set<Class<?>> resources = new HashSet<>();
+        resources.add(org.ejbca.ui.web.rest.api.resource.CertificateRestResource.class);
+        resources.add(org.ejbca.ui.web.rest.api.resource.CaRestResource.class);
+        resources.add(org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver.class);
+        resources.add(org.ejbca.ui.web.rest.api.config.ExceptionHandler.class);
+        if (EjbcaConfiguration.getIsInProductionMode()) {
+            log.debug("Swagger is not available in distribution.");
+        } else {
+            resources.add(io.swagger.jaxrs.listing.ApiListingResource.class);
+            resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
+        }
+        return resources;
+    }
 }
