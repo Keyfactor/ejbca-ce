@@ -12,21 +12,26 @@
  *************************************************************************/
 package org.ejbca.core.model.validation.domainblacklist;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.util.Collections;
+import java.util.Map;
+
+import org.cesecore.util.MapTools;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.Assert.*;
-
 /**
- *
+ * Tests DomainBlacklistComponentChecker functions.
  * @version $Id$
  */
 public class DomainBlacklistComponentCheckerTest {
 
+    private static final Map<String,String> BLACKLIST = MapTools.unmodifiableMap(
+            "something.com", "somethingORIG.com", // normalized -> original, un-normalized, domain
+            "bank", "bankORIG",
+            "paypal.com", "paypalORIG.com"
+            );
 
     @Test(expected = IllegalStateException.class)
     public void checkNotInitialized() throws Exception {
@@ -37,54 +42,49 @@ public class DomainBlacklistComponentCheckerTest {
     @Test
     public void checkEmptyBlackList() throws Exception {
         DomainBlacklistComponentChecker checker = new DomainBlacklistComponentChecker();
-        checker.initialize(null, Collections.emptySet());
-        boolean result = checker.check("something");
-        assertTrue("'something' domain should be accepted by Component checker", result);
+        checker.initialize(null, Collections.emptyMap());
+        final String result = checker.check("something");
+        assertNull("'something' domain should be accepted by Component checker", result);
     }
 
     @Test
     public void checkPartInBlackList() throws Exception {
         DomainBlacklistComponentChecker checker = new DomainBlacklistComponentChecker();
-        Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
-        checker.initialize(null, blacklist);
-        boolean result = checker.check("bank.com");
-        assertFalse("'bank.com' domain should not be accepted by Component checker", result);
+        checker.initialize(null, BLACKLIST);
+        final String result = checker.check("bank.com");
+        assertEquals("'bank.com' domain should not be accepted by Component checker", "bankORIG", result);
     }
 
     @Test
     public void checkInMiddlePartBlackList() throws Exception {
         DomainBlacklistComponentChecker checker = new DomainBlacklistComponentChecker();
-        Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
-        checker.initialize(null, blacklist);
-        boolean result = checker.check("test.bank.com");
-        assertFalse("'test.bank.com' domain should not be accepted  by Component checker", result);
+        checker.initialize(null, BLACKLIST);
+        final String result = checker.check("test.bank.com");
+        assertEquals("'test.bank.com' domain should not be accepted  by Component checker", "bankORIG", result);
     }
 
     @Test
     public void checkWordPartInBlackList() throws Exception {
         DomainBlacklistComponentChecker checker = new DomainBlacklistComponentChecker();
-        Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
-        checker.initialize(null, blacklist);
-        boolean result = checker.check("memorybank.com");
-        assertTrue("'memorybank.com' domain should be accepted by Component checker", result);
+        checker.initialize(null, BLACKLIST);
+        final String result = checker.check("memorybank.com");
+        assertNull("'memorybank.com' domain should be accepted by Component checker", result);
     }
 
     @Test
     public void checkFullDomainBlackList() throws Exception {
         DomainBlacklistComponentChecker checker = new DomainBlacklistComponentChecker();
-        Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
-        checker.initialize(null, blacklist);
-        boolean result = checker.check("paypal.com");
-        assertTrue("'paypal.com' domain should be accepted by Component checker", result);
+        checker.initialize(null, BLACKLIST);
+        final String result = checker.check("paypal.com");
+        assertNull("'paypal.com' domain should be accepted by Component checker", result);
     }
 
     @Test
     public void checkDomainPartWithDotInBlackList() throws Exception {
         DomainBlacklistComponentChecker checker = new DomainBlacklistComponentChecker();
-        Set<String> blacklist = new HashSet<>(Arrays.asList("something.com", "bank", "paypal.com"));
-        checker.initialize(null, blacklist);
-        boolean result = checker.check("login.paypal.com");
-        assertTrue("'login.paypal.com' domain should be accepted by Component checker", result);
+        checker.initialize(null, BLACKLIST);
+        final String result = checker.check("login.paypal.com");
+        assertNull("'login.paypal.com' domain should be accepted by Component checker", result);
     }
 
 }

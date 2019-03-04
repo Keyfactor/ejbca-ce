@@ -13,7 +13,6 @@
 package org.ejbca.core.model.validation.domainblacklist;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.cesecore.util.NameTranslatable;
 
@@ -29,14 +28,14 @@ public interface DomainBlacklistChecker extends NameTranslatable {
     /**
      * Initializes this blacklist checker with a given blacklist.
      * @param configData Data hash map with configuration options (if the checker is configurable)
-     * @param blacklist Set of all domains or domain components to blacklist. May not be modified after initialization.
+     * @param blacklist Map with of all domains or domain components to blacklist. Keys are normalized domains, and values are unnormalized domains. May not be modified after initialization.
      */
-    void initialize(final Map<Object,Object> configData, final Set<String> blacklist);
+    void initialize(final Map<Object,Object> configData, final Map<String,String> blacklist);
 
     /**
      * Checks a domain name against this blacklist. Must be thread safe.
      * @param domain Domain to check
-     * @return Return false if blocked by blacklist.
+     * @return Return null if not blacklisted, or a blacklisted domain (may be similar but not the same as the argument)
      */
-    boolean check(final String domain);
+    String check(final String domain);
 }

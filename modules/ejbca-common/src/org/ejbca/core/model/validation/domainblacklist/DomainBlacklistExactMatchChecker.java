@@ -13,7 +13,6 @@
 package org.ejbca.core.model.validation.domainblacklist;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Performs an exact string match against a blacklist.
@@ -22,7 +21,7 @@ import java.util.Set;
  */
 public class DomainBlacklistExactMatchChecker implements DomainBlacklistChecker {
 
-    private Set<String> blacklist;
+    private Map<String,String> blacklist;
 
     @Override
     public String getNameKey() {
@@ -30,16 +29,16 @@ public class DomainBlacklistExactMatchChecker implements DomainBlacklistChecker 
     }
 
     @Override
-    public void initialize(final Map<Object, Object> configData, final Set<String> blacklist) {
+    public void initialize(final Map<Object, Object> configData, final Map<String,String> blacklist) {
         this.blacklist = blacklist;
     }
 
     @Override
-    public boolean check(final String domain) {
+    public String check(final String domain) {
         if (blacklist == null) {
             throw new IllegalStateException("Blacklist not configured!");
         }
-        return !blacklist.contains(domain);
+        return blacklist.get(domain); // Returns null if not blacklisted
     }
 
 }

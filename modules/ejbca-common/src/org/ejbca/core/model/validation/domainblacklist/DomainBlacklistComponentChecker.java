@@ -13,17 +13,16 @@
 package org.ejbca.core.model.validation.domainblacklist;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Splits the domain into peices by "." and checks if any piece is present in the blacklist
+ * Splits the domain into pieces by "." and checks if any piece is present in the blacklist
  *
  * @version $Id$
  */
 public class DomainBlacklistComponentChecker implements DomainBlacklistChecker {
 
 
-    private Set<String> blacklist;
+    private Map<String,String> blacklist;
 
     @Override
     public String getNameKey() {
@@ -32,21 +31,22 @@ public class DomainBlacklistComponentChecker implements DomainBlacklistChecker {
 
 
     @Override
-    public void initialize(Map<Object, Object> configData, Set<String> blacklist) {
+    public void initialize(final Map<Object, Object> configData, final Map<String,String> blacklist) {
         this.blacklist = blacklist;
     }
 
     @Override
-    public boolean check(String domain) {
+    public String check(final String domain) {
         if (blacklist == null) {
             throw new IllegalStateException("Blacklist not configured!");
         }
         final String[] domainParts = domain.split("\\.");
         for (final String domainPart : domainParts) {
-            if (blacklist.contains(domainPart)) {
-                return false; // Backlisted
+            final String blacklistedDomain = blacklist.get(domainPart);
+            if (blacklistedDomain != null) {
+                return blacklistedDomain; // Blacklisted
             }
         }
-        return true;
+        return null; // Not blacklisted
     }
 }
