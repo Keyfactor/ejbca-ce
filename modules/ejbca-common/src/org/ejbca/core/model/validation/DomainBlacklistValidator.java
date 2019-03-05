@@ -461,4 +461,11 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         final String languageKey = successful ? "validator.domainblacklist.validation_successful" : "validator.domainblacklist.validation_failed";
         return intres.getLocalizedMessage(languageKey, validatorName, messages);
     }
+
+    @Override
+    public DomainBlacklistValidator clone() {
+        final DomainBlacklistValidator clone = (DomainBlacklistValidator) super.clone();
+        clone.cache = cache; // cache is not modified, so it can be referenced.
+        return clone;
+    }
 }
