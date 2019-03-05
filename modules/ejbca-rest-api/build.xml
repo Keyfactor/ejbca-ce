@@ -62,6 +62,7 @@
         <path refid="compile-test.classpath"/>
 		<path location="${ejbca-rest-api.build-test.dir}"/>
 		<pathelement path="${clover.jar}"/>
+        <path refid="lib.jee-client.classpath"/>
 	</path>
 
     <target name="clean" description="Clean up this module">
