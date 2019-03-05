@@ -30,7 +30,9 @@ public interface Validator extends PhasedValidator, CertificateProfileAwareValid
     static final String TYPE_NAME = "VALIDATOR";
     
     /**
-     * Initializes the key validator.
+     * Initializes the key validator. Called from the constructor.
+     * <p>
+     * <strong>WARNING:</strong> The data map is not fully initialized when this method is called.
      */
     void init();
 
