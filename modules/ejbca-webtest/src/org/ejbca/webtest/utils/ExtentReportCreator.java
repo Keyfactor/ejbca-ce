@@ -1,24 +1,5 @@
 package org.ejbca.webtest.utils;
 
-import com.aventstack.extentreports.ExtentReports;
-import com.aventstack.extentreports.ExtentTest;
-import com.aventstack.extentreports.Status;
-import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
-import com.aventstack.extentreports.reporter.configuration.ChartLocation;
-import com.aventstack.extentreports.reporter.configuration.Theme;
-import org.apache.commons.io.FileUtils;
-import org.ejbca.webtest.WebTestBase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -26,12 +7,30 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import com.aventstack.extentreports.reporter.configuration.ChartLocation;
+import com.aventstack.extentreports.reporter.configuration.Theme;
+
 public class ExtentReportCreator {
-    static ExtentReports extent;
-    static ExtentHtmlReporter htmlReporter;
-    static ExtentTest testCase;
-    static String currTest;
-    static WebDriver browser;
+    private static ExtentReports extent;
+    private static ExtentHtmlReporter htmlReporter;
+    private static ExtentTest testCase;
+    private static String currTest;
+    private static WebDriver browser;
 
     public static void setBrowser(WebDriver browser) {
         ExtentReportCreator.browser = browser;
@@ -40,7 +39,6 @@ public class ExtentReportCreator {
 
     @BeforeClass
     public static void setUp() throws IOException {
-        System.out.println("Do we reach it?");
         extent = new ExtentReports();
 
 
@@ -57,7 +55,7 @@ public class ExtentReportCreator {
 
     @AfterClass
     public static void tearDown() throws IOException {
-    // writing everything to document
+        // writing everything to document
         extent.flush();
     }
 
