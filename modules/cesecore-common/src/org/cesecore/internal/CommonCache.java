@@ -34,7 +34,7 @@ public interface CommonCache<T> {
     /** Update the cache with the current version read from the database. 
      *
      * @param id id of the object, typically database id
-     * @param digest, typically getProtectString(0).hashCode() of the object;
+     * @param digest typically getProtectString(0).hashCode() of the object;
      * @name String name of the object, typically database name
      * @object the object to cache
      */
