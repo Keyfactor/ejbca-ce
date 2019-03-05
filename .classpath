@@ -223,5 +223,6 @@
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-module-junit4-1.7.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-module-junit4-common-1.7.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-reflect-1.7.4.jar"/>
+	<classpathentry kind="lib" path="lib/ext/webtest/extentreports-3.1.5.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
