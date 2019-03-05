@@ -8,14 +8,10 @@ import org.ejbca.webtest.utils.CommandLineHelper;
 import org.ejbca.webtest.utils.RemoveDir;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
+
 
 /**
  * The CA can be both edited and restored.  When a CA is restored,
@@ -68,6 +64,8 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         cryptoTokenHelper.assertTokenExists("ManagementCA");
     }
 
+
+
     @Test
     public void stepB_createCAUsingCryptoToken() {
         //Verify CA using cryptotoken exists
@@ -79,6 +77,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
     }
 
+
     @Test(timeout=20000)
     public void stepC_buildStatedump() {
         //Run the designated ant command
@@ -88,6 +87,8 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         File statedumpDir = new File("dist/statedump");
         Assert.assertTrue(statedumpDir.exists());
     }
+
+
 
     @Test(timeout=20000)
     public void stepD_exportCAssertStatedump() {
@@ -100,15 +101,23 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     }
 
 
-    @Test(timeout=20000)
-    public void stepE_importCA() {
-        //Reimport the CA
+
+    @Test
+    public void stepE_deleteCA() {
+        //Remove the CA
         caHelper.openPage(getAdminWebUrl());
+        caHelper.deleteCaAndAssert(deleteAlert, false, null, EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
+    }
+
+
+    @Test(timeout=20000)
+    public void stepF_importCA() {
+        //Reimport the CA
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh import -l test-statedump");
     }
 
     @Test
-    public void stepF_editCA() {
+    public void stepG_editCA() {
         //Edit the reimported CA
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(TestData.CA_NAME);
@@ -116,19 +125,11 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
 
     @Test
-    public void stepG_assertKeyAliasesRestored() {
+    public void stepH_assertKeyAliasesRestored() {
         //Assert Key values are restored.
         caHelper.assertCrlSignKeyValue("signKey");
         caHelper.assertDefaultKeyValue("defaultKey");
         caHelper.assertTestKeyValue("testKey");
-    }
-
-
-    @Test
-    public void stepH_deleteCA() {
-        //Remove the CA
-        caHelper.openPage(getAdminWebUrl());
-        caHelper.deleteCaAndAssert(deleteAlert, false, null, EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
     }
 
     @Test(timeout=10000)
@@ -137,5 +138,8 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         new RemoveDir("test-statedump").deleteDirectoryStream();
         new RemoveDir("dist/statedump").deleteDirectoryStream();
     }
+
+
+
 
 }

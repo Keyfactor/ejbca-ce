@@ -42,6 +42,8 @@ import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.ejbca.webtest.utils.ConfigurationHolder;
+import org.ejbca.webtest.utils.ExtentReportCreator;
+import org.junit.Rule;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
@@ -54,7 +56,7 @@ import org.openqa.selenium.firefox.internal.ProfilesIni;
  *
  * @version $Id: WebTestBase.java 30768 2018-12-06 08:06:23Z andrey_s_helmes $
  */
-public abstract class WebTestBase {
+public abstract class WebTestBase extends ExtentReportCreator {
 
     private static final Logger log = Logger.getLogger(WebTestBase.class);
 
@@ -124,6 +126,7 @@ public abstract class WebTestBase {
         webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         // Add to array
         webDrivers.add(webDriver);
+        ExtentReportCreator.setBrowser(getWebDriver());
     }
 
     /**
