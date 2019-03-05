@@ -120,6 +120,14 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         // Add fields that have been upgraded and need default values here
     }
 
+    @Override
+    protected void loadTransientObjects() {
+        if (log.isDebugEnabled()) {
+            log.debug("loadTransientObjects was called for validator " + getProfileName());
+        }
+        loadBlacklistData();
+    }
+
     private void loadBlacklistData() {
         if (cache == null) {
             synchronized (this) { // wait
@@ -462,7 +470,8 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     @Override
     public DomainBlacklistValidator clone() {
-        final DomainBlacklistValidator clone = (DomainBlacklistValidator) super.clone();
+        final DomainBlacklistValidator clone = new DomainBlacklistValidator();
+        clone.data = new LinkedHashMap<>(data);
         clone.cache = cache; // cache is not modified, so it can be referenced.
         return clone;
     }
