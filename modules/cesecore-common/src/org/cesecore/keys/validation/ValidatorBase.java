@@ -107,7 +107,10 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     
     /**
      * Initializes uninitialized data fields.
+     * <p>
+     * <strong>WARNING:</strong> This method will be called before the data map is loaded when a validator is cloned (for example when copied from cache).
      */
+    @Override
     public void init() {
         super.initialize();
         if (null == data.get(VERSION)) {

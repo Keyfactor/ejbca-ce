@@ -22,10 +22,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -118,8 +118,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     public void init() {
         super.init();
         // Add fields that have been upgraded and need default values here
-        // Load blacklist data
-        loadBlacklistData();
     }
 
     private void loadBlacklistData() {
@@ -145,7 +143,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
 
     /** Replaces the existing domain blacklist with the uploaded one. Takes a byte array. */
     public void changeBlacklist(final byte[] bytes) {
-        final Set<String> domainSet = new HashSet<>();
+        final Set<String> domainSet = new TreeSet<>(); // store entries sorted in database
         try {
             try (final InputStream domainBlacklistInputStream = new ByteArrayInputStream(bytes);
                  final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(domainBlacklistInputStream, StandardCharsets.UTF_8))) {
@@ -219,7 +217,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
         }
         // Create combined blacklist
-        final Set<String> domainSetNotNormalized = getBlacklist(); 
+        final Collection<String> domainSetNotNormalized = getBlacklist(); 
         final HashMap<String,String> domainMap = new HashMap<>((int)(domainSetNotNormalized.size()/0.75)+1); // keys: normalized domains. values: unmodified blacklisted domains
         if (log.isDebugEnabled()) {
             log.debug("Normalizing " + domainSetNotNormalized.size() + " domains for Validator '" + getProfileName() + "'");
@@ -417,12 +415,12 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     }
 
 
-    public Set<String> getBlacklist() {
-        return getData(BLACKLISTS_KEY, Collections.emptySet());
+    public Collection<String> getBlacklist() {
+        return getData(BLACKLISTS_KEY, Collections.emptyList());
     }
 
-    public void setBlacklist(final Set<String> domainMap) {
-        putData(BLACKLISTS_KEY, new TreeSet<>(domainMap));
+    public void setBlacklist(final Collection<String> domainMap) {
+        putData(BLACKLISTS_KEY, new ArrayList<>(domainMap));
         clearCache();
     }
 
@@ -445,7 +443,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     @Override
     public LinkedHashMap<Object,Object> getFilteredDataMapForLogging() {
         LinkedHashMap<Object,Object> map = getDataMap();
-        final Set<?> blacklists = (Set<?>) map.get(BLACKLISTS_KEY);
+        final Collection<?> blacklists = (Collection<?>) map.get(BLACKLISTS_KEY);
         if (blacklists == null || blacklists.size() <= MAX_LOG_DOMAINS) {
             return map; // Just log as is
         } else {
