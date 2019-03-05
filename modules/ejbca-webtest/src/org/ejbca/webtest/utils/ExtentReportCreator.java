@@ -4,6 +4,8 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import com.aventstack.extentreports.reporter.configuration.ChartLocation;
+import com.aventstack.extentreports.reporter.configuration.Theme;
 import org.apache.commons.io.FileUtils;
 import org.ejbca.webtest.WebTestBase;
 import org.junit.AfterClass;
@@ -40,12 +42,16 @@ public class ExtentReportCreator {
     public static void setUp() throws IOException {
         System.out.println("Do we reach it?");
         extent = new ExtentReports();
+
+
         htmlReporter = new ExtentHtmlReporter(System.getProperty("user.dir") +
                 "/reports/QaEjbcaTestReport.html");
         extent.attachReporter(htmlReporter);
 
         htmlReporter.config().setDocumentTitle("EJBCA QA Test Report");
         htmlReporter.config().setReportName("EJBCA Test Results!");
+        htmlReporter.config().setTestViewChartLocation(ChartLocation.BOTTOM);
+        htmlReporter.config().setTheme(Theme.DARK);
 
     }
 
