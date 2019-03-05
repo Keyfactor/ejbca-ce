@@ -19,9 +19,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
@@ -55,7 +55,7 @@ public class DomainBlacklistValidatorUnitTest {
     public void parseBlacklistFile() {
         final DomainBlacklistValidator validator = new DomainBlacklistValidator();
         validator.changeBlacklist(BLACKLIST);
-        final Set<String> blacklist = validator.getBlacklist();
+        final Collection<String> blacklist = validator.getBlacklist();
         log.debug("Result after parsing: " + blacklist);
         assertEquals("Wrong number of entries in parsed blacklist.", 5, blacklist.size());
         assertTrue("Should contain 'forbidden.example.com'", blacklist.contains("forbidden.example.com"));
