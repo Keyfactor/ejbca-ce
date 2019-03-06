@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -283,10 +284,13 @@ public class RaCertDistServlet extends HttpServlet {
             }
             try {
                 final Certificate caCertificate = caInfo.getCertificateChain().get(0);
-                final String caFingerprint = CertTools.getFingerprintAsString(CertTools.generateSHA256Fingerprint(caCertificate.getEncoded()));
-                final Map<String, String> caEntry = new LinkedHashMap<>();
+                final String caFingerprint = Hex.encodeHexString(CertTools.generateSHA256Fingerprint(caCertificate.getEncoded()));
+                final Map<String, Object> caEntry = new LinkedHashMap<>();
+                final Map<String, String> fingerprintEntry = new LinkedHashMap<>();
+                fingerprintEntry.put("Algorithm", "SHA-256");
+                fingerprintEntry.put("Fingerprint", caFingerprint.toUpperCase());
                 caEntry.put("Subject DN", caInfo.getSubjectDN());
-                caEntry.put("CA Certificate Fingerprint", caFingerprint);
+                caEntry.put("CA Certificate Fingerprint", fingerprintEntry);
                 entries.put(caInfo.getName(), caEntry);
                 if (log.isDebugEnabled()) {
                     log.debug("Computed CA certificate fingerprint for CA " + caInfo.getName() + ".");
