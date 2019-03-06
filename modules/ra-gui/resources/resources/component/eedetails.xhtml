@@ -122,12 +122,26 @@
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="caname" value="#{cc.attrs.raEndEntityDetails.caName}"
                 styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputLabel for="tokentype" value="#{msg.component_eedetails_field_tokentype}"
+            <h:outputLabel for="tokentype" value="#{msg.component_eedetails_field_tokentype}" rendered="#{!cc.attrs.editMode}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:panelGroup id="tokentype" styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+            <h:panelGroup id="tokentype" styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" rendered="#{!cc.attrs.editMode}">
 	            <h:outputText value="#{cc.attrs.raEndEntityDetails.tokenType} #{msg['component_eedetails_field_keyrecoverable_'.concat(cc.attrs.raEndEntityDetails.keyRecoverable)]}" />
-	            <h:commandLink action="#{cc.attrs.raEndEntityDetails.downloadCsr}" value="#{msg.component_eedetails_link_downloadcsr}" styleClass="fineprint" rendered="#{cc.attrs.raEndEntityDetails.csrSet}"/>
+	            <h:commandLink action="#{cc.attrs.raEndEntityDetails.downloadCsr}" value="#{msg.component_eedetails_link_downloadcsr}" styleClass="fineprint" 
+	                rendered="#{cc.attrs.raEndEntityDetails.csrSet}"/>
             </h:panelGroup>
+            <h:outputLabel for="tokenTypeSelect" value="#{msg.component_eedetails_field_tokentype}"
+                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                rendered="#{cc.attrs.editMode}" />
+            <h:panelGroup
+                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity"
+                rendered="#{cc.attrs.editMode}">
+                <h:selectOneMenu id="tokenTypeSelect" value="#{cc.attrs.raEndEntityBean.selectedTokenType}" styleClass="pure-input-1-4">
+                    <f:selectItems value="#{cc.attrs.raEndEntityBean.selectableTokenTypes}" var="selectableTokenType"
+                        itemLabel="#{selectableTokenType.tokenTypeString}" itemValue="#{selectableTokenType.tokenTypeConstant}" />
+                    <f:ajax event="change" />
+                </h:selectOneMenu>
+            </h:panelGroup>
+
             <h:outputLabel for="keytype" value="#{msg.component_eedetails_field_keyalgorithm}"
                 rendered="#{cc.attrs.raEndEntityDetails.keyType != null}"
                 styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>

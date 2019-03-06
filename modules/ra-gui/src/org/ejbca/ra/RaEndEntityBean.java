@@ -48,7 +48,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
 /**
- * Backing bean for certificate details view.
+ * Backing bean for end entity details view.
  *  
  * @version $Id$
  */
@@ -80,7 +80,9 @@ public class RaEndEntityBean implements Serializable {
     private boolean editEditEndEntityMode = false;
     private List<RaCertificateDetails> issuedCerts = null;
     private SelectStatus[] selectableStatuses = null;
+    private SelectTokenType[] selectableTokenTypes = null;
     private int selectedStatus = -1;
+    private int selectedTokenType = -1;
     private String enrollmentCode = "";
     private String enrollmentCodeConfirm = "";
     private boolean clearCsrChecked = false;
@@ -122,6 +124,44 @@ public class RaEndEntityBean implements Serializable {
             return "{" + statusString + ": " + statusConstant + "}";
         }
     }
+    
+    /**
+     * The TokenTypeStatus class holds a status string/constant pair
+     */
+    public static final class SelectTokenType {
+        private String tokenTypeString;
+        private int tokenTypeConstant;
+
+        /**
+         * Constructor for the SelectTokenType class
+         * 
+         * @param tokenTypeString the tokenType string
+         * @param tokenTypeConstant the tokenType constant
+         */
+        public SelectTokenType(String tokenTypeString, int tokenTypeConstant) {
+            this.tokenTypeString = tokenTypeString;
+            this.tokenTypeConstant = tokenTypeConstant;
+        }
+
+        /**
+         * @return the tokenType string
+         */
+        public String getTokenTypeString() {
+            return tokenTypeString;
+        }
+
+        /**
+         * @return the tokenType constant
+         */
+        public int getTokenTypeConstant() {
+            return tokenTypeConstant;
+        }
+
+        @Override
+        public String toString() {
+            return "{" + tokenTypeString + ": " + tokenTypeConstant + "}";
+        }
+    }
 
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
@@ -160,10 +200,12 @@ public class RaEndEntityBean implements Serializable {
                     caIdToNameMap.put(caInfo.getCAId(), caInfo.getName());
                 }
                 raEndEntityDetails = new RaEndEntityDetails(endEntityInformation, raEndEntityDetailsCallbacks, cpIdToNameMap, eepIdToNameMap, caIdToNameMap);
+                selectedTokenType = endEntityInformation.getTokenType();
             }
         }
         issuedCerts = null;
         selectableStatuses = null;
+        selectableTokenTypes = null;
         selectedStatus = -1;
         clearCsrChecked = false;
     }
@@ -200,6 +242,7 @@ public class RaEndEntityBean implements Serializable {
     public void editEditEndEntitySave() {
         boolean changed = false;
         int selectedStatus = getSelectedStatus();
+        int selectedTokenType = getSelectedTokenType();
         EndEntityInformation endEntityInformation = new EndEntityInformation(
                 raEndEntityDetails.getEndEntityInformation());
         if (selectedStatus > 0 && selectedStatus != endEntityInformation.getStatus()) {
@@ -208,6 +251,7 @@ public class RaEndEntityBean implements Serializable {
                 // Change the End Entity's status and set the new password
                 endEntityInformation.setStatus(selectedStatus);
                 endEntityInformation.setPassword(enrollmentCode);
+                endEntityInformation.setTokenType(getNewTokenTypeValue(selectedTokenType, endEntityInformation));
                 changed = true;
             }
         } else if (!StringUtils.isEmpty(enrollmentCode)
@@ -216,9 +260,16 @@ public class RaEndEntityBean implements Serializable {
             if (verifyEnrollmentCodes()) {
                 // Enrollment codes were valid, set new password but leave status unchanged
                 endEntityInformation.setPassword(enrollmentCode);
+                endEntityInformation.setTokenType(getNewTokenTypeValue(selectedTokenType, endEntityInformation));
                 changed = true;
             }
-        } 
+        } else {
+            int newTokenType = getNewTokenTypeValue(selectedTokenType, endEntityInformation);
+            if (newTokenType != endEntityInformation.getTokenType()) {
+                endEntityInformation.setTokenType(newTokenType);
+                changed = true;
+            }
+        }
         if (clearCsrChecked) {
             if (endEntityInformation.getExtendedInformation() != null) {
                 endEntityInformation.getExtendedInformation().setCertificateRequest(null);
@@ -250,6 +301,16 @@ public class RaEndEntityBean implements Serializable {
             }
         }
         editEditEndEntityCancel();
+    }
+
+    /**
+     * @return the new tokenType value to be saved/used
+     */
+    private int getNewTokenTypeValue(final int selectedTokenType, final EndEntityInformation endEntityInformation) {
+        if (selectedTokenType == -1) {
+            return endEntityInformation.getTokenType();
+        }
+        return selectedTokenType;
     }
 
     /**
@@ -291,6 +352,25 @@ public class RaEndEntityBean implements Serializable {
      */
     public void setSelectedStatus(int selectedStatus) {
         this.selectedStatus = selectedStatus;
+    }
+    
+    /**
+     * @return the tokenType currently selected in edit mode
+     */
+    public int getSelectedTokenType() {
+        if (selectedTokenType == -1) {
+            getSelectableTokenTypes();
+        }
+        return selectedTokenType;
+    }
+
+    /**
+     * Sets the selected tokenType to a new tokenType
+     * 
+     * @param selectedTokenType the new tokenType
+     */
+    public void setSelectedTokenType(int selectedTokenType) {
+        this.selectedTokenType = selectedTokenType;
     }
 
     /**
@@ -347,6 +427,32 @@ public class RaEndEntityBean implements Serializable {
             selectedStatus = selectableStatuses[0].getStatusConstant();
         }
         return selectableStatuses;
+    }
+    
+    /**
+     * Generates an array of selectable tokenTypes if not already cached
+     * 
+     * @return an array of selectable tokenTypes
+     */
+    public SelectTokenType[] getSelectableTokenTypes() {
+        if (editEditEndEntityMode && selectableTokenTypes == null) {
+            selectableTokenTypes = new SelectTokenType[] {
+                    new SelectTokenType(
+                            raLocaleBean.getMessage("component_eedetails_tokentype_usergen"),
+                            EndEntityConstants.TOKEN_USERGEN),
+                    new SelectTokenType(
+                            raLocaleBean.getMessage("component_eedetails_tokentype_jks"),
+                            EndEntityConstants.TOKEN_SOFT_JKS),
+                    new SelectTokenType(
+                            raLocaleBean.getMessage("component_eedetails_tokentype_pkcs12"),
+                            EndEntityConstants.TOKEN_SOFT_P12),
+                    new SelectTokenType(
+                            raLocaleBean.getMessage("component_eedetails_tokentype_pem"),
+                            EndEntityConstants.TOKEN_SOFT_PEM)
+            };
+            selectedTokenType = selectableTokenTypes[0].getTokenTypeConstant();
+        }
+        return selectableTokenTypes;
     }
 
     /**
