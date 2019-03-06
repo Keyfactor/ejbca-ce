@@ -126,7 +126,7 @@ public class RaEndEntityBean implements Serializable {
     }
     
     /**
-     * The TokenTypeStatus class holds a status string/constant pair
+     * The SelectTokenType class holds a tokenType string/constant pair
      */
     public static final class SelectTokenType {
         private String tokenTypeString;
