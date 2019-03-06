@@ -97,6 +97,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     /** Text field that allow for testing of domains. Not persisted. */
     private static final String TEST_DOMAINENTRY_KEY = "test_domainentry";
     private static final String TEST_BUTTON_KEY = "test_button";
+    private static final String TEST_BUTTON_TEXT = "test_button_text";
     private static final String TEST_RESULT_KEY = "test_result";
 
     private static final int MAX_LOG_DOMAINS = 100;
@@ -364,7 +365,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             throw new IllegalStateException(e);
         }
         uiModel.add(testEntry);
-        final DynamicUiProperty<String> testButton = new DynamicUiProperty<>(String.class, TEST_BUTTON_KEY, TEST_BUTTON_KEY);
+        final DynamicUiProperty<String> testButton = new DynamicUiProperty<>(String.class, TEST_BUTTON_KEY, TEST_BUTTON_TEXT);
         testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
         testButton.setTransientValue(true);
         testButton.setActionCallback(new DynamicUiActionCallback() {
@@ -378,7 +379,7 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
             }
             @Override
             public List<String> getRender() {
-                return null;
+                return new ArrayList<>(Collections.singleton(TEST_RESULT_KEY));
             }
         });
         uiModel.add(testButton);
