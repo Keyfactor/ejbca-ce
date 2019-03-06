@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.validation.DnsNameValidator;
@@ -51,6 +52,8 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.MapTools;
 import org.cesecore.util.NameTranslatable;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.ui.DynamicUiActionCallback;
+import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.cesecore.util.ui.PropertyValidationException;
@@ -91,6 +94,10 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     private static final String BLACKLIST_SHA256_KEY = "blacklist_sha256"; // Persisted
     /** File upload of new existing blacklist. Not persisted */
     private static final String BLACKLIST_UPLOAD_KEY = "blacklist_upload";
+    /** Text field that allow for testing of domains. Not persisted. */
+    private static final String TEST_DOMAINENTRY_KEY = "test_domainentry";
+    private static final String TEST_BUTTON_KEY = "test_button";
+    private static final String TEST_RESULT_KEY = "test_result";
 
     private static final int MAX_LOG_DOMAINS = 100;
 
@@ -288,6 +295,9 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         addClassSelection(DomainBlacklistChecker.class, CHECKS_KEY, true, getChecks(), DomainBlacklistExactMatchChecker.class.getName());
         addBlacklistInfo();
         uploadBlacklistFile();
+        if (getBlacklistDate() != null) {
+            addTestControls();
+        }
     }
 
     private <T extends NameTranslatable> void addClassSelection(final Class<T> clazz, final String dataMapKey, final boolean required, final List<String> currentValues, final String defaultValue) {
@@ -341,6 +351,71 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         uiProperty.setRenderingHint(DynamicUiProperty.RENDER_FILE_CHOOSER);
         uiProperty.setTransientValue(true);
         uiModel.add(uiProperty);
+    }
+
+    private void addTestControls() {
+        final DynamicUiProperty<String> testEntry = new DynamicUiProperty<>(String.class, TEST_DOMAINENTRY_KEY, "");
+        testEntry.setRenderingHint(DynamicUiProperty.RENDER_TEXTFIELD);
+        testEntry.setTransientValue(true);
+        testEntry.setRequired(false);
+        try {
+            testEntry.setValue("");
+        } catch (PropertyValidationException e) {
+            throw new IllegalStateException(e);
+        }
+        uiModel.add(testEntry);
+        final DynamicUiProperty<String> testButton = new DynamicUiProperty<>(String.class, TEST_BUTTON_KEY, TEST_BUTTON_KEY);
+        testButton.setRenderingHint(DynamicUiProperty.RENDER_BUTTON);
+        testButton.setTransientValue(true);
+        testButton.setActionCallback(new DynamicUiActionCallback() {
+            @Override
+            public void action(final Object parameter) throws DynamicUiCallbackException {
+                final DynamicUiProperty<?> domainEntryProperty = uiModel.getProperties().get(TEST_DOMAINENTRY_KEY);
+                uiModel.writeProperties(getRawData());
+                reloadBlacklistData();
+                final String resultText = testDomain((String) domainEntryProperty.getValue());
+                uiModel.firePropertyChange(TEST_RESULT_KEY, "x", resultText);
+            }
+            @Override
+            public List<String> getRender() {
+                return null;
+            }
+        });
+        uiModel.add(testButton);
+        final DynamicUiProperty<String> resultLabel = new DynamicUiProperty<>(String.class, TEST_RESULT_KEY, "");
+        resultLabel.setRenderingHint(DynamicUiProperty.RENDER_LABEL);
+        resultLabel.setEscape(false);
+        resultLabel.setTransientValue(true);
+        uiModel.add(resultLabel);
+    }
+
+    /**
+     * Performs a test validation of a domain
+     * @param domain Domain to test
+     * @return HTML message.
+     */
+    private String testDomain(final String domain) {
+        if (log.isDebugEnabled()) {
+            log.debug("Testing domain: " + domain);
+        }
+        if (StringUtils.isBlank(domain)) {
+            return "";
+        }
+        final Entry<Boolean,List<String>> result = validate(null, domain.trim());
+        if (result.getKey()) {
+            return StringEscapeUtils.escapeHtml(intres.getLocalizedMessage("validator.domainblacklist.validation_successful", getProfileName()));
+        } else if (CollectionUtils.isEmpty(result.getValue())) {
+            return "Failed to checked domain"; // Bug. Should never happen
+        } else {
+            final StringBuilder sb = new StringBuilder();
+            for (final String message : result.getValue()) {
+                if (sb.length() != 0) {
+                    sb.append("<br />");
+                }
+                sb.append(StringEscapeUtils.escapeHtml(message));
+            }
+            return sb.toString();
+        }
     }
 
     @Override
