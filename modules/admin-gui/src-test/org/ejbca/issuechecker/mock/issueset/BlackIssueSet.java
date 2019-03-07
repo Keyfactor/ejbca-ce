@@ -11,13 +11,12 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuechecker.issueset;
+package org.ejbca.issuechecker.mock.issueset;
 
 import java.util.Set;
 
 import org.ejbca.issuechecker.ConfigurationIssue;
-import org.ejbca.issuechecker.ConfigurationIssueSet;
-import org.ejbca.issuechecker.issues.RedIssue;
+import org.ejbca.issuechecker.mock.issues.BlackIssue;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -28,25 +27,25 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @version $Id$
  */
-public class RedIssueSet extends ConfigurationIssueSet {
+public class BlackIssueSet extends RedIssueSet {
 
     @Override
     public Set<Class<? extends ConfigurationIssue>> getConfigurationIssues() {
-        return ImmutableSet.of(RedIssue.class);
+        return ImmutableSet.of(BlackIssue.class);
     }
 
     @Override
     public String getTitleLanguageString() {
-        return "RED_ISSUE_SET_TITLE";
+        return "BLACK_ISSUE_SET_TITLE";
     }
 
     @Override
     public String getDescriptionLanguageString() {
-        return "RED_ISSUE_SET_DESCRIPTION";
+        return "BLACK_ISSUE_SET_DESCRIPTION";
     }
 
     @Override
     public String getDatabaseValue() {
-        return "RedIssueSet";
+        return "BlackIssueSet";
     }
 }

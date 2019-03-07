@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuechecker.ejb;
+package org.ejbca.issuechecker.mock.ejb;
 
 import java.util.Collections;
 import java.util.Set;
@@ -20,6 +20,8 @@ import org.cesecore.configuration.GlobalConfigurationSession;
 import org.ejbca.core.ejb.config.ConfigurationSessionBean;
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
+import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionBean;
+import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
 
 /**
  * A extended version of {@link ConfigurationSessionBean} suitable for unit testing.
@@ -29,7 +31,7 @@ import org.ejbca.issuechecker.ConfigurationIssueSet;
  * 
  * @version $Id$
  */
-class ConfigurationCheckerSessionBeanPartialMock extends ConfigurationCheckerSessionBean {
+public class ConfigurationCheckerSessionBeanPartialMock extends ConfigurationCheckerSessionBean {
     private final Set<ConfigurationIssueSet> enabledConfigurationIssueSets;
     
     public static class Builder {

@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuechecker.ejb;
+package org.ejbca.issuechecker.mock.ejb;
 
 import static org.junit.Assert.assertEquals;
 
@@ -23,12 +23,14 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.db.TicketRequest;
-import org.ejbca.issuechecker.issues.BlackIssue;
-import org.ejbca.issuechecker.issues.GreenIssue;
-import org.ejbca.issuechecker.issues.RedIssue;
-import org.ejbca.issuechecker.issueset.BlackIssueSet;
-import org.ejbca.issuechecker.issueset.GreenIssueSet;
-import org.ejbca.issuechecker.issueset.RedIssueSet;
+import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
+import org.ejbca.issuechecker.mock.ejb.ConfigurationCheckerSessionBeanPartialMock;
+import org.ejbca.issuechecker.mock.issues.BlackIssue;
+import org.ejbca.issuechecker.mock.issues.GreenIssue;
+import org.ejbca.issuechecker.mock.issues.RedIssue;
+import org.ejbca.issuechecker.mock.issueset.BlackIssueSet;
+import org.ejbca.issuechecker.mock.issueset.GreenIssueSet;
+import org.ejbca.issuechecker.mock.issueset.RedIssueSet;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
