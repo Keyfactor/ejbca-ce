@@ -14,13 +14,12 @@
 package org.ejbca.core.model.validation.domainblacklist;
 
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.net.IDN;
-import java.text.ParseException;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests DomainBlacklistAsciiLookalikeNormalizer functions.
