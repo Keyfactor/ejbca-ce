@@ -143,7 +143,7 @@ public class EndEntityCopyCnToDnsNameSystemTest extends CaTestCase {
 
     @Test
     public void addEndEntityOneDnsNameCopiedSecondIsEmpty() throws Exception {
-        log.trace(">validationInApprovalPhase");
+        log.trace(">addEndEntityOneDnsNameCopiedSecondIsEmpty");
         // given
         final EndEntityInformation endEntity = new EndEntityInformation();
         endEntity.setUsername(TEST_ENDENTITY);
@@ -165,12 +165,14 @@ public class EndEntityCopyCnToDnsNameSystemTest extends CaTestCase {
 
         assertNotNull("End Entity Certificate should not be empty", certificate);
         assertTrue("Subject alternative name should contain CN", certificate.getSubjectAlternativeNames().iterator().next().contains(TEST_ENDENTITY));
+
+        log.trace("<addEndEntityOneDnsNameCopiedSecondIsEmpty");
     }
 
 
     @Test
     public void addEndEntityOneDnsNameCopiedSecondUserValue() throws Exception {
-        log.trace(">validationInApprovalPhase");
+        log.trace(">addEndEntityOneDnsNameCopiedSecondUserValue");
         // given
         final EndEntityInformation endEntity = new EndEntityInformation();
         endEntity.setUsername(TEST_ENDENTITY);
@@ -195,5 +197,6 @@ public class EndEntityCopyCnToDnsNameSystemTest extends CaTestCase {
         Iterator<List<?>> iterator = certificate.getSubjectAlternativeNames().iterator();
         assertTrue("Subject alternative name should contain User inserted Dns Name", iterator.next().contains(USER_DOMAINNAME));
         assertTrue("Subject alternative name should contain CN", iterator.next().contains(TEST_ENDENTITY));
+        log.trace("<addEndEntityOneDnsNameCopiedSecondUserValue");
     }
 }
