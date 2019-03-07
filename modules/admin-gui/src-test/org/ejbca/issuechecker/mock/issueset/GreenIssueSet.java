@@ -11,41 +11,42 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuechecker.issueset;
+package org.ejbca.issuechecker.mock.issueset;
 
 import java.util.Set;
 
 import org.ejbca.issuechecker.ConfigurationIssue;
-import org.ejbca.issuechecker.issues.BlackIssue;
+import org.ejbca.issuechecker.ConfigurationIssueSet;
+import org.ejbca.issuechecker.mock.issues.GreenIssue;
 
 import com.google.common.collect.ImmutableSet;
 
 /**
  * A configuration issue set used as a mock in unit testing.
  * 
- * <p>Contains a single {@link REDIssue}.
+ * <p>Contains a single {@link GreenIssue}.
  * 
  * @version $Id$
  */
-public class BlackIssueSet extends RedIssueSet {
+public class GreenIssueSet extends ConfigurationIssueSet {
 
     @Override
     public Set<Class<? extends ConfigurationIssue>> getConfigurationIssues() {
-        return ImmutableSet.of(BlackIssue.class);
+        return ImmutableSet.of(GreenIssue.class);
     }
 
     @Override
     public String getTitleLanguageString() {
-        return "BLACK_ISSUE_SET_TITLE";
+        return "GREEN_ISSUE_SET_TITLE";
     }
 
     @Override
     public String getDescriptionLanguageString() {
-        return "BLACK_ISSUE_SET_DESCRIPTION";
+        return "GREEN_ISSUE_SET_DESCRIPTION";
     }
 
     @Override
     public String getDatabaseValue() {
-        return "BlackIssueSet";
+        return "GreenIssueSet";
     }
 }

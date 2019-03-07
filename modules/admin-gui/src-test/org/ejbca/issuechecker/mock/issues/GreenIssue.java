@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuechecker.issues;
+package org.ejbca.issuechecker.mock.issues;
 
 import java.util.List;
 import java.util.stream.Collectors;
