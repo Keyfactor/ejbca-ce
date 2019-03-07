@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.issuechecker.ejbtest;
+package org.ejbca.issuechecker.ejb;
 
 import static org.junit.Assert.assertEquals;
 
