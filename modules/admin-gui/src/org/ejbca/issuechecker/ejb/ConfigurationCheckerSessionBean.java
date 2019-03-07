@@ -58,20 +58,20 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
     /**
      * A set of all implemented issue sets. If you create a new issue set, add it to this set.
      */
-    private Set<ConfigurationIssueSet> configurationIssueSets;
+    protected Set<ConfigurationIssueSet> allConfigurationIssueSets;
 
     /**
      * A set of all implemented issues. If you create a new issue, add it to this set.
      */
-    private Set<ConfigurationIssue> configurationIssues;
+    protected Set<ConfigurationIssue> allConfigurationIssues;
 
     @PostConstruct
-    public void instansiateConfigurationIssuesAndConfigurationIssueSets() {
-        configurationIssues = new ImmutableSet.Builder<ConfigurationIssue>()
+    private void instansiateConfigurationIssuesAndConfigurationIssueSets() {
+        allConfigurationIssues = new ImmutableSet.Builder<ConfigurationIssue>()
                 .add(new NotInProductionMode())
                 .add(new EccWithKeyEncipherment(certificateProfileSession))
                 .build();
-        configurationIssueSets = new ImmutableSet.Builder<ConfigurationIssueSet>()
+        allConfigurationIssueSets = new ImmutableSet.Builder<ConfigurationIssueSet>()
                 .add(new EjbcaCommonIssueSet())
                 .add(new CertificateTransparencyConfigurationIssueSet())
                 .build();
@@ -79,7 +79,7 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
 
     @Override
     public Stream<Ticket> getTickets(final TicketRequest request) {
-        return configurationIssues.stream()
+        return allConfigurationIssues.stream()
                 .filter(issue -> isChecking(issue))
                 .map(issue -> issue.getTickets())
                 .flatMap(tickets -> tickets.stream())
@@ -92,7 +92,7 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
 
     @Override
     public Set<ConfigurationIssueSet> getAllConfigurationIssueSets() {
-        return configurationIssueSets;
+        return allConfigurationIssueSets;
     }
 
     /**
@@ -101,7 +101,7 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
      * @param configurationIssueSet the issue set to check.
      * @return true if the issue set is enabled, false otherwise.
      */
-    private boolean isConfigurationIssueSetEnabled(final ConfigurationIssueSet configurationIssueSet) {
+    protected boolean isConfigurationIssueSetEnabled(final ConfigurationIssueSet configurationIssueSet) {
         final ConfigurationCheckerConfiguration configurationCheckerConfiguration = (ConfigurationCheckerConfiguration)
                 globalConfigurationSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID);
         return configurationCheckerConfiguration.getEnabledIssueSets().contains(configurationIssueSet.getDatabaseValue());
@@ -115,7 +115,7 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
      * @return true if the issue is being tracked, false otherwise
      */
     private boolean isChecking(final ConfigurationIssue configurationIssue) {
-        return configurationIssueSets.stream()
+        return allConfigurationIssueSets.stream()
                 .filter(configurationIssueSet -> isConfigurationIssueSetEnabled(configurationIssueSet))
                 .anyMatch(configurationIssueSet -> configurationIssueSet.getConfigurationIssues().contains(configurationIssue.getClass()));
     }

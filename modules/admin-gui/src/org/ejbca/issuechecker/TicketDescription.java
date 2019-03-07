@@ -26,15 +26,19 @@ import org.ejbca.ui.web.jsf.configuration.WebLanguages;
  * E.g. "EJBCA is not running in production mode, system tests may run on this instance and additional
  * tools for developers are available."
  *
- * <p>This class does not hold the description text directly, instead it contains a language key which
- * can be used to lookup the ticket description in the language file. This makes it possible to load
+ * <p>Normally, this class does not hold the description text directly, instead it contains a language key
+ * which can be used to lookup the ticket description in the language file. This makes it possible to load
  * ticket descriptions in the administrator's preferred language dynamically at runtime.
+ * 
+ * <p>However, it is possible to create a ticket description by specifying the ticket description directly.
+ * This can be useful during testing, or if an administrator chooses to create their own tickets. 
  *
  * @version $Id$
  */
 public class TicketDescription {
-    private final String languageKey;
-    private final String parameter;
+    private String languageKey;
+    private String parameter;
+    private String text;
 
     /**
      * Factory method creating a new ticket description from a language resource.
@@ -43,7 +47,9 @@ public class TicketDescription {
      * @return a new instance of {@link TicketDescription} class.
      */
     public static TicketDescription fromResource(final String languageKey) {
-        return fromResource(languageKey, null);
+        final TicketDescription ticketDescription = new TicketDescription();
+        ticketDescription.languageKey = languageKey;
+        return ticketDescription;
     }
 
     /**
@@ -55,12 +61,16 @@ public class TicketDescription {
      * @return a new instance of {@link TicketDescription} class.
      */
     public static TicketDescription fromResource(final String languageKey, final String parameter) {
-        return new TicketDescription(languageKey, parameter);
+        final TicketDescription ticketDescription = new TicketDescription();
+        ticketDescription.languageKey = languageKey;
+        ticketDescription.parameter = parameter;
+        return ticketDescription;
     }
 
-    private TicketDescription(final String languageKey, final String parameter) {
-        this.languageKey = languageKey;
-        this.parameter = parameter;
+    public static TicketDescription fromStringLiteral(final String text) {
+        final TicketDescription ticketDescription = new TicketDescription();
+        ticketDescription.text = text;
+        return ticketDescription;
     }
 
     /**
@@ -69,10 +79,21 @@ public class TicketDescription {
      * @return the ticket description as a string.
      */
     public String toString(final WebLanguages webLanguages) {
-        if (parameter == null) {
-            return webLanguages.getText(languageKey);
-        } else {
+        if (text != null) {
+            return text;
+        } else if (parameter != null) {
             return webLanguages.getText(languageKey, parameter);
+        } else {
+            return webLanguages.getText(languageKey);
+        }
+    }
+
+    @Override
+    public String toString() {
+        if (text != null) {
+            return text;
+        } else {
+            return String.format("(%s, %s)", languageKey, parameter);
         }
     }
 
@@ -89,11 +110,12 @@ public class TicketDescription {
         }
         final TicketDescription ticketDescription = (TicketDescription) o;
         return StringUtils.equals(this.languageKey, ticketDescription.languageKey) &&
-               StringUtils.equals(this.parameter, ticketDescription.parameter);
+               StringUtils.equals(this.parameter, ticketDescription.parameter) &&
+               StringUtils.equals(this.text, ticketDescription.text); 
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(languageKey, parameter);
+        return Objects.hash(languageKey, parameter, text);
     }
 }
