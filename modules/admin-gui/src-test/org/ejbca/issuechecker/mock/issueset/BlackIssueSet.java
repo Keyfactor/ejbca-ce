@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * A configuration issue set used as a mock in unit testing.
  * 
- * <p>Contains a single {@link REDIssue}.
+ * <p>Contains a single {@link BlackIssue}.
  * 
  * @version $Id$
  */
