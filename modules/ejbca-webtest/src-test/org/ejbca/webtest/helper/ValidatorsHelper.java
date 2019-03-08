@@ -151,6 +151,7 @@ public class ValidatorsHelper extends BaseHelper {
     public void deleteValidator(final String validatorName) {
         // Click 'Delete' button
         clickLink(Page.getDeleteButtonFromValidatorsTableRowContainingText(validatorName));
+        clickLink(Page.BUTTON_DELETE_CONFIRM);
         // Assert that the correct Validator is being deleted
         assertValidatorTitleExists(Page.TEXT_TITLE_DELETE_VALIDATOR, validatorName);
     }
