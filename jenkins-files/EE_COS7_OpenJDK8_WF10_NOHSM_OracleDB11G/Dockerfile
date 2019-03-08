@@ -42,7 +42,7 @@ ADD standalone2.xml /opt/standalone2.xml
 
 
 # add mariadb driver to deploy folder
-ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
+ADD ojdbc6.jar /opt/jboss/wildfly/standalone/deployments/ojdbc6.jar
 
 # Set the working directory to /app
 WORKDIR /app/ejbca
