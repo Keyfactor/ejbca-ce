@@ -38,7 +38,7 @@ RUN ls -la /tmp
 
 RUN mv /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip $INSTALL_DIR/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
-RUN ls -la $INSTALL_DIR
+#RUN ls -la $INSTALL_DIR
 
 # Install Oracle Express Edition
 # ------------------------------
@@ -46,7 +46,8 @@ RUN ls -la $INSTALL_DIR
 RUN yum -y install unzip libaio bc initscripts net-tools openssl compat-libstdc++-33 && \
     rm -rf /var/cache/yum && \
     cd $INSTALL_DIR && \
-    unzip $INSTALL_FILE_1 && \
+    ls -la $INSTALL_DIR && \
+    unzip oracle-xe-11.2.0-1.0.x86_64.rpm.zip && \
     rm $INSTALL_FILE_1 &&    \
     cat() { declare -A PROC=(["/proc/sys/kernel/shmmax"]=4294967295 ["/proc/sys/kernel/shmmni"]=4096 ["/proc/sys/kernel/shmall"]=2097152 ["/proc/sys/fs/file-max"]=6815744); [[ ${PROC[$1]} == "" ]] && /usr/bin/cat $* || echo ${PROC[$1]}; } && \
     free() { echo "Swap: 2048 0 2048"; } && \
