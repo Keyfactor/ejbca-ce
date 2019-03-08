@@ -46,7 +46,7 @@ public class ValidatorsHelper extends BaseHelper {
         static final By INPUT_CLONE_NEW_NAME = By.id("editvalidators:addFromTemplateValidatorNew");
         static final By INPUT_RENAME_NEW_NAME = By.id("editvalidators:renameValidatorNew");
         static final By INPUT_DESCRIPTION = By.id("kvf:description");
-        
+        static final By INPUT_BROWSE_BLACKLIST_FILE = By.id("kvf:blacklist_upload");
         // Buttons
         static final By BUTTON_ADD = By.xpath("//input[@value='Add']");
         static final By BUTTON_RENAME_CONFIRM = By.xpath("//input[@value='Confirm new name']");
@@ -57,7 +57,7 @@ public class ValidatorsHelper extends BaseHelper {
         static final By BUTTON_DELETE_CANCEL = By.xpath("//input[@value='Cancel']");
         static final By BUTTON_SAVE_EDIT = By.xpath("//input[@value='Save']");
         static final By BUTTON_CANCEL_EDIT = By.xpath("//input[@value='Cancel']");
-        
+
         // Check boxes
         static final By CHECKBOX_APPLY_FOR_ALL_PROFILES = By.id("kvf:allcertificateprofiles");
         
@@ -201,7 +201,17 @@ public class ValidatorsHelper extends BaseHelper {
     public void setValidatorType(final String validatorType) {
         selectOptionByName(Page.SELECT_VALIDATOR_TYPE, validatorType);
     }
-    
+
+    /**
+     * Select a blacklist validator filename.
+     *
+     * @param filename
+     */
+
+    public void setBlacklistFile(final String filename) {
+        fillInput(Page.INPUT_BROWSE_BLACKLIST_FILE, filename);
+    }
+
     /**
      * Sets the description for the currently validator being edited.
      * @param description free text

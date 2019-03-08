@@ -16,6 +16,7 @@
 	<property name="webtest.resources.dir" location="${webtest.dir}/resources"/>
 	<property name="webtest.conf.dir" location="${webtest.dir}/conf"/>
 	<property name="webtest.lib.webtest" value="${webtest.dir}/../../lib/ext/webtest"/>
+	<property name="reports.dir" value="${webtest.dir}/reports"/>
 	
 	<path id="compile.classpath">
 		<path refid="lib.commons-lang.classpath"/>
@@ -126,6 +127,9 @@
 	<target name="clean" description="Clean up this module">
 		<delete dir="${webtest.build.dir}" />
 		<delete dir="${webtest.build-test.dir}"/>
+		<delete dir="${reports.dir}/images"/>
+		<delete file="${reports.dir}/QaEjbcaTestReport.html" />
+
 	</target>
 
 </project>
