@@ -53,18 +53,8 @@ COPY $CONFIG_RSP $RUN_FILE $PWD_FILE $CHECK_DB_FILE $INSTALL_DIR/
 
 ENV ORACLE_SHA1 dd7881a55569d890241f11cd0eeb7d48
 
-# RUN cd $HOME
-# RUN wget --no-check-certificate "https://deathstar.primekey.com/index.php/s/Xg9ZbWMAdXxQ3Ad/download?path=%2FDatabases%2FOracle&files=oracle-xe-11.2.0-1.0.x86_64.rpm.zip"
-
-RUN cd $HOME \
-    && curl -k -o oracle-xe-11.2.0-1.0.x86_64.rpm.zip "http://deathstar.primekey.com/index.php/s/Xg9ZbWMAdXxQ3Ad/download?path=%2FDatabases%2FOracle&files=oracle-xe-11.2.0-1.0.x86_64.rpm.zip" \ 
-   && ls -la
-   
-   # \
-   # && sha1sum oracle-xe-11.2.0-1.0.x86_64.rpm.zip | grep $ORACLE_SHA1 \
-   # && mv $HOME/oracle-xe-11.2.0-1.0.x86_64.rpm.zip $INSTALL_DIR \
-   # && rm oracle-xe-11.2.0-1.0.x86_64.rpm.zip
-    
+RUN curl -k -o $INSTALL_DIR/oracle-xe-11.2.0-1.0.x86_64.rpm.zip "http://deathstar.primekey.com/index.php/s/Xg9ZbWMAdXxQ3Ad/download?path=%2FDatabases%2FOracle&files=oracle-xe-11.2.0-1.0.x86_64.rpm.zip" \ 
+     
 # Install Oracle Express Edition
 # ------------------------------
 
