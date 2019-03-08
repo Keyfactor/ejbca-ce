@@ -889,6 +889,5 @@ public class X509CAInfo extends CAInfo {
                     useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry,
                     cmpRaAuthSecret, keepExpiredCertsOnCRL, usePartitionedCrl, crlPartitions, retiredCrlPartitions);
         }
-
     }
 }
