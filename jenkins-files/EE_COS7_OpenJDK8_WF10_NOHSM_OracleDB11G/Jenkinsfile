@@ -20,7 +20,7 @@ pipeline {
             steps {
                 dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_OracleDB11G/oracle_image') {
                     sh "docker build -t oracledb ."
-                    sh "run --name oracledb --net=my_isolated_bridge_network --shm-size=2g oracledb"
+                    sh "docker run --name oracledb --net=my_isolated_bridge_network --shm-size=2g oracledb"
                 }
             }
         }
