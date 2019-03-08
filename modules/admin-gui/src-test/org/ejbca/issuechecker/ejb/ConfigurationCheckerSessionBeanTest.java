@@ -13,6 +13,7 @@
 
 package org.ejbca.issuechecker.ejb;
 
+import static org.easymock.EasyMock.createNiceMock;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -20,10 +21,8 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.issuechecker.Ticket;
 import org.ejbca.issuechecker.db.TicketRequest;
-import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
 import org.ejbca.issuechecker.mock.ejb.ConfigurationCheckerSessionBeanPartialMock;
 import org.ejbca.issuechecker.mock.issues.BlackIssue;
 import org.ejbca.issuechecker.mock.issues.GreenIssue;
@@ -43,7 +42,8 @@ import com.google.common.collect.ImmutableSet;
 public class ConfigurationCheckerSessionBeanTest {
 
     private AuthenticationToken getAuthenticationToken() {
-        return new TestAlwaysAllowLocalAuthenticationToken(this.getClass().getCanonicalName());
+        final AuthenticationToken authenticationToken = createNiceMock(AuthenticationToken.class);
+        return authenticationToken;
     }
 
     @Test
