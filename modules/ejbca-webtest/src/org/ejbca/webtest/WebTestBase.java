@@ -29,7 +29,7 @@ import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
-import org.cesecore.keys.validation.KeyValidatorProxySessionRemote;
+import org.cesecore.keys.validation.KeyValidatorSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -45,7 +45,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.webtest.utils.ConfigurationConstants;
 import org.ejbca.webtest.utils.ConfigurationHolder;
 import org.ejbca.webtest.utils.ExtentReportCreator;
-import org.junit.Rule;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
@@ -295,9 +294,9 @@ public abstract class WebTestBase extends ExtentReportCreator {
      * @param validatorName CA name.
      */
     protected static void removeValidatorByName(final String validatorName) {
-        final KeyValidatorProxySessionRemote validatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorProxySessionRemote.class);
+        final KeyValidatorSessionRemote validatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
         try {
-                validatorSession.removeKeyValidator(ADMIN_TOKEN, validatorName);
+            validatorSession.removeKeyValidator(ADMIN_TOKEN, validatorName);
         } catch (AuthorizationDeniedException | CouldNotRemoveKeyValidatorException e) {
             throw new IllegalStateException(e); // Should never happen with always allow token
         }

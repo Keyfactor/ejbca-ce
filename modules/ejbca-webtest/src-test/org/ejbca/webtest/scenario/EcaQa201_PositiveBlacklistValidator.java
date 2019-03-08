@@ -65,16 +65,14 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
         // Init helpers
         validatorsHelper = new ValidatorsHelper(webDriver);
         caHelper = new CaHelper(webDriver);
+        approvalProfilesHelperDefault = new ApprovalProfilesHelper(webDriver);
     }
 
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
         removeCaAndCryptoToken(EcaQa201_PositiveBlacklistValidator.TestData.CA_NAME);
-        validatorsHelper.deleteValidator(EcaQa201_PositiveBlacklistValidator.TestData.VALIDATOR_NAME
-        + " (Domain Blacklist Validator) ");
-        validatorsHelper.deleteValidator(TestData.VALIDATOR_NAME);
-
+        removeValidatorByName(TestData.VALIDATOR_NAME);
         // super
         afterClass();
     }
@@ -83,15 +81,14 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
     @Test
     public void stepA_AddAValidator() {
         validatorsHelper.openPage(getAdminWebUrl());
-        validatorsHelper.addValidator(EcaQa201_PositiveBlacklistValidator.TestData.VALIDATOR_NAME);
-        validatorsHelper.saveValidator();
+        validatorsHelper.addValidator(TestData.VALIDATOR_NAME);
         validatorsHelper.assertValidatorNameExists(TestData.VALIDATOR_NAME);
     }
 
     @Test
     public void stepB_EditAValidator() {
         validatorsHelper.openPage(getAdminWebUrl());
-        validatorsHelper.openEditValidatorPage(EcaQa201_PositiveBlacklistValidator.TestData.VALIDATOR_NAME);
+        validatorsHelper.openEditValidatorPage(TestData.VALIDATOR_NAME);
         validatorsHelper.setValidatorType("Domain Blacklist Validator");
         validatorsHelper.setBlacklistFile(TestData.VALIDATOR_BLACKLIST_FILENAME);
         validatorsHelper.saveValidator();
@@ -112,12 +109,11 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
     @Test
     public void stepD_AddApprovalProfile() throws InterruptedException {
         approvalProfilesHelperDefault.openPage(getAdminWebUrl());
-        Thread.sleep(10000);
         approvalProfilesHelperDefault.addApprovalProfile(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelperDefault.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelperDefault.setApprovalProfileType(TestData.APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL);
         approvalProfilesHelperDefault.setApprovalStepPartitionApprovePartitionRole(0, 0,
-                EcaQa201_PositiveBlacklistValidator.TestData.ROLE_NAME);
+                TestData.ROLE_NAME);
         approvalProfilesHelperDefault.saveApprovalProfile();
 
     }
