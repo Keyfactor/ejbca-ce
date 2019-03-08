@@ -435,6 +435,7 @@ public class CertificateProfileHelper extends BaseHelper {
         assertCertificateProfileTitleExists(Page.TEXT_TITLE_EDIT_CERTIFICATE_PROFILE, "Certificate Profile: ", certificateProfileName);
     }
 
+
     /**
      * Fills the validity property ('Validity or end date of the certificate') of the 'Certificate Profile'.
      *

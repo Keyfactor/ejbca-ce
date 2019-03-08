@@ -32,36 +32,45 @@ public class ExtentReportCreator {
     private static String currTest;
     private static WebDriver browser;
 
+    //Setter method for WebDriver
     public static void setBrowser(WebDriver browser) {
         ExtentReportCreator.browser = browser;
     }
 
-
+    /**
+     * Initially builds a new test report at the beginning of the testrun.
+     * Afterwards, it appends new tests to the report.
+     *
+     * @throws IOException
+     */
     @BeforeClass
     public static void setUp() throws IOException {
         extent = new ExtentReports();
 
-
         htmlReporter = new ExtentHtmlReporter(System.getProperty("user.dir") +
                 "/reports/QaEjbcaTestReport.html");
         extent.attachReporter(htmlReporter);
+        htmlReporter.setAppendExisting(true);
 
         htmlReporter.config().setDocumentTitle("EJBCA QA Test Report");
         htmlReporter.config().setReportName("EJBCA Test Results!");
         htmlReporter.config().setTestViewChartLocation(ChartLocation.BOTTOM);
         htmlReporter.config().setTheme(Theme.DARK);
-
     }
 
+    //Flushes all events to test report.
     @AfterClass
     public static void tearDown() throws IOException {
         // writing everything to document
         extent.flush();
     }
 
+    //Using JUnit TestWatcher as a rule
+
     @Rule
     public TestRule watchman = new TestWatcher() {
 
+        //Override the Junit failed method to report results and take screenshot
         @Override
         protected void failed(Throwable e, Description description) {
             // step log
@@ -77,7 +86,7 @@ public class ExtentReportCreator {
         }
 
 
-        //When passed only write to the log.
+        //When passed only write to the log with screenshot.
         @Override
         protected void succeeded(Description description) {
             // step log
@@ -93,6 +102,7 @@ public class ExtentReportCreator {
             extent.flush();
         }
 
+        //Adds a new test node for each Junit test.
         public void createTest(Description description) {
             String test = description.getTestClass().getSimpleName();
             if ( (currTest == null) || !(currTest.equalsIgnoreCase(test)) ) {
@@ -101,6 +111,7 @@ public class ExtentReportCreator {
             }
         }
 
+        //Takes a screenshot
         private String snap(Description description) {
             TakesScreenshot takesScreenshot = (TakesScreenshot) browser;
 
@@ -114,6 +125,7 @@ public class ExtentReportCreator {
             return (destFile.getAbsolutePath());
         }
 
+        //Creates a folder for the screenshot.
         private File getDestinationFile(Description description) {
             String userDirectory = "reports/images/";
             String date = getDateTime();
