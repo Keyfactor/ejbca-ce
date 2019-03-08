@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -104,7 +105,7 @@ public class ProfilesExportServlet extends HttpServlet {
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws IOException, ServletException {
         log.trace(">doGet()");
         final String type = request.getParameter("profileType");
-
+        final String profileId = request.getParameter("profileId");
         String zipfilename = null;
         int exportedprofiles = 0;
         int totalprofiles = 0;
@@ -141,8 +142,12 @@ public class ProfilesExportServlet extends HttpServlet {
             }
 
             Collection<Integer> certprofids = new LinkedHashSet<>();
-            for(Integer certificateProfileType : certificateProfileTypes) {
-                certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType));
+            if(profileId == null) {
+                for (Integer certificateProfileType : certificateProfileTypes) {
+                    certprofids.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, certificateProfileType));
+                }
+            } else {
+                certprofids.add(Integer.valueOf(profileId));
             }
 
             totalprofiles = certprofids.size();
@@ -183,7 +188,12 @@ public class ProfilesExportServlet extends HttpServlet {
 
             zipfilename = "entityprofiles.zip";
 
-            Collection<Integer> endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
+            Collection<Integer> endentityprofids;
+            if(profileId == null) {
+                endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY);
+            } else {
+                endentityprofids = Arrays.asList(Integer.valueOf(profileId));
+            }
             totalprofiles = endentityprofids.size();
             log.info("Exporting non-fixed end entity profiles");
             for (int profileid : endentityprofids) {
