@@ -56,11 +56,12 @@ COPY $CONFIG_RSP $RUN_FILE $PWD_FILE $CHECK_DB_FILE $INSTALL_DIR/
 RUN cd $HOME \
     && curl -k -o oracle-xe-11.2.0-1.0.x86_64.rpm.zip "http://deathstar.primekey.com/index.php/s/Xg9ZbWMAdXxQ3Ad/download?path=%2FDatabases%2FOracle&files=oracle-xe-11.2.0-1.0.x86_64.rpm.zip" 
 
-RUN ls -la $HOME
 
 RUN cd $INSTALL_DIR
  
 RUN mv $HOME/oracle-xe-11.2.0-1.0.x86_64.rpm.zip $INSTALL_DIR/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+
+RUN ls -la $INSTALL_DIR
 
 # Install Oracle Express Edition
 # ------------------------------
