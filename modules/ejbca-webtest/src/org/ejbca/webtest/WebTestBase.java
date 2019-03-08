@@ -28,6 +28,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.validation.CouldNotRemoveKeyValidatorException;
+import org.cesecore.keys.validation.KeyValidatorProxySessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
@@ -283,6 +285,20 @@ public abstract class WebTestBase extends ExtentReportCreator {
             }
             cryptoTokenManagementSessionRemote.deleteCryptoToken(ADMIN_TOKEN, cryptoTokenId);
         } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e); // Should never happen with always allow token
+        }
+    }
+
+    /**
+     * Removes the Validator using EJB instance.
+     *
+     * @param validatorName CA name.
+     */
+    protected static void removeValidatorByName(final String validatorName) {
+        final KeyValidatorProxySessionRemote validatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorProxySessionRemote.class);
+        try {
+                validatorSession.removeKeyValidator(ADMIN_TOKEN, validatorName);
+        } catch (AuthorizationDeniedException | CouldNotRemoveKeyValidatorException e) {
             throw new IllegalStateException(e); // Should never happen with always allow token
         }
     }
