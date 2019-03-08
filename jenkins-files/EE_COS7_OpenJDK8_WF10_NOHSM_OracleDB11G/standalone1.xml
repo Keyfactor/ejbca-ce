@@ -149,7 +149,7 @@
                     </security>
                 </datasource>
                 <datasource jndi-name="java:/EjbcaDS" pool-name="ejbcads" use-ccm="true">
-                    <connection-url>jdbc:oracle:thin:@127.0.0.1:1521:ejbca</connection-url>
+                    <connection-url>jdbc:oracle:thin:@oracledb:1521:ejbca</connection-url>
                     <driver-class>oracle.jdbc.driver.OracleDriver</driver-class>
                     <driver>ojdbc6.jar</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
