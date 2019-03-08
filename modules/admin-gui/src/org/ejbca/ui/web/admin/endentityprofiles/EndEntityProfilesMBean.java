@@ -248,6 +248,11 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
         redirect(getAdminWebUrl()+"/profilesexport", "profileType", "eep", "profileId", getSelectedEndEntityProfileId().toString());
     }
     
+    public void actionExportProfiles() {
+        clearMessages();
+        redirect(getAdminWebUrl()+"/profilesexport", "profileType", "eep");
+    }
+    
     private String getAdminWebUrl() {
         return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
     }

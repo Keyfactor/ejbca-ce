@@ -238,6 +238,10 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         selectCurrentRowData();
         redirect(getAdminWebUrl()+"profilesexport", "profileType", "cp", "profileId", getSelectedCertProfileId().toString());
     }
+    
+    public void actionExportProfiles() {
+        redirect(getAdminWebUrl()+"profilesexport", "profileType", "cp");
+    }
    
     private String getAdminWebUrl() {
         return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();

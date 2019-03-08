@@ -123,9 +123,7 @@
 				<h:commandButton action="#{certProfilesBean.actionImportProfiles}" value="#{web.text.IMPORT}" rendered="#{certProfilesBean.authorizedToEdit}"/>
 			</h:panelGrid>
 			<h:panelGrid columns="1">
-				<h:outputLink value="#{adminMenuBean.adminWebUrl}profilesexport?profileType=cp">
-					<h:outputText value="#{web.text.EXPORTROFILES}..."/>
-				</h:outputLink>
+				<h:commandButton value="#{web.text.EXPORTROFILES}.." action="#{certProfilesBean.actionExportProfiles}" />
 			</h:panelGrid>
 		</h:form>
 		</h:panelGroup>
