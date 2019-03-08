@@ -78,6 +78,13 @@ public class CaHelper extends BaseHelper {
          */
         static final By SELECT_APPROVALPROFILES = By.xpath("//select[contains(@name, ':approvalProfile')]");
 
+        /**
+         * Select validator from Other Data list.
+         *
+         */
+
+        static final By SELECT_OTHER_DATA = By.name("editcapage:j_idt450");
+
         static final By INPUT_CANAME = By.id("managecas:textfieldcaname");
         /**
          * CA Certificate Data / Validity(*y *mo *d *h *m *s) or end date of the certificate
@@ -220,6 +227,16 @@ public class CaHelper extends BaseHelper {
      */
     public void setCertificateProfile(final String profileName) {
         selectOptionByName(Page.SELECT_CERT_PROFILE, profileName);
+    }
+
+    /**
+     * Select the validator from other data.
+     *
+     * @param validatorName
+     */
+
+    public void setOtherData(final String validatorName) {
+        selectOptionByName(Page.SELECT_OTHER_DATA, validatorName);
     }
 
     /**
