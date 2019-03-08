@@ -38,6 +38,8 @@ RUN ls -la /tmp
 
 RUN mv /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip $INSTALL_DIR/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
+RUN chmod 777 $INSTALL_DIR/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+
 #RUN ls -la $INSTALL_DIR
 
 # Install Oracle Express Edition
