@@ -20,7 +20,23 @@ pipeline {
             steps {
                 dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_OracleDB11G/oracle_image') {
                     sh "docker build -t oracledb ."
-                    sh "docker run --name oracledb --net=my_isolated_bridge_network --shm-size=2g oracledb"
+                    sh "docker run -d --name oracledb --net=my_isolated_bridge_network --shm-size=2g oracledb"
+                    
+                    // waits until oracleDB comes up
+                    timeout(10) {
+                        waitUntil {
+                            script {
+                                try {
+                                    // the command needs to be its own variable, otherwise sh call doesn't handle the | pipe correctly
+                                    def command = 'docker logs oracledb 2>&1 | grep  -c -m 1 "DATABASE IS READY TO USE!"'
+                                    def r = sh script: command, returnStatus: true
+                                    return (r == 0)
+                                } catch (exc) {
+                                    echo exc;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
