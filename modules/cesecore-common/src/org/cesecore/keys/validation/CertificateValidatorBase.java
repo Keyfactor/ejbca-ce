@@ -171,19 +171,6 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
     }
 
     /**
-     * Formats a date.
-     * @param date the date
-     * @return the formatted date string.
-     */
-    private String formatDate(Date date) {
-        String result = StringUtils.EMPTY;
-        if (null != date) {
-            result = new SimpleDateFormat(DATE_FORMAT[0]).format(date);
-        }
-        return result;
-    }
-
-    /**
      * Parses a date string with the date format list.
      * @param string the formatted date string.
      * @return the date or null, if the date could not be parsed.
