@@ -17,14 +17,13 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.cesecore.configuration.GlobalConfigurationSession;
-import org.ejbca.core.ejb.config.ConfigurationSessionBean;
 import org.ejbca.issuechecker.ConfigurationIssue;
 import org.ejbca.issuechecker.ConfigurationIssueSet;
 import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionBean;
 import org.ejbca.issuechecker.ejb.ConfigurationCheckerSessionLocal;
 
 /**
- * A extended version of {@link ConfigurationSessionBean} suitable for unit testing.
+ * A extended version of {@link ConfigurationCheckerSessionBean} suitable for unit testing.
  * 
  * <p>This class has no dependencies to {@link GlobalConfigurationSession} and can be tested in isolation 
  * without an EJB container.

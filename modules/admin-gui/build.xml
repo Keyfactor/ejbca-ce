@@ -51,6 +51,7 @@
         <path location="${admin-gui.build-test.dir}" />
         <path location="${admin-gui.build.dir}/WEB-INF/classes" />
         <path refid="lib.junit.classpath"/>
+    	<path refid="lib.test.classpath"/>
     </path>
 	
     <target name="clean" description="Clean up this module">
