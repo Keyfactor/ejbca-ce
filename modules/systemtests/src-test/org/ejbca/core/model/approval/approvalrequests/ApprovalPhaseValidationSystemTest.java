@@ -121,8 +121,8 @@ public class ApprovalPhaseValidationSystemTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         log.trace(">tearDown");
-        cleanup();
         super.tearDown();
+        cleanup();
         log.trace("<tearDown");
     }
 
