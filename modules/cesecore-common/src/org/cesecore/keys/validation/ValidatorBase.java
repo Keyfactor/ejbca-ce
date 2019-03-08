@@ -14,8 +14,10 @@
 package org.cesecore.keys.validation;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -35,6 +37,9 @@ import org.cesecore.profiles.ProfileBase;
  * @version $Id$
  */
 public abstract class ValidatorBase extends ProfileBase implements Serializable, Cloneable, Validator {
+
+    /** List of accepted date formats for notBefore and notAfter filter. */
+    static final String[] DATE_FORMAT = new String[] { "yyyy-MM-dd HH:mm:ssZZ", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
 
     private static final long serialVersionUID = -335459158399850925L;
 
@@ -305,6 +310,19 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
     @Override
     public UpgradeableDataHashMap getUpgradableHashmap() {
         return this;
+    }
+
+    /**
+     * Formats a date.
+     * @param date the date
+     * @return the formatted date string.
+     */
+    protected String formatDate(Date date) {
+        String result = StringUtils.EMPTY;
+        if (null != date) {
+            result = new SimpleDateFormat(DATE_FORMAT[0]).format(date);
+        }
+        return result;
     }
     
 }

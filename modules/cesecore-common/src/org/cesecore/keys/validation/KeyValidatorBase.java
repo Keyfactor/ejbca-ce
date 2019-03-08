@@ -154,19 +154,6 @@ public abstract class KeyValidatorBase extends ValidatorBase implements KeyValid
     public DynamicUiModel getDynamicUiModel() {
         return uiModel;
     }
-    
-    /**
-     * Formats a date.
-     * @param date the date
-     * @return the formatted date string.
-     */
-    private String formatDate(Date date) {
-        String result = StringUtils.EMPTY;
-        if (null != date) {
-            result = new SimpleDateFormat(DATE_FORMAT[0]).format(date);
-        }
-        return result;
-    }
 
     /**
      * Parses a date string with the date format list.
