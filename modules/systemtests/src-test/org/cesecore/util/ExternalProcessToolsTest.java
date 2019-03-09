@@ -84,10 +84,11 @@ public class ExternalProcessToolsTest {
         log.trace(">test02WriteTemporaryFileToDisk()");
 
         // Write temporary file.
-        final String filePrefix = getClass().getSimpleName();
-        final String fileSuffix = ".tmp";
+        final String filePrefix = ExternalProcessTools.class.getSimpleName();
+        final String fileSuffix = ".crt";
         final String content = "Read-PEM-Certificate";
-        final File file = ExternalProcessTools.writeTemporaryFileToDisk(content.getBytes(), filePrefix, fileSuffix);
+        final File file = ExternalProcessTools.writeTemporaryFileToDisk(filePrefix + '-' + System.currentTimeMillis(),
+                fileSuffix, content.getBytes());
 
         // Filename must match.
         assertTrue("Filename ("+file.getName()+") must match start with filePrefix '" + filePrefix + "'and end with fileSuffix '" + fileSuffix + "'",

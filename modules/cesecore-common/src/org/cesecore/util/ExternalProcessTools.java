@@ -15,7 +15,6 @@ package org.cesecore.util;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -100,14 +99,18 @@ public final class ExternalProcessTools {
     }
 
     /**
-     * Writes the byte-array to a temporary file or pipes the PEM certificate into the command, and launches the given external command, 
-     * see {@link ExternalProcessTools#launchExternalCommand(String, byte[], boolean, boolean, boolean, boolean, List, String)}.
+     * Writes the certificate to a temporary file and launches the given external command with the file as first argument 
+     * if {@link #PLACE_HOLDER_CERTIFICATE} is specified as parameter, or pipes the PEM certificate into the command if 
+     * {@link #PLACE_HOLDER_CERTIFICATE} is not used as parameter.  
+     * 
+     * @see {@link ExternalProcessTools#launchExternalCommand(String, byte[], boolean, boolean, boolean, boolean, List, String)}.
      * 
      * @param cmd The command to run.
      * @param bytes The buffer with content to write to the file.
      * @param failOnCode Determines if the method should fail on a non-zero exit code.
      * @param failOnOutput Determines if the method should fail on output to standard error.
      * @param args Added to the command after the temporary files name
+     * @param filePrefix the file prefix to use
      * @throws ExternalProcessException if the temporary file could not be written or the external process fails.
      */
     public static final List<String> launchExternalCommand(final String cmd, final byte[] bytes, final boolean failOnCode, final boolean failOnOutput,
@@ -116,17 +119,22 @@ public final class ExternalProcessTools {
     }
 
     /**
-     * Writes the byte-array to a temporary file and launches the given external command with the file as argument at 
-     * index positional parameter index 1 or the pipes the PEM certificate into the command. The function will, depending on 
-     * its parameters, fail if output to standard error from the command was detected or the command returns with an non-zero exit code.
+     * Writes the certificate to a temporary file and launches the given external command with the file as first argument 
+     * if {@link #PLACE_HOLDER_CERTIFICATE} is specified as parameter, or pipes the PEM certificate into the command if 
+     * {@link #PLACE_HOLDER_CERTIFICATE} is not used as parameter. 
      * 
-     * @param cmd The command to run. If the parameter place holder {@link #PLACE_HOLDER_CERTIFICATE} is used, the PEM certificate is piped into the STDIN of the command (i.e. 'openssl x509 -text -noout %cert%').
+     * <p>The method will, depending on its parameters, fail if output to standard error was detected or the if the command 
+     * returns with a non-zero exit code.
+     * 
+     * @param cmd The command to run. If the parameter placeholder {@link #PLACE_HOLDER_CERTIFICATE} is used, the PEM certificate 
+     * is piped into the STDIN of the command (i.e. 'openssl x509 -text -noout %cert%').
      * @param bytes The buffer with content to write to the file.
      * @param failOnCode Determines if the method should fail on a non-zero exit code.
      * @param failOnOutput Determines if the method should fail on output to standard error.
      * @param logStdOut if the scripts STDOUT should be logged as info.
      * @param logErrOut if the scripts ERROUT should be logged as info.
-     * @param arguments Added to the command after the temporary files name
+     * @param arguments the command arguments (optional)
+     * @param filePrefix Added to the command before the temporary filename.
      * @throws ExternalProcessException if the temporary file could not be written or the external process fails.
      */
     public static final List<String> launchExternalCommand(final String cmd, final byte[] bytes, final boolean failOnCode, final boolean failOnOutput,
@@ -137,7 +145,9 @@ public final class ExternalProcessTools {
         final boolean writeFileToDisk = !arguments.contains(PLACE_HOLDER_CERTIFICATE);
         File file = null;
         if (writeFileToDisk) {
-            file = writeTemporaryFileToDisk(bytes, filePrefix, ".tmp");
+            final String filename = ExternalProcessTools.class.getSimpleName() + '-' + System.currentTimeMillis();
+            final String fileExtension = ".crt";
+            file = writeTemporaryFileToDisk(filename, fileExtension, bytes);
         }
         // Execute external script or command with PEM in STDIN or full path of temporary file as first argument.
         String filename = null;
@@ -248,42 +258,30 @@ public final class ExternalProcessTools {
     }
 
     /**
-     * Writes the byte array into a temporary file with the prefix + "-" + System.currentTimeMillies + suffix into the user directory and returns it, or null.
+     * Writes the byte array given as argument, to a temporary file on disk.
      * 
-     * @param bytes the bytes to write.
-     * @param filePrefix the file prefix.
-     * @param fileSuffix the file suffix.
-     * @return the file or null.
-     * @throws ExternalProcessException any exception.
+     * @param filename the name of the file to be created (without the file extension).
+     * @param fileExtension the file extension (including the leading dot) of the file to be created, or null 
+     * to use the default file extension (.tmp).
+     * @param bytes a byte array containing the bytes to be written to disk.
+     * @return a {@link File} object, never null.
+     * @throws ExternalProcessException if an error occurred when the file was written to disk.
      */
-    public static final File writeTemporaryFileToDisk(final byte[] bytes, final String filePrefix, final String fileSuffix)
+    public static final File writeTemporaryFileToDisk(final String filename, final String fileExtension, final byte[] bytes)
             throws ExternalProcessException {
-        File file = null;
         try {
-            file = File.createTempFile(filePrefix + "-" + System.currentTimeMillis(), fileSuffix);
-        } catch (IOException e) {
-            final String msg = intres.getLocalizedMessage("process.errortempfile");
-            log.error(msg, e);
-        }
-        if (file != null) {
-            try (FileOutputStream fos = new FileOutputStream(file)) {
+            final File file = File.createTempFile(filename, fileExtension);
+            try (final FileOutputStream fos = new FileOutputStream(file)) {
                 fos.write(bytes);
-            } catch (FileNotFoundException e) {
-                final String msg = intres.getLocalizedMessage("process.errortempfile");
-                log.error(msg, e);
-                throw new ExternalProcessException(msg);
-            } catch (IOException e) {
-                try {
-                    file.delete();
-                } catch (Exception e1) {
-                    // NOOP
-                }
-                final String msg = intres.getLocalizedMessage("process.errortempfile");
-                log.error(msg, e);
-                throw new ExternalProcessException(msg);
             }
+            if (log.isDebugEnabled()) {
+                log.debug("Wrote file " + filename + fileExtension + " (" + bytes.length + " bytes) to disk.");
+            }
+            return file;
+        } catch (final IOException e) {
+            log.error(intres.getLocalizedMessage("process.errortempfile"));
+            throw new ExternalProcessException(e);
         }
-        return file;
     }
     
     /**
