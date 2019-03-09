@@ -50,9 +50,11 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     }
 
     @AfterClass
-    public static void exit() throws AuthorizationDeniedException {
+    public static void exit() throws AuthorizationDeniedException, IOException {
         // Remove generated artifacts
         removeCaAndCryptoToken(EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
+        new RemoveDir("test-statedump").deleteDirectoryStream();
+        new RemoveDir("dist/statedump").deleteDirectoryStream();
         // super
         afterClass();
     }
@@ -91,7 +93,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
 
     @Test(timeout=20000)
-    public void stepD_exportCAssertStatedump() {
+    public void stepD_exportCAssertStatedumpCmdLine() {
         //Export the CA
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh export -l test-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
 
@@ -111,7 +113,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
 
     @Test(timeout=20000)
-    public void stepF_importCA() {
+    public void stepF_importCACmdLine() {
         //Reimport the CA
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh import -l test-statedump");
     }
@@ -131,15 +133,6 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         caHelper.assertDefaultKeyValue("defaultKey");
         caHelper.assertTestKeyValue("testKey");
     }
-
-    @Test(timeout=10000)
-    public void stepI_cleanDumps() throws IOException {
-        //Remove statedump module and test statedump
-        new RemoveDir("test-statedump").deleteDirectoryStream();
-        new RemoveDir("dist/statedump").deleteDirectoryStream();
-    }
-
-
 
 
 }
