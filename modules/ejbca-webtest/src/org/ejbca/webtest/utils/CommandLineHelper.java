@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 
 public class CommandLineHelper {
 
-
     /**
      * Run the designated command line method.
      *
