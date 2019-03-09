@@ -78,7 +78,9 @@ public class ExtentReportCreator {
             ExtentTest failed = testCase.createNode(description.getDisplayName());
             failed.log(Status.FAIL, "Failure trace Selenium:  " + e.toString());
             try {
-                failed.addScreenCaptureFromPath(snap(description));
+                if (!description.getDisplayName().contains("CmdLine")) {
+                    failed.addScreenCaptureFromPath(snap(description));
+                }
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -94,7 +96,9 @@ public class ExtentReportCreator {
             ExtentTest passed = testCase.createNode(description.getDisplayName());
             passed.log(Status.PASS, "-");
             try {
-                passed.addScreenCaptureFromPath(snap(description));
+                if (!description.getDisplayName().contains("CmdLine")) {
+                    passed.addScreenCaptureFromPath(snap(description));
+                }
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
