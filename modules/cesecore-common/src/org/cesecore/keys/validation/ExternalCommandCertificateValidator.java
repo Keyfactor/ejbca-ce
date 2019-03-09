@@ -184,8 +184,8 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsWhitelist externalScriptsWhitelist)
             throws ValidatorNotApplicableException, ValidationException, CertificateException {
         final List<String> messages = new ArrayList<String>();
-        log.debug("Validating certificate with external command " + getExternalCommand());
         if (log.isDebugEnabled()) {
+            log.debug("Validating certificate with external command " + getExternalCommand());
             log.debug("Validating certificate with external command (cert):" + certificate);
         }
         // Add CA certificate chain, that may be processed.
