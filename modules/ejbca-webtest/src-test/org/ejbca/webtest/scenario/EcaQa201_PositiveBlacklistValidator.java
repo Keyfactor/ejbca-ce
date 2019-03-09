@@ -44,7 +44,6 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
         private static final String EJBCA_HOME = System.getenv("EJBCA_HOME");
         private static final String VALIDATOR_NAME = "EcaQa201_Blacklist";
         private static final String VALIDATOR_BLACKLIST_FILENAME = EJBCA_HOME + "/modules/ejbca-webtest/resources/Blacklist.txt";
-
         private static final String CA_NAME = "EcaQa201_P_CA";
         private static final String CA_VALIDITY = "1y";
         private static final String APPROVAL_PROFILE_NAME = "EcaQa201_P_ApprovalProfile";
@@ -68,6 +67,7 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
         currentDateString = new SimpleDateFormat("yyyy-MM-dd").format(currentDate);
         oneMonthsFromNowString = new SimpleDateFormat("yyyy-MM-dd").format(oneMonthsFromNow.getTime());
         webDriver = getWebDriver();
+
         // Init helpers
         validatorsHelper = new ValidatorsHelper(webDriver);
         caHelper = new CaHelper(webDriver);
@@ -187,7 +187,7 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
         }
 
         @Test
-        public void testG_AddEndEntityProfile() {
+        public void stepG_AddEndEntityProfile() {
             eeProfileHelper.openPage(this.getAdminWebUrl());
             eeProfileHelper.addEndEntityProfile(EcaQa201_PositiveBlacklistValidator.TestData.ENTITY_NAME);
             eeProfileHelper.openEditEndEntityProfilePage(EcaQa201_PositiveBlacklistValidator.TestData.ENTITY_NAME);
@@ -216,10 +216,11 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
         raWebHelper.openPage(this.getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
         raWebHelper.selectCertificateTypeByEndEntityName(EcaQa201_PositiveBlacklistValidator.TestData.ENTITY_NAME);
+        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
         raWebHelper.fillClearCsrText(StringUtils.join(EcaQa201_PositiveBlacklistValidator.TestData.CERTIFICATE_REQUEST_PEM, "\n"));
         raWebHelper.clickUploadCsrButton();
-        raWebHelper.assertCsrUploadError();
+        //raWebHelper.assertCsrUploadError();
     }
 
 

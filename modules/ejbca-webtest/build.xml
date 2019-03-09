@@ -132,4 +132,9 @@
 
 	</target>
 
+	<target name="cleanReports" description="Clean up this module">
+		<delete dir="${reports.dir}/images"/>
+		<delete file="${reports.dir}/QaEjbcaTestReport.html" />
+
+	</target>
 </project>

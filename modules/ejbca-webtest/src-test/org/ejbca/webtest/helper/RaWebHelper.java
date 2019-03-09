@@ -41,6 +41,7 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_MAKE_NEW_REQUEST = By.id("makeRequestButton");
         static final By SELECT_CERTIFICATE_TYPE = By.id("requestTemplateForm:selectEEPOneMenu");
         static final By SELECT_CERTIFICATE_SUBTYPE = By.id("requestTemplateForm:selectCPOneMenu");
+        static final By SELECT_CA_TYPE = By.id("requestTemplateForm:selectCAOneMenu");
         static final By SELECT_KEY_ALGORITHM = By.id("requestInfoForm:selectAlgorithmOneMenu");
         static final By RADIO_BUTTON_KEY_PAIR_ON_SERVER = By.id("requestTemplateForm:selectKeyPairGeneration:0");
         static final By RADIO_BUTTON_KEY_PAIR_PROVIDED = By.id("requestTemplateForm:selectKeyPairGeneration:1");
@@ -104,6 +105,10 @@ public class RaWebHelper extends BaseHelper {
 
     public void selectCertificateTypeByEndEntityName(final String endEntityProfileName) {
         selectOptionByName(Page.SELECT_CERTIFICATE_TYPE, endEntityProfileName);
+    }
+
+    public void selectCertificationAuthorityByName(final String ca) {
+        selectOptionByName(Page.SELECT_CA_TYPE, ca);
     }
 
     public void selectKeyPairGenerationOnServer() {
