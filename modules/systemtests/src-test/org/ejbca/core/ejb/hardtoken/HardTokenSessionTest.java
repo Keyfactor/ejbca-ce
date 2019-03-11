@@ -152,7 +152,7 @@ public class HardTokenSessionTest extends CaTestCase {
             certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(cert), "DUMMYUSER",
                     CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    EndEntityConstants.NO_END_ENTITY_PROFILE, null, new Date().getTime());
+                    EndEntityConstants.NO_END_ENTITY_PROFILE,  CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
         }
         String tokensn = hardTokenSessionRemote.findHardTokenByCertificateSNIssuerDN(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 

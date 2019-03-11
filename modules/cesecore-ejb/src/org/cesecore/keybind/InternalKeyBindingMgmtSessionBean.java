@@ -1011,7 +1011,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new CertificateImportException("No CA certificate for " + issuerDn + " was found on the system.");
         }
         certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, System.currentTimeMillis());
+                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis());
     }
 
     /** Helper method for audit logging changes */

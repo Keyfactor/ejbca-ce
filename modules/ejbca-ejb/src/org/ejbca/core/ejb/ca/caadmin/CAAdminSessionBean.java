@@ -3102,9 +3102,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (certificateDataWrapper == null) {
                 // If we don't have it in the database, store it
                 long updateTime = System.currentTimeMillis();
+                final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
                 certificateDataWrapper = certificateStoreSession.storeCertificate(admin, cert, name, cafp,
                         futureRollover ? CertificateConstants.CERT_ROLLOVERPENDING : CertificateConstants.CERT_ACTIVE, type,
-                        CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, updateTime);
+                        CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, crlPartitionIndex, null, updateTime);
                 certificateStoreSession.reloadCaCertificateCache();
             }
             if (usedpublishers != null) {

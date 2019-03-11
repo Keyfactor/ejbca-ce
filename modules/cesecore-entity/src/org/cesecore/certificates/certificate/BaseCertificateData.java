@@ -138,6 +138,9 @@ public abstract class BaseCertificateData extends ProtectedData {
     /** @return the end entity profile this certificate was issued under or null if the information is not available. */
     public abstract Integer getEndEntityProfileId();
     
+    /** CRL partition index. Zero or null if not using CRL partitions */
+    public abstract Integer getCrlPartitionIndex();
+    
     /**
      * Fingerprint of CA certificate
      *
@@ -262,7 +265,10 @@ public abstract class BaseCertificateData extends ProtectedData {
      */
     public abstract void setCertificateProfileId(Integer certificateProfileId);
     public abstract void setEndEntityProfileId(Integer endEntityProfileId);
-    
+
+    /** CRL partition index. Zero or null if not using CRL partitions */
+    public abstract void setCrlPartitionIndex(Integer crlPartitionIndex);
+
     /**
      * Fingerprint of CA certificate
      *

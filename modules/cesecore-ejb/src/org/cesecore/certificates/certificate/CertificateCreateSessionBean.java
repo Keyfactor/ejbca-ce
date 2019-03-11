@@ -477,13 +477,16 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (StringUtils.isEmpty(certificateRequest)) {
                     certificateRequest = getCsrFromRequestMessage(request);
                 }
-                
+
+                final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
+
                 // Store certificate in the database, if this CA is configured to do so.
                 if (!ca.isUseCertificateStorage() || !certProfile.getUseCertificateStorage()) {
                     // We still need to return a CertificateData object for publishers
                     final CertificateData throwAwayCertData = new CertificateData(cert, cert.getPublicKey(), endEntityInformation.getUsername(), 
                             cafingerprint, null, CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId,
-                            endEntityInformation.getEndEntityProfileId(), null, updateTime, false, certProfile.getStoreSubjectAlternativeName());
+                            endEntityInformation.getEndEntityProfileId(), crlPartitionIndex,
+                            null, updateTime, false, certProfile.getStoreSubjectAlternativeName());
                     result = new CertificateDataWrapper(cert, throwAwayCertData, null);
                     // Always Store full certificate for OCSP signing certificates.
                     boolean isOcspSigner = certProfile.getExtendedKeyUsageOids().contains("1.3.6.1.5.5.7.3.9");
@@ -501,7 +504,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // Authorization was already checked by since this is a private method, the CA parameter should
                     // not be possible to get without authorization
                     result = certificateStoreSession.storeCertificateNoAuth(admin, cert, endEntityInformation.getUsername(), cafingerprint, certificateRequest, 
-                            CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(), tag, updateTime);
+                            CertificateConstants.CERT_ACTIVE, certProfile.getType(), certProfileId, endEntityInformation.getEndEntityProfileId(),
+                            crlPartitionIndex, tag, updateTime);
                     storeEx = null;
                     break;
                 } catch (CertificateSerialNumberException e) {

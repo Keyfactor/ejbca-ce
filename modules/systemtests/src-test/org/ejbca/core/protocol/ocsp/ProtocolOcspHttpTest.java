@@ -1539,6 +1539,7 @@ Content-Type: text/html; charset=iso-8859-1
                     CertificateConstants.CERTTYPE_ENDENTITY, 
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, 
+                    CertificateConstants.NO_CRL_PARTITION,
                     null, 
                     System.currentTimeMillis());
             this.helper.reloadKeys();

@@ -102,7 +102,7 @@ public class CertificateDataSerializationTest {
         final Certificate cert = CertTools.genSelfCert("CN=certuser", 10*365, null, kp.getPrivate(), kp.getPublic(), "SHA256withRSA", false);
         final CertificateData certData = new CertificateData(cert, kp.getPublic(), "certuser", "1234567812345678", "CSR123456", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
-                null, new Date().getTime(), false, true);
+                CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), false, true);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final Base64OutputStream b64os = new Base64OutputStream(baos);
         final ObjectOutputStream oos = new ObjectOutputStream(b64os);

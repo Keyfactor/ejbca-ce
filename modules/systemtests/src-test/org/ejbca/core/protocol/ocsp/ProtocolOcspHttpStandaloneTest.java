@@ -621,7 +621,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         X509Certificate caCertificate = (X509Certificate) certificate;
         //Store the CA Certificate.
         certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(caCertificate), "foo", "1234", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE, "footag", new Date().getTime());
+                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
         return caCertificate;
     }
 

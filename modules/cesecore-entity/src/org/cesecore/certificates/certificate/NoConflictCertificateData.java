@@ -24,6 +24,7 @@ import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -78,6 +79,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     private String tag;
     private Integer certificateProfileId;
     private Integer endEntityProfileId = null;  // @since EJBCA 6.6.0
+    private Integer crlPartitionIndex = null; // @since EJBCA 7.1.0
     private long updateTime = 0;
     private String subjectKeyId;
     private String certificateRequest;  // @since EJBCA 7.0.0
@@ -107,6 +109,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         setUpdateTime(copy.getUpdateTime());
         setCertificateProfileId(copy.getCertificateProfileId());
         setEndEntityProfileId(copy.getEndEntityProfileId());
+        setCrlPartitionIndex(copy.getCrlPartitionIndex());
         setSubjectKeyId(copy.getSubjectKeyId());
         setTag(copy.getTag());
         setCertificateRequest(copy.getCertificateRequest());
@@ -405,6 +408,16 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     public Integer getEndEntityProfileId() {
         return endEntityProfileId;
     }
+
+    @Override
+    public Integer getCrlPartitionIndex() {
+        return crlPartitionIndex;
+    }
+
+    @Override
+    public void setCrlPartitionIndex(final Integer crlPartitionIndex) {
+        this.crlPartitionIndex = crlPartitionIndex;
+    }
     
     @Override
     public String getCertificateRequest() {
@@ -536,6 +549,9 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
                 return false;
             }
         }
+        if (!ObjectUtils.defaultIfNull(crlPartitionIndex, 0).equals(ObjectUtils.defaultIfNull(certificateData.crlPartitionIndex, 0))) {
+            return false;
+        }
         if (updateTime != certificateData.updateTime) {
             return false;
         }
@@ -559,27 +575,6 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         return fingerprint.hashCode() * 11;
     }
 
-    public void updateWith(NoConflictCertificateData certificateData, boolean inclusionMode) {
-        issuerDN = certificateData.issuerDN;
-        subjectDN = certificateData.subjectDN;
-        fingerprint = certificateData.fingerprint;
-        cAFingerprint = certificateData.cAFingerprint;
-        status = certificateData.status;
-        type = certificateData.type;
-        serialNumber = certificateData.serialNumber;
-        expireDate = certificateData.expireDate;
-        revocationDate = certificateData.revocationDate;
-        revocationReason = certificateData.revocationReason;
-        setUsername(certificateData.username);
-        tag = certificateData.tag;
-        certificateProfileId = certificateData.certificateProfileId;
-        updateTime = certificateData.updateTime;
-        base64Cert = inclusionMode ? null : certificateData.base64Cert;
-        id = certificateData.id;
-        certificateRequest = certificateData.certificateRequest;
-    }
-    
-
     //
     // Start Database integrity protection methods
     //
@@ -591,6 +586,12 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getFingerprint()).append(getIssuerDN());
+        if (version >= 5) {
+            // In version 5 (EJBCA 7.1.0) the crlPartitionIndex column is added
+            build.append(getCrlPartitionIndex());
+            // This was actually added in EJBCA 7.0.0, but wasn't added in NoConflictCertificateData
+            build.append(getCertificateRequest());
+        }
         if (version>=3) {
             // From version 3 for EJBCA 6.7 we always use empty String here to allow future migration between databases when this value is unset
             build.append(getSubjectDnNeverNull());
@@ -623,7 +624,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 3;
+        return 5;
     }
 
     @PrePersist

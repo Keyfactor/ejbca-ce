@@ -51,6 +51,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
      * @param endEntityProfileId the end entity profile id this cert was issued under
+     * @param crlPartitionIndex the CRL partition that the certificate belongs to, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
      * @param tag a custom string tagging this certificate for some purpose
      * @param updateTime epoch millis to use as last update time of the stored object
      * @return CertificateDataWrapper with the certificate just stored that can be used for further publishing
@@ -58,7 +59,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
     CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username,
-            String cafp, int status, int type, int certificateProfileId, int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+            String cafp, int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /**
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to
@@ -71,11 +72,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
      * @param endEntityProfileId the end entity profile id this cert was issued under
+     * @param crlPartitionIndex the CRL partition that the certificate belongs to, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
      * @param tag a custom string tagging this certificate for some purpose
      * 
      */
     CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username, String cafp, String certificateRequest, 
-            int status, int type, int certificateProfileId, int endEntityProfileId, String tag, long updateTime);
+            int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime);
 
     /** 
      * Retrieve the full wrapped CertificateData and Base64CertData objects.
@@ -152,8 +154,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * NOTE: does not add an event to the security audit log, that test certificates were added to the database, and removed.
      * All normal operations that stores certificates in the database creates audit log events.
      */
-    void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, int endEntityProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
+    void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, long updateTime) throws AuthorizationDeniedException;
 
     /** Removed certificates created during checks for present certificate serial number unique index. 
      * Should not be used externally. */

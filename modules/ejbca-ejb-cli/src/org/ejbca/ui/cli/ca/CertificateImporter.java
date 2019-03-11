@@ -244,6 +244,8 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
                 return Result.CA_MISMATCH;
             }
 
+            final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
+
             log.debug("Loading/updating user " + username);
             final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -259,7 +261,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
             CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
             certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(certificate), username,
                     CertTools.getFingerprintAsString(caCertificate), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-                    certificateProfileId, endEntityProfileId, null, now.getTime());
+                    certificateProfileId, endEntityProfileId, crlPartitionIndex, null, now.getTime());
 
             if (status == CertificateConstants.CERT_REVOKED) {
                 endEntityManagementSession.revokeCert(authenticationToken, certificate.getSerialNumber(), revocationTime, issuer,

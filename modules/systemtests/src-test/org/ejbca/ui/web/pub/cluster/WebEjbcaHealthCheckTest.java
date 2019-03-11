@@ -88,7 +88,8 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
                 .getRemoteSession(CertificateStoreSessionRemote.class);
         //Store the CA Certificate.
         certificateStoreSession.storeCertificateRemote(authenticationToken, EJBTools.wrap(x509ca.getCACertificate()), "foo", "1234", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE, "footag", new Date().getTime());
+                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                CertificateConstants.NO_CRL_PARTITION, "footag", new Date().getTime());
         OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(OcspResponseGeneratorSessionRemote.class);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
