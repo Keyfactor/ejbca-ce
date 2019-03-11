@@ -274,7 +274,7 @@ public class PublisherTest extends RoleUsingTestCase {
 		publishers.add(Integer.valueOf(this.publisherProxySession.getPublisherId(newName)));
 
         final CertificateData cd = new CertificateData(cert, cert.getPublicKey(), "test05", null, "crt123", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, "foo", System.currentTimeMillis(), true, true);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, "foo", System.currentTimeMillis(), true, true);
         cd.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
         cd.setRevocationDate(-1L);
         final CertificateDataWrapper cdw = new CertificateDataWrapper(cd, null);
@@ -317,8 +317,8 @@ public class PublisherTest extends RoleUsingTestCase {
         final Certificate testCertificate = CertTools.getCertfromByteArray(testcert, Certificate.class);
         final String cafp = "CA fingerprint could be anything in this test.";
         final CertificateData cd = new CertificateData(testCertificate, testCertificate.getPublicKey(), "username", cafp, "csr1234", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, "tag",
-                System.currentTimeMillis(), true, true);
+                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                CertificateConstants.NO_CRL_PARTITION, "tag", System.currentTimeMillis(), true, true);
         cd.setRevocationReason(RevokedCertInfo.NOT_REVOKED);
         cd.setRevocationDate(-1L);
         final CertificateDataWrapper cdw = new CertificateDataWrapper(cd, null);
