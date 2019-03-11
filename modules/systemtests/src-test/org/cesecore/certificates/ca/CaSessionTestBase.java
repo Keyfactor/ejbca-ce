@@ -214,7 +214,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovals(), false, true, false, false, cainfo.getIncludeInHealthCheck(), cainfo.isDoEnforceUniquePublicKeys(), 
         		cainfo.isDoEnforceUniqueDistinguishedName(), cainfo.isDoEnforceUniqueSubjectDNSerialnumber(), cainfo.isUseCertReqHistory(), cainfo.isUseUserStorage(),
         		cainfo.isUseCertificateStorage(), cainfo.isAcceptRevocationNonExistingEntry(), null, cainfo.getKeepExpiredCertsOnCRL(), -1, false 
-        		/* Temporary default values, change these when implementing partitioned crls -> */, false, 0, 0);
+        		/* TODO: Temporary default values, change these when implementing partitioned crls -> */, false, 0, 0);
         newinfo.setSubjectDN(cainfo.getSubjectDN());
         newinfo.setName(cainfo.getName());
         caSession.editCA(roleMgmgToken, newinfo);
