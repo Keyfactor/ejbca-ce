@@ -7,9 +7,6 @@ cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.x
 
 cp /opt/conf/* /app/ejbca/conf/
 
-# TODO try to remove
-cp /opt/persistence.xml /app/ejbca/src/samples/plugins/mywebapps/resources/META-INF/persistence.xml
-
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
 ant clean deployear
