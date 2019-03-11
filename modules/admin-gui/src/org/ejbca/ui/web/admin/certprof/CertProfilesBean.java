@@ -27,10 +27,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
 import javax.faces.model.ListDataModel;
@@ -47,11 +44,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -67,9 +62,6 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 public class CertProfilesBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertProfilesBean.class);
-
-    @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
     
     // This restriction in certificate profile naming can be removed when the current running version no longer has
     // to be able to run side by side (share the db) with an EJBCA 6.1.x or earlier
@@ -236,19 +228,13 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
     
     public void actionExportProfile() {
         selectCurrentRowData();
-        redirect(getAdminWebUrl()+"profilesexport", "profileType", "cp", "profileId", getSelectedCertProfileId().toString());
+        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "profilesexport", "profileType",
+                "cp", "profileId", getSelectedCertProfileId().toString());
     }
-    
+
     public void actionExportProfiles() {
-        redirect(getAdminWebUrl()+"profilesexport", "profileType", "cp");
-    }
-   
-    private String getAdminWebUrl() {
-        return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
-    }
-    
-    private GlobalConfiguration getGlobalConfiguration() {
-        return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "profilesexport", "profileType",
+                "cp");
     }
     
     public boolean getViewOnly() {
