@@ -157,8 +157,8 @@ public interface InternalCertificateStoreSessionRemote {
 
     void removeCRLs(AuthenticationToken admin, String issuerDN) throws AuthorizationDeniedException;
 
-    /** @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#storeCertificateNoAuth(AuthenticationToken, Certificate, String, String, int, int, int, int, String, long) */
-    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, int endEntityProfileId, String tag, long updateTime);
+    /** @see org.cesecore.certificates.certificate.CertificateStoreSessionLocal#storeCertificateNoAuth(AuthenticationToken, Certificate, String, String, int, int, int, int, int, String, long) */
+    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime);
 
     /** Access to DatabaseIndexUtil.getDatabaseIndexFromTable() using the default EJBCA DataSource. */
     List<DatabaseIndex> getDatabaseIndexFromTable(String tableName, boolean requireUnique);
