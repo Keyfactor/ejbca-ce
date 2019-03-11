@@ -152,7 +152,7 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
                 arguments.add(CertTools.getIssuerDN(incert));
                 arguments.add(CertTools.getSerialNumberAsString(incert));
                 ExternalProcessTools.launchExternalCommand(certExternalCommandFileName, incert.getEncoded(), 
-                        certFailOnErrorCode, certFailOnStandardError, arguments, "GeneralPurposeCustomPublisher");
+                        certFailOnErrorCode, certFailOnStandardError, arguments, this.getClass().getName());
             } catch (CertificateEncodingException e) {
                 String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
                 log.error(msg);
@@ -241,7 +241,7 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
             arguments.add(CertTools.getIssuerDN(cert));
             arguments.add(CertTools.getSerialNumberAsString(cert));
             ExternalProcessTools.launchExternalCommand(revokeExternalCommandFileName, cert.getEncoded(), 
-                    revokeFailOnErrorCode, revokeFailOnStandardError, arguments, "GeneralPurposeCustomPublisher");
+                    revokeFailOnErrorCode, revokeFailOnStandardError, arguments, this.getClass().getName());
         } catch (CertificateEncodingException e) {
             String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
             log.error(msg);

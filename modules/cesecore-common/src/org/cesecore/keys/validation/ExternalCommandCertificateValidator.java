@@ -185,7 +185,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
             throws ValidatorNotApplicableException, ValidationException, CertificateException {
         final List<String> messages = new ArrayList<String>();
         if (log.isDebugEnabled()) {
-            log.debug("Validating certificate with external command " + getExternalCommand());
+            log.debug("Validating certificate with external command: " + getExternalCommand());
             log.debug("Validating certificate with external command (cert):" + certificate);
         }
         // Add CA certificate chain, that may be processed.
@@ -470,8 +470,8 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final List<String> out = new ArrayList<String>();
         try {
             out.addAll(ExternalProcessTools.launchExternalCommand(cmd, certificates.get(0).getEncoded(),
-                    isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, ExternalCommandCertificateValidator.class.getName()));
-        } catch(ExternalProcessException e) {
+                    isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, this.getClass().getName()));
+        } catch (ExternalProcessException e) {
             log.info("Could not call external command '" + cmd + "' with arguments " + arguments + " sucessfully: " + e.getMessage());
             if (log.isDebugEnabled()) {
                 log.debug("Failed with exception: ", e);
