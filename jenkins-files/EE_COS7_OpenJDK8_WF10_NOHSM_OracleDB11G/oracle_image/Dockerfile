@@ -11,10 +11,7 @@ ENV ORACLE_BASE=/u01/app/oracle \
     INSTALL_DIR="/tmp/install" \
     CONFIG_RSP="xe.rsp" \
     RUN_FILE="runOracle.sh" \
-    PWD_FILE="setPassword.sh" \
     CHECK_DB_FILE="checkDBStatus.sh"
-
-# TODO: remove setPassword.sh and chcksum.xe files and checkDBStatus.sh & their references
 
 # Use second ENV so that variable get substituted
 ENV PATH=$ORACLE_HOME/bin:$PATH
@@ -23,10 +20,9 @@ RUN mkdir $INSTALL_DIR
 
 # Copy binaries
 # -------------
-COPY $CONFIG_RSP $RUN_FILE $PWD_FILE $CHECK_DB_FILE $INSTALL_DIR/
+COPY $CONFIG_RSP $RUN_FILE $CHECK_DB_FILE $INSTALL_DIR/
 
-# ENV ORACLE_SHA1 dd7881a55569d890241f11cd0eeb7d48
-
+# for local use - if you don't have access to deathstar
 #ADD oracle-xe-11.2.0-1.0.x86_64.rpm.zip /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
 RUN cd /tmp \
@@ -63,9 +59,7 @@ RUN yum -y install unzip libaio bc initscripts net-tools openssl compat-libstdc+
     chown -R oracle:dba $ORACLE_BASE && \
     mv $INSTALL_DIR/$CONFIG_RSP $ORACLE_BASE/ && \
     mv $INSTALL_DIR/$RUN_FILE $ORACLE_BASE/ && \
-    mv $INSTALL_DIR/$PWD_FILE $ORACLE_BASE/ && \
     mv $INSTALL_DIR/$CHECK_DB_FILE $ORACLE_BASE/ && \
-    ln -s $ORACLE_BASE/$PWD_FILE / && \
     cd /tmp && \
     rm -rf $INSTALL_DIR && \
     chmod ug+x $ORACLE_BASE/*.sh
