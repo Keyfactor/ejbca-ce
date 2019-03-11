@@ -30,8 +30,9 @@
         <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.extension.undertow"/>
     </extensions>
-
+    
     <system-properties>
+        <property name="jboss.as.management.blocking.timeout" value="1000"/> 
         <property name="org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH" value="true"/>
         <property name="org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH" value="true"/>
         <property name="org.apache.catalina.connector.URI_ENCODING" value="UTF-8"/>
@@ -172,9 +173,9 @@
                     </security>
                 </datasource>
                 <datasource jndi-name="java:/EjbcaDS" pool-name="ejbcads" use-ccm="true">
-                    <connection-url>jdbc:oracle:thin:@oracledb:1521:xe</connection-url>
+                    <connection-url>jdbc:oracle:thin:@oracledb:1521:XE</connection-url>
                     <driver-class>oracle.jdbc.driver.OracleDriver</driver-class>
-                    <driver>ojdbc6.jar</driver>
+                    <driver>ojdbc8.jar</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <pool>
                         <min-pool-size>5</min-pool-size>
@@ -186,7 +187,7 @@
                         <password>ejbca</password>
                     </security>
                     <validation>
-                        <check-valid-connection-sql>select 1;</check-valid-connection-sql>
+                        <check-valid-connection-sql>select 1 from dual</check-valid-connection-sql>
                         <validate-on-match>true</validate-on-match>
                         <background-validation>false</background-validation>
                     </validation>

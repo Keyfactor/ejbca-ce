@@ -21,11 +21,11 @@ RUN cd $HOME \
 #Updating Path
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 
-#Setting environment variables
-ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true"
+#Setting environment variables. deployment timeout is 800 seconds for EJBCA+Oracle variation.
+ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.as.management.blocking.timeout=800"
 
 #Setting Ant Params
-ENV ANT_OPTS="-Xms256M -Xmx512M"
+ENV ANT_OPTS="-Xms1024M -Xmx1024M"
 
 #Copy the run script and set execution privileges to it
 ADD run.sh /opt/
@@ -35,14 +35,18 @@ RUN chmod +x /opt/run.sh
 ADD conf /opt/conf
 RUN chmod 777 /opt/conf
 
+# is the dialect config needed at all?. TODO try remove
+ADD persistence.xml /opt/persistence.xml
+RUN chmod 777 /opt/persistence.xml
+
 
 #copy two stages of standalone.xml file (WildFly config file). They are both needed for different stages of installation
 ADD standalone1.xml /opt/standalone1.xml
 ADD standalone2.xml /opt/standalone2.xml
 
 
-# add mariadb driver to deploy folder
-ADD ojdbc6.jar /opt/jboss/wildfly/standalone/deployments/ojdbc6.jar
+# add database driver to deploy folder
+ADD ojdbc8.jar /opt/jboss/wildfly/standalone/deployments/ojdbc8.jar
 
 # Set the working directory to /app
 WORKDIR /app/ejbca

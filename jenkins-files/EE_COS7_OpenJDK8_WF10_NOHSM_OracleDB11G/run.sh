@@ -7,6 +7,9 @@ cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.x
 
 cp /opt/conf/* /app/ejbca/conf/
 
+# TODO try to remove
+cp /opt/persistence.xml /app/ejbca/src/samples/plugins/mywebapps/resources/META-INF/persistence.xml
+
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
 ant clean deployear
@@ -16,8 +19,8 @@ echo '=================== Waiting for deploy ================================='
 
 wait_for_deployment() {
     DEPLOY_SUCCESSFUL=0
-	# Wait for up to 180 seconds for app to start up
-	for i in {1..90} ; do
+	# Wait for up to 800 seconds for app to start up (yeah, Oracle config takes that much)
+	for i in {1..400} ; do
 		if [ -e "/opt/jboss/wildfly/standalone/deployments/ejbca.ear.deployed" ] ; then
 			echo "EJBCA successfully started."
 			DEPLOY_SUCCESSFUL=1

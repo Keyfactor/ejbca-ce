@@ -14,6 +14,8 @@ ENV ORACLE_BASE=/u01/app/oracle \
     PWD_FILE="setPassword.sh" \
     CHECK_DB_FILE="checkDBStatus.sh"
 
+# TODO: remove setPassword.sh and chcksum.xe files and checkDBStatus.sh & their references
+
 # Use second ENV so that variable get substituted
 ENV PATH=$ORACLE_HOME/bin:$PATH
 
@@ -25,9 +27,8 @@ COPY $CONFIG_RSP $RUN_FILE $PWD_FILE $CHECK_DB_FILE $INSTALL_DIR/
 
 # ENV ORACLE_SHA1 dd7881a55569d890241f11cd0eeb7d48
 
-# ADD oracle-xe-11.2.0-1.0.x86_64.rpm.zip /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+#ADD oracle-xe-11.2.0-1.0.x86_64.rpm.zip /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
-# TODO http -> https
 RUN cd /tmp \
     && curl -k -o oracle-xe-11.2.0-1.0.x86_64.rpm.zip "https://deathstar.primekey.com/index.php/s/Xg9ZbWMAdXxQ3Ad/download?path=%2FDatabases%2FOracle&files=oracle-xe-11.2.0-1.0.x86_64.rpm.zip" 
 
@@ -40,7 +41,6 @@ RUN mv /tmp/oracle-xe-11.2.0-1.0.x86_64.rpm.zip $INSTALL_DIR/oracle-xe-11.2.0-1.
 
 RUN chmod 777 $INSTALL_DIR/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
-#RUN ls -la $INSTALL_DIR
 
 # Install Oracle Express Edition
 # ------------------------------
