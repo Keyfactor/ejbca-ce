@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -29,7 +31,6 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,8 +51,8 @@ public class ExternalProcessToolsTest {
     }
     
     @Test
-    public void test01BuildShellCommand() throws Exception {
-        log.trace(">test01BuildShellCommand()");
+    public void buildShellCommand() throws Exception {
+        log.trace(">buildShellCommand()");
 
         final String externalCommand = "help";
         final List<String> shellCommand = ExternalProcessTools.buildShellCommand(externalCommand);
@@ -69,41 +70,57 @@ public class ExternalProcessToolsTest {
         }
         assertEquals("The external command " + externalCommand + " must be keeped unchanged.", externalCommand, shellCommand.get(2));
 
-        log.trace("<test01BuildShellCommand()");
-    }
-    
-    @After
-    public void tearDown() throws Exception {
-        log.trace(">tearDown()");
-        // NOOP
-        log.trace("<tearDown()");
+        log.trace("<buildShellCommand()");
     }
 
     @Test
-    public void test02WriteTemporaryFileToDisk() throws Exception {
-        log.trace(">test02WriteTemporaryFileToDisk()");
-
-        // Write temporary file.
-        final String filePrefix = ExternalProcessTools.class.getSimpleName();
-        final String fileSuffix = ".crt";
-        final String content = "Read-PEM-Certificate";
-        final File file = ExternalProcessTools.writeTemporaryFileToDisk(filePrefix + '-' + System.currentTimeMillis(),
-                fileSuffix, content.getBytes());
-
-        // Filename must match.
-        assertTrue("Filename ("+file.getName()+") must match start with filePrefix '" + filePrefix + "'and end with fileSuffix '" + fileSuffix + "'",
-                file.getName().startsWith(filePrefix) && file.getName().endsWith(fileSuffix));
-
-        // File content must match.
-        final String reloadedContent = new String(FileTools.readFiletoBuffer(file.getCanonicalPath()));
-        assertEquals("File contents must not have changed after reloading.", content, reloadedContent);
-
-        // Delete file
-        if (file.exists() && !file.delete()) {
-            file.deleteOnExit();
+    public void writeTemporaryCrtFileToDisk() throws Exception {
+        log.trace(">writeTemporaryCrtFileToDisk()");
+        final String filePrefix = ExternalProcessTools.class.getName();
+        final String fileExtension = ".crt";
+        final byte[] bytes = createSelfSignedX509TestCertificate("Foo Bar Ltd.").getEncoded();
+        File file = null;
+        try {
+            file = ExternalProcessTools.writeTemporaryFileToDisk(filePrefix, fileExtension, bytes);
+            assertNotNull("Null should never be returned from this method.", file);
+            assertTrue("The file was not written to disk correctly.", file.exists());
+            assertTrue("The file was written, but it's not readable.", file.canRead());
+            assertTrue("The file was not given the file prefix specified as argument.", file.getName().startsWith(filePrefix));
+            assertTrue("The file was not given the file extension given as argument.", file.getName().endsWith(fileExtension));
+            assertArrayEquals("The file data read from disk does not match the data written.", bytes,
+                    FileTools.readFiletoBuffer(file.getCanonicalPath()));
+        } finally {
+            // Delete file
+            if (file.exists() && !file.delete()) {
+                file.deleteOnExit();
+            }
+            log.trace("<writeTemporaryCrtFileToDisk()");
         }
+    }
 
-        log.trace("<test02WriteTemporaryFileToDisk()");
+    @Test
+    public void writeTemporaryTmpFileToDisk() throws Exception {
+        log.trace(">writeTemporaryCrtFileToDisk()");
+        final String filePrefix = ExternalProcessTools.class.getName();
+        final String fileExtension = null;
+        final byte[] bytes = "Foobar".getBytes();
+        File file = null;
+        try {
+            file = ExternalProcessTools.writeTemporaryFileToDisk(filePrefix, fileExtension, bytes);
+            assertNotNull("Null should never be returned from this method.", file);
+            assertTrue("The file was not written to disk correctly.", file.exists());
+            assertTrue("The file was written, but it's not readable.", file.canRead());
+            assertTrue("The file was not given the file prefix specified as argument.", file.getName().startsWith(filePrefix));
+            assertTrue("The file was not given the default file extension (.tmp) when null was given as argument.", file.getName().endsWith(".tmp"));
+            assertArrayEquals("The file data read from disk does not match the data written.", bytes,
+                    FileTools.readFiletoBuffer(file.getCanonicalPath()));
+        } finally {
+            // Delete file
+            if (file.exists() && !file.delete()) {
+                file.deleteOnExit();
+            }
+            log.trace("<writeTemporaryCrtFileToDisk()");
+        }
     }
 
     /**
@@ -114,8 +131,8 @@ public class ExternalProcessToolsTest {
      * @throws Exception any exception.
      */
     @Test
-    public void test03LaunchExternalCommandWithWriteFileToDisk() throws Exception {
-        log.trace(">test03LaunchExternalCommandWithWriteFileToDisk()");
+    public void launchExternalCommandWithWriteFileToDisk() throws Exception {
+        log.trace(">launchExternalCommandWithWriteFileToDisk()");
         
         // Platforms: MS Windows and Unix/Linux.
         final X509Certificate certificate = createSelfSignedX509TestCertificate("test03Launch");
@@ -127,7 +144,8 @@ public class ExternalProcessToolsTest {
         // A:1 Script contains output to ERROUT but should not fail because of failOnStandardError=false. ERROUT should have been logged.
         try {
             arguments.clear();
-            out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments, getClass().getName());
+            out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
+                    this.getClass().getName());
             if (log.isDebugEnabled()) {
                 log.debug("Out A:1: " + out);
             }
@@ -145,7 +163,8 @@ public class ExternalProcessToolsTest {
         // A:2 Same thing but switch off logging.
         try {
             arguments.clear();
-            out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, false, false, arguments, getClass().getName());
+            out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, false, false, arguments,
+                    this.getClass().getName());
             if (log.isDebugEnabled()) {
                 log.debug("Out A:2: " + out);
             }
@@ -162,7 +181,8 @@ public class ExternalProcessToolsTest {
         // A:3 Turn on logging again but let the call fail (failOnStandardError=true).
         try {
             arguments.clear();
-            out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, true, true, true, arguments, getClass().getName());
+            out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, true, true, true, arguments,
+                    this.getClass().getName());
             fail("The external command '" + cmd + "' should have failed (failOnStandardError=true).");
         } catch(Exception e) {
             if (log.isDebugEnabled()) {
@@ -180,7 +200,8 @@ public class ExternalProcessToolsTest {
         // A:4 Turn off logging again but let call fail (failOnStandardError=false).
         try {
             arguments.clear();
-            out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, true, false, false, arguments, getClass().getName());
+            out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, true, false, false, arguments,
+                    this.getClass().getName());
             fail("The external command '" + cmd + "' should have failed (failOnStandardError=true).");
         } catch(Exception e) {
             if (log.isDebugEnabled()) {
@@ -193,7 +214,7 @@ public class ExternalProcessToolsTest {
             assertTrue(cnt + " line(s) must have been logged to ERROUT.", cnt == 0);
         }
         
-        log.trace("<test03LaunchExternalCommandWithWriteFileToDisk()");
+        log.trace("<launchExternalCommandWithWriteFileToDisk()");
     }
     
     /**
@@ -203,13 +224,13 @@ public class ExternalProcessToolsTest {
      * @throws Exception any exception.
      */
     @Test
-    public void test04LaunchExternalCommandDontWriteFileToDisk() throws Exception {
-        log.trace(">test04LaunchExternalCommandDontWriteFileToDisk()");
+    public void launchExternalCommandDontWriteFileToDisk() throws Exception {
+        log.trace(">launchExternalCommandDontWriteFileToDisk()");
         
         // Platforms: Unix/Linux only.
         // B: Script parameters contains '%cert%' -> PEM certificate is in STDIN.
         if (!SystemUtils.IS_OS_WINDOWS) {            
-            final X509Certificate certificate = createSelfSignedX509TestCertificate("test04Launch");
+            final X509Certificate certificate = createSelfSignedX509TestCertificate("launchExternalCommandDontWriteFileToDisk");
             final String cmd = getFilePathFromClasspath("external_process_tools_dont_write_to_disk");
             List<String> out = null;
             final List<String> arguments = new ArrayList<String>();
@@ -222,7 +243,8 @@ public class ExternalProcessToolsTest {
                 arguments.add("param1");
                 arguments.add(Integer.toString(exitCode));
                 arguments.add(ExternalProcessTools.PLACE_HOLDER_CERTIFICATE);
-                out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments, getClass().getName());
+                out = ExternalProcessTools.launchExternalCommand(cmd, certificate.getEncoded(), true, false, true, true, arguments,
+                        this.getClass().getName());
                 assertTrue("The exit code must be " + exitCode + ".", new Integer(0).equals(ExternalProcessTools.extractExitCode(out)));
                 cnt = count(out, ExternalProcessTools.STDOUT_PREFIX);
                 assertTrue("At least " + cnt + " line(s) must have been logged to STDOUT.", cnt > 3);
@@ -235,7 +257,7 @@ public class ExternalProcessToolsTest {
             }
         }
         
-        log.trace("<test04LaunchExternalCommandDontWriteFileToDisk()");
+        log.trace("<launchExternalCommandDontWriteFileToDisk()");
     }
     
     private final X509Certificate createSelfSignedX509TestCertificate(final String cn) throws Exception {
