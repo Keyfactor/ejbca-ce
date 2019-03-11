@@ -850,7 +850,8 @@ public class IntegratedOcspResponseTest {
             externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
             caSession.addCA(internalAdmin, externalCa);
             certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(externalCaCertificate), externalCaName, "1234", CertificateConstants.CERT_ACTIVE,
-                    CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, null, new Date().getTime());
+                    CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                    CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             try {
                 final String externalUsername = "testStandAloneOcspResponseExternalUser";
@@ -874,7 +875,8 @@ public class IntegratedOcspResponseTest {
                 X509Certificate importedCertificate = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 certificateStoreSession.storeCertificateRemote(internalAdmin, EJBTools.wrap(importedCertificate), externalUsername, "1234",
                         CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
-                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE, null, new Date().getTime());
+                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                        CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime());
                 try {
                     //Now everything is in place. Perform a request, make sure that the default responder signed it. 
                     OCSPReqBuilder gen = new OCSPReqBuilder();
