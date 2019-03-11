@@ -493,32 +493,54 @@ public class X509CAInfo extends CAInfo {
         this.caSerialNumberOctetSize = caSerialNumberOctetSize;
     }
     
-    /** @return true if a partitioned crl is used */
+    /** 
+     * Partitioned crls are used by CAs with very large crls.  
+     * It is CA specific configuration using multiple partitions to which certificates randomly are assigned. 
+     * When these partitions grow too large they are discontinued and set as retired partitions.
+     * @return true if a partitioned crl is used 
+     */
     public boolean getUsePartitionedCrl() {
         return this.usePartitionedCrl;
     }
     
-    /** Set use partitioned crl for this ca */
+    /** 
+     *  Set use partitioned crl for this ca.
+     *  This implies that a set of non-retired crl partitions will be available for this ca. 
+     *  @see #getUsePartitionedCrl() 
+     */
     public void setUsePartitionedCrl(final boolean usePartitionedCrl) {
         this.usePartitionedCrl = usePartitionedCrl;  
     }
     
-    /** @return how many crl partitions are being used by this ca */
+    /** 
+     * @return how many crl partitions are being used in total by this ca 
+     *  @see #getUsePartitionedCrl() 
+     */
     public int getCrlPartitions() {
         return crlPartitions;
     }
     
-    /** Set the number of crl partitions that should be used by this ca */
+    /** 
+     * Set the number of crl partitions that should be used by this ca. 
+     * @see #getUsePartitionedCrl() 
+     */
     public void setCrlPartitions(final int crlPartitions) {
         this.crlPartitions = crlPartitions;  
     }
     
-    /** @return the number of retired crl partitions for this ca*/
+    /** 
+     * Retired crls are discontinued crls, certificates will not be added to retired crls.  
+     * @return the number of retired crl partitions for this ca.
+     * @see #getUsePartitionedCrl() 
+     */
     public int getRetiredCrlPartitions() {
         return retiredCrlPartitions;
     }
     
-    /** Set the number of retired crl partitions for this ca */
+    /** 
+     * Set the number of retired crl partitions for this ca.
+     * @see #getUsePartitionedCrl() 
+     */
     public void setRetiredCrlPartitions(final int retiredCrlPartitions) {
         this.retiredCrlPartitions = retiredCrlPartitions;  
     }
