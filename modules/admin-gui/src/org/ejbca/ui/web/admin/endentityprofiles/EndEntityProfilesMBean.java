@@ -43,11 +43,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -96,8 +94,6 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private CaSessionLocal caSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     private EjbcaWebBean ejbcaWebBean = getEjbcaWebBean();
 
@@ -245,22 +241,15 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     
     public void actionExportProfile() {
         clearMessages();
-        redirect(getAdminWebUrl()+"/profilesexport", "profileType", "eep", "profileId", getSelectedEndEntityProfileId().toString());
+        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
+                "eep", "profileId", getSelectedEndEntityProfileId().toString());
     }
-    
+
     public void actionExportProfiles() {
         clearMessages();
-        redirect(getAdminWebUrl()+"/profilesexport", "profileType", "eep");
+        redirect(getEjbcaWebBean().getBaseUrl() + getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "/profilesexport", "profileType",
+                "eep");
     }
-    
-    private String getAdminWebUrl() {
-        return getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getAdminWebPath();
-    }
-    
-    private GlobalConfiguration getGlobalConfiguration() {
-        return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-    }
-    
 
     public void reset() {
         deleteInProgress = false;
