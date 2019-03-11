@@ -937,7 +937,7 @@ public class CAInterfaceBean implements Serializable {
                         useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck,
                         isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory,
                         useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry, sharedCmpRaSecret, keepExpiredCertsOnCRL, defaultCertprofileId, 
-                        useNoConflictCertificateData /* Temporary default values, change when these when implementing partitioned crls -> */, false, 0, 0);
+                        useNoConflictCertificateData /* TODO: Temporary default values, change when these when implementing partitioned crls -> */, false, 0, 0);
             }
            // Info specific for CVC CA
            if (catype == CAInfo.CATYPE_CVC) {
