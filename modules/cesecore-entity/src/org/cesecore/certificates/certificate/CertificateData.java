@@ -31,6 +31,7 @@ import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -87,6 +88,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     private String tag;
     private Integer certificateProfileId;
     private Integer endEntityProfileId = null;  // @since EJBCA 6.6.0
+    private Integer crlPartitionIndex = null; // @since EJBCA 7.1.0
     private long updateTime = 0;
     private String subjectKeyId;
     private String certificateRequest;  // @since EJBCA 7.0.0
@@ -109,13 +111,14 @@ public class CertificateData extends BaseCertificateData implements Serializable
      * @param type the user type the certificate belongs to, i.e. EndEntityTypes.USER_ENDUSER etc
      * @param certprofileid certificate profile id, can be 0 for "no profile"
      * @param endEntityProfileId end entity profile id, can be 0 for "no profile"
+     * @param crlPartitionIndex CRL partition index, or 0 if not using CRL partitioning.
      * @param tag a custom tag to map the certificate to any custom defined tag
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
      * @param storeCertificate true if the certificate should be stored in this table in the base&4Cert column, false if certificate data isn't to be stored in this table. NOTE: If false and the data should be stored in Base64CertData then the caller must store the certificate in Base64CertData as well.
      * @param storeSubjectAltName true if the subjectAltName column should be populated with the Subject Alternative Name of the certificate
      */
     public CertificateData(Certificate certificate, PublicKey enrichedpubkey, String username, String cafp, String certificateRequest, int status, int type, int certprofileid, int endEntityProfileId,
-            String tag, long updatetime, boolean storeCertificate, boolean storeSubjectAltName) {
+            int crlPartitionIndex, String tag, long updatetime, boolean storeCertificate, boolean storeSubjectAltName) {
         // Extract all fields to store with the certificate.
         try {
             if (storeCertificate ) {
@@ -152,7 +155,8 @@ public class CertificateData extends BaseCertificateData implements Serializable
             setRevocationReason(RevokedCertInfo.NOT_REVOKED);
             setUpdateTime(updatetime); // (new Date().getTime());
             setCertificateProfileId(certprofileid);
-            setEndEntityProfileId(Integer.valueOf(endEntityProfileId));
+            setEndEntityProfileId(endEntityProfileId);
+            setCrlPartitionIndex(crlPartitionIndex);
             // Create a key identifier
             PublicKey pubk = certificate.getPublicKey();
             if (enrichedpubkey != null) {
@@ -196,6 +200,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         setUpdateTime(copy.getUpdateTime());
         setCertificateProfileId(copy.getCertificateProfileId());
         setEndEntityProfileId(copy.getEndEntityProfileId());
+        setCrlPartitionIndex(copy.getCrlPartitionIndex());
         setSubjectKeyId(copy.getSubjectKeyId());
         setTag(copy.getTag());
         setRowVersion(copy.getRowVersion());
@@ -486,7 +491,17 @@ public class CertificateData extends BaseCertificateData implements Serializable
     public Integer getEndEntityProfileId() {
         return endEntityProfileId;
     }
-    
+
+    @Override
+    public Integer getCrlPartitionIndex() {
+        return crlPartitionIndex;
+    }
+
+    @Override
+    public void setCrlPartitionIndex(final Integer crlPartitionIndex) {
+        this.crlPartitionIndex = crlPartitionIndex;
+    }
+
     @Override
     public String getCertificateRequest() {
         return this.getZzzCertificateRequest();
@@ -610,6 +625,9 @@ public class CertificateData extends BaseCertificateData implements Serializable
                 return false;
             }
         }
+        if (!ObjectUtils.defaultIfNull(crlPartitionIndex, 0).equals(ObjectUtils.defaultIfNull(certificateData.crlPartitionIndex, 0))) {
+            return false;
+        }
         if (updateTime != certificateData.updateTime) {
             return false;
         }
@@ -627,26 +645,6 @@ public class CertificateData extends BaseCertificateData implements Serializable
         return fingerprint.hashCode() * 11;
     }
 
-    public void updateWith(CertificateData certificateData, boolean inclusionMode) {
-        issuerDN = certificateData.issuerDN;
-        subjectDN = certificateData.subjectDN;
-        fingerprint = certificateData.fingerprint;
-        cAFingerprint = certificateData.cAFingerprint;
-        status = certificateData.status;
-        type = certificateData.type;
-        serialNumber = certificateData.serialNumber;
-        expireDate = certificateData.expireDate;
-        revocationDate = certificateData.revocationDate;
-        revocationReason = certificateData.revocationReason;
-        setUsername(certificateData.username);
-        tag = certificateData.tag;
-        certificateProfileId = certificateData.certificateProfileId;
-        updateTime = certificateData.updateTime;
-        base64Cert = inclusionMode ? null : certificateData.base64Cert;
-        certificateRequest = certificateData.certificateRequest;
-    }
-
-    
     //
     // Search functions (deprecated, use methods in CertificateDataSession instead)
     //
@@ -701,6 +699,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         protectionStringBuilder.append(getFingerprint()).append(getIssuerDN());
+        if (version >= 5) {
+            // In version 5 (EJBCA 7.1.0) the crlPartitionIndex column is added
+            protectionStringBuilder.append(getCrlPartitionIndex());
+        }
         if (version>=4) { 
             // In version 4 for EJBCA 7.0.0 the certificateRequest column is added
             protectionStringBuilder.append(getCertificateRequest());
@@ -737,7 +739,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 4;
+        return 5;
     }
 
     @PrePersist
