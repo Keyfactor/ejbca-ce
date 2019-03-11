@@ -82,9 +82,7 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
         removeCaAndCryptoToken(EcaQa201_PositiveBlacklistValidator.TestData.CA_NAME);
-        validatorsHelper.deleteValidator(EcaQa201_PositiveBlacklistValidator.TestData.VALIDATOR_NAME
-        + " (Domain Blacklist Validator) ");
-        validatorsHelper.deleteValidator(TestData.VALIDATOR_NAME);
+        removeValidatorByName(TestData.VALIDATOR_NAME);
         removeApprovalProfileByName(TestData.APPROVAL_PROFILE_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
         removeEndEntityProfileByName("EcaQa201_EntityProfile");
@@ -99,7 +97,6 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
     public void stepA_AddAValidator() {
         validatorsHelper.openPage(getAdminWebUrl());
         validatorsHelper.addValidator(EcaQa201_PositiveBlacklistValidator.TestData.VALIDATOR_NAME);
-        validatorsHelper.saveValidator();
         validatorsHelper.assertValidatorNameExists(TestData.VALIDATOR_NAME);
     }
 
@@ -128,7 +125,6 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
     @Test
     public void stepD_AddApprovalProfile() throws InterruptedException {
         approvalProfilesHelperDefault.openPage(getAdminWebUrl());
-        Thread.sleep(10000);
         approvalProfilesHelperDefault.addApprovalProfile(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelperDefault.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelperDefault.setApprovalProfileType(TestData.APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL);
