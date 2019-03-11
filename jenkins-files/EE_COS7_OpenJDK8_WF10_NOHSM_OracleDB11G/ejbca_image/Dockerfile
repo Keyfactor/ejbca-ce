@@ -35,11 +35,6 @@ RUN chmod +x /opt/run.sh
 ADD conf /opt/conf
 RUN chmod 777 /opt/conf
 
-# is the dialect config needed at all?. TODO try remove
-ADD persistence.xml /opt/persistence.xml
-RUN chmod 777 /opt/persistence.xml
-
-
 #copy two stages of standalone.xml file (WildFly config file). They are both needed for different stages of installation
 ADD standalone1.xml /opt/standalone1.xml
 ADD standalone2.xml /opt/standalone2.xml
