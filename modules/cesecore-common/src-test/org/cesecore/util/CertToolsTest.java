@@ -2738,4 +2738,48 @@ public class CertToolsTest {
             assertEquals("Multi value RDNs should be handled with + sign", "SURNAME=Ciaffi+DN=200590+GIVENNAME=Enrico Maria+SN=IT:MEZCAL86T16H523D,O=Test1,O=Test,C=IT", CertTools.stringToBCDNString(dn));
         }
     }    
+
+    /** Document behavior of CertTools.verify for bad paremters */
+    @Test
+    public void testVerifyBadParameterBehavior() throws CertificateParsingException, CertPathValidatorException {
+        final String errorMessage = "Behavioural change of CertTools.verify when bad parameters are used.";
+        final String infoMessage = "Expected legacy behavior from CertTools.verify.";
+        try {
+            CertTools.verify(null, null);
+            fail(errorMessage);
+        } catch (NullPointerException e) {
+            log.debug(infoMessage, e);
+        }
+        try {
+            CertTools.verify(null, new ArrayList<X509Certificate>());
+            fail(errorMessage);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            log.debug(infoMessage, e);
+        }
+        try {
+            CertTools.verify(null, new ArrayList<X509Certificate>(Arrays.asList((X509Certificate)null)));
+            fail(errorMessage);
+        } catch (NullPointerException e) {
+            log.debug(infoMessage, e);
+        }
+        final X509Certificate x509Certificate = CertTools.getCertfromByteArray(CertToolsTest.testcert, X509Certificate.class);
+        try {
+            CertTools.verify(x509Certificate, null);
+            fail(errorMessage);
+        } catch (NullPointerException e) {
+            log.debug(infoMessage, e);
+        }
+        try {
+            CertTools.verify(x509Certificate, new ArrayList<X509Certificate>());
+            fail(errorMessage);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            log.debug(infoMessage, e);
+        }
+        try {
+            CertTools.verify(x509Certificate, new ArrayList<X509Certificate>(Arrays.asList((X509Certificate)null)));
+            fail(errorMessage);
+        } catch (NullPointerException e) {
+            log.debug(infoMessage, e);
+        }
+    }
 }
