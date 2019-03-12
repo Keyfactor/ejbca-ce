@@ -48,6 +48,7 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+		<ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
@@ -215,10 +216,20 @@
         <target name="-copy-cesecore-ejb">
             <copy file="${ejbca.home}/modules/cesecore-ejb/dist/cesecore-ejb.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
         </target>
+	
+        <target name="-copy-cesecore-x509ca">
+            <copy file="${ejbca.home}/modules/cesecore-x509ca/dist/cesecore-x509ca.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
+        </target>	
         
         <target name="-copy-cesecore-ejb-interface">
             <copy file="${ejbca.home}/modules/cesecore-ejb-interface/dist/cesecore-ejb-interface.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
         </target>
+	
+    <target name="cesecore-x509ca" if="mod.cesecore-x509ca.exists" depends="cesecore-common, -build-cesecore-x509ca, -copy-cesecore-x509ca"/>
+	
+    <target name="-build-cesecore-x509ca">
+        <ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
+    </target>
     
     <target name="validationtool" description="Build ValidationTool">
 		<echo  message="${mod.validationtool.path}/build.xml" />
@@ -470,7 +481,7 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war,
 					ejbca-ejb, ejbca-properties, edition-specific-interface, peerconnector, eedition-ejb, acme, admin-gui, ra-gui, ejbca-ws, externalra-service, ejbca-cmp-tcp, ejbca.clients,
-					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-api">
+					systemtests.build.libs, ct, va-ejbca-war, certstore-war, crlstore-war, caa, est-war, unidfnr, ejbca-rest-api, cesecore-x509ca">
 	</target>
 
 	<target name="ct" depends="ejbca-ejb-interface" if="mod.ct.exists">

@@ -447,7 +447,13 @@
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${mod.peerconnector.exists}"
 			replacement-ejb="peerconnector-ejb.jar"
-			/>
+		/>
+        <jar-replacement-in-module
+            replacement-tag="!--@cesecore-x509ca.jar@-->"
+            replacement-file="${eardd.src}/META-INF/application.xml"
+            replacement-enabled="${mod.cesecore-x509ca.exists}"
+            replacement-ejb="cesecore-x509ca.jar"
+        />
 		<jar-replacement-in-module
 			replacement-tag="!--@unidfnr-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
@@ -571,6 +577,7 @@
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="cesecore-ejb.jar" />
+            	<include name="cesecore-x509ca.jar" />
                 <include name="ejbca-ejb.jar" />
             	<include name="edition-specific-ejb.jar" />
                 <include name="ejbca-ws-ejb.jar" />
@@ -709,6 +716,7 @@
             <sourcepath location="${ejbca.home}/modules/cesecore-ejb/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-ejb-interface/src"/>
             <sourcepath location="${ejbca.home}/modules/cesecore-entity/src"/>
+        	<sourcepath location="${ejbca.home}/modules/cesecore-x509ca/src"/>
         	<sourcepath location="${ejbca.home}/modules/cli-util/src"/>
            	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
         	<sourcepath location="${ejbca.home}/modules/edition-specific/src-ejb/"/>

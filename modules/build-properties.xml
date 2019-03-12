@@ -36,6 +36,8 @@
     <property name="mod.cesecore-other-entity.lib" location="${mod.dist.path}/cesecore-other-entity.jar" />
     <property name="mod.cesecore-other-ejb.lib" location="${mod.dist.path}/cesecore-other-ejb.jar" />
     <property name="mod.cesecore-other-ejb-interface.lib" location="${mod.dist.path}/cesecore-other-ejb-interface.jar" />
+    <property name="mod.cesecore-x509ca.path" location="${mod.path}/cesecore-x509ca" />
+    <property name="mod.cesecore-x509ca.lib" location="${mod.dist.path}/cesecore-x509ca.jar" />
     <property name="mod.ejbca-ejb.lib" location="${mod.dist.path}/ejbca-ejb.jar" />
     <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
     <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.dist.path}/ejbca-ejb-cli" />
@@ -471,6 +473,10 @@
 				<istrue value="${peerconnector.rar.disabled}"/>
 			</not>
 		</and>
+    </condition>
+	
+    <condition property="mod.cesecore-x509ca.exists">
+        <available file="${mod.cesecore-x509ca.path}/build.xml" />
     </condition>
 
 	<condition property="mod.externalra.exists">
