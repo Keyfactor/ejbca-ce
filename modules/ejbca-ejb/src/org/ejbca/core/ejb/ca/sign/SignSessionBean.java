@@ -1077,9 +1077,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     cryptoToken.getSignProviderName());
 
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
-            // know that we are the CA (SCEP is soooo stupid!)
+            // know that we are the CA (SCEP is soooo stupid!).
+            // It is not possible to use Partitioned CRLs via SCEP.
             final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-            byte[] crl = crlStoreSession.getLastCRL(certSubjectDN, false);
+            byte[] crl = crlStoreSession.getLastCRL(certSubjectDN, CertificateConstants.NO_CRL_PARTITION, false);
             if (crl != null) {
                 ret.setCrl(CertTools.getCRLfromByteArray(crl));
                 ret.setStatus(ResponseStatus.SUCCESS);

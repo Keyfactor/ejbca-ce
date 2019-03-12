@@ -73,7 +73,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     }
         
     @Override
-    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+    public byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">createCRL(Collection)");
     	}
@@ -116,7 +116,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			    log.debug("Finished encoding CRL to byte array. Free memory="+Runtime.getRuntime().freeMemory());
     				log.debug("Storing CRL in certificate store.");
     			}
-    			crlSession.storeCRL(admin, tmpcrlBytes, cafp, nextCrlNumber, crl.getIssuer().toString(), crl.toASN1Structure().getThisUpdate().getDate(), crl.toASN1Structure().getNextUpdate().getDate(), (deltaCRL ? 1 : -1));
+    			crlSession.storeCRL(admin, tmpcrlBytes, cafp, nextCrlNumber, crl.getIssuer().toString(), crlPartitionIndex,
+    			        crl.toASN1Structure().getThisUpdate().getDate(), crl.toASN1Structure().getNextUpdate().getDate(), (deltaCRL ? 1 : -1));
     			String msg = intres.getLocalizedMessage("createcrl.createdcrl", Integer.valueOf(nextCrlNumber), ca.getName(), ca.getSubjectDN());
     			Map<String, Object> details = new LinkedHashMap<String, Object>();
     			details.put("msg", msg);

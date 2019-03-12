@@ -34,6 +34,7 @@ public interface CrlCreateSession {
      *
      * @param admin administrator performing the task
      * @param ca the CA this operation regards
+     * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
      * @param certs collection of RevokedCertInfo object.
      * @param basecrlnumber the CRL number of the Base CRL to generate a deltaCRL, -1 to generate a full CRL
      * @param nextCrlNumber the CRL number.
@@ -41,7 +42,7 @@ public interface CrlCreateSession {
      * @throws AuthorizationDeniedException 
      * @throws CryptoTokenOfflineException 
      */
-    byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber)
+    byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int basecrlnumber, int nextCrlNumber)
             throws CryptoTokenOfflineException, AuthorizationDeniedException;
 
 }

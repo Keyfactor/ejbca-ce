@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -103,9 +104,10 @@ public class GetCRLServlet extends HttpServlet {
         if (command == null) {
             command = "";
         }
+        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO add partitioned CRL support (ECA-7961) 
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
-                byte[] crl = crlStoreSession.getLastCRL(issuerdn, false);
+                byte[] crl = crlStoreSession.getLastCRL(issuerdn, crlPartitionIndex, false);
                 String basename = getBaseFileName(issuerdn);
                 String filename = basename+".crl";
                 // We must remove cache headers for IE
@@ -125,7 +127,7 @@ public class GetCRLServlet extends HttpServlet {
         }
         if (command.equalsIgnoreCase(COMMAND_DELTACRL) && issuerdn != null) {
         	try {
-        		byte[] crl = crlStoreSession.getLastCRL(issuerdn, true);
+        		byte[] crl = crlStoreSession.getLastCRL(issuerdn, crlPartitionIndex, true);
                 String basename = getBaseFileName(issuerdn);
         		String filename = basename+"_delta.crl";
         		// We must remove cache headers for IE

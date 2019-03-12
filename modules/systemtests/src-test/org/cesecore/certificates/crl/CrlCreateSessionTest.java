@@ -59,7 +59,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
@@ -134,14 +133,14 @@ public class CrlCreateSessionTest {
         CA ca = caTestSessionRemote.getCA(authenticationToken, caid);
         final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
         Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, -1);
-        int fullnumber = crlStoreSession.getLastCRLNumber(certSubjectDN, false);
-        int deltanumber = crlStoreSession.getLastCRLNumber(certSubjectDN, true);
+        int fullnumber = getLastCrlNumber(certSubjectDN, false);
+        int deltanumber = getLastCrlNumber(certSubjectDN, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
         int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
 
-        crlCreateSession.generateAndStoreCRL(authenticationToken, ca, revcerts, -1, nextCrlNumber);
+        generateAndStoreCrl(ca, revcerts, -1, nextCrlNumber);
         // We should now have a CRL generated
-        byte[] crl = crlStoreSession.getLastCRL(ca.getSubjectDN(), false);
+        byte[] crl = getLastCrl(ca.getSubjectDN(), false);
         try {
             assertNotNull(crl);
             // Check that it is signed by the correct public key
@@ -165,32 +164,32 @@ public class CrlCreateSessionTest {
         X509CAInfo cainfo = (X509CAInfo) ca.getCAInfo();
         cainfo.setDeltaCRLPeriod(1); // Issue very often..
         caSession.editCA(authenticationToken, cainfo);
-        forceCRL(authenticationToken, ca);
-        forceDeltaCRL(authenticationToken, ca);
+        forceCRL(ca);
+        forceDeltaCRL(ca);
     
         // Get number of last Delta CRL
-        int number = crlStoreSession.getLastCRLNumber(ca.getSubjectDN(), true);
+        int number = getLastCrlNumber(ca.getSubjectDN(), true);
         log.debug("Last CRLNumber = " + number);
-        byte[] crl = crlStoreSession.getLastCRL(ca.getSubjectDN(), true);
+        byte[] crl = getLastCrl(ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         assertEquals(number, num.intValue());
         // Create a new CRL again to see that the number increases
-        forceDeltaCRL(authenticationToken, ca);
-        int number1 = crlStoreSession.getLastCRLNumber(ca.getSubjectDN(), true);
+        forceDeltaCRL(ca);
+        int number1 = getLastCrlNumber(ca.getSubjectDN(), true);
         assertEquals(number + 1, number1);
-        byte[] crl1 = crlStoreSession.getLastCRL(ca.getSubjectDN(), true);
+        byte[] crl1 = getLastCrl(ca.getSubjectDN(), true);
         X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
         BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
         assertEquals(number + 1, num1.intValue());
         // Now create a normal CRL and a deltaCRL again. CRLNUmber should now be
         // increased by two
-        forceCRL(authenticationToken, ca);
-        forceDeltaCRL(authenticationToken, ca);
-        int number2 = crlStoreSession.getLastCRLNumber(ca.getSubjectDN(), true);
+        forceCRL(ca);
+        forceDeltaCRL(ca);
+        int number2 = getLastCrlNumber(ca.getSubjectDN(), true);
         assertEquals(number1 + 2, number2);
-        byte[] crl2 = crlStoreSession.getLastCRL(ca.getSubjectDN(), true);
+        byte[] crl2 = getLastCrl(ca.getSubjectDN(), true);
         X509CRL x509crl2 = CertTools.getCRLfromByteArray(crl2);
         BigInteger num2 = CrlExtensions.getCrlNumber(x509crl2);
         assertEquals(number1 + 2, num2.intValue());
@@ -218,7 +217,7 @@ public class CrlCreateSessionTest {
             Thread.sleep(1000);
             
             // Base CRL should have the revoked certificate in the revoked state
-            forceCRL(authenticationToken, ca);
+            forceCRL(ca);
             X509CRLEntry crlEntry = fetchCRLEntry(cainfo, cert, false);
             assertNotNull("Revoked certificate should be on CRL", crlEntry);
             assertEquals("Wrong revocation status on Base CRL", CRLReason.CERTIFICATE_HOLD, crlEntry.getRevocationReason());
@@ -232,13 +231,13 @@ public class CrlCreateSessionTest {
             Thread.sleep(1000);
             
             // Delta CRL should now have the certificate in status "removeFromCrl"
-            forceDeltaCRL(authenticationToken, ca);
+            forceDeltaCRL(ca);
             crlEntry = fetchCRLEntry(cainfo, cert, true);
             assertNotNull("Unrevoked certificate should be on Delta CRL", crlEntry);
             assertEquals("Wrong revocation status on Delta CRL", CRLReason.REMOVE_FROM_CRL, crlEntry.getRevocationReason());
             
             // Generate a new Delta CRL. The certificate should still be there with removeFromCRL status
-            forceDeltaCRL(authenticationToken, ca);
+            forceDeltaCRL(ca);
             crlEntry = fetchCRLEntry(cainfo, cert, true);
             assertNotNull("Unrevoked certificate should still be on Delta CRL", crlEntry);
             assertEquals("Wrong revocation status on Delta CRL", CRLReason.REMOVE_FROM_CRL, crlEntry.getRevocationReason());
@@ -246,12 +245,12 @@ public class CrlCreateSessionTest {
             Thread.sleep(1000);
             
             // Generate a new Base CRL. The certificate should not be included.
-            forceCRL(authenticationToken, ca);
+            forceCRL(ca);
             crlEntry = fetchCRLEntry(cainfo, cert, false);
             assertNull("Revoked certificate should have been removed after generating a new Base CRL", crlEntry);
             
             // Generate a new Delta CRL. The certificate should not be included.
-            forceDeltaCRL(authenticationToken, ca);
+            forceDeltaCRL(ca);
             crlEntry = fetchCRLEntry(cainfo, cert, true);
             assertNull("Revoked certificate should no longer be included on Delta CRL after generating a new Base CRL", crlEntry);
             
@@ -260,7 +259,7 @@ public class CrlCreateSessionTest {
             internalCertificateStoreSession.setRevokeStatus(authenticationToken, cert, new Date(), RevokedCertInfo.NOT_REVOKED);
             
             // Generate a new Base CRL. Unrevoked certificates should not appear on Base CRLs 
-            forceCRL(authenticationToken, ca);
+            forceCRL(ca);
             crlEntry = fetchCRLEntry(cainfo, cert, false);
             assertNull("Unrevoked (removeFromCRL) certificates should never appear on Base CRLs", crlEntry);
         } finally {
@@ -363,17 +362,17 @@ public class CrlCreateSessionTest {
             assertArrayEquals("Wrong SKID in test CA.", TEST_AKID, CertTools.getSubjectKeyId(subca.getCACertificate()));
             
             // Create a base CRL and check the AKID
-            int baseCrlNumber = crlStoreSession.getLastCRLNumber(subcadn, false) + 1;
+            int baseCrlNumber = getLastCrlNumber(subcadn, false) + 1;
             assertEquals("For a new CA, the next crl number should be 1.", 1, baseCrlNumber);
-            crlCreateSession.generateAndStoreCRL(authenticationToken, subca, new ArrayList<RevokedCertInfo>(), -1, baseCrlNumber);
-            final byte[] crl = crlStoreSession.getLastCRL(subcadn, false);
+            generateAndStoreCrl(subca, new ArrayList<RevokedCertInfo>(), -1, baseCrlNumber);
+            final byte[] crl = getLastCrl(subcadn, false);
             checkCrlAkid(subca, crl);
             
             // Create a delta CRL and check the AKID
-            int deltaCrlNumber = crlStoreSession.getLastCRLNumber(subcadn, false) + 1;
+            int deltaCrlNumber = getLastCrlNumber(subcadn, false) + 1;
             assertEquals("Next CRL number should be 2 at this point.", 2, deltaCrlNumber);
-            crlCreateSession.generateAndStoreCRL(authenticationToken, subca, new ArrayList<RevokedCertInfo>(), baseCrlNumber, deltaCrlNumber);
-            final byte[] deltacrl = crlStoreSession.getLastCRL(subcadn, true); // true = get delta CRL
+            generateAndStoreCrl(subca, new ArrayList<RevokedCertInfo>(), baseCrlNumber, deltaCrlNumber);
+            final byte[] deltacrl = getLastCrl(subcadn, true); // true = get delta CRL
             checkCrlAkid(subca, deltacrl);
         } finally {
             // Remove everything created above to clean the database
@@ -386,14 +385,14 @@ public class CrlCreateSessionTest {
                 int caid = caInfo.getCAId();
                 // Delete sub CA CRLs
                 while (true) {
-                    final byte[] crl = crlStoreSession.getLastCRL(subcadn, true); // delta CRLs
+                    final byte[] crl = getLastCrl(subcadn, true); // delta CRLs
                     if (crl == null) {
                         break;
                     }
                     internalCertificateStoreSession.removeCRL(authenticationToken, CertTools.getFingerprintAsString(crl));
                 }
                 while (true) {
-                    final byte[] crl = crlStoreSession.getLastCRL(subcadn, false); // base CRLs
+                    final byte[] crl = getLastCrl(subcadn, false); // base CRLs
                     if (crl == null) {
                         break;
                     }
@@ -424,18 +423,18 @@ public class CrlCreateSessionTest {
         assertArrayEquals("Incorrect Authority Key Id in CRL.", TEST_AKID, akid.getKeyIdentifier());
     }
     
-    private void forceDeltaCRL(AuthenticationToken admin, CA ca) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CRLException {
-        final CRLInfo crlInfo = crlStoreSession.getLastCRLInfo(ca.getSubjectDN(), false);
+    private void forceDeltaCRL(final CA ca) throws AuthorizationDeniedException, CryptoTokenOfflineException, CRLException {
+        final CRLInfo crlInfo = crlStoreSession.getLastCRLInfo(ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
         // if no full CRL has been generated we can't create a delta CRL
         if (crlInfo != null) {
             CAInfo cainfo = ca.getCAInfo();
             if (cainfo.getDeltaCRLPeriod() > 0) {
-                internalCreateDeltaCRL(admin, ca, crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());   
+                internalCreateDeltaCRL(ca, crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());   
             }
         } 
     }
     
-    private String forceCRL(AuthenticationToken admin, CA ca) throws CryptoTokenOfflineException,
+    private String forceCRL(final CA ca) throws CryptoTokenOfflineException,
             AuthorizationDeniedException {
         if (ca == null) {
             throw new EJBException("No CA specified.");
@@ -472,12 +471,12 @@ public class CrlCreateSessionTest {
             }
             // a full CRL
             final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-            int fullnumber = crlStoreSession.getLastCRLNumber(certSubjectDN, false);
-            int deltanumber = crlStoreSession.getLastCRLNumber(certSubjectDN, true);
+            int fullnumber = getLastCrlNumber(certSubjectDN, false);
+            int deltanumber = getLastCrlNumber(certSubjectDN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
 
-            byte[] crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, revcerts, -1, nextCrlNumber);
+            byte[] crlBytes = generateAndStoreCrl(ca, revcerts, -1, nextCrlNumber);
 
             if (crlBytes != null) {
                 ret = CertTools.getFingerprintAsString(crlBytes);
@@ -488,7 +487,7 @@ public class CrlCreateSessionTest {
         return ret;
     }
     
-    private byte[] internalCreateDeltaCRL(AuthenticationToken admin, CA ca, int baseCrlNumber, long baseCrlCreateTime)
+    private byte[] internalCreateDeltaCRL(final CA ca, int baseCrlNumber, long baseCrlCreateTime)
             throws CryptoTokenOfflineException, AuthorizationDeniedException, CRLException {
         byte[] crlBytes = null;
         CAInfo cainfo = ca.getCAInfo();
@@ -500,7 +499,7 @@ public class CrlCreateSessionTest {
         }
 
         if ((baseCrlNumber == -1) && (baseCrlCreateTime == -1)) {
-            CRLInfo basecrlinfo = crlStoreSession.getLastCRLInfo(caCertSubjectDN, false);
+            CRLInfo basecrlinfo = crlStoreSession.getLastCRLInfo(caCertSubjectDN, CertificateConstants.NO_CRL_PARTITION, false);
             baseCrlCreateTime = basecrlinfo.getCreateDate().getTime();
             baseCrlNumber = basecrlinfo.getLastCRLNumber();
         }
@@ -521,12 +520,12 @@ public class CrlCreateSessionTest {
         }
         // create a delta CRL
         final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-        int fullnumber = crlStoreSession.getLastCRLNumber(certSubjectDN, false);
-        int deltanumber = crlStoreSession.getLastCRLNumber(certSubjectDN, true);
+        int fullnumber = getLastCrlNumber(certSubjectDN, false);
+        int deltanumber = getLastCrlNumber(certSubjectDN, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
         int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
 
-        crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, certs, baseCrlNumber, nextCrlNumber);
+        crlBytes = generateAndStoreCrl(ca, certs, baseCrlNumber, nextCrlNumber);
         X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
         if (log.isDebugEnabled()) {
             log.debug("Created delta CRL with expire date: " + crl.getNextUpdate());
@@ -536,9 +535,22 @@ public class CrlCreateSessionTest {
     }
     
     private X509CRLEntry fetchCRLEntry(final CAInfo cainfo, final Certificate cert, final boolean deltaCRL) throws CRLException {
-        final byte[] crlBytes = crlStoreSession.getLastCRL(cainfo.getSubjectDN(), deltaCRL);
+        final byte[] crlBytes = getLastCrl(cainfo.getSubjectDN(), deltaCRL);
         final X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
         return crl.getRevokedCertificate(CertTools.getSerialNumber(cert));
+    }
+
+
+    private int getLastCrlNumber(final String issuerDn, final boolean deltaCrl) {
+        return crlStoreSession.getLastCRLNumber(issuerDn, CertificateConstants.NO_CRL_PARTITION, deltaCrl);
+    }
+
+    private byte[] getLastCrl(final String issuerDn, final boolean deltaCrl) {
+        return crlStoreSession.getLastCRL(issuerDn, CertificateConstants.NO_CRL_PARTITION, deltaCrl);
+    }
+
+    private byte[] generateAndStoreCrl(final CA ca, final Collection<RevokedCertInfo> revcerts, int thisCrlNumber, int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+        return crlCreateSession.generateAndStoreCRL(authenticationToken, ca, CertificateConstants.NO_CRL_PARTITION, revcerts, thisCrlNumber, nextCrlNumber);
     }
 
 }
