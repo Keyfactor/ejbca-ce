@@ -285,19 +285,39 @@
 					<h:panelGroup>
 						&nbsp;
 					</h:panelGroup>
-					<h:panelGroup id="mergedWebServicesGroup">
+					<h:panelGroup id="mergeDnWebServicesGroup">
 						<h:outputText value="#{web.text.ALLOWMERGEDNWEBSERVICES}" />    
 						&nbsp;
-						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Fields.html#Configuring_Web_Services_Behavior')}" escape="false"/>
+						<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Fields.html#Allow_merge_DN_Webservices')}" escape="false"/>
 					</h:panelGroup>
-					<h:panelGrid id="mergerdWebServicesGrid" columns="2">
+					<h:panelGrid id="mergeDnWebServicesGrid" columns="2">
 	       	    	    <h:selectBooleanCheckbox 
-	       	    	    	id="mergerdWebServicesCheckBox" 
+	       	    	    	id="mergeDnWebServicesCheckBox" 
 	       	    	    	value="#{endEntityProfileMBean.profiledata.allowMergeDnWebServices}" 
 	       	    	    	disabled="#{endEntityProfileMBean.viewOnly}">
 						</h:selectBooleanCheckbox>
-	       	    		<h:outputLabel for="mergerdWebServicesCheckBox" value="#{web.text.ALLOW}"/>
+	       	    		<h:outputLabel for="mergeDnWebServicesCheckBox" value="#{web.text.ALLOW}"/>
 					</h:panelGrid>
+                    <h:panelGroup>
+                        &nbsp;
+                    </h:panelGroup>
+                    <h:panelGroup id="allowMultiValueRDNGroup">
+                        <h:outputText value="#{web.text.ALLOWMULTIVALUERDN}" />    
+                        &nbsp;
+                        <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Fields.html#Allow_multi-value_RDNs')}" escape="false"/>
+                    </h:panelGroup>
+                    <h:panelGrid id="allowMultiValueRDNGrid" columns="2">
+                        <h:selectBooleanCheckbox 
+                            id="allowMultiValueRDNCheckBox" 
+                            value="#{endEntityProfileMBean.profiledata.allowMultiValueRDNs}" 
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                        </h:selectBooleanCheckbox>
+                        <h:panelGroup>
+	                        <h:outputLabel for="allowMultiValueRDNCheckBox" value="#{web.text.ALLOW}"/>
+                            &nbsp;
+                            <h:outputText styleClass="help" value="#{web.text.ALLOWMULTIVALUERDN_HELP}"/>
+	                    </h:panelGroup>
+                    </h:panelGrid>
 	       	</h:panelGrid>
 	
 <!-- SUBJECT DN ATTRIBUTES -->
