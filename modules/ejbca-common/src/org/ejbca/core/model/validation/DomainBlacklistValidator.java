@@ -512,10 +512,6 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
         return getData(BLACKLIST_DATE_KEY, null);
     }
 
-    public String getBlacklistDateAsString(){
-        return formatDate(getBlacklistDate());
-    }
-
     public void setBlacklistDate(final Date date) {
         putData(BLACKLIST_DATE_KEY, date);
     }
