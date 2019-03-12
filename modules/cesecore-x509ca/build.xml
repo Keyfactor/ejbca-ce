@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="cesecore-x509ca" basedir="../.." default="jar">
+	<property environment="env" />
+	<dirname property="cesecore-x509ca.dir" file="${ant.file.cesecore-x509ca}"/>
+
+    <import file="${cesecore-x509ca.dir}/../build-helpers.xml"/>
+
+	<property name="cesecore-x509ca.build.dir" location="${cesecore-x509ca.dir}/build"/>
+	<property name="cesecore-x509ca.build-test.dir" location="${cesecore-x509ca.dir}/build-test"/>
+	<property name="cesecore-x509ca.src-test.dir" location="${cesecore-x509ca.dir}/src-test"/>
+
+
+    <path id="compile.classpath">
+        <path refid="lib.bouncycastle.classpath"/>
+        <path refid="lib.log4j.classpath"/>
+        <path refid="lib.commons-lang.classpath"/>
+        <path refid="lib.commons-logging.classpath"/>
+        <path refid="lib.commons-codec.classpath"/>
+        <path refid="lib.commons-config.classpath"/>
+        <path refid="lib.commons-collections.classpath"/>
+        <path location="${mod.cesecore-common.lib}"/>
+    </path>
+
+	<!-- The buildservicemanifest needs additional classes in order to run. 
+	     These are not included in the javac classpath for cesecore-x509ca to ensure that cesecore-x509ca does not depends on that -->
+	<path id="manifest.classpath">
+		<path refid="compile.classpath"/>
+		<path location="${ejbca.home}/src/java"/>
+		<path location="${ejbca.home}/src"/>
+		<path location="${cesecore-x509ca.dir}/build/classes"/>
+	</path>
+
+	<path id="test.classpath">
+		<path location="${cesecore-x509ca.build.dir}/classes"/>
+		<path location="${cesecore-x509ca.build-test.dir}"/>
+		<path refid="compile.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.easymock.classpath"/>
+		<path refid="lib.ldap.classpath"/>
+		<path location="${mod.cesecore-entity.lib}"/>
+		<path refid="lib.commons-codec.classpath"/>
+		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
+	</path>
+
+	<target name="jar" depends="with.clover">
+		<mkdir dir="${cesecore-x509ca.dir}/build/classes"/>
+		<javac srcdir="${cesecore-x509ca.dir}/src" destdir="${cesecore-x509ca.build.dir}/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
+			<classpath refid="compile.classpath"/>
+		</javac>
+		<!-- generates dynamically META-INF/services for the ServiceLocator to find plugin implementations -->
+		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.certificates.ca.CvcPlugin;org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.configuration.ConfigurationCache;org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;org.cesecore.keys.validation.Validator"
+    		file="${cesecore-x509ca.dir}/build/classes" classpath="manifest.classpath"/>
+		<mkdir dir="${cesecore-x509ca.dir}/dist"/>
+		<jar destfile="${cesecore-x509ca.dir}/dist/cesecore-x509ca.jar">
+			<fileset dir="${cesecore-x509ca.dir}/build" includes="META-INF/**/*"/>
+			<fileset dir="${cesecore-x509ca.dir}/build/classes/" excludes="**/*.java"/>
+			<fileset dir="${cesecore-x509ca.dir}/src/" excludes="**/*.java"/>
+			<fileset dir="${ejbca.home}/src/java">
+				<include name="defaultvalues.properties"/>
+				<include name="dncomponents.properties"/>
+				<include name="profilemappings.properties"/>
+	            <include name="profilemappings_enterprise.properties"/>
+				<include name="certextensions.properties"/> <!-- Used only for upgrade to 6.4.0, file can be dropped in future editions -->
+			</fileset>
+			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+		</jar>
+	</target>
+
+	<target name="clean" depends="">
+		<delete dir="${cesecore-x509ca.dir}/dist"/>
+		<delete dir="${cesecore-x509ca.build.dir}"/>
+		<delete dir="${cesecore-x509ca.build-test.dir}"/>
+
+	</target>
+
+	<target name="compile-tests" depends="jar, with.clover">
+		<mkdir dir="${cesecore-x509ca.build-test.dir}" />
+		<javac srcdir="${cesecore-x509ca.src-test.dir}" destdir="${cesecore-x509ca.build-test.dir}" debug="on" includeantruntime="no"
+	        	encoding="UTF-8" target="${java.target.version}" classpathref="test.classpath"/>
+		<copy file="${log4j.test.file}" tofile="${cesecore-x509ca.build-test.dir}/log4j.xml" failonerror="true"/>
+		<copy todir="${cesecore-x509ca.build-test.dir}" failonerror="true">
+			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+			<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
+		</copy>
+		<!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
+		<copy file="${systemtests.properties.file}" todir="${cesecore-x509ca.build-test.dir}" failonerror="false"/>
+	</target>
+
+	<target name="test" depends="compile-tests" description="Run tests for this module">
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cesecore-x509ca.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${cesecore-x509ca.build-test.dir}" includes="**/*Test.class">
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+	</target>
+
+	<target name="runone" depends="compile-tests">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=FooTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cesecore-x509ca.dir}">
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${cesecore-x509ca.build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+</project>
