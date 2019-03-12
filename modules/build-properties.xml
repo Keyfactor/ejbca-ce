@@ -27,6 +27,8 @@
     <property name="mod.ejbca-db-cli.lib" location="${mod.ejbca-db-cli.dist}/ejbca-db-cli.jar" />
     <property name="mod.cesecore-common.path" location="${mod.path}/cesecore-common" />
     <property name="mod.cesecore-common.lib" location="${mod.dist.path}/cesecore-common.jar" />
+    <property name="mod.cesecore-cvcca.path" location="${mod.path}/cesecore-cvcca" />
+    <property name="mod.cesecore-cvcca.lib" location="${mod.dist.path}/cesecore-cvcca.jar" />
     <property name="mod.cesecore-entity.path" location="${mod.path}/cesecore-entity" />
     <property name="mod.cesecore-entity.lib" location="${mod.dist.path}/cesecore-entity.jar" />
     <property name="mod.cesecore-ejb.path" location="${mod.path}/cesecore-ejb" />
@@ -477,6 +479,10 @@
 	
     <condition property="mod.cesecore-x509ca.exists">
         <available file="${mod.cesecore-x509ca.path}/build.xml" />
+    </condition>
+	
+    <condition property="mod.cesecore-cvcca.exists">
+        <available file="${mod.cesecore-cvcca.path}/build.xml" />
     </condition>
 
 	<condition property="mod.externalra.exists">
