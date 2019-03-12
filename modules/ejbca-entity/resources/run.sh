@@ -1,7 +1,16 @@
 #!/bin/sh
 
+# Manual classpath to include all JDBC drivers we put in 'endorsed'
+export MYCP=`dirname "$0"`/ejbca-db-cli.jar:`dirname "$0"`/endorsed/*
+#echo $MYCP 
+
 # Memory settings can be specified using parameters like: JAVA_OPT="-Xms20480m -Xmx20480m -XX:MaxPermSize=384m" run.sh ....
-java ${JAVA_OPT} -server -XX:+UseConcMarkSweepGC -XX:+ExplicitGCInvokesConcurrent -XX:-UseGCOverheadLimit -Djava.endorsed.dirs=`dirname "$0"`/endorsed -jar `dirname "$0"`/ejbca-db-cli.jar "$@"
+if [ "x${JAVA_OPT}" = "x" ] ; then
+    echo
+else
+    echo Using JAVA_OPT: ${JAVA_OPT}
+fi
+java ${JAVA_OPT} -cp $MYCP org.ejbca.database.DatabaseCli "$@"
 
 ERRORLEVEL="$?"
 if [ "x${ERRORLEVEL}" = "x1" ] ; then
