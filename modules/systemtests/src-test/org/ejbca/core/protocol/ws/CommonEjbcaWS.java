@@ -844,7 +844,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     /**
      * Generate a new key pair and return a B64 encoded PKCS#10 encoded certificate request for the keypair.
      */
-    private String getP10() throws Exception {
+    protected String getP10() throws Exception {
         return new String(Base64.encode(getP10Request().getEncoded()));
     }
 
