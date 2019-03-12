@@ -24,7 +24,7 @@ import java.util.Date;
  */
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
+public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
 
     private static WebDriver webDriver;
     private static String currentDateString;
@@ -43,7 +43,9 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
     private static class TestData {
         private static final String EJBCA_HOME = System.getenv("EJBCA_HOME");
         private static final String VALIDATOR_NAME = "EcaQa201_Blacklist";
-        private static final String VALIDATOR_BLACKLIST_FILENAME = EJBCA_HOME + "/modules/ejbca-webtest/resources/Blacklist.txt";
+        private static final String VALIDATOR_BLACKLIST_FILENAME = EJBCA_HOME + "/modules/ejbca-webtest/resources/blacklist.txt";
+        private static final String VALIDATOR_BLACKLIST_SITE = "www.yahoo.com";
+        private static final String VALIDATOR_PERFORM_TYPE = "Exact match";
         private static final String CA_NAME = "EcaQa201_P_CA";
         private static final String CA_VALIDITY = "1y";
         private static final String APPROVAL_PROFILE_NAME = "EcaQa201_P_ApprovalProfile";
@@ -81,7 +83,7 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
     @AfterClass
     public static void exit() throws AuthorizationDeniedException {
         // Remove generated artifacts
-        removeCaAndCryptoToken(EcaQa201_PositiveBlacklistValidator.TestData.CA_NAME);
+        removeCaAndCryptoToken(EcaQa201_PositiveBlacklistExactMatch.TestData.CA_NAME);
         removeValidatorByName(TestData.VALIDATOR_NAME);
         removeApprovalProfileByName(TestData.APPROVAL_PROFILE_NAME);
         removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
@@ -96,97 +98,133 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
     @Test
     public void stepA_AddAValidator() {
         validatorsHelper.openPage(getAdminWebUrl());
-        validatorsHelper.addValidator(EcaQa201_PositiveBlacklistValidator.TestData.VALIDATOR_NAME);
+        validatorsHelper.addValidator(EcaQa201_PositiveBlacklistExactMatch.TestData.VALIDATOR_NAME);
         validatorsHelper.assertValidatorNameExists(TestData.VALIDATOR_NAME);
     }
 
     @Test
-    public void stepB_EditAValidator() {
+    public void stepB_EditValidatorWithBlacklist() {
         validatorsHelper.openPage(getAdminWebUrl());
-        validatorsHelper.openEditValidatorPage(EcaQa201_PositiveBlacklistValidator.TestData.VALIDATOR_NAME);
+        validatorsHelper.openEditValidatorPage(EcaQa201_PositiveBlacklistExactMatch.TestData.VALIDATOR_NAME);
         validatorsHelper.setValidatorType("Domain Blacklist Validator");
+        validatorsHelper.setBlacklistPerformOption(TestData.VALIDATOR_PERFORM_TYPE);
         validatorsHelper.setBlacklistFile(TestData.VALIDATOR_BLACKLIST_FILENAME);
+    }
+
+    @Test
+    public void stepC_SaveValidator() {
+        validatorsHelper.saveValidator();
+        validatorsHelper.assertValidatorNameExists(TestData.VALIDATOR_NAME);
+    }
+
+    @Test public void stepD_EditValidatorSecondTime() {
+        validatorsHelper.openPage(getAdminWebUrl());
+        validatorsHelper.openEditValidatorPage(EcaQa201_PositiveBlacklistExactMatch.TestData.VALIDATOR_NAME);
+        validatorsHelper.setBlackListSite(TestData.VALIDATOR_BLACKLIST_SITE);
+
+        //Test to verify it returns a positive test result
+        validatorsHelper.testBlacklistSite();
+        validatorsHelper.assertBlackListResultsIsCorrect("Domain Blacklist Validator 'EcaQa201_Blacklist' permitted issuance of certificate.");
+    }
+
+    @Test
+    public void stepE_SaveValidatorSecondTime() {
         validatorsHelper.saveValidator();
         validatorsHelper.assertValidatorNameExists(TestData.VALIDATOR_NAME);
     }
 
 
     @Test
-    public void stepC_CreateCA() {
+    public void stepF_AddNewCA() {
         caHelper.openPage(getAdminWebUrl());
-        caHelper.addCa(EcaQa201_PositiveBlacklistValidator.TestData.CA_NAME);
-        caHelper.setValidity(EcaQa201_PositiveBlacklistValidator.TestData.CA_VALIDITY);
+        caHelper.addCa(EcaQa201_PositiveBlacklistExactMatch.TestData.CA_NAME);
+        caHelper.setValidity(EcaQa201_PositiveBlacklistExactMatch.TestData.CA_VALIDITY);
         caHelper.setOtherData(TestData.VALIDATOR_NAME);
+    }
+
+    @Test
+    public void stepG_CreateCA() {
         caHelper.createCa();
-        caHelper.assertExists(EcaQa201_PositiveBlacklistValidator.TestData.CA_NAME);
+        caHelper.assertExists(EcaQa201_PositiveBlacklistExactMatch.TestData.CA_NAME);
     }
 
 
     @Test
-    public void stepD_AddApprovalProfile() throws InterruptedException {
+    public void stepH_AddApprovalProfile() {
         approvalProfilesHelperDefault.openPage(getAdminWebUrl());
         approvalProfilesHelperDefault.addApprovalProfile(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelperDefault.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelperDefault.setApprovalProfileType(TestData.APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL);
         approvalProfilesHelperDefault.setApprovalStepPartitionApprovePartitionRole(0, 0,
-                EcaQa201_PositiveBlacklistValidator.TestData.ROLE_NAME);
-        approvalProfilesHelperDefault.saveApprovalProfile();
+                EcaQa201_PositiveBlacklistExactMatch.TestData.ROLE_NAME);
+    }
 
+    @Test
+    public void stepI_SaveApprovalProfile() {
+        approvalProfilesHelperDefault.saveApprovalProfile();
     }
 
 
     @Test
-    public void stepE_AddCertificateProfile() {
+    public void stepJ_AddCertificateProfile() {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         // Add Certificate Profile
         certificateProfileHelper.openPage(getAdminWebUrl());
-        certificateProfileHelper.addCertificateProfile(EcaQa201_PositiveBlacklistValidator.TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.addCertificateProfile(EcaQa201_PositiveBlacklistExactMatch.TestData.CERTIFICATE_PROFILE_NAME);
         // Verify Audit Log
         auditLogHelper.openPage(getAdminWebUrl());
         auditLogHelper.assertLogEntryByEventText(
                 "Certificate Profile Create",
                 "Success",
                 null,
-                Collections.singletonList("New certificate profile " + EcaQa201_PositiveBlacklistValidator.TestData.CERTIFICATE_PROFILE_NAME + " added successfully.")
+                Collections.singletonList("New certificate profile " + EcaQa201_PositiveBlacklistExactMatch.TestData.CERTIFICATE_PROFILE_NAME + " added successfully.")
         );
     }
 
     @Test
-    public void stepF_EditCertificateProfile() {
+    public void stepK_EditCertificateProfile() {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         // Edit certificate Profile
         certificateProfileHelper.openPage(getAdminWebUrl());
-        certificateProfileHelper.openEditCertificateProfilePage(EcaQa201_PositiveBlacklistValidator.TestData.CERTIFICATE_PROFILE_NAME);
+        certificateProfileHelper.openEditCertificateProfilePage(EcaQa201_PositiveBlacklistExactMatch.TestData.CERTIFICATE_PROFILE_NAME);
 
         // Set Approval Settings
-        certificateProfileHelper.selectApprovalSetting(CertificateProfileHelper.ApprovalSetting.ADD_OR_EDIT_END_ENTITY, EcaQa201_PositiveBlacklistValidator.TestData.APPROVAL_PROFILE_NAME);
-        certificateProfileHelper.selectApprovalSetting(CertificateProfileHelper.ApprovalSetting.KEY_RECOVERY, EcaQa201_PositiveBlacklistValidator.TestData.APPROVAL_PROFILE_NAME);
-        certificateProfileHelper.selectApprovalSetting(CertificateProfileHelper.ApprovalSetting.REVOCATION, EcaQa201_PositiveBlacklistValidator.TestData.APPROVAL_PROFILE_NAME);
+        certificateProfileHelper.selectApprovalSetting(CertificateProfileHelper.ApprovalSetting.ADD_OR_EDIT_END_ENTITY, EcaQa201_PositiveBlacklistExactMatch.TestData.APPROVAL_PROFILE_NAME);
+        certificateProfileHelper.selectApprovalSetting(CertificateProfileHelper.ApprovalSetting.KEY_RECOVERY, EcaQa201_PositiveBlacklistExactMatch.TestData.APPROVAL_PROFILE_NAME);
+        certificateProfileHelper.selectApprovalSetting(CertificateProfileHelper.ApprovalSetting.REVOCATION, EcaQa201_PositiveBlacklistExactMatch.TestData.APPROVAL_PROFILE_NAME);
 
         // Set validity
         certificateProfileHelper.editCertificateProfile("720d");
-        // Save
-        certificateProfileHelper.saveCertificateProfile();
-        // Verify Audit Log
-        auditLogHelper.openPage(getAdminWebUrl());
-        auditLogHelper.assertLogEntryByEventText(
-                "Certificate Profile Edit",
-                "Success",
-                null,
-                Arrays.asList(
-                        "msg=Edited certificateprofile " + EcaQa201_PositiveBlacklistValidator.TestData.CERTIFICATE_PROFILE_NAME + ".",
-                        "changed:encodedvalidity=1y 11mo 25d"
+        }
+
+        @Test
+        public void stepL_SaveCertificateProfile() {
+            // Save
+            certificateProfileHelper.saveCertificateProfile();
+            // Verify Audit Log
+            auditLogHelper.openPage(getAdminWebUrl());
+            auditLogHelper.assertLogEntryByEventText(
+                    "Certificate Profile Edit",
+                    "Success",
+                    null,
+                    Arrays.asList(
+                            "msg=Edited certificateprofile " + EcaQa201_PositiveBlacklistExactMatch.TestData.CERTIFICATE_PROFILE_NAME + ".",
+                            "changed:encodedvalidity=1y 11mo 25d"
                     )
             );
         }
 
         @Test
-        public void stepG_AddEndEntityProfile() {
+        public void stepM_AddEndEntityProfile() {
             eeProfileHelper.openPage(this.getAdminWebUrl());
-            eeProfileHelper.addEndEntityProfile(EcaQa201_PositiveBlacklistValidator.TestData.ENTITY_NAME);
-            eeProfileHelper.openEditEndEntityProfilePage(EcaQa201_PositiveBlacklistValidator.TestData.ENTITY_NAME);
+            eeProfileHelper.addEndEntityProfile(EcaQa201_PositiveBlacklistExactMatch.TestData.ENTITY_NAME);
+        }
+
+        @Test
+        public void stepN_EditEndEntityProfile() {
+            eeProfileHelper.openEditEndEntityProfilePage(EcaQa201_PositiveBlacklistExactMatch.TestData.ENTITY_NAME);
             eeProfileHelper.selectDefaultCa(this.getCaName());
             eeProfileHelper.triggerMaximumNumberOfFailedLoginAttempts();
             eeProfileHelper.triggerCertificateValidityStartTime();
@@ -203,20 +241,27 @@ public class EcaQa201_PositiveBlacklistValidator extends WebTestBase {
             eeProfileHelper.setNotificationSender(0, "sender@example.com");
             eeProfileHelper.setNotificationSubject(0, "Web Tester");
             eeProfileHelper.setNotificationMessage(0, "test message");
+        }
+
+        @Test
+        public void stepO_SaveEndEntityProfile() {
             eeProfileHelper.saveEndEntityProfile(true);
-            eeProfileHelper.assertEndEntityProfileNameExists(EcaQa201_PositiveBlacklistValidator.TestData.ENTITY_NAME);
+            eeProfileHelper.assertEndEntityProfileNameExists(EcaQa201_PositiveBlacklistExactMatch.TestData.ENTITY_NAME);
         }
 
     @Test
-    public void stepH_MakeNewCertificate() {
+    public void stepP_MakeNewCertificate() {
         raWebHelper.openPage(this.getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
-        raWebHelper.selectCertificateTypeByEndEntityName(EcaQa201_PositiveBlacklistValidator.TestData.ENTITY_NAME);
+        raWebHelper.selectCertificateTypeByEndEntityName(EcaQa201_PositiveBlacklistExactMatch.TestData.ENTITY_NAME);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
-        raWebHelper.fillClearCsrText(StringUtils.join(EcaQa201_PositiveBlacklistValidator.TestData.CERTIFICATE_REQUEST_PEM, "\n"));
+        raWebHelper.fillClearCsrText(StringUtils.join(EcaQa201_PositiveBlacklistExactMatch.TestData.CERTIFICATE_REQUEST_PEM, "\n"));
+    }
+
+    public void stepQ_UploadCsrCertificate() {
         raWebHelper.clickUploadCsrButton();
-        //raWebHelper.assertCsrUploadError();
+        raWebHelper.assertApproveMessageHasText("");
     }
 
 
