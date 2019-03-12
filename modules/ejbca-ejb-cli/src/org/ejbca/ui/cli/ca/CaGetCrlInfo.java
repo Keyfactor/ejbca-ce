@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -53,8 +54,9 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
             } 
             final StringBuilder sb = new StringBuilder();
             sb.append("\"").append(cainfo.getName()).append("\" \"").append(cainfo.getSubjectDN()).append("\"");
+            // TODO Handle partitioned CRLs here (ECA-7961)
             final CRLInfo crlInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLInfo(cainfo.getSubjectDN(),
-                    false);
+                    CertificateConstants.NO_CRL_PARTITION, false);
             if (crlInfo != null) {
                 sb.append(" CRL# ").append(crlInfo.getLastCRLNumber());
                 sb.append(" issued ").append(ValidityDate.formatAsUTC(crlInfo.getCreateDate()));
@@ -63,7 +65,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
                 sb.append(" NO_CRL_ISSUED");
             }
             final CRLInfo deltaCrlInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLInfo(cainfo.getSubjectDN(),
-                    true);
+                    CertificateConstants.NO_CRL_PARTITION, true);
             if (deltaCrlInfo != null) {
                 sb.append(" DELTACRL# ").append(deltaCrlInfo.getLastCRLNumber());
                 sb.append(" issued ").append(ValidityDate.formatAsUTC(deltaCrlInfo.getCreateDate()));

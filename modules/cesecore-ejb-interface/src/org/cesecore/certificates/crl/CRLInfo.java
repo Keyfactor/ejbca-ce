@@ -20,24 +20,29 @@ import java.util.Date;
  *
  * @version $Id$
  */
-public class CRLInfo implements Serializable {
-    
+public final class CRLInfo implements Serializable {
+
     private static final long serialVersionUID = 4942836797714142516L;
-    protected String subjectdn;
-    protected int lastcrlnumber;
-    protected Date thisupdate;
-    protected Date nextupdate;
-    
-    public CRLInfo(String subjectdn, int lastcrlnumber, long thisupdate, long nextupdate){
+    private final String subjectdn;
+    private final int crlPartitionIndex;
+    private final int lastcrlnumber;
+    private final Date thisupdate;
+    private final Date nextupdate;
+
+    public CRLInfo(final String subjectdn, final int crlPartitionIndex, final int lastcrlnumber, final long thisupdate, final long nextupdate) {
       this.subjectdn = subjectdn;
+      this.crlPartitionIndex = crlPartitionIndex;
       this.lastcrlnumber = lastcrlnumber;
       this.thisupdate = new Date(thisupdate);
       this.nextupdate = new Date(nextupdate);
     }
-    
+
+    /** Subject DN of CA that we have queried information for */
     public String getSubjectDN() {return subjectdn;}
+    /** CRL partition that we have queried information for, or CertificateConstants.NO_CRL_PARTITION for the main CRL */
+    public int getCrlPartitionIndex() { return crlPartitionIndex; }
+
     public int getLastCRLNumber() { return lastcrlnumber; }
     public Date getCreateDate() { return thisupdate; }
     public Date getExpireDate() { return nextupdate; }
-    
 }

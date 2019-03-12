@@ -27,29 +27,32 @@ public interface CrlStoreSession {
 	 * Retrieves the latest CRL issued by this CA.
 	 * 
 	 * @param issuerdn the CRL issuers DN (CAs subject DN)
+	 * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
 	 * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
 	 * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
 	 */
-	byte[] getLastCRL(String issuerdn, boolean deltaCRL);
+	byte[] getLastCRL(String issuerdn, int crlPartitionIndex, boolean deltaCRL);
 
     /**
      * Retrieves a specific CRL issued by this CA.
      * 
      * @param issuerdn the CRL issuers DN (CAs subject DN)
+     * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
      * @param crlNumber a crlNumber of a complete, or delta, CRL
      * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
      */
-    byte[] getCRL(String issuerdn, int crlNumber);
+    byte[] getCRL(String issuerdn, int crlPartitionIndex, int crlNumber);
 
 	/**
 	 * Retrieves the information about the latest CRL issued by this CA.
 	 * Retrieves less information than getLastCRL, i.e. not the actual CRL data.
 	 * 
 	 * @param issuerdn the CRL issuers DN (CAs subject DN)
+	 * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
 	 * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
 	 * @return CRLInfo of last CRL by CA or null if no CRL exists.
 	 */
-	CRLInfo getLastCRLInfo(String issuerdn, boolean deltaCRL);
+	CRLInfo getLastCRLInfo(String issuerdn, int crlPartitionIndex, boolean deltaCRL);
 
 	/**
 	 * Retrieves the information about the specified CRL. Retrieves less
@@ -64,11 +67,19 @@ public interface CrlStoreSession {
 	 * Retrieves the highest CRLNumber issued by the CA.
 	 * 
 	 * @param issuerdn the subjectDN of a CA certificate
+	 * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
 	 * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
 	 * @return the highest CRL number of CRLs issued by issuerdn, or 0 if no CRLs were issued.
 	 */
-	int getLastCRLNumber(String issuerdn, boolean deltaCRL);
-	
+	int getLastCRLNumber(String issuerdn, int crlPartitionIndex, boolean deltaCRL);
+
+	/**
+	 * Checks if any CRL has been created for the given CA.
+	 * @param issuerDn Issuer DN of CA.
+	 * @return true if at least one base CRL exists (partitioned or not)
+	 */
+	boolean crlExistsForCa(String issuerDn);
+
 	/**
      * Stores a CRL
      *
@@ -77,6 +88,7 @@ public interface CrlStoreSession {
      * @param cafp   Fingerprint (hex) of the CAs certificate.
      * @param number CRL number.
      * @param issuerDN the issuer of the CRL
+     * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
      * @param thisUpdate when this CRL was created
      * @param nextUpdate when this CRL expires
      * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
@@ -84,7 +96,7 @@ public interface CrlStoreSession {
      * @throws CrlStoreException (rollback) if an error occured storing the CRL
      * @throws AuthorizationDeniedException (rollback) if admin was not authorized to store CRL
      */
-    void storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator)
+    void storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String issuerDN, int crlPartitionIndex, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator)
     	throws CrlStoreException, AuthorizationDeniedException;
 	
 }

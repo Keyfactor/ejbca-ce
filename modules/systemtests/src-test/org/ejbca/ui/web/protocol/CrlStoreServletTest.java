@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -63,7 +64,7 @@ public class CrlStoreServletTest extends CaTestCase {
 	public void testCRLStore() throws Exception {
 		log.trace(">testCRLStore()");
 		final X509Certificate cacert = (X509Certificate)getTestCACert();
-		final String result = testCRLStore(cacert);
+		final String result = testCRLStore(cacert, CertificateConstants.NO_CRL_PARTITION); // TODO add partitioned CRL testing (ECA-7961)
 		assertNull(result, result);
 		log.trace("<testCRLStore()");
 	}
@@ -89,7 +90,7 @@ public class CrlStoreServletTest extends CaTestCase {
         return url;
 	}
 
-    private String testCRLStore(X509Certificate caCert) throws Exception {
+    private String testCRLStore(final X509Certificate caCert, final int crlPartitionIndex) throws Exception {
         // Before running this we need to make sure the certificate cache is refreshed, there may be a cache delay which is acceptable in real life, 
         // but not when running JUnit tests  
         final String sURI = getBaseUrl(false) + "?reloadcache=true";
@@ -100,10 +101,10 @@ public class CrlStoreServletTest extends CaTestCase {
         // Now on to the actual tests, with fresh caches
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
-        testCRLStore( pw, RFC4387URL.sKIDHash, false, caCert);
-        testCRLStore( pw, RFC4387URL.iHash, false, caCert);
-        testCRLStore( pw, RFC4387URL.sKIDHash, true, caCert);
-        testCRLStore( pw, RFC4387URL.iHash, true, caCert);
+        testCRLStore(pw, RFC4387URL.sKIDHash, crlPartitionIndex, false, caCert);
+        testCRLStore(pw, RFC4387URL.iHash, crlPartitionIndex, false, caCert);
+        testCRLStore(pw, RFC4387URL.sKIDHash, crlPartitionIndex, true, caCert);
+        testCRLStore(pw, RFC4387URL.iHash, crlPartitionIndex, true, caCert);
         pw.flush();
         final String problems = sw.toString();
         if ( !problems.isEmpty() ) {
@@ -112,7 +113,7 @@ public class CrlStoreServletTest extends CaTestCase {
         return null; // everything OK
     }
     
-    private void testCRLStore( PrintWriter pw, RFC4387URL urlType, boolean isDelta, X509Certificate caCert) throws Exception {
+    private void testCRLStore(final PrintWriter pw, final RFC4387URL urlType, final int crlPartitionIndex, final boolean isDelta, final X509Certificate caCert) throws Exception {
         final HashID id;
         final boolean aliasTest;
         switch( urlType ) {
@@ -130,7 +131,7 @@ public class CrlStoreServletTest extends CaTestCase {
         final String caSubjectDN = caCert.getSubjectDN().getName();
         {
             final String sURI = urlType.appendQueryToURL(getBaseUrl(false), id, isDelta);
-            testURI( pw, sURI, caSubjectDN, isDelta );
+            testUri(pw, sURI, caSubjectDN, crlPartitionIndex, isDelta);
         }
         if ( !aliasTest ) {
             return;
@@ -146,10 +147,10 @@ public class CrlStoreServletTest extends CaTestCase {
             }
         }
         final String sURI = getBaseUrl(false) + "?alias="+alias+(isDelta ? "&delta=" : "");
-        testURI( pw, sURI, caSubjectDN, isDelta );
+        testUri(pw, sURI, caSubjectDN, crlPartitionIndex, isDelta);
     }
     
-    private void testURI( PrintWriter pw, String sURI, String caSubjectDN, boolean isDelta ) throws Exception {
+    private void testUri(final PrintWriter pw, final String sURI, final String caSubjectDN, final int crlPartitionIndex, final boolean isDelta) throws Exception {
         log.debug("Testing URL: '"+sURI+"'.");
         final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
         connection.connect();
@@ -159,7 +160,7 @@ public class CrlStoreServletTest extends CaTestCase {
             return;
         }
 
-        final byte fromBean[] = crlSession.getLastCRL(caSubjectDN, isDelta);
+        final byte fromBean[] = crlSession.getLastCRL(caSubjectDN, crlPartitionIndex, isDelta);
         final byte fromURL[] = new byte[connection.getContentLength()];
         connection.getInputStream().read(fromURL);
         if ( !Arrays.areEqual(fromBean, fromURL) ) {

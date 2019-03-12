@@ -494,7 +494,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     @Override
     public Integer getCrlPartitionIndex() {
-        return crlPartitionIndex;
+        return crlPartitionIndex != null ? crlPartitionIndex : 0;
     }
 
     @Override

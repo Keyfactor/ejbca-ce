@@ -34,7 +34,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
@@ -157,11 +156,11 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
     public void tearDown() throws Exception {
         // Remove any testca before exiting tests
         byte[] crl;
-        while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
+        while ((crl = getLastCrl(testx509ca.getSubjectDN(), false)) != null) {
             X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
             internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
         }
-        while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
+        while ((crl = getLastCrl(testx509ca.getSubjectDN(), true)) != null) {
             X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
             internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
         }
@@ -177,18 +176,18 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         X509CRL x509crl = null;
 
         // Get number of last CRL
-        int number = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), false);
+        int number = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
         log.debug("Last CRLNumber = " + number);
-        byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+        byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
 
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         // Create a new CRL again to see that the number increases
         publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-        int number1 = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), false);
+        int number1 = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
         assertEquals(number + 1, number1);
-        byte[] crl1 = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+        byte[] crl1 = getLastCrl(testx509ca.getSubjectDN(), false);
         X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
         BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
         assertEquals(num.intValue() + 1, num1.intValue());
@@ -200,7 +199,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         // Get number of last CRL
         Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), -1);
         log.debug("Number of revoked certificates=" + revfp.size());
-        crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+        crl = getLastCrl(testx509ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
 
         x509crl = CertTools.getCRLfromByteArray(crl);
@@ -245,14 +244,14 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
 
             // Create a CRL verify that our expired, but unrevoked certificate is not on it
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
             assertFalse("Certificate should not be present on the CRL", x509crl.isRevoked(cert));
             // Revoke it, it shall now be on the CRL
             internalCertificateStoreSession.setRevokeStatus(alwaysAllowToken, cert, new Date(), RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED);
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             assertTrue("Certificate should be present on the CRL", x509crl.isRevoked(cert));
@@ -261,7 +260,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertTrue(info.getKeepExpiredCertsOnCRL());
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             final BigInteger initialCrlNumber = CrlExtensions.getCrlNumber(x509crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
@@ -279,7 +278,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(fp);
             assertEquals("Info should be REVOKED before generating CRL that will set it to ARCHIVED", CertificateConstants.CERT_REVOKED, certInfo.getStatus());
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             assertTrue("Certificate should be present on the CRL", x509crl.isRevoked(cert));
@@ -287,7 +286,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertEquals("Info should be ARCHIVED after generating CRL", CertificateConstants.CERT_ARCHIVED, certInfo.getStatus());
             // Second time it should be gone
             publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             assertFalse("Certificate should not be present on the CRL", x509crl.isRevoked(cert));
@@ -318,7 +317,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             // Create a new CRL again...
             assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate is not present in a new CRL
-            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
             Set<? extends X509CRLEntry> revset = x509crl.getRevokedCertificates();
@@ -334,7 +333,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             // Create a new CRL again...
             assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS present in a new CRL
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -347,7 +346,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS NOT present in the new
             // CRL.
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -361,7 +360,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             // Create a new CRL again...
             assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS present in a new CRL
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -376,7 +375,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             // because the revocation reason
             // was not CERTIFICATE_HOLD, we can only un-revoke certificates that are
             // on hold.
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -430,14 +429,14 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         cainfo.setDefaultCRLDistPoint(cdpURL);
         caSession.editCA(roleMgmgToken, cainfo);
         publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-        x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
+        x509crl = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), false));
         cdpDER = x509crl.getExtensionValue(Extension.issuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance((ASN1Sequence) aIn.readObject());
+        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
         DistributionPointName distpoint = cdp.getDistributionPoint();
 
         assertEquals("CRL distribution point is different", cdpURL,
@@ -447,7 +446,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         cainfo.setDefaultCRLDistPoint("");
         caSession.editCA(roleMgmgToken, cainfo);
         publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-        x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
+        x509crl = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), false));
         assertNull("CRL has distribution points", x509crl.getExtensionValue(Extension.cRLDistributionPoints.getId()));
     }
 
@@ -467,14 +466,14 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         cainfo.setCADefinedFreshestCRL(freshestCdpURL);
         caSession.editCA(roleMgmgToken, cainfo);
         publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
-        x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
+        x509crl = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), false));
         cFreshestDpDER = x509crl.getExtensionValue(Extension.freshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = CRLDistPoint.getInstance((ASN1Sequence) aIn.readObject());
+        CRLDistPoint cdp = CRLDistPoint.getInstance(aIn.readObject());
         DistributionPoint[] distpoints = cdp.getDistributionPoints();
 
         assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
@@ -494,33 +493,33 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         try {
             // Now wait and test again
             Thread.sleep(1000);
-            final X509CRL x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
+            final X509CRL x509crl = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), false));
             assertTrue(publishingCrlSessionRemote.createCRLs(roleMgmgToken) > 0);
-            final X509CRL x509crlAfter = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
+            final X509CRL x509crlAfter = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), false));
             assertTrue("Did not generate a newer CRL.", x509crlAfter.getThisUpdate().after(x509crl.getThisUpdate()));
-            final X509CRL x509deltaCrl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), true));
+            final X509CRL x509deltaCrl = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), true));
             assertTrue(publishingCrlSessionRemote.createDeltaCRLs(roleMgmgToken) > 0);
-            final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), true));
+            final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), true));
             assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter.getThisUpdate().after(x509deltaCrl.getThisUpdate()));
             // Try a similar thing when we specify which CA IDs to generate CRLs for
             // Compare CRL numbers instead of Dates, since these CRLs might have been generated the same second as the last ones
-            final Collection<Integer> caids = new ArrayList<Integer>();
+            final Collection<Integer> caids = new ArrayList<>();
             caids.add(Integer.valueOf(testx509ca.getCAId()));
             publishingCrlProxySession.createCRLs(roleMgmgToken, caids, 2);
-            final X509CRL x509crlAfter2 = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
+            final X509CRL x509crlAfter2 = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), false));
             assertTrue("Did not generate a newer CRL.",
                     CrlExtensions.getCrlNumber(x509crlAfter2).intValue() > CrlExtensions.getCrlNumber(x509crlAfter).intValue());
             publishingCrlProxySession.createDeltaCRLs(roleMgmgToken, caids, 2);
-            final X509CRL x509deltaCrlAfter2 = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), true));
+            final X509CRL x509deltaCrlAfter2 = CertTools.getCRLfromByteArray(getLastCrl(cainfo.getSubjectDN(), true));
             assertTrue("Did not generate a newer Delta CRL.",
                     CrlExtensions.getCrlNumber(x509deltaCrlAfter2).intValue() > CrlExtensions.getCrlNumber(x509deltaCrlAfter).intValue());
         } finally {
             byte[] crl;
-            while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
+            while ((crl = getLastCrl(testx509ca.getSubjectDN(), false)) != null) {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 internalCertificateStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
             }
-            while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
+            while ((crl = getLastCrl(testx509ca.getSubjectDN(), true)) != null) {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 internalCertificateStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
             }
@@ -572,4 +571,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         return cert;
     }
 
+    private byte[] getLastCrl(final String issuerDn, final boolean deltaCrl) {
+        return crlStoreSession.getLastCRL(issuerDn, CertificateConstants.NO_CRL_PARTITION, deltaCrl);
+    }
 }

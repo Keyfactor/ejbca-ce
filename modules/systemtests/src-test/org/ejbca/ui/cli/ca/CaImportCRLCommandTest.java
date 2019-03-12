@@ -123,9 +123,9 @@ public class CaImportCRLCommandTest {
             caInitCommand.execute(CAINIT_ARGS);
             assertNotNull("Test CA was not created.", caSession.getCAInfo(admin, CA_NAME));
             CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
-            int no = crlSession.getLastCRLNumber(cainfo.getSubjectDN(), false);
+            int no = crlSession.getLastCRLNumber(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             caCreateCrlCommand.execute(CACREATECRL_ARGS);
-            int noafter = crlSession.getLastCRLNumber(cainfo.getSubjectDN(), false);
+            int noafter = crlSession.getLastCRLNumber(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             assertEquals("A new CRL was not created", no+1, noafter);
             File f = new File(CRL_FILENAME);
             assertFalse("CRL file already exists.", f.exists());

@@ -139,14 +139,15 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
             if (issuerdn != null) {
                 CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
                         issuerdn.hashCode());
+                int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO loop over all partitions to support partitioned CRLs (ECA-7961)
                 if (!deltaCRL) {
                     EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).forceCRL(getAuthenticationToken(), cainfo.getCAId());
-                    int number = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, false);
+                    int number = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, crlPartitionIndex, false);
                     log.info("CRL with number " + number + " generated.");
                 } else {
                     EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).forceDeltaCRL(getAuthenticationToken(),
                             cainfo.getCAId());
-                    int number = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, true);
+                    int number = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, crlPartitionIndex, true);
                     log.info("Delta CRL with number " + number + " generated.");
                 }
             } else {

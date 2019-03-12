@@ -2431,7 +2431,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (cainfo == null) {
             throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
         }
-        return crlStoreSession.getLastCRL(cainfo.getSubjectDN(), deltaCRL);
+        // This method is used from the EjbcaWS.getLatestCRL Web Service method, and it does not allow specifying a partition.
+        return crlStoreSession.getLastCRL(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, deltaCRL);
     }
 
     @Override
@@ -2440,8 +2441,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (cainfo == null) {
             throw new CADoesntExistsException("CA with subjectDn " + issuerDn + " doesn't exist.");
         }
-        return crlStoreSession.getLastCRL(issuerDn, deltaCRL);
+        // This method is used from the EjbcaWS.getLatestCRL Web Service method, and it does not allow specifying a partition.
+        return crlStoreSession.getLastCRL(issuerDn, CertificateConstants.NO_CRL_PARTITION, deltaCRL);
     }
+
+    // TODO Add new method for Partitioned CRL support for Web Service and REST API (ECA-7966)
 
     @Override
     public Integer getRemainingNumberOfApprovals(final AuthenticationToken authenticationToken, final int requestId)

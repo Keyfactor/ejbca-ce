@@ -50,6 +50,7 @@ import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -188,6 +189,7 @@ public class CertDistServlet extends HttpServlet {
             try {
                 // Do we have a CRL number parameters?
                 final String crlNumber = req.getParameter(CRLNUMBER_PROPERTY);
+                final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO Add partitioned CRL support (ECA-7961)
                 byte[] crl = null;
                 if (StringUtils.isNotEmpty(crlNumber)) {
                     // Using CRLNumber then we don't care if it's delta or full, it's what it is specified by the number
@@ -195,12 +197,12 @@ public class CertDistServlet extends HttpServlet {
                         log.debug("CRL Number must be a positive number: "+crlNumber);
                         res.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE, "CRLNumber is not a valid positive numeric value.");
                     }
-                    crl = crlSession.getCRL(issuerdn, Integer.valueOf(crlNumber));
+                    crl = crlSession.getCRL(issuerdn, crlPartitionIndex, Integer.valueOf(crlNumber));
                 } else {
                     if (command.equalsIgnoreCase(COMMAND_CRL)) {
-                        crl = crlSession.getLastCRL(issuerdn, false); // CRL
+                        crl = crlSession.getLastCRL(issuerdn, crlPartitionIndex, false); // CRL
                     } else {
-                        crl = crlSession.getLastCRL(issuerdn, true); // deltaCRL
+                        crl = crlSession.getLastCRL(issuerdn, crlPartitionIndex, true); // deltaCRL
                     }
                 }
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);

@@ -16,10 +16,9 @@ import static org.junit.Assert.assertFalse;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -67,10 +66,12 @@ public class CaCreateCrlCommandTest {
     }
 
     @Test
-    public void testCommand() throws CADoesntExistsException, AuthorizationDeniedException {
-        CRLInfo oldCrl = crlStoreSession.getLastCRLInfo(CA_DN, false);
+    public void testCommand() {
+        CRLInfo oldCrl = crlStoreSession.getLastCRLInfo(CA_DN, CertificateConstants.NO_CRL_PARTITION, false);
         String[] args = new String[] { CA_NAME };
         command.execute(args);
-        assertFalse("No CRL was produced", crlStoreSession.getLastCRLInfo(CA_DN, false).equals(oldCrl));
+        assertFalse("No CRL was produced", crlStoreSession.getLastCRLInfo(CA_DN, CertificateConstants.NO_CRL_PARTITION, false).equals(oldCrl));
     }
+
+    // TODO Add test of Partitioned CRLs (ECA-7961)
 }

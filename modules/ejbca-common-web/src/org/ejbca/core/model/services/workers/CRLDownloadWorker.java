@@ -27,6 +27,7 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -90,9 +91,10 @@ public class CRLDownloadWorker extends BaseWorker {
                         continue;
                     }
                     final String issuerDn = CertTools.getSubjectDN(caCertificate);
+                    final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO add support for partioning for CRLs (ECA-7963). Should probably loop over all partitions?
                     // Get last known CRL (if any) and check when the next update will be
                     final Date now = new Date();
-                    final X509CRL lastFullCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, false));
+                    final X509CRL lastFullCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false));
                     final X509CRL newestFullCrl;
                     if (!ignoreNextUpdate && lastFullCrl!=null && now.before(lastFullCrl.getNextUpdate())) {
                         log.info("Next full CRL update for CA '" + caInfo.getName() + "' will be " + ValidityDate.formatAsISO8601(lastFullCrl.getNextUpdate(), null) + ". Skipping download.");
@@ -109,7 +111,7 @@ public class CRLDownloadWorker extends BaseWorker {
                         final List<String> freshestCdps = CrlExtensions.extractFreshestCrlDistributionPoints(newestFullCrl);
                         if (!freshestCdps.isEmpty()) {
                             // Delta CRLs are used and we might already have a valid one stored
-                            X509CRL lastDeltaCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, true));
+                            X509CRL lastDeltaCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, true));
                             if (lastDeltaCrl!=null && lastDeltaCrl.getThisUpdate().before(newestFullCrl.getThisUpdate())) {
                                 // The last known delta CRL info is already included in the latest full CRL, so treat the last delta as non-existent
                                 lastDeltaCrl = null;

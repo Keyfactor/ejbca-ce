@@ -28,6 +28,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -245,39 +246,39 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
         //Make sure that CA that has gone through Name Change continue CRL numbering
         // Using full CRLs should be the use case that is the most common when doing CA Name Change, so make sure full crl number is the latest
         publishingCrlSession.forceCRL(internalAdmin, info.getCAId());
-        int crlFullNumberBeforeRenaming = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), false);
-        final int crlDeltaNumberBeforeRenaming = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), true);        
+        int crlFullNumberBeforeRenaming = getLastCrlNumber(info.getSubjectDN(), false);
+        final int crlDeltaNumberBeforeRenaming = getLastCrlNumber(info.getSubjectDN(), true);        
         if (crlFullNumberBeforeRenaming <= 1 && crlDeltaNumberBeforeRenaming <= 1) {
             // If only an initial CRL was generated, force another one so we have CRL number > 1
             publishingCrlSession.forceCRL(internalAdmin, info.getCAId());
-            int newNumber = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), false);
+            int newNumber = getLastCrlNumber(info.getSubjectDN(), false);
             assertTrue("After CRL generation, full CRL number did not increase",
                     newNumber == Math.max(crlFullNumberBeforeRenaming, crlDeltaNumberBeforeRenaming) + 1);
             crlFullNumberBeforeRenaming = newNumber;
         }
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
                 /*createLinkCertificates=*/false, newSubjectDN);
-        final int crlFullNumberAfterRenaming = crlStoreSession.getLastCRLNumber(newSubjectDN, false);
+        final int crlFullNumberAfterRenaming = getLastCrlNumber(newSubjectDN, false);
         assertEquals("After CA Name Change, CA doesn't continue CRL numbering",
                 Math.max(crlFullNumberBeforeRenaming, crlDeltaNumberBeforeRenaming) + 1, crlFullNumberAfterRenaming);
         
         //Make sure that CA that has gone through Name Change can issue CRLs with right numbering
-        final int crlDeltaNumberAfterRenaming = crlStoreSession.getLastCRLNumber(newSubjectDN, true);
+        final int crlDeltaNumberAfterRenaming = getLastCrlNumber(newSubjectDN, true);
         X509CAInfo newinfo1 = (X509CAInfo) caSession.getCAInfo(internalAdmin, newCAName);
         boolean crlGenerated = publishingCrlSession.forceCRL(internalAdmin, newinfo1.getCAId());
         assertTrue("CRL are not generated for renewed CA after forceCRL operation", crlGenerated);
-        final int crlFullNumberAfterForceCRL = crlStoreSession.getLastCRLNumber(newSubjectDN, false);
+        final int crlFullNumberAfterForceCRL = getLastCrlNumber(newSubjectDN, false);
         assertEquals("Unexpected CRL number value " + crlFullNumberAfterForceCRL + " after forceCRL for renewed CA with new name. Should be " + (Math.max(crlFullNumberAfterRenaming, crlDeltaNumberAfterRenaming) + 1 + 1),
                 Math.max(crlFullNumberAfterRenaming, crlDeltaNumberAfterRenaming) + 1, crlFullNumberAfterForceCRL);
         
         // Do the same but when deltaCRLNumber is the latest
         // Clean up first
         publishingCrlSession.forceDeltaCRL(internalAdmin, info.getCAId());
-        int crlFullNumberBeforeRenaming2 = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), false);
-        final int crlDeltaNumberBeforeRenaming2 = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), true);
+        int crlFullNumberBeforeRenaming2 = getLastCrlNumber(info.getSubjectDN(), false);
+        final int crlDeltaNumberBeforeRenaming2 = getLastCrlNumber(info.getSubjectDN(), true);
         caAdminSession.renewCANewSubjectDn(internalAdmin, info.getCAId(), /*regenerateKeys=*/true, /*customNotBefore=*/null,
                 /*createLinkCertificates=*/false, newSubjectDN2);
-        final int crlFullNumberAfterRenaming2 = crlStoreSession.getLastCRLNumber(newSubjectDN2, false);
+        final int crlFullNumberAfterRenaming2 = getLastCrlNumber(newSubjectDN2, false);
         assertEquals("After CA Name Change, CA doesn't continue CRL numbering",
                 Math.max(crlFullNumberBeforeRenaming2, crlDeltaNumberBeforeRenaming2) + 1, crlFullNumberAfterRenaming2);
 
@@ -322,5 +323,9 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
         }
         
         log.trace("<testNewCANameDoesNotExist()");
+    }
+    
+    private int getLastCrlNumber(final String issuerDn, final boolean deltaCrl) {
+        return crlStoreSession.getLastCRLNumber(newSubjectDN2, CertificateConstants.NO_CRL_PARTITION, false);
     }
 }

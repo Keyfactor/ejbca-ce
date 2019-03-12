@@ -1992,7 +1992,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.error(errorMessage);
                     throw new CANameChangeRenewalException(errorMessage);
                 }
-                if (crlStoreSession.getLastCRL(newSubjectDN, false) != null) {
+                if (crlStoreSession.crlExistsForCa(newSubjectDN)) {
                     final String errorMessage = "There are already stored some CRL data with issuer DN equal to specified new SubjectDN = "
                             + newSubjectDN + ". Please delete them. Aborting CA Name Change renewal.";
                     log.error(errorMessage);
@@ -3125,19 +3125,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isDebugEnabled()) {
             log.debug("Storing CRL in publishers");
         }
+        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO add support for partitioned CRLs (ECA-7939)
         final String issuerDN = CertTools.getSubjectDN(caCert);
         final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
-        final byte crl[] = crlStoreSession.getLastCRL(issuerDN, false);
+        final byte crl[] = crlStoreSession.getLastCRL(issuerDN, crlPartitionIndex, false);
         if (crl != null) {
-            final int nr = crlStoreSession.getLastCRLInfo(issuerDN, false).getLastCRLNumber();
+            final int nr = crlStoreSession.getLastCRLInfo(issuerDN, crlPartitionIndex, false).getLastCRLNumber();
             publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
         }
         if (!doPublishDeltaCRL) {
             return;
         }
-        final byte deltaCrl[] = crlStoreSession.getLastCRL(issuerDN, true);
+        final byte deltaCrl[] = crlStoreSession.getLastCRL(issuerDN, crlPartitionIndex, true);
         if (deltaCrl != null) {
-            final int nr = crlStoreSession.getLastCRLInfo(issuerDN, true).getLastCRLNumber();
+            final int nr = crlStoreSession.getLastCRLInfo(issuerDN, crlPartitionIndex, true).getLastCRLNumber();
             publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
         }
     }

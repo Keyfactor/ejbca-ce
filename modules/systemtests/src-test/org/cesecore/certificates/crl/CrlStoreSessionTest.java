@@ -29,6 +29,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
@@ -116,7 +117,8 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     	BigInteger crlnumber = CrlExtensions.getCrlNumber(crl);
     	String issuerDN = CertTools.getIssuerDN(crl);
     	String fingerprint = CertTools.getFingerprintAsString(crl);
-    	crlStoreSession.storeCRL(roleMgmgToken, crl.getEncoded(), fingerprint, crlnumber.intValue(), issuerDN, crl.getThisUpdate(), crl.getNextUpdate(), -1);
+    	crlStoreSession.storeCRL(roleMgmgToken, crl.getEncoded(), fingerprint, crlnumber.intValue(), issuerDN, CertificateConstants.NO_CRL_PARTITION,
+    	        crl.getThisUpdate(), crl.getNextUpdate(), -1);
     	CRLInfo info = crlStoreSession.getCRLInfo(fingerprint);
     	assertEquals(crlnumber.intValue(), info.getLastCRLNumber());
     	assertEquals(issuerDN, info.getSubjectDN());
@@ -127,42 +129,43 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     	BigInteger deltaCrlnumber = CrlExtensions.getCrlNumber(deltacrl);
     	String deltaIssuerDN = CertTools.getIssuerDN(deltacrl);    
     	String deltaFingerprint = CertTools.getFingerprintAsString(deltacrl);
-    	crlStoreSession.storeCRL(roleMgmgToken, deltacrl.getEncoded(), deltaFingerprint, deltaCrlnumber.intValue(), deltaIssuerDN, deltacrl.getThisUpdate(), deltacrl.getNextUpdate(), 1);
+    	crlStoreSession.storeCRL(roleMgmgToken, deltacrl.getEncoded(), deltaFingerprint, deltaCrlnumber.intValue(), deltaIssuerDN, CertificateConstants.NO_CRL_PARTITION,
+    	        deltacrl.getThisUpdate(), deltacrl.getNextUpdate(), 1);
     	info = crlStoreSession.getCRLInfo(deltaFingerprint);
     	assertEquals(deltaCrlnumber.intValue(), info.getLastCRLNumber());
     	assertEquals(deltaIssuerDN, info.getSubjectDN());
     	assertEquals(deltacrl.getThisUpdate(), info.getCreateDate());
     	assertEquals(deltacrl.getNextUpdate(), info.getExpireDate());
 
-    	info = crlStoreSession.getLastCRLInfo(issuerDN, false);
+    	info = crlStoreSession.getLastCRLInfo(issuerDN, CertificateConstants.NO_CRL_PARTITION, false);
     	assertEquals(crlnumber.intValue(), info.getLastCRLNumber());
     	assertEquals(issuerDN, info.getSubjectDN());
     	assertEquals(crl.getThisUpdate(), info.getCreateDate());
     	assertEquals(crl.getNextUpdate(), info.getExpireDate());
     	
-    	info = crlStoreSession.getLastCRLInfo(issuerDN, true);
+    	info = crlStoreSession.getLastCRLInfo(issuerDN, CertificateConstants.NO_CRL_PARTITION, true);
     	assertEquals(deltaCrlnumber.intValue(), info.getLastCRLNumber());
     	assertEquals(deltaIssuerDN, info.getSubjectDN());
     	assertEquals(deltacrl.getThisUpdate(), info.getCreateDate());
     	assertEquals(deltacrl.getNextUpdate(), info.getExpireDate());
     	
-    	int number = crlStoreSession.getLastCRLNumber(issuerDN, false);
+    	int number = crlStoreSession.getLastCRLNumber(issuerDN, CertificateConstants.NO_CRL_PARTITION, false);
     	assertEquals(2, number); // crlnumber.intValue()
-    	number = crlStoreSession.getLastCRLNumber(issuerDN, true);
+    	number = crlStoreSession.getLastCRLNumber(issuerDN, CertificateConstants.NO_CRL_PARTITION, true);
     	assertEquals(3, number); // deltaCrlnumber.intValue()
     	
-    	byte[] crlbytes = crlStoreSession.getLastCRL(issuerDN, false);
+    	byte[] crlbytes = crlStoreSession.getLastCRL(issuerDN, CertificateConstants.NO_CRL_PARTITION, false);
     	assertNotNull(crlbytes);
     	assertEquals(fingerprint, CertTools.getFingerprintAsString(crlbytes));
-    	crlbytes = crlStoreSession.getLastCRL( issuerDN, true);
+    	crlbytes = crlStoreSession.getLastCRL(issuerDN, CertificateConstants.NO_CRL_PARTITION, true);
     	assertNotNull(crlbytes);
     	assertEquals(deltaFingerprint, CertTools.getFingerprintAsString(crlbytes));
 
     	// Get by CRL number
-        crlbytes = crlStoreSession.getCRL(issuerDN, crlnumber.intValue());
+        crlbytes = crlStoreSession.getCRL(issuerDN, CertificateConstants.NO_CRL_PARTITION, crlnumber.intValue());
         assertNotNull(crlbytes);
         assertEquals(fingerprint, CertTools.getFingerprintAsString(crlbytes));
-        crlbytes = crlStoreSession.getCRL( issuerDN, deltaCrlnumber.intValue());
+        crlbytes = crlStoreSession.getCRL(issuerDN, CertificateConstants.NO_CRL_PARTITION, deltaCrlnumber.intValue());
         assertNotNull(crlbytes);
         assertEquals(deltaFingerprint, CertTools.getFingerprintAsString(crlbytes));
     	
@@ -171,10 +174,10 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     /** Test error handling when we request info that does not exist. */
     @Test
     public void testCrlStoreSessionErrorHandling() {
-    	assertNull("crlStoreSession.getLastCRL returned a CRL for nonexsting CA", crlStoreSession.getLastCRL("CN=notexsting", false));
-    	assertNull("crlStoreSession.getLastCRL returned a DeltaCRL for nonexsting CA", crlStoreSession.getLastCRL("CN=notexsting", true));
-    	assertNull("crlStoreSession.getLastCRLInfo returned CRLInfo for nonexsting CA", crlStoreSession.getLastCRLInfo("CN=notexsting", false));
-    	assertNull("crlStoreSession.getLastCRLInfo returned Delta CRLInfo for nonexsting CA", crlStoreSession.getLastCRLInfo("CN=notexsting", true));
+    	assertNull("crlStoreSession.getLastCRL returned a CRL for nonexsting CA", crlStoreSession.getLastCRL("CN=notexsting", CertificateConstants.NO_CRL_PARTITION, false));
+    	assertNull("crlStoreSession.getLastCRL returned a DeltaCRL for nonexsting CA", crlStoreSession.getLastCRL("CN=notexsting", CertificateConstants.NO_CRL_PARTITION, true));
+    	assertNull("crlStoreSession.getLastCRLInfo returned CRLInfo for nonexsting CA", crlStoreSession.getLastCRLInfo("CN=notexsting", CertificateConstants.NO_CRL_PARTITION, false));
+    	assertNull("crlStoreSession.getLastCRLInfo returned Delta CRLInfo for nonexsting CA", crlStoreSession.getLastCRLInfo("CN=notexsting", CertificateConstants.NO_CRL_PARTITION, true));
     	assertNull("crlStoreSession.getCRLInfo returned CRLInfo for nonexsting CRL fingerprint", crlStoreSession.getCRLInfo("tooshortfp"));
     }
 
@@ -196,7 +199,7 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
 
     	// Try to store a CRL with an admin that does not have access to CA
         try {
-        	crlStoreSession.storeCRL(adminTokenNoAuth, crl.getEncoded(), fingerprint, crlnumber.intValue(), issuerDN, crl.getThisUpdate(), crl.getNextUpdate(), -1);
+        	crlStoreSession.storeCRL(adminTokenNoAuth, crl.getEncoded(), fingerprint, crlnumber.intValue(), issuerDN, CertificateConstants.NO_CRL_PARTITION, crl.getThisUpdate(), crl.getNextUpdate(), -1);
         	assertTrue("Should throw", false);
         } catch (AuthorizationDeniedException e) {
         	// NOPMD
@@ -204,7 +207,7 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     	CRLInfo info = crlStoreSession.getCRLInfo(fingerprint);
     	assertNull(info);
     	// Store it for real
-    	crlStoreSession.storeCRL(roleMgmgToken, crl.getEncoded(), fingerprint, crlnumber.intValue(), issuerDN, crl.getThisUpdate(), crl.getNextUpdate(), -1);
+    	crlStoreSession.storeCRL(roleMgmgToken, crl.getEncoded(), fingerprint, crlnumber.intValue(), issuerDN, CertificateConstants.NO_CRL_PARTITION, crl.getThisUpdate(), crl.getNextUpdate(), -1);
     	info = crlStoreSession.getCRLInfo(fingerprint);
     	assertNotNull(info);
     	// Remove the CRL

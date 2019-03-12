@@ -28,6 +28,7 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -84,7 +85,8 @@ public class CertificateFinderBean {
 	}
 
 	public boolean existsDeltaCrlForCurrentCA() {
-	    return ejb.getCrlStoreSession().getLastCRLInfo(getCAInfo().getSubjectDN(), true) != null;
+	    // TODO consider adding Partitioned CRL support (ECA-7961). Not super important since the public web is deprecated.
+	    return ejb.getCrlStoreSession().getLastCRLInfo(getCAInfo().getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true) != null;
 	}
 
 	public void setCurrentCA(Integer currentCA) {

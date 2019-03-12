@@ -64,7 +64,8 @@ public interface PublishingCrlSession {
     boolean createCRLNewTransactionConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException,
             CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
-    /** Method that forces generation of a CRL for a certain CA
+    /** Method that forces generation of a CRL for a certain CA.
+     * If the CA has multiple CRL partitions, then a CRL is generated for each of them.
      * 
      * @param admin administrator performing the task
      * @param caid the id of the CA this operation regards
@@ -73,12 +74,29 @@ public interface PublishingCrlSession {
     boolean forceCRL(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
             CAOfflineException;
 
-    /** Method that forces generation of a Delta CRL for a certain CA
+    /** Method that forces generation of a Delta CRL for a certain CA.
+     * If the CA has multiple CRL partitions, then a Delta CRL is generated for each of them.
      * 
      * @param admin administrator performing the task
      * @param caid the id of the CA this operation regards
      * @return true if a CRL was generated
      */
     boolean forceDeltaCRL(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException,
+            CryptoTokenOfflineException, CAOfflineException;
+
+    /**
+     * Method that forces generation of a CRL for a certain CA. This method generates the CRL for a specific CRL partition only.
+     * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
+     * @see #forceCRL(AuthenticationToken, int)
+     */
+    boolean forceCRL(AuthenticationToken admin, int caid, int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
+            CAOfflineException;
+
+    /**
+     * Method that forces generation of a CRL for a certain CA. This method generates the CRL for a specific CRL partition only.
+     * @param crlPartitionIndex CRL partition index, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
+     * @see #forceCRL(AuthenticationToken, int)
+     */
+    boolean forceDeltaCRL(AuthenticationToken admin, int caid, int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException,
             CryptoTokenOfflineException, CAOfflineException;
 }

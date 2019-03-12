@@ -40,6 +40,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
@@ -368,7 +369,7 @@ public class CAImportExportTest  {
 	            log.info("Error: ", e);
 	            fail("Could not remove CA. " + e);
 	        }
-	        int crlNumberBefore = crlStore.getLastCRLNumber(cainfo.getSubjectDN(), false);
+	        int crlNumberBefore = crlStore.getLastCRLNumber(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
 	        try {
 	            caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
 	        } catch (Exception e) { 
@@ -376,7 +377,7 @@ public class CAImportExportTest  {
 	            fail("Could not import CA. " + e);
 	        }
             assertTrue("Fingerprint does not match for \"" + caname + "\".", keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)));
-	        int crlNumberAfter= crlStore.getLastCRLNumber(cainfo.getSubjectDN(), false);
+	        int crlNumberAfter= crlStore.getLastCRLNumber(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
 	        assertEquals("CRL number of CRL generated on import should be 1 higher than any pre-existing CRLs.", crlNumberBefore+1, crlNumberAfter);
 
 	        try {
@@ -392,7 +393,7 @@ public class CAImportExportTest  {
 	        internalCertificateStoreSession.removeCertificatesBySubject(cainfo.getSubjectDN());
 	        byte[] crlBytes = null;
 	        do {
-	            crlBytes = crlStore.getLastCRL(cainfo.getSubjectDN(), false);
+	            crlBytes = crlStore.getLastCRL(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
 	            if (crlBytes != null) {
 	                internalCertificateStoreSession.removeCRL(internalAdmin, CertTools.getFingerprintAsString(crlBytes));
 	            }

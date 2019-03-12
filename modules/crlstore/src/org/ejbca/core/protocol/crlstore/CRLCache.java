@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -120,7 +121,8 @@ public class CRLCache {
 		final String issuerDN = CertTools.getSubjectDN(caCert);
 		this.rebuildlock.lock();
 		try {
-			final CRLInfo crlInfo = this.crlSession.getLastCRLInfo(issuerDN, isDelta);
+		    final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO Add support for partitioned CRLs (ECA-7961)
+			final CRLInfo crlInfo = this.crlSession.getLastCRLInfo(issuerDN, crlPartitionIndex, isDelta);
 			if ( crlInfo==null ) {
 				if (log.isDebugEnabled()) {
 					log.debug("No CRL found with issuerDN '"+issuerDN+"', returning null.");
@@ -133,7 +135,7 @@ public class CRLCache {
 			    final CRLEntity cachedCRL = usedCrls.get(id.getKey());
 			    if ( cachedCRL!=null && !crlInfo.getCreateDate().after(cachedCRL.crlInfo.getCreateDate()) ) {
 			        if (log.isDebugEnabled()) {
-			            log.debug("Retrieved CRL (from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());
+			            log.debug("Retrieved CRL (from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber() + " and partition " + crlInfo.getCrlPartitionIndex());
 			        }
 			        return cachedCRL.encoded;
 			    }
@@ -143,14 +145,14 @@ public class CRLCache {
 			    if (log.isDebugEnabled()) {
 			        log.debug("Getting CRL with CRL number "+crlNumber);
 			    }
-			    entry = new CRLEntity( crlInfo, this.crlSession.getCRL(issuerDN, crlNumber) );			    
+			    entry = new CRLEntity( crlInfo, this.crlSession.getCRL(issuerDN, crlPartitionIndex, crlNumber) );
 			} else {
-			    entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(issuerDN, isDelta) );
+			    entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(issuerDN, crlPartitionIndex, isDelta) );
 			    // Only cache latest CRLs, these should be the ones accessed regularly, and we don't want to fill the cache with old CRLs
 	            usedCrls.put(id.getKey(), entry);
 			}
 			if (log.isDebugEnabled()) {
-				log.debug("Retrieved CRL (not from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());
+				log.debug("Retrieved CRL (not from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber() + " and partition " + crlInfo.getCrlPartitionIndex());
 			}
 			return entry.encoded;
 		} finally {
