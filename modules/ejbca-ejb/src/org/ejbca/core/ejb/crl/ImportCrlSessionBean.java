@@ -80,13 +80,17 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         // Check if the CRL is already stored locally
         final boolean isDeltaCrl = CrlExtensions.getDeltaCRLIndicator(x509crl).intValue() != -1;
         final int downloadedCrlNumber = CrlExtensions.getCrlNumber(x509crl).intValue();
+        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO partitioned CRL import (partition auto-detection) could be added as part of ECA-7961
         if (log.isTraceEnabled()) {
             log.trace("Delta CRL:  " + isDeltaCrl);
             log.trace("IssuerDn:   " + issuerDn);
             log.trace("CRL Number: " + downloadedCrlNumber);
+//            if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
+//                log.trace("CRL Partition: " + crlPartitionIndex);
+//            }
         }
         
-        X509CRL lastCrlOfSameType = getLastCrlOfSameType(x509crl, isDeltaCrl, issuerDn);
+        X509CRL lastCrlOfSameType = getLastCrlOfSameType(x509crl, isDeltaCrl, issuerDn, crlPartitionIndex);
         if(lastCrlOfSameType!=null && !x509crl.getThisUpdate().after(lastCrlOfSameType.getThisUpdate())) {
             log.info((isDeltaCrl?"Delta":"Full") + " CRL number " + downloadedCrlNumber + " for CA '" + cainfo.getName() + 
                     "' is not newer than last known " + (isDeltaCrl?"delta":"full") + " CRL. Ignoring download.");
@@ -150,13 +154,13 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         // Calculate (make up) the CRL Number if the number was not present
         final int newCrlNumber;
         if (downloadedCrlNumber==0) {
-            final int lastCrlNumber = crlStoreSession.getLastCRLNumber(issuerDn, isDeltaCrl);
+            final int lastCrlNumber = crlStoreSession.getLastCRLNumber(issuerDn, crlPartitionIndex, isDeltaCrl);
             newCrlNumber = lastCrlNumber+1;
         } else {
             newCrlNumber = downloadedCrlNumber;
         }
         // Last of all, store the CRL if there were no errors during creation of database entries
-        crlStoreSession.storeCRL(authenticationToken, x509crl.getEncoded(), caFingerprint, newCrlNumber, issuerDn, x509crl.getThisUpdate(), x509crl.getNextUpdate(), isDeltaCrl?1:-1);
+        crlStoreSession.storeCRL(authenticationToken, x509crl.getEncoded(), caFingerprint, newCrlNumber, issuerDn, crlPartitionIndex, x509crl.getThisUpdate(), x509crl.getNextUpdate(), isDeltaCrl?1:-1);
     
     }
     
@@ -188,9 +192,9 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         }
     }
     
-    private X509CRL getLastCrlOfSameType(final X509CRL crl, final boolean isDeltaCrl, final String issuerDN) {
+    private X509CRL getLastCrlOfSameType(final X509CRL crl, final boolean isDeltaCrl, final String issuerDN, final int crlPartitionIndex) {
         X509CRL lastCrlOfSameType = null;
-        final byte[] lastCrl = crlStoreSession.getLastCRL(issuerDN, isDeltaCrl);
+        final byte[] lastCrl = crlStoreSession.getLastCRL(issuerDN, crlPartitionIndex, isDeltaCrl);
         if(lastCrl != null) {
             try {
                 lastCrlOfSameType = CertTools.getCRLfromByteArray(lastCrl);

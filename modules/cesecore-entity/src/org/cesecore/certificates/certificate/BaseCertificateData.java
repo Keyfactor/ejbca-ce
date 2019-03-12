@@ -138,7 +138,7 @@ public abstract class BaseCertificateData extends ProtectedData {
     /** @return the end entity profile this certificate was issued under or null if the information is not available. */
     public abstract Integer getEndEntityProfileId();
     
-    /** CRL partition index. Zero or null if not using CRL partitions */
+    /** CRL partition index. Zero if not using CRL partitions */
     public abstract Integer getCrlPartitionIndex();
     
     /**

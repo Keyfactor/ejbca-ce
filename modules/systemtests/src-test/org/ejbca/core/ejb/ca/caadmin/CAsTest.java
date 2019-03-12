@@ -944,7 +944,7 @@ public class CAsTest extends CaTestCase {
             caInfo = caSession.getCAInfo(admin, caName);
             assertEquals(CAConstants.CA_REVOKED, caInfo.getStatus());
             assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, caInfo.getRevocationReason());
-            byte[] crlData = crlStoreSession.getLastCRL(caInfo.getSubjectDN(), false);
+            byte[] crlData = crlStoreSession.getLastCRL(caInfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             assertNotNull("No CRL was produced at CA revocation.", crlData);
             X509CRL crl = CertTools.getCRLfromByteArray(crlData);
             assertTrue(

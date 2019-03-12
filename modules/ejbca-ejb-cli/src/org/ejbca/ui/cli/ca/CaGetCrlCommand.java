@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -74,6 +75,8 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
         String caname = parameters.get(CA_NAME_KEY);
         String outfile = parameters.get(FILE_KEY);
         String crlnumber = parameters.get(CRLNUMBER_KEY);
+        // TODO Add partitioned CRL support (ECA-7961)
+        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION;
         if (crlnumber != null) {
             if ( !StringUtils.isNumeric(crlnumber) || (Integer.valueOf(crlnumber) < 0) ) {
                 log.error("CRL Number must be a positive number");
@@ -84,9 +87,9 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
             String issuerdn = getIssuerDN(getAuthenticationToken(), caname);
             final byte[] crl;
             if (crlnumber != null) {
-                crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getCRL(issuerdn, Integer.valueOf(crlnumber));                
+                crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getCRL(issuerdn, crlPartitionIndex, Integer.valueOf(crlnumber));
             } else {
-                crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerdn, deltaSelector);
+                crl = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerdn, crlPartitionIndex, deltaSelector);
             }
             if (crl != null) {
                 FileOutputStream fos = new FileOutputStream(outfile);

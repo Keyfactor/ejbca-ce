@@ -411,7 +411,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
 
     @Override
     public Integer getCrlPartitionIndex() {
-        return crlPartitionIndex;
+        return crlPartitionIndex != null ? crlPartitionIndex : 0;
     }
 
     @Override

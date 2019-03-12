@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -114,11 +115,12 @@ public class AdminIndexMBean extends BaseManagedBean implements Serializable {
             final boolean caService = (cainfo.getStatus() == CAConstants.CA_ACTIVE) && caTokenStatus;
             boolean crlStatus = true;
             final Date now = new Date();
-            final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), false);
+            // TODO GUI support for Partitioned CRLs (ECA-7961)
+            final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             if ((crlinfo != null) && (now.after(crlinfo.getExpireDate()))) {
                 crlStatus = false;
             }
-            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), true);
+            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
             if ((deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate()))) {
                 crlStatus = false;
             }

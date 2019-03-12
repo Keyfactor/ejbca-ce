@@ -164,6 +164,7 @@
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="crlNumber"><column name="cRLNumber" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(256)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="INTEGER" nullable="true"/></basic>
             <basic fetch="EAGER" name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="thisUpdate"><column name="thisUpdate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="nextUpdate"><column name="nextUpdate" column-definition="BIGINT" nullable="false"/></basic>
