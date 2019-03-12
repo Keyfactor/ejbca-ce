@@ -49,6 +49,7 @@ public class CRLData extends ProtectedData implements Serializable {
 
     private int cRLNumber;
     private int deltaCRLIndicator;
+    private int crlPartitionIndex; // Since EJBCA 7.1.0
     private String issuerDN;
     private String fingerprint;
     private String cAFingerprint;
@@ -69,7 +70,7 @@ public class CRLData extends ProtectedData implements Serializable {
      * @param deltaCRLIndicator
      *            -1 for a normal CRL and 1 for a deltaCRL
      */
-    public CRLData(byte[] incrl, int number, String issuerDN, Date thisUpdate, Date nextUpdate, String cafingerprint, int deltaCRLIndicator) {
+    public CRLData(byte[] incrl, int number, int crlPartitionIndex, String issuerDN, Date thisUpdate, Date nextUpdate, String cafingerprint, int deltaCRLIndicator) {
         String b64Crl = new String(Base64.encode(incrl));
         setBase64Crl(b64Crl);
         String fp = CertTools.getFingerprintAsString(incrl);
@@ -85,6 +86,7 @@ public class CRLData extends ProtectedData implements Serializable {
         setThisUpdate(thisUpdate);
         setNextUpdate(nextUpdate);
         setDeltaCRLIndicator(deltaCRLIndicator);
+        setCrlPartitionIndex(crlPartitionIndex);
     }
 
     public CRLData() {
@@ -106,6 +108,17 @@ public class CRLData extends ProtectedData implements Serializable {
 
     public void setDeltaCRLIndicator(int deltaCRLIndicator) {
         this.deltaCRLIndicator = deltaCRLIndicator;
+    }
+
+    /** @since EJBCA 7.1.0 */
+    // @Column
+    public int getCrlPartitionIndex() {
+        return crlPartitionIndex;
+    }
+
+    /** @since EJBCA 7.1.0 */
+    public void setCrlPartitionIndex(final int crlPartitionIndex) {
+        this.crlPartitionIndex = crlPartitionIndex;
     }
 
     // @Column
@@ -260,10 +273,11 @@ public class CRLData extends ProtectedData implements Serializable {
      *             if more than one entity with the name exists
      * @return the found entity instance or null if the entity does not exist
      */
-    public static CRLData findByIssuerDNAndCRLNumber(EntityManager entityManager, String issuerDN, int crlNumber) {
-        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber");
+    public static CRLData findByIssuerDNAndCRLNumber(EntityManager entityManager, String issuerDN, int crlPartitionIndex, int crlNumber) {
+        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND a.crlPartitionIndex=:crlPartitionIndex");
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
+        query.setParameter("crlPartitionIndex", crlPartitionIndex);
         return (CRLData) QueryResultWrapper.getSingleResult(query);
     }
     
@@ -281,20 +295,30 @@ public class CRLData extends ProtectedData implements Serializable {
     /**
      * @return the highest CRL number or null if no CRL for the specified issuer exists.
      */
-    public static Integer findHighestCRLNumber(EntityManager entityManager, String issuerDN, boolean deltaCRL) {
-        Integer ret;
+    public static Integer findHighestCRLNumber(EntityManager entityManager, String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
         if (deltaCRL) {
             final Query query = entityManager
-                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0");
+                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlPartitionIndex=:crlPartitionIndex AND a.deltaCRLIndicator>0");
             query.setParameter("issuerDN", issuerDN);
-            ret = (Integer) QueryResultWrapper.getSingleResult(query);
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+            return (Integer) QueryResultWrapper.getSingleResult(query);
         } else {
             final Query query = entityManager
-                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1");
+                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlPartitionIndex=:crlPartitionIndex AND a.deltaCRLIndicator=-1");
             query.setParameter("issuerDN", issuerDN);
-            ret = (Integer) QueryResultWrapper.getSingleResult(query);
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+            return (Integer) QueryResultWrapper.getSingleResult(query);
         }
-        return ret;
+    }
+
+    /**
+     * @return true if at least one CRL exists for the given CA.
+     */
+    public static boolean crlExistsForCa(final EntityManager entityManager, final String issuerDn) {
+        final Query query = entityManager
+                .createQuery("SELECT a.crlNumber FROM CRLData a WHERE a.issuerDN=:issuerDN");
+        query.setParameter("issuerDN", issuerDn);
+        return QueryResultWrapper.getSingleResult(query) != null;
     }
 
     //
@@ -309,13 +333,17 @@ public class CRLData extends ProtectedData implements Serializable {
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getFingerprint()).append(getCrlNumber()).append(getDeltaCRLIndicator()).append(getIssuerDN()).append(getCaFingerprint())
                 .append(getThisUpdate()).append(getNextUpdate()).append(getBase64Crl());
+        if (version >= 2) {
+            // CRL Partition Index added in EJBCA 7.1.0
+            build.append(getCrlPartitionIndex());
+        }
         return build.toString();
     }
 
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 1;
+        return 2;
     }
 
     @PrePersist
