@@ -22,6 +22,7 @@
 	<classpathentry kind="src" path="modules/cesecore-entity/src"/>
 	<classpathentry kind="src" path="modules/cesecore-entity/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-x509ca/src"/>
+	<classpathentry kind="src" path="modules/cesecore-x509ca/src-test"/>
 	<classpathentry kind="src" path="modules/clearcache-war/src"/>
 	<classpathentry kind="src" path="modules/cli-util/src"/>
 	<classpathentry kind="src" path="modules/cli-util/src-test"/>
