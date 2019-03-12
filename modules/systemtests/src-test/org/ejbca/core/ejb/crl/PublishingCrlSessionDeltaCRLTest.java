@@ -36,6 +36,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -129,11 +130,11 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     public void tearDown() throws Exception {
         // Remove any testca before exiting tests
         byte[] crl;
-        while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
+        while ((crl = getLastCrl(testx509ca.getSubjectDN(), false)) != null) {
             X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
             internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
         }
-        while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
+        while ((crl = getLastCrl(testx509ca.getSubjectDN(), true)) != null) {
             X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
             internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
         }
@@ -147,18 +148,18 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId());
     
         // Get number of last Delta CRL
-        int number = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), true);
+        int number = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
         log.debug("Last CRLNumber = " + number);
-        byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+        byte[] crl = getLastCrl(testx509ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         assertEquals(number, num.intValue());
         // Create a new CRL again to see that the number increases
         publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId());
-        int number1 = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), true);
+        int number1 = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
         assertEquals(number + 1, number1);
-        byte[] crl1 = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+        byte[] crl1 = getLastCrl(testx509ca.getSubjectDN(), true);
         X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
         BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
         assertEquals(number + 1, num1.intValue());
@@ -166,9 +167,9 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         // increased by two
         publishingCrlSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
         publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId());
-        int number2 = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), true);
+        int number2 = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
         assertEquals(number1 + 2, number2);
-        byte[] crl2 = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+        byte[] crl2 = getLastCrl(testx509ca.getSubjectDN(), true);
         X509CRL x509crl2 = CertTools.getCRLfromByteArray(crl2);
         BigInteger num2 = CrlExtensions.getCrlNumber(x509crl2);
         assertEquals(number1 + 2, num2.intValue());
@@ -180,12 +181,12 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId());
         
         // check revoked certificates
-        byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+        byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         // Get number of last CRL
         Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), x509crl.getThisUpdate().getTime());
         log.debug("Number of revoked certificates=" + revfp.size());
-        crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+        crl = getLastCrl(testx509ca.getSubjectDN(), true);
         assertNotNull("Could not get CRL", crl);
 
         x509crl = CertTools.getCRLfromByteArray(crl);
@@ -211,7 +212,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             // Create a new CRL again...
             assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate is present in a new CRL
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+            crl = getLastCrl(testx509ca.getSubjectDN(), true);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             BigInteger num2 = CrlExtensions.getCrlNumber(x509crl);
@@ -233,7 +234,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             // Create a new CRL again...
             assertTrue(publishingCrlSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate is not present in a new CRL
-            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
             Set<? extends X509CRLEntry> revset = x509crl.getRevokedCertificates();
@@ -253,7 +254,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             // Create a new delta CRL again...
             assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS present in a new Delta CRL
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+            crl = getLastCrl(testx509ca.getSubjectDN(), true);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -266,7 +267,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             // Create a new Delta CRL again...
             assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS NOT present in the new CRL.
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+            crl = getLastCrl(testx509ca.getSubjectDN(), true);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -285,7 +286,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             // Create a new delta CRL again...
             assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS present in a new Delta CRL
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+            crl = getLastCrl(testx509ca.getSubjectDN(), true);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -298,7 +299,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             // Create a new Full CRL
             assertTrue(publishingCrlSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS present in a new Full CRL
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -311,7 +312,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
             // Create a new Delta CRL again...
             assertTrue(publishingCrlSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS NOT present in the new Delta CRL.
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true);
+            crl = getLastCrl(testx509ca.getSubjectDN(), true);
             assertNotNull("Could not get CRL", crl);
             x509crl = CertTools.getCRLfromByteArray(crl);
             revset = x509crl.getRevokedCertificates();
@@ -345,5 +346,9 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         X509Certificate cert = (X509Certificate)resp.getCertificate();
         assertNotNull("Failed to create certificate", cert);
         return cert;
+    }
+
+    private byte[] getLastCrl(final String issuerDn, final boolean deltaCrl) {
+        return crlStoreSession.getLastCRL(issuerDn, CertificateConstants.NO_CRL_PARTITION, deltaCrl);
     }
 }

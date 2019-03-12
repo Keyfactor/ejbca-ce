@@ -54,6 +54,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -375,13 +376,13 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             // Generate CRL
             Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
-            int fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
-            int deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            int fullnumber = getLastCrlNumber(CADN, false);
+            int deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
-            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
+            generateAndStoreCrl(testx509ca, revcerts, -1, nextCrlNumber);
             // We should now have a CRL generated
-            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
             crlFp1 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
@@ -400,12 +401,12 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             // Generate a new CRL. It should contain usercert
             revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
-            fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
-            deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            fullnumber = getLastCrlNumber(CADN, false);
+            deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
-            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            generateAndStoreCrl(testx509ca, revcerts, -1, nextCrlNumber);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             crlFp2 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
@@ -468,13 +469,13 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             // Generate CRL
             Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
-            int fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
-            int deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            int fullnumber = getLastCrlNumber(CADN, false);
+            int deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
-            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
+            generateAndStoreCrl(testx509ca, revcerts, -1, nextCrlNumber);
             // We should now have a CRL generated
-            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
             crlFp1 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
@@ -494,12 +495,12 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             // Generate a new CRL. It should contain usercert
             revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
-            fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
-            deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            fullnumber = getLastCrlNumber(CADN, false);
+            deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
-            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            generateAndStoreCrl(testx509ca, revcerts, -1, nextCrlNumber);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             crlFp2 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
@@ -550,13 +551,13 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             // Generate CRL
             Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
-            int fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
-            int deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            int fullnumber = getLastCrlNumber(CADN, false);
+            int deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
-            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
+            generateAndStoreCrl(testx509ca, revcerts, -1, nextCrlNumber);
             // We should now have a CRL generated
-            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
             crlFp1 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
@@ -615,13 +616,13 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             // Generate CRL for the "real" CA
             Collection<RevokedCertInfo> revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
-            int fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
-            int deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            int fullnumber = getLastCrlNumber(CADN, false);
+            int deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             int nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
-            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
+            generateAndStoreCrl(testx509ca, revcerts, -1, nextCrlNumber);
             // We should now have a CRL generated
-            byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            byte[] crl = getLastCrl(testx509ca.getSubjectDN(), false);
             crlFp1 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
@@ -639,13 +640,13 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             // Generate CRL for the second testCA
             revcerts = certStoreSession.listRevokedCertInfo(testca2SubjectDN, -1);
-            fullnumber = crlStoreSession.getLastCRLNumber(testca2SubjectDN, false);
-            deltanumber = crlStoreSession.getLastCRLNumber(testca2SubjectDN, true);
+            fullnumber = getLastCrlNumber(testca2SubjectDN, false);
+            deltanumber = getLastCrlNumber(testca2SubjectDN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
-            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testca2, revcerts, -1, nextCrlNumber);
+            generateAndStoreCrl(testca2, revcerts, -1, nextCrlNumber);
             // We should now have a CRL generated
-            crl = crlStoreSession.getLastCRL(testca2SubjectDN, false);
+            crl = getLastCrl(testca2SubjectDN, false);
             testca2CrlFp1 = CertTools.getFingerprintAsString(crl);
             
             
@@ -666,12 +667,12 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             
             // Generate a new CRL. It should contain usercert
             revcerts = certStoreSession.listRevokedCertInfo(CADN, -1);
-            fullnumber = crlStoreSession.getLastCRLNumber(CADN, false);
-            deltanumber = crlStoreSession.getLastCRLNumber(CADN, true);
+            fullnumber = getLastCrlNumber(CADN, false);
+            deltanumber = getLastCrlNumber(CADN, true);
             // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
             nextCrlNumber = ((fullnumber > deltanumber) ? fullnumber : deltanumber) + 1;
-            crlCreateSession.generateAndStoreCRL(alwaysAllowToken, testx509ca, revcerts, -1, nextCrlNumber);
-            crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
+            generateAndStoreCrl(testx509ca, revcerts, -1, nextCrlNumber);
+            crl = getLastCrl(testx509ca.getSubjectDN(), false);
             crlFp2 = CertTools.getFingerprintAsString(crl);
             
             // Check usercert revocation status
@@ -717,6 +718,18 @@ public class CertRevocationStatusCheckerTest extends CaTestCase {
             eeManagementSession.setUserStatus(alwaysAllowToken, user.getUsername(), EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
+    }
+
+    private int getLastCrlNumber(final String issuerDn, final boolean deltaCrl) {
+        return crlStoreSession.getLastCRLNumber(issuerDn, CertificateConstants.NO_CRL_PARTITION, deltaCrl);
+    }
+
+    private byte[] getLastCrl(final String issuerDn, final boolean deltaCrl) {
+        return crlStoreSession.getLastCRL(issuerDn, CertificateConstants.NO_CRL_PARTITION, deltaCrl);
+    }
+
+    private byte[] generateAndStoreCrl(final CA ca, final Collection<RevokedCertInfo> revcerts, int thisCrlNumber, int nextCrlNumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
+        return crlCreateSession.generateAndStoreCRL(alwaysAllowToken, ca, CertificateConstants.NO_CRL_PARTITION, revcerts, thisCrlNumber, nextCrlNumber);
     }
 
 }

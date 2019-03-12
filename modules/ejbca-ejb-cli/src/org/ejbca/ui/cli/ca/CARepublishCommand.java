@@ -27,6 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -100,8 +101,9 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             Iterator<Certificate> caiter = cachain.iterator();
             if (caiter.hasNext()) {
                 final X509Certificate cacert = (X509Certificate) caiter.next();
+                // TODO Add support for partitioned CRLs (ECA-7962)
                 final byte[] crlbytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(cainfo.getSubjectDN(),
-                        false);
+                        CertificateConstants.NO_CRL_PARTITION, false);
                 // Get the CRLnumber
                 X509CRL crl;
                 try {

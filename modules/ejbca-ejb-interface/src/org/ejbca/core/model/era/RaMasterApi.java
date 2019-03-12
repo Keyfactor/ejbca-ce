@@ -1065,7 +1065,7 @@ public interface RaMasterApi {
                AuthLoginException;
 
     /**
-     * Fetches the latest CRL issued by the given CA.
+     * Fetches the latest CRL issued by the given CA. This method is used by the Web Service.
      *
      * Authorization requirements:<pre>
      * - /ca/&lt;caid&gt;
@@ -1082,7 +1082,7 @@ public interface RaMasterApi {
     byte[] getLatestCrl(AuthenticationToken authenticationToken, String caName, boolean deltaCRL) throws AuthorizationDeniedException, CADoesntExistsException;
 
     /**
-     * Fetches the latest CRL by issuerDn.
+     * Fetches the latest CRL by issuerDn. This method is used by the REST API.
      *
      * Authorization requirements:<pre>
      * - /ca/&lt;caid&gt;
@@ -1187,7 +1187,7 @@ public interface RaMasterApi {
    /**
     * Generates a CV certificate for a user.
     *
-    * @see org.ejbca.core.ejb.ca.sign.SignSession#createCardVerifiableCertificateWS(AuthenticationToken, String, String, String).
+    * @see org.ejbca.core.ejb.ca.sign.SignSession#createCardVerifiableCertificateWS
     * @since RA Master API version 4 (EJBCA 6.14.0)
     */
    Collection<CertificateWrapper> processCardVerifiableCertificateRequest(AuthenticationToken authenticationToken, String username, String password, String cvcreq)

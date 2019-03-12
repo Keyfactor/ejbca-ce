@@ -24,6 +24,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -84,6 +85,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
     private static final String CA_NAME_KEY = "--caname";
     private static final String CRL_FILE_KEY = "-f";
     private static final String OPERATION_KEY = "-o";
+    private static final String PARTITIONINDEX_KEY = "--index";
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -93,6 +95,8 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(OPERATION_KEY, STRICT_OP + "|" + LENIENT_OP + "|" + ADAPTIVE_OP, MandatoryMode.MANDATORY,
                 StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Operations mode. Must be one of " + STRICT_OP + ", " + LENIENT_OP + " or "
                         + ADAPTIVE_OP + "."));
+        registerParameter(new Parameter(PARTITIONINDEX_KEY, "Partition Index", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The CRL partition index (only if using CRL partitioning, omit for main CRL)."));
     }
 
     @Override
@@ -110,6 +114,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
             final String caname = parameters.get(CA_NAME_KEY);
             final String crl_file = parameters.get(CRL_FILE_KEY);
             final String operationsMode = parameters.get(OPERATION_KEY);
+            final int crlPartitionIndex = Integer.parseInt(StringUtils.defaultString(parameters.get(PARTITIONINDEX_KEY), "0"));
             final boolean strict = operationsMode.equalsIgnoreCase(STRICT_OP);
             final boolean adaptive = operationsMode.equalsIgnoreCase(ADAPTIVE_OP);
             if (!strict && !adaptive && !operationsMode.equalsIgnoreCase(LENIENT_OP)) {
@@ -213,9 +218,9 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                     }
                 }
             } // if (entries != null)
-            if (EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuer, false) < crl_no) {
+            if (EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuer, crlPartitionIndex, false) < crl_no) {
                 EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).storeCRL(getAuthenticationToken(), x509crl.getEncoded(),
-                        CertTools.getFingerprintAsString(cacert), crl_no, issuer, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
+                        CertTools.getFingerprintAsString(cacert), crl_no, issuer, crlPartitionIndex, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
             } else {
                 if (strict) {
                     throw new IOException("CRL #" + crl_no + " or higher is already in the database");

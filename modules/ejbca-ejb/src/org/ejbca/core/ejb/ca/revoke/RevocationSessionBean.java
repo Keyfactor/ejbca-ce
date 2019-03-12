@@ -141,7 +141,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         }
         
         final String issuerDN = cdw.getBaseCertificateData().getIssuerDN();
-        final CRLInfo baseCrlInfo = crlStoreSession.getLastCRLInfo(issuerDN, false);
+        final CRLInfo baseCrlInfo = crlStoreSession.getLastCRLInfo(issuerDN, cdw.getBaseCertificateData().getCrlPartitionIndex(), false);
         if (baseCrlInfo == null || baseCrlInfo.getCreateDate().before(revocationDate)) { // if not on base CRL
             return null;
         } else {
