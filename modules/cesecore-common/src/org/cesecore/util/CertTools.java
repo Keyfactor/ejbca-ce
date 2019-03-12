@@ -2963,8 +2963,8 @@ public abstract class CertTools {
     /**
      * Check the certificate with CA certificate.
      * 
-     * @param certificate certificate to verify
-     * @param caCertChain collection of X509Certificates
+     * @param certificate X.509 certificate to verify. May not be null.
+     * @param caCertChain Collection of X509Certificates. May not be null, an empty list or a Collection with null entries.
      * @param date Date to verify at, or null to use current time.
      * @param pkixCertPathCheckers optional PKIXCertPathChecker implementations to use during cert path validation
      * @return true if verified OK
@@ -3012,8 +3012,8 @@ public abstract class CertTools {
     /**
      * Check the certificate with CA certificate.
      * 
-     * @param certificate certificate to verify
-     * @param caCertChain collection of X509Certificates
+     * @param certificate X.509 certificate to verify. May not be null.
+     * @param caCertChain Collection of X509Certificates. May not be null, an empty list or a Collection with null entries.
      * @return true if verified OK
      * @throws CertPathValidatorException if verification failed
      */
