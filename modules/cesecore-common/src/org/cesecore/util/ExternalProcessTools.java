@@ -100,8 +100,8 @@ public final class ExternalProcessTools {
 
     /**
      * Writes a byte array to a temporary file and launches the given external command with the file as first argument 
-     * if {@link #PLACE_HOLDER_CERTIFICATE} is not specified as parameter, or pipes the byte array into the command if 
-     * {@link #PLACE_HOLDER_CERTIFICATE} is used as parameter.
+     * if {@link #PLACE_HOLDER_CERTIFICATE} is not specified as argument, or pipes the byte array into the command if 
+     * {@link #PLACE_HOLDER_CERTIFICATE} is used as argument.
      * 
      * @see {@link ExternalProcessTools#launchExternalCommand(String, byte[], boolean, boolean, boolean, boolean, List, String)}.
      * 
@@ -109,15 +109,15 @@ public final class ExternalProcessTools {
      * @param bytes The buffer with content to write to file or pipe to stdin.
      * @param failOnCode Determines if the method should fail on a non-zero exit code.
      * @param failOnOutput Determines if the method should fail on output to standard error.
-     * @param args the command arguments (optional), may contain the placeholder '%cert' to
+     * @param arguments the command arguments (optional), may contain the placeholder '%cert' to
      * retrieve data from stdin. 
      * @param filePrefix a prefix to prepend to the temporary filename, typically the name of the caller.
      * @return the output of the command (stdout, any stderr and the exit code).
      * @throws ExternalProcessException if the temporary file could not be written or the external process fails.
      */
     public static final List<String> launchExternalCommand(final String cmd, final byte[] bytes, final boolean failOnCode, final boolean failOnOutput,
-            final List<String> args, final String filePrefix) throws ExternalProcessException {
-        return launchExternalCommand(cmd, bytes, failOnCode, failOnOutput, false, false, args, filePrefix);
+            final List<String> arguments, final String filePrefix) throws ExternalProcessException {
+        return launchExternalCommand(cmd, bytes, failOnCode, failOnOutput, false, false, arguments, filePrefix);
     }
 
     /**
@@ -125,8 +125,8 @@ public final class ExternalProcessTools {
      * {@link #PLACE_HOLDER_CERTIFICATE} is not specified as one of the arguments, or pipes the bytes array into the command 
      * if {@link #PLACE_HOLDER_CERTIFICATE} is used as argument. 
      * 
-     * <p>The method will, depending on its parameters, fail if output to standard error was detected or the if the command 
-     * returns with a non-zero exit code.
+     * <p>The method will, depending on the parameters given, fail with {@link ExternalProcessException} if output to standard
+     * error was detected or the if the command  returns with a non-zero exit code.
      * 
      * @param cmd The command to run.
      * @param bytes The buffer with content to write to the file to pipe to stdin.
@@ -134,7 +134,7 @@ public final class ExternalProcessTools {
      * @param failOnOutput Determines if the method should fail on output to standard error.
      * @param logStdOut if the scripts STDOUT should be logged as info.
      * @param logErrOut if the scripts ERROUT should be logged as info.
-     * @param arguments the command arguments (optional), may contain the placeholder, may contain the placeholder '%cert' to
+     * @param arguments the command arguments (optional), may contain the placeholder '%cert' to
      * retrieve data from stdin.
      * @param filePrefix a prefix to prepend to the temporary filename, typically the name of the caller.
      * @return the output of the command (stdout, any stderr and the exit code).
