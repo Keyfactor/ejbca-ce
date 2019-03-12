@@ -42,6 +42,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
@@ -220,8 +221,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?
             }
-            final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), false);
-            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), true);
+            // TODO GUI support for Partitioned CRLs (ECA-7961)
+            final CRLInfo crlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+            final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfo(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
             final CAGuiInfo caGuiInfo = new CAGuiInfo(caname, caid, cainfo.getSubjectDN(), cainfo.getCertificateChain(), crlinfo, deltacrlinfo,
                     cainfo.getDeltaCRLPeriod() > 0, cainfo.getStatus() == CAConstants.CA_ACTIVE);

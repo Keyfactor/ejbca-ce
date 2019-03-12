@@ -32,6 +32,7 @@ import javax.faces.bean.ViewScoped;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
@@ -143,11 +144,12 @@ public class RaCasPageBean implements Serializable {
                     // Construct links to RFC4387 CRL Download Servlet
                     if (caCertificate instanceof X509Certificate) {
                         caAndCrl.x509 = true;
-                        final CRLInfo crlInfoFull = crlSession.getLastCRLInfo(subjectDn, false);
+                        // TODO Add support for Partitioned CRLs (ECA-7961)
+                        final CRLInfo crlInfoFull = crlSession.getLastCRLInfo(subjectDn, CertificateConstants.NO_CRL_PARTITION, false);
                         if (crlInfoFull!=null) {
                             atLeastOneCrlLinkPresent = true;
                             caAndCrl.crlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate);
-                            final CRLInfo crlInfoDelta = crlSession.getLastCRLInfo(subjectDn, true);
+                            final CRLInfo crlInfoDelta = crlSession.getLastCRLInfo(subjectDn, CertificateConstants.NO_CRL_PARTITION, true);
                             if (crlInfoDelta!=null) {
                                 caAndCrl.deltaCrlLink = RFC4387_DEFAULT_EJBCA_URL + "?iHash=" + getSubjectPrincipalHashAsUnpaddedBase64((X509Certificate)caCertificate) + "&delta=";
                             }
