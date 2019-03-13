@@ -46,6 +46,7 @@
 <li>Supports the German <a href="http://www.t7ev.org/T7-de/Common-PKI">Common PKI</a> SigG CertHash OCSP extension.</li> 
 <li>Key recovery to store private keys for recovery for selected users and certificates.</li>
 <li>Standard integration protocols and APIs. SCEP, CMP, EST, ACME, REST and SOAP WS (see Integration Features).</li>
+<li>Validators for standard key quality measures, and calling external scripts (for example linters).</li>
 </ul>    
 </subsection>
   <subsection name="ePassport, eID and eDL PKI features">
@@ -60,7 +61,7 @@
   </subsection>  
   <subsection name="Integration Features">
 <ul>
-<li>Built on the JEE 6 specification.</li>
+<li>Built on the Java EE (now Jakarta EE) specification.</li>
 <li>Flexible, component based architecture.</li>
 <li>Run standalone or integrated in any JEE application.</li>
 <li><a href="docs/Web_Service_Interface.html">Web service</a> (WS) interface for remote administration and integration.</li>
@@ -124,7 +125,7 @@
 <li>Regular maintenance and security releases.</li>
 <li>Common Criteria EAL4+ certified.</li>
 <li>Used in many WebTrust, CWA 14167 and eIDAS audited installations.</li>
-<li>eIDAS compliant certificates including profiles for Qualified certificates.</li>
+<li>eIDAS compliant certificates including profiles for Qualified certificates and PSD2.</li>
 <li>FIPS 201-2 (PIV) compliant certificates including FASC-N subjectAltName</li>
 <li>Integrity protected <a href="docs/Logging.html">audit log</a> (log signing), with digital signature or HMAC protection.</li>
 <li>Full database integrity protection of all tables, to detect database manipulation.</li>
@@ -153,6 +154,7 @@
 <li>Support for GOST and DSTU algorithms (Russian and Ukrainian algorithms).</li>
 <li>Penetration tested with improved security.</li>
 <li>Validation of <a href="https://tools.ietf.org/html/rfc6844">CAA records</a> during certificate issuance.</li>
+<li>GDPR features, configurable to not publish PII from CA to VA.</li>
 </ul>
   </subsection>
   </section>

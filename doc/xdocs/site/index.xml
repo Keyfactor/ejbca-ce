@@ -28,6 +28,11 @@
 				</div>				
 				<div id="news">
 			    <div>  
+                    <p>
+                        <strong>EJBCA can be configured to generate certificate serial numbers (positive integers) from 32 to 160 bits.</strong>
+                         <br />
+                         <span class="date"> Posted: 2019-03-13</span>
+                    </p>
                 <p>
                 <a href="https://www.primekey.com/products/cloud/ejbca-enterprise-cloud/"><img src="images/cloud-banner-for-org.jpg"/></a>
                 </p>
@@ -40,14 +45,20 @@
                         <span class="date"> Posted: 2018-12-19</span>  
                     </p>  
 					<p>
-						<strong>EJBCA Enterprise 6.15.1 has now been released.</strong>
-						PrimeKey's <a href="https://www.primekey.com/products/software/ejbca-enterprise/">EJBCA Enterprise</a> is Common Criteria 
-						EAL4+ certified ETSI/eIDAS/WebTrust compliant to provide the most powerful and flexible PKI. For entire non-community features, only
-						 available in EJBCA Enterprise, see the section on <a href="features.html#Enterprise%20Edition%20features">"Enterprise 
-						 Edition features" in the features list</a>. EJBCA 6.15 brings support for the ACME protocol.
-						 <br/>
-						 <span class="date"> Posted: 2018-11-20</span>
+                        <strong>EJBCA Enterprise 7.0.1 has now been released.</strong>
+                        PrimeKey's <a href="https://www.primekey.com/products/software/ejbca-enterprise/">EJBCA Enterprise</a> is Common Criteria 
+                        EAL4+ certified ETSI/eIDAS/WebTrust compliant to provide the most powerful and flexible PKI. For entire non-community features, only
+                         available in EJBCA Enterprise, see the section on <a href="features.html#Enterprise%20Edition%20features">"Enterprise 
+                         Edition features" in the features list</a>. <a href="http://blog.ejbca.org/2019/02/ejbca-700-same-but-completely-different.html" target="ejbcablog">EJBCA 7.0</a> brings an updated technology stack, <a href="http://blog.ejbca.org/2019/03/ejbca-701-psd2-and-sn-entropy.html" target="ejbcablog">PSD2 support</a> and Blacklist validators.
+                         <br />
+                         <span class="date"> Posted: 2019-02-25</span>
 					</p>
+                    <p>
+                        <strong>EJBCA Community Containers</strong>
+                        Go to <a href="https://hub.docker.com/r/primekey/ejbca-ce" target="_ejbcadocker">DockerHub</a> to run the latest EJBCA Community edition as a container.
+                        <br/>
+                        <span class="date"> Posted: 2019-03-11</span>  
+                    </p>
 					<p>
 						<strong>EJBCA Community 6.10.1.2 is now available</strong>
 						Visit the <a href="download.html">download</a> section. There you will also find a pre-installed VM to try.
@@ -58,7 +69,7 @@
 						<strong>Keep track of certificate issuance using Graylog</strong>
 						<a href="http://blog.ejbca.org/2018/10/keep-track-of-certificate-issuance.html" target="ejbcablog">Create nice dashboards with Graylog or other log analytics tools!</a> 
 						<br/>
-						<span class="date"> Posted: 2010-10-08</span>
+						<span class="date"> Posted: 2018-10-08</span>
 					</p> 
 					<p>
 						<strong>PKI-in-a-box!</strong>
