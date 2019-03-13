@@ -154,6 +154,9 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
     public void stepH_AddApprovalProfile() {
         approvalProfilesHelperDefault.openPage(getAdminWebUrl());
         approvalProfilesHelperDefault.addApprovalProfile(TestData.APPROVAL_PROFILE_NAME);
+    }
+
+    @Test void StepI_EditApprovalProfile() {
         approvalProfilesHelperDefault.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelperDefault.setApprovalProfileType(TestData.APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL);
         approvalProfilesHelperDefault.setApprovalStepPartitionApprovePartitionRole(0, 0,
@@ -161,13 +164,13 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
     }
 
     @Test
-    public void stepI_SaveApprovalProfile() {
+    public void stepJ_SaveApprovalProfile() {
         approvalProfilesHelperDefault.saveApprovalProfile();
     }
 
 
     @Test
-    public void stepJ_AddCertificateProfile() {
+    public void stepK_AddCertificateProfile() {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         // Add Certificate Profile
@@ -184,11 +187,10 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
     }
 
     @Test
-    public void stepK_EditCertificateProfile() {
+    public void stepL_EditCertificateProfile() {
         // Update default timestamp
         auditLogHelper.initFilterTime();
         // Edit certificate Profile
-        certificateProfileHelper.openPage(getAdminWebUrl());
         certificateProfileHelper.openEditCertificateProfilePage(EcaQa202_NegativeBlacklistExactMatch.TestData.CERTIFICATE_PROFILE_NAME);
 
         // Set Approval Settings
@@ -201,7 +203,7 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
         }
 
         @Test
-        public void stepL_SaveCertificateProfile() {
+        public void stepM_SaveCertificateProfile() {
             // Save
             certificateProfileHelper.saveCertificateProfile();
             // Verify Audit Log
@@ -218,15 +220,14 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
         }
 
         @Test
-        public void stepM_AddEndEntityProfile() {
+        public void stepN_AddEndEntityProfile() {
             eeProfileHelper.openPage(this.getAdminWebUrl());
             eeProfileHelper.addEndEntityProfile(EcaQa202_NegativeBlacklistExactMatch.TestData.ENTITY_NAME);
         }
 
         @Test
-        public void stepN_EditEndEntityProfile() {
+        public void stepO_EditEndEntityProfile() {
             eeProfileHelper.openEditEndEntityProfilePage(EcaQa202_NegativeBlacklistExactMatch.TestData.ENTITY_NAME);
-            eeProfileHelper.selectDefaultCa(this.getCaName());
             eeProfileHelper.triggerMaximumNumberOfFailedLoginAttempts();
             eeProfileHelper.triggerCertificateValidityStartTime();
             eeProfileHelper.triggerCertificateValidityEndTime();
@@ -246,13 +247,13 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
         }
 
         @Test
-        public void stepO_SaveEndEntityProfile() {
+        public void stepP_SaveEndEntityProfile() {
             eeProfileHelper.saveEndEntityProfile(true);
             eeProfileHelper.assertEndEntityProfileNameExists(EcaQa202_NegativeBlacklistExactMatch.TestData.ENTITY_NAME);
         }
 
         @Test
-        public void stepP_MakeNewCertificate() {
+        public void stepQ_MakeNewCertificate() {
             raWebHelper.openPage(this.getRaWebUrl());
             raWebHelper.makeNewCertificateRequest();
             raWebHelper.selectCertificateTypeByEndEntityName(EcaQa202_NegativeBlacklistExactMatch.TestData.ENTITY_NAME);
@@ -261,11 +262,17 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
             raWebHelper.fillClearCsrText(StringUtils.join(EcaQa202_NegativeBlacklistExactMatch.TestData.CERTIFICATE_REQUEST_PEM, "\n"));
         }
 
-    @Test
-    public void stepQ_UploadCsrCertificate() {
-        raWebHelper.clickUploadCsrButton();
-        raWebHelper.assertCsrUploadError();
-    }
+        @Test
+        public void stepR_UploadCsrCertificate() {
+            raWebHelper.clickUploadCsrButton();
+        }
+
+        @Test
+        public void stepS_completeCertificateRequest() {
+            raWebHelper.clickConfirmRequest();
+        }
+
+
 
 
 

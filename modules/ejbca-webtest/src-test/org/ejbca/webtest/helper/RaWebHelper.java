@@ -53,6 +53,7 @@ public class RaWebHelper extends BaseHelper {
         static final By BUTTON_UPLOAD_CSR = By.id("keyPairForm:uploadCsrButton");
         static final By TEXT_ERROR_MESSAGE = By.xpath("//li[@class='errorMessage']");
         // Manage Requests
+        static final By BUTTON_TAB_CONFIRM_REQUESTS = By.id("requestInfoForm:confirmRequestButton");
         static final By BUTTON_MENU_MANAGE_REQUESTS = By.id("menuManageRequests");
         static final By BUTTON_TAB_APPROVE_REQUESTS = By.id("manageRequestsForm:tabApproveRequests");
         static final By BUTTON_TAB_PENDING_REQUESTS = By.id("manageRequestsForm:tabPendingRequests");
@@ -87,6 +88,10 @@ public class RaWebHelper extends BaseHelper {
      */
     public void clickMenuManageRequests() {
         clickLink(Page.BUTTON_MENU_MANAGE_REQUESTS);
+    }
+
+    public void clickConfirmRequest() {
+        clickLink(Page.BUTTON_TAB_CONFIRM_REQUESTS);
     }
 
     /**
