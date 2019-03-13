@@ -152,7 +152,7 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
                 arguments.add(CertTools.getIssuerDN(incert));
                 arguments.add(CertTools.getSerialNumberAsString(incert));
                 ExternalProcessTools.launchExternalCommand(certExternalCommandFileName, incert.getEncoded(), 
-                        certFailOnErrorCode, certFailOnStandardError, arguments, this.getClass().getName());
+                        certFailOnErrorCode, certFailOnStandardError, arguments, this.getClass().getSimpleName());
             } catch (CertificateEncodingException e) {
                 String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
                 log.error(msg);
@@ -203,7 +203,7 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
         // Write temporary file and run the external script / command.
         try {
             ExternalProcessTools.launchExternalCommand(crlExternalCommandFileName, incrl, 
-                crlFailOnErrorCode, crlFailOnStandardError, additionalArguments, "GeneralPurposeCustomPublisher");
+                    crlFailOnErrorCode, crlFailOnStandardError, additionalArguments, this.getClass().getSimpleName());
         } catch (ExternalProcessException e) {
             throw new PublisherException(e.getMessage());
         }
@@ -241,7 +241,7 @@ public class GeneralPurposeCustomPublisher extends CustomPublisherUiBase impleme
             arguments.add(CertTools.getIssuerDN(cert));
             arguments.add(CertTools.getSerialNumberAsString(cert));
             ExternalProcessTools.launchExternalCommand(revokeExternalCommandFileName, cert.getEncoded(), 
-                    revokeFailOnErrorCode, revokeFailOnStandardError, arguments, this.getClass().getName());
+                    revokeFailOnErrorCode, revokeFailOnStandardError, arguments, this.getClass().getSimpleName());
         } catch (CertificateEncodingException e) {
             String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
             log.error(msg);
