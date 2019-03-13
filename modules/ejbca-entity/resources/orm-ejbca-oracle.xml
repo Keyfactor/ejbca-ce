@@ -110,7 +110,7 @@
             <basic fetch="EAGER" name="tag"><column name="tag" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="NUMBER(10)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="NUMBER(10) DEFAULT 0" nullable="false"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(2000 byte)" nullable="true"/></basic>
@@ -170,7 +170,7 @@
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR2(255 byte)"/></id>
             <basic fetch="EAGER" name="crlNumber"><column name="cRLNumber" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="NUMBER(10)" nullable="true"/></basic>
+            <basic fetch="EAGER" name="crlPartitionIndex"><column name="crlPartitionIndex" column-definition="NUMBER(10) DEFAULT 0" nullable="false"/></basic>
             <basic fetch="EAGER" name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
             <basic fetch="EAGER" name="thisUpdate"><column name="thisUpdate" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic fetch="EAGER" name="nextUpdate"><column name="nextUpdate" column-definition="NUMBER(19)" nullable="false"/></basic>
