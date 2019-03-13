@@ -83,7 +83,7 @@ public class DynamicUiModel {
         viewComponents = new HashMap<String,List<DynamicUiComponent>>();
         this.data = data;
         if (log.isDebugEnabled()) {
-            log.debug("Create dynmic UI model with data: " + filteredDataToLog);
+            log.debug("Create dynamic UI model with data: " + filteredDataToLog);
         }
     }
 
