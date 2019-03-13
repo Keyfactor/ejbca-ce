@@ -1562,7 +1562,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /** @return true if we are running EJBCA build that has CA functionality enabled. */
     @Override
     public boolean isRunningBuildWithCA() {
-        boolean isWithCA = false;
+        boolean isWithCA = true;
         return isWithCA;
     }
     
