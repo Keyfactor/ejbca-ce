@@ -32,6 +32,7 @@ wait_for_deployment() {
     fi
 }
 
+export ANT_OPTS="-Xms64m -Xmx512m"
 ant clean deployear
 wait_for_deployment
 echo '=================== should be started now ========================'
