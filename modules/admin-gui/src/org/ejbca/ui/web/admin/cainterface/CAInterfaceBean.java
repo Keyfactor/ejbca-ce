@@ -350,7 +350,8 @@ public class CAInterfaceBean implements Serializable {
             String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive,
-            boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean buttonCreateCa, boolean buttonMakeRequest,
+            boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean usePartitionedCrl, int crlPartitions, int retiredCrlPartitions,
+            boolean buttonCreateCa, boolean buttonMakeRequest,
             String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
@@ -418,7 +419,8 @@ public class CAInterfaceBean implements Serializable {
                     nameConstraintsPermittedString, nameConstraintsExcludedString,
                     caDefinedFreshestCrlString, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
                     usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive,
-                    serviceCmsActive, sharedCmpRaSecret, keepExpiredCertsOnCRL, buttonCreateCa, buttonMakeRequest, cryptoTokenId,
+                    serviceCmsActive, sharedCmpRaSecret, keepExpiredCertsOnCRL, usePartitionedCrl, crlPartitions, retiredCrlPartitions,
+                    buttonCreateCa, buttonMakeRequest, cryptoTokenId,
                     keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey, keyAliasHardTokenEncryptKey,
                     keyAliasKeyEncryptKey, keyAliasKeyTestKey, fileBuffer);
         } catch (Exception e) {
@@ -450,7 +452,8 @@ public class CAInterfaceBean implements Serializable {
             String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useUtf8PolicyText,
             boolean usePrintableStringSubjectDn, boolean useLdapDnOrder, boolean useCrlDistributionPointOnCrl,
             boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck, boolean serviceOcspActive,
-            boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean buttonCreateCa, boolean buttonMakeRequest,
+            boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL, boolean usePartitionedCrl, int crlPartitions, int retiredCrlPartitions,
+            boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
@@ -625,6 +628,9 @@ public class CAInterfaceBean implements Serializable {
                                 .setAcceptRevocationNonExistingEntry(acceptRevocationsNonExistingEntry)
                                 .setCmpRaAuthSecret(sharedCmpRaSecret)
                                 .setKeepExpiredCertsOnCRL(keepExpiredCertsOnCRL)
+                                .setUsePartitionedCrl(usePartitionedCrl)
+                                .setCrlPartitions(crlPartitions)
+                                .setRetiredCrlPartitions(retiredCrlPartitions)
                                 .build();
                         try {
                             caadminsession.createCA(authenticationToken, x509cainfo);
@@ -690,6 +696,9 @@ public class CAInterfaceBean implements Serializable {
                                 .setUseCertificateStorage(useCertificateStorage)
                                 .setAcceptRevocationNonExistingEntry(acceptRevocationsNonExistingEntry)
                                 .setKeepExpiredCertsOnCRL(keepExpiredCertsOnCRL)
+                                .setUsePartitionedCrl(usePartitionedCrl)
+                                .setCrlPartitions(crlPartitions)
+                                .setRetiredCrlPartitions(retiredCrlPartitions)
                                 .build();
 	                    saveRequestInfo(x509cainfo);                
 	                }
@@ -857,7 +866,8 @@ public class CAInterfaceBean implements Serializable {
 	        String certificateAiaDefaultCaIssuerUriParam,
 	        String nameConstraintsPermittedString, String nameConstraintsExcludedString,
 	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL
+	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceCmsActive, String sharedCmpRaSecret, boolean keepExpiredCertsOnCRL,
+            boolean usePartitionedCrl, int crlPartitions, int retiredCrlPartitions
 	        ) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
         CAInfo caInfo = casession.getCAInfo(authenticationToken, caid);
@@ -937,7 +947,7 @@ public class CAInterfaceBean implements Serializable {
                         useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, includeInHealthCheck,
                         isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber, useCertReqHistory,
                         useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry, sharedCmpRaSecret, keepExpiredCertsOnCRL, defaultCertprofileId, 
-                        useNoConflictCertificateData /* TODO: Temporary default values, change when these when implementing partitioned crls -> */, false, 0, 0);
+                        useNoConflictCertificateData, usePartitionedCrl, crlPartitions, retiredCrlPartitions);
             }
            // Info specific for CVC CA
            if (catype == CAInfo.CATYPE_CVC) {
