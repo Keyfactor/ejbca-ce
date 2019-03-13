@@ -326,6 +326,6 @@ public class RenewCANewSubjectDNTest extends CaTestCase {
     }
     
     private int getLastCrlNumber(final String issuerDn, final boolean deltaCrl) {
-        return crlStoreSession.getLastCRLNumber(newSubjectDN2, CertificateConstants.NO_CRL_PARTITION, false);
+        return crlStoreSession.getLastCRLNumber(newSubjectDN2, CertificateConstants.NO_CRL_PARTITION, deltaCrl);
     }
 }
