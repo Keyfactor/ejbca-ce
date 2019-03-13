@@ -201,6 +201,9 @@ public class X509CA extends CA implements Serializable {
     protected static final String NAMECONSTRAINTSEXCLUDED = "nameconstraintsexcluded";
     protected static final String EXTERNALCDP = "externalcdp";
     protected static final String NAMECHANGED = "namechanged";
+    protected static final String USEPARTITIONEDCRL = "usepartitionedcrl";
+    protected static final String CRLPARTITIONS = "crlpartitions";
+    protected static final String RETIREDCRLPARTITIONS = "retiredcrlpartitions";
 
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
@@ -229,14 +232,17 @@ public class X509CA extends CA implements Serializable {
         setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
         setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
+        setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
+        setCrlPartitions(cainfo.getCrlPartitions());
+        setRetiredCrlPartitions(cainfo.getRetiredCrlPartitions());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
         // CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
         setAuthorityInformationAccess(cainfo.getAuthorityInformationAccess());
         setCertificateAiaDefaultCaIssuerUri(cainfo.getCertificateAiaDefaultCaIssuerUri());
         setNameConstraintsPermitted(cainfo.getNameConstraintsPermitted());
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
-        data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_X509));
-        data.put(VERSION, new Float(LATEST_VERSION));
+        data.put(CA.CATYPE, CAInfo.CATYPE_X509);
+        data.put(VERSION, LATEST_VERSION);
         setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
     }
 
@@ -254,7 +260,7 @@ public class X509CA extends CA implements Serializable {
             //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored
             //for instantiation.
             if (type != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
-                ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type.intValue());
+                ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type);
                 if (info != null) {
                     externalcaserviceinfos.add(info);
                 }
@@ -316,6 +322,9 @@ public class X509CA extends CA implements Serializable {
                 .setAcceptRevocationNonExistingEntry(isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(getCmpRaAuthSecret())
                 .setKeepExpiredCertsOnCRL(getKeepExpiredCertsOnCRL())
+                .setUsePartitionedCrl(getUsePartitionedCrl())
+                .setCrlPartitions(getCrlPartitions())
+                .setRetiredCrlPartitions(getRetiredCrlPartitions())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
@@ -349,19 +358,19 @@ public class X509CA extends CA implements Serializable {
     }
 
     public boolean getUseAuthorityKeyIdentifier() {
-        return ((Boolean) data.get(USEAUTHORITYKEYIDENTIFIER)).booleanValue();
+        return (Boolean) data.get(USEAUTHORITYKEYIDENTIFIER);
     }
 
     public void setUseAuthorityKeyIdentifier(boolean useauthoritykeyidentifier) {
-        data.put(USEAUTHORITYKEYIDENTIFIER, Boolean.valueOf(useauthoritykeyidentifier));
+        data.put(USEAUTHORITYKEYIDENTIFIER, useauthoritykeyidentifier);
     }
 
     public boolean getAuthorityKeyIdentifierCritical() {
-        return ((Boolean) data.get(AUTHORITYKEYIDENTIFIERCRITICAL)).booleanValue();
+        return (Boolean) data.get(AUTHORITYKEYIDENTIFIERCRITICAL);
     }
 
     public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical) {
-        data.put(AUTHORITYKEYIDENTIFIERCRITICAL, Boolean.valueOf(authoritykeyidentifiercritical));
+        data.put(AUTHORITYKEYIDENTIFIERCRITICAL, authoritykeyidentifiercritical);
     }
 
     /** CA Issuer URI to put in CRLs (RFC5280 section 5.2.7, not the URI to put in certs
@@ -391,19 +400,19 @@ public class X509CA extends CA implements Serializable {
     }
 
     public boolean getUseCRLNumber() {
-        return ((Boolean) data.get(USECRLNUMBER)).booleanValue();
+        return (Boolean) data.get(USECRLNUMBER);
     }
 
     public void setUseCRLNumber(boolean usecrlnumber) {
-        data.put(USECRLNUMBER, Boolean.valueOf(usecrlnumber));
+        data.put(USECRLNUMBER, usecrlnumber);
     }
 
     public boolean getCRLNumberCritical() {
-        return ((Boolean) data.get(CRLNUMBERCRITICAL)).booleanValue();
+        return (Boolean) data.get(CRLNUMBERCRITICAL);
     }
 
     public void setCRLNumberCritical(boolean crlnumbercritical) {
-        data.put(CRLNUMBERCRITICAL, Boolean.valueOf(crlnumbercritical));
+        data.put(CRLNUMBERCRITICAL, crlnumbercritical);
     }
 
     public String getDefaultCRLDistPoint() {
@@ -455,43 +464,43 @@ public class X509CA extends CA implements Serializable {
     }
 
     public boolean getUseUTF8PolicyText() {
-        return ((Boolean) data.get(USEUTF8POLICYTEXT)).booleanValue();
+        return (Boolean) data.get(USEUTF8POLICYTEXT);
     }
 
     public void setUseUTF8PolicyText(boolean useutf8) {
-        data.put(USEUTF8POLICYTEXT, Boolean.valueOf(useutf8));
+        data.put(USEUTF8POLICYTEXT, useutf8);
     }
 
     public boolean getUsePrintableStringSubjectDN() {
-        return ((Boolean) data.get(USEPRINTABLESTRINGSUBJECTDN)).booleanValue();
+        return (Boolean) data.get(USEPRINTABLESTRINGSUBJECTDN);
     }
 
     public void setUsePrintableStringSubjectDN(boolean useprintablestring) {
-        data.put(USEPRINTABLESTRINGSUBJECTDN, Boolean.valueOf(useprintablestring));
+        data.put(USEPRINTABLESTRINGSUBJECTDN, useprintablestring);
     }
 
     public boolean getUseLdapDNOrder() {
-        return ((Boolean) data.get(USELDAPDNORDER)).booleanValue();
+        return (Boolean) data.get(USELDAPDNORDER);
     }
 
     public void setUseLdapDNOrder(boolean useldapdnorder) {
-        data.put(USELDAPDNORDER, Boolean.valueOf(useldapdnorder));
+        data.put(USELDAPDNORDER, useldapdnorder);
     }
 
     public boolean getUseCrlDistributionPointOnCrl() {
-        return ((Boolean) data.get(USECRLDISTRIBUTIONPOINTONCRL)).booleanValue();
+        return (Boolean) data.get(USECRLDISTRIBUTIONPOINTONCRL);
     }
 
     public void setUseCrlDistributionPointOnCrl(boolean useCrlDistributionPointOnCrl) {
-        data.put(USECRLDISTRIBUTIONPOINTONCRL, Boolean.valueOf(useCrlDistributionPointOnCrl));
+        data.put(USECRLDISTRIBUTIONPOINTONCRL, useCrlDistributionPointOnCrl);
     }
 
     public boolean getCrlDistributionPointOnCrlCritical() {
-        return ((Boolean) data.get(CRLDISTRIBUTIONPOINTONCRLCRITICAL)).booleanValue();
+        return (Boolean) data.get(CRLDISTRIBUTIONPOINTONCRLCRITICAL);
     }
 
     public void setCrlDistributionPointOnCrlCritical(boolean crlDistributionPointOnCrlCritical) {
-        data.put(CRLDISTRIBUTIONPOINTONCRLCRITICAL, Boolean.valueOf(crlDistributionPointOnCrlCritical));
+        data.put(CRLDISTRIBUTIONPOINTONCRLCRITICAL, crlDistributionPointOnCrlCritical);
     }
 
     /** @return Encoded name constraints to permit */
@@ -542,6 +551,44 @@ public class X509CA extends CA implements Serializable {
         data.put(SERIALNUMBEROCTETSIZE, serialNumberOctetSize);
     }
 
+    public boolean getUsePartitionedCrl() {
+        if(data.containsKey(USEPARTITIONEDCRL)) {
+            return (Boolean) data.get(USEPARTITIONEDCRL);
+        } else {
+            return false;
+        }
+    }
+
+    public void setUsePartitionedCrl(boolean usePartitionedCrl) {
+        data.put(USEPARTITIONEDCRL, usePartitionedCrl);
+    }
+
+    public int getCrlPartitions() {
+        if (data.containsKey(CRLPARTITIONS)) {
+            return (Integer) data.get(CRLPARTITIONS);
+        } else {
+            return 0;
+        }
+    }
+
+    public void setCrlPartitions(final int crlPartitions) {
+        data.put(CRLPARTITIONS, crlPartitions);
+    }
+
+    public int getRetiredCrlPartitions() {
+        if (data.containsKey(CRLPARTITIONS)) {
+            return (Integer) data.get(RETIREDCRLPARTITIONS);
+        } else {
+            return 0;
+        }
+    }
+
+    public void setRetiredCrlPartitions(final int retiredCrlPartitions) {
+        data.put(RETIREDCRLPARTITIONS, retiredCrlPartitions);
+    }
+
+
+
     private Object getMapValueWithDefault(final String key, final Object defaultValue) {
         final Object o = data.get(key);
         if (o == null) {
@@ -556,13 +603,13 @@ public class X509CA extends CA implements Serializable {
             log.warn("Not supported operation of setting CA Name Change value from TRUE to FALSE. Value not set!");
             return;
         }
-        data.put(NAMECHANGED, Boolean.valueOf(nameChanged));
+        data.put(NAMECHANGED, nameChanged);
     }
 
     /** Retrieving NAMECHANGED flag that shows if this CA has gone through the Name Change any time in its history renewal. */
     public boolean getNameChanged() {
         Boolean v = ((Boolean) data.get(NAMECHANGED));
-        return (v == null) ? false : v.booleanValue();
+        return (v == null) ? false : v;
     }
 
     @Override
@@ -590,7 +637,10 @@ public class X509CA extends CA implements Serializable {
         setNameConstraintsExcluded(info.getNameConstraintsExcluded());
         setExternalCdp(info.getExternalCdp());
         setSubjectAltName(info.getSubjectAltName());
-        setCaSerialNumberOctetSize(new Integer(info.getCaSerialNumberOctetSize()));
+        setCaSerialNumberOctetSize(info.getCaSerialNumberOctetSize());
+        setUsePartitionedCrl(((X509CAInfo) cainfo).getUsePartitionedCrl());
+        setCrlPartitions(((X509CAInfo) cainfo).getCrlPartitions());
+        setRetiredCrlPartitions(((X509CAInfo) cainfo).getRetiredCrlPartitions());
     }
 
     /**
@@ -1277,7 +1327,7 @@ public class X509CA extends CA implements Serializable {
                 }
                 if ((remainingOidsToMatch == requestOids.size()) && certExt.isRequiredFlag()) {
                     // Required wildcard extension didn't match any OIDs in the request
-                    throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(certExt.getId()), certExt.getOID()) + 
+                    throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", certExt.getId(), certExt.getOID()) +
                             "\nNo requested OID matched wildcard");
                 }
             }
@@ -1879,7 +1929,7 @@ public class X509CA extends CA implements Serializable {
                 }
             } else {
                 // Use the same value as we had before when we had alwaysuseutf8subjectdn
-                boolean useutf8 = ((Boolean) data.get("alwaysuseutf8subjectdn")).booleanValue();
+                boolean useutf8 = (Boolean) data.get("alwaysuseutf8subjectdn");
                 if (data.get(USEUTF8POLICYTEXT) == null) {
                     setUseUTF8PolicyText(useutf8);
                 }
@@ -1931,7 +1981,7 @@ public class X509CA extends CA implements Serializable {
                 @SuppressWarnings("unchecked")
                 Collection<Integer> types = (Collection<Integer>)data.get(EXTENDEDCASERVICES);
                 // Remove type 2, which is XKMS
-                types.remove(Integer.valueOf(2));
+                types.remove(2);
                 data.put(EXTENDEDCASERVICES, types);
                 // Remove any data if it exists
                 data.remove(EXTENDEDCASERVICE+2);
@@ -1960,7 +2010,7 @@ public class X509CA extends CA implements Serializable {
                 setCaSerialNumberOctetSize(CesecoreConfiguration.getSerialNumberOctetSizeForExistingCa());
             }
 
-            data.put(VERSION, new Float(LATEST_VERSION));
+            data.put(VERSION, LATEST_VERSION);
         }
     }
 
