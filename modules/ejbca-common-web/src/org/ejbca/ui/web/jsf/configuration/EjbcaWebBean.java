@@ -439,6 +439,9 @@ public interface EjbcaWebBean extends Serializable {
     /** @return true if we are running in the enterprise mode otherwise false. */
     public boolean isRunningEnterprise();
 
+    /** @return true if we are running EJBCA build that has CA functionality enabled. */
+    public boolean isRunningBuildWithCA();
+    
     public EstConfiguration getEstConfiguration();
 
     /**
