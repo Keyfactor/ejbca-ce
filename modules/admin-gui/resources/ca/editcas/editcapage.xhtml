@@ -869,7 +869,7 @@
 
 			<!-- ==================================================================== CRL Specific Data ============================================================================ -->
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+			<h:panelGrid id="crlSpecificData" columns="2" styleClass="edit-top" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
 				columnClasses="editColumn1,editColumn2"
 				rendered="#{editCAsMBean.caTypeX509 and not editCAsMBean.renderCvcAvailable}">
@@ -984,6 +984,43 @@
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" />
 					<h:outputLabel for="checkboxkeepexpiredoncrl"
 						value="#{web.text.USE}" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:outputText value="#{web.text.USECRLPARTITIONS}" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+					<h:selectBooleanCheckbox id="checkboxusecrlpartitions"
+											 value="#{editCAsMBean.usePartitionedCrl}"
+											 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
+						<f:ajax render=":editcapage:crlSpecificData"/>
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="crlpartitions"
+								   value="#{web.text.USE}" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.usePartitionedCrl}">
+					<h:outputText value="#{web.text.CRLPARTITIONNUMBER}" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.usePartitionedCrl}">
+					<h:inputText id="crlpartitions"  value="#{editCAsMBean.crlPartitions}" size="2" maxlength="2" title="#{web.text.FORMAT_INTEGER}"
+								 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
+								 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
+						<f:validateLength minimum="1" maximum="2"/>
+						<f:validateLongRange minimum="0" maximum="99"/>
+					</h:inputText>
+				</h:panelGroup>
+
+				<h:panelGroup id="retiredPartitionLabelGroup" rendered="#{not editCAsMBean.caExternal and editCAsMBean.usePartitionedCrl}">
+					<h:outputText value="#{web.text.CRLRETIREDPARTITIONNUMBER}" />
+
+				</h:panelGroup>
+				<h:panelGroup id="retiredPartitionInputGroup" rendered="#{not editCAsMBean.caExternal and editCAsMBean.usePartitionedCrl}">
+					<h:inputText id="crlretiredpartitions" value="#{editCAsMBean.retiredCrlPartitions}" size="2" maxlength="2" title="#{web.text.FORMAT_INTEGER}"
+								 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
+								 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
+						<f:validateLength minimum="1" maximum="2"/>
+						<f:validateLongRange minimum="0" maximum="99"/>
+					</h:inputText>
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
