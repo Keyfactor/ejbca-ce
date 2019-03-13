@@ -13,7 +13,7 @@ sudo -E env "PATH=$PATH" cp -rf /opt/jboss-ejb-client.properties /app/ejbca/src/
 sleep 10
 
 cd /app/ejbca
-export ANT_OPTS="-Xms64m -Xmx1024m"
+export ANT_OPTS="-Xms64m -Xmx1792m"
 
 # needs to be *clean* build, because otherwise the ejb remote configs won't be built into the package
 sudo -E env "PATH=$PATH" "ANT_OPTS=$ANT_OPTS" ant clean build
