@@ -24,6 +24,7 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -79,90 +80,15 @@ public class RaEndEntityBean implements Serializable {
     private Map<Integer,String> caIdToNameMap = new HashMap<>();
     private boolean editEditEndEntityMode = false;
     private List<RaCertificateDetails> issuedCerts = null;
-    private SelectStatus[] selectableStatuses = null;
-    private SelectTokenType[] selectableTokenTypes = null;
+    private SelectItem[] selectableStatuses = null;
+    private SelectItem[] selectableTokenTypes = null;
     private int selectedStatus = -1;
     private int selectedTokenType = -1;
     private String enrollmentCode = "";
     private String enrollmentCodeConfirm = "";
     private boolean clearCsrChecked = false;
-
-    /**
-     * The SelectStatus class holds a status string/constant pair
-     */
-    public static final class SelectStatus {
-        private String statusString;
-        private int statusConstant;
-
-        /**
-         * Constructor for the SelectStatus class
-         * 
-         * @param statusString the status string
-         * @param statusConstant the status constant
-         */
-        public SelectStatus(String statusString, int statusConstant) {
-            this.statusString = statusString;
-            this.statusConstant = statusConstant;
-        }
-
-        /**
-         * @return the status string
-         */
-        public String getStatusString() {
-            return statusString;
-        }
-
-        /**
-         * @return the status constant
-         */
-        public int getStatusConstant() {
-            return statusConstant;
-        }
-
-        @Override
-        public String toString() {
-            return "{" + statusString + ": " + statusConstant + "}";
-        }
-    }
     
-    /**
-     * The SelectTokenType class holds a tokenType string/constant pair
-     */
-    public static final class SelectTokenType {
-        private String tokenTypeString;
-        private int tokenTypeConstant;
-
-        /**
-         * Constructor for the SelectTokenType class
-         * 
-         * @param tokenTypeString the tokenType string
-         * @param tokenTypeConstant the tokenType constant
-         */
-        public SelectTokenType(String tokenTypeString, int tokenTypeConstant) {
-            this.tokenTypeString = tokenTypeString;
-            this.tokenTypeConstant = tokenTypeConstant;
-        }
-
-        /**
-         * @return the tokenType string
-         */
-        public String getTokenTypeString() {
-            return tokenTypeString;
-        }
-
-        /**
-         * @return the tokenType constant
-         */
-        public int getTokenTypeConstant() {
-            return tokenTypeConstant;
-        }
-
-        @Override
-        public String toString() {
-            return "{" + tokenTypeString + ": " + tokenTypeConstant + "}";
-        }
-    }
-
+    
     private final Callbacks raEndEntityDetailsCallbacks = new RaEndEntityDetails.Callbacks() {
         @Override
         public RaLocaleBean getRaLocaleBean() {
@@ -411,20 +337,17 @@ public class RaEndEntityBean implements Serializable {
      * 
      * @return an array of selectable statuses
      */
-    public SelectStatus[] getSelectableStatuses() {
+    public SelectItem[] getSelectableStatuses() {
         if (editEditEndEntityMode && selectableStatuses == null) {
-            selectableStatuses = new SelectStatus[] {
-                    new SelectStatus(
-                            raLocaleBean.getMessage("component_eedetails_status_unchanged"),
-                            0),
-                    new SelectStatus(
-                            raLocaleBean.getMessage("component_eedetails_status_new"),
-                            EndEntityConstants.STATUS_NEW),
-                    new SelectStatus(
-                            raLocaleBean.getMessage("component_eedetails_status_generated"),
-                            EndEntityConstants.STATUS_GENERATED)
+            selectableStatuses = new SelectItem[] {
+                    new SelectItem(0,
+                            raLocaleBean.getMessage("component_eedetails_status_unchanged")),
+                    new SelectItem(EndEntityConstants.STATUS_NEW,
+                            raLocaleBean.getMessage("component_eedetails_status_new")),
+                    new SelectItem(EndEntityConstants.STATUS_GENERATED,
+                            raLocaleBean.getMessage("component_eedetails_status_generated"))
             };
-            selectedStatus = selectableStatuses[0].getStatusConstant();
+            selectedStatus = (int)selectableStatuses[0].getValue();
         }
         return selectableStatuses;
     }
@@ -434,23 +357,19 @@ public class RaEndEntityBean implements Serializable {
      * 
      * @return an array of selectable tokenTypes
      */
-    public SelectTokenType[] getSelectableTokenTypes() {
+    public SelectItem[] getSelectableTokenTypes() {
         if (editEditEndEntityMode && selectableTokenTypes == null) {
-            selectableTokenTypes = new SelectTokenType[] {
-                    new SelectTokenType(
-                            raLocaleBean.getMessage("component_eedetails_tokentype_usergen"),
-                            EndEntityConstants.TOKEN_USERGEN),
-                    new SelectTokenType(
-                            raLocaleBean.getMessage("component_eedetails_tokentype_jks"),
-                            EndEntityConstants.TOKEN_SOFT_JKS),
-                    new SelectTokenType(
-                            raLocaleBean.getMessage("component_eedetails_tokentype_pkcs12"),
-                            EndEntityConstants.TOKEN_SOFT_P12),
-                    new SelectTokenType(
-                            raLocaleBean.getMessage("component_eedetails_tokentype_pem"),
-                            EndEntityConstants.TOKEN_SOFT_PEM)
+            selectableTokenTypes = new SelectItem[] {
+                    new SelectItem(EndEntityConstants.TOKEN_USERGEN,
+                            raLocaleBean.getMessage("component_eedetails_tokentype_usergen")),
+                    new SelectItem(EndEntityConstants.TOKEN_SOFT_JKS,
+                            raLocaleBean.getMessage("component_eedetails_tokentype_jks")),
+                    new SelectItem(EndEntityConstants.TOKEN_SOFT_P12,
+                            raLocaleBean.getMessage("component_eedetails_tokentype_pkcs12")),
+                    new SelectItem(EndEntityConstants.TOKEN_SOFT_PEM,
+                            raLocaleBean.getMessage("component_eedetails_tokentype_pem"))
             };
-            selectedTokenType = selectableTokenTypes[0].getTokenTypeConstant();
+            selectedTokenType = (int)selectableTokenTypes[0].getValue();
         }
         return selectableTokenTypes;
     }
