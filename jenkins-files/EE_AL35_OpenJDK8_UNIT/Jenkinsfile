@@ -8,7 +8,7 @@ pipeline {
             agent {
                 // build and run (later also cleanup) the Docker container
                 dockerfile {
-                    label 'docker'
+                    reuseNode true
                     dir 'ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT'
                     filename 'Dockerfile'
                     additionalBuildArgs  '--disable-content-trust=false --pull'
