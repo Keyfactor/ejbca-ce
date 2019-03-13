@@ -149,7 +149,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
                 final Map<Object, Object> oldValues = (Map<Object, Object>) data.clone();
                 final Map<Object, Object> newValues = (Map<Object, Object>) data.clone();
                 newValues.put("testOut", StringUtils.join(out, System.getProperty("line.separator")));
-                newValues.put("testPath", "");
+                newValues.put("testPath", null);
                 uiModel.firePropertyChange(oldValues, newValues);
                 setTestCertificates(ListUtils.EMPTY_LIST);
             }
@@ -359,7 +359,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
      */
     @SuppressWarnings("unchecked")
     public List<String> testCommand() throws DynamicUiCallbackException {
-        log.info("Test external command certificate validator " + getProfileName());
+        log.info("Test external command certificate validator: " + getProfileName());
         final DynamicUiProperty<File> property = (DynamicUiProperty<File>) uiModel.getProperties().get("testPath");
         final List<String> out = new ArrayList<String>();
         File file = null;
