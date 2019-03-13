@@ -413,7 +413,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     public boolean forceDeltaCRL(final AuthenticationToken admin, final int caid) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
 //        final CA ca = caSession.getCA(admin, caid);
         // TODO loop over all partitions here (ECA-7939)
-        return forceCRL(admin, caid, CertificateConstants.NO_CRL_PARTITION);
+        return forceDeltaCRL(admin, caid, CertificateConstants.NO_CRL_PARTITION);
     }
 
     /**
