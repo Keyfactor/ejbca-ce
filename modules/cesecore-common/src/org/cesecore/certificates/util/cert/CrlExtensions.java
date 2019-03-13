@@ -106,13 +106,15 @@ public class CrlExtensions {
         int reasonCode = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
         if (crlEntry.hasExtensions()) {
             final byte[] extensionValue = crlEntry.getExtensionValue(Extension.reasonCode.getId());
-            try {
-                final ASN1Enumerated reasonCodeExtension = ASN1Enumerated.getInstance(X509ExtensionUtil.fromExtensionValue(extensionValue));
-                if (reasonCodeExtension!=null) {
-                    reasonCode = reasonCodeExtension.getValue().intValue();
+            if (extensionValue!=null) {
+                try {
+                    final ASN1Enumerated reasonCodeExtension = ASN1Enumerated.getInstance(X509ExtensionUtil.fromExtensionValue(extensionValue));
+                    if (reasonCodeExtension!=null) {
+                        reasonCode = reasonCodeExtension.getValue().intValue();
+                    }
+                } catch (IOException e) {
+                    log.debug("Failed to parse reason code of CRLEntry: " + e.getMessage());
                 }
-            } catch (IOException e) {
-                log.debug("Failed to parse reason code of CRLEntry: " + e.getMessage());
             }
         }
         return reasonCode;
