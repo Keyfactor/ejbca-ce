@@ -1559,6 +1559,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return enterpriseEjbLocalHelper.isRunningEnterprise();
     }
 
+    /** @return true if we are running EJBCA build that has CA functionality enabled. */
+    @Override
+    public boolean isRunningBuildWithCA() {
+        boolean isWithCA = false;
+        return isWithCA;
+    }
+    
     @Override
     public EstConfiguration getEstConfiguration() {
         if (estconfiguration == null) {

@@ -99,13 +99,13 @@
 							value="#{web.ejbcaWebBean.getHelpReference('/Signing_a_Rollover_Certificate.html')}"
 							escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
-				<h:panelGroup>
+				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
 						<h3>
 							<h:outputText value="#{web.text.ADDCA}"
 								rendered="#{manageCAsMBean.canAddOrEditResource}" />
 						</h3>
 				</h:panelGroup>
-				<h:panelGroup>
+				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
 						<h:inputText
 							id="textfieldcaname" size="40" maxlength="255"
 							title="#{web.text.FORMAT_ID_STR}"
