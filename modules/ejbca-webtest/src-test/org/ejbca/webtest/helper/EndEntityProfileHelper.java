@@ -83,6 +83,7 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By SELECT_DEFAULT_CERTIFICATE_PROFILE = By.id("eeProfiles:defaultCertificateProfile");
         static final By SELECT_AVAILABLE_CERTIFICATE_PROFILES = By.id("eeProfiles:availableCertProfiles");
         static final By SELECT_ISSUANCE_REVOCATION_REASON = By.id("eeProfiles:revocationReasonMenu");
+        static final By SELECT_DEFAULT_CP = By.id("eeProfiles:defaultCertificateProfile");
         static final By SELECT_DEFAULT_CA = By.id("eeProfiles:defaultCAMenu");
         static final By SELECT_AVAILABLE_CAS = By.id("eeProfiles:availableCA");
         static final By NOTIFICATION = By.xpath("//tr[td/strong[text()='Send Notification']]/following-sibling::tr[1]/td[2][contains(text(), 'Notification')]");
@@ -212,6 +213,16 @@ public class EndEntityProfileHelper extends BaseHelper {
         selectOptionsByName(Page.SELECT_AVAILABLE_CERTIFICATE_PROFILES, selectedCertificateProfiles);
         selectDefaultCa(defaultCAName);
         selectOptionsByName(Page.SELECT_AVAILABLE_CAS, selectedCAs);
+    }
+
+    /**
+     * Selects the default certification profile
+     *
+     * @param defaultCPName
+     */
+
+    public void selectDefaultCp(String defaultCPName) {
+        selectOptionByName(Page.SELECT_DEFAULT_CP, defaultCPName);
     }
 
     /**
