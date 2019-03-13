@@ -470,7 +470,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final List<String> out = new ArrayList<String>();
         try {
             out.addAll(ExternalProcessTools.launchExternalCommand(cmd, certificates.get(0).getEncoded(),
-                    isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, this.getClass().getName()));
+                    isFailOnErrorCode(), isFailOnStandardError(), isLogStandardOut(), isLogErrorOut(), arguments, this.getClass().getSimpleName()));
         } catch (ExternalProcessException e) {
             log.info("Could not call external command '" + cmd + "' with arguments " + arguments + " sucessfully: " + e.getMessage());
             if (log.isDebugEnabled()) {
