@@ -38,7 +38,7 @@ java -version
 echo '=================== Copying Configuration =================================='
 cp /opt/standalone1.xml $JBOSS_STANDALONE_CONF/standalone.xml
 cp /opt/conf/* /app/ejbca/conf/
-export ANT_OPTS="-Xms64m -Xmx1792m"
+export ANT_OPTS="-Xms64m -Xmx1536m"
 
 echo '=================== Starting WildFly ======================================='
 $JBOSS_BIN/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &

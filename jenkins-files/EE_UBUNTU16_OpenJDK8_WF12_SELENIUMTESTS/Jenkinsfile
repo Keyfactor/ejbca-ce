@@ -72,8 +72,8 @@ pipeline {
                 sh "chmod 777 $env.WORKSPACE/ejbca/modules/ejbca-webtest"
 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_WF12_SELENIUMTESTS/selenium_image') {
-                    sh "docker build -t seleniumtests -m 3GB ."
-                    sh "docker run --name seleniumtests --net=selenium-network -p 4444:4444 --shm-size=2g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
+                    sh "docker build -t seleniumtests -m 4GB ."
+                    sh "docker run --name seleniumtests --net=selenium-network -p 4444:4444 --shm-size=4g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
                 }
             }
         }

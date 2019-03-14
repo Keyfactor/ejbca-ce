@@ -48,7 +48,7 @@ pipeline {
 			steps {
 				sh "mkdir ear || true"
 				dir ("ejbca/jenkins-files/${params.JENKINS_JOB_FOLDER}") {
-					sh "docker build -t ${params.DOCKER_NAME_BASE} -m 4GB ."
+					sh "docker build -t ${params.DOCKER_NAME_BASE} -m 5GB ."
 					sh "docker run --name ${params.DOCKER_NAME_BASE} --net=${params.DOCKER_NAME_NET} -v ${env.WORKSPACE}:/app ${params.DOCKER_NAME_BASE}"
 				}
 			}
