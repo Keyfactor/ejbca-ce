@@ -13,8 +13,8 @@ sudo -E env "PATH=$PATH" cp -rf /opt/jboss-ejb-client.properties /app/ejbca/src/
 sleep 10
 
 cd /app/ejbca
-export JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -XX:+UseCompressedOops -Xms64m -Xmx1280m"
-export ANT_OPTS="$JAVA_OPTS"
+export JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -XX:+UseCompressedOops -Xms64m -Xmx1792m"
+export ANT_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -XX:+UseCompressedOops -Xms64m -Xmx512m -Dtest.jvmargs='$JAVA_OPTS'"
 
 # needs to be *clean* build, because otherwise the ejb remote configs won't be built into the package
 sudo -E env "PATH=$PATH" "ANT_OPTS=$ANT_OPTS" "JAVA_OPTS=$JAVA_OPTS" ant clean build
