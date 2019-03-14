@@ -8,6 +8,11 @@ JBOSS_STANDALONE=$JBOSS_HOME/standalone
 JBOSS_STANDALONE_CONF=$JBOSS_STANDALONE/configuration
 JBOSS_STANDALONE_DEPLOYMENTS=$JBOSS_STANDALONE/deployments
 
+# Options for JUnit JVM
+export JAVA_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
+# Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
+export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m"
+
 # Functions
 wait_for_deployment() {
 	DEPLOY_SUCCESSFUL=0
@@ -38,7 +43,6 @@ java -version
 echo '=================== Copying Configuration =================================='
 cp /opt/standalone1.xml $JBOSS_STANDALONE_CONF/standalone.xml
 cp /opt/conf/* /app/ejbca/conf/
-export ANT_OPTS="-Xms64m -Xmx1536m"
 
 echo '=================== Starting WildFly ======================================='
 $JBOSS_BIN/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
@@ -70,5 +74,5 @@ wait_for_deployment
 echo '=================== Deployment is done ====================================='
 
 echo '=================== Starting system tests =================================='
-ant test:runsys
+ant test:runsys -Dtests.jvmargs="$JAVA_OPTS"
 echo '=================== System tests are done =================================='
