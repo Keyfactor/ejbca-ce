@@ -210,7 +210,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     }
     
     @Test
-    public void test01CrmfHttpOkUser() throws Exception {
+    public void testCrmfHttpOkUser() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -236,7 +236,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     }
 
     @Test
-    public void test01CrmfHttpOkUserWithSAN() throws Exception {
+    public void testCrmfHttpOkUserWithSAN() throws Exception {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
@@ -266,7 +266,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
      * added as fields in the profile
      */
     @Test
-    public void test01CrmfHttpOkUserWithMultiValueRDN() throws Exception {
+    public void testCrmfHttpOkUserWithMultiValueRDN() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -347,7 +347,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
     /** Tests a revocation without revocation reasons and without KeyId */
     @Test
-    public void test01CrmfHttpOkUser2NoRevocationReason() throws Exception {
+    public void testCrmfHttpOkUser2NoRevocationReason() throws Exception {
         try {
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -407,7 +407,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
      * ProfileDefault means that the certificate profile used is taken from the default certificate profile in the end entity profile.
      */
     @Test
-    public void test02KeyIdProfiles() throws Exception {
+    public void testKeyIdProfiles() throws Exception {
         final String keyId = "CmpTestKeyIdProfileName";
         final String keyIdDefault = "CmpTestKeyIdProfileNameDefault";
         
@@ -521,7 +521,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     }
 
     @Test
-    public void test03CrmfHttpTooManyIterations() throws Exception {
+    public void testCrmfHttpTooManyIterations() throws Exception {
         log.trace(">test03CrmfHttpTooManyIterations");
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -543,7 +543,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     }
 
     @Test
-    public void test04RevocationApprovals() throws Exception {
+    public void testRevocationApprovals() throws Exception {
         // Generate random username and CA name
         String randomPostfix = Integer.toString((new Random(new Date().getTime() + 4711)).nextInt(999999));
         String caname = "cmpRevocationCA" + randomPostfix;
@@ -652,7 +652,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
     
     @Test
-    public void test05CrmfEmptyDN() throws Exception {
+    public void testCrmfEmptyDN() throws Exception {
         try {
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
