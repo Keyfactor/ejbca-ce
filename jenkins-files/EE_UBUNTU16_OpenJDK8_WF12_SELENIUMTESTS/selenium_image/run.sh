@@ -14,7 +14,7 @@ sleep 10
 
 cd /app/ejbca
 # Options for test JVM. The browser runs in a separate process, so it shouldn't need much memory
-export JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx256m"
+export JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError=\"kill -9 %p\" -Xms64m -Xmx256m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much
 export ANT_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m -Dtests.jvmargs='$JAVA_OPTS'"
 
