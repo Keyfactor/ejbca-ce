@@ -15,11 +15,15 @@ pipeline {
                     args '--group-add root'
                 }
             }
+            environment {
+                ANT_OPTS = "-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1024m"
+                TEST_OPTS = "-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx256m"
+            }
             steps {
                 // Run these steps inside the running docker container
                 dir ('ejbca') {
                     sh "cp /opt/conf/* conf/"
-                    sh "ant -q -Dappserver.home=/tmp -Dappserver.type=jboss -Dejbca.productionmode=false -XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m clean build test:runsa"
+                    sh "ant -q -Dappserver.home=/tmp -Dappserver.type=jboss -Dejbca.productionmode=false clean build test:runsa -Dtests.jvmargs=\"\$TEST_OPTS\""
                 }
                 // gather the results
                 junit "ejbca/**/reports/**/TEST-*.xml"
