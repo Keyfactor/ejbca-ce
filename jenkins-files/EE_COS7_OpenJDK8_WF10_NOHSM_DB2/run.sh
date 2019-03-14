@@ -9,7 +9,7 @@ JBOSS_STANDALONE_CONF=$JBOSS_STANDALONE/configuration
 JBOSS_STANDALONE_DEPLOYMENTS=$JBOSS_STANDALONE/deployments
 
 # Options for JUnit JVM
-export JAVA_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
+export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
 export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m"
 
@@ -74,5 +74,5 @@ wait_for_deployment
 echo '=================== Deployment is done ====================================='
 
 echo '=================== Starting system tests =================================='
-ant test:runsys -Dtests.jvmargs="$JAVA_OPTS"
+ant test:runsys -Dtests.jvmargs="$TEST_OPTS"
 echo '=================== System tests are done =================================='
