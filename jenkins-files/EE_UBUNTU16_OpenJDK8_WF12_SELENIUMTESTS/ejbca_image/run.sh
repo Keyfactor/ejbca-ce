@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Options for ant itself. Report building is done in selenium_image, so this shouldn't require much memory
+export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
+
 cp /opt/conf/* /app/ejbca/conf/
 cp /opt/p12/* /app/ejbca/p12/
 cp /opt/ManagementCA.pem /app/ejbca/ManagementCA.pem
@@ -32,7 +35,6 @@ wait_for_deployment() {
     fi
 }
 
-export ANT_OPTS="-Xms64m -Xmx1024m"
 ant clean deployear
 wait_for_deployment
 echo '=================== should be started now ========================'
