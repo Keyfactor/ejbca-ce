@@ -80,7 +80,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     }
 
 
-    @Test(timeout=20000)
+    @Test(timeout=30000)
     public void stepC_buildStatedump() {
         //Run the designated ant command
         Assert.assertTrue(commandLineHelper.runCommand("ant statedump"));
@@ -90,10 +90,14 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         Assert.assertTrue(statedumpDir.exists());
     }
 
+    @Test(timeout=30000)
+    public void stepD_unlockStatedump() {
+        commandLineHelper.runCommand("sh dist/statedump/statedump.sh lockdown --unlock");
+    }
 
 
-    @Test(timeout=20000)
-    public void stepD_exportCAssertStatedumpCmdLine() {
+    @Test(timeout=30000)
+    public void stepE_exportCAssertStatedumpCmdLine() {
         //Export the CA
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh export -l test-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
 
@@ -103,23 +107,27 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     }
 
 
-
     @Test
-    public void stepE_deleteCA() {
+    public void stepF_deleteCA() {
         //Remove the CA
         caHelper.openPage(getAdminWebUrl());
         caHelper.deleteCaAndAssert(deleteAlert, false, null, EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
     }
 
+    @Test(timeout=30000)
+    public void stepG_unlockStatedumpBeforeImport() {
+        commandLineHelper.runCommand("sh dist/statedump/statedump.sh lockdown --unlock");
+    }
 
-    @Test(timeout=20000)
-    public void stepF_importCACmdLine() {
+
+    @Test(timeout=30000)
+    public void stepH_importCACmdLine() {
         //Reimport the CA
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh import -l test-statedump");
     }
 
     @Test
-    public void stepG_editCA() {
+    public void stepI_editCA() {
         //Edit the reimported CA
         caHelper.openPage(getAdminWebUrl());
         caHelper.edit(TestData.CA_NAME);
@@ -127,7 +135,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
 
     @Test
-    public void stepH_assertKeyAliasesRestored() {
+    public void stepJ_assertKeyAliasesRestored() {
         //Assert Key values are restored.
         caHelper.assertCrlSignKeyValue("signKey");
         caHelper.assertDefaultKeyValue("defaultKey");
