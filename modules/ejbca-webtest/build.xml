@@ -120,6 +120,7 @@
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg value="${remoteDebugJvmArgs}"/>
 		</junit>
 	</target>
