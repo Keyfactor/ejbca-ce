@@ -1,12 +1,16 @@
 #!/bin/sh
 
+# Options for JUnit JVM
+export JAVA_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
+# Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
+export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m"
+
 echo '=================== CHECKING JAVA VERSION: ================================='
 java -version
 
 cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
 cp /opt/conf/* /app/ejbca/conf/
-export ANT_OPTS="-Xms64m -Xmx1536m"
 
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
@@ -57,4 +61,4 @@ wait_for_deployment
 
 echo '=================== starting system tests ================================='
 
-ant test:run -Dtest.includep11=true
+ant test:run -Dtest.includep11=true -Dtests.jvmargs="$JAVA_OPTS"
