@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Options for test JVM. The browser runs in a separate process, so it shouldn't need much memory
+export JAVA_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx256m"
+# Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
+export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m"
 
 # try those with sudo
 # add the seluser guy to root group
@@ -13,10 +17,6 @@ sudo -E env "PATH=$PATH" cp -rf /opt/jboss-ejb-client.properties /app/ejbca/src/
 sleep 10
 
 cd /app/ejbca
-# Options for test JVM. The browser runs in a separate process, so it shouldn't need much memory
-export JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError=\"kill -9 %p\" -Xms64m -Xmx256m"
-# Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much
-export ANT_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m"
 
 # needs to be *clean* build, because otherwise the ejb remote configs won't be built into the package
 sudo -E env "PATH=$PATH" "ANT_OPTS=$ANT_OPTS" "JAVA_OPTS=$JAVA_OPTS" ant clean build
