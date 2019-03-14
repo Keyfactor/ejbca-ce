@@ -537,12 +537,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 fail("Should be possible to create certificate with multi-value RDN when EE profile is configured correctly: "+e.getMessage());
             }
         } finally {
-            try {
-                if (endEntityManagementSession.existsUser(username)) {
-                    endEntityManagementSession.revokeAndDeleteUser(intAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                }
-            } catch (Exception e) {
-                // NOPMD: ignore
+            if (endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.revokeAndDeleteUser(intAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
         }
     }
