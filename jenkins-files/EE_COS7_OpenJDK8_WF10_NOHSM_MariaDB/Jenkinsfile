@@ -26,7 +26,7 @@ pipeline {
                 sh "mkdir ear || true"
                 dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_MariaDB') {
                     sh "docker build -t ee_cos7_openjdk8_wf10_nohsm_mariadb -m 2GB ."
-                    sh "docker run --name ee_cos7_openjdk8_wf10_nohsm_mariadb --net=my_isolated_bridge_network -v " + "$env.WORKSPACE" + ":/app ee_cos7_openjdk8_wf10_nohsm_mariadb"
+                    sh "docker run --name ee_cos7_openjdk8_wf10_nohsm_mariadb --net=my_isolated_bridge_network --user 1001:1001 --group-add 1001 -v " + "$env.WORKSPACE" + ":/app ee_cos7_openjdk8_wf10_nohsm_mariadb"
                 }
             }
         }
