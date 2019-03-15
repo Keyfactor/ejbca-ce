@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -37,6 +36,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.util.crypto.CryptoTools;
 
 /** Handles and maintains the CA-part of the Key Recovery functionality
  * 
@@ -121,7 +121,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	                log.warn("Error creating subjectKeyId for key recovery, cryptoToken: " + cryptoToken.getId() + ", keyAlias: " + keyAlias, e);
 	            }
 				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
-						X509CA.encryptKeys(cryptoToken, keyAlias, serviceReq.getKeyPair()), cryptoToken.getId(), keyAlias, keyId);
+						CryptoTools.encryptKeys(cryptoToken, keyAlias, serviceReq.getKeyPair()), cryptoToken.getId(), keyAlias, keyId);
 			} catch(Exception e) {
 				throw new IllegalExtendedCAServiceRequestException(e);
 			}
@@ -139,7 +139,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 				        if (log.isDebugEnabled()) {
 				            log.debug("Trying to decrypt using alias '"+keyAlias+"' from crypto token "+cryptoToken.getId());
 				        }
-				        keys = X509CA.decryptKeys(cryptoToken, keyAlias, serviceReq.getKeyData());
+				        keys = CryptoTools.decryptKeys(cryptoToken, keyAlias, serviceReq.getKeyData());
 				    } catch (Exception e) { // NOPMD: we have to catch wide here, using the wrong key to decrypt can result in several different errors
 				        if (log.isDebugEnabled()) {
 				            log.debug("Decryption with alias '"+keyAlias+"' failed, trying defaultAlias: ", e);
@@ -149,7 +149,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	                        if (log.isDebugEnabled()) {
 	                            log.debug("Trying to decrypt using default alias '"+defaultAlias+"' from crypto token "+cryptoToken.getId());
 	                        }
-	                        keys = X509CA.decryptKeys(cryptoToken, defaultAlias, serviceReq.getKeyData());
+	                        keys = CryptoTools.decryptKeys(cryptoToken, defaultAlias, serviceReq.getKeyData());
 				        } else {
 				            // Just re-throw if we have nothing to test here
 				            throw e;

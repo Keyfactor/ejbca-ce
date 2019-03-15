@@ -48,6 +48,7 @@
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
+		<path location="${ejbca.home}/modules/cesecore-x509ca/build/classes"/>
 	</path>
 
 	<target name="jar" depends="with.clover">
@@ -56,7 +57,7 @@
 			<classpath refid="compile.classpath"/>
 		</javac>
 		<!-- generates dynamically META-INF/services for the ServiceLocator to find plugin implementations -->
-		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.certificates.ca.CvcPlugin;org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.configuration.ConfigurationCache;org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;org.cesecore.keys.validation.Validator"
+		<buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.certificates.ca.CvcPlugin;org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.configuration.ConfigurationCache;org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;org.cesecore.keys.validation.Validator;org.cesecore.certificates.ca.CACommon"
     		file="${cesecore-common.dir}/build/classes" classpath="manifest.classpath"/>
 		<mkdir dir="${cesecore-common.dir}/dist"/>
 		<jar destfile="${cesecore-common.dir}/dist/cesecore-common.jar">

@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -39,6 +42,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -75,9 +79,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Common class for test classes which need to create a CA.
@@ -119,7 +120,7 @@ public abstract class CaTestUtils {
         X509CAInfo cainfo = new X509CAInfo(cadn, caName, CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit RSA CA");
-        X509CA x509ca = new X509CA(cainfo);
+        X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         x509ca.setCAToken(catoken);
         // A CA certificate
         X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1",
@@ -194,7 +195,7 @@ public abstract class CaTestUtils {
         cainfo.setExtendedCAServiceInfos(extendedCaServices);
         cainfo.setUseLdapDnOrder(ldapOrder);
         cainfo.setCmpRaAuthSecret("foo123");
-        X509CA x509ca = new X509CA(cainfo);
+        X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         try {
             x509ca.setCAToken(catoken);
         } catch (InvalidAlgorithmException e) {
@@ -244,7 +245,7 @@ public abstract class CaTestUtils {
         boolean ldapOrder = !CertTools.isDNReversed(cadn);
         cainfo.setUseLdapDnOrder(ldapOrder);
         cainfo.setCmpRaAuthSecret("foo123");
-        X509CA x509ca = new X509CA(cainfo);
+        X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         try {
             x509ca.setCAToken(catoken);
         } catch (InvalidAlgorithmException e) {
@@ -290,7 +291,7 @@ public abstract class CaTestUtils {
             CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
         cainfo.setDescription("JUnit RSA CVC CA");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
-        CvcCA cvcca = CvcCA.getInstance(cainfo);
+        CvcCA cvcca = (CvcCA) CAFactory.INSTANCE.getCvcCaImpl(cainfo);
         cvcca.setCAToken(catoken);
         // A CA certificate
         CAReferenceField caRef = new CAReferenceField("SE", "CAREF001", "00000");
@@ -394,7 +395,7 @@ public abstract class CaTestUtils {
                 .setCaSerialNumberOctetSize(20)
                 .build();
         cainfo.setDescription("JUnit RSA CA");
-        X509CA x509ca = new X509CA(cainfo);
+        X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         x509ca.setCAToken(caToken);
         // A CA certificate
         X509Certificate cacert = CertTools.genSelfCert(caDn, 10L, "1.1.1.1",

@@ -82,8 +82,10 @@ import org.ejbca.cvc.exception.ParseException;
  *
  * @version $Id$
  */
-public class CvcEacCA extends CvcCA implements CvcPlugin {
+public class CvcEacCA extends CvcCABase implements CvcPlugin, CvcCA {
 
+    private static final String CA_TYPE = "CVC_EAC";
+    
 	private static final long serialVersionUID = 3L;
 	private static final Logger log = Logger.getLogger(CvcEacCA.class);
 
@@ -561,6 +563,10 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
             log.debug("Using access rights "+accessRights);
         }
         return accessRights;
+    }
+    
+    public String getCaImplType() {
+        return CA_TYPE;
     }
 
 }

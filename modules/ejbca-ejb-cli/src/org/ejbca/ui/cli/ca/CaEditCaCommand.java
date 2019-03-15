@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CABase;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -71,7 +71,7 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
             final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), name);
             // List fields, get values or set value
             try {
-                if(field.equals(CA.NAME)) {
+                if(field.equals(CABase.NAME)) {
                     // The CA name field is a bit of a special case. Since there's a CESeCore method specifically for it, we should use
                     // it instead
                     try {
