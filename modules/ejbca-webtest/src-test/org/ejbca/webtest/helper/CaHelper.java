@@ -82,8 +82,7 @@ public class CaHelper extends BaseHelper {
          * Select validator from Other Data list.
          *
          */
-
-        static final By SELECT_OTHER_DATA = By.name("editcapage:j_idt450");
+        static final By SELECT_VALIDATOR = By.name("editcapage:selectValidator");
 
         static final By INPUT_CANAME = By.id("managecas:textfieldcaname");
         /**
@@ -236,7 +235,7 @@ public class CaHelper extends BaseHelper {
      */
 
     public void setOtherData(final String validatorName) {
-        selectOptionByName(Page.SELECT_OTHER_DATA, validatorName);
+        selectOptionByName(Page.SELECT_VALIDATOR, validatorName);
     }
 
     /**
