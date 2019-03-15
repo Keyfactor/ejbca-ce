@@ -61,3 +61,7 @@ wait_for_deployment
 
 echo '=================== starting system tests ================================='
 ant test:runsys -Dtests.jvmargs="$TEST_OPTS"
+
+
+echo '=================== fixing permissions ================================='
+chown -R 1001:1001 .
