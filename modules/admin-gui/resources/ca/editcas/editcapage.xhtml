@@ -1319,7 +1319,7 @@
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:selectManyListbox styleClass="select-list" size="5"
+					<h:selectManyListbox id="selectValidator" styleClass="select-list" size="5"
 						name="selectavailablevalidators"
 						disabled="#{not editCAsMBean.hasEditRight}"
 						value="#{editCAsMBean.usedValidators}">
