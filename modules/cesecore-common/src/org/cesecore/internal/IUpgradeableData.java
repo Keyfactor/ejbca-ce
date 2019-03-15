@@ -13,6 +13,8 @@
  
 package org.cesecore.internal;
 
+import java.util.Map;
+
 /**
  * IUpgradableData is an interface intended to be used by classed saved to database as BLOB. Every
  * such class should put all it's data in one of the Collection data structures and it will only
@@ -53,4 +55,6 @@ public interface IUpgradeableData {
      * latest version.
      */
     void upgrade();
+
+    Map<Object, Object> diff(UpgradeableDataHashMap newobj);
 }

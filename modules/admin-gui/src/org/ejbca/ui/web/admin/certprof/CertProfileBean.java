@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
-import org.cesecore.certificates.ca.CvcCA;
+import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
@@ -1005,7 +1005,7 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isCvcAvailable() {
-        return CvcCA.getImplementationClasses().iterator().hasNext();
+        return CvcCABase.getImplementationClasses().iterator().hasNext();
     }
 
     public boolean isCvcTerminalTypeIs() { return getCertificateProfile().isCvcTerminalTypeIs(); }

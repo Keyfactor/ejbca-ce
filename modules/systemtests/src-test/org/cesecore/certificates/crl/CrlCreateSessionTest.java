@@ -59,6 +59,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
@@ -322,7 +323,7 @@ public class CrlCreateSessionTest {
             final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024");
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             X509CAInfo subcainfo = new X509CAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "365d", CAInfo.SIGNEDBYEXTERNALCA, null, catoken);
-            X509CA subca = new X509CA(subcainfo);
+            X509CA subca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(subcainfo);
             subca.setCAToken(catoken);
             caSession.addCA(authenticationToken, subca);
             
