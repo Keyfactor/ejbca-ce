@@ -351,4 +351,12 @@ public class RaWebHelper extends BaseHelper {
         );
     }
 
+    /**
+     * Asserts the 'Approve Message' does not appear.
+     */
+    public void assertApproveMessageDoesNotExist() {
+                assertElementDoesNotExist(Page.TEXT_REQUEST_FORM_APPROVE_MESSAGE, "There was Approve message displayed upon creation of EE");
+    }
+
+
 }
