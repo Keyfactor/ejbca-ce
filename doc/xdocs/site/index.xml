@@ -29,7 +29,7 @@
 				<div id="news">
 			    <div>  
                     <p>
-                        <strong>EJBCA can be configured to generate certificate serial numbers (positive integers) from 32 to 160 bits.</strong>
+                        <strong>EJBCA can be configured to generate certificate serial numbers (positive integers) from 4 to 20 octets.</strong>
                          <br />
                          <span class="date"> Posted: 2019-03-13</span>
                     </p>
@@ -53,12 +53,14 @@
                          <br />
                          <span class="date"> Posted: 2019-02-25</span>
 					</p>
+					<!-- 
                     <p>
                         <strong>EJBCA Community Containers</strong>
                         Go to <a href="https://hub.docker.com/r/primekey/ejbca-ce" target="_ejbcadocker">DockerHub</a> to run the latest EJBCA Community edition as a container.
                         <br/>
                         <span class="date"> Posted: 2019-03-11</span>  
                     </p>
+                     -->
 					<p>
 						<strong>EJBCA Community 6.10.1.2 is now available</strong>
 						Visit the <a href="download.html">download</a> section. There you will also find a pre-installed VM to try.

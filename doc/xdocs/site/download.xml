@@ -10,9 +10,11 @@
     <note>
     If you have problems with any of the download links below or need older releases, try to download through the SourceForge <a href="http://sourceforge.net/projects/ejbca/files/">download page</a>.
     <br/><br/>
+    <!-- 
     EJBCA Community 6.15.2 is available on
     <a href="https://hub.docker.com/r/primekey/ejbca-ce" target="_ejbcadocker">DockerHub</a>.
     <br/><br/>
+     -->
     EJBCA Community 6.10.1.2 is available for  
     <a href="https://sourceforge.net/projects/ejbca/files/ejbca6/ejbca_6_10_0/ejbca_ce_6_10_1_2.zip">download</a>.
     <br/>
