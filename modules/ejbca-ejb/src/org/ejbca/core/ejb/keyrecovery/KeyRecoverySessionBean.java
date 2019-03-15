@@ -40,7 +40,6 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateWrapper;
@@ -72,6 +71,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+import org.ejbca.util.crypto.CryptoTools;
 
 /**
  * Stores key recovery data.
@@ -207,7 +207,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
             final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
             
-            final byte[] encryptedKeyData = X509CA.encryptKeys(cryptoToken, keyAlias, keypair);
+            final byte[] encryptedKeyData = CryptoTools.encryptKeys(cryptoToken, keyAlias, keypair);
             entityManager.persist(new org.ejbca.core.ejb.keyrecovery.KeyRecoveryData(CertTools.getSerialNumber(certificate), CertTools
                             .getIssuerDN(certificate), username, encryptedKeyData, cryptoTokenId, keyAlias, publicKeyId));
             // same method to make hex serno as in KeyRecoveryDataBean
@@ -354,7 +354,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                 if (returnval == null) {
                     final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
                     final String publicKeyId = getPublicKeyIdFromKey(cryptoToken, keyAlias);
-                    final KeyPair keys = X509CA.decryptKeys(cryptoToken, keyAlias, krd.getKeyDataAsByteArray());
+                    final KeyPair keys = CryptoTools.decryptKeys(cryptoToken, keyAlias, krd.getKeyDataAsByteArray());
                     returnval = new KeyRecoveryInformation(krd.getCertificateSN(), krd.getIssuerDN(),
                             krd.getUsername(), krd.getMarkedAsRecoverable(), keys, null);
                     certSerialNumber = krd.getCertificateSN().toString(16);

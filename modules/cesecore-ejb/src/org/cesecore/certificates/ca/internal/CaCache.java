@@ -15,7 +15,7 @@ package org.cesecore.certificates.ca.internal;
 import java.util.List;
 import java.util.Map;
 
-import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.CommonCache;
 import org.cesecore.internal.CommonCacheBase;
@@ -25,10 +25,10 @@ import org.cesecore.internal.CommonCacheBase;
  * 
  * @version $Id$
  */
-public enum CaCache implements CommonCache<CA> {
+public enum CaCache implements CommonCache<CACommon> {
     INSTANCE;
 
-    final private CommonCache<CA> caCache = new CommonCacheBase<CA>() {
+    final private CommonCache<CACommon> caCache = new CommonCacheBase<CACommon>() {
         @Override
         protected long getCacheTime() {
             return CesecoreConfiguration.getCacheCaTimeInCaSession();
@@ -41,7 +41,7 @@ public enum CaCache implements CommonCache<CA> {
     };
 
     @Override
-    public CA getEntry(final Integer id) {
+    public CACommon getEntry(final Integer id) {
         if (id == null) {
             return null;
         }
@@ -49,7 +49,7 @@ public enum CaCache implements CommonCache<CA> {
     }
 
     @Override
-    public CA getEntry(final int caId) {
+    public CACommon getEntry(final int caId) {
         return caCache.getEntry(caId);
     }
 
@@ -59,8 +59,8 @@ public enum CaCache implements CommonCache<CA> {
     }
     
     @Override
-    public void updateWith(int caId, int digest, String name, CA object) {
-        caCache.updateWith(caId, digest, name, object);
+    public void updateWith(int caId, int digest, String name, CACommon caInterface) {
+        caCache.updateWith(caId, digest, name, caInterface);
     }
 
     @Override
