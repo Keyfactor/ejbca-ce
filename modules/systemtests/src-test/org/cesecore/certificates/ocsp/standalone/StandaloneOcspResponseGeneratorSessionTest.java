@@ -66,6 +66,7 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
@@ -536,7 +537,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         X509CAInfo externalCaInfo = new X509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
                 CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
         CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
-        X509CA externalCa = new X509CA(externalCaInfo);
+        X509CA externalCa = (X509CA) CAFactory.INSTANCE.getX509CAImpl(externalCaInfo);
         externalCa.setCAToken(token);
         externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
         caSession.addCA(authenticationToken, externalCa);
@@ -613,7 +614,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             X509CAInfo externalCaInfo = new X509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
             CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
-            X509CA externalCa = new X509CA(externalCaInfo);
+            X509CA externalCa = (X509CA) CAFactory.INSTANCE.getX509CAImpl(externalCaInfo);
             externalCa.setCAToken(token);
             externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
             caSession.addCA(authenticationToken, externalCa);
@@ -687,7 +688,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             X509CAInfo externalCaInfo = new X509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
             CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
-            X509CA externalCa = new X509CA(externalCaInfo);
+            X509CA externalCa = (X509CA) CAFactory.INSTANCE.getX509CAImpl(externalCaInfo);
             externalCa.setCAToken(token);
             externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
             caSession.addCA(authenticationToken, externalCa);

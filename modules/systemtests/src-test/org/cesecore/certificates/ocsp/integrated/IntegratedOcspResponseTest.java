@@ -64,6 +64,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -806,7 +807,7 @@ public class IntegratedOcspResponseTest {
                     null, catoken);
             cainfo.setDescription("TESTSIGNEDBYEXTERNAL");
             try {
-                CA ca = new X509CA(cainfo);
+                CA ca = (CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
                 ca.setCAToken(catoken);
                 ocspResponseGeneratorTestSession.reloadOcspSigningCache();
                 int originalCacheSize = ocspResponseGeneratorTestSession.getCacheOcspCertificates().size();
@@ -845,7 +846,7 @@ public class IntegratedOcspResponseTest {
             X509CAInfo externalCaInfo = new X509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
             CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
-            X509CA externalCa = new X509CA(externalCaInfo);
+            X509CA externalCa = (X509CA) CAFactory.INSTANCE.getX509CAImpl(externalCaInfo);
             externalCa.setCAToken(token);
             externalCa.setCertificateChain(Arrays.asList(externalCaCertificate));
             caSession.addCA(internalAdmin, externalCa);

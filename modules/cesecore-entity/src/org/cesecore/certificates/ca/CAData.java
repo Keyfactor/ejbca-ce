@@ -66,7 +66,7 @@ public class CAData extends ProtectedData implements Serializable {
 	 * @param status initial status
 	 * @param ca CA to store
 	 */
-	public CAData(final String subjectdn, final String name, final int status, final CA ca) {
+	public CAData(final String subjectdn, final String name, final int status, final CACommon ca) {
 	    setCaId(calculateCAId(subjectdn));
 	    setName(name);
 	    setSubjectDN(subjectdn);
@@ -135,12 +135,12 @@ public class CAData extends ProtectedData implements Serializable {
     public CA getCA() {
         final LinkedHashMap<Object, Object> dataMap = getDataMap();
         CA ca = null;
-        switch (((Integer)(dataMap.get(CA.CATYPE))).intValue()) {
+        switch (((Integer)(dataMap.get(CABase.CATYPE))).intValue()) {
         case CAInfo.CATYPE_X509:
-            ca = new X509CA(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
+            ca = (CA) CAFactory.INSTANCE.getX509CAImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));
             break;
         case CAInfo.CATYPE_CVC:
-            ca = CvcCA.getInstance(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
+            ca = (CA) CAFactory.INSTANCE.getCvcCaImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
             break;
         }
         return ca;
@@ -149,7 +149,7 @@ public class CAData extends ProtectedData implements Serializable {
 	/**  Method that converts the CA object to storage representation. */
 	@SuppressWarnings({"unchecked"})
     @Transient
-    public final void setCA(final CA ca) {
+    public final void setCA(final CACommon ca) {
         setDataMap((LinkedHashMap<Object, Object>) ca.saveData());
         setUpdateTime(System.currentTimeMillis());
         // We have to update status as well, because it is kept in it's own database column, but only do that if it was actually provided in the request

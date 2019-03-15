@@ -74,6 +74,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
@@ -1261,7 +1262,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         X509CAInfo ecdsaCaInfo = new X509CAInfo(ecdsaCADN, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
                 CAInfo.SELFSIGNED, null, catoken);
         ecdsaCaInfo.setExtendedCAServiceInfos(extendedCaServices);
-        X509CA ecdsaCA = new X509CA(ecdsaCaInfo);
+        X509CA ecdsaCA = (X509CA) CAFactory.INSTANCE.getX509CAImpl(ecdsaCaInfo);
         ecdsaCA.setCAToken(catoken);
         // A CA certificate
         List<Certificate> cachain = new ArrayList<Certificate>();

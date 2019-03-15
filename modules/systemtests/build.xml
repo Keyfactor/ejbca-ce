@@ -70,6 +70,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
         <path refid="systemtests.classpath.nojee"/>
+		<path location="${ejbca.home}/modules/cesecore-x509ca/build/classes"/>
 		<pathelement path="${clover.jar}"/>
 	</path>
 

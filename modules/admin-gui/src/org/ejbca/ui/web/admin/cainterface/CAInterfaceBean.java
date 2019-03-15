@@ -58,7 +58,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.CvcCA;
+import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.CvcPlugin;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -1219,7 +1219,7 @@ public class CAInterfaceBean implements Serializable {
      */
     public boolean isCvcAvailable() {
         boolean ret = false;
-        ServiceLoader<? extends CvcPlugin> loader = CvcCA.getImplementationClasses();
+        ServiceLoader<? extends CvcPlugin> loader = CvcCABase.getImplementationClasses();
         if (loader.iterator().hasNext()) {
             ret = true;
         }

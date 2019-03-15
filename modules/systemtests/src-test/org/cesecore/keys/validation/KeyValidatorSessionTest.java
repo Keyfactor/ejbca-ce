@@ -60,6 +60,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
@@ -160,7 +161,7 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
         testCA = CaTestUtils.createTestX509CA("CN=" + TEST_CA_NAME, null, false);
         caSession.addCA(internalAdmin, testCA);
         final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, TEST_CA_NAME);
-        testCA = new X509CA(caInfo);
+        testCA = (X509CA) CAFactory.INSTANCE.getX509CAImpl(caInfo);
         assertNotNull(testCA);
         if (log.isDebugEnabled()) {
             log.debug("Test CA " + testCA.getName() + " with DN " + testCA.getSubjectDN() + " and id " + testCA.getCAId() + " created.");

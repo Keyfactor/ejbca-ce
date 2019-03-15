@@ -454,7 +454,7 @@ public class X509CATest {
 
 		// Restore CA from data (and other things)
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-        X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
+        X509CA ca1 = (X509CA) CAFactory.INSTANCE.getX509CAImpl((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
 
 		Certificate usercert1 = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
 
@@ -518,7 +518,7 @@ public class X509CATest {
 		Object o = ca.saveData();
 		// Restore CA from data (and other things)
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-        X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
+        X509CA ca1 = (X509CA) CAFactory.INSTANCE.getX509CAImpl((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
 		ca1.extendedService(cryptoToken, new MyExtendedCAServiceRequest());
 		assertEquals(3, MyExtendedCAService.didrun);
 	}
@@ -1363,7 +1363,7 @@ public class X509CATest {
         X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
         cainfo.setDescription("JUnit RSA CA");
-        X509CA x509ca = new X509CA(cainfo);
+        X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         x509ca.setCAToken(caToken);
         // A CA certificate
         final PublicKey publicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));

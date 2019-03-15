@@ -125,6 +125,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, Serial
      * @param newobj The "changed" object for which we want to get the changes compared to this object
      * @return Map object with difference as described above
      */
+    @Override
     public Map<Object, Object> diff(UpgradeableDataHashMap newobj) {
     	@SuppressWarnings("unchecked")
         Map<Object, Object> newmap = (Map<Object, Object>)newobj.saveData();

@@ -12,11 +12,32 @@
  *************************************************************************/
 package org.ejbca.util.crypto;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.EjbcaConfiguration;
 
 /**
@@ -80,6 +101,69 @@ public class CryptoTools {
         //Locate the third '$', this is where the rounds declaration ends.
         int offset = passwordHash.indexOf('$', BCRYPT_PREFIX.length())+1;
         return passwordHash.substring(0, offset+22);            
+    }
+    
+    /**
+     * Encryption method used to encrypt a key pair using a CA
+     *
+     * @param cryptoToken the crypto token where the encryption key is
+     * @param alias the alias of the key on the crypto token to use for encryption
+     * @param keypair the data to encrypt
+     * @return encrypted data
+     * @throws CryptoTokenOfflineException If crypto token is off-line so encryption key can not be used.
+     */
+    public static byte[] encryptKeys(final CryptoToken cryptoToken, final String alias, final KeyPair keypair) throws CryptoTokenOfflineException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream os = new ObjectOutputStream(baos);
+            os.writeObject(keypair);
+            CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+            CMSEnvelopedData ed;
+            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
+            final PublicKey pk = cryptoToken.getPublicKey(alias);
+            byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
+            edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
+            JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), jceCMSContentEncryptorBuilder.build());
+            log.info("Encrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
+            return ed.getEncoded();
+        } catch (IOException | CMSException e) {
+            throw new IllegalStateException("Failed to encrypt keys: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Decryption method used to decrypt a key pair using a CA
+     *
+     * @param cryptoToken the crypto token where the decryption key is
+     * @param alias the alias of the key on the crypto token to use for decryption
+     * @param data the data to decrypt
+     * @return a KeyPair
+     * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
+     * @throws IOException In case reading/writing data streams failed during decryption, or parsing decrypted data into KeyPair.
+     */
+    public static KeyPair decryptKeys(final CryptoToken cryptoToken, final String alias, final byte[] data) throws IOException, CryptoTokenOfflineException {
+        try {
+            CMSEnvelopedData ed = new CMSEnvelopedData(data);
+            RecipientInformationStore recipients = ed.getRecipientInfos();
+            RecipientInformation recipient = recipients.getRecipients().iterator().next();
+            ObjectInputStream ois = null;
+            JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(alias));
+            rec.setProvider(cryptoToken.getEncProviderName());
+            rec.setContentProvider(BouncyCastleProvider.PROVIDER_NAME);
+            // Option we must set to prevent Java PKCS#11 provider to try to make the symmetric decryption in the HSM,
+            // even though we set content provider to BC. Symm decryption in HSM varies between different HSMs and at least for this case is known
+            // to not work in SafeNet Luna (JDK behavior changed in JDK 7_75 where they introduced imho a buggy behavior)
+            rec.setMustProduceEncodableUnwrappedKey(true);
+            byte[] recdata = recipient.getContent(rec);
+            ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
+            log.info("Decrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
+            return (KeyPair) ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Could not deserialize key pair after decrypting it due to missing class: " + e.getMessage(), e);
+        } catch (CMSException e) {
+            throw new IOException("Could not parse encrypted data: " + e.getMessage(), e);
+        }
     }
 
 }

@@ -49,7 +49,7 @@
             <classpath refid="compile.classpath"/>
         </javac>
         <!-- generates dynamically META-INF/services for the ServiceLocator to find plugin implementations -->
-        <buildservicemanifest interface="org.cesecore.authentication.tokens.AuthenticationTokenMetaData;org.cesecore.certificates.ca.CvcPlugin;org.cesecore.authorization.rules.AccessRulePlugin;org.cesecore.configuration.ConfigurationCache;org.cesecore.certificates.certificate.certextensions.CustomCertificateExtension;org.cesecore.keys.validation.Validator"
+        <buildservicemanifest interface="org.cesecore.certificates.ca.CACommon"
             file="${cesecore-x509ca.dir}/build/classes" classpath="manifest.classpath"/>
         <mkdir dir="${cesecore-x509ca.dir}/dist"/>
         <jar destfile="${cesecore-x509ca.dir}/dist/cesecore-x509ca.jar">

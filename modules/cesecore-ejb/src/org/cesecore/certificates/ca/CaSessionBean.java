@@ -262,7 +262,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             assertAuthorizationAndTarget(admin, ca.getName(), ca.getSubjectDN(), ca.getCAToken().getCryptoTokenId(), orgca);
             if (auditlog) {
                 // Get the diff of what changed
-                final Map<Object, Object> diff = orgca.diff(ca);
+                final Map<Object, Object> diff = orgca.diff((UpgradeableDataHashMap) ca);
                 String msg = intres.getLocalizedMessage("caadmin.editedca", ca.getCAId(), ca.getName(), ca.getStatus());
                 // Use a LinkedHashMap because we want the details logged (in the final log string) in the order we insert them, and not randomly
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -828,7 +828,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             // 4. If database is different from cache, replace it in the cache
         }
         // 5. Get CA from cache (or null) and be merry
-        return CaCache.INSTANCE.getEntry(caId);
+        return (CA) CaCache.INSTANCE.getEntry(caId);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -898,7 +898,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @SuppressWarnings("unchecked")
     @Deprecated // Remove when we no longer need to support upgrades from 5.0.x
     private boolean adhocUpgradeFrom50(int caid, LinkedHashMap<Object, Object> data, String caName) {
-        HashMap<String, String> tokendata = (HashMap<String, String>) data.get(CA.CATOKENDATA);
+        HashMap<String, String> tokendata = (HashMap<String, String>) data.get(CABase.CATOKENDATA);
         if (tokendata.get(CAToken.CRYPTOTOKENID) != null) {
             // Already upgraded
             if (!CesecoreConfiguration.isKeepInternalCAKeystores()) {
@@ -918,7 +918,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         // Perform pre-upgrade of CATokenData to correct classpath changes (org.ejbca.core.model.ca.catoken.SoftCAToken)
         tokendata = (LinkedHashMap<String, String>) new CAToken(tokendata).saveData();
-        data.put(CA.CATOKENDATA, tokendata);
+        data.put(CABase.CATOKENDATA, tokendata);
         log.info("Pulling CryptoToken out of CA '" + caName + "' with id " + caid + " into a separate database table.");
         final String str = tokendata.get(CAToken.KEYSTORE);
         byte[] keyStoreData = null;

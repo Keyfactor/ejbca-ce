@@ -626,6 +626,7 @@
                 <include name="cesecore-ejb-interface.jar" />
                 <include name="cesecore-common.jar" />
                 <include name="cesecore-entity.jar" />
+        		<include name="cesecore-x509ca.jar" />
         		<include name="ejbca-extensions.jar" />
                 <include name="ejbca-properties.jar" />
                 <include name="log4jconfig.jar" unless="jbosseap6-specials"/>
