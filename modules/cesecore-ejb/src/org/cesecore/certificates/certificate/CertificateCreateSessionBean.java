@@ -283,7 +283,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             // If no CAid in the supplied userdata
             ca = getCAFromRequest(admin, req);
         } else {
-            ca = caSession.getCA(admin, userData.getCAId());
+            ca = (CA) caSession.getCA(admin, userData.getCAId());
         }
 
         if (log.isTraceEnabled()) {
@@ -304,7 +304,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // See if we can get issuerDN directly from request
         if (req.getIssuerDN() != null) {
             String dn = certificateStoreSession.getCADnFromRequest(req);
-            ca = caSession.getCA(admin, dn.hashCode());
+            ca = (CA) caSession.getCA(admin, dn.hashCode());
             if (log.isDebugEnabled()) {
                 log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
             }

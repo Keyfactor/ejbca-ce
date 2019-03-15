@@ -22,8 +22,8 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -222,6 +222,6 @@ public class CaCacheTest {
         final X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, emptyCaToken);
         cainfo.setDescription("JUnit RSA CA");
-        return new X509CA(cainfo);
+        return (CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
     }
 }

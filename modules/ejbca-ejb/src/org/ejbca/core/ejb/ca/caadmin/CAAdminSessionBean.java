@@ -90,13 +90,14 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAFactory;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
-import org.cesecore.certificates.ca.CvcCA;
+import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -554,7 +555,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info("Creating an X509 CA: " + cainfo.getName());
             X509CAInfo x509cainfo = (X509CAInfo) cainfo;
             // Create X509CA
-            ca = new X509CA(x509cainfo);
+            ca = (CA) CAFactory.INSTANCE.getX509CAImpl(x509cainfo);
             ca.setCAToken(catoken);
             // Set certificate policies in profile object
             mergeCertificatePoliciesFromCAAndProfile(x509cainfo, certprofile);
@@ -563,7 +564,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info("Creating a CVC CA: " + cainfo.getName());
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
             // Create CVCCA
-            ca = CvcCA.getInstance(cvccainfo);
+            ca = CvcCABase.getInstance(cvccainfo);
             ca.setCAToken(catoken);
         }
         return ca;
@@ -1561,14 +1562,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         // a NULL token, since the CA is already created
                         if (cainfo instanceof X509CAInfo) {
                             log.info("Creating a X509 CA (process request)");
-                            ca = new X509CA((X509CAInfo) cainfo);
+                            ca = (CA) CAFactory.INSTANCE.getX509CAImpl((X509CAInfo) cainfo);
                         } else if (cainfo instanceof CVCCAInfo) {
                             // CVC CA is a special type of CA for EAC electronic
                             // passports
                             log.info("Creating a CVC CA (process request)");
                             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
                             // Create CVCCA
-                            ca = CvcCA.getInstance(cvccainfo);
+                            ca = (CA) CAFactory.INSTANCE.getCvcCaImpl(cvccainfo);
                         } else {
                             throw new IllegalArgumentException("CAInfo of type " + cainfo.getClass().getName() + " is not a supported CA type.");
                         }
@@ -1696,12 +1697,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         if (cainfo instanceof X509CAInfo) {
             log.info("Creating a X509 CA (process request)");
-            ca = new X509CA((X509CAInfo) cainfo);
+            ca = (CA) CAFactory.INSTANCE.getX509CAImpl((X509CAInfo) cainfo);
         } else if (cainfo instanceof CVCCAInfo) {
             // CVC CA is a special type of CA for EAC electronic passports
             log.info("Creating a CVC CA (process request)");
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
-            ca = CvcCA.getInstance(cvccainfo);
+            ca = CvcCABase.getInstance(cvccainfo);
         } else {
             throw new IllegalStateException("CAInfo object was of an unknown type: " + cainfo.getCAType());
         }
@@ -2780,7 +2781,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo.setCRLPublishers(crlpublishers);
             cainfo.setExtendedCAServiceInfos(extendedcaservices);
             cainfo.setApprovals(new HashMap<ApprovalRequestType, Integer>());
-            ca = new X509CA((X509CAInfo) cainfo);
+            ca = (CA) CAFactory.INSTANCE.getX509CAImpl((X509CAInfo) cainfo);
         } else if (caSignatureCertificate.getType().equals("CVC")) {
             // Create a CVC CA
             // Create the CAInfo to be used for either generating the whole CA
@@ -2792,7 +2793,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo.setCRLPublishers(crlpublishers);
             cainfo.setExtendedCAServiceInfos(extendedcaservices);
             cainfo.setApprovals(new HashMap<ApprovalRequestType, Integer>());
-            ca = CvcCA.getInstance((CVCCAInfo) cainfo);
+            ca = CvcCABase.getInstance((CVCCAInfo) cainfo);
         }
         // We must activate the token, in case it does not have the default password
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
