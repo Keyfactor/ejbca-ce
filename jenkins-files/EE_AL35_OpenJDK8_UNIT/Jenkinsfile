@@ -12,7 +12,7 @@ pipeline {
                     dir 'ejbca/jenkins-files/EE_AL35_OpenJDK8_UNIT'
                     filename 'Dockerfile'
                     additionalBuildArgs  '--disable-content-trust=false --pull'
-                    args '--group-add root'
+                    args '--group-add root --user jenkins:jenkins'
                 }
             }
             environment {
