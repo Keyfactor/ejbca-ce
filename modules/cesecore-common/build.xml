@@ -48,7 +48,7 @@
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
-		<path location="${ejbca.home}/modules/cesecore-x509ca/build/classes"/>
+		<path location="${mod.cesecore-x509ca.lib}"/>
 	</path>
 
 	<target name="jar" depends="with.clover">
