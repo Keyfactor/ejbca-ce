@@ -27,4 +27,4 @@ ant test:webtest -Dtests.jvmargs="$TEST_OPTS"
 
 
 echo '=================== fixing permissions ================================='
-chown -R 1001:1001 .
+sudo -E env "PATH=$PATH" chown -R 1001:1001 .
