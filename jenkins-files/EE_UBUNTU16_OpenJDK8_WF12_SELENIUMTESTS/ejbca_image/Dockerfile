@@ -26,6 +26,8 @@ RUN yum install -y which
 
 # copy WildFly conf
 ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
+ADD application-roles.properties /opt/jboss/wildfly/standalone/configuration/application-roles.properties
+ADD application-users.properties /opt/jboss/wildfly/standalone/configuration/application-users.properties
 
 # copy keystore file to WildFly
 #ADD keystore /opt/jboss/wildfly/standalone/configuration/keystore
