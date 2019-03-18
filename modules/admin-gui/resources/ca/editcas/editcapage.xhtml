@@ -797,7 +797,7 @@
                         value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Serial_Number_Octet_Size')}"
                         escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
+                <h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable and not editCAsMBean.caExternal}">
                     <h:inputText id="caSerialNumberOctetSize" size="4" maxlength="2"
                         value="#{editCAsMBean.caSerialNumberOctetSize}"
                         disabled="#{not editCAsMBean.hasEditRight}">
