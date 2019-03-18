@@ -192,8 +192,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String CMPRAAUTHSECRET = "cmpraauthsecret";
     protected static final String NAMECONSTRAINTSPERMITTED = "nameconstraintspermitted";
     protected static final String NAMECONSTRAINTSEXCLUDED = "nameconstraintsexcluded";
-    protected static final String EXTERNALCDP = "externalcdp";
-    protected static final String NAMECHANGED = "namechanged";
     protected static final String USEPARTITIONEDCRL = "usepartitionedcrl";
     protected static final String CRLPARTITIONS = "crlpartitions";
     protected static final String RETIREDCRLPARTITIONS = "retiredcrlpartitions";
@@ -702,22 +700,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public void setCmpRaAuthSecret(String cmpRaAuthSecret) {
         data.put(CMPRAAUTHSECRET, cmpRaAuthSecret);
     }
-
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#getExternalCdp()
-     */
-    @Override
-    public String getExternalCdp() {
-        return (String) getMapValueWithDefault(EXTERNALCDP, "");
-    }
-
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#setExternalCdp(java.lang.String)
-     */
-    @Override
-    public void setExternalCdp(final String externalCdp) {
-        data.put(EXTERNALCDP, externalCdp);
-    }
     
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#getSerialNumberOctetSize()
@@ -733,36 +715,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     public void setCaSerialNumberOctetSize(int serialNumberOctetSize) {
         data.put(SERIALNUMBEROCTETSIZE, serialNumberOctetSize);
-    }
-
-    private Object getMapValueWithDefault(final String key, final Object defaultValue) {
-        final Object o = data.get(key);
-        if (o == null) {
-            return defaultValue;
-        }
-        return o;
-    }
-
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#setNameChanged(boolean)
-     */
-    @Override
-    public void setNameChanged(boolean nameChanged) {
-        if(getNameChanged() && !nameChanged){
-            //This must not happen. Once CA "Name Changed" value is set to true it mustn't be set to false again
-            log.warn("Not supported operation of setting CA Name Change value from TRUE to FALSE. Value not set!");
-            return;
-        }
-        data.put(NAMECHANGED, nameChanged);
-    }
-
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#getNameChanged()
-     */
-    @Override
-    public boolean getNameChanged() {
-        Boolean v = ((Boolean) data.get(NAMECHANGED));
-        return (v == null) ? false : v;
     }
 
     /* (non-Javadoc)
@@ -2057,7 +2009,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @see org.cesecore.certificates.ca.X509CA#upgrade()
      */
     @Override
-    @SuppressWarnings("deprecation")
     public void upgrade() {
         super.upgrade();
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
