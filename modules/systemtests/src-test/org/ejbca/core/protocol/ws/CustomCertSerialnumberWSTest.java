@@ -102,7 +102,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
         log.debug(">test01CreateCertWithCustomSN");
 
         try {            
-            final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
+            final BigInteger serno = SernoGeneratorRandom.instance(12).getSerno();
             log.debug("serno: " + serno);
 
             if (this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE) != 0) {
