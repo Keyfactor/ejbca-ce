@@ -71,12 +71,12 @@ pipeline {
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca/reports"
                 sh "chmod 777 $env.WORKSPACE/ejbca/modules/ejbca-webtest"
 
-                // target directory for Remote EJB client JAR (jboss-client.jar)
+                // copy Remote EJB client JAR (jboss-client.jar)
                 sh "mkdir -p -m 755 " + "$env.WORKSPACE/ejbca/lib/jee-client"
+                sh "docker cp mypeer:/opt/jboss/wildfly/bin/client/jboss-client.jar $env.WORKSPACE/ejbca/lib/jee-client/jboss-client.jar"
 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_WF12_SELENIUMTESTS/selenium_image') {
                     sh "docker build -t seleniumtests -m 5GB ."
-                    sh "docker cp mypeer:/opt/jboss/wildfly/bin/client/jboss-client.jar - | docker cp - seleniumtests:/$env.WORKSPACE/ejbca/lib/jee-client/jboss-client.jar"
                     sh "docker run --name seleniumtests --net=selenium-network -p 4444:4444 --shm-size=5g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
                 }
             }
