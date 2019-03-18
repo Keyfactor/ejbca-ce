@@ -64,20 +64,18 @@ public class X509ExternalCAImpl extends CABaseCommon {
     @Override
     public void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
             AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException {
-        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Operation not supported for external X509CA");
         
     }
 
     @Override
     public float getLatestVersion() {
-        // TODO Auto-generated method stub
-        return 0;
+        return LATEST_VERSION;
     }
 
     @Override
     public void upgrade() {
-        // TODO Auto-generated method stub
-        
+        super.upgrade();
     }
 
     @Override
