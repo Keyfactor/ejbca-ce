@@ -828,7 +828,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             // 4. If database is different from cache, replace it in the cache
         }
         // 5. Get CA from cache (or null) and be merry
-        return (CA) CaCache.INSTANCE.getEntry(caId);
+        return (CACommon) CaCache.INSTANCE.getEntry(caId);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)

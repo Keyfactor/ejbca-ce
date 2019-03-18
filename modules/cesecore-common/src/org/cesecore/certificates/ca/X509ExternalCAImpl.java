@@ -56,9 +56,22 @@ public class X509ExternalCAImpl extends CABaseCommon {
                 .build();
         super.setCAInfo(info);
         setCAId(caId);
+        info.setExternalCdp(getExternalCdp());
+        info.setNameChanged(getNameChanged());
     }
     
     public X509ExternalCAImpl() {
+    }
+    
+    /* (non-Javadoc)
+     * @see org.cesecore.certificates.ca.X509CA#updateCA(org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
+     */
+    @Override
+    public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
+        super.updateCA(cryptoToken, cainfo, cceConfig);
+        X509CAInfo info = (X509CAInfo) cainfo;
+        setExternalCdp(info.getExternalCdp());
+        setSubjectAltName(info.getSubjectAltName());
     }
     
     @Override
@@ -76,6 +89,9 @@ public class X509ExternalCAImpl extends CABaseCommon {
     @Override
     public void upgrade() {
         super.upgrade();
+        if (data.get(NAMECHANGED) == null) {
+            setNameChanged(false);
+        }
     }
 
     @Override

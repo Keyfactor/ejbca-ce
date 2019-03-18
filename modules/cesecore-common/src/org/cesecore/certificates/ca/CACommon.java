@@ -96,6 +96,12 @@ public interface CACommon extends IUpgradeableData {
     Date getExpireTime();
 
     void setExpireTime(Date expiretime);
+    
+    /** @return what should be a String formatted URL pointing to an external CA's CDP. */
+    String getExternalCdp();
+
+    /** Set what should be a String formatted URL pointing to an external CA's CDP. */
+    void setExternalCdp(String externalCdp);
 
     int getSignedBy();
 
@@ -104,6 +110,11 @@ public interface CACommon extends IUpgradeableData {
     String getDescription();
 
     void setDescription(String description);
+    
+    void setNameChanged(boolean nameChanged);
+
+    /** Retrieving NAMECHANGED flag that shows if this CA has gone through the Name Change any time in its history renewal. */
+    boolean getNameChanged();
 
     int getRevocationReason();
 
