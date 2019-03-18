@@ -49,16 +49,9 @@ public interface SernoGenerator {
     /** 
      * Set the algorithm used for the serial number generator, if needed to set.
      * Usually a default value is provided for your serial number generator. 
-     * This can be used to override default values. 
+     * This can be used to override/change default values. Usage must consider multi-threaded behavior. 
      * @param an (optional) algorithm for a serial number generator implementation
      */
      void setAlgorithm(final String algo) throws NoSuchAlgorithmException;
      
-     /** 
-      * Sets the desired length of serial number returned by the generator. 
-      * The generator should have a default value, which could be overridden though.
-      * @param the size of the requested serial numbers in octets, i.e. 8, 4, ...
-      */
-     void setSernoOctetSize(int noOctets);
-
 }
