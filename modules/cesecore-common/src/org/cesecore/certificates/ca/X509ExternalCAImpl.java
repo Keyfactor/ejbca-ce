@@ -31,10 +31,17 @@ public class X509ExternalCAImpl extends CABaseCommon {
     private static final long serialVersionUID = 1L;
     private static final String CA_TYPE = "X509CA_EXTERNAL";
     
+    /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public X509ExternalCAImpl(final X509CAInfo cainfo) {
         init(cainfo);
+        data.put(SUBJECTALTNAME, cainfo.getSubjectAltName());
+        data.put(CABase.CATYPE, CAInfo.CATYPE_X509);
+        data.put(VERSION, LATEST_VERSION);
     }
     
+    /**
+     * Constructor used when retrieving existing X509CA from database.
+     */
     public X509ExternalCAImpl(final HashMap<Object, Object> data, final int caId, final String subjectDn, final String name, final int status,
             final Date updateTime, final Date expireTime) {
         init(data);
