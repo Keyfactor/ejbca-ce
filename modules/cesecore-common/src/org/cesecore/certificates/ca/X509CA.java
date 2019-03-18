@@ -195,17 +195,6 @@ public interface X509CA extends CA {
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
     float getLatestVersion();
 
-    /**
-     * Implementation of UpgradableDataHashMap function upgrade.
-     */
-    void upgrade();
-
-    /**
-     * Method to upgrade new (or existing external caservices) This method needs to be called outside the regular upgrade since the CA isn't
-     * instantiated in the regular upgrade.
-     */
-    boolean upgradeExtendedCAServices();
-
     byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws CMSException, CryptoTokenOfflineException;
 
     byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose)

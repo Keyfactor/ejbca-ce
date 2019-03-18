@@ -211,7 +211,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         		log.trace(">editCA (CAInfo): "+cainfo.getName());
         	}
     		try {
-    			final CA ca = getCAInternal(cainfo.getCAId(), null, false);
+    			final CACommon ca = getCAInternal(cainfo.getCAId(), null, false);
     			// Check if we can edit the CA (also checks authorization)
     			int newCryptoTokenId = ca.getCAToken().getCryptoTokenId();
     			if (cainfo.getCAToken() != null) {
@@ -252,12 +252,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException {
+    public void editCA(final AuthenticationToken admin, final CACommon ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException {
         if (ca != null) {
             if (log.isTraceEnabled()) {
                 log.trace(">editCA (CA): "+ca.getName());
             }
-            final CA orgca = getCAInternal(ca.getCAId(), null, true);
+            final CACommon orgca = getCAInternal(ca.getCAId(), null, true);
             // Check if we can edit the CA (also checks authorization)
             assertAuthorizationAndTarget(admin, ca.getName(), ca.getSubjectDN(), ca.getCAToken().getCryptoTokenId(), orgca);
             if (auditlog) {
@@ -311,7 +311,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
 	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name and subjectDN matches. */
-	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca)
+	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CACommon ca)
 			throws CADoesntExistsException, AuthorizationDeniedException {
 		assertAuthorizationAndTargetWithNewSubjectDn(admin, name, subjectDN, cryptoTokenId, ca);
         if (!StringUtils.equals(subjectDN, ca.getSubjectDN()) && ca.getCAInfo().getStatus() != CAConstants.CA_UNINITIALIZED) {
@@ -320,7 +320,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	}
 
 	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name matches. */
-    private void assertAuthorizationAndTargetWithNewSubjectDn(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca)
+    private void assertAuthorizationAndTargetWithNewSubjectDn(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CACommon ca)
             throws CADoesntExistsException, AuthorizationDeniedException {
         // Check if we are authorized to edit CA and authorization to specific CA
         if (cryptoTokenId == ca.getCAToken().getCryptoTokenId() || cryptoTokenId==0) {
@@ -345,7 +345,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public CA getCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
+    public CACommon getCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
             throw new AuthorizationDeniedException(msg);
@@ -355,8 +355,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public CA getCA(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
-        CA ca = getCAInternal(-1, name, true);
+    public CACommon getCA(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
+        CACommon ca = getCAInternal(-1, name, true);
         if(ca != null) { 
             if (!authorizedToCA(admin, ca.getCAId())) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), name);
@@ -368,7 +368,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public CA getCANoLog(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
+    public CACommon getCANoLog(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         if (!authorizedToCANoLogging(admin, caid)) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
             throw new AuthorizationDeniedException(msg);
@@ -378,8 +378,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public CA getCAForEdit(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
-        CA ca = getCAInternal(caid, null, false);
+    public CACommon getCAForEdit(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
+        CACommon ca = getCAInternal(caid, null, false);
         if (ca != null) {
             if (!authorizedToCA(admin, ca.getCAId())) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
@@ -391,8 +391,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public CA getCAForEdit(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
-        CA ca = getCAInternal(-1, name, false);
+    public CACommon getCAForEdit(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
+        CACommon ca = getCAInternal(-1, name, false);
         if(ca == null) {
             return null;
         }
@@ -407,7 +407,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public CAInfo getCAInfo(final AuthenticationToken admin, final String name) throws AuthorizationDeniedException {
         // Authorization is handled by getCA
-        CA ca = getCA(admin, name);
+        CACommon ca = getCA(admin, name);
         if (ca == null) {
             return null;
         } else {
@@ -420,7 +420,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public CAInfo getCAInfo(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         // Authorization is handled by getCA
-        CA ca = getCA(admin, caid);
+        CACommon ca = getCA(admin, caid);
         if (ca == null) {
             return null;
         } else {
@@ -432,7 +432,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public CAInfo getCAInfoInternal(final int caid) {
         // Authorization is handled by getCA
-        CA ca = getCAInternal(caid, null, true);
+        CACommon ca = getCAInternal(caid, null, true);
         if (ca == null) {
             return null;
         } else {
@@ -461,7 +461,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public CAInfo getCAInfoInternal(final int caid, final String name, boolean fromCache) {
         // Authorization is handled by getCA
-        CA ca = getCAInternal(caid, name, fromCache);
+        CACommon ca = getCAInternal(caid, name, fromCache);
         if (ca == null) {
             return null;
         } else {
@@ -653,7 +653,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-	public CA getCAInternal(int caid, final String name, boolean fromCache) {
+	public CACommon getCAInternal(int caid, final String name, boolean fromCache) {
 	    if (log.isTraceEnabled()) {
 	        log.trace(">getCAInternal: " + caid + ", " + name);
 	    }
@@ -661,7 +661,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	    if (caid == -1) {
 	        caIdValue = CaCache.INSTANCE.getNameToIdMap().get(name);
 	    }
-	    CA ca = null;
+	    CACommon ca = null;
 	    if (fromCache && caIdValue!=null) {
 	        ca = getCa(caIdValue.intValue());
 	        if (ca != null && hasCAExpiredNow(ca)) {
@@ -686,7 +686,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
      *
      * @return the true if the CA is expired
      */
-    private boolean hasCAExpiredNow(final CA ca) {
+    private boolean hasCAExpiredNow(final CACommon ca) {
         boolean expired = false;
         // Check that CA hasn't expired.
         try {
@@ -798,7 +798,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     /** @return the CA object, from the database (including any upgrades) is necessary */
-    private CA getCa(int caId) {
+    private CACommon getCa(int caId) {
         final Integer realCAId = CACacheHelper.getCaCertHash(Integer.valueOf(caId));
         if (realCAId!=null) {
             // Since we have found a cached "real" CA Id and the cache will use this one (if cached)
@@ -813,7 +813,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 final int digest = caData.getProtectString(0).hashCode();
                 // Special for splitting out the CAToken and committing it..
                 // Since getCAData has already run upgradeAndMergeToDatabase we can just get the CA here..
-                CA ca = caData.getCA();
+                CACommon ca = caData.getCA();
                 if (ca != null) {
                     // Note that we store using the "real" CAId in the cache.
                     CaCache.INSTANCE.updateWith(caData.getCaId(), digest, ca.getName(), ca);
@@ -833,7 +833,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public int mergeCa(final CA ca) {
+    public int mergeCa(final CACommon ca) {
         final int caId = ca.getCAId();
         CAData caData = entityManager.find(CAData.class, caId);
         if (caData == null) {
@@ -868,7 +868,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             cadata.setDataMap(caDataMap);
         }
         // Fetching the CA object will trigger UpgradableHashMap upgrades
-        CA ca = cadata.getCA();
+        CACommon ca = cadata.getCA();
         if (ca != null) {
             final boolean expired = hasCAExpiredNow(ca);
             if (expired) {
@@ -986,7 +986,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @Override
     public Certificate getFutureRolloverCertificate(int caid) throws CADoesntExistsException {
-        final CA ca = getCa(caid);
+        final CACommon ca = getCa(caid);
         if (ca == null) {
             throw new CADoesntExistsException("Method called on non-existent CA");
         }

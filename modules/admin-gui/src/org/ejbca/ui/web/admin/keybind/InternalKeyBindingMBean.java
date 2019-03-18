@@ -58,6 +58,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -540,7 +541,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
                     try {
                         // Note that we can do lookups using the .hashCode, but we will use the objects id
-                        final CA ca = caSession.getCANoLog(authenticationToken, certificateIssuerDn.hashCode());
+                        final CACommon ca = caSession.getCANoLog(authenticationToken, certificateIssuerDn.hashCode());
                         certificateInternalCaName = ca.getName();
                         certificateInternalCaId = ca.getCAId();
                         caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
@@ -962,7 +963,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 boundCertificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
                 try {
                     // Note that we can do lookups using the .hashCode, but we will use the objects id
-                    final CA ca = caSession.getCANoLog(authenticationToken, boundCertificateIssuerDn.hashCode());
+                    final CACommon ca = caSession.getCANoLog(authenticationToken, boundCertificateIssuerDn.hashCode());
                     boundCertificateInternalCaName = ca.getName();
                     certificateInternalCaId = ca.getCAId();
                     boundCaCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());

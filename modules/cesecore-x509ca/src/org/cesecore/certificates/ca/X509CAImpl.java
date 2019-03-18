@@ -111,7 +111,6 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.ErrorCode;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
@@ -172,9 +171,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-
-    /** Version of this class, if this is increased the upgrade() method will be called automatically */
-    public static final float LATEST_VERSION = 24;
 
     // protected fields for properties specific to this type of CA.
     protected static final String POLICIES = "policies";
@@ -2063,6 +2059,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     @SuppressWarnings("deprecation")
     public void upgrade() {
+        super.upgrade();
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
             log.info("Upgrading X509CA with version " + getVersion());
@@ -2134,16 +2131,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (o instanceof Integer) {
                 setDeltaCRLPeriod(((Integer) o).longValue() * SimpleTime.MILLISECONDS_PER_HOUR); // h to ms
             }
-            // v20, remove XKMS CA service
-            if (data.get(EXTENDEDCASERVICES) != null) {
-                @SuppressWarnings("unchecked")
-                Collection<Integer> types = (Collection<Integer>)data.get(EXTENDEDCASERVICES);
-                // Remove type 2, which is XKMS
-                types.remove(2);
-                data.put(EXTENDEDCASERVICES, types);
-                // Remove any data if it exists
-                data.remove(EXTENDEDCASERVICE+2);
-            }
             if (data.get(NAMECHANGED) == null) {
                 setNameChanged(false);
             }
@@ -2155,56 +2142,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     setCertificateAiaDefaultCaIssuerUri( new ArrayList<String>());
                 }
             }
-            // v22, 'encodedValidity' is derived by the former long value!
-            if (null == data.get(ENCODED_VALIDITY)  && null != data.get(VALIDITY)) {
-                setEncodedValidity(getEncodedValidity());
-            }
-            // v23 'keyValidators' new empty list.
-            if (null == data.get(VALIDATORS)) {
-                setValidators(new ArrayList<Integer>());
-            }
             // v24 'serial number octet size' assign configured value (or default value if not configured)
             if (data.get(SERIALNUMBEROCTETSIZE) == null) {
                 setCaSerialNumberOctetSize(CesecoreConfiguration.getSerialNumberOctetSizeForExistingCa());
             }
-
-            data.put(VERSION, LATEST_VERSION);
         }
-    }
-
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#upgradeExtendedCAServices()
-     */
-    @SuppressWarnings({ "rawtypes", "deprecation" })
-    @Override
-    public boolean upgradeExtendedCAServices() {
-        boolean retval = false;
-        // call upgrade, if needed, on installed CA services
-        Collection<Integer> externalServiceTypes = getExternalCAServiceTypes();
-        if (!CesecoreConfiguration.getCaKeepOcspExtendedService() && externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
-            //This type has been removed, so remove it from any CAs it's been added to as well.
-            externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE);
-            data.put(EXTENDEDCASERVICES, externalServiceTypes);
-            retval = true;
-        }
-
-        for (Integer type : externalServiceTypes) {
-            ExtendedCAService service = getExtendedCAService(type);
-            if (service != null) {
-                if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
-                    retval = true;
-                    service.upgrade();
-                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
-                } else if (service.isUpgraded()) {
-                    // Also return true if the service was automatically upgraded by a UpgradeableDataHashMap.load, which calls upgrade automagically.
-                    retval = true;
-                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
-                }
-            } else {
-                log.error("Extended service is null, can not upgrade service of type: " + type);
-            }
-        }
-        return retval;
     }
 
     /* (non-Javadoc)

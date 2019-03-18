@@ -47,10 +47,6 @@ public interface CvcCA extends CA {
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
     float getLatestVersion();
 
-    /** Implementation of UpgradableDataHashMap function upgrade. 
-     */
-    void upgrade();
-
     /**
      * Method to upgrade new (or existing external caservices)
      * This method needs to be called outside the regular upgrade

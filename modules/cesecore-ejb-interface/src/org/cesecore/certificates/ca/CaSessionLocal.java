@@ -96,7 +96,7 @@ public interface CaSessionLocal extends CaSession {
      * @return the CA object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCA(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
+    CACommon getCA(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
   
     /**
      * Get the CA object performing the regular authorization check. Checks if
@@ -113,7 +113,7 @@ public interface CaSessionLocal extends CaSession {
      * @return CA value object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCA(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+    CACommon getCA(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
     
     /**
      * Get the CA object performing the regular authorization check. Checks if
@@ -130,7 +130,7 @@ public interface CaSessionLocal extends CaSession {
      * @return CA value object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCAForEdit(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
+    CACommon getCAForEdit(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
 
     /**
      * Get the CA object performing the regular authorization check. Checks if
@@ -147,7 +147,7 @@ public interface CaSessionLocal extends CaSession {
      * @return CA value object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCAForEdit(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+    CACommon getCAForEdit(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
     /** Changes a CA in the database. Can change mostly everything except caid, caname and subject DN. When editing a CA the CA token will usually be taken off line.
      * So you need to activate the CA token after editing, if auto-activation of the CA token is not enabled. 
@@ -158,7 +158,7 @@ public interface CaSessionLocal extends CaSession {
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
      */
-    void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException;
+    void editCA(final AuthenticationToken admin, final CACommon ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Verify that a CA exists.
@@ -233,7 +233,7 @@ public interface CaSessionLocal extends CaSession {
      * @return the CA object, or null if it doesn't exist.
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
-    CA getCANoLog(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
+    CACommon getCANoLog(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
 
     /**
      * Internal method for getting CA, to avoid code duplication. Tries to find the CA even if the CAId is wrong due to CA certificate DN not being
@@ -247,7 +247,7 @@ public interface CaSessionLocal extends CaSession {
      *             a completely distinct object, for edit, and not a shared cached instance.
      * @return CA value object, or null if it doesn't exist.
      */
-    CA getCAInternal(int caid, String name, boolean fromCache);
+    CACommon getCAInternal(int caid, String name, boolean fromCache);
 
     /**
      * Local access CRUD method for persisting the CA object to the database and removes any old
@@ -255,7 +255,7 @@ public interface CaSessionLocal extends CaSession {
      * 
      * @return the CA Id
      */
-    int mergeCa(CA ca);
+    int mergeCa(CACommon ca);
     
     /**
      * Checks if at least one CA references a key validator.

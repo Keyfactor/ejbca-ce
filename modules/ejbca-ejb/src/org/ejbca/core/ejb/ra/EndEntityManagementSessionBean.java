@@ -402,7 +402,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Get CAInfo, to be able to read configuration
         // No need to access control on the CA here just to get these flags, we have already checked above that we are authorized to the CA
-        final CA ca = caSession.getCAInternal(caid, null, true);
+        final CA ca = (CA) caSession.getCAInternal(caid, null, true);
         if (ca == null) {
             throw new CADoesntExistsException("CA with ID " + caid + " does not exist.");
         }
@@ -846,7 +846,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         }
         // Check name constraints
-        final CA ca = caSession.getCAInternal(caid, null, true);
+        final CA ca = (CA) caSession.getCAInternal(caid, null, true);
         final CAInfo cainfo = ca != null ? ca.getCAInfo() : null;
         final boolean nameChanged = // only check when name is changed so existing end-entities can be changed even if they violate NCs
                 !userData.getSubjectDnNeverNull().equals(CertTools.stringToBCDNString(dn)) ||
@@ -1294,7 +1294,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int caid = data1.getCaId();
         // Get CAInfo, to be able to read configuration of approval proiles and validators.
         // No need to access control on the CA here just to get these flags, we have already checked above that we are authorized to the CA
-        final CA ca = caSession.getCAInternal(caid, null, true);
+        final CA ca = (CA) caSession.getCAInternal(caid, null, true);
         final CAInfo caInfo = ca != null ? ca.getCAInfo() : null;
 
         final String username = data1.getUsername();

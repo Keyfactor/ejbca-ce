@@ -187,7 +187,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         boolean ret = false;
         final Date now = new Date();
         // Get CA checks authorization to the CA
-        final CA ca = caSession.getCA(admin, caid);
+        final CA ca = (CA) caSession.getCA(admin, caid);
         final CAInfo cainfo = ca.getCAInfo();
         try {
             if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
@@ -303,7 +303,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
         boolean ret = false;
         final Date now = new Date();
-        final CA ca = caSession.getCA(admin, caid);
+        final CA ca = (CA) caSession.getCA(admin, caid);
         final CAInfo cainfo = ca.getCAInfo();
         try{
             if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
@@ -378,14 +378,14 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
 
     @Override
     public boolean forceCRL(final AuthenticationToken admin, final int caid, final int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
-        final CA ca = caSession.getCA(admin, caid);
+        final CA ca = (CA) caSession.getCA(admin, caid);
         final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(CertTools.getSubjectDN(getCaCertificate(ca.getCAInfo())), crlPartitionIndex, false);
         return internalCreateCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo) != null;
     }
 
     @Override
     public boolean forceDeltaCRL(final AuthenticationToken admin, final int caid, final int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
-        final CA ca = caSession.getCA(admin, caid);
+        final CA ca = (CA) caSession.getCA(admin, caid);
         final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(CertTools.getSubjectDN(getCaCertificate(ca.getCAInfo())), crlPartitionIndex, false);
         // if no full CRL has been generated we can't create a delta CRL
         boolean ret = false;

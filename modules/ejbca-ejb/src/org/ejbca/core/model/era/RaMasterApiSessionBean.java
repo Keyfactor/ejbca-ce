@@ -77,6 +77,7 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -2519,7 +2520,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public HashSet<String> getCaaIdentities(final AuthenticationToken authenticationToken, final int caId)
             throws AuthorizationDeniedException, CADoesntExistsException {
         final HashSet<String> caaIdentities = new HashSet<String>();
-        final CA ca = caSession.getCA(authenticationToken, caId);
+        final CACommon ca = caSession.getCA(authenticationToken, caId);
         if (ca == null) {
             throw new CADoesntExistsException("The CA with id " + caId + " does not exist on peer.");
         }

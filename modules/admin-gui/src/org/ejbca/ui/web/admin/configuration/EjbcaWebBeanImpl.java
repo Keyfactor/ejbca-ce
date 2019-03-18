@@ -62,6 +62,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -1441,7 +1442,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         final List<String> certificateAuthorities = new ArrayList<>();
         for (final int id : certificateAuthorityIds) {
-            final CA ca = caSession.getCANoLog(administrator, id);
+            final CACommon ca = caSession.getCANoLog(administrator, id);
             certificateAuthorities.add(ca.getName());
         }
         return addKeyIdAndSort(certificateAuthorities);

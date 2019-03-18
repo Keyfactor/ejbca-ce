@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -68,7 +68,7 @@ public class RolloverWorker extends BaseWorker {
         final CaSessionLocal caSession = ((CaSessionLocal)ejbs.get(CaSessionLocal.class));
         final CAAdminSessionLocal caAdminSession = ((CAAdminSessionLocal)ejbs.get(CAAdminSessionLocal.class));
 	    try {
-            final CA ca = caSession.getCA(getAdmin(), caid);
+            final CACommon ca = caSession.getCA(getAdmin(), caid);
             final List<Certificate> rolloverChain = ca.getRolloverCertificateChain();
             if (rolloverChain != null) {
                 final Certificate cert = rolloverChain.get(0);

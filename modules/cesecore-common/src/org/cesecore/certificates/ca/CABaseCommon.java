@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -24,15 +25,20 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoToken;
@@ -50,7 +56,10 @@ import org.cesecore.util.ValidityDate;
 public abstract class CABaseCommon extends UpgradeableDataHashMap implements CACommon {
     
     private static final long serialVersionUID = 1L;
-
+    
+    /** Version of this class, if this is increased the upgrade() method will be called automatically */
+    public static final float LATEST_VERSION = 24;
+    
     private static Logger log = Logger.getLogger(CABaseCommon.class);
     
     private static final InternalResources intres = InternalResources.getInstance();
@@ -96,23 +105,34 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     @Deprecated
     protected static final String APPROVALSETTINGS = "approvalsettings";
     /**
+     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
+     */
+    @Deprecated
+    protected static final String APPROVALPROFILE = "approvalprofile";
+    private static final String APPROVALS = "approvals";
+    
+    /**
      * @deprecated since 6.6.0, use the appropriate approval profile instead
      * Needed in order to be able to upgrade from 6.5 and earlier
      */
     @Deprecated
     protected static final String NUMBEROFREQAPPROVALS = "numberofreqapprovals";
-
     
     private CAInfo cainfo = null;
     private CAToken caToken = null;
     private ArrayList<Certificate> requestcertchain = null;
     private ArrayList<Certificate> certificatechain = null;
     private ArrayList<Certificate> renewedcertificatechain = null;
+    
+    private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<>();
 
     public void init(CAInfo cainfo) {
         data = new LinkedHashMap<>();
         this.cainfo = cainfo;
+        setEncodedValidity(cainfo.getEncodedValidity());
+        setCRLPublishers(cainfo.getCRLPublishers());
         setSignedBy(cainfo.getSignedBy());
+        setValidators(cainfo.getValidators());
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(REVOCATIONREASON, Integer.valueOf(-1));
         data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
@@ -122,6 +142,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     /** Constructor used when retrieving existing CA from database. */
     public void init(HashMap<Object, Object> data) {
         loadData(data);
+        extendedcaservicemap = new HashMap<>();
     }
     
     public void setCAInfo(CAInfo cainfo) {
@@ -182,6 +203,15 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
 
     public void setStatus(int status) {
         cainfo.status = status;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Collection<Integer> getValidators() {
+        return ((Collection<Integer>) data.get(VALIDATORS));
+    }
+
+    public void setValidators(Collection<Integer> validators) {
+        data.put(VALIDATORS, validators);
     }
     
     @Deprecated
@@ -543,8 +573,9 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     }
 
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
-
+        data.put(APPROVALS, cainfo.getApprovals());
         data.put(DESCRIPTION, cainfo.getDescription());
+        setEncodedValidity(cainfo.getEncodedValidity());
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
         }
@@ -601,6 +632,264 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
             } catch (final UnsupportedEncodingException e) {
                 throw new RuntimeException(e); // Lack of UTF8 would be fatal.
             }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Collection<Integer> getCRLPublishers() {
+        return ((Collection<Integer>) data.get(CRLPUBLISHERS));
+    }
+    
+    public void setCRLPublishers(Collection<Integer> crlpublishers) {
+        data.put(CRLPUBLISHERS, crlpublishers);
+    }
+    
+    /**
+     * The number of different administrators that needs to approve
+     * @deprecated since 6.6.0, use the appropriate approval profile instead.
+     * Needed in order to be able to upgrade from 6.5 and earlier
+     */
+    @Deprecated
+    public void setNumOfRequiredApprovals(int numOfReqApprovals) {
+        data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
+    }
+    
+    
+    /**
+     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
+     * default none and never null.
+     *
+     * @deprecated since 6.8.0, see getApprovals()
+     */
+    @Deprecated
+    @SuppressWarnings("unchecked")
+    public Collection<Integer> getApprovalSettings() {
+        if (data.get(APPROVALSETTINGS) == null) {
+            return new ArrayList<>();
+        }
+        return (Collection<Integer>) data.get(APPROVALSETTINGS);
+    }
+
+    /**
+     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
+     *
+     * @deprecated since 6.8.0, see setApprovals()
+     */
+    @Deprecated
+    public void setApprovalSettings(Collection<Integer> approvalSettings) {
+        data.put(APPROVALSETTINGS, approvalSettings);
+    }
+    
+    /**
+     * @return the number of different administrators that needs to approve an action, default 1.
+     * @deprecated since 6.6.0, use the appropriate approval profile instead.
+     * Needed in order to be able to upgrade from 6.5 and earlier
+     */
+    @Deprecated
+    public int getNumOfRequiredApprovals() {
+        if (data.get(NUMBEROFREQAPPROVALS) == null) {
+            return 1;
+        }
+        return ((Integer) data.get(NUMBEROFREQAPPROVALS)).intValue();
+    }
+    
+    /**
+     * @return A 1:1 mapping between Approval Action:Approval Profile ID
+     */
+    @SuppressWarnings("unchecked")
+    public Map<ApprovalRequestType, Integer> getApprovals() {
+        return (Map<ApprovalRequestType, Integer>) data.get(APPROVALS);
+    }
+
+    public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
+        // We must store this as a predictable order map in the database, in order for databaseprotection to work
+        data.put(APPROVALS, approvals != null ? new LinkedHashMap<>(approvals) : new LinkedHashMap<>());
+    }
+    
+    /**
+     * @return the id of the approval profile. Defult -1 (= none)
+     *
+     * @deprecated since 6.8.0, see getApprovals()
+     */
+    @Deprecated
+    public int getApprovalProfile() {
+        if (data.get(APPROVALPROFILE) == null) {
+            return -1;
+        }
+        return ((Integer) data.get(APPROVALPROFILE)).intValue();
+    }
+
+    /**
+     * The id of the approval profile.
+     *
+     * @deprecated since 6.8.0, see setApprovals()
+     */
+    @Deprecated
+    public void setApprovalProfile(final int approvalProfileID) {
+        data.put(APPROVALPROFILE, Integer.valueOf(approvalProfileID));
+    }
+    
+    protected ExtendedCAService getExtendedCAService(int type) {
+        ExtendedCAService returnval = null;
+        try {
+            returnval = extendedcaservicemap.get(Integer.valueOf(type));
+            if (returnval == null) {
+                @SuppressWarnings("rawtypes")
+                HashMap serviceData = getExtendedCAServiceData(type);
+                if (serviceData != null) {
+                    // We must have run upgrade on the extended CA services for this to work
+                    String implClassname = (String) serviceData.get(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS);
+                    if (implClassname == null) {
+                        // We need this hardcoded implementation classnames in order to be able to upgrade extended services from before
+                        // See ECA-6341 and UpgradeSessionBean.migrateDatabase500()
+                        log.info("implementation classname is null for extended service type: "+type+". Will try our known ones.");
+                        switch (type) {
+                        case 2: // Old XKMSCAService that should not be used anymore
+                            log.info("Found an XKMS CA service type. Will not create the deprecated service.");
+                            break;
+                        case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
+                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService";
+                            break;
+                        case ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE:
+                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService";
+                            break;
+                        case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
+                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService";
+                            break;
+                        default:
+                            log.error("implementation classname is null for extended service type: "+type+". Service not created.");
+                            break;
+                        }
+                    }
+                    if (implClassname != null) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
+                        }
+                        Class<?> implClass = Class.forName(implClassname);
+                        returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(new Object[] { serviceData });
+                        extendedcaservicemap.put(Integer.valueOf(type), returnval);
+                    }
+                } else {
+                    log.error("Servicedata is null for extended CA service of type: "+type);
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            log.warn("Extended CA service of type " + type + " can not get created: ", e);
+        } catch (IllegalArgumentException e) {
+            log.warn("Extended CA service of type " + type + " can not get created: ", e);
+        } catch (SecurityException e) {
+            log.warn("Extended CA service of type " + type + " can not get created: ", e);
+        } catch (InstantiationException e) {
+            log.warn("Extended CA service of type " + type + " can not get created: ", e);
+        } catch (IllegalAccessException e) {
+            log.warn("Extended CA service of type " + type + " can not get created: ", e);
+        } catch (InvocationTargetException e) {
+            log.warn("Extended CA service of type " + type + " can not get created: ", e);
+        } catch (NoSuchMethodException e) {
+            log.warn("Extended CA service of type " + type + " can not get created: ", e);
+        }
+        return returnval;
+    }
+    
+    /** Method used to retrieve information about the service. */
+    public ExtendedCAServiceInfo getExtendedCAServiceInfo(int type) {
+        ExtendedCAServiceInfo ret = null;
+        ExtendedCAService service = getExtendedCAService(type);
+        if (service != null) {
+            ret = service.getExtendedCAServiceInfo();
+        }
+        return ret;
+    }
+    
+    @SuppressWarnings("rawtypes")
+    public HashMap getExtendedCAServiceData(int type) {
+        HashMap serviceData = (HashMap) data.get(EXTENDEDCASERVICE + type);
+        return serviceData;
+    }
+
+    public void setExtendedCAServiceData(int type, @SuppressWarnings("rawtypes") HashMap serviceData) {
+        data.put(EXTENDEDCASERVICE + type, serviceData);
+    }
+    
+    @SuppressWarnings("rawtypes")
+    public void setExtendedCAService(ExtendedCAService extendedcaservice) {
+        ExtendedCAServiceInfo info = extendedcaservice.getExtendedCAServiceInfo();
+        setExtendedCAServiceData(info.getType(), (HashMap)extendedcaservice.saveData());
+        extendedcaservicemap.put(Integer.valueOf(info.getType()), extendedcaservice);
+    }
+
+    /** Returns a Collection of ExternalCAServices (int) added to this CA. */
+    @SuppressWarnings("unchecked")
+    public Collection<Integer> getExternalCAServiceTypes() {
+        if (data.get(EXTENDEDCASERVICES) == null) {
+            return new ArrayList<>();
+        }
+        return (Collection<Integer>) data.get(EXTENDEDCASERVICES);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.cesecore.certificates.ca.X509CA#upgradeExtendedCAServices()
+     */
+    @SuppressWarnings({ "rawtypes", "deprecation" })
+    @Override
+    public boolean upgradeExtendedCAServices() {
+        boolean retval = false;
+        // call upgrade, if needed, on installed CA services
+        Collection<Integer> externalServiceTypes = getExternalCAServiceTypes();
+        if (!CesecoreConfiguration.getCaKeepOcspExtendedService() && externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
+            //This type has been removed, so remove it from any CAs it's been added to as well.
+            externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE);
+            data.put(EXTENDEDCASERVICES, externalServiceTypes);
+            retval = true;
+        }
+
+        for (Integer type : externalServiceTypes) {
+            ExtendedCAService service = getExtendedCAService(type);
+            if (service != null) {
+                if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
+                    retval = true;
+                    service.upgrade();
+                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
+                } else if (service.isUpgraded()) {
+                    // Also return true if the service was automatically upgraded by a UpgradeableDataHashMap.load, which calls upgrade automagically.
+                    retval = true;
+                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
+                }
+            } else {
+                log.error("Extended service is null, can not upgrade service of type: " + type);
+            }
+        }
+        return retval;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.cesecore.certificates.ca.X509CA#upgrade()
+     */
+    @Override
+    public void upgrade() {
+        if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
+            // New version of the class, upgrade
+
+            // v20, remove XKMS CA service
+            if (data.get(EXTENDEDCASERVICES) != null) {
+                @SuppressWarnings("unchecked")
+                Collection<Integer> types = (Collection<Integer>)data.get(EXTENDEDCASERVICES);
+                // Remove type 2, which is XKMS
+                types.remove(2);
+                data.put(EXTENDEDCASERVICES, types);
+                // Remove any data if it exists
+                data.remove(EXTENDEDCASERVICE+2);
+            }
+
+            // v22, 'encodedValidity' is derived by the former long value!
+            if (null == data.get(ENCODED_VALIDITY)  && null != data.get(VALIDITY)) {
+                setEncodedValidity(getEncodedValidity());
+            }
+            // v23 'keyValidators' new empty list.
+            if (null == data.get(VALIDATORS)) {
+                setValidators(new ArrayList<Integer>());
+            }
+            data.put(VERSION, LATEST_VERSION);
         }
     }
     

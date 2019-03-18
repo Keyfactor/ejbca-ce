@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSession;
-import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -106,7 +106,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		
         // Try to find a HMAC/SHA1 protection key
         final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
-        CA ca = null;
+        CACommon ca = null;
         try {
             ca = getRecipientCA(msg, keyId);
         } catch (EndEntityProfileNotFoundException e) {
@@ -277,9 +277,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		return rresp;
 	}
 
-    private CA getRecipientCA(final BaseCmpMessage msg, final String keyId)
+    private CACommon getRecipientCA(final BaseCmpMessage msg, final String keyId)
             throws EndEntityProfileNotFoundException, CADoesntExistsException, AuthorizationDeniedException {
-        CA ca;
+        CACommon ca;
         final String caDN = msg.getRecipient().getName().toString();
         int caId = 0;
         if (StringUtils.isEmpty(caDN)) {

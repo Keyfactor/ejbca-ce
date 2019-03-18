@@ -38,7 +38,7 @@ import org.cesecore.keys.token.CryptoToken;
  *
  * @version $Id$
  */
-public abstract class CvcCABase extends CABase implements Serializable {
+public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 
     private static final long serialVersionUID = 3L;
 	private static final Logger log = Logger.getLogger(CvcCABase.class);
