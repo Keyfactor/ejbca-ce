@@ -67,7 +67,7 @@
       <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewCAHeader}">
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_CAFUNCTIONS}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
-          <h:outputLink id="caCaactivation" value="#{adminMenuBean.adminWebUrl}/ca/caactivation.xhtml" rendered="#{adminMenuBean.authorizedToViewCA}"><h:outputText value="#{web.text.NAV_CAACTIVATION}"/></h:outputLink>
+          <h:outputLink id="caCaactivation" value="#{adminMenuBean.adminWebUrl}/ca/caactivation.xhtml" rendered="#{adminMenuBean.authorizedToViewCAActivation}"><h:outputText value="#{web.text.NAV_CAACTIVATION}"/></h:outputLink>
           <h:outputLink id="caCafunctions" value="#{adminMenuBean.adminWebUrl}/ca/cafunctions.xhtml" rendered="#{adminMenuBean.authorizedToViewCA}"><h:outputText value="#{web.text.NAV_CASTRUCTUREANDCRL}"/></h:outputLink>
           <h:outputLink id="caEditcertificateprofiles" value="#{adminMenuBean.adminWebUrl}/ca/editcertificateprofiles/editcertificateprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewCertificateProfile}"><h:outputText value="#{web.text.NAV_CERTIFICATEPROFILES}"/></h:outputLink>
           <h:outputLink id="caEditcas" value="#{adminMenuBean.adminWebUrl}/ca/editcas/managecas.xhtml" rendered="#{adminMenuBean.authorizedToViewCA}"><h:outputText value="#{web.text.NAV_CAS}"/></h:outputLink>
@@ -95,8 +95,10 @@
       <h:panelGroup layout="block" styleClass="section" rendered="#{adminMenuBean.authorizedToViewSupervisionFunctionsHeader}">
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_SUPERVISIONFUNCTIONS}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
-          <h:outputLink id="supervisionEditapprovalprofiles" value="#{adminMenuBean.adminWebUrl}/approval/editapprovalprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewApprovalProfiles}"><h:outputText value="#{web.text.NAV_APPROVALPROFILES}"/></h:outputLink>
-          <h:outputLink id="supervisionApproveactionlist" value="#{adminMenuBean.adminWebUrl}/approval/approvalactions.xhtml" rendered="#{adminMenuBean.authorizedToApproveActions}"><h:outputText value="#{web.text.NAV_APPROVEACTIONS}"/></h:outputLink>
+          <h:outputLink id="supervisionEditapprovalprofiles" value="#{adminMenuBean.adminWebUrl}/approval/editapprovalprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewApprovalProfiles}">
+            <h:outputText value="#{web.text.NAV_APPROVALPROFILES}"/></h:outputLink>
+          <h:outputLink id="supervisionApproveactionlist" value="#{adminMenuBean.adminWebUrl}/approval/approvalactions.xhtml" rendered="#{adminMenuBean.authorizedToApproveActions}">
+            <h:outputText value="#{web.text.NAV_APPROVEACTIONS}"/></h:outputLink>
           <h:outputLink id="supervisionAuditsearch" value="#{adminMenuBean.adminWebUrl}/audit/search.xhtml" rendered="#{adminMenuBean.authorizedToViewLog}"><h:outputText value="#{web.text.NAV_AUDIT}"/></h:outputLink>
         </h:panelGroup>
       </h:panelGroup>
@@ -113,7 +115,7 @@
         <h:panelGroup layout="block" styleClass="section-header"><h:outputText value="#{web.text.NAV_SYSTEMCONFIGURATION}"/></h:panelGroup>
         <h:panelGroup layout="block" styleClass="section-content">
           <h:outputLink id="sysConfigAcme" value="#{adminMenuBean.adminWebUrl}/sysconfig/acmeconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToViewAcmeConfiguration}"><h:outputText value="#{web.text.NAV_ACMECONFIGURATION}"/></h:outputLink> 
-          <h:outputLink id="sysConfigCmp" value="#{adminMenuBean.adminWebUrl}/sysconfig/cmpaliases.xhtml" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text.NAV_CMPCONFIGURATION}"/></h:outputLink>
+          <h:outputLink id="sysConfigCmp" value="#{adminMenuBean.adminWebUrl}/sysconfig/cmpaliases.xhtml" rendered="#{adminMenuBean.authorizedToViewCmpConfiguration}"><h:outputText value="#{web.text.NAV_CMPCONFIGURATION}"/></h:outputLink>
           <h:outputLink id="sysConfigEst" value="#{adminMenuBean.adminWebUrl}/sysconfig/estconfigurations.xhtml" rendered="#{adminMenuBean.authorizedToViewEstConfiguration}"><h:outputText value="#{web.text.NAV_ESTCONFIGURATION}"/></h:outputLink>
           <h:outputLink id="sysConfigScep" value="#{adminMenuBean.adminWebUrl}/sysconfig/scepconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text.NAV_SCEPCONFIGURATION}"/></h:outputLink>
           <h:outputLink id="sysConfigGlobal" value="#{adminMenuBean.adminWebUrl}/sysconfig/systemconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToConfigureSystem}"><h:outputText value="#{web.text.NAV_SYSTEMCONFIGURATION}"/></h:outputLink>
@@ -124,8 +126,8 @@
         <h:panelGroup layout="block" styleClass="misc-section-header">...</h:panelGroup>
         <h:panelGroup layout="block" styleClass="misc-section-content">
           <h:outputLink value="#{adminMenuBean.adminWebUrl}/mypreferences.xhtml"><h:outputText value="#{web.text.NAV_MYPREFERENCES}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb"><h:outputText value="#{web.text.RAWEB}"/></h:outputLink>
-          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}ra/" target="_ejbcaraweb" rendered="#{adminMenuBean.authorizedToViewRaWeb}"><h:outputText value="#{web.text.RAWEB}"/></h:outputLink>
+          <h:outputLink value="#{ejbcawebbean.getBaseUrl()}" rendered="#{adminMenuBean.authorizedToViewPublicWeb}"><h:outputText value="#{web.text.PUBLICWEB}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getHelpBaseURI() }/index.html" target="_ejbcaDocWindow" rendered="#{adminMenuBean.helpEnabled}"><h:outputText value="#{web.text.DOCUMENTATION}"/></h:outputLink>
           <h:outputLink value="#{ejbcawebbean.getBaseUrl()}adminweb/logout" target="_top"><h:outputText value="#{web.text.LOGOUT}"/></h:outputLink>
         </h:panelGroup>

@@ -120,7 +120,7 @@ org.ejbca.util.HTMLTools
    // CA FUNCTIONS
  %>
  <%
-     if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CAVIEW.resource())){ 
+     if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CAVIEW.resource())){ 
         if(!caheaderprinted){
           out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
            caheaderprinted=true;
@@ -136,7 +136,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= CA_LINK %>"><%=ejbcawebbean.getText("NAV_CASTRUCTUREANDCRL") %></a></li>
 <% } %>
 <%
-     if(ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CERTIFICATEPROFILEVIEW.resource())){ 
+     if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(StandardRules.CERTIFICATEPROFILEVIEW.resource())){ 
         if(!caheaderprinted){
           out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
            caheaderprinted=true;
@@ -188,7 +188,7 @@ org.ejbca.util.HTMLTools
    // RA FUNCTIONS
 %>
 <%
-      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_CREATEENDENTITY)){ 
+      if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_CREATEENDENTITY)){ 
          if(!raheaderprinted){
            out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
            raheaderprinted=true;
@@ -196,7 +196,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= RA_ADDENDENTITYLINK %>"><%=ejbcawebbean.getText("NAV_ADDENDENTITY") %></a></li>
 <% } %>
 <%
-      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){
+      if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){
          if(!raheaderprinted){
            out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>");
            raheaderprinted=true;
@@ -204,7 +204,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= RA_EDITPROFILESLINK %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
 <% } %>
 <%
-      if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
+      if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
             if(!raheaderprinted){
               out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
               raheaderprinted=true;
@@ -212,7 +212,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= RA_LISTENDENTITIESLINK %>"><%=ejbcawebbean.getText("NAV_SEARCHENDENTITIES") %></a></li>
 <% } %>
 <%
-     if(ejbcawebbean.isAuthorizedNoLogSilent(RAEDITUSERDATASOURCES_RESOURCE)){ 
+     if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(RAEDITUSERDATASOURCES_RESOURCE)){ 
          if(!raheaderprinted){
              out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+ "</strong><ul>");
 			 raheaderprinted=true;
@@ -233,7 +233,7 @@ org.ejbca.util.HTMLTools
        %>  
 <%
      // If authorized to edit the hard token issuers then display related links.
-       if(ejbcawebbean.isAuthorizedNoLogSilent(HTEDITHARDTOKENISSUERS_RESOURCE)){ 
+       if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(HTEDITHARDTOKENISSUERS_RESOURCE)){ 
            if(!htheaderprinted){
              htheaderprinted=true;%> 
 		<li id="cat3" class="section"><strong><%=ejbcawebbean.getText("NAV_HARDTOKENFUNCTIONS") %></strong>
@@ -243,7 +243,7 @@ org.ejbca.util.HTMLTools
 <% } %>
     <%
      // If authorized to edit the hard token profiles then display related links.
-       if(ejbcawebbean.isAuthorizedNoLogSilent(HTEDITHARDTOKENPROFILES_RESOURCE)){ 
+       if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(HTEDITHARDTOKENPROFILES_RESOURCE)){ 
            if(!htheaderprinted){
                htheaderprinted=true;%> 
 		<li id="cat3" class="section"><strong><%=ejbcawebbean.getText("NAV_HARDTOKENFUNCTIONS") %></strong>
@@ -266,7 +266,7 @@ org.ejbca.util.HTMLTools
 
     // If authorized to view approval profiles then display related links.
 
-	    if(ejbcawebbean.isAuthorizedNoLogSilent(APPROVALPROFILEVIEW_RESOURCE)){
+	    if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(APPROVALPROFILEVIEW_RESOURCE)){
 			logheaderprinted = true;%>
 		<li id="cat4" class="section"><strong><%=ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS") %></strong>
 			<ul>
@@ -277,7 +277,7 @@ org.ejbca.util.HTMLTools
          // If authorized to approve data show related links
    	  boolean approveendentity = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
 	  boolean approvecaaction = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
-	  if(approveendentity || approvecaaction){
+	  if(ejbcawebbean.isRunningBuildWithRA() && approveendentity || approvecaaction){
            if(!logheaderprinted){
              out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
              logheaderprinted=true;
@@ -360,7 +360,7 @@ org.ejbca.util.HTMLTools
 <%
 
     // If authorized to edit ACME Configuration then display related links.
-      if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE) && ejbcawebbean.isRunningEnterprise() ){
+      if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE) && ejbcawebbean.isRunningEnterprise() ){
           if(!configheaderprinted){      
         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
         configheaderprinted = true;
@@ -370,7 +370,7 @@ org.ejbca.util.HTMLTools
 <%
 
     // If authorized to edit CMP Configuration then display related links.
-      if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){
+      if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){
           if(!configheaderprinted){
         out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
         configheaderprinted = true;
@@ -380,7 +380,7 @@ org.ejbca.util.HTMLTools
 
 <%
 // If authorized to edit EST Configuration then display related links.
-  if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){ 
+  if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){ 
       if(!configheaderprinted){      
     out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>");
     configheaderprinted = true;
@@ -438,11 +438,15 @@ if(configheaderprinted){
 <%   }
 %>
 
+<% if (ejbcawebbean.isRunningBuildWithRA()) { %>
 		<li id="cat9"><a href="<%= RAWEB_LINK %>" target="_ejbcaraweb"><%=ejbcawebbean.getText("RAWEB") %></a>
 		</li>
+<% } %>
 
+<% if (ejbcawebbean.isRunningBuildWithCA()) { %>
 		<li id="cat9"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
 		</li>
+<% } %>
 
 <% if (ejbcawebbean.isHelpEnabled()) { %>
 		<li id="cat10"><a href="<%= ejbcawebbean.getHelpBaseURI() %>/index.html" target="<%= GlobalConfiguration.DOCWINDOW %>"

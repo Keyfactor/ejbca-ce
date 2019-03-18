@@ -1724,7 +1724,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource())) {
             availableTabs.add("Extended Key Usages");
         }
-        if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) && CertificateTransparencyFactory.isCTAvailable()) {
+        if (getEjbcaWebBean().isRunningBuildWithCA()
+                && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource())
+                && CertificateTransparencyFactory.isCTAvailable()) {
             availableTabs.add("Certificate Transparency Logs");
         }
         if (authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CUSTOMCERTEXTENSIONCONFIGURATION_VIEW.resource())) {

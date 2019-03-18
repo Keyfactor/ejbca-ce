@@ -129,23 +129,23 @@
 				</h:panelGroup>
 			</h:panelGroup>
 
-			<h:panelGroup>
+			<h:panelGroup rendered="#{web.ejbcaWebBean.runningBuildWithCA}">
 				<h:outputLabel for="issuehwtokens" value="#{web.text.ISSUEHARDWARETOKENS}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.ISSUEHARDWARETOKENS_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:panelGroup>
+			<h:panelGroup rendered="#{web.ejbcaWebBean.runningBuildWithCA}">
 				<h:selectBooleanCheckbox id="issuehwtokens" value="#{systemConfigMBean.currentConfig.issueHardwareToken}"
 					disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
 				<h:outputLabel for="issuehwtokens" value="#{web.text.ACTIVATE}" />
 			</h:panelGroup>	
 
-			<h:panelGroup>
+			<h:panelGroup rendered="#{web.ejbcaWebBean.runningBuildWithCA}">
 				<h:outputLabel for="htdEncryptCa" value="#{web.text.HARDTOKENENCRYPTCA}" styleClass="titles"/>
 				<br/>
 				<h:outputText value="#{web.text.HARDTOKENENCRYPTCA_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:panelGroup id="htdEncryptCa">
+			<h:panelGroup id="htdEncryptCa" rendered="#{web.ejbcaWebBean.runningBuildWithCA}">
 				<h:selectOneMenu value="#{systemConfigMBean.currentConfig.hardTokenDataEncryptCA}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
 					<f:selectItems value="#{systemConfigMBean.availableCAsAndNoEncryptionOption}"/>
 				</h:selectOneMenu>
@@ -548,7 +548,7 @@
 	
 	<!-- Certificate Transparency Logs -->
 
-	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs'}">
+	<h:form id="ctlogsform" enctype="multipart/form-data" rendered="#{systemConfigMBean.selectedTab eq 'Certificate Transparency Logs' and web.ejbcaWebBean.runningBuildWithCA}">
 		<div class="section-label">
             <h4>
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_EDIT_CTLOG_TITLE}" rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>

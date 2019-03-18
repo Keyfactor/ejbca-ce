@@ -53,8 +53,14 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CAVIEW.resource());
     }
     
+    public boolean isAuthorizedToViewCAActivation() {
+        return getEjbcaWebBean().isRunningBuildWithCA()
+                && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CAVIEW.resource());
+    }
+    
     public boolean isAuthorizedToViewCertificateProfile() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CERTIFICATEPROFILEVIEW.resource());
+        return getEjbcaWebBean().isRunningBuildWithCA()
+                && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.CERTIFICATEPROFILEVIEW.resource());
     }
     
     public boolean isAuthorizedToViewCryptotoken() {
@@ -71,6 +77,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     public boolean isAuthorizedToViewCAHeader() {
         return isAuthorizedToViewCA()
+                || isAuthorizedToViewCAActivation()
                 || isAuthorizedToViewCertificateProfile()
                 || isAuthorizedToViewCryptotoken()
                 || isAuthorizedToViewPublishers()
@@ -96,10 +103,11 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isAuthorizedToViewRAHeader() {
-        return isAuthorizedToCreateEndEntity()
+        return getEjbcaErrorWebBean().isRunningBuildWithRA()
+                && (isAuthorizedToCreateEndEntity()
                 || isAuthorizedToViewEndEntityProfiles()
                 || isAuthorizedToViewEndEntity()
-                || isAuthorizedToEditUserDataSources();
+                || isAuthorizedToEditUserDataSources());
     }
     
     /*===HARD TOKEN FUNCTIONALITY===*/
@@ -115,19 +123,22 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isAuthorizedToViewHTHeader() {
-        return getGlobalConfiguration().getIssueHardwareTokens() &&
-                (isAuthorizedToEditHardTokenIssuers() || isAuthorizedToEditHardTokenProfiles());
+        return getEjbcaErrorWebBean().isRunningBuildWithCA()
+                && getGlobalConfiguration().getIssueHardwareTokens() 
+                && (isAuthorizedToEditHardTokenIssuers() || isAuthorizedToEditHardTokenProfiles());
     }
     
     /*===SUPERVISION FUNCTIONS===*/
     
     public boolean isAuthorizedToViewApprovalProfiles() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.APPROVALPROFILEVIEW.resource());
+        return getEjbcaErrorWebBean().isRunningBuildWithRA()
+                && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.APPROVALPROFILEVIEW.resource());
     }
     
     public boolean isAuthorizedToApproveActions() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_APPROVEENDENTITY) 
-                || authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_APPROVECAACTION);
+        return getEjbcaErrorWebBean().isRunningBuildWithRA()
+                && (authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_APPROVEENDENTITY) 
+                || authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_APPROVECAACTION));
     }
     
     public boolean isAuthorizedToViewLog() {
@@ -173,11 +184,20 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isAuthorizedToViewEstConfiguration() {
-        return getEjbcaWebBean().isRunningEnterprise() && isAuthorizedToViewSystemConfiguration();
+        return getEjbcaWebBean().isRunningEnterprise() 
+                && getEjbcaErrorWebBean().isRunningBuildWithCA()
+                && isAuthorizedToViewSystemConfiguration();
     }
 
     public boolean isAuthorizedToViewAcmeConfiguration() {
-        return getEjbcaWebBean().isRunningEnterprise() && isAuthorizedToViewSystemConfiguration();
+        return getEjbcaWebBean().isRunningEnterprise() 
+                && getEjbcaErrorWebBean().isRunningBuildWithCA()
+                && isAuthorizedToViewSystemConfiguration();
+    }
+    
+    public boolean isAuthorizedToViewCmpConfiguration() {
+        return getEjbcaErrorWebBean().isRunningBuildWithCA()
+                && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
     }
     
     public boolean isAuthorizedToConfigureSystem() {
@@ -201,6 +221,14 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     public boolean isAuthorizedToEditPreferences() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.ROLE_ADMINISTRATOR);
+    }
+    
+    public boolean isAuthorizedToViewPublicWeb() {
+        return getEjbcaErrorWebBean().isRunningBuildWithCA();
+    }
+    
+    public boolean isAuthorizedToViewRaWeb() {
+        return getEjbcaErrorWebBean().isRunningBuildWithRA();
     }
     
     public boolean isHelpEnabled() {
