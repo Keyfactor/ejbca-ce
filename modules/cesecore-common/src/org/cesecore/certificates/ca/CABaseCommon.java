@@ -75,7 +75,8 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String REVOCATIONDATE = "revokationdate";
     protected static final String CRLPERIOD = "crlperiod";
     protected static final String DELTACRLPERIOD = "deltacrlperiod";
-
+    protected static final String NAMECHANGED = "namechanged";
+    
     // protected fields.
     protected static final String SUBJECTDN = "subjectdn";
     protected static final String SUBJECTALTNAME = "subjectaltname";
@@ -96,6 +97,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String REQUESTCERTCHAIN = "requestcertchain";
     protected static final String EXTENDEDCASERVICES = "extendedcaservices";
     protected static final String EXTENDEDCASERVICE = "extendedcaservice";
+    protected static final String EXTERNALCDP = "externalcdp";
     protected static final String USENOCONFLICTCERTIFICATEDATA = "usenoconflictcertificatedata";
     protected static final String SERIALNUMBEROCTETSIZE = "serialnumberoctetsize";
     private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";
@@ -243,6 +245,30 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         data.put(ENCODED_VALIDITY, encodedValidity);
     }
 
+    /* (non-Javadoc)
+     * @see org.cesecore.certificates.ca.X509CA#getExternalCdp()
+     */
+    @Override
+    public String getExternalCdp() {
+        return (String) getMapValueWithDefault(EXTERNALCDP, "");
+    }
+
+    public Object getMapValueWithDefault(final String key, final Object defaultValue) {
+        final Object o = data.get(key);
+        if (o == null) {
+            return defaultValue;
+        }
+        return o;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.cesecore.certificates.ca.X509CA#setExternalCdp(java.lang.String)
+     */
+    @Override
+    public void setExternalCdp(final String externalCdp) {
+        data.put(EXTERNALCDP, externalCdp);
+    }
+    
     /**
      * @return one of CAInfo.CATYPE_CVC or CATYPE_X509
      */
@@ -572,6 +598,22 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         return false;
     }
 
+    @Override
+    public void setNameChanged(boolean nameChanged) {
+        if(getNameChanged() && !nameChanged){
+            //This must not happen. Once CA "Name Changed" value is set to true it mustn't be set to false again
+            log.warn("Not supported operation of setting CA Name Change value from TRUE to FALSE. Value not set!");
+            return;
+        }
+        data.put(NAMECHANGED, nameChanged);
+    }
+
+    @Override
+    public boolean getNameChanged() {
+        Boolean v = ((Boolean) data.get(NAMECHANGED));
+        return (v == null) ? false : v;
+    }
+    
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         data.put(APPROVALS, cainfo.getApprovals());
         data.put(DESCRIPTION, cainfo.getDescription());
