@@ -132,9 +132,9 @@ public class CAData extends ProtectedData implements Serializable {
 
 	/** @return a CA in the form it was saved in the database + regular UpgradableHashMap upgrade-on-load */
     @Transient
-    public CA getCA() {
+    public CACommon getCA() {
         final LinkedHashMap<Object, Object> dataMap = getDataMap();
-        CA ca = null;
+        CACommon ca = null;
         switch (((Integer)(dataMap.get(CABase.CATYPE))).intValue()) {
         case CAInfo.CATYPE_X509:
             ca = (CA) CAFactory.INSTANCE.getX509CAImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));

@@ -82,7 +82,7 @@ import org.ejbca.cvc.exception.ParseException;
  *
  * @version $Id$
  */
-public class CvcEacCA extends CvcCABase implements CvcPlugin, CvcCA {
+public class CvcEacCA extends CvcCABase implements CvcPlugin {
 
     private static final String CA_TYPE = "CVC_EAC";
     
