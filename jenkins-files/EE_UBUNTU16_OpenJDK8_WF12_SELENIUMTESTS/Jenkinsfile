@@ -76,7 +76,7 @@ pipeline {
 
                 dir ('ejbca/jenkins-files/EE_UBUNTU16_OpenJDK8_WF12_SELENIUMTESTS/selenium_image') {
                     sh "docker build -t seleniumtests -m 5GB ."
-                    sh "docker cp mypeer:/opt/wildfly/bin/client/jboss-client.jar - | docker cp - seleniumtests:/$env.WORKSPACE/ejbca/lib/jee-client/jboss-client.jar"
+                    sh "docker cp mypeer:/opt/jboss/wildfly/bin/client/jboss-client.jar - | docker cp - seleniumtests:/$env.WORKSPACE/ejbca/lib/jee-client/jboss-client.jar"
                     sh "docker run --name seleniumtests --net=selenium-network -p 4444:4444 --shm-size=5g -v " + "$env.WORKSPACE" + ":/app seleniumtests"
                 }
             }
