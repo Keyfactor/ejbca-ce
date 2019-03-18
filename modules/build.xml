@@ -49,14 +49,23 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, edition-specific-clean, edition-specific-ee-clean, 
-		externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, webtestclean, estclean, ejbca-rest-api-clean, plugins-ee-clean, clover.clean"/>
+		externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, webtestclean, estclean, ejbca-rest-api-clean, plugins-ee-clean, clover.clean, cesecore-x509ca-clean"/>
+	
+	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
+		<echo message="Cleaning cesecore-x509ca"/>
+		<ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="cesecore-cvcca-clean" if="${mod.cesecore-cvcca.exists}">
+		<echo message="Cleaning cesecore-cvcca"/>
+		<ant antfile="${mod.cesecore-cvcca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+	</target>
 	
 	<target name="externalraclean" if="${mod.externalra.exists}">
 		<echo message="Cleaning externalra"/>
@@ -214,7 +223,7 @@
         	<copy file="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" todir="${ejbca.home}/dist/"/>
         </target>
         
-        <target name="-copy-cesecore-cvcca">
+        <target name="-copy-cesecore-cvcca" if="${mod.cesecore-cvcca.exists}">
             <copy file="${ejbca.home}/modules/cesecore-cvcca/dist/cesecore-cvcca.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
         </target>   
 	
@@ -222,7 +231,7 @@
             <copy file="${ejbca.home}/modules/cesecore-ejb/dist/cesecore-ejb.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
         </target>
 	
-        <target name="-copy-cesecore-x509ca">
+        <target name="-copy-cesecore-x509ca" if="${mod.cesecore-x509ca.exists}">
             <copy file="${ejbca.home}/modules/cesecore-x509ca/dist/cesecore-x509ca.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
         </target>	
         
@@ -230,15 +239,15 @@
             <copy file="${ejbca.home}/modules/cesecore-ejb-interface/dist/cesecore-ejb-interface.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
         </target>
 	
-	<target name="cesecore-cvcca" if="mod.cesecore-cvcca.exists" depends="cesecore-common, -build-cesecore-cvcca, -copy-cesecore-cvcca"/>
+	<target name="cesecore-cvcca" depends="cesecore-common, -build-cesecore-cvcca, -copy-cesecore-cvcca"/>
 	
-	<target name="cesecore-x509ca" if="mod.cesecore-x509ca.exists" depends="cesecore-common, -build-cesecore-x509ca, -copy-cesecore-x509ca"/>
+	<target name="cesecore-x509ca" depends="cesecore-common, -build-cesecore-x509ca, -copy-cesecore-x509ca"/>
 	
-    <target name="-build-cesecore-cvcca">
+    <target name="-build-cesecore-cvcca" if="${mod.cesecore-cvcca.exists}">
         <ant antfile="${mod.cesecore-cvcca.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
     </target>    
 	
-	<target name="-build-cesecore-x509ca">
+	<target name="-build-cesecore-x509ca" if="${mod.cesecore-x509ca.exists}">
         <ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="jar" inheritall="true" inheritrefs="true"/>
     </target>
     
