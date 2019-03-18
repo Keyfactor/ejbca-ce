@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -277,8 +278,8 @@ public class WebAuthenticationProviderSessionBeanTest {
         // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
         // bean is created.
         byte[] serno = new byte[8];
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed(new Date().getTime());
+        // This is a test, so randomness does not have to be secure (CSPRNG)
+        Random random = new Random();
         random.nextBytes(serno);
         
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());                

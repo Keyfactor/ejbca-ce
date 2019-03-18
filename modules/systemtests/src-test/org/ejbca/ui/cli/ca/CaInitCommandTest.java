@@ -256,8 +256,8 @@ public class CaInitCommandTest {
             Date lastDate = new Date();
             lastDate.setTime(lastDate.getTime() + (365 * (24 * 60 * 60 * 1000)));
             byte[] serno = new byte[8];
+            // This is a test, so randomness does not have to be secure (CSPRNG)
             Random random = new Random();
-            random.setSeed(firstDate.getTime());
             random.nextBytes(serno);
             final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(msg.getRequestPublicKey().getEncoded());
             X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(

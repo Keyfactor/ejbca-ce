@@ -1906,16 +1906,14 @@ public abstract class CertTools {
             publicKey = pubKey;
         }
 
-        // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
-        // bean is created.
-        byte[] serno = new byte[8];
+        // Serial number is random bits
+        byte[] serno = new byte[16];
         SecureRandom random;
         try {
             random = SecureRandom.getInstance("SHA1PRNG");
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA1PRNG was not a known algorithm", e);
         }
-        random.setSeed(new Date().getTime());
         random.nextBytes(serno);
 
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());

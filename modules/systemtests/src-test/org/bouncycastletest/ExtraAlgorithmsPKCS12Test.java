@@ -1,9 +1,5 @@
 package org.bouncycastletest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -20,6 +16,7 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.ECPublicKeySpec;
 import java.util.Date;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -48,6 +45,10 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * This test verifies that GOST3410 and DSTU4145 are working in BouncyCastle.
@@ -154,8 +155,8 @@ public class ExtraAlgorithmsPKCS12Test {
         // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
         // bean is created.
         byte[] serno = new byte[8];
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed(new Date().getTime());
+        // This is a test, so randomness does not have to be secure (CSPRNG)
+        Random random = new Random();
         random.nextBytes(serno);
         
         Date firstDate = new Date();

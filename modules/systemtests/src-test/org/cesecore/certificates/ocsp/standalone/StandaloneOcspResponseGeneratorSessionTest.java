@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -555,8 +556,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             Date lastDate = new Date();
             lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
             byte[] serno = new byte[8];
-            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            random.setSeed(new Date().getTime());
+            // This is a test, so randomness does not have to be secure (CSPRNG)
+            Random random = new Random();
             random.nextBytes(serno);
             KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
             final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(certificateKeyPair.getPublic().getEncoded());
@@ -632,8 +633,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 Date lastDate = new Date();
                 lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
                 byte[] serno = new byte[8];
-                SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-                random.setSeed(new Date().getTime());
+                // This is a test, so randomness does not have to be secure (CSPRNG)
+                Random random = new Random();
                 random.nextBytes(serno);
                 KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
                 final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(certificateKeyPair.getPublic().getEncoded());
@@ -706,8 +707,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 Date lastDate = new Date();
                 lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
                 byte[] serno = new byte[8];
-                SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-                random.setSeed(new Date().getTime());
+                // This is a test, so randomness does not have to be secure (CSPRNG)
+                Random random = new Random();
                 random.nextBytes(serno);
                 KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
                 final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(certificateKeyPair.getPublic().getEncoded());                  
