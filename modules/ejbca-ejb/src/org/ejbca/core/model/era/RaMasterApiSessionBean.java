@@ -120,6 +120,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
@@ -197,7 +198,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.model.validation.CaaValidator;
 import org.ejbca.core.protocol.NoSuchAliasException;
 import org.ejbca.core.protocol.acme.AcmeAccount;
 import org.ejbca.core.protocol.acme.AcmeAccountDataSessionLocal;
@@ -2533,7 +2533,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 continue;
             }
             if (validator.getValidatorTypeIdentifier().equals(DnsNameValidator.CAA_TYPE_IDENTIFIER)) {
-                caaIdentities.addAll(((CaaValidator) validator).getIssuers());
+                caaIdentities.addAll(((CaaIdentitiesValidator) validator).getIssuers());
             }
         }
         return caaIdentities;
