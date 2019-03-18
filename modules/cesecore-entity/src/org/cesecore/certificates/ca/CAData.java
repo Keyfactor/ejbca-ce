@@ -137,10 +137,10 @@ public class CAData extends ProtectedData implements Serializable {
         CACommon ca = null;
         switch (((Integer)(dataMap.get(CABase.CATYPE))).intValue()) {
         case CAInfo.CATYPE_X509:
-            ca = (CA) CAFactory.INSTANCE.getX509CAImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));
+            ca = (CACommon) CAFactory.INSTANCE.getX509CAImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));
             break;
         case CAInfo.CATYPE_CVC:
-            ca = (CA) CAFactory.INSTANCE.getCvcCaImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
+            ca = (CACommon) CAFactory.INSTANCE.getCvcCaImpl(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
             break;
         }
         return ca;
