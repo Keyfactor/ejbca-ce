@@ -375,7 +375,44 @@ public class X509CAInfo extends CAInfo {
   public void setDefaultCRLDistPoint(String defaultCRLDistPoint) {
       this.defaultcrldistpoint = defaultCRLDistPoint;
   }
+ 
+  /**
+   * A method returning all CDP URLs to currently used CRL partitions for this CA  
+   * @param crlUrl is the URL to the CRL CDP for this CA, in the format "http://example.com/CA*.crl", 
+   * where any '*' will be replaced by an index number (or removed for the first partition)
+   * @return a list of CDP URLs with index numbers for currently used CRL partitions for this CA 
+   */
+  public List<String> getAllCrlPartitionUrls(String crlUrl) {
+      List<String> crlUrlsReturned = new ArrayList<String>();
+      if (getUsePartitionedCrl()) {
+          int partitionsInUse = (getCrlPartitions() - getRetiredCrlPartitions());
+          crlUrlsReturned.add(crlUrl.replace("*", ""));
+          Integer partitionIndex = 1;
+          for (int loop = 0; loop < partitionsInUse - 1; loop++) {
+              crlUrlsReturned.add(crlUrl.replace("*", partitionIndex.toString()));
+              partitionIndex++;
+          }
+      } else {
+          crlUrlsReturned.add(crlUrl.replace("*", ""));
+      }
+      return crlUrlsReturned;
+  }
 
+  /**
+   * A method returning a CDP URL with the given CRL partition index number for this CA 
+   * @param crlUrl is the URL to the CRL CDP for this CA, in the format "http://example.com/CA*.crl", 
+   * where any '*' will be replaced by given index number (or removed for the first partition)
+   * @param index is the index of the CRL partition asked for
+   * @return the URL for the specific CRL partition CDP with the given index number 
+   */
+  public String getCrlPartitionUrl(String crlUrl, int index) {
+      Integer partitionIndex = new Integer(index);
+      if (index == 0) {
+          return crlUrl.replace("*", "");
+      }
+      return crlUrl.replace("*", partitionIndex.toString());
+  }
+  
   public String getDefaultCRLIssuer(){ return defaultcrlissuer; }
   public void setDefaultCRLIssuer(String defaultcrlissuer) {
       this.defaultcrlissuer = defaultcrlissuer;
