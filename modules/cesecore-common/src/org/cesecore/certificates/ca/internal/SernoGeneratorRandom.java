@@ -27,7 +27,7 @@ import org.cesecore.internal.InternalResources;
 
 /**
  * This is a "constant octet size random serial number generator".
- * (note that no defined level of entropy is defined for this generator, although the entropy will be easily calculated according to the below rules)
+ * (note that this generator is not designed to generated a specified level of entropy, although the entropy will be fixed and can easily calculated according to the below rules.)
  * 
  * The purpose of this certificate serial number generator is to generate random serial numbers with a fixed octet size. If you specify the octet size 
  * to be 8 octets, the serial number will be 8 octets, if you specify 20 octets it will be 20 octets, etc.
