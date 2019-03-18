@@ -350,6 +350,9 @@
 			<include name="glassfish/lib/gf-client.jar"/>			
 			<include name="glassfish/lib/jndi.properties.jar"/>			
 		</fileset>
+		<fileset dir="${ejbca.home}">
+			<include name="lib/jee-client/*.jar"/>
+		</fileset>
 	</path>
 
 	<path id="lib.jee.classpath">
