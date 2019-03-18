@@ -467,7 +467,7 @@ public class X509CATest {
         CAInfo cainfo = ca.getCAInfo();
         CAData cadata = new CAData(cainfo.getSubjectDN(), cainfo.getName(), cainfo.getStatus(), ca);
 
-        CA ca2 = cadata.getCA();
+        CACommon ca2 = cadata.getCA();
 		Certificate usercert2 = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
         String authKeyId2 = new String(Hex.encode(CertTools.getAuthorityKeyId(usercert2)));
         PublicKey publicKey2 = cryptoToken.getPublicKey(ca2.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));

@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -41,7 +40,6 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveE
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -103,7 +101,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
     private static final String ACCEPT_REVOCATION_NONEXISTING_ENTRY = "acceptRevocationNonExistingEntry";
     private static final String KEEPEXPIREDCERTSONCRL = "keepExpiredCertsOnCRL";
-    private static final String APPROVALS = "approvals";
     
     /**
      * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
@@ -116,16 +113,10 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      */
     @Deprecated
     protected static final String NUMBEROFREQAPPROVALS = "numberofreqapprovals";
-    /**
-     * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping
-     */
-    @Deprecated
-    protected static final String APPROVALPROFILE = "approvalprofile";
+
     protected static final String INCLUDEINHEALTHCHECK = "includeinhealthcheck";
     private static final String USE_USER_STORAGE = "useUserStorage";
 
-    private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<>();
-    
     /** No args constructor required for ServiceLocator */
     protected CABase() {
     }
@@ -139,7 +130,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         data = new LinkedHashMap<>();
         super.init(cainfo);
         
-        setEncodedValidity(cainfo.getEncodedValidity());
         setSignedBy(cainfo.getSignedBy());
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(REVOCATIONREASON, Integer.valueOf(-1));
@@ -148,13 +138,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         if (!cainfo.isUseCertificateStorage()) {
             data.put(DEFAULTCERTIFICATEPROFILEID, Integer.valueOf(cainfo.getDefaultCertificateProfileId()));
         }
-        setKeepExpiredCertsOnCRL(cainfo.getKeepExpiredCertsOnCRL());
-        setCRLPeriod(cainfo.getCRLPeriod());
-        setCRLIssueInterval(cainfo.getCRLIssueInterval());
-        setCRLOverlapTime(cainfo.getCRLOverlapTime());
-        setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
-        setCRLPublishers(cainfo.getCRLPublishers());
-        setValidators(cainfo.getValidators());
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
         setDoEnforceUniquePublicKeys(cainfo.isDoEnforceUniquePublicKeys());
@@ -169,9 +152,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         setCRLIssueInterval(cainfo.getCRLIssueInterval());
         setCRLOverlapTime(cainfo.getCRLOverlapTime());
         setDeltaCRLPeriod(cainfo.getDeltaCRLPeriod());
-        setCRLPublishers(cainfo.getCRLPublishers());
-        setValidators(cainfo.getValidators());
-        setEncodedValidity(cainfo.getEncodedValidity());
         
         ArrayList<Integer> extendedservicetypes = new ArrayList<>();
         for(ExtendedCAServiceInfo next : cainfo.getExtendedCAServiceInfos()) {
@@ -188,19 +168,16 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     /** Constructor used when retrieving existing CA from database. */
     public void init(HashMap<Object, Object> data) {
         super.init(data);
-        extendedcaservicemap = new HashMap<>();
     }
     
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         super.updateCA(cryptoToken, cainfo, cceConfig);
-        setEncodedValidity(cainfo.getEncodedValidity());
         data.put(CRLPERIOD, Long.valueOf(cainfo.getCRLPeriod()));
         data.put(DELTACRLPERIOD, Long.valueOf(cainfo.getDeltaCRLPeriod()));
         data.put(CRLISSUEINTERVAL, Long.valueOf(cainfo.getCRLIssueInterval()));
         data.put(CRLOVERLAPTIME, Long.valueOf(cainfo.getCRLOverlapTime()));
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
         data.put(VALIDATORS, cainfo.getValidators());
-        data.put(APPROVALS, cainfo.getApprovals());
         data.put(USENOCONFLICTCERTIFICATEDATA, cainfo.isUseNoConflictCertificateData());
         if (cainfo.getDefaultCertificateProfileId() > 0 && !cainfo.isUseCertificateStorage()) {
             data.put(DEFAULTCERTIFICATEPROFILEID, Integer.valueOf(cainfo.getDefaultCertificateProfileId()));
@@ -284,24 +261,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     public void setCRLOverlapTime(long crlOverlapTime) {
         data.put(CRLOVERLAPTIME, Long.valueOf(crlOverlapTime));
     }
-
-    @SuppressWarnings("unchecked")
-    public Collection<Integer> getCRLPublishers() {
-        return ((Collection<Integer>) data.get(CRLPUBLISHERS));
-    }
-
-    public void setCRLPublishers(Collection<Integer> crlpublishers) {
-        data.put(CRLPUBLISHERS, crlpublishers);
-    }
-
-    @SuppressWarnings("unchecked")
-    public Collection<Integer> getValidators() {
-        return ((Collection<Integer>) data.get(VALIDATORS));
-    }
-
-    public void setValidators(Collection<Integer> validators) {
-        data.put(VALIDATORS, validators);
-    }
     
     public int getDefaultCertificateProfileId() {
         Integer defaultCertificateProfileId = (Integer) data.get(DEFAULTCERTIFICATEPROFILEID);
@@ -310,55 +269,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         } else {
             return 0;
         }
-    }
-    
-    /**
-     * The number of different administrators that needs to approve
-     * @deprecated since 6.6.0, use the appropriate approval profile instead.
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    @Deprecated
-    public void setNumOfRequiredApprovals(int numOfReqApprovals) {
-        data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
-    }
-    
-    
-    /**
-     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
-     * default none and never null.
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public Collection<Integer> getApprovalSettings() {
-        if (data.get(APPROVALSETTINGS) == null) {
-            return new ArrayList<>();
-        }
-        return (Collection<Integer>) data.get(APPROVALSETTINGS);
-    }
-
-    /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Deprecated
-    public void setApprovalSettings(Collection<Integer> approvalSettings) {
-        data.put(APPROVALSETTINGS, approvalSettings);
-    }
-    
-    /**
-     * @return the number of different administrators that needs to approve an action, default 1.
-     * @deprecated since 6.6.0, use the appropriate approval profile instead.
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    @Deprecated
-    public int getNumOfRequiredApprovals() {
-        if (data.get(NUMBEROFREQAPPROVALS) == null) {
-            return 1;
-        }
-        return ((Integer) data.get(NUMBEROFREQAPPROVALS)).intValue();
     }
     
     private void createExtendedCAService(ExtendedCAServiceInfo info) {
@@ -404,42 +314,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         return service.extendedService(cryptoToken, request);
     }
     
-    /** Method used to retrieve information about the service. */
-    public ExtendedCAServiceInfo getExtendedCAServiceInfo(int type) {
-        ExtendedCAServiceInfo ret = null;
-        ExtendedCAService service = getExtendedCAService(type);
-        if (service != null) {
-            ret = service.getExtendedCAServiceInfo();
-        }
-        return ret;
-    }
-    
-    @SuppressWarnings("rawtypes")
-    public HashMap getExtendedCAServiceData(int type) {
-        HashMap serviceData = (HashMap) data.get(EXTENDEDCASERVICE + type);
-        return serviceData;
-    }
-
-    public void setExtendedCAServiceData(int type, @SuppressWarnings("rawtypes") HashMap serviceData) {
-        data.put(EXTENDEDCASERVICE + type, serviceData);
-    }
-    
-    @SuppressWarnings("rawtypes")
-    public void setExtendedCAService(ExtendedCAService extendedcaservice) {
-        ExtendedCAServiceInfo info = extendedcaservice.getExtendedCAServiceInfo();
-        setExtendedCAServiceData(info.getType(), (HashMap)extendedcaservice.saveData());
-        extendedcaservicemap.put(Integer.valueOf(info.getType()), extendedcaservice);
-    }
-
-    /** Returns a Collection of ExternalCAServices (int) added to this CA. */
-    @SuppressWarnings("unchecked")
-    public Collection<Integer> getExternalCAServiceTypes() {
-        if (data.get(EXTENDEDCASERVICES) == null) {
-            return new ArrayList<>();
-        }
-        return (Collection<Integer>) data.get(EXTENDEDCASERVICES);
-    }
-    
     // Methods used with extended services
     /**
      * Initializes the ExtendedCAService
@@ -456,69 +330,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
             service.init(cryptoToken, ca, cceConfig);
             setExtendedCAService(service);
         }
-    }
-    
-    
-    protected ExtendedCAService getExtendedCAService(int type) {
-        ExtendedCAService returnval = null;
-        try {
-            returnval = extendedcaservicemap.get(Integer.valueOf(type));
-            if (returnval == null) {
-                @SuppressWarnings("rawtypes")
-                HashMap serviceData = getExtendedCAServiceData(type);
-                if (serviceData != null) {
-                    // We must have run upgrade on the extended CA services for this to work
-                    String implClassname = (String) serviceData.get(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS);
-                    if (implClassname == null) {
-                        // We need this hardcoded implementation classnames in order to be able to upgrade extended services from before
-                        // See ECA-6341 and UpgradeSessionBean.migrateDatabase500()
-                        log.info("implementation classname is null for extended service type: "+type+". Will try our known ones.");
-                        switch (type) {
-                        case 2: // Old XKMSCAService that should not be used anymore
-                            log.info("Found an XKMS CA service type. Will not create the deprecated service.");
-                            break;
-                        case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
-                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService";
-                            break;
-                        case ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE:
-                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService";
-                            break;
-                        case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
-                            implClassname = "org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService";
-                            break;
-                        default:
-                            log.error("implementation classname is null for extended service type: "+type+". Service not created.");
-                            break;
-                        }
-                    }
-                    if (implClassname != null) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
-                        }
-                        Class<?> implClass = Class.forName(implClassname);
-                        returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(new Object[] { serviceData });
-                        extendedcaservicemap.put(Integer.valueOf(type), returnval);
-                    }
-                } else {
-                    log.error("Servicedata is null for extended CA service of type: "+type);
-                }
-            }
-        } catch (ClassNotFoundException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (IllegalArgumentException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (SecurityException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (InstantiationException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (IllegalAccessException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (InvocationTargetException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (NoSuchMethodException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        }
-        return returnval;
     }
     
     private void setFinishUser(boolean finishuser) {
@@ -600,42 +411,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     /** whether revocations for non existing entry accepted */
     public boolean isAcceptRevocationNonExistingEntry() {
         return getBoolean(ACCEPT_REVOCATION_NONEXISTING_ENTRY, false);
-    }
-    
-    /**
-     * @return A 1:1 mapping between Approval Action:Approval Profile ID
-     */
-    @SuppressWarnings("unchecked")
-    public Map<ApprovalRequestType, Integer> getApprovals() {
-        return (Map<ApprovalRequestType, Integer>) data.get(APPROVALS);
-    }
-
-    public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
-        // We must store this as a predictable order map in the database, in order for databaseprotection to work
-        data.put(APPROVALS, approvals != null ? new LinkedHashMap<>(approvals) : new LinkedHashMap<>());
-    }
-    
-    /**
-     * @return the id of the approval profile. Defult -1 (= none)
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    @Deprecated
-    public int getApprovalProfile() {
-        if (data.get(APPROVALPROFILE) == null) {
-            return -1;
-        }
-        return ((Integer) data.get(APPROVALPROFILE)).intValue();
-    }
-
-    /**
-     * The id of the approval profile.
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    @Deprecated
-    public void setApprovalProfile(final int approvalProfileID) {
-        data.put(APPROVALPROFILE, Integer.valueOf(approvalProfileID));
     }
 
     public boolean getKeepExpiredCertsOnCRL() {

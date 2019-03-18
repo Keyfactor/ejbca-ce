@@ -278,7 +278,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (log.isTraceEnabled()) {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
         }
-        final CA ca = caSession.getCA(admin, caId);
+        final CA ca = (CA) caSession.getCA(admin, caId);
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
         final byte[] returnval = ca.createPKCS7(cryptoToken, cert, includeChain);
         if (returnval != null) {
@@ -306,7 +306,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (log.isTraceEnabled()) {
                 log.trace(">createPKCS7Rollover(" + caId + ")");
             }
-            CA ca = caSession.getCA(admin, caId);
+            CA ca = (CA) caSession.getCA(admin, caId);
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
             byte[] returnval = ca.createPKCS7Rollover(cryptoToken);
             log.trace("<createPKCS7Rollover()");
@@ -452,7 +452,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (suppliedUserData == null) {
             ca = getCAFromRequest(admin, req, false);
         } else {
-            ca = caSession.getCANoLog(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
+            ca = (CA) caSession.getCANoLog(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
         }
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             final String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
@@ -577,7 +577,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         // Get CA object and make sure it is active
         // Do not log access control to the CA here, that is logged later on when we use the CA to issue a certificate (if we get that far).
-        final CA ca = caSession.getCANoLog(admin, data.getCAId());
+        final CA ca = (CA) caSession.getCANoLog(admin, data.getCAId());
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             final String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
@@ -1121,9 +1121,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             String dn = certificateStoreSession.getCADnFromRequest(req);
 
             if (doLog) {
-                ca = caSession.getCA(admin, dn.hashCode());
+                ca = (CA) caSession.getCA(admin, dn.hashCode());
             } else {
-                ca = caSession.getCANoLog(admin, dn.hashCode());
+                ca = (CA) caSession.getCANoLog(admin, dn.hashCode());
             }
             if (ca == null) {
                 // We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
@@ -1177,9 +1177,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         final CA ca;
         if (doLog) {
-            ca = caSession.getCA(admin, data.getCAId());
+            ca = (CA) caSession.getCA(admin, data.getCAId());
         } else {
-            ca = caSession.getCANoLog(admin, data.getCAId());
+            ca = (CA) caSession.getCANoLog(admin, data.getCAId());
         }
         if (log.isDebugEnabled()) {
             log.debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
@@ -1375,7 +1375,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (log.isDebugEnabled()) {
             log.debug("Attempting to sign payload from CA with ID " + signingCaId + " with authentication token " + authenticationToken);
         }
-        CA ca = caSession.getCA(authenticationToken, signingCaId);
+        CA ca = (CA) caSession.getCA(authenticationToken, signingCaId);
         if (ca == null) {
             log.debug("CA with ID " + signingCaId + " does not exist.");
             throw new CADoesntExistsException("CA with ID " + signingCaId + " does not exist.");
