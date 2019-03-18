@@ -835,7 +835,7 @@ public class X509CATest {
 	        }
 	    }
 	}
-
+	
 	/** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
     @Test
     public void testAuthorityInformationAccessCrlExtensionWithEmptyList() throws Exception{
@@ -847,6 +847,35 @@ public class X509CATest {
         X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
         Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
         assertEquals("A list was returned without any values present.", 0, result.size());
+    }
+    
+    /**
+     * Test that CRL CDP URLs generated for this CA are correct when using partitioned CRLs  
+     */
+    @Test
+    public void shouldGenerateIndexedCrlPartitionUrls() throws Exception {
+        // Given:
+        final CryptoToken partitionedCrlCryptoToken = getNewCryptoToken();
+        X509CA partitionedCrlCa = createTestCA(partitionedCrlCryptoToken, "CN=PartitionedCrlCa");
+        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
+        //Setting use partitioned crl
+        caInfo.setUsePartitionedCrl(true);
+        caInfo.setCrlPartitions(15);
+        //We make sure to have 11 non-retired crl partitions left in use
+        caInfo.setRetiredCrlPartitions(4);
+        // When:
+        //We use a template URL with the asterisk operator to generate our indexed URLs
+        List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
+        int actualUrlListSize = actualCdpUrl.size();
+        // Then:
+        //The list should contain some CRL CDP URLs, as we have configured this
+        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
+        //We should have 11 entries in the list of URLs
+        assertEquals("Number of CRL partition URLs is incorrect.", 11, actualUrlListSize);
+        //This URL should be modified without added index number (representing the 1st partition)
+        assertEquals("CRL CDP URL is incorrect.", "http://example.com/CA.crl", actualCdpUrl.get(0));
+        //This URL should be modified with the index number '10' (representing the 11th partition)
+        assertEquals("CRL partition index in URL is incorrect.", "http://example.com/CA10.crl", actualCdpUrl.get(10));
     }
 
     /**
