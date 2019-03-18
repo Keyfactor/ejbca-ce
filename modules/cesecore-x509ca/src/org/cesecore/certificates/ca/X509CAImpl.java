@@ -203,7 +203,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public X509CAImpl() {
     }
     
-    // Public Methods
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public X509CAImpl(final X509CAInfo cainfo) {
         super(cainfo);
@@ -213,6 +212,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         data.put(POLICIES, cainfo.getPolicies());
         data.put(SUBJECTALTNAME, cainfo.getSubjectAltName());
+        data.put(CABase.CATYPE, CAInfo.CATYPE_X509);
+        data.put(VERSION, LATEST_VERSION);
         setUseAuthorityKeyIdentifier(cainfo.getUseAuthorityKeyIdentifier());
         setAuthorityKeyIdentifierCritical(cainfo.getAuthorityKeyIdentifierCritical());
         setUseCRLNumber(cainfo.getUseCRLNumber());
@@ -233,8 +234,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setCertificateAiaDefaultCaIssuerUri(cainfo.getCertificateAiaDefaultCaIssuerUri());
         setNameConstraintsPermitted(cainfo.getNameConstraintsPermitted());
         setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
-        data.put(CABase.CATYPE, CAInfo.CATYPE_X509);
-        data.put(VERSION, LATEST_VERSION);
         setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
         setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
         setCrlPartitions(cainfo.getCrlPartitions());
