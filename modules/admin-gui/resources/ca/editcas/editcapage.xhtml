@@ -791,7 +791,7 @@
 					<h:outputLabel for="checkboxuseldapdnorder" value="#{web.text.USE}" />
 				</h:panelGroup>
 
-                <h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable}">
+                <h:panelGroup rendered="#{not editCAsMBean.renderCvcAvailable and not editCAsMBean.caExternal}">
                     <h:outputLabel for="caSerialNumberOctetSize" value="#{web.text.SERIALNUMBER_OCTET_SIZE}" />
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Serial_Number_Octet_Size')}"
