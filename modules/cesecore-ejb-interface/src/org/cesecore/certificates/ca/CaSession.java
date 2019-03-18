@@ -64,7 +64,7 @@ public interface CaSession {
      * @throws CAExistsException if CA already exists
      * @throws AuthorizationDeniedException if not authorized to add CA
      */
-     void addCA(AuthenticationToken admin, CA ca) throws CAExistsException, AuthorizationDeniedException;
+     void addCA(AuthenticationToken admin, CACommon ca) throws CAExistsException, AuthorizationDeniedException;
     
     /** Changes a CA in the database. Can change mostly everything except caid, caname and subject DN. When editing a CA the CA token will usually be taken off line.
      * So you need to activate the CA token after editing, if auto-activation of the CA token is not enabled. 

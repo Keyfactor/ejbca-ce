@@ -1664,7 +1664,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (!CertTools.isCA(caCertificate)) {
             throw new CertificateImportException("Only CA certificates can be imported using this function.");
         }
-        CA ca = null;
+        CACommon ca = null;
         CAInfo cainfo = null;
 
         // Parameters common for both X509 and CVC CAs
@@ -1699,7 +1699,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         if (cainfo instanceof X509CAInfo) {
             log.info("Creating a X509 CA (process request)");
-            ca = (CA) CAFactory.INSTANCE.getX509CAImpl((X509CAInfo) cainfo);
+            ca = (CACommon) CAFactory.INSTANCE.getX509CAImpl((X509CAInfo) cainfo);
         } else if (cainfo instanceof CVCCAInfo) {
             // CVC CA is a special type of CA for EAC electronic passports
             log.info("Creating a CVC CA (process request)");
