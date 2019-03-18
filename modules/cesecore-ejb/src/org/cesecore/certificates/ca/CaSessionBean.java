@@ -170,7 +170,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public void addCA(final AuthenticationToken admin, final CA ca) throws CAExistsException, AuthorizationDeniedException {
+    public void addCA(final AuthenticationToken admin, final CACommon ca) throws CAExistsException, AuthorizationDeniedException {
         if (ca != null) {
             final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             if (!authorizationSession.isAuthorized(admin, StandardRules.CAADD.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
