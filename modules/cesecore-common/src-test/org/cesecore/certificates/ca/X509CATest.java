@@ -1184,8 +1184,8 @@ public class X509CATest {
     }
 
     /**
-     * Testing that the certificate's serial number is generated with the correct length, according to "CA serial number octet size" that is configured to CA.
-     * "CA serial number octet size" is left to be default 20 bytes here
+     * Testing that the certificate's serial number is generated with the correct length, according to "serial number octet size" that is configured to CA.
+     * "serial number octet size" is left to be default 20 bytes here
      */ 
     @Test
     public void testCaSerialNumberWithDefaultOctetSize20() throws Exception {
@@ -1209,8 +1209,8 @@ public class X509CATest {
     }
     
     /**
-     * Testing that the certificate's serial number is generated with the correct length, according to "CA serial number octet size" that is configured to CA.
-     * "CA serial number octet size" is configured to be 4 bytes here
+     * Testing that the certificate's serial number is generated with the correct length, according to "serial number octet size" that is configured to CA.
+     * "serial number octet size" is configured to be 4 bytes here
      */
     @Test
     public void testCaSerialNumberWithOctetSize4() throws Exception {
