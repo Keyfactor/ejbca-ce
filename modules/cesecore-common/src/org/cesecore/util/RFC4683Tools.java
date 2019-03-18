@@ -150,7 +150,7 @@ public final class RFC4683Tools {
         result.append(hashAlogrithmOidString);
 
         // 1. Create authority random.
-        final String authorityRandomSource = Long.toHexString(SernoGeneratorRandom.instance().getSerno().longValue());
+        final String authorityRandomSource = Long.toHexString(SernoGeneratorRandom.instance(16).getSerno().longValue());
         if (LOG.isDebugEnabled()) {
             LOG.debug("Authority random source created: " + authorityRandomSource);
         }

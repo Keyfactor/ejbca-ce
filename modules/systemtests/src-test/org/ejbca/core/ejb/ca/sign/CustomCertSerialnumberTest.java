@@ -161,7 +161,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
      log.trace(">test01CreateCustomCert()");
 
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        BigInteger serno = SernoGeneratorRandom.instance().getSerno();
+        BigInteger serno = SernoGeneratorRandom.instance(20).getSerno();
         log.debug("serno: " + serno);
 
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
@@ -268,7 +268,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         log.trace(">test04CreateCertWithCustomSNNotAllowed()");
 
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        BigInteger serno = SernoGeneratorRandom.instance().getSerno();
+        BigInteger serno = SernoGeneratorRandom.instance(8).getSerno();
         log.debug("serno: " + serno);
 
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),

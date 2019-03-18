@@ -1123,15 +1123,12 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 if (ei != null && ei.certificateSerialNumber()!=null) {
                     serno = ei.certificateSerialNumber();
                 } else {
-                    SernoGenerator instance = SernoGeneratorRandom.instance();
-                    instance.setSernoOctetSize(getSerialNumberOctetSize());
+                    SernoGenerator instance = SernoGeneratorRandom.instance(getSerialNumberOctetSize());
                     serno = instance.getSerno();
                 }
             } else {
-                SernoGenerator instance = SernoGeneratorRandom.instance();
-                instance.setSernoOctetSize(getSerialNumberOctetSize());
+                SernoGenerator instance = SernoGeneratorRandom.instance(getSerialNumberOctetSize());
                 serno = instance.getSerno();
-                
                 if ((ei != null) && (ei.certificateSerialNumber() != null)) {
                     final String msg = intres.getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override_using_normal", ei.certificateSerialNumber().toString(16));
                     log.info(msg);
