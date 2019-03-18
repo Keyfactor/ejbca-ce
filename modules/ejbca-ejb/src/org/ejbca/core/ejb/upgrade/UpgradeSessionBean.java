@@ -66,6 +66,7 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -892,7 +893,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.debug("migrateDatabase660: Upgrading CAs with approval profiles");
             for (int caId : caSession.getAllCaIds()) {
                 try {
-                    CA ca = caSession.getCAForEdit(authenticationToken, caId);
+                    CACommon ca = caSession.getCAForEdit(authenticationToken, caId);
                     int numberOfRequiredApprovals = ca.getNumOfRequiredApprovals();
                     //Verify that the CA is in need of an approval profile...
                     if (ca.getApprovalProfile() == -1 && ca.getApprovalSettings().size() > 0) {
@@ -1157,7 +1158,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 + "to using one profile per request type.");
         try {
             for (int caId : caSession.getAllCaIds()) {
-                CA ca = caSession.getCAForEdit(authenticationToken, caId);
+                CACommon ca = caSession.getCAForEdit(authenticationToken, caId);
                 //If approvals map is null or empty, then this CA may be in an unupgraded state.
                 if(ca.getApprovals() == null || ca.getApprovals().isEmpty()) {
                 	Map<ApprovalRequestType, Integer> approvals = new LinkedHashMap<>();

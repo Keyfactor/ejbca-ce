@@ -29,7 +29,7 @@ import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -70,7 +70,7 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
     @Override
     public String getKeyFingerPrint(String caname) throws CADoesntExistsException, UnsupportedEncodingException, IllegalCryptoTokenException, CryptoTokenOfflineException, NoSuchAlgorithmException {
     	CAData cadata = caSession.findByNameOrThrow(caname);
-    	CA thisCa = cadata.getCA();//getCAFromDatabase(cadata.getCaId());
+    	CACommon thisCa = cadata.getCA();//getCAFromDatabase(cadata.getCaId());
     	// Fetch keys
     	CAToken thisCAToken = thisCa.getCAToken();
     	final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(thisCAToken.getCryptoTokenId());
