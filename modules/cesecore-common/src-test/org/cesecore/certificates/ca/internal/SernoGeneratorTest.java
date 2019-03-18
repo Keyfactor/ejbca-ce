@@ -12,17 +12,21 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -40,7 +44,7 @@ public class SernoGeneratorTest {
     @Test
     public void testSernoValidationChecker() throws NoSuchAlgorithmException {
         // Default serno size 20 bytes (160 bits)
-        SernoGeneratorRandom gen = new SernoGeneratorRandom();
+        SernoGeneratorRandom gen = new SernoGeneratorRandom(20);
         BigInteger lowest = new BigInteger("0080000000000000000000000000000000000000", 16);
         BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
         assertTrue(gen.checkSernoValidity(lowest));
@@ -50,8 +54,19 @@ public class SernoGeneratorTest {
         assertFalse(gen.checkSernoValidity(toolow));
         assertFalse(gen.checkSernoValidity(toohigh));
 
+        // Default serno size 16 bytes (128 bits)
+        gen = new SernoGeneratorRandom(16);
+        lowest = new BigInteger("00800000000000000000000000000000", 16);
+        highest = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+        assertTrue(gen.checkSernoValidity(lowest));
+        assertTrue(gen.checkSernoValidity(highest));
+        toolow = new BigInteger("007FFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+        toohigh = new BigInteger("80000000000000000000000000000000", 16);
+        assertFalse(gen.checkSernoValidity(toolow));
+        assertFalse(gen.checkSernoValidity(toohigh));
+
         // Set serno size 4 bytes (32 bits)
-        gen.setSernoOctetSize(4);
+        gen = new SernoGeneratorRandom(4);
         lowest = new BigInteger("00800000", 16);
         highest = new BigInteger("7FFFFFFF", 16);
         assertTrue(gen.checkSernoValidity(lowest));
@@ -66,7 +81,7 @@ public class SernoGeneratorTest {
         assertTrue(gen.checkSernoValidity(someSerno));
         
         // Set serno size 8 bytes (64 bits)
-        gen.setSernoOctetSize(8);
+        gen = new SernoGeneratorRandom(8);
         lowest = new BigInteger("0080000000000000", 16);
         highest = new BigInteger("7FFFFFFFFFFFFFFF", 16);
         assertTrue(gen.checkSernoValidity(lowest));
@@ -86,7 +101,7 @@ public class SernoGeneratorTest {
         final int noRounds = 500;
         generateSernos(8, "SHA1PRNG", 0, noRounds);
         final long end = System.currentTimeMillis();
-        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance()).getAlgorithm();
+        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance(8)).getAlgorithm();
         assertEquals("SHA1PRNG", algo);
         BigDecimal time = BigDecimal.valueOf(end-start);
         BigDecimal div = time.divide(BigDecimal.valueOf(500000));
@@ -102,12 +117,29 @@ public class SernoGeneratorTest {
         final int noRounds = 100;
         generateSernos(4, "SHA1PRNG", 10, noRounds);
         final long end = System.currentTimeMillis();
-        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance()).getAlgorithm();
+        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance(4)).getAlgorithm();
         assertEquals("SHA1PRNG", algo);
         BigDecimal time = BigDecimal.valueOf(end-start);
         BigDecimal div = time.divide(BigDecimal.valueOf(500000));
         log.info("Creating "+noRounds*1000+" 4 octet serNos with "+algo+" took "+(end-start)+" ms, thats "+div+" ms per serno");
     }
+    
+    /** Test certificate serialNumber generation with 20 octets size (160 bits). 
+     * Using 160 bit serial numbers should not product any collisions for 500.000 serials
+     */
+    @Test
+    public void testGenerateSernos20OctetsSHA1PRNG() throws Exception {
+        final long start = System.currentTimeMillis();
+        final int noRounds = 500;
+        generateSernos(20, "SHA1PRNG", 0, noRounds);
+        final long end = System.currentTimeMillis();
+        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance(20)).getAlgorithm();
+        assertEquals("SHA1PRNG", algo);
+        BigDecimal time = BigDecimal.valueOf(end-start);
+        BigDecimal div = time.divide(BigDecimal.valueOf(500000));
+        log.info("Creating "+noRounds*1000+" 8 octet serNos with "+algo+" took "+(end-start)+" ms, thats "+div+" ms per serno");
+    }
+
 
     /** Try fetching a random number generator of type "defaultstrong". 
      * We will not make actual tests with this, since on Tomas's Linux laptop (on real HW) 
@@ -119,7 +151,7 @@ public class SernoGeneratorTest {
         try {
             generateSernos(4, "defaultstrong", 0, 0);
             // If running on JDK >= 8 we will come here
-            final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance()).getAlgorithm();
+            final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance(4)).getAlgorithm();
             assertEquals("NativePRNGBlocking", algo);        
         } catch (IllegalStateException e) {
             // if running on JDK < 8 this is a valid exception
@@ -143,7 +175,7 @@ public class SernoGeneratorTest {
         final int noRounds = 500;
         generateSernos(8, "default", 0, noRounds);
         final long end = System.currentTimeMillis();
-        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance()).getAlgorithm();
+        final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance(8)).getAlgorithm();
         assertEquals("NativePRNG", algo);            
         BigDecimal time = BigDecimal.valueOf(end-start);
         BigDecimal div = time.divide(BigDecimal.valueOf(500000));
@@ -152,8 +184,7 @@ public class SernoGeneratorTest {
     
     private void generateSernos(final int nrOctets, final String algorithm, final int maxDups, final int roundsOf1000) throws Exception {
         // this will actually create a default RNG first (depending on configuration in cesecore.properties), which will be changed by setAlgorithm below
-        SernoGenerator gen = SernoGeneratorRandom.instance();
-        gen.setSernoOctetSize(nrOctets);
+        SernoGenerator gen = SernoGeneratorRandom.instance(nrOctets);
         gen.setAlgorithm(algorithm);
         HashMap<String, String> map = new HashMap<String, String>(100000);
         String hex = null;
@@ -166,6 +197,11 @@ public class SernoGeneratorTest {
                 //long end = System.currentTimeMillis();
                 //log.info("Generated one serno took (ms): "+(end-start));
                 
+                // Check that it generates the specified number of ASN.1 encoded integers
+                // The length to check is nrOctets+2 since it is encoded as "tag+length+value", where tag and length are 1 octet each
+                ASN1Integer asn1 = new ASN1Integer(bi);
+                assertEquals("Encoded ASN.1 integer length should be nrOctets + 2 (tag+length+value)", nrOctets+2, asn1.getEncoded().length);
+
                 //hex = Hex.encode(serno);
                 hex = bi.toString(16);
 
@@ -183,5 +219,66 @@ public class SernoGeneratorTest {
 //        log.info("Map now contains " + map.size() + " serial numbers. Last one: "+hex);
 //        log.info("Number of duplicates: "+duplicates);
     }
+
+    public static Throwable threadException = null;
+    @Test
+    public void testMultiThreadedSernoGeneration() throws Exception {
+        Thread no1 = new Thread(new SernoTester(4),"4 octets"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no2 = new Thread(new SernoTester(8),"8 octets"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no3 = new Thread(new SernoTester(12),"12 octets"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no4 = new Thread(new SernoTester(16),"16 octets"); // NOPMD we want to use thread here, it's not a JEE app
+        Thread no5 = new Thread(new SernoTester(20),"20 octets"); // NOPMD we want to use thread here, it's not a JEE app
+        CacheExceptionHandler handler = new CacheExceptionHandler();
+        no1.setUncaughtExceptionHandler(handler);
+        no2.setUncaughtExceptionHandler(handler);
+        no3.setUncaughtExceptionHandler(handler);
+        no4.setUncaughtExceptionHandler(handler);
+        no5.setUncaughtExceptionHandler(handler);
+        long start = new Date().getTime();
+        no1.start();
+        log.info("Started no1");
+        no2.start();
+        log.info("Started no2");
+        no3.start();
+        log.info("Started no3");
+        no4.start();
+        log.info("Started no4");
+        no5.start();
+        log.info("Started no5");
+        no1.join();
+        no2.join();
+        no3.join();
+        no4.join();
+        no5.join();
+        long end = new Date().getTime();
+        log.info("Time consumed: "+(end-start));
+        assertNull(threadException != null?threadException.getMessage():"null", threadException);
+    }
+
+    private static class SernoTester implements Runnable { // NOPMD, this is not a JEE app, only a test
+        private int noOctets;
+        public SernoTester(int noOctets) {
+            this.noOctets = noOctets;
+        }
+        public void run() {
+            for (int i=0; i<100000;i++) {
+                SernoGenerator gen = SernoGeneratorRandom.instance(noOctets);
+                BigInteger bi = gen.getSerno();
+                ASN1Integer asn1 = new ASN1Integer(bi);
+                try {
+                    assertEquals("Multi-threaded test encoded length failure, is the wrong generator returned?", noOctets+2, asn1.getEncoded().length);
+                } catch (IOException e) {
+                    log.error("IOEsception encoding ASN.1: ", e);
+                    fail("IOEsception encoding ASN.1: " + e.getMessage());
+                }
+            }
+        }
+    }
+    private static class CacheExceptionHandler implements Thread.UncaughtExceptionHandler {
+        public void uncaughtException(Thread t, Throwable e) { // NOPMD, this is not a JEE app, only a test
+            SernoGeneratorTest.threadException = e;
+        }
+    }
+
 
 }
