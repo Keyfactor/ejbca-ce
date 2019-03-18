@@ -75,14 +75,6 @@ public interface CA extends CACommon {
 
     void setCRLOverlapTime(long crlOverlapTime);
 
-    Collection<Integer> getCRLPublishers();
-
-    void setCRLPublishers(Collection<Integer> crlpublishers);
-
-    Collection<Integer> getValidators();
-
-    void setValidators(Collection<Integer> validators);
-
     boolean getKeepExpiredCertsOnCRL();
 
     void setKeepExpiredCertsOnCRL(boolean keepexpiredcertsoncrl);
@@ -111,58 +103,6 @@ public interface CA extends CACommon {
 
     /** whether revocations for non existing entry accepted */
     boolean isAcceptRevocationNonExistingEntry();
-
-    
-    /**
-     * @return A 1:1 mapping between Approval Action:Approval Profile ID
-     */
-    Map<ApprovalRequestType, Integer> getApprovals();
-
-    void setApprovals(Map<ApprovalRequestType, Integer> approvals);
-
-    /**
-     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
-     * default none and never null.
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    Collection<Integer> getApprovalSettings();
-
-    /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    void setApprovalSettings(Collection<Integer> approvalSettings);
-
-    /**
-     * @return the number of different administrators that needs to approve an action, default 1.
-     * @deprecated since 6.6.0, use the appropriate approval profile instead.
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    int getNumOfRequiredApprovals();
-
-    /**
-     * The number of different administrators that needs to approve
-     * @deprecated since 6.6.0, use the appropriate approval profile instead.
-     * Needed in order to be able to upgrade from 6.5 and earlier
-     */
-    void setNumOfRequiredApprovals(int numOfReqApprovals);
-
-    /**
-     * @return the id of the approval profile. Defult -1 (= none)
-     *
-     * @deprecated since 6.8.0, see getApprovals()
-     */
-    int getApprovalProfile();
-
-    /**
-     * The id of the approval profile.
-     *
-     * @deprecated since 6.8.0, see setApprovals()
-     */
-    void setApprovalProfile(int approvalProfileID);
-    
     
     // Methods used with extended services
 
@@ -197,12 +137,6 @@ public interface CA extends CACommon {
      * @param cceConfig containing a list of available custom certificate extensions
      */
     void initExtendedService(CryptoToken cryptoToken, int type, CA ca, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception;
-    
-    /**
-     * Method to upgrade new (or existing externacaservices) This method needs to be called outside the regular upgrade since the CA isn't
-     * instantiated in the regular upgrade.
-     */
-    boolean upgradeExtendedCAServices();
     
     /**
      * General encryption method used to encrypt using a CA

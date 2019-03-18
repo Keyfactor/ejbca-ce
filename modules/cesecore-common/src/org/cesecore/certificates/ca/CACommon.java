@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -65,6 +66,10 @@ public interface CACommon extends IUpgradeableData {
     void setStatus(int status);
 
     int getCertificateProfileId();
+    
+    Collection<Integer> getValidators();
+
+    void setValidators(Collection<Integer> validators);
     
     long getValidity();
 
@@ -145,6 +150,13 @@ public interface CACommon extends IUpgradeableData {
     List<Certificate> getRolloverCertificateChain();
 
     void clearRolloverCertificateChain();
+    
+    /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
+    void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
+            AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException;
+    
+    /** @return the CA latest link certificate or null */
+    byte[] getLatestLinkCertificate();
 
     /** Returns the CAs certificate, or null if no CA-certificates exist. */
     Certificate getCACertificate();
@@ -163,10 +175,69 @@ public interface CACommon extends IUpgradeableData {
      */
     void updateUninitializedCA(CAInfo cainfo);
     
-    /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
-    void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
-            AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException;
+    
+    Collection<Integer> getCRLPublishers();
+    
+    void setCRLPublishers(Collection<Integer> crlpublishers);
+    
+    /**
+     * @return A 1:1 mapping between Approval Action:Approval Profile ID
+     */
+    Map<ApprovalRequestType, Integer> getApprovals();
 
-    /** @return the CA latest link certificate or null */
-    byte[] getLatestLinkCertificate();
+    void setApprovals(Map<ApprovalRequestType, Integer> approvals);
+
+    /**
+     * @return a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
+     * default none and never null.
+     *
+     * @deprecated since 6.8.0, see getApprovals()
+     */
+    Collection<Integer> getApprovalSettings();
+
+    /**
+     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
+     *
+     * @deprecated since 6.8.0, see setApprovals()
+     */
+    void setApprovalSettings(Collection<Integer> approvalSettings);
+
+    /**
+     * @return the number of different administrators that needs to approve an action, default 1.
+     * @deprecated since 6.6.0, use the appropriate approval profile instead.
+     * Needed in order to be able to upgrade from 6.5 and earlier
+     */
+    int getNumOfRequiredApprovals();
+
+    /**
+     * The number of different administrators that needs to approve
+     * @deprecated since 6.6.0, use the appropriate approval profile instead.
+     * Needed in order to be able to upgrade from 6.5 and earlier
+     */
+    void setNumOfRequiredApprovals(int numOfReqApprovals);
+
+    /**
+     * @return the id of the approval profile. Defult -1 (= none)
+     *
+     * @deprecated since 6.8.0, see getApprovals()
+     */
+    int getApprovalProfile();
+
+    /**
+     * The id of the approval profile.
+     *
+     * @deprecated since 6.8.0, see setApprovals()
+     */
+    void setApprovalProfile(int approvalProfileID);
+    
+    /**
+     * Method to upgrade new (or existing externacaservices) This method needs to be called outside the regular upgrade since the CA isn't
+     * instantiated in the regular upgrade.
+     */
+    boolean upgradeExtendedCAServices();
+    
+    /**
+     * Implementation of UpgradableDataHashMap function upgrade.
+     */
+    void upgrade();
 }
