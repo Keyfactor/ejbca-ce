@@ -26,19 +26,36 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 
 /**
- * Implements a singleton serial number generator using SecureRandom. This generator generates random 8 octec (64 bits) serial numbers.
+ * This is a "constant octet size random serial number generator".
+ * (note that no defined level of entropy is defined for this generator, although the entropy will be easily calculated according to the below rules)
  * 
- * RFC3280 defines serialNumber be positive INTEGER, and X.690 defines INTEGER consist of one or more octets. X.690 also defines as follows:
+ * The purpose of this certificate serial number generator is to generate random serial numbers with a fixed octet size. If you specify the octet size 
+ * to be 8 octets, the serial number will be 8 octets, if you specify 20 octets it will be 20 octets, etc.
+ * To achieve this the following process is performed:
  * 
- * If the contents octets of an integer value encoding consist of more than one octet, then the bits of the first octet and bit 8 of the second octet:
- * a) shall not all be ones; and b) shall not all be zero.
+ * - The specified number of octets is retrieved from a CSPRNG (SecureRandom).
+ * - The octets are converted into a positive BigInteger (serial numbers are ASN.1 INTEGERs) by taking the absolute value of the BigInteger 
+ *   created from the random bytes 
+ * - If this integer does not fulfill requirements and limitations specified by RFC5280 and X.690, the serial number is discarded
+ * - This process is repeated with new octets from the CSPRNG until an integer fulfilling the tests has been retrieved.
+ * -- This integer is returned as the serial number from the generator 
  * 
- * Therefore, minimum 8 octets value is 0080000000000000 and maximum value is 7FFFFFFFFFFFFFFF."
+ * RFC 5280 defines serialNumber be a positive INTEGER.
  * 
- * Therefore, minimum 4 octets value is 00800000 and maximum value is 7FFFFFFF."
+ * Simply using an integer conforming to RFC5280 will lead to variable length encoding of the serial number in the certificate. 
+ * If the (random) integer 3 is retrieved from the CSPRNG it will be encoded as '03' and the number 65535 as 'FFFF', etc. Also if the number is too 
+ * large, ASN.1 integers being in two-complement representation, it will be encoded as 9 bytes.
+ * 
+ * To achieve fixed octet length serials we apply restrictions according to X.690. X.690 defines that INTEGER consist of one or more octets,
+ * and also defines as follows:
+ *   If the contents octets of an integer value encoding consist of more than one octet, then the bits of the first octet and bit 8 of the second octet:
+ *   a) shall not all be ones; and b) shall not all be zero.
+ * This sets minimum and maximum boundaries for the integer.
+ *   Minimum 4 octets value is 00800000 and maximum value is 7FFFFFFF."
+ *   Minimum 8 octets value is 0080000000000000 and maximum value is 7FFFFFFFFFFFFFFF."
+ * Simply extend with '00' and 'FF' for other octet sizes. 
  * 
  * X.690:
- * 
  * 8.3 Encoding of an integer value 8.3.1 The encoding of an integer value shall be primitive. The contents octets shall consist of one or more
  * octets. 8.3.2 If the contents octets of an integer value encoding consist of more than one octet, then the bits of the first octet and bit 8 of the
  * second octet: a) shall not all be ones; and b) shall not all be zero. NOTE – These rules ensure that an integer value is always encoded in the

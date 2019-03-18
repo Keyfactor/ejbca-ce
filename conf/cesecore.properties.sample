@@ -57,6 +57,7 @@
 
 # The default length in octets of certificate serial numbers configured when creating new CAs. 
 # Note: since EJBCA 7.0.1 this only affects the default value of this field, which is editable in the CA configuration 
+# Before selecting a value, see the documentation for a complete description of how serial numbers are generated.
 # Possible values: between 4 and 20 
 # Default: 20 
 #ca.serialnumberoctetsize=20 

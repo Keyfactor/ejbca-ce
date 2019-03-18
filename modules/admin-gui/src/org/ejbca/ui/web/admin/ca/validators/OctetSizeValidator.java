@@ -22,7 +22,7 @@ import javax.faces.validator.ValidatorException;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Validator used in validating CA Serial Number Octet Size field.
+ * Validator used in validating Serial Number Octet Size field.
  * 
  * @version $Id$
  *
@@ -44,7 +44,7 @@ public class OctetSizeValidator implements Validator {
         }
         
         if (!isValid) {
-            FacesMessage msg = new FacesMessage("CA Serial Number Octet Size must be a number between 4 and 20");
+            FacesMessage msg = new FacesMessage("Serial Number Octet Size must be a number between 4 and 20");
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(msg);
         }
