@@ -627,6 +627,7 @@
                 <include name="cesecore-common.jar" />
                 <include name="cesecore-entity.jar" />
         		<include name="cesecore-x509ca.jar" />
+        		<include name="cesecore-cvcca.jar" />
         		<include name="ejbca-extensions.jar" />
                 <include name="ejbca-properties.jar" />
                 <include name="log4jconfig.jar" unless="jbosseap6-specials"/>
@@ -891,7 +892,7 @@
     <!-- ======================================================================= -->
 	<property name="edition" value="ce"/> <!-- ce if edition not set on command line with -Dedition=xyz" -->
 	
-	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dedition=ee or ce (default)">
+	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dedition=ee or ce (default) -Dlimited=ra or va">
 		<antcall target="clean" />
 		<!-- Always retrieve current version from Confluence -->
 		<antcall target="doc" inheritAll="true">
@@ -922,6 +923,32 @@
         <condition property="edition.is.ee" value="true">
             <equals arg1="${edition}" arg2="ee" casesensitive="true"/>
         </condition>
+		
+        <condition property="build.contains.va" value="true">
+            <equals arg1="${limited}" arg2="va" casesensitive="false"/>
+        </condition>
+		
+        <condition property="build.contains.ra" value="true">
+                <equals arg1="${limited}" arg2="ra" casesensitive="false"/>
+        </condition>
+		
+        <condition property="build.contains.cesecore-x509ca" value="true">
+            <or>
+                <not><equals arg1="${limited}" arg2="ra" casesensitive="false"/></not>
+            	<not><equals arg1="${limited}" arg2="va" casesensitive="false"/></not>
+            </or>
+        </condition>
+        
+        <condition property="build.contains.cesecore-cvcca" value="true">
+        	<and>
+        		<equals arg1="${edition}" arg2="ee" casesensitive="true"/>
+                <or>
+                	<not><equals arg1="${limited}" arg2="ra" casesensitive="false"/></not>
+                	<not><equals arg1="${limited}" arg2="va" casesensitive="false"/></not>
+                </or>
+        	</and>	
+        </condition>
+		
 		<zip destfile="../${basezipfile}.zip">
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700" > 
 		    	<include name="**/**" />
@@ -985,7 +1012,8 @@
                 <exclude unless="edition.is.ee" name="modules/cmpProxy/**"/>
                 <exclude unless="edition.is.ee" name="modules/ct/**"/>
                 <exclude unless="edition.is.ee" name="lib/ct/**"/>
-		    	<exclude unless="edition.is.ee" name="modules/cesecore-cvcca/**"/>
+		    	<exclude unless="build.contains.cesecore-cvcca" name="modules/cesecore-cvcca/**"/>
+		    	<exclude unless="build.contains.cesecore-x509ca" name="modules/cesecore-x509ca/**"/>
                 <exclude unless="edition.is.ee" name="modules/peerconnector/**"/>
                 <exclude unless="edition.is.ee" name="modules/peerconnector/src-interface/org/ejbca/peerconnector/**"/>
                 <exclude unless="edition.is.ee" name="modules/peerconnector/src-ejb/org/ejbca/peerconnector/**"/>
@@ -1017,6 +1045,9 @@
                 <exclude unless="edition.is.ee" name="lib/ext/swagger docs/**"/>
                 <exclude unless="edition.is.ee" name="lib/ext/swagger/**"/>
                 <exclude unless="edition.is.ee" name="modules/plugins-ee/**"/>
+		    	
+		    	<exclude unless="build.contains.ra" name="modules/ra-gui/**"/>
+		    	<exclude unless="build.contains.va" name="modules/va/**"/>
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
