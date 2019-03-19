@@ -256,6 +256,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         final StringBuilder sb = new StringBuilder();
         sb.append(intres.getLocalizedMessage(messageKey, params));
         if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
+            sb.append(' ');
             sb.append(intres.getLocalizedMessage("store.crlpartition", crlPartitionIndex));
         }
         return sb.toString();

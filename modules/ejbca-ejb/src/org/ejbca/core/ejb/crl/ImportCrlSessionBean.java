@@ -85,6 +85,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
             log.trace("Delta CRL:  " + isDeltaCrl);
             log.trace("IssuerDn:   " + issuerDn);
             log.trace("CRL Number: " + downloadedCrlNumber);
+            // TODO uncomment in ECA-7961
 //            if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
 //                log.trace("CRL Partition: " + crlPartitionIndex);
 //            }
