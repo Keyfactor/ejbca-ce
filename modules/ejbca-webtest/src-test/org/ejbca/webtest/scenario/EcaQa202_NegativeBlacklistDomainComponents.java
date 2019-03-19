@@ -18,8 +18,8 @@ import java.util.Collections;
 import java.util.Date;
 
 /**
- * Asserts whether the blacklist validator permits a site based on the
- * blacklist.txt file.
+ * Asserts whether the blacklist validator denies a site based on the
+ * blacklist.txt file using domain components.
  *
  */
 
