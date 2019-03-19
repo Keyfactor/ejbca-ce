@@ -77,6 +77,16 @@
     	<mkdir dir="${ejbca-ejb-cli.build.dir}" />
         <javac srcdir="${ejbca-ejb-cli.src.dir}" destdir="${ejbca-ejb-cli.build.dir}" debug="on" includeantruntime="no"
         	encoding="UTF-8" target="${java.target.version}">
+        	<!-- List of subcommands that must be hidden when we are running on limited ejbca (va/ra) installation -->
+			<exclude name="org/ejbca/ui/cli/hardtoken/**/*.java" unless="running.full.ejbca"/>
+            <exclude name="org/ejbca/ui/cli/config/est/**/*.java" unless="running.full.ejbca"/>
+            <exclude name="org/ejbca/ui/cli/config/cmp/**/*.java" unless="running.full.ejbca"/>
+            <exclude name="org/ejbca/ui/cli/ca/**/CaEditCaCommand.java" unless="running.full.ejbca"/>
+            <exclude name="org/ejbca/ui/cli/ca/**/CaRenewCACommand.java" unless="running.full.ejbca"/>
+            <exclude name="org/ejbca/ui/cli/ca/**/CaDeactivateCACommand.java" unless="running.full.ejbca"/>
+            <exclude name="org/ejbca/ui/cli/ca/**/CaInitCommand.java" unless="running.full.ejbca"/>
+            <exclude name="org/ejbca/ui/cli/ca/**/CARepublishCommand.java.java" unless="running.full.ejbca"/>
+			<!-- End of the list of subcommands that must be hidden when we are running on limited ejbca (va/ra) installation -->
         	<classpath>
         		<path refid="compile.classpath"/>
         		<path refid="lib.jee.classpath"/>
