@@ -110,6 +110,7 @@ CREATE TABLE CRLData (
     fingerprint TEXT NOT NULL,
     base64Crl TEXT NOT NULL,
     cAFingerprint TEXT NOT NULL,
+    crlPartitionIndex INT4 NOT NULL DEFAULT 0,
     cRLNumber INT4 NOT NULL,
     deltaCRLIndicator INT4 NOT NULL,
     issuerDN TEXT NOT NULL,

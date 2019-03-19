@@ -47,6 +47,8 @@ public class CRLData extends ProtectedData implements Serializable {
 
     private static final Logger log = Logger.getLogger(CRLData.class);
 
+    private static final int LATEST_PROTECT_VERSON = 2;
+
     private int cRLNumber;
     private int deltaCRLIndicator;
     private int crlPartitionIndex; // Since EJBCA 7.1.0
@@ -343,7 +345,7 @@ public class CRLData extends ProtectedData implements Serializable {
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 2;
+        return LATEST_PROTECT_VERSON;
     }
 
     @PrePersist
