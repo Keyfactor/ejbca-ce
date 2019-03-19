@@ -518,7 +518,11 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     } else {
                         if (!revokedCertInfo.isRevocationDateSet()) {
                             revokedCertInfo.setRevocationDate(now);
-                            // FIXME should use noConflictCertificateStoreSession! (or can we skip this code? when can isRevocationDateSet return false?)
+                            /*
+                             * FIXME should use noConflictCertificateStoreSession (add a new method). the method there should also update to database. 
+                             * (or can we skip this code? when can isRevocationDateSet return false?)
+                             * ECA-7992
+                             */
 //                            noConflictCertificateStoreSession.setRevocationDate(revokedCertInfo.getCertificateFingerprint(), now);
                             CertificateData certdata = certificateDataSession.findByFingerprint(revokedCertInfo.getCertificateFingerprint());
                             if (certdata == null) {
@@ -526,7 +530,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             }
                             // Set revocation date in the database
                             certdata.setRevocationDate(now);
-                            // FIXME update to database!
                         }
                     }
                 }
