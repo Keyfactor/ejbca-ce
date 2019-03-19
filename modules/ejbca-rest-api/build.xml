@@ -57,6 +57,7 @@
 		<path refid="lib.test.classpath"/>
         <path refid="lib.resteasy-jaxrs.classpath"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
+        <path location="${mod.cesecore-cvcca.lib}"/>
 	</path>
 
 	<path id="test.classpath">

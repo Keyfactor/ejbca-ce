@@ -71,6 +71,7 @@
 		<path refid="lib.jee-client.classpath"/>
         <path refid="systemtests.classpath.nojee"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
+        <path location="${mod.cesecore-cvcca.lib}"/>
 		<pathelement path="${clover.jar}"/>
 	</path>
 

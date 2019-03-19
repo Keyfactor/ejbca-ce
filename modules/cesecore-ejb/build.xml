@@ -35,6 +35,7 @@
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.commons-codec.classpath"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
+        <path location="${mod.cesecore-cvcca.lib}"/>
 	</path>
 
 	<target name="jar" depends="with.clover">
