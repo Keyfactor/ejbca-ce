@@ -31,6 +31,9 @@ public class ExtentReportCreator {
     private static ExtentTest testCase;
     private static String currTest;
     private static WebDriver browser;
+    private static String ReportDir
+            = ( System.getProperty("user.dir").contains("ejbca-webtest") )
+            ? System.getProperty("user.dir") + "/../.." : System.getProperty("user.dir");
 
     //Setter method for WebDriver
     public static void setBrowser(WebDriver browser) {
@@ -46,11 +49,10 @@ public class ExtentReportCreator {
     @BeforeClass
     public static void setUp() throws IOException {
         extent = new ExtentReports();
-
-        htmlReporter = new ExtentHtmlReporter(System.getProperty("user.dir") +
-                "/reports/QaEjbcaTestReport.html");
-        extent.attachReporter(htmlReporter);
+        htmlReporter = new ExtentHtmlReporter(
+                ReportDir + "/reports/QaEjbcaTestReport.html");
         htmlReporter.setAppendExisting(true);
+        extent.attachReporter(htmlReporter);
 
         htmlReporter.config().setDocumentTitle("EJBCA QA Test Report");
         htmlReporter.config().setReportName("EJBCA Test Results!");
@@ -131,7 +133,7 @@ public class ExtentReportCreator {
 
         //Creates a folder for the screenshot.
         private File getDestinationFile(Description description) {
-            String userDirectory = "reports/images/";
+            String userDirectory = ReportDir + "/reports/images/";
             String date = getDateTime();
             String fileName = description.getDisplayName() + "_" + date + ".png";
             //add date of today

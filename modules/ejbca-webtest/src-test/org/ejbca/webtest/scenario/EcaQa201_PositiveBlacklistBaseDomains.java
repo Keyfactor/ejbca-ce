@@ -19,7 +19,7 @@ import java.util.Date;
 
 /**
  * Asserts whether the blacklist validator permits a site based on the
- * blacklist.txt file.
+ * blacklist.txt file using base domains.
  *
  */
 
@@ -271,6 +271,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     public void stepR_UploadCSRCertificate() {
         raWebHelper.clickUploadCsrButton();
         raWebHelper.assertApproveMessageHasText("");
+
     }
 
 
