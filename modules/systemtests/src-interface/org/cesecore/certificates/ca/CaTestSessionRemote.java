@@ -26,8 +26,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 public interface CaTestSessionRemote {
 
     /** @see org.cesecore.certificates.ca.CaSessionLocal#getCA(AuthenticationToken, int) */
-    public CACommon getCA(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
+    public CA getCA(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
   
     /** @see org.cesecore.certificates.ca.CaSessionLocal#getCA(AuthenticationToken, String) */
-    public CACommon getCA(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+    public CA getCA(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 }
