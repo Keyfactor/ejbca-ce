@@ -28,7 +28,7 @@
 		<path refid="lib.guava.classpath"/>
 	</path>
 
-	<!-- The buildservicemanifest needs additional classes in order to run. 
+	<!-- The buildservicemanifest needs additional classes in order to run.
 	     These are not included in the javac classpath for cesecore-common to ensure that cesecore-common does not depends on that -->
 	<path id="manifest.classpath">
 		<path refid="compile.classpath"/>
@@ -49,6 +49,7 @@
 		<path refid="lib.commons-codec.classpath"/>
 		<path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
 		<path location="${mod.cesecore-x509ca.lib}"/>
+        <path location="${mod.cesecore-cvcca.lib}"/>
 	</path>
 
 	<target name="jar" depends="with.clover">
