@@ -71,6 +71,8 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     private static final Logger log = Logger.getLogger(CertificateData.class);
 
+    private static final int LATEST_PROTECT_VERSON = 5;
+
     private String issuerDN;
     private String subjectDN;
     private String subjectAltName = null;  // @since EJBCA 6.6.0
@@ -739,7 +741,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 5;
+        return LATEST_PROTECT_VERSON;
     }
 
     @PrePersist
