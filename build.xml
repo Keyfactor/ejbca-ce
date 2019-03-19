@@ -891,6 +891,14 @@
 	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->
     <!-- ======================================================================= -->
 	<property name="edition" value="ce"/> <!-- ce if edition not set on command line with -Dedition=xyz" -->
+	<property name="variant" value=""/> <!-- If we are running on a full EJBCA instance! -->
+	
+    <condition property="running.full.ejbca" value="true">
+         <and>
+            <not><equals arg1="${variant}" arg2="ra" casesensitive="false"/></not>
+            <not><equals arg1="${variant}" arg2="va" casesensitive="false"/></not>
+         </and>
+    </condition>	
 	
 	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dedition=ee or ce (default) -Dlimited=ra or va">
 		<antcall target="clean" />
