@@ -61,7 +61,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -1563,15 +1562,23 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     /** @return true if we are running an EJBCA build that has CA functionality enabled. */
     @Override
     public boolean isRunningBuildWithCA() {
-        boolean isWithCA = true;
-        return isWithCA;
+        try {
+            Class.forName("org.cesecore.certificates.ca.X509CAImpl");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
     
     /** @return true if we are running an EJBCA build that has RA functionality enabled. */
     @Override
     public boolean isRunningBuildWithRA() {
-        boolean isWithRA = true;
-        return isWithRA;
+        try {
+            Class.forName("org.cesecore.keybind.impl.OcspKeyBinding");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
     
     @Override
