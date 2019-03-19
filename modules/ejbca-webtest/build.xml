@@ -16,7 +16,7 @@
 	<property name="webtest.resources.dir" location="${webtest.dir}/resources"/>
 	<property name="webtest.conf.dir" location="${webtest.dir}/conf"/>
 	<property name="webtest.lib.webtest" value="${webtest.dir}/../../lib/ext/webtest"/>
-	<property name="reports.dir" value="${webtest.dir}/reports"/>
+	<property name="reports.dir" value="${webtest.dir}/../../reports"/>
 	
 	<path id="compile.classpath">
 		<path refid="lib.commons-lang.classpath"/>
