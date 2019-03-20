@@ -13,7 +13,7 @@ ENV ANT_HOME /opt/ant/apache-ant-1.9.8
 ENV PATH="${PATH}:${HOME}/bin:${ANT_HOME}/bin"
 ENV ANT_OPTS="-Xms1024M -Xmx1024M"
 ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=256m -XX:PermSize=1024m -XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true"
-ENV EJBCA_HOME="/app"
+ENV EJBCA_HOME="/app/ejbca"
 
 RUN cd $HOME \
 	&& curl -O http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.8-bin.tar.gz \
