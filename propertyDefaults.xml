@@ -163,6 +163,7 @@
 	<property name="httpserver.external.fqdn" value="" />
 	<property name="target.hostname" value="localhost" />
 	<property name="target.port.http" value="8080" />
+	<property name="tests.jvmargs" value="" />
 	<!-- By default, we connect directly to EJBCA in the CMP tests, but it is also
 	     possible override those variables to connect via the CMP proxy -->
 	<property name="httpCmpProxyURL" value="http://${target.hostname}:${target.port.http}/ejbca/publicweb/cmp"/>
