@@ -28,10 +28,13 @@ public enum CAFactory {
     
     private CAFactory() {
         try {
-            ServiceLoader<CACommon> x509CALoader = ServiceLoader.load(CACommon.class);
-            for (CACommon x509ca : x509CALoader) {
-                caImplMap.put(x509ca.getCaImplType(), x509ca);
+            ServiceLoader<CACommon> cALoader = ServiceLoader.load(CACommon.class);
+            for (CACommon ca : cALoader) {
+                caImplMap.put(ca.getCaImplType(), ca);
             }
+            if (caImplMap.isEmpty()) {
+                Logger.getLogger(CAFactory.class).error("No CA implementations found by ServieLoader");
+            } 
         } catch (Exception e) {
             Logger.getLogger(CAFactory.class).error("Could not construct CA implementations", e);
             throw e;
