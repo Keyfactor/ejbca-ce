@@ -170,7 +170,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= EDITPUBLISHERS_LINK %>"><%=ejbcawebbean.getText("NAV_PUBLISHERS") %></a></li>
 <% } %>
 <%
-     if(ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWVALIDATOR)) {
+     if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWVALIDATOR)) {
         if(!caheaderprinted) {
           out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
            caheaderprinted=true;
@@ -188,7 +188,7 @@ org.ejbca.util.HTMLTools
    // RA FUNCTIONS
 %>
 <%
-      if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_CREATEENDENTITY)){ 
+      if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_CREATEENDENTITY)){ 
          if(!raheaderprinted){
            out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
            raheaderprinted=true;
@@ -196,7 +196,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= RA_ADDENDENTITYLINK %>"><%=ejbcawebbean.getText("NAV_ADDENDENTITY") %></a></li>
 <% } %>
 <%
-      if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){
+      if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES)){
          if(!raheaderprinted){
            out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>");
            raheaderprinted=true;
@@ -204,7 +204,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= RA_EDITPROFILESLINK %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
 <% } %>
 <%
-      if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
+      if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_VIEWENDENTITY)){ 
             if(!raheaderprinted){
               out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
               raheaderprinted=true;
@@ -212,7 +212,7 @@ org.ejbca.util.HTMLTools
 				<li><a href="<%= RA_LISTENDENTITIESLINK %>"><%=ejbcawebbean.getText("NAV_SEARCHENDENTITIES") %></a></li>
 <% } %>
 <%
-     if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(RAEDITUSERDATASOURCES_RESOURCE)){ 
+     if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(RAEDITUSERDATASOURCES_RESOURCE)){ 
          if(!raheaderprinted){
              out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+ "</strong><ul>");
 			 raheaderprinted=true;
@@ -266,7 +266,7 @@ org.ejbca.util.HTMLTools
 
     // If authorized to view approval profiles then display related links.
 
-	    if(ejbcawebbean.isRunningBuildWithRA() && ejbcawebbean.isAuthorizedNoLogSilent(APPROVALPROFILEVIEW_RESOURCE)){
+	    if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(APPROVALPROFILEVIEW_RESOURCE)){
 			logheaderprinted = true;%>
 		<li id="cat4" class="section"><strong><%=ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS") %></strong>
 			<ul>
@@ -277,7 +277,7 @@ org.ejbca.util.HTMLTools
          // If authorized to approve data show related links
    	  boolean approveendentity = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVEENDENTITY);
 	  boolean approvecaaction = ejbcawebbean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_APPROVECAACTION);
-	  if(ejbcawebbean.isRunningBuildWithRA() && approveendentity || approvecaaction){
+	  if(ejbcawebbean.isRunningBuildWithCA() && approveendentity || approvecaaction){
            if(!logheaderprinted){
              out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
              logheaderprinted=true;

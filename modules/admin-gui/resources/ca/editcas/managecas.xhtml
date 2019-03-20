@@ -69,7 +69,7 @@
 										action="#{manageCAsMBean.deleteCA()}"
 										rendered="#{manageCAsMBean.canRemoveResource}" />
 						</h:panelGroup>
-						<h:panelGroup>
+						<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
 								<h:commandButton 
 										id="buttonimportca"
 										value="#{manageCAsMBean.importKeystoreText}"
@@ -89,7 +89,7 @@
 			</h:panelGrid>
 
 			<h:panelGrid class="actions" columns="1">
-				<h:panelGroup>
+				<h:panelGroup rendered="#{ejbcawebbean.runningBuildWithCA}">
 					<h:commandButton 
 							id="buttonsignrequest"
 							value="#{web.text.CREATEAUTHCSR}"

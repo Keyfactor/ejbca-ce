@@ -72,7 +72,8 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isAuthorizedToViewValidators() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_VIEWVALIDATOR);
+        return getEjbcaWebBean().isRunningBuildWithCA()
+                && authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_VIEWVALIDATOR);
     }
     
     public boolean isAuthorizedToViewCAHeader() {
@@ -103,7 +104,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
     
     public boolean isAuthorizedToViewRAHeader() {
-        return getEjbcaErrorWebBean().isRunningBuildWithRA()
+        return getEjbcaErrorWebBean().isRunningBuildWithCA()
                 && (isAuthorizedToCreateEndEntity()
                 || isAuthorizedToViewEndEntityProfiles()
                 || isAuthorizedToViewEndEntity()
@@ -131,12 +132,12 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     /*===SUPERVISION FUNCTIONS===*/
     
     public boolean isAuthorizedToViewApprovalProfiles() {
-        return getEjbcaErrorWebBean().isRunningBuildWithRA()
+        return getEjbcaErrorWebBean().isRunningBuildWithCA()
                 && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.APPROVALPROFILEVIEW.resource());
     }
     
     public boolean isAuthorizedToApproveActions() {
-        return getEjbcaErrorWebBean().isRunningBuildWithRA()
+        return getEjbcaErrorWebBean().isRunningBuildWithCA()
                 && (authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_APPROVEENDENTITY) 
                 || authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_APPROVECAACTION));
     }
