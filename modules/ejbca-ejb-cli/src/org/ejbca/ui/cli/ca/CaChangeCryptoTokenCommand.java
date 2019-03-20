@@ -111,6 +111,9 @@ nextCertSignKey fooalias03
             final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
             final CAInfo caInfo = caSession.getCAInfo(getAuthenticationToken(), caName);
+            if (caInfo == null) {
+                throw new CADoesntExistsException("No such CA with name: " + caName);
+            }
             final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
             final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
 
@@ -185,7 +188,7 @@ nextCertSignKey fooalias03
             log.trace("<execute()");
             return CommandResult.AUTHORIZATION_FAILURE;
         } catch (CADoesntExistsException e) {
-            getLogger().error("No such CA with by name " + caName);
+            getLogger().error("No such CA with name: " + caName);
             getLogger().error(getCaList());
             return CommandResult.FUNCTIONAL_FAILURE;
         } 
