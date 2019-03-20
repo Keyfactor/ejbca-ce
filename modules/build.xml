@@ -45,7 +45,6 @@
 		<ant antfile="${mod.appserver-ext.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.oldlogexport.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.cesecore-cvcca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -54,8 +53,9 @@
 		<delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
-	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, edition-specific-clean, edition-specific-ee-clean, 
-		externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, webtestclean, estclean, ejbca-rest-api-clean, plugins-ee-clean, clover.clean, cesecore-x509ca-clean"/>
+	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
+        edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
+        webtestclean, estclean, ejbca-rest-api-clean, plugins-ee-clean, clover.clean, cesecore-x509ca-clean, cesecore-cvcca-clean"/>
 	
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
