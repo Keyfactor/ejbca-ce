@@ -85,8 +85,6 @@ pipeline {
     post {
         always {
             junit "ejbca/**/reports/**/TEST-*.xml"
-            junit "ejbca/**/reports/images/*.*"
-            junit "ejbca/**/reports/QaEjbcaTestReport.html"
             
             sh "docker stop --time=1 seleniumtests || true"
             sh "docker rm -f seleniumtests || true"
