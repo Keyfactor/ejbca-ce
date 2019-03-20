@@ -174,18 +174,6 @@ public interface CACommon extends IUpgradeableData {
 
     /** Returns true if we should use the next CA certificate for rollover, instead of the current CA certificate. */
     boolean getUseNextCACert(RequestMessage request);
-
-    void updateCA(CryptoToken cryptoToken, CAInfo cainfo, AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws InvalidAlgorithmException;
-
-    /**
-     * Called when an uninitialized CA is updated, either from updateCA
-     * or from other places in the code.
-     *
-     * A few more values are also set in the overridden method in X509CA.
-     */
-    void updateUninitializedCA(CAInfo cainfo);
-    
     
     Collection<Integer> getCRLPublishers();
     
@@ -240,6 +228,17 @@ public interface CACommon extends IUpgradeableData {
      * @deprecated since 6.8.0, see setApprovals()
      */
     void setApprovalProfile(int approvalProfileID);
+    
+    void updateCA(CryptoToken cryptoToken, CAInfo cainfo, AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws InvalidAlgorithmException;
+
+    /**
+     * Called when an uninitialized CA is updated, either from updateCA
+     * or from other places in the code.
+     *
+     * A few more values are also set in the overridden method in X509CA.
+     */
+    void updateUninitializedCA(CAInfo cainfo);
     
     /**
      * Method to upgrade new (or existing externacaservices) This method needs to be called outside the regular upgrade since the CA isn't

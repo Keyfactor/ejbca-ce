@@ -129,11 +129,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     public void init(CAInfo cainfo) {
         data = new LinkedHashMap<>();
         super.init(cainfo);
-        
-        setSignedBy(cainfo.getSignedBy());
-        data.put(DESCRIPTION, cainfo.getDescription());
-        data.put(REVOCATIONREASON, Integer.valueOf(-1));
-        data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
         data.put(USENOCONFLICTCERTIFICATEDATA, cainfo.isUseNoConflictCertificateData());
         if (!cainfo.isUseCertificateStorage()) {
             data.put(DEFAULTCERTIFICATEPROFILEID, Integer.valueOf(cainfo.getDefaultCertificateProfileId()));
