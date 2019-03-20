@@ -16,8 +16,10 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
@@ -34,6 +36,10 @@ public class X509ExternalCAImpl extends CABaseCommon {
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public X509ExternalCAImpl(final X509CAInfo cainfo) {
         init(cainfo);
+        //Verify integrity if caInfo, either one SubjectDN or SubjectAltName needs to be filled in
+        if(StringUtils.isEmpty(DNFieldsUtil.removeAllEmpties(cainfo.getSubjectDN())) && StringUtils.isEmpty(cainfo.getSubjectAltName())) {
+            throw new IllegalArgumentException("Subject DN and Alt Name can't both be blank for an X509 CA.");
+        }
         data.put(SUBJECTALTNAME, cainfo.getSubjectAltName());
         data.put(CABase.CATYPE, CAInfo.CATYPE_X509);
         data.put(VERSION, LATEST_VERSION);
