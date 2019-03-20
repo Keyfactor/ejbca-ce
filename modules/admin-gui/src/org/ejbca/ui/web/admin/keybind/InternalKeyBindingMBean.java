@@ -102,6 +102,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  */
 public class InternalKeyBindingMBean extends BaseManagedBean implements Serializable {
 
+    public static final String OCSP_KEY_BINDING = "OcspKeyBinding";
     protected static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
 
     @EJB(description = "Used to reload ocsp signing cache when user disables the internal ocsp key binding.")
@@ -291,7 +292,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public boolean isOcspKeyBinding() {
-        return getSelectedInternalKeyBindingType().equals("OcspKeyBinding");
+        return getSelectedInternalKeyBindingType().equals(OCSP_KEY_BINDING);
     }
 
     public String getBackLinkTranslatedText() {
@@ -303,6 +304,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public List<String> getAvailableKeyBindingTypes() {
         final List<String> availableKeyBindingTypes = new ArrayList<>();
         for (String current : internalKeyBindingSession.getAvailableTypesAndProperties().keySet()) {
+            // The RA-only build of EJBCA should not have the OcspKeyBinding tab
+            if (!getEjbcaWebBean().isRunningBuildWithCA() && getEjbcaWebBean().isRunningBuildWithRA() && OCSP_KEY_BINDING.equals(current)) {
+                continue;
+            }
             availableKeyBindingTypes.add(current);
         }
         return availableKeyBindingTypes;
