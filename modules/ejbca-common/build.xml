@@ -150,6 +150,7 @@
 				<batchtest fork="yes" todir="${reports.dir}">
 					<fileset dir="${ejbca-common.build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
 				</batchtest>
+				<jvmarg line="${tests.jvmargs}"/>
 			</junit>
 		</target>
 
@@ -166,6 +167,7 @@
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
 	</target>
 
