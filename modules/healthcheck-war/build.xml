@@ -71,6 +71,7 @@
 					<include name="**/*Test.class" />
 				</fileset>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
 	</target>
 

@@ -108,6 +108,7 @@
 	                 <include name="**/*Test.class" />
 	             </fileset>
 	         </batchtest>
+	     	<jvmarg line="${tests.jvmargs}"/>
 	     </junit>
 	</target>
 
@@ -124,6 +125,7 @@
 	                <include name="**/${test.runone}.class" />
 	            </fileset>
 	        </batchtest>
+	    	<jvmarg line="${tests.jvmargs}"/>
 	    </junit>
 	</target>
 
