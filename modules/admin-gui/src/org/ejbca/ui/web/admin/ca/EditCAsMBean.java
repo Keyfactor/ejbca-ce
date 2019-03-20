@@ -22,6 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1190,6 +1191,12 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         for (final int validatorId : keyValidatorMap.keySet()) {
                 ret.add(new SelectItem(validatorId, keyValidatorMap.get(validatorId), "", isHasEditRight() ? false : true));
         }
+        Collections.sort(ret, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem o1, SelectItem o2) {
+                return o1.getLabel().compareToIgnoreCase(o2.getLabel());
+            }
+        });
         return ret;
     }
 
