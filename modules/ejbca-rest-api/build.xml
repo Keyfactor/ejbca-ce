@@ -122,6 +122,7 @@
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${ejbca-rest-api.build-test.dir}" includes="**/*UnitTest.class"/>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg value="${remoteDebugJvmArgs}"/>
 		</junit>
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
@@ -142,6 +143,7 @@
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${ejbca-rest-api.build-test.dir}" includes="**/*SystemTest.class"/>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg value="${remoteDebugJvmArgs}"/>
 		</junit>
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
@@ -158,6 +160,7 @@
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${ejbca-rest-api.build-test.dir}" includes="**/${test.runone}.class"/>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
 	</target>
 </project>
