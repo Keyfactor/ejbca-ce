@@ -158,6 +158,7 @@
 				<pathelement path="${clover.jar}"/>
 				<pathelement location="${ejbca-entity.build-test.dir}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<test name="org.ejbca.database.DatabaseSchemaTest" todir="${reports.dir}"/>
 		</junit>
@@ -182,6 +183,7 @@
 				<pathelement path="${clover.jar}"/>
 				<pathelement location="${ejbca-entity.build-test.dir}"/>
 			</classpath>
+    		<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<test name="org.ejbca.database.OcspMonitoringToolTest" todir="${reports.dir}"/>
 		</junit>
@@ -202,6 +204,7 @@
 					<exclude name="org/ejbca/database/DatabaseSchemaTest.class"/>
 				</fileset>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
     	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
     </target>
@@ -307,6 +310,7 @@
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
 	</target>
 

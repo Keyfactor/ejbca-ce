@@ -206,6 +206,7 @@
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${ejbca-ejb.build-test.dir}" includes="${test-subprocess.include-pattern}" excludes="${test-subprocess.exclude-pattern}"/>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
 	</target>
 
@@ -226,6 +227,7 @@
 	                <fileset dir="${ejbca-ejb.build-test.dir}" includes="**/*UnitTest.class">
 	                </fileset>
 	            </batchtest>
+	        	<jvmarg line="${tests.jvmargs}"/>
 	            <jvmarg value="${remoteDebugJvmArgs}"/>
 	        </junit>
 	        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
@@ -244,6 +246,7 @@
 					<include name="**/${test.runone}.class" />
 				</fileset>
 			</batchtest>
+			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
 	</target>
 </project>
