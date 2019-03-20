@@ -934,11 +934,11 @@
         </condition>
 		
         <condition property="build.contains.va" value="true">
-            <equals arg1="${variant}" arg2="va" casesensitive="false"/>
+            <not><equals arg1="${variant}" arg2="ra" casesensitive="false"/></not>
         </condition>
 		
         <condition property="build.contains.ra" value="true">
-                <equals arg1="${variant}" arg2="ra" casesensitive="false"/>
+        	<not><equals arg1="${variant}" arg2="va" casesensitive="false"/></not>
         </condition>
 		
         <condition property="build.contains.cesecore-x509ca" value="true">
