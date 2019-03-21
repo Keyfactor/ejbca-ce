@@ -43,7 +43,7 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
     private static class TestData {
         private static final String EJBCA_HOME = System.getenv("EJBCA_HOME");
         private static final String VALIDATOR_NAME = "EcaQa202_BL_Blacklist";
-        private static final String VALIDATOR_BLACKLIST_FILENAME = EJBCA_HOME + "/modules/ejbca-webtest/resources/blacklist.txt";
+        private static final String VALIDATOR_BLACKLIST_FILENAME = EJBCA_HOME + "/modules/ejbca-webtest/resources/Blacklist.txt";
         private static final String VALIDATOR_BLACKLIST_SITE = "evil.example.edu";
         private static final String VALIDATOR_PERFORM_TYPE = "Exact match";
         private static final String CA_NAME = "EcaQa202_BL_CA";
