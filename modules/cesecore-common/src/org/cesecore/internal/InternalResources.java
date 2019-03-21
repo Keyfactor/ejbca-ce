@@ -209,8 +209,16 @@ public class InternalResources implements Serializable {
     }
     
     public static void replacePlaceholders(final StringBuilder sb, final Object... params) {
-        for (int i=0; i<params.length; i++) {
+        int i = 0;
+        while (i < (params.length - 1)) {
             replaceAll(sb, i, params[i]);
+            i++;
+        }
+        //Append all extra parameters to the end so that no information is lost. 
+        if(i < params.length) {
+            for (; i<params.length; i++) {
+                sb.append(", " + params[i]);
+            }
         }
         removeUnusedPlaceHolders(sb, params.length);
     }
