@@ -591,7 +591,11 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
         if (version >= 5) {
             // In version 5 (EJBCA 7.1.0) the crlPartitionIndex column is added
             build.append(getCrlPartitionIndex());
-            // This was actually added in EJBCA 7.0.0, but wasn't added in NoConflictCertificateData
+        }
+        if (version >= 4) {
+            // This field was actually added in EJBCA 7.0.0, but wasn't added here until 7.1.0.
+            // So version 4 will never appear in the database, only 5 or later.
+            // We check for version 4 in case we would need to backport this change to 7.0.x, independently of the change in version 5.
             build.append(getCertificateRequest());
         }
         if (version>=3) {
