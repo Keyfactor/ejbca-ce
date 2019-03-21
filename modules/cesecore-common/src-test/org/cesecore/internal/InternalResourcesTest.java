@@ -14,6 +14,10 @@ package org.cesecore.internal;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.util.Properties;
+
 import org.cesecore.config.ConfigurationHolder;
 import org.junit.After;
 import org.junit.Before;
@@ -87,14 +91,19 @@ public class InternalResourcesTest {
     }
 
     @Test
-    public void testMessageStringWithExtraParameter() {
+    public void testMessageStringWithExtraParameter() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
-        String res = intres.getLocalizedMessage("raadmin.testmsgsv");
-        assertEquals("Test sv-SE", res);
-        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("raadmin.testmsgsv").toString());
-        res = intres.getLocalizedMessage("raadmin.testmsgsv", "foo $bar \\haaaar");
-        assertEquals("Test sv-SE", res);
-        assertEquals("Test sv-SE", intres.getLocalizedMessageCs("raadmin.testmsgsv", "foo $bar \\haaaar").toString());
+        Field primaryResource = InternalResources.class.getDeclaredField("primaryResource");
+        primaryResource.setAccessible(true);
+        Properties intresource = new Properties();
+        final String testMessage = "test";
+        final String testMessageParams = testMessage + " {0}";
+        final String testMessageKey = "test.message";
+        final String param = "foo";
+        final String extraParam = "bar";
+        intresource.setProperty(testMessageKey, testMessageParams);
+        primaryResource.set(intres, intresource);
+        assertEquals("Extra params were not correctly handled.", testMessage + " " + param + ", bar", intres.getLocalizedMessage(testMessageKey, param, extraParam).toString());
     }
 
     /** Test that we don't allow unlimited recursion in the language strings */
