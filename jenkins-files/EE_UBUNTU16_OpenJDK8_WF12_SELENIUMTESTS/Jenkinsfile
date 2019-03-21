@@ -70,6 +70,7 @@ pipeline {
                 sh "mkdir -p " + "$env.WORKSPACE/ejbca/reports"
                 sh "chmod 777 " + "$env.WORKSPACE/ejbca/reports"
                 sh "chmod 777 $env.WORKSPACE/ejbca/modules/ejbca-webtest"
+                sh "chmod 777 " + "$env.WORKSPACE/ejbca/modules/ejbca-webtest/resources"
 
                 // copy Remote EJB client JAR (jboss-client.jar)
                 sh "mkdir -p -m 755 " + "$env.WORKSPACE/ejbca/lib/jee-client"
