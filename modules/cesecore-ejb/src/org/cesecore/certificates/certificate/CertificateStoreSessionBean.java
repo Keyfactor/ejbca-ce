@@ -60,6 +60,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -187,6 +188,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
      * @param endEntityProfileId the end entity profile id this cert was issued under
+     * @param crlPartitionIndex the CRL partition that the certificate belongs to, or CertificateConstants.NO_CRL_PARTITION if partitioning is not used.
      * @param tag a custom string tagging this certificate for some purpose
      * @param updateTime epoch millis to use as last update time of the stored object
      * @param doAuditLog determines if a security audit log event shall be written or not with, EventTypes.CERT_STORED, ModuleTypes.CERTIFICATE,
