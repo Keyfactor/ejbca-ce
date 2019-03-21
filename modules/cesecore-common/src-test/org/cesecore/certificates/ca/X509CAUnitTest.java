@@ -884,7 +884,7 @@ public class X509CAUnitTest {
      * Test that one non-indexed CRL CDP URL is generated if not using partitioned CRLs configuration  
      */
     @Test
-    public void shouldNotGenerateIndexedCrlPartitionUrls() throws Exception {
+    public void shouldNotGenerateIndexedCrlPartitionUrlsIfFalse() throws Exception {
         // Given:
         final CryptoToken nonPartitionedCrlCaCryptoToken = getNewCryptoToken();
         X509CA nonPartitionedCrlCa = createTestCA(nonPartitionedCrlCaCryptoToken, "CN=NonPartitionedCrlCa");
@@ -894,6 +894,34 @@ public class X509CAUnitTest {
         //We add some partitions
         caInfo.setCrlPartitions(10);
         caInfo.setRetiredCrlPartitions(5);
+        // When:
+        //We use a template URL with the asterisk operator to generate our indexed URLs
+        List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
+        int actualUrlListSize = actualCdpUrl.size();
+        // Then:
+        //The list should not be null, as we have a base url
+        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
+        //We should have 1 entry in the list of URLs, this is the base URL
+        assertEquals("Number of CRL partition URLs should be 1.", 1, actualUrlListSize);
+        //This URL should not have an index number, it is the base URL
+        assertEquals("The URL should not contain a partition index.", "http://example.com/CA.crl", actualCdpUrl.get(0));
+    }
+    
+    /**
+     * Test that only one non-indexed CRL CDP URL is generated if all partitions are retired  
+     */
+    @Test
+    public void shouldNotGenerateIndexedCrlPartitionUrlsIfAllRetired() throws Exception {
+     // Given:
+        final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
+        X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
+        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
+        //Setting use partitioned crl to true
+        caInfo.setUsePartitionedCrl(true);
+        //We add some partitions
+        caInfo.setCrlPartitions(10);
+        //We retire all partitions
+        caInfo.setRetiredCrlPartitions(10);
         // When:
         //We use a template URL with the asterisk operator to generate our indexed URLs
         List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
