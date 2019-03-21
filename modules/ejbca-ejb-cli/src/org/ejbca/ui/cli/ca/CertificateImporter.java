@@ -244,7 +244,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
                 return Result.CA_MISMATCH;
             }
 
-            final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
+            final int crlPartitionIndex = caInfo.determineCrlPartitionIndex(certificate);
 
             log.debug("Loading/updating user " + username);
             final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE

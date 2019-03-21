@@ -249,7 +249,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
 
-        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
+        final int crlPartitionIndex = cainfo.determineCrlPartitionIndex(certificate);
 
         final Certificate cacert = cainfo.getCertificateChain().iterator().next();
         log.info("Trying to add user:");
@@ -262,6 +262,9 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 + EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(certificateprofileid));
         log.info("End Entity Profile: "
                 + EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(endentityprofileid));
+        if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
+            log.info("CRL Partition Index: " + crlPartitionIndex);
+        }
 
         String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
         if (subjectAltName != null) {

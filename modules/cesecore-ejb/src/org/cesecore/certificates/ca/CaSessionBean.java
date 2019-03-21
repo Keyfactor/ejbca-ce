@@ -994,4 +994,10 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (chain == null) { return null; }
         return chain.get(0);
     }
+
+    @Override
+    public int determineCrlPartitionIndex(final int caid, final CertificateWrapper cert) {
+        final CACommon ca = getCa(caid);
+        return ca.getCAInfo().determineCrlPartitionIndex(EJBTools.unwrap(cert));
+    }
 }

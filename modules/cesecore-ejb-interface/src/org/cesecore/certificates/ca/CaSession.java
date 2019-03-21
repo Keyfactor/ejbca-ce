@@ -254,4 +254,12 @@ public interface CaSession {
      * @throws CADoesntExistsException If no CA with the given CA Id exists.
      */
     Certificate getFutureRolloverCertificate(int caid) throws CADoesntExistsException;
+
+    /**
+     * Determines which CRL Partition Index a given certificate belongs to. This check is based on the URI in the Issuing Distribution Point extension.
+     * @param caId the CA ID
+     * @param cert Certificate to check
+     * @return Partition index, or zero if not using partitioning.
+     */
+    int determineCrlPartitionIndex(int caId, CertificateWrapper cert);
 }

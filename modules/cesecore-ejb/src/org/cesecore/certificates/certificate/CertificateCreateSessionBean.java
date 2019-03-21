@@ -478,7 +478,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     certificateRequest = getCsrFromRequestMessage(request);
                 }
 
-                final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
+                final int crlPartitionIndex = ca.getCAInfo().determineCrlPartitionIndex(cert);
 
                 // Store certificate in the database, if this CA is configured to do so.
                 if (!ca.isUseCertificateStorage() || !certProfile.getUseCertificateStorage()) {

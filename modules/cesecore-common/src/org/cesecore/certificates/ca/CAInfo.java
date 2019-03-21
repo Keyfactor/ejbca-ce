@@ -14,6 +14,7 @@ package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -23,6 +24,7 @@ import java.util.Map;
 
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateWrapper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
@@ -550,5 +552,28 @@ public abstract class CAInfo implements Serializable {
      */
     public boolean isDoEnforceUniqueDistinguishedName() {
         return this.doEnforceUniqueDistinguishedName;
+    }
+
+    /**
+     * Determines which CRL Partition Index a given certificate belongs to. This check is based on the URI in the Issuing Distribution Point extension. 
+     */
+    public int determineCrlPartitionIndex(final Certificate cert) {
+        final String uri = CertTools.getIssuingDistributionPointUri(cert);
+        return determineCrlPartitionIndex(uri);
+    }
+
+    /**
+     * Determines which CRL Partition Index a given CRL belongs to. This check is based on the URI in the Issuing Distribution Point extension. 
+     */
+    public int determineCrlPartitionIndex(final X509CRL crl) {
+        final String uri = CertTools.getIssuingDistributionPointUri(crl);
+        return determineCrlPartitionIndex(uri);
+    }
+
+    /**
+     * Determines which CRL Partition Index by a CRL Distribution Point URI. 
+     */
+    private int determineCrlPartitionIndex(final String uri) {
+        return CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
     }
 }
