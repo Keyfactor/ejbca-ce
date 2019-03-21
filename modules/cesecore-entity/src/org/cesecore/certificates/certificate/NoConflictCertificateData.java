@@ -61,6 +61,8 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
 
     private static final Logger log = Logger.getLogger(NoConflictCertificateData.class);
 
+    private static final int LATEST_PROTECT_VERSON = 5;
+
     private String id;
     private String issuerDN;
     private String subjectDN;
@@ -624,7 +626,7 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     @Transient
     @Override
     protected int getProtectVersion() {
-        return 5;
+        return LATEST_PROTECT_VERSON;
     }
 
     @PrePersist
