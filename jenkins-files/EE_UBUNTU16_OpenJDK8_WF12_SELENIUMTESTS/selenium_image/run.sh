@@ -23,6 +23,8 @@ sudo -E env "PATH=$PATH" "ANT_OPTS=$ANT_OPTS" "JAVA_OPTS=$JAVA_OPTS" ant clean b
 
 echo '=================== build finished ========================'
 
+ls -la /app/ejbca/modules/ejbca-webtest/resources
+
 ant test:webtest -Dtests.jvmargs="$TEST_OPTS"
 
 
