@@ -124,14 +124,14 @@ import static org.junit.Assume.assumeTrue;
  *
  * @version $Id$
  */
-public class X509CATest {
+public class X509CAUnitTest {
 
 	public static final String CADN = "CN=TEST";
 
 	// This will be an empty list of custom certificate extensions
 	private final AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
 
-	public X509CATest() {
+	public X509CAUnitTest() {
 		CryptoProviderTools.installBCProvider();
 	}
 
@@ -861,23 +861,73 @@ public class X509CATest {
         //Setting use partitioned crl
         caInfo.setUsePartitionedCrl(true);
         caInfo.setCrlPartitions(15);
-        //We make sure to have 11 non-retired crl partitions left in use
+        //We make sure to have 11 non-retired crl partitions left in use by retiring 4 partitions 
         caInfo.setRetiredCrlPartitions(4);
         // When:
         //We use a template URL with the asterisk operator to generate our indexed URLs
         List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
         int actualUrlListSize = actualCdpUrl.size();
         // Then:
-        //The list should contain some CRL CDP URLs, as we have configured this
+        //The list should contain a minimum of one CRL CDP URL, as we always have a base URL
         assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
-        //We should have 11 entries in the list of URLs
-        assertEquals("Number of CRL partition URLs is incorrect.", 11, actualUrlListSize);
-        //This URL should be modified without added index number (representing the 1st partition)
+        //We should have 12 entries in the list of URLs
+        assertEquals("Number of CRL partition URLs is incorrect.", 12, actualUrlListSize);
+        //This URL should be modified without added index number (representing the base url)
         assertEquals("CRL CDP URL is incorrect.", "http://example.com/CA.crl", actualCdpUrl.get(0));
-        //This URL should be modified with the index number '10' (representing the 11th partition)
-        assertEquals("CRL partition index in URL is incorrect.", "http://example.com/CA10.crl", actualCdpUrl.get(10));
+        //This URL should be modified with the index number '5' (representing the lowest used partition number)
+        assertEquals("CRL partition index in URL is incorrect.", "http://example.com/CA5.crl", actualCdpUrl.get(1));
+        //This URL should be modified with the index number '15' (representing the highest used partition number)
+        assertEquals("CRL partition index in URL is incorrect.", "http://example.com/CA15.crl", actualCdpUrl.get(11));
     }
-
+    
+    /**
+     * Test that one non-indexed CRL CDP URL is generated if not using partitioned CRLs configuration  
+     */
+    @Test
+    public void shouldNotGenerateIndexedCrlPartitionUrls() throws Exception {
+        // Given:
+        final CryptoToken nonPartitionedCrlCaCryptoToken = getNewCryptoToken();
+        X509CA nonPartitionedCrlCa = createTestCA(nonPartitionedCrlCaCryptoToken, "CN=NonPartitionedCrlCa");
+        X509CAInfo caInfo = (X509CAInfo) nonPartitionedCrlCa.getCAInfo();
+        //Setting use partitioned crl to false
+        caInfo.setUsePartitionedCrl(false);
+        //We add some partitions
+        caInfo.setCrlPartitions(10);
+        caInfo.setRetiredCrlPartitions(5);
+        // When:
+        //We use a template URL with the asterisk operator to generate our indexed URLs
+        List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
+        int actualUrlListSize = actualCdpUrl.size();
+        // Then:
+        //The list should not be null, as we have a base url
+        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
+        //We should have 1 entry in the list of URLs, this is the base URL
+        assertEquals("Number of CRL partition URLs should be 1.", 1, actualUrlListSize);
+        //This URL should not have an index number, it is the base URL
+        assertEquals("The URL should not contain a partition index.", "http://example.com/CA.crl", actualCdpUrl.get(0));
+    }
+    
+    /**
+     * Test that a correct CRL CDP URL is generated when a partition index is provided  
+     */
+    @Test
+    public void shouldGenerateCrlUrlBasedOnIndex() throws Exception {
+        // Given:
+        final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
+        X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
+        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
+        caInfo.setUsePartitionedCrl(true);
+        // When:
+        //We use a template URL with the asterisk operator to generate our indexed and non indexed URLs
+        String actualCdpUrlforIndex0 = caInfo.getCrlPartitionUrl("http://example.com/CA*.crl", 0);
+        String actualCdpUrlforIndex1 = caInfo.getCrlPartitionUrl("http://example.com/CA*.crl", 1);
+        // Then:
+        //We should have a URL without partition number for actualCdpUrlforIndex0
+        assertEquals("CRL URL is wrong, should not contain partition index.", "http://example.com/CA.crl", actualCdpUrlforIndex0);
+        //We should have a URL with a partition number '1' for actualCdpUrlforIndex1
+        assertEquals("CRL URL is wrong, should contain correct partition index.", "http://example.com/CA1.crl", actualCdpUrlforIndex1);
+    }
+    
     /**
      * Test that the CA refuses to issue certificates outside of the PrivateKeyUsagePeriod, but that it does issue a cert within this period.
      * This test has some timing, so it sleeps in total 11 seconds during the test.
