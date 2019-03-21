@@ -385,10 +385,13 @@ public class X509CAInfo extends CAInfo {
   public List<String> getAllCrlPartitionUrls(String crlUrl) {
       List<String> crlUrlsReturned = new ArrayList<String>();
       if (getUsePartitionedCrl()) {
-          int partitionsInUse = (getCrlPartitions() - getRetiredCrlPartitions());
+          Integer partitionIndex = 1 + getRetiredCrlPartitions();
+          int partitionUrlsToGenerate = (getCrlPartitions() - getRetiredCrlPartitions());
           crlUrlsReturned.add(crlUrl.replace("*", ""));
-          Integer partitionIndex = 1;
-          for (int loop = 0; loop < partitionsInUse - 1; loop++) {
+          if (getRetiredCrlPartitions() < 1) {
+              partitionIndex = 1;
+          }
+          for (int generatedUrls = 0; generatedUrls < partitionUrlsToGenerate; generatedUrls++) {
               crlUrlsReturned.add(crlUrl.replace("*", partitionIndex.toString()));
               partitionIndex++;
           }
@@ -407,7 +410,7 @@ public class X509CAInfo extends CAInfo {
    */
   public String getCrlPartitionUrl(String crlUrl, int index) {
       Integer partitionIndex = new Integer(index);
-      if (index == 0) {
+      if (index == 0 || !getUsePartitionedCrl()) {
           return crlUrl.replace("*", "");
       }
       return crlUrl.replace("*", partitionIndex.toString());
