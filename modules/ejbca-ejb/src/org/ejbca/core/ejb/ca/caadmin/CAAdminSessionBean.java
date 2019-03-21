@@ -3106,10 +3106,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (certificateDataWrapper == null) {
                 // If we don't have it in the database, store it
                 long updateTime = System.currentTimeMillis();
-                final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
+                final int crlPartitionIndex = determineCrlPartitionIndex(cert);
                 certificateDataWrapper = certificateStoreSession.storeCertificate(admin, cert, name, cafp,
                         futureRollover ? CertificateConstants.CERT_ROLLOVERPENDING : CertificateConstants.CERT_ACTIVE, type,
-                        CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE, crlPartitionIndex, null, updateTime);
+                        CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
+                        crlPartitionIndex, null, updateTime);
                 certificateStoreSession.reloadCaCertificateCache();
             }
             if (usedpublishers != null) {
@@ -3117,6 +3118,23 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
 
+    }
+
+    /**
+     * Determines the CRL Partition Index to use for a given certificate. This is done by looking at the
+     * CRL Distribution Point extension, and the settings in the CA.
+     */
+    private int determineCrlPartitionIndex(final Certificate cert) {
+        final String issuerDn = CertTools.getIssuerDN(cert);
+        if (issuerDn == null) {
+            return CertificateConstants.NO_CRL_PARTITION;
+        }
+        final int caId = issuerDn.hashCode(); // BouncyCastle formatted string, so this is OK
+        final CAInfo caInfo = caSession.getCAInfoInternal(caId);
+        if (caInfo == null) {
+            return CertificateConstants.NO_CRL_PARTITION;
+        }
+        return caInfo.determineCrlPartitionIndex(cert);
     }
 
     @Override

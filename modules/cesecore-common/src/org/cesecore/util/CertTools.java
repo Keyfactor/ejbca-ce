@@ -108,11 +108,13 @@ import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralSubtree;
+import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.NameConstraints;
 import org.bouncycastle.asn1.x509.PolicyInformation;
@@ -4586,5 +4588,96 @@ public abstract class CertTools {
             }
         }
         return commonName;
+    }
+
+    public static String getIssuingDistributionPointUri(final Certificate cert) {
+        if (!(cert instanceof X509Certificate)) {
+            return null;
+        }
+        final X509Certificate x509cert = (X509Certificate) cert;
+        final byte[] extBytes = x509cert.getExtensionValue(Extension.issuingDistributionPoint.getId());
+        if (extBytes == null) {
+            return null;
+        }
+        return getIssuingDistributionPointUri(ASN1Sequence.getInstance(extBytes));
+    }
+
+    public static String getIssuingDistributionPointUri(final X509CRL crl) {
+        final byte[] extBytes = crl.getExtensionValue(Extension.issuingDistributionPoint.getId());
+        if (extBytes == null) {
+            return null;
+        }
+        return getIssuingDistributionPointUri(ASN1Sequence.getInstance(extBytes));
+    }
+
+    public static String getIssuingDistributionPointUri(final ASN1Sequence seq) {
+        String result = null;
+        for (final ASN1Encodable entry : seq) {
+            final IssuingDistributionPoint idp = IssuingDistributionPoint.getInstance(entry);
+            final String entryDecoded = getIssuingDistributionPointUri(idp);
+            if (result == null) {
+                result = entryDecoded;
+            } else {
+                log.debug("Multiple DistributionPointName URIs found. All will be ignored");
+                return null;
+            }
+        }
+        return result;
+    }
+
+    public static String getIssuingDistributionPointUri(final IssuingDistributionPoint idp) {
+        final DistributionPointName dpName = idp.getDistributionPoint();
+        if (dpName == null) { // if it is another type of IDP extension, such as onlyContainsUserCerts
+            return null;
+        }
+        if (dpName.getType() != DistributionPointName.FULL_NAME) { // "relative name" is not supported
+            return null;
+        }
+        final GeneralNames generalNames = GeneralNames.getInstance(dpName.getName());
+        try {
+            return getGeneralNameUri(generalNames);
+        } catch (IllegalArgumentException e) {
+            log.debug("Malformed GeneralName", e);
+            return null;
+        }
+    }
+
+    /**
+     * Extracts a GeneralName, for example URI or DNSName, from a GeneralNames object
+     * @param generalNames GeneralNames object to look in
+     * @param type One of the integer constants in {@link GeneralName}
+     * @return Value of the GeneralName. Returns null if non-existent or if duplicates exist.
+     * @throws IllegalArgumentException If the ASN.1 structure is malformed
+     */
+    public static ASN1Encodable getGeneralName(final GeneralNames generalNames, final int type) {
+        ASN1Encodable result = null;
+        for (final GeneralName generalName : generalNames.getNames()) {
+            if (generalName.getTagNo() == type) {
+                if (result == null) {
+                    result = generalName.getName();
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Multiple GeneralNames of the same type exists: " + type + ". All will be ignored");
+                    }
+                    return null;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Extracts a uniformResourceIdentifier (URI) from a GeneralNames object.
+     * @param generalNames GeneralNames object to look in
+     * @return URI as a string, or null if non-existent or if duplicates exist
+     * @throws IllegalArgumentException If the ASN.1 structure is malformed
+     */
+    public static String getGeneralNameUri(final GeneralNames generalNames) {
+        final ASN1Encodable asn1Enc = getGeneralName(generalNames, GeneralName.uniformResourceIdentifier);
+        if (asn1Enc == null) {
+            return null;
+        }
+        final DERIA5String ia5String = DERIA5String.getInstance(asn1Enc.toASN1Primitive());
+        return ia5String.getString();
     }
 }
