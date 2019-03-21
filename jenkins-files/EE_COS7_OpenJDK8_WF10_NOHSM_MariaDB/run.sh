@@ -4,6 +4,8 @@
 export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
 export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
+# Options for the CLI tools that require little memory, like the JBoss CLI
+export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx128m"
 
 echo '=================== CHECKING JAVA VERSION: ================================='
 java -version
@@ -52,7 +54,7 @@ echo '=================== ant deploy-keystore done! ============================
 
 # load the final version of Wildfly conf and restart wildfly
 cp /opt/standalone2.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
-/opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
+JAVA_OPTS="$CLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
 # wait for reload to kick in and start undeploying and drop ejbca.ear.deployed file (otherwise we'd detect ejbca.ear.deployed file immediately again)
 sleep 10
