@@ -156,7 +156,8 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
         approvalProfilesHelperDefault.addApprovalProfile(TestData.APPROVAL_PROFILE_NAME);
     }
 
-    @Test void StepI_EditApprovalProfile() {
+    @Test
+    public void StepI_EditApprovalProfile() {
         approvalProfilesHelperDefault.openEditApprovalProfilePage(TestData.APPROVAL_PROFILE_NAME);
         approvalProfilesHelperDefault.setApprovalProfileType(TestData.APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL);
         approvalProfilesHelperDefault.setApprovalStepPartitionApprovePartitionRole(0, 0,
