@@ -382,15 +382,12 @@ public class X509CAInfo extends CAInfo {
    * where any '*' will be replaced by an index number (or removed for the first partition)
    * @return a list of CDP URLs with index numbers for currently used CRL partitions for this CA 
    */
-  public List<String> getAllCrlPartitionUrls(String crlUrl) {
+  public List<String> getAllCrlPartitionUrls(final String crlUrl) {
       List<String> crlUrlsReturned = new ArrayList<String>();
       if (getUsePartitionedCrl()) {
-          Integer partitionIndex = 1 + getRetiredCrlPartitions();
           int partitionUrlsToGenerate = (getCrlPartitions() - getRetiredCrlPartitions());
           crlUrlsReturned.add(crlUrl.replace("*", ""));
-          if (getRetiredCrlPartitions() < 1) {
-              partitionIndex = 1;
-          }
+          Integer partitionIndex = getRetiredCrlPartitions() < 1 ? 1 : 1 + getRetiredCrlPartitions();  
           for (int generatedUrls = 0; generatedUrls < partitionUrlsToGenerate; generatedUrls++) {
               crlUrlsReturned.add(crlUrl.replace("*", partitionIndex.toString()));
               partitionIndex++;
@@ -408,8 +405,8 @@ public class X509CAInfo extends CAInfo {
    * @param index is the index of the CRL partition asked for
    * @return the URL for the specific CRL partition CDP with the given index number 
    */
-  public String getCrlPartitionUrl(String crlUrl, int index) {
-      Integer partitionIndex = new Integer(index);
+  public String getCrlPartitionUrl(final String crlUrl, final int index) {
+      Integer partitionIndex = index;
       if (index == 0 || !getUsePartitionedCrl()) {
           return crlUrl.replace("*", "");
       }
