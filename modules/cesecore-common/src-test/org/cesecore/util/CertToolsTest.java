@@ -27,7 +27,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.URL;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CertPathValidatorException;
@@ -560,6 +559,13 @@ public class CertToolsTest {
     		+"DQEBCwUAA0EAP8CIPLll5m/wmhcLL5SXlb+aYrPGsUlBFNBKYKO0iV1QjBHeDMp5"
     		+"z70nU3g2tIfiEX4IKNFyzFvn5m6e8m0JQQ==").getBytes());
 
+    private static byte[] testCrlWithIssuingDistributionPoint = Base64.decode(("MIIBTjCBrwIBATALBglghkgBZQMEAwswHTEbMBkGA1UEAwwSQ0Egd0l0aCBJRFAgb24gQ1JMFw0x\n" + 
+            "OTAzMjExOTM1MzhaFw0xOTAzMjIxOTM1MzhaoGAwXjAfBgNVHSMEGDAWgBRv8z/8lQ2y+HtRbGYD\n" + 
+            "y+BFdDPGwjAKBgNVHRQEAwIBBTAvBgNVHRwBAf8EJTAjoCGgH4YdaHR0cDovL2NybC5leGFtcGxl\n" + 
+            "LmNvbS9DQS5jcmwwCwYJYIZIAWUDBAMLA4GMADCBiAJCARTNuZfLD+sm/UXPjlcycSjX1cPv4kpV\n" + 
+            "Z3YYTPQPLl+zDe+J2mtkTEVeaL8J/Jg5o3i+RKtjUVVQ9P8CidlpecCPAkIBL3KbYAz4OOI+GVIY\n" + 
+            "CmYzteNakXsgEtyvZVGRr8lGlH1dCVcuFq46bqalHDp77+H5sVczATYSYVAUjxyAqvBLcOY=").getBytes());
+    
     static byte[] chainRootCA = Base64.decode( ("MIIFIzCCAwugAwIBAgIIDZIKPU4lBGQwDQYJKoZIhvcNAQELBQAwHzEQMA4GA1UE" +
             "AwwHM0dQUENBMjELMAkGA1UEBhMCU0UwHhcNMTcwNjE0MjIyODU0WhcNMzcwNjA5" +
             "MjIyODU0WjAfMRAwDgYDVQQDDAczR1BQQ0EyMQswCQYDVQQGEwJTRTCCAiIwDQYJ" +
@@ -1740,27 +1746,34 @@ public class CertToolsTest {
         log.trace(">test24GetCrlDistributionPoint()");
 
         Collection<Certificate> certs;
-        URL url;
+        String url;
         // Test with normal cert
-        try {
-            certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITH_URI.getBytes()), Certificate.class);
-            url = CertTools.getCrlDistributionPoint(certs.iterator().next());
-            assertNotNull(url);
-        } catch (CertificateParsingException ex) {
-            fail("Exception: " + ex.getMessage());
-        }
+        certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITH_URI.getBytes()), Certificate.class);
+        url = CertTools.getCrlDistributionPoint(certs.iterator().next());
+        assertNotNull(url);
+        assertEquals("Wrong CRL Distribution Point.", "http://vmserver1:8080/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=CN=DemoSubCA11,O=Demo%20Organization%2010,C=SE", url);
         // Test with cert that contains CDP without URI
-        try {
-            certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITHOUT_URI.getBytes()), Certificate.class);
-            url = CertTools.getCrlDistributionPoint(certs.iterator().next());
-            assertNull(url);
-        } catch (CertificateParsingException ex) {
-            fail("Exception: " + ex.getMessage());
-        }
-
+        certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITHOUT_URI.getBytes()), Certificate.class);
+        url = CertTools.getCrlDistributionPoint(certs.iterator().next());
+        assertNull(url);
+        
         log.trace("<test24GetCrlDistributionPoint()");
     }
-    
+
+    @Test
+    public void getCrlDistributionPointForCrl() throws Exception {
+        Collection<String> uris;
+        // CRL without IDP
+        X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
+        uris = CertTools.getCrlDistributionPoints(crl);
+        assertEquals("Should return no URIs for CRL without issuingDistributionPoint.", 0, uris.size());
+        // CRL with IDP
+        crl = CertTools.getCRLfromByteArray(testCrlWithIssuingDistributionPoint);
+        uris = CertTools.getCrlDistributionPoints(crl);
+        assertEquals("Should return IDP URL for CRL with issuingDistributionPoint.", 1, uris.size());
+        assertEquals("Extracted string from issuingDistributionPoint is wrong.", "http://crl.example.com/CA.crl", uris.iterator().next());
+    }
+
     @Test
     public void test25AiaCaIssuerUri() throws Exception {
         // Only 1 CA Issuer in static aiaCert: "http://localhost:8080/caIssuer"!
