@@ -2,8 +2,6 @@
 
 # Options for ant itself. Report building is done in selenium_image, so this shouldn't require much memory
 export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
-# Options for the CLI tools that require little memory, like the JBoss CLI
-export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx128m"
 
 cp /opt/conf/* /app/ejbca/conf/
 cp /opt/p12/* /app/ejbca/p12/
@@ -44,7 +42,7 @@ echo '=================== should be started now ========================'
 ant deploy-keystore
 echo '=================== deploy-keystore done ========================'
 
-JAVA_OPTS="$CLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
+/opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 echo '=================== waiting 30... ========================'
 sleep 30
 wait_for_deployment
