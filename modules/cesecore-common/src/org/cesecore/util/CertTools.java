@@ -3135,12 +3135,13 @@ public abstract class CertTools {
      * tags are read.
      * 
      * @param certificate
-     * @return A URL, or null if no CRL distribution points were found
+     * @return A URI, or null if no CRL distribution points were found. It is returned as a string, because it is used to
+     *         identify a DP and must match exactly (no normalization allowed).
      */
-    public static URL getCrlDistributionPoint(final Certificate certificate) {
+    public static String getCrlDistributionPoint(final Certificate certificate) {
         if(certificate instanceof X509Certificate) {
             final X509Certificate x509cert = (X509Certificate) certificate;
-            final Collection<URL> cdps = getCrlDistributionPoints(x509cert, true);
+            final Collection<String> cdps = getCrlDistributionPoints(x509cert, true);
             if(!cdps.isEmpty()) {
                 return cdps.iterator().next();
             }
@@ -3149,7 +3150,7 @@ public abstract class CertTools {
     }
     
     /**
-     * Return a list of CRL distribution points. The CRL distributions points are URL specified in the certificate extension 
+     * Return a list of CRL distribution points. The CRL distributions points are URIs specified in the certificate extension 
      * CRLDistributionPoints with OID 2.5.29.31.
      * 
      * The CRLDistributionPoints extension contains a sequece of DistributionPoint, which has the following structure:
@@ -3164,20 +3165,20 @@ public abstract class CertTools {
      * tags are read.
      * 
      * @param x509cert
-     * @return A list of URLs
+     * @return A list of URIs
      */
-    public static Collection<URL> getCrlDistributionPoints(final X509Certificate x509cert) {
+    public static Collection<String> getCrlDistributionPoints(final X509Certificate x509cert) {
         return getCrlDistributionPoints(x509cert, false);
     }
-    
-    private static Collection<URL> getCrlDistributionPoints(final X509Certificate x509cert, final boolean onlyfirst) {
-        ArrayList<URL> cdps = new ArrayList<URL>();
-        final ASN1Primitive obj = getExtensionValue(x509cert, Extension.cRLDistributionPoints.getId());
-        if (obj == null) {
+
+    private static Collection<String> getCrlDistributionPoints(final X509Certificate x509cert, final boolean onlyfirst) {
+        final ArrayList<String> cdps = new ArrayList<>();
+        final ASN1Primitive extensionValue = getExtensionValue(x509cert, Extension.cRLDistributionPoints.getId());
+        if (extensionValue == null) {
             return cdps;
         }
-            
-        final ASN1Sequence crlDistributionPoints = (ASN1Sequence) obj;
+
+        final ASN1Sequence crlDistributionPoints = (ASN1Sequence) extensionValue;
         for (int i = 0; i < crlDistributionPoints.size(); i++) {
             ASN1Sequence distributionPoint = (ASN1Sequence) crlDistributionPoints.getObjectAt(i);
             for (int j = 0; j < distributionPoint.size(); j++) {
@@ -3186,7 +3187,8 @@ public abstract class CertTools {
                     String url = getStringFromGeneralNames(tagged.getObject());
                     if(url!=null) {
                         try {
-                            cdps.add(new URL(url));
+                            new URL(url); // Syntax check
+                            cdps.add(url);
                         } catch (MalformedURLException e) {
                             if(log.isDebugEnabled()) {
                                 log.debug("Error parsing '" + url + "' as a URL. " + e.getLocalizedMessage());
@@ -3200,6 +3202,40 @@ public abstract class CertTools {
             }
         }
         return cdps;
+    }
+
+    /**
+     * Return a list of CRL Issuing Distribution Points URIs from a CRL.
+     * @see #getCrlDistributionPoints(X509Certificate)
+     * @param crl CRL
+     * @return A list of URIs
+     */
+    public static Collection<String> getCrlDistributionPoints(final X509CRL crl) {
+        final ArrayList<String> uris = new ArrayList<>();
+        try {
+            final ASN1Primitive extensionValue = getExtensionValue(crl, Extension.issuingDistributionPoint.getId());
+            if (extensionValue == null) {
+                return uris;
+            }
+            final IssuingDistributionPoint idp = IssuingDistributionPoint.getInstance(extensionValue);
+            if (idp == null) {
+                return uris;
+            }
+            final DistributionPointName dpName = idp.getDistributionPoint();
+            if (dpName == null || dpName.getType() != DistributionPointName.FULL_NAME) { // Relative names are not implemented
+                return uris;
+            }
+            final GeneralNames generalNames = GeneralNames.getInstance(dpName.getName());
+            for (final GeneralName generalName : generalNames.getNames()) {
+                if (generalName.getTagNo() == GeneralName.uniformResourceIdentifier) {
+                    final DERIA5String asn1Value = DERIA5String.getInstance(generalName.getName());
+                    uris.add(asn1Value.getString());
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            log.debug("Malformed CRL Issuance Distribution Point", e);
+        }
+        return uris;
     }
 
     
@@ -4588,96 +4624,5 @@ public abstract class CertTools {
             }
         }
         return commonName;
-    }
-
-    public static String getIssuingDistributionPointUri(final Certificate cert) {
-        if (!(cert instanceof X509Certificate)) {
-            return null;
-        }
-        final X509Certificate x509cert = (X509Certificate) cert;
-        final byte[] extBytes = x509cert.getExtensionValue(Extension.issuingDistributionPoint.getId());
-        if (extBytes == null) {
-            return null;
-        }
-        return getIssuingDistributionPointUri(ASN1Sequence.getInstance(extBytes));
-    }
-
-    public static String getIssuingDistributionPointUri(final X509CRL crl) {
-        final byte[] extBytes = crl.getExtensionValue(Extension.issuingDistributionPoint.getId());
-        if (extBytes == null) {
-            return null;
-        }
-        return getIssuingDistributionPointUri(ASN1Sequence.getInstance(extBytes));
-    }
-
-    public static String getIssuingDistributionPointUri(final ASN1Sequence seq) {
-        String result = null;
-        for (final ASN1Encodable entry : seq) {
-            final IssuingDistributionPoint idp = IssuingDistributionPoint.getInstance(entry);
-            final String entryDecoded = getIssuingDistributionPointUri(idp);
-            if (result == null) {
-                result = entryDecoded;
-            } else {
-                log.debug("Multiple DistributionPointName URIs found. All will be ignored");
-                return null;
-            }
-        }
-        return result;
-    }
-
-    public static String getIssuingDistributionPointUri(final IssuingDistributionPoint idp) {
-        final DistributionPointName dpName = idp.getDistributionPoint();
-        if (dpName == null) { // if it is another type of IDP extension, such as onlyContainsUserCerts
-            return null;
-        }
-        if (dpName.getType() != DistributionPointName.FULL_NAME) { // "relative name" is not supported
-            return null;
-        }
-        final GeneralNames generalNames = GeneralNames.getInstance(dpName.getName());
-        try {
-            return getGeneralNameUri(generalNames);
-        } catch (IllegalArgumentException e) {
-            log.debug("Malformed GeneralName", e);
-            return null;
-        }
-    }
-
-    /**
-     * Extracts a GeneralName, for example URI or DNSName, from a GeneralNames object
-     * @param generalNames GeneralNames object to look in
-     * @param type One of the integer constants in {@link GeneralName}
-     * @return Value of the GeneralName. Returns null if non-existent or if duplicates exist.
-     * @throws IllegalArgumentException If the ASN.1 structure is malformed
-     */
-    public static ASN1Encodable getGeneralName(final GeneralNames generalNames, final int type) {
-        ASN1Encodable result = null;
-        for (final GeneralName generalName : generalNames.getNames()) {
-            if (generalName.getTagNo() == type) {
-                if (result == null) {
-                    result = generalName.getName();
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Multiple GeneralNames of the same type exists: " + type + ". All will be ignored");
-                    }
-                    return null;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Extracts a uniformResourceIdentifier (URI) from a GeneralNames object.
-     * @param generalNames GeneralNames object to look in
-     * @return URI as a string, or null if non-existent or if duplicates exist
-     * @throws IllegalArgumentException If the ASN.1 structure is malformed
-     */
-    public static String getGeneralNameUri(final GeneralNames generalNames) {
-        final ASN1Encodable asn1Enc = getGeneralName(generalNames, GeneralName.uniformResourceIdentifier);
-        if (asn1Enc == null) {
-            return null;
-        }
-        final DERIA5String ia5String = DERIA5String.getInstance(asn1Enc.toASN1Primitive());
-        return ia5String.getString();
     }
 }
