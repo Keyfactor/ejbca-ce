@@ -732,8 +732,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                         currentCryptoToken.setP11SlotLabelType(cryptoTokenInfo.getP11SlotLabelType());
                         // Extra capabilities not stored in the crypto token, but defined for this type of P11 crypto token
                         WebConfiguration.P11LibraryInfo libinfo = WebConfiguration.getAvailableP11LibraryToAliasMap().get(currentCryptoToken.getP11Library());
-                        currentCryptoToken.setCanGenerateKey(libinfo.isCanGenerateKey());
-                        currentCryptoToken.setCanGenerateKeyMsg(libinfo.getCanGenerateKeyMsg());
+                        if (libinfo != null) {
+                            currentCryptoToken.setCanGenerateKey(libinfo.isCanGenerateKey());
+                            currentCryptoToken.setCanGenerateKeyMsg(libinfo.getCanGenerateKeyMsg());
+                        }
                     }
                     currentCryptoToken.setActive(cryptoTokenInfo.isActive());
                     currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(Integer.valueOf(cryptoTokenId)));
