@@ -36,7 +36,6 @@
 		<ant antfile="${mod.cmp-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.clearcache-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.va.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cerstore.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.crlstore.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.renew-war.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -49,24 +48,34 @@
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
-		<delete failonerror="false" dir="${modules.basedir}/dist" />
+        <delete failonerror="false" dir="${modules.basedir}/dist" />
 	</target>
 	
 	<target name="clean-optional" depends="cmpproxyclean, validationtoolclean, statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, externalraclean, externalra-guiclean, externalra-scepclean, peerconnectorclean, acmeclean, caaclean, 
-        webtestclean, estclean, ejbca-rest-api-clean, plugins-ee-clean, clover.clean, cesecore-x509ca-clean, cesecore-cvcca-clean"/>
+        webtestclean, estclean, ejbca-rest-api-clean, plugins-ee-clean, clover.clean, cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean"/>
 	
 	<target name="cesecore-x509ca-clean" if="${mod.cesecore-x509ca.exists}">
 		<echo message="Cleaning cesecore-x509ca"/>
 		<ant antfile="${mod.cesecore-x509ca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
+    
 	<target name="cesecore-cvcca-clean" if="${mod.cesecore-cvcca.exists}">
 		<echo message="Cleaning cesecore-cvcca"/>
 		<ant antfile="${mod.cesecore-cvcca.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
 	</target>
 	
+    <target name="va-clean" if="${mod.va.exists}">
+        <echo message="Cleaning va"/>
+        <ant antfile="${mod.va.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>
+    
+    <target name="ra-gui-clean" if="${mod.ra.exists}">
+        <echo message="Cleaning ra"/>
+        <ant antfile="${mod.ra-gui.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>
+    
 	<target name="externalraclean" if="${mod.externalra.exists}">
 		<echo message="Cleaning externalra"/>
 		<ant antfile="${mod.externalra.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
@@ -434,7 +443,7 @@
 		<ant antfile="${mod.admin-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="ra-gui" depends="ejbca-common-web, ejbca-ejb" description="Build the EJBCA RA GUI WAR">
+	<target name="ra-gui" if="build.contains.ra" depends="ejbca-common-web, ejbca-ejb" description="Build the EJBCA RA GUI WAR">
 		<ant antfile="${mod.ra-gui.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -454,7 +463,7 @@
 		<ant antfile="${mod.clearcache-war.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="va-ejbca-war" depends="ejbca-common-web, ejbca-common">
+	<target name="va-ejbca-war" if="${mod.va.exists}" depends="ejbca-common-web, ejbca-common">
 		<ant antfile="${mod.va.path}/build.xml" target="ejbca-build" inheritall="true" inheritrefs="true"/>
 	</target>
 	

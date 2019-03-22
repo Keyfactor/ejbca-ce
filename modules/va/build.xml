@@ -56,7 +56,7 @@
 	<condition property="ocsp.enabled.if.defined"><istrue value="${ocsp.enabled}"/></condition>
 
 	<target name="ejbca-build" description="Build this module" depends="ejbca-status.war"/>
-	<target name="ejbca-status.war" depends="ejbca-status-compile" if="ocsp.enabled.if.defined">
+	<target name="ejbca-status.war" depends="ejbca-status-compile" if="ocsp.enabled.if.defined and build.contains.va">
 		<war destfile="${mod.status.war}" webxml="${va.resources.dir}/WEB-INF/web-status-ejbca.xml" basedir="${va.build-status.dir}"/>
 	</target>
 	
@@ -82,7 +82,7 @@
     	<mkdir dir="${va.build-status.dir}/WEB-INF/classes" />
         <javac destdir="${va.build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
-        	<include name="org/ejbca/ui/web/protocol/OCSPServlet.java"/>
+        	<include name="org/ejbca/ui/web/protocol/OCSPServlet.java" if="${mod.va.exists}"/>
         	<include name="org/ejbca/core/protocol/ocsp/*.java"/>
         	<include name="org/ejbca/core/protocol/ocsp/extension/**/*.java"/>
 			<src path="${va.src.war.dir}"/>
