@@ -2991,7 +2991,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] addUserAndGenerateKeyStore(AuthenticationToken authenticationToken, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
-        AuthorizationDeniedException authorizationDeniedException = null;
+            AuthorizationDeniedException authorizationDeniedException = null;
+        final GlobalConfiguration globalConfig = (GlobalConfiguration) localNodeGlobalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        // Local key pair generation requires special handling, generating keys and storing them locally while letting the CA issue the certificate using that key pair.
+        if (endEntity.getKeyRecoverable() && globalConfig.getEnableKeyRecovery() && globalConfig.getLocalKeyRecovery()) {
+            addUser(authenticationToken, endEntity, clearpwd);
+            return generateKeyStore(authenticationToken, endEntity);
+        }
+        
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
