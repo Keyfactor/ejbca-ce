@@ -86,9 +86,11 @@ public class EndEntityProfileHelper extends BaseHelper {
         static final By SELECT_DEFAULT_CP = By.id("eeProfiles:defaultCertificateProfile");
         static final By SELECT_DEFAULT_CA = By.id("eeProfiles:defaultCAMenu");
         static final By SELECT_AVAILABLE_CAS = By.id("eeProfiles:availableCA");
+        static final By SELECT_SUBJECT_ALTERNATIVE_NAME = By.id("eeProfiles:subjectAltNameAttributeType");
         static final By NOTIFICATION = By.xpath("//tr[td/strong[text()='Send Notification']]/following-sibling::tr[1]/td[2][contains(text(), 'Notification')]");
         // Other Data / Send Notification  / Add
         static final By BUTTON_ADD_NOTIFICATION = By.id("eeProfiles:addButton");
+        static final By BUTTON_ADD_SUBJECT_ALT_NAME = By.id("eeProfiles:addSubjectAltNameAttributeButton");
         // Other Data / Send Notification  / Delete all
         static final By BUTTON_DELETE_ALL_NOTIFICATION = By.id("eeProfiles:sendNotificationsDeleteAllButton");
 
@@ -454,6 +456,11 @@ public class EndEntityProfileHelper extends BaseHelper {
      */
     public void setNotificationSender(final int inputIndex, String sender) {
         fillInput(Page.getNotificationSenderByIndex(inputIndex), sender);
+    }
+
+    public void setSubjectAlternativeName(final String subjectAltName) {
+        selectOptionByName(Page.SELECT_SUBJECT_ALTERNATIVE_NAME, subjectAltName);
+        clickLink(Page.BUTTON_ADD_SUBJECT_ALT_NAME);
     }
 
     /**
