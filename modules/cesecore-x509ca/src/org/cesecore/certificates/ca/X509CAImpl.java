@@ -1484,15 +1484,62 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 }
             }
 
+            // Sign the certificate with a dummy key for presign validation.
+            // Do not call this if no validation will occur in the PRESIGN_CERTIFICATE_VALIDATION, because this code takes some time, signing a certificate
+            if (certGenParams != null && certGenParams.getAuthenticationToken() != null && 
+                    certGenParams.getCertificateValidationDomainService() != null && certGenParams.getCertificateValidationDomainService().willValidateInPhase(IssuancePhase.PRESIGN_CERTIFICATE_VALIDATION, this)) {
+                try {
+                    PrivateKey presignKey = CAConstants.getPreSignPrivateKey(sigAlg);
+                    if (presignKey == null) {
+                        throw new CertificateCreateException("No pre-sign key exist usable with algorithm " + sigAlg + ", PRESIGN_CERTIFICATE_VALIDATION is not possible with this CA.");
+                    }
+                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(presignKey), 20480);
+                    // Since this certificate may be written to file through the validator we want to ensure it's not a real certificate
+                    // We do that by signing with a hard coded fake key, and set authorityKeyIdentifier accordingly, so the cert can
+                    // not be verified even accidentally by someone
+                    // Confirmed in CT mailing list that this approach is ok.
+                    // https://groups.google.com/forum/#!topic/certificate-transparency/sDRcVBAgjCY
+                    // - "Anyone can create a certificate with a given issuer and sign it with a key they create. So it cannot be misissuance just because a name was used."
+                    
+                    // Get the old, real, authorityKeyIdentifier
+                    Extension ext = exts.getExtension(Extension.authorityKeyIdentifier);
+                    if (ext != null) {
+                        // Create a new authorityKeyIdentifier for the fake key
+                        JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
+                        AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(CAConstants.getPreSignPublicKey(sigAlg));
+                        certbuilder.replaceExtension(Extension.authorityKeyIdentifier, ext.isCritical(), aki.getEncoded());
+                    }
+                    X509CertificateHolder presignCertHolder = certbuilder.build(presignSigner);
+                    X509Certificate presignCert = CertTools.getCertfromByteArray(presignCertHolder.getEncoded(), X509Certificate.class);
+                    certGenParams.getCertificateValidationDomainService().validateCertificate(certGenParams.getAuthenticationToken(), IssuancePhase.PRESIGN_CERTIFICATE_VALIDATION, this, subject, presignCert);
+                    // Restore the original, real, authorityKeyIdentifier
+                    if (ext != null) {
+                        certbuilder.replaceExtension(Extension.authorityKeyIdentifier, ext.isCritical(), ext.getExtnValue().getOctets());
+                    }
+                } catch (IOException e) {
+                    throw new CertificateCreateException("Cannot create presign certificate: ", e);
+                } catch (ValidationException e) {
+                    throw new CertificateCreateException(ErrorCode.INVALID_CERTIFICATE, e);
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    if (certGenParams == null) {
+                        log.debug("No PRESIGN_CERTIFICATE_VALIDATION: certGenParams is null");
+                    } else {
+                        log.debug("No PRESIGN_CERTIFICATE_VALIDATION: " + (certGenParams.getAuthenticationToken() != null ? "" : "certGenParams.authenticationToken is null") + ":" + (certGenParams.getCertificateValidationDomainService() != null ? "" : "certGenParams.getCertificateValidationDomainService is null"));                        
+                    }
+                }
+            }
+
             // Add Certificate Transparency extension. It needs to access the certbuilder and
             // the CA key so it has to be processed here inside X509CA.
              if (ct != null && certProfile.isUseCertificateTransparencyInCerts() && certGenParams != null) {
 
-                // Create pre-certificate
+                // Create CT pre-certificate
                 // A critical extension is added to prevent this cert from being used
                 ct.addPreCertPoison(precertbuilder);
 
-                // Sign pre-certificate
+                // Sign CT pre-certificate
                 /*
                  *  TODO: Should be able to use a special CT signing certificate.
                  *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID,
@@ -1500,6 +1547,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                  */
                 final ContentSigner signer = new BufferingContentSigner(
                         new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
+                // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 // ECA-6051 Re-Factored with Domain Service Layer.
