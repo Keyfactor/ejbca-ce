@@ -590,6 +590,22 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
     }
 
+    @Override
+    public boolean willValidateInPhase(IssuancePhase phase, final CA ca) {
+        if (log.isDebugEnabled()) {
+            log.debug("Check if we have any validator for phase " + phase);
+        }
+        if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) {
+            for (Integer id : ca.getValidators()) {
+                Validator validator = getValidatorInternal(id, true);
+                if (phase.getIndex() == validator.getPhase()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     // Method is never called.
     public boolean authorizedToKeyValidatorWithResource(AuthenticationToken admin, CertificateProfile profile, boolean logging, String... resources) {
         // We need to check that admin also have rights to the passed in resources
@@ -875,4 +891,5 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
             return result;
         }
     }
+
 }
