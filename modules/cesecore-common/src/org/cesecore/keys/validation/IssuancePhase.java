@@ -26,10 +26,15 @@ import org.cesecore.util.IndexEnum;
 public enum IssuancePhase implements IndexEnum {
 
     // @formatter:off
+    /** after all required data for the certificate issuance was collected but before the certificate was generated */
     DATA_VALIDATION(0, "VALIDATORPHASE_DATA_VALIDATION"),
+    /** after the CT pre-certificate was generated but not submitted to CT logs, and before the final certificate is issued and stored (works with CT enabled only). */
     PRE_CERTIFICATE_VALIDATION(1, "VALIDATORPHASE_PRE_CERTIFICATE_VALIDATION"),
+    /** after the certificate was generated but not stored and issued */
     CERTIFICATE_VALIDATION(2, "VALIDATORPHASE_CERTIFICATE_VALIDATION"),
-    APPROVAL_VALIDATION(3, "VALIDATORPHASE_APPROVAL_VALIDATION");
+    APPROVAL_VALIDATION(3, "VALIDATORPHASE_APPROVAL_VALIDATION"),
+    /** on a certificate signed with a dummy key (not the CAs signature key), before real certificate is created */
+    PRESIGN_CERTIFICATE_VALIDATION(4, "VALIDATORPHASE_PRESIGN_CERTIFICATE_VALIDATION");
     // @formatter:on
 
     /** The unique index. */

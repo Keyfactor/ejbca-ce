@@ -41,4 +41,12 @@ public interface CertificateValidationDomainService {
      */
     void validateCertificate(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca,
             final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException;
+
+    /** Method that checks if validation will be performed in the specified phase. Can be used to exclude operations 
+     * (such as signing a certificate) if we know no validation will happen in this phase
+     * @param phase the certificate issuance life cycle phase ({@link IssuancePhase}.
+     * @param ca the issuing CA, which is configured with validators
+     * @return true if some validator will run in the phase
+     */
+    boolean willValidateInPhase(IssuancePhase phase, CA ca);
 }

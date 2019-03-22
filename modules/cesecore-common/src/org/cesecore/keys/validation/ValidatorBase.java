@@ -75,6 +75,7 @@ public abstract class ValidatorBase extends ProfileBase implements Serializable,
         APPLICABLE_PHASES.add(IssuancePhase.DATA_VALIDATION.getIndex());
         APPLICABLE_PHASES.add(IssuancePhase.PRE_CERTIFICATE_VALIDATION.getIndex());
         APPLICABLE_PHASES.add(IssuancePhase.CERTIFICATE_VALIDATION.getIndex());
+        APPLICABLE_PHASES.add(IssuancePhase.PRESIGN_CERTIFICATE_VALIDATION.getIndex());
         
         APPLICABLE_CA_TYPES = new ArrayList<>();
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);

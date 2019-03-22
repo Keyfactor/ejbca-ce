@@ -14,7 +14,6 @@
 package org.cesecore.keys.validation;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -46,6 +45,7 @@ public abstract class CertificateValidatorBase extends ValidatorBase implements 
         APPLICABLE_PHASES = new ArrayList<Integer>();
         APPLICABLE_PHASES.add(IssuancePhase.PRE_CERTIFICATE_VALIDATION.getIndex());
         APPLICABLE_PHASES.add(IssuancePhase.CERTIFICATE_VALIDATION.getIndex());
+        APPLICABLE_PHASES.add(IssuancePhase.PRESIGN_CERTIFICATE_VALIDATION.getIndex());
         
         APPLICABLE_CA_TYPES = new ArrayList<Integer>();
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
