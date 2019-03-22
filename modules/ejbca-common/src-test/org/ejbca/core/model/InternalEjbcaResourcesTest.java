@@ -78,17 +78,6 @@ public class InternalEjbcaResourcesTest {
         assertEquals("Test      message  ", res);
         assertEquals("Test      message  ", intres.getLocalizedMessageCs("test.testparams").toString());
     }
-
-	@Test
-	public void testMessageStringWithExtraParameter() {
-	    InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
-	    String res = intres.getLocalizedMessage("test.testmsgsv");
-	    assertEquals("Test sv-SE", res);
-	    assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv").toString());
-	    res = intres.getLocalizedMessage("test.testmsgsv", "foo $bar \\haaaar");
-	    assertEquals("Test sv-SE", res);
-	    assertEquals("Test sv-SE", intres.getLocalizedMessageCs("test.testmsgsv", "foo $bar \\haaaar").toString());
-	}
     
 	@Test
     public void testCeSecoreMessage() {

@@ -194,11 +194,6 @@ public class InternalResources implements Serializable {
                 sb.append(secondaryResource.getProperty(key));
             } else {
                 sb.append(key);
-                for(Object param : params) {
-                    if (param != null) {
-                        sb.append(", ").append(param.toString());
-                    }
-                }
             }
         }
         replacePlaceholders(sb, params);
@@ -210,15 +205,12 @@ public class InternalResources implements Serializable {
     
     public static void replacePlaceholders(final StringBuilder sb, final Object... params) {
         int i = 0;
-        while (i < (params.length - 1)) {
-            replaceAll(sb, i, params[i]);
+        while (i < params.length && replaceAll(sb, i, params[i])) {
             i++;
         }
         //Append all extra parameters to the end so that no information is lost. 
-        if(i < params.length) {
-            for (; i<params.length; i++) {
-                sb.append(", " + params[i]);
-            }
+        for (; i < params.length; i++) {
+            sb.append(", " + params[i]);
         }
         removeUnusedPlaceHolders(sb, params.length);
     }
@@ -235,33 +227,39 @@ public class InternalResources implements Serializable {
         return placeHolders;
     }
     
-    /** Replace any "{placeHolderIndex}" String that is present in the StringBuilder with 'replacementObject'. */
-    private static void replaceAll(final StringBuilder sb, final int placeHolderIndex, final Object replacementObject) {
+    /** Replace any "{placeHolderIndex}" String that is present in the StringBuilder with 'replacementObject'. 
+     * @return true if a param was replaced.
+     */
+    private static boolean replaceAll(final StringBuilder sb, final int placeHolderIndex, final Object replacementObject) {
         if (sb==null) {
             log.error("No StringBuilder. Unable to create localized message.");
-            return;
+            return false;
         }
         final String[] placeHolders = getPlaceHolders();
         if (placeHolderIndex<0 || placeHolderIndex>(placeHolders.length-1)) {
             log.error("Place holder index out of range. Unable to create localized message.");
-            return;
+            return false;
         }
-        final String placeHolder = placeHolders[placeHolderIndex];
-        final int placeHolderLength = placeHolder.length();
-        int currentIndex = -placeHolderLength;
-        int bar = 20; // never allow more than 20 placeholders to avoid recursion
-        if (replacementObject==null) {
-            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1 && bar > 0) {
-                sb.delete(currentIndex-1, currentIndex+placeHolderLength);
-                bar--;
-            }
+        String placeHolder = "{"+placeHolderIndex+"}";
+        int index = sb.indexOf(placeHolder);
+        final String to = (replacementObject == null ? "" :  replacementObject.toString());
+        int recursionLimit = 20; // never allow more than 20 placeholders to avoid recursion
+        if(index == -1) {
+            //There were more parameters than available indexes
+            return false;
         } else {
-            final String replacement = replacementObject.toString();
-            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1 && bar > 0) {
-                sb.replace(currentIndex-1, currentIndex+placeHolderLength, replacement);
-                bar--;
+            while (index != -1 && recursionLimit > 0) {
+                sb.replace(index, index + 3, to);
+                if(index == sb.indexOf(placeHolder)){
+                    index = -1;
+                } else {
+                    index = sb.indexOf(placeHolder);
+                }
+                recursionLimit--;
             }
+            return true;
         }
+        
     }
 
     /** Remove any "{number}" string that is still present in the StringBuilder where number starts with 'startPlaceHolderIndex'. */
