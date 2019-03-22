@@ -117,6 +117,17 @@ public class CaHelper extends BaseHelper {
          * CA Life Cycle / New Subject DN
          */
         static final By INPUT_NEWSUBJECTDN = By.id("editcapage:idnewsubjectdn");
+
+        /**
+         * Directives / Enforce Unique Public Keys
+         */
+        static final By INPUT_CHECKBOXENFORCEUNIQUEPUBLICKEYS = By.id("editcapage:isdoenforceuniquepublickeys");
+
+        /**
+         * Directives / Enforce Unique DN
+         */
+        static final By INPUT_CHECKBOXENFORCEUNIQUEDN = By.id("editcapage:isdoenforceuniquedn");
+
         /**
          * certSignKey
          */
@@ -494,5 +505,18 @@ public class CaHelper extends BaseHelper {
      */
     public void assertNewSubjectDnNotPresent() {
         assertNull(findElementWithoutWait(Page.INPUT_NEWSUBJECTDN));
+    }
+
+    /**
+     * Check or uncheck Enforce Unique Public Keys
+     *
+     * @param check
+     */
+    public void checkEnforceUniquePublicKeys(Boolean check) {
+        toggleCheckbox(Page.INPUT_CHECKBOXENFORCEUNIQUEPUBLICKEYS, check);
+    }
+
+    public void checkEnforceUniqueDN(Boolean check) {
+        toggleCheckbox(Page.INPUT_CHECKBOXENFORCEUNIQUEDN, check);
     }
 }
