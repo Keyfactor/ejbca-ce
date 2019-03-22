@@ -139,6 +139,8 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
     public void stepF_AddCA() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
+        caHelper.checkEnforceUniquePublicKeys(false);
+        caHelper.checkEnforceUniqueDN(false);
         caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.setOtherData(TestData.VALIDATOR_NAME);
     }
@@ -240,6 +242,10 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
             eeProfileHelper.triggerKeyRecoverable();
             eeProfileHelper.triggerIssuanceRevocationReason();
             eeProfileHelper.triggerSendNotification();
+
+            //Add DNS Name
+            eeProfileHelper.setSubjectAlternativeName("DNS Name");
+
             eeProfileHelper.addNotification();
             eeProfileHelper.setNotificationSender(0, "sender@example.com");
             eeProfileHelper.setNotificationSubject(0, "Web Tester");
@@ -252,29 +258,43 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
             eeProfileHelper.assertEndEntityProfileNameExists(TestData.ENTITY_NAME);
         }
 
-    @Test
+    @Test()
     public void stepP_MakeNewCertificate() {
         raWebHelper.openPage(this.getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
+    }
+
+    @Test
+    public void stepQ_SelectRequestTemplate() {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
         raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
         raWebHelper.selectKeyPairGenerationProvided();
+    }
+
+    @Test
+    public void stepR_insertCsrCertificate() {
         raWebHelper.fillClearCsrText(StringUtils.join(TestData.CERTIFICATE_REQUEST_PEM, "\n"));
     }
 
     @Test
-    public void stepQ_UploadCsrCertificate() {
+    public void stepS_UploadCSRCertificate() {
         raWebHelper.clickUploadCsrButton();
+    }
+
+    @Test
+    public void stepT_ProvideRequestInfo() {
+        raWebHelper.fillRequestEditCommonName("cn" + Calendar.getInstance().toString());
+        raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
+    }
+
+    @Test
+    public void stepU_downloadPem() {
+        raWebHelper.clickDownloadPem();
         raWebHelper.assertCsrUploadError();
     }
 
     @Test(timeout = 20000)
-    public void stepR_ReturnToCAdmin() {
+    public void stepV_ReturnToCAdmin() {
         eeProfileHelper.openPage(this.getAdminWebUrl());
     }
-
-
-
-
-
 }
