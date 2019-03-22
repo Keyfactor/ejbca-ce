@@ -583,8 +583,6 @@
             <fileset dir="${dist.dir}" includes="doc*.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="cesecore-ejb.jar" />
-            	<include name="cesecore-cvcca.jar" />
-            	<include name="cesecore-x509ca.jar" />
                 <include name="ejbca-ejb.jar" />
             	<include name="edition-specific-ejb.jar" />
                 <include name="ejbca-ws-ejb.jar" />
