@@ -246,7 +246,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
      * @throws CertPathValidatorException
      */
     private void fallBackToCrl(final Certificate cert, final String issuerDN) throws CertPathValidatorException {
-        final ArrayList<URL> crlUrls = getCrlUrl(cert);
+        final ArrayList<String> crlUrls = getCrlUrl(cert);
         if(crlUrls.isEmpty()) {
             final String errmsg = "Failed to verify certificate status using the fallback CRL method. Could not find a CRL URL"; 
             log.info(errmsg);
@@ -257,7 +257,7 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         }
         
         CRL crl = null;
-        for(URL url : crlUrls) {
+        for (final String url : crlUrls) {
             crl = getCRL(url);
             if(crl != null) {
                 if(isCorrectCRL(crl, issuerDN)) {
@@ -322,18 +322,23 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         return false;
     }
     
-    private CRL getCRL(final URL url) {
+    private CRL getCRL(final String uri) {
         CRL crl = null;
         try {
+            final URL url = new URL(uri);
             final URLConnection con = url.openConnection();
             final InputStream is = con.getInputStream();
             final CertificateFactory cf = CertificateFactory.getInstance("X.509");
             crl = cf.generateCRL(is);
             is.close();
             log.info("Downloaded CRL from " + url);
+        } catch (MalformedURLException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Failed to parse '" + this.crlUrl + "' as a URL. " + e.getLocalizedMessage());
+            }
         } catch(IOException | CertificateException | CRLException e) {
             if(log.isDebugEnabled()) {
-                log.debug("Fetching CRL from " + url.toString() + " failed. " + e.getLocalizedMessage());
+                log.debug("Fetching CRL from " + uri + " failed. " + e.getLocalizedMessage());
             }
         }
         return crl;
@@ -516,21 +521,15 @@ public class PKIXCertRevocationStatusChecker extends PKIXCertPathChecker {
         return urls;
     }
     
-    private ArrayList<URL> getCrlUrl(final Certificate cert) {
+    private ArrayList<String> getCrlUrl(final Certificate cert) {
         
-        ArrayList<URL> urls = new ArrayList<URL>();
+        ArrayList<String> urls = new ArrayList<>();
         
         if(StringUtils.isNotEmpty(this.crlUrl)) {
-            try {
-                urls.add(new URL(this.crlUrl));
-            } catch (MalformedURLException e) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Failed to parse '" + this.crlUrl + "' as a URL. " + e.getLocalizedMessage());
-                }
-            }
+            urls.add(crlUrl);
         }
         
-        Collection<URL> crlUrlFromExtension = CertTools.getCrlDistributionPoints((X509Certificate)cert); 
+        Collection<String> crlUrlFromExtension = CertTools.getCrlDistributionPoints((X509Certificate)cert); 
         urls.addAll(crlUrlFromExtension);
         
         return urls; 
