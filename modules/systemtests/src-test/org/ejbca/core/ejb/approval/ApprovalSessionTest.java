@@ -110,7 +110,7 @@ public class ApprovalSessionTest extends CaTestCase {
      * Expiration period for approval requests and admin approvals, in milliseconds, to use in this test.
      * A less performant or more highly loaded test environment may need a higher value.
      */
-    private static final long EXPIRATION_PERIOD = 2000;
+    private static final long EXPIRATION_PERIOD = 4000;
     private static final long EXPIRATION_SLEEP = EXPIRATION_PERIOD + 100;
 
     private static String adminusername1 = "createTestCAWithEndEntity";
