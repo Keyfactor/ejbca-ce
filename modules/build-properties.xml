@@ -487,7 +487,15 @@
     <condition property="mod.cesecore-cvcca.exists">
         <available file="${mod.cesecore-cvcca.path}/build.xml" />
     </condition>
+    
+    <condition property="mod.va.exists">
+        <available file="${mod.va.path}/build.xml" />
+    </condition>
 
+    <condition property="mod.ra.exists">
+        <available file="${mod.ra-gui.path}/build.xml" />
+    </condition>
+        
 	<condition property="mod.externalra.exists">
 		<available file="${mod.externalra.path}/build.xml" />
     </condition>
