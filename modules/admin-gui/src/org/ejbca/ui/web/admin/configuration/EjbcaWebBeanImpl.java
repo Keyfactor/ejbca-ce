@@ -50,7 +50,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -1570,7 +1569,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
     }
     
-    /** @return true if we are running an EJBCA build that has RA functionality enabled. */
+    /** @return true if we are running an EJBCA build that has RA functionality enabled. 
+     * The check is implemented to look for RaMasterApiPeerImpl, as it is excluded from the "variant=va ziprelease.
+     * We decided to use RaMasterApiPeerImpl for this check, because it seemd the most painless one among 
+     * the excluded classes to perform this check against: it is visible here in EjbcaWebBeanImpl and it doesn't have 
+     * many dependencies to disturb the exclusion.
+     * */
     @Override
     public boolean isRunningBuildWithRA() {
         try {
