@@ -187,6 +187,9 @@ public interface KeyValidatorSessionLocal extends KeyValidatorSession, Certifica
     void validateCertificate(final AuthenticationToken authenticationToken, final IssuancePhase phase, final CA ca,
             final EndEntityInformation endEntityInformation, final X509Certificate certificate) throws ValidationException;
 
+    @Override
+    boolean willValidateInPhase(final IssuancePhase phase, final CA ca);
+    
     /** Removes the key validator data if it is not referenced by a CA.
      * If the validatorId does not exist, the method returns without doing anything.
      *
