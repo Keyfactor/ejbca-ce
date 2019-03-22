@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -511,7 +512,7 @@ public abstract class CATokenTestBase {
 			try {
 				KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
 						cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
-				assertTrue(false);
+				fail("Keystore instansiation should have failed.");
 			} catch (CryptoTokenOfflineException e) {
                 assertEquals("Can not instantiate "+getProvider()+". keyStore (111) == null.", e.getMessage());
 			}
