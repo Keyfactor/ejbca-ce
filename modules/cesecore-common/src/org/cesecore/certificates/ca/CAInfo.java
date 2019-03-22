@@ -13,10 +13,8 @@
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
-import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -555,36 +553,24 @@ public abstract class CAInfo implements Serializable {
     public boolean isDoEnforceUniqueDistinguishedName() {
         return this.doEnforceUniqueDistinguishedName;
     }
-
+    
     /**
      * Determines which CRL Partition Index a given certificate belongs to. This check is based on the URI in the CRL Distribution Point extension.
      * @param cert Certificate
-     * @return CRL Partition Index. If there is none or more than one Distribution Point URI, it returns CertificateConstants.NO_CRL_PARTITION.
+     * @return Partition number, or {@link CertificateConstants#NO_CRL_PARTITION} if partitioning is not enabled / not applicable.
      */
     public int determineCrlPartitionIndex(final Certificate cert) {
-        if (cert instanceof X509Certificate) {
-            final Collection<String> uris = CertTools.getCrlDistributionPoints((X509Certificate) cert);
-            return determineCrlPartitionIndex(uris);
-        }
+        // Overridden in X509CAInfo
         return CertificateConstants.NO_CRL_PARTITION;
     }
 
     /**
-     * Determines which CRL Partition Index a given CRL belongs to. This check is based on the URI in the Issuing Distribution Point extension. 
+     * Determines which CRL Partition Index a given CRL belongs to. This check is based on the URI in the Issuing Distribution Point extension.
+     * @param crl CRL
+     * @return Partition number, or {@link CertificateConstants#NO_CRL_PARTITION} if partitioning is not enabled / not applicable.
      */
     public int determineCrlPartitionIndex(final X509CRL crl) {
-        final Collection<String> uris = CertTools.getCrlDistributionPoints(crl);
-        return determineCrlPartitionIndex(uris);
-    }
-
-    /**
-     * Determines which CRL Partition Index by a CRL Distribution Point URIs. 
-     */
-    private int determineCrlPartitionIndex(final Collection<String> uris) {
-        if (uris.size() != 1) { // no URI, or multiple URIs (not supported)
-            return CertificateConstants.NO_CRL_PARTITION;
-        }
-        final String uri = uris.iterator().next();
-        return CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
+        // Overridden in X509CAInfo
+        return CertificateConstants.NO_CRL_PARTITION;
     }
 }

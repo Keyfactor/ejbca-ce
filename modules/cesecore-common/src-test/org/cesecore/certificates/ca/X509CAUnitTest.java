@@ -12,6 +12,14 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -95,6 +103,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
@@ -130,14 +139,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /** JUnit test for X.509 CA
  *
@@ -1278,6 +1279,37 @@ public class X509CAUnitTest {
         assertEquals("CRL URL is wrong, should not contain partition index.", "http://example.com/CA.crl", actualCdpUrlforIndex0);
         //We should have a URL with a partition number '1' for actualCdpUrlforIndex1
         assertEquals("CRL URL is wrong, should contain correct partition index.", "http://example.com/CA1.crl", actualCdpUrlforIndex1);
+    }
+
+    /**
+     * Tests the determineCrlPartitionIndex method.
+     */
+    @Test
+    public void determineCrlPartitionIndex() throws Exception {
+        log.trace(">determineCrlPartitionIndex");
+        final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
+        X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
+        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
+        caInfo.setUsePartitionedCrl(true);
+        // Test with no partition
+        caInfo.setDefaultCRLDistPoint("http://example.com/CA1.crl");
+        assertEquals("With no asterisk in URL there should be no partitioning.", CertificateConstants.NO_CRL_PARTITION, caInfo.determineCrlPartitionIndex("http://example.com/CA1.crl"));
+        // Test with default partition
+        caInfo.setDefaultCRLDistPoint("http://example.com/CA*.crl");
+        assertEquals("Test with default partition failed.", CertificateConstants.NO_CRL_PARTITION, caInfo.determineCrlPartitionIndex("http://example.com/CA.crl"));
+        // Test with partition index in one place
+        caInfo.setDefaultCRLDistPoint("http://example.com/CA*.crl");
+        assertEquals("Test with one partition index failed.", 234, caInfo.determineCrlPartitionIndex("http://example.com/CA234.crl"));
+        // Test with partition index in two places
+        caInfo.setDefaultCRLDistPoint("http://part*.crl.example.com/CA*.crl");
+        assertEquals("Test with two partition indexes failed.", 3456, caInfo.determineCrlPartitionIndex("http://part3456.crl.example.com/CA3456.crl"));
+        // Test with partition index in two places, with mismatch
+        caInfo.setDefaultCRLDistPoint("http://part*.crl.example.com/CA*.crl");
+        assertEquals("Test with mismatch should return 0 partition.", CertificateConstants.NO_CRL_PARTITION, caInfo.determineCrlPartitionIndex("http://part123.crl.example.com/CA456.crl"));
+        // Test with strange characters. Should work
+        caInfo.setDefaultCRLDistPoint("http://part*.crl.example.com/strange\\xx\\\"test\\E++TEST*.crl");
+        assertEquals("Test with two partition indexes failed.", 987, caInfo.determineCrlPartitionIndex("http://part987.crl.example.com/strange\\xx\\\"test\\E++TEST987.crl"));
+        log.trace("<determineCrlPartitionIndex");
     }
 
     /**

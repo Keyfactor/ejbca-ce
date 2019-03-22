@@ -15,6 +15,7 @@ package org.cesecore.certificates.ca;
 import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,9 +23,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.CertTools;
@@ -39,6 +44,8 @@ import org.cesecore.util.StringTools;
  */
 public class X509CAInfo extends CAInfo {
 
+    private static final Logger log = Logger.getLogger(X509CAInfo.class);
+    
 	private static final long serialVersionUID = 2L;
 	private List<CertificatePolicy> policies;
 	private boolean useauthoritykeyidentifier;
@@ -412,7 +419,85 @@ public class X509CAInfo extends CAInfo {
       }
       return crlUrl.replace("*", partitionIndex.toString());
   }
-  
+
+  /**
+   * Determines which CRL Partition Index a given certificate belongs to. This check is based on the URI in the CRL Distribution Point extension.
+   * @param cert Certificate
+   * @return Partition number, or {@link CertificateConstants#NO_CRL_PARTITION} if partitioning is not enabled / not applicable.
+   */
+  @Override
+  public int determineCrlPartitionIndex(final Certificate cert) {
+      if (getUsePartitionedCrl() && cert instanceof X509Certificate) {
+          final Collection<String> uris = CertTools.getCrlDistributionPoints((X509Certificate) cert);
+          return determineCrlPartitionIndex(uris);
+      } else {
+          return CertificateConstants.NO_CRL_PARTITION;
+      }
+  }
+
+  /**
+   * Determines which CRL Partition Index a given CRL belongs to. This check is based on the URI in the Issuing Distribution Point extension.
+   * @param crl CRL
+   * @return Partition number, or {@link CertificateConstants#NO_CRL_PARTITION} if partitioning is not enabled / not applicable.
+   */
+  @Override
+  public int determineCrlPartitionIndex(final X509CRL crl) {
+      if (getUsePartitionedCrl()) {
+          final Collection<String> uris = CertTools.getCrlDistributionPoints(crl);
+          return determineCrlPartitionIndex(uris);
+      } else {
+          return CertificateConstants.NO_CRL_PARTITION;
+      }
+  }
+
+  private int determineCrlPartitionIndex(final Collection<String> uris) {
+      for (final String uri : uris) {
+          final int partition = determineCrlPartitionIndex(uri);
+          if (partition != CertificateConstants.NO_CRL_PARTITION) {
+              return partition;
+          }
+      }
+      return CertificateConstants.NO_CRL_PARTITION;
+  }
+
+  /**
+   * Determines which CRL Partition Index by a CRL Distribution Point URIs.
+   * @param uri URI to extract partition index from.
+   * @return Partition number, or {@link CertificateConstants#NO_CRL_PARTITION} if partitioning is not enabled / not applicable.
+   */
+  protected int determineCrlPartitionIndex(final String uri) {
+      if (!getUsePartitionedCrl()) {
+          return CertificateConstants.NO_CRL_PARTITION;
+      }
+      final String regex = Pattern.quote(defaultcrldistpoint).replace("*", "\\E(\\d+)\\Q"); // match digits where there is a "*"
+      if (log.isTraceEnabled()) {
+          log.trace("Using regex '" + regex +"' to match URI '" + uri + "'");
+      }
+      final Matcher matcher = Pattern.compile(regex).matcher(uri);
+      if (!matcher.matches()) {
+          final String msg = "CRL Distribution Point URI '" + uri + "' does not match '" + defaultcrldistpoint + "'";
+          log.debug(msg);
+          return CertificateConstants.NO_CRL_PARTITION;
+      }
+      final int groupCount = matcher.groupCount();
+      int partition = CertificateConstants.NO_CRL_PARTITION;
+      try {
+          for (int i = 1; i <= groupCount; i++) {
+              final int numberFromUri = Integer.parseInt(matcher.group(i));
+              if (partition != CertificateConstants.NO_CRL_PARTITION && numberFromUri != partition) {
+                  log.info("Ambiguous CRL Partition Indexes in URI: " + uri);
+                  return CertificateConstants.NO_CRL_PARTITION;
+              }
+              partition = numberFromUri;
+          }
+          return partition;
+      } catch (NumberFormatException e) {
+          final String msg = "Bad number format in CRL Partition Indexes in URI: " + uri;
+          log.info(msg);
+          return CertificateConstants.NO_CRL_PARTITION;
+      }
+  }
+
   public String getDefaultCRLIssuer(){ return defaultcrlissuer; }
   public void setDefaultCRLIssuer(String defaultcrlissuer) {
       this.defaultcrlissuer = defaultcrlissuer;
