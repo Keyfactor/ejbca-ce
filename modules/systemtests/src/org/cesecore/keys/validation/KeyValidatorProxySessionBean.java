@@ -178,6 +178,11 @@ public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRem
     }
 
     @Override
+    public boolean willValidateInPhase(IssuancePhase phase, CA ca) {
+        return keyValidatorSession.willValidateInPhase(phase, ca);
+    }
+
+    @Override
     public Map<Integer, String> getKeyValidatorIdToNameMap(int applicableCas) {
         return keyValidatorSession.getKeyValidatorIdToNameMap(applicableCas);
     }
