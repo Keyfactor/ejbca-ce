@@ -11,8 +11,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -140,8 +138,11 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
     public void stepF_AddCA() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
+        caHelper.checkEnforceUniquePublicKeys(false);
+        caHelper.checkEnforceUniqueDN(false);
         caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.setOtherData(TestData.VALIDATOR_NAME);
+
     }
 
 
@@ -243,6 +244,10 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
             eeProfileHelper.triggerKeyRecoverable();
             eeProfileHelper.triggerIssuanceRevocationReason();
             eeProfileHelper.triggerSendNotification();
+
+            //Add DNS Name
+            eeProfileHelper.setSubjectAlternativeName("DNS Name");
+
             eeProfileHelper.addNotification();
             eeProfileHelper.setNotificationSender(0, "sender@example.com");
             eeProfileHelper.setNotificationSubject(0, "Web Tester");
@@ -255,29 +260,45 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
             eeProfileHelper.assertEndEntityProfileNameExists(TestData.ENTITY_NAME);
         }
 
-        @Test
-        public void stepP_MakeNewCertificate() {
-            raWebHelper.openPage(this.getRaWebUrl());
-            raWebHelper.makeNewCertificateRequest();
-            raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
-            raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
-            raWebHelper.selectKeyPairGenerationProvided();
-            raWebHelper.fillClearCsrText(StringUtils.join(TestData.CERTIFICATE_REQUEST_PEM, "\n"));
-        }
 
-        @Test
-        public void stepQ_UploadCsrCertificate() {
-            raWebHelper.clickUploadCsrButton();
-            raWebHelper.assertCsrUploadError();
-        }
+    @Test()
+    public void stepP_MakeNewCertificate() {
+        raWebHelper.openPage(this.getRaWebUrl());
+        raWebHelper.makeNewCertificateRequest();
+    }
 
-        @Test(timeout = 20000)
-        public void stepR_ReturnToCAAdmin() {
-            eeProfileHelper.openPage(this.getAdminWebUrl());
-        }
+    @Test
+    public void stepQ_SelectRequestTemplate() {
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
+        raWebHelper.selectKeyPairGenerationProvided();
+    }
 
+    @Test
+    public void stepR_insertCsrCertificate() {
+        raWebHelper.fillClearCsrText(StringUtils.join(TestData.CERTIFICATE_REQUEST_PEM, "\n"));
+    }
 
+    @Test
+    public void stepS_UploadCSRCertificate() {
+        raWebHelper.clickUploadCsrButton();
+    }
 
+    @Test
+    public void stepT_ProvideRequestInfo() {
+        raWebHelper.fillRequestEditCommonName("cn" + Calendar.getInstance().toString());
+        raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
+    }
 
+    @Test
+    public void stepU_downloadPem() {
+        raWebHelper.clickDownloadPem();
+        raWebHelper.assertCsrUploadError();
+    }
+
+    @Test(timeout = 20000)
+    public void stepV_ReturnToCAdmin() {
+        eeProfileHelper.openPage(this.getAdminWebUrl());
+    }
 
 }

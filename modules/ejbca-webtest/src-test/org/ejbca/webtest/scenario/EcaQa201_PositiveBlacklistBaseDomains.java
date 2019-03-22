@@ -42,16 +42,16 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     // Test Data
     private static class TestData {
         private static final String VALIDATOR_BLACKLIST_FILENAME = new GetResourceDir().getResourceFolder() + "/blacklist.txt";
-        private static final String VALIDATOR_NAME = "EcaQa201A_Blacklist";
+        private static final String VALIDATOR_NAME = "EcaQa201-2A_Blacklist";
         private static final String VALIDATOR_BLACKLIST_SITE = "www.yahoo.com";
         private static final String VALIDATOR_PERFORM_TYPE = "Base domains";
-        private static final String CA_NAME = "EcaQa201A_CA";
+        private static final String CA_NAME = "EcaQa201-2A_CA";
         private static final String CA_VALIDITY = "1y";
-        private static final String APPROVAL_PROFILE_NAME = "EcaQa201A_ApprovalProfile";
+        private static final String APPROVAL_PROFILE_NAME = "EcaQa201-2A_ApprovalProfile";
         private static final String APPROVAL_PROFILE_TYPE_PARTITIONED_APPROVAL = "Partitioned Approval";
-        private static final String CERTIFICATE_PROFILE_NAME = "EcaQa201A-CertificateProfile";
+        private static final String CERTIFICATE_PROFILE_NAME = "EcaQa201-2A-CertificateProfile";
         private static final String ROLE_NAME = "Super Administrator Role";
-        private static final String ENTITY_NAME = "EcaQa201B_EntityProfile";
+        private static final String ENTITY_NAME = "EcaQa201-2A_EntityProfile";
         static final String[] CERTIFICATE_REQUEST_PEM = new String[]{"-----BEGIN CERTIFICATE REQUEST-----", "MIICZzCCAU8CAQAwIjELMAkGA1UEBhMCVVMxEzARBgNVBAMMClJlc3RyaWN0Q04w", "ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDwyIsyw3HB+8yxOF9BOfjG", "zLoQIX7sLg1lXk1miLyU6wYmuLnZfZrr4pjZLyEr2iP92IE97DeK/8y2827qctPM", "y4axmczlRTrEZKI/bVXnLOrQNw1dE+OVHiVoRFa5i4TS/qfhNA/Gy/eKpzxm8LT7", "+folAu92HwbQ5H8fWQ/l+ysjTheLMyUDaK83+NvYAL9Gfl29EN/TTrRzLKWoXrlB", "Ed7PT2oCBgrvF7pHsrry2O3yuuO2hoF5RQTo9BdBaGvzxGdweYTvdoLWfZm1zGI+", "CW0lprBdjagCC4XAcWi5OFcxjrRA9WA6Cu1q4Hn+eJEdCNHVvqss2rz6LOWjAQAr", "AgMBAAGgADANBgkqhkiG9w0BAQsFAAOCAQEA1JlwrFN4ihTZWICnWFb/kzcmvjcs", "0xeerNZQAEk2FJgj+mKVNrqCRWr2iaPpAeggH8wFoZIh7OvhmIZNmxScw4K5HhI9", "SZD+Z1Dgkj8+bLAQaxvw8sxXLdizcMNvbaXbzwbAN9OUkXPavBlik/b2JLafcEMM", "8IywJOtJMWemfmLgR7KAqDj5520wmXgAK6oAbbMqWUip1vz9oIisv53n2HFq2jzq", "a5d2WKBq5pJY19ztQ17HwlGTI8it4rlKYn8p2fDuqxLXiBsX8906E/cFRN5evhWt", "zdJ6yvdw3HQsoVAVi0GDHTs2E8zWFoYyP0byzKSSvkvQR363LQ0bik4cuQ==", "-----END CERTIFICATE REQUEST-----"};
 
 
@@ -84,13 +84,6 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     public static void exit() throws AuthorizationDeniedException {
         // super
         afterClass();
-
-        // Remove generated artifacts
-        removeEndEntityProfileByName(TestData.ENTITY_NAME);
-        removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
-        removeApprovalProfileByName(TestData.APPROVAL_PROFILE_NAME);
-        removeCaAndCryptoToken(TestData.CA_NAME);
-        removeValidatorByName(TestData.VALIDATOR_NAME);
     }
 
 
@@ -123,8 +116,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
 
         //Test to verify it returns a positive test result
         validatorsHelper.testBlacklistSite();
-        validatorsHelper.assertBlackListResultsIsCorrect("Domain Blacklist Validator 'EcaQa201A_Blacklist' permitted issuance of certificate.");
-
+        validatorsHelper.assertBlackListResultsIsCorrect("Domain Blacklist Validator '" + TestData.VALIDATOR_BLACKLIST_SITE + "' permitted issuance of certificate.");
     }
 
     @Test
@@ -138,6 +130,8 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     public void stepF_CreateCA() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
+        caHelper.checkEnforceUniquePublicKeys(false);
+        caHelper.checkEnforceUniqueDN(false);
         caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.setOtherData(TestData.VALIDATOR_NAME);
     }
@@ -243,6 +237,10 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
             eeProfileHelper.triggerKeyRecoverable();
             eeProfileHelper.triggerIssuanceRevocationReason();
             eeProfileHelper.triggerSendNotification();
+
+            //Add DNS Name
+            eeProfileHelper.setSubjectAlternativeName("DNS Name");
+
             eeProfileHelper.addNotification();
             eeProfileHelper.setNotificationSender(0, "sender@example.com");
             eeProfileHelper.setNotificationSubject(0, "Web Tester");
@@ -259,20 +257,50 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
         public void stepQ_MakeNewCertificate() {
             raWebHelper.openPage(this.getRaWebUrl());
             raWebHelper.makeNewCertificateRequest();
+        }
+
+        @Test
+        public void stepR_SelectRequestTemplate() {
             raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
             raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
             raWebHelper.selectKeyPairGenerationProvided();
+        }
+
+        @Test
+        public void stepS_insertCsrCertificate() {
             raWebHelper.fillClearCsrText(StringUtils.join(TestData.CERTIFICATE_REQUEST_PEM, "\n"));
         }
 
         @Test
-        public void stepR_UploadCSRCertificate() {
+        public void stepT_UploadCSRCertificate() {
             raWebHelper.clickUploadCsrButton();
+        }
+
+        @Test
+        public void stepU_ProvideRequestInfo() {
+            raWebHelper.fillRequestEditCommonName("cn" + Calendar.getInstance().toString());
+            raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
+        }
+
+        @Test
+        public void stepV_downloadPem() {
+            raWebHelper.clickDownloadPem();
             raWebHelper.assertApproveMessageDoesNotExist();
         }
 
         @Test(timeout = 20000)
-        public void stepS_ReturnToCAdmin() {
+        public void stepW_ReturnToCAdmin() {
             eeProfileHelper.openPage(this.getAdminWebUrl());
         }
+
+        @Test
+        public void stepX_CleanArtifactsUsingInternalMethods() {
+            // Remove generated artifacts
+            removeEndEntityProfileByName(TestData.ENTITY_NAME);
+            removeCertificateProfileByName(TestData.CERTIFICATE_PROFILE_NAME);
+            removeApprovalProfileByName(TestData.APPROVAL_PROFILE_NAME);
+            removeCaAndCryptoToken(TestData.CA_NAME);
+            removeValidatorByName(TestData.VALIDATOR_NAME);
+        }
+
 }

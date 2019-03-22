@@ -11,8 +11,6 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -124,7 +122,7 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
 
         //Test to verify it returns a positive test result
         validatorsHelper.testBlacklistSite();
-        validatorsHelper.assertBlackListResultsIsCorrect("Domain Blacklist Validator 'EcaQa201B_Blacklist' permitted issuance of certificate.");
+        validatorsHelper.assertBlackListResultsIsCorrect("Domain Blacklist Validator '" + TestData.VALIDATOR_BLACKLIST_SITE + "' permitted issuance of certificate.");
     }
 
     @Test
@@ -138,6 +136,8 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
     public void stepF_AddCA() {
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
+        caHelper.checkEnforceUniquePublicKeys(false);
+        caHelper.checkEnforceUniqueDN(false);
         caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.setOtherData(TestData.VALIDATOR_NAME);
 
@@ -241,6 +241,10 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
             eeProfileHelper.triggerKeyRecoverable();
             eeProfileHelper.triggerIssuanceRevocationReason();
             eeProfileHelper.triggerSendNotification();
+
+            //Add DNS Name
+            eeProfileHelper.setSubjectAlternativeName("DNS Name");
+
             eeProfileHelper.addNotification();
             eeProfileHelper.setNotificationSender(0, "sender@example.com");
             eeProfileHelper.setNotificationSubject(0, "Web Tester");
@@ -253,25 +257,43 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
             eeProfileHelper.assertEndEntityProfileNameExists(TestData.ENTITY_NAME);
         }
 
-        @Test
-        public void stepQ_MakeNewCertificate() {
-            raWebHelper.openPage(this.getRaWebUrl());
-            raWebHelper.makeNewCertificateRequest();
-            raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
-            raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
-            raWebHelper.selectKeyPairGenerationProvided();
-            raWebHelper.fillClearCsrText(StringUtils.join(TestData.CERTIFICATE_REQUEST_PEM, "\n"));
-        }
+    @Test()
+    public void stepQ_MakeNewCertificate() {
+        raWebHelper.openPage(this.getRaWebUrl());
+        raWebHelper.makeNewCertificateRequest();
+    }
 
-        @Test
-        public void stepR_UploadCsrCertificate() {
-            raWebHelper.clickUploadCsrButton();
-            raWebHelper.assertApproveMessageDoesNotExist();
-        }
+    @Test
+    public void stepR_SelectRequestTemplate() {
+        raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
+        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
+        raWebHelper.selectKeyPairGenerationProvided();
+    }
 
-        @Test(timeout = 20000)
-        public void stepS_ReturnToCAdmin() {
-            eeProfileHelper.openPage(this.getAdminWebUrl());
-        }
+    @Test
+    public void stepS_insertCsrCertificate() {
+        raWebHelper.fillClearCsrText(StringUtils.join(TestData.CERTIFICATE_REQUEST_PEM, "\n"));
+    }
 
+    @Test
+    public void stepT_UploadCSRCertificate() {
+        raWebHelper.clickUploadCsrButton();
+    }
+
+    @Test
+    public void stepU_ProvideRequestInfo() {
+        raWebHelper.fillRequestEditCommonName("cn" + Calendar.getInstance().toString());
+        raWebHelper.fillDnsName(TestData.VALIDATOR_BLACKLIST_SITE);
+    }
+
+    @Test
+    public void stepV_downloadPem() {
+        raWebHelper.clickDownloadPem();
+        raWebHelper.assertApproveMessageDoesNotExist();
+    }
+
+    @Test(timeout = 20000)
+    public void stepW_ReturnToCAdmin() {
+        eeProfileHelper.openPage(this.getAdminWebUrl());
+    }
 }
