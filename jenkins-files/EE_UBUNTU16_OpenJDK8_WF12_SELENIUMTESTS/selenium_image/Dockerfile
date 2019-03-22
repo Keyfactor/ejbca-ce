@@ -50,10 +50,6 @@ RUN chmod 777 /opt/ejbca_webtest_conf
 ADD configuration/jboss-ejb-client.properties /opt/
 RUN chmod 777 /opt/jboss-ejb-client.properties
 
-# copy propertyDefaults.xml to /opt in the container for runtime-usage
-# ADD configuration/propertyDefaults.xml /opt/
-# RUN chmod 777 /opt/propertyDefaults.xml
-
 # need to run as seluser, because firefox needs to be run as seluser for the profile to work properly inside the container
 USER seluser
 
