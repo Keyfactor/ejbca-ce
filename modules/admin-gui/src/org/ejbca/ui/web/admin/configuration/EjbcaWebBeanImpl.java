@@ -1574,7 +1574,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public boolean isRunningBuildWithRA() {
         try {
-            Class.forName("org.cesecore.keybind.impl.OcspKeyBinding");
+            Class.forName("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
             return true;
         } catch (ClassNotFoundException e) {
             return false;
