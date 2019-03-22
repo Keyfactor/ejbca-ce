@@ -62,8 +62,8 @@ public class RevokeEndEntityCommand extends BaseRaCommand {
                 MandatoryMode.MANDATORY,
                 StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT,
-                "Reason: unused(0), keyCompromise(1), cACompromise(2), affiliationChanged(3),"
-                        + " superseded(4), cessationOfOperation(5), certficateHold(6), removeFromCRL(8), privilegeWithdrawn(9), aACompromise(10). Normal reason is 0"));
+                "Reason: unspecified(0), keyCompromise(1), cACompromise(2), affiliationChanged(3),"
+                        + " superseded(4), cessationOfOperation(5), certificateHold(6), removeFromCRL(8), privilegeWithdrawn(9), aACompromise(10). Normal reason is 0"));
 
     }
 
