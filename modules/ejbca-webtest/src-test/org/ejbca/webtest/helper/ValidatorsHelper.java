@@ -51,6 +51,7 @@ public class ValidatorsHelper extends BaseHelper {
         static final By INPUT_BLACKLIST_SITE = By.id("kvf:test_domainentry");
         static final By INPUT_BLACKLIST_RESULT = By.id("kvf:test_result");
 
+
         // Buttons
         static final By BUTTON_ADD = By.xpath("//input[@value='Add']");
         static final By BUTTON_RENAME_CONFIRM = By.xpath("//input[@value='Confirm new name']");
@@ -71,7 +72,7 @@ public class ValidatorsHelper extends BaseHelper {
         static final By TEXT_TITLE_DELETE_VALIDATOR = By.id("editvalidators:deleteValidatorName");
         static final By TEXT_TITLE_CLONE_VALIDATOR = By.id("editvalidators:addFromTemplateValidatorOld");
         static final By TEXT_TITLE_RENAME_VALIDATOR = By.id("editvalidators:renameValidatorOld");
-        
+
         // Select
         static final By SELECT_BLACKLIST_PERFORM = By.id("kvf:checks");
         static final By SELECT_VALIDATOR_TYPE = By.id("kvf:validatorType");
