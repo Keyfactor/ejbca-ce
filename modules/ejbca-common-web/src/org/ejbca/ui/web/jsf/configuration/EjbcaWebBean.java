@@ -442,7 +442,9 @@ public interface EjbcaWebBean extends Serializable {
     /** @return true if we are running EJBCA build that has CA functionality enabled. */
     public boolean isRunningBuildWithCA();
     
-    /** @return true if we are running EJBCA build that has RA functionality enabled. */
+    /** @return true if we are running EJBCA build that has RA functionality enabled. 
+     * RA functionality can be disabled by composing a VA-only ziprelease (with variant=va)
+     * */
     public boolean isRunningBuildWithRA();
     
     public EstConfiguration getEstConfiguration();
