@@ -13,10 +13,14 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
-import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -92,11 +96,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
@@ -482,8 +481,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             String altNames = CertTools.getSubjectAlternativeName(cert);
             assertContains("Subject Alt Name", altNames, "upn=fooupn@bar.com");
             assertContains("Subject Alt Name", altNames, "rfc822name=fooemail@bar.com");
-            final URL cdpfromcert1 = CertTools.getCrlDistributionPoint(cert);
-            assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp1, cdpfromcert1.toString());
+            final String cdpfromcert1 = CertTools.getCrlDistributionPoint(cert);
+            assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp1, cdpfromcert1);
             
             // Update property on server so that we use ProfileDefault as certificate profile, should give a little different result
             this.cmpConfiguration.setRACertProfile(ALIAS, "ProfileDefault");
@@ -506,8 +505,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             cert = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
             altNames = CertTools.getSubjectAlternativeName(cert);
             assertNull(altNames);
-            final URL cdpfromcert2 = CertTools.getCrlDistributionPoint(cert);
-            assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp2, cdpfromcert2.toString());            
+            final String cdpfromcert2 = CertTools.getCrlDistributionPoint(cert);
+            assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp2, cdpfromcert2);            
         } finally {
             try {
                 this.endEntityManagementSession.deleteUser(ADMIN, "cmptest");
