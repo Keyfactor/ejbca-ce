@@ -3171,6 +3171,11 @@ public abstract class CertTools {
         return getCrlDistributionPoints(x509cert, false);
     }
 
+    /**
+     * Extracts the URIs from a CRL Issuing Distribution Point extension of a CRL.
+     * @param extensionValue Extension value of a CRL Issuing Distribution Point extension
+     * @return List of URIs
+     */
     public static Collection<String> getCrlDistributionPoints(final ASN1Primitive extensionValue) {
         return getCrlDistributionPoints(extensionValue, false);
     }

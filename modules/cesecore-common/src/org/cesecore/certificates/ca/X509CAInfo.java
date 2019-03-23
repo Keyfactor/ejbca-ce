@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -460,17 +461,24 @@ public class X509CAInfo extends CAInfo {
       return CertificateConstants.NO_CRL_PARTITION;
   }
 
+  /** Creates a regex that matches all Default CRL Distribution Points. Partition numbers (if any) are matched in groups. */
+  private String getRegexForCrlDistPoints() {
+      // \E and \Q are "end quote" and "start quote", see the javadoc of Pattern
+      return Pattern.quote(StringUtils.trim(defaultcrldistpoint))
+              .replace("*", "\\E(\\d+)\\Q") // match digits where there is a "*"
+              .replaceAll("\\s*;\\s*", "\\\\E|\\\\Q"); // match multiple different URIs separated with ";"
+  }
+
   /**
    * Determines which CRL Partition Index by a CRL Distribution Point URIs.
    * @param uri URI to extract partition index from.
    * @return Partition number, or {@link CertificateConstants#NO_CRL_PARTITION} if partitioning is not enabled / not applicable.
    */
   protected int determineCrlPartitionIndex(final String uri) {
-      if (!getUsePartitionedCrl()) {
+      if (!getUsePartitionedCrl() || StringUtils.isBlank(defaultcrldistpoint)) {
           return CertificateConstants.NO_CRL_PARTITION;
       }
-      // FIXME ECA-7940 this is actually semicolon separated!
-      final String regex = Pattern.quote(defaultcrldistpoint).replace("*", "\\E(\\d+)\\Q"); // match digits where there is a "*"
+      final String regex = getRegexForCrlDistPoints();
       if (log.isTraceEnabled()) {
           log.trace("Using regex '" + regex +"' to match URI '" + uri + "'");
       }
@@ -484,12 +492,14 @@ public class X509CAInfo extends CAInfo {
       int partition = CertificateConstants.NO_CRL_PARTITION;
       try {
           for (int i = 1; i <= groupCount; i++) {
-              final int numberFromUri = Integer.parseInt(matcher.group(i));
-              if (partition != CertificateConstants.NO_CRL_PARTITION && numberFromUri != partition) {
-                  log.info("Ambiguous CRL Partition Indexes in URI: " + uri);
-                  return CertificateConstants.NO_CRL_PARTITION;
+              if (matcher.group(i) != null) {
+                  final int numberFromUri = Integer.parseInt(matcher.group(i));
+                  if (partition != CertificateConstants.NO_CRL_PARTITION && numberFromUri != partition) {
+                      log.info("Ambiguous CRL Partition Indexes in URI: " + uri);
+                      return CertificateConstants.NO_CRL_PARTITION;
+                  }
+                  partition = numberFromUri;
               }
-              partition = numberFromUri;
           }
           return partition;
       } catch (NumberFormatException e) {
