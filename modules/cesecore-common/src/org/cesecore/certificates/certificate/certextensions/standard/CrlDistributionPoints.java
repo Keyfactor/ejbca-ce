@@ -32,7 +32,9 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
+import org.cesecore.certificates.ca.internal.CrlPartitionIndexGeneratorRandom;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -55,6 +57,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 		super.setCriticalFlag(certProf.getCRLDistributionPointCritical());
 	}
     
+    @Deprecated // Should not be called directly, see the interface javadoc.
     @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws
@@ -62,17 +65,22 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 		String crldistpoint = certProfile.getCRLDistributionPointURI();
 		String crlissuer=certProfile.getCRLIssuer();
 		final X509CA x509ca = (X509CA)ca;
+		final X509CAInfo caInfo = (X509CAInfo) ca.getCAInfo();
 		if(certProfile.getUseDefaultCRLDistributionPoint()){
 			crldistpoint = x509ca.getDefaultCRLDistPoint();
 			crlissuer = x509ca.getDefaultCRLIssuer();
 		}
+		final int crlPartitionIndex = CrlPartitionIndexGeneratorRandom.INSTANCE.generateCrlPartitionIndex(caInfo);
+		if (log.isDebugEnabled() && caInfo.getUsePartitionedCrl()) {
+            log.debug("Certificate '" + subject.getCertificateDN() + "' was assigned to CRL partition " + crlPartitionIndex);
+        }
 		// Multiple CDPs are separated with the ';' sign        	         	 
 		final ArrayList<DistributionPointName> dpns = new ArrayList<DistributionPointName>();
 		if (StringUtils.isNotEmpty(crldistpoint)) {
 			final Iterator<String> it = StringTools.splitURIs(crldistpoint).iterator();
 			while (it.hasNext()) {
 				// 6 is URI
-				final String uri = (String) it.next();
+				final String uri = caInfo.getCrlPartitionUrl(it.next(), crlPartitionIndex);
 				final GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
 				if (log.isDebugEnabled()) {
 					log.debug("Added CRL distpoint: "+uri);
