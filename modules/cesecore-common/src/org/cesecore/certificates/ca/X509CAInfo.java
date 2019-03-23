@@ -469,6 +469,7 @@ public class X509CAInfo extends CAInfo {
       if (!getUsePartitionedCrl()) {
           return CertificateConstants.NO_CRL_PARTITION;
       }
+      // FIXME ECA-7940 this is actually semicolon separated!
       final String regex = Pattern.quote(defaultcrldistpoint).replace("*", "\\E(\\d+)\\Q"); // match digits where there is a "*"
       if (log.isTraceEnabled()) {
           log.trace("Using regex '" + regex +"' to match URI '" + uri + "'");

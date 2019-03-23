@@ -3171,13 +3171,20 @@ public abstract class CertTools {
         return getCrlDistributionPoints(x509cert, false);
     }
 
+    public static Collection<String> getCrlDistributionPoints(final ASN1Primitive extensionValue) {
+        return getCrlDistributionPoints(extensionValue, false);
+    }
+
     private static Collection<String> getCrlDistributionPoints(final X509Certificate x509cert, final boolean onlyfirst) {
-        final ArrayList<String> cdps = new ArrayList<>();
         final ASN1Primitive extensionValue = getExtensionValue(x509cert, Extension.cRLDistributionPoints.getId());
         if (extensionValue == null) {
-            return cdps;
+            return new ArrayList<>();
         }
+        return getCrlDistributionPoints(extensionValue, onlyfirst);
+    }
 
+    private static Collection<String> getCrlDistributionPoints(final ASN1Primitive extensionValue, final boolean onlyfirst) {
+        final ArrayList<String> cdps = new ArrayList<>();
         final ASN1Sequence crlDistributionPoints = (ASN1Sequence) extensionValue;
         for (int i = 0; i < crlDistributionPoints.size(); i++) {
             ASN1Sequence distributionPoint = (ASN1Sequence) crlDistributionPoints.getObjectAt(i);

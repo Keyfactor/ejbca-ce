@@ -2182,10 +2182,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         return ed.getEncoded();
     }
 
-    private int generateCrlPartitionIndex() {
-        return CertificateConstants.NO_CRL_PARTITION; // TODO ECA-7940
-    }
-
     @Override
     public String getCaImplType() {
         return CA_TYPE;
