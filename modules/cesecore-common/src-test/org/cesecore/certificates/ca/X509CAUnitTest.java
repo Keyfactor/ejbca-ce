@@ -1282,7 +1282,7 @@ public class X509CAUnitTest {
     }
 
     /**
-     * Tests the determineCrlPartitionIndex method.
+     * Tests the determineCrlPartitionIndex method, with one Default CRL DP configured.
      */
     @Test
     public void determineCrlPartitionIndex() throws Exception {
@@ -1310,6 +1310,25 @@ public class X509CAUnitTest {
         caInfo.setDefaultCRLDistPoint("http://part*.crl.example.com/strange\\xx\\\"test\\E++TEST*.crl");
         assertEquals("Test with two partition indexes failed.", 987, caInfo.determineCrlPartitionIndex("http://part987.crl.example.com/strange\\xx\\\"test\\E++TEST987.crl"));
         log.trace("<determineCrlPartitionIndex");
+    }
+
+    /**
+     * Tests the determineCrlPartitionIndex method, with multiple CRL DPs configured.
+     */
+    @Test
+    public void determineCrlPartitionIndexMultipleDistributionPoints() throws Exception {
+        log.trace(">determineCrlPartitionIndexMultipleDistributionPoints");
+        final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
+        X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
+        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
+        caInfo.setUsePartitionedCrl(true);
+        // Test with no partition
+        caInfo.setDefaultCRLDistPoint(" http://example.com/CA1.crl ; http://example.com/CA2.crl ");
+        assertEquals("With no asterisk in URL there should be no partitioning.", CertificateConstants.NO_CRL_PARTITION, caInfo.determineCrlPartitionIndex("http://example.com/CA1.crl"));
+        // Test with partitions
+        caInfo.setDefaultCRLDistPoint(" http://example.com/CA*.crl ; http://crl*.example.net/CA*.crl ");
+        assertEquals("Test with multiple CRL DPs with CRL partitioning failed.", 5, caInfo.determineCrlPartitionIndex("http://crl5.example.net/CA5.crl"));
+        log.trace("<determineCrlPartitionIndexMultipleDistributionPoints");
     }
 
     /**
