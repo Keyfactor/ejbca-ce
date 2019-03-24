@@ -34,6 +34,7 @@ import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
@@ -59,6 +60,7 @@ import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
@@ -91,6 +93,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.validation.BlacklistSessionRemote;
 import org.ejbca.core.model.validation.PublicKeyBlacklistEntry;
@@ -107,10 +110,13 @@ import org.junit.Test;
  */
 public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
+    private static final Logger log = Logger.getLogger(CertificateCreateSessionTest.class);
+
     private static KeyPair keys;
     private static final String X509CADN = "CN=CertificateCreateSessionTest";
     private CA testx509ca;
 
+    private static CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -193,6 +199,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             Certificate cert1 = certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert));
             assertNotNull(cert1);
             assertEquals(fingerprint, CertTools.getFingerprintAsString(cert1));
+            final CertificateData certData = internalCertStoreSession.getCertificateData(CertTools.getFingerprintAsString(cert));
+            assertEquals("Certificate should not be assigned a CRL Partition Index unless CRL Partitioning is enabled.", CertificateConstants.NO_CRL_PARTITION, (int) certData.getCrlPartitionIndex());
         } finally {
             certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
             internalCertStoreSession.removeCertificate(fingerprint);
@@ -1100,6 +1108,57 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             internalCertStoreSession.removeCertificate(alreadyExpired);
             internalCertStoreSession.removeCertificate(newCertificate);
             internalCertStoreSession.removeCertificate(onhold);
+        }
+    }
+
+    /**
+     * Issues a certificate with CRL Partitioning enabled in the CA, with two partitions: one retired (partition 1), and one active (partition 2).
+     * Checks that the certificate is assigned CRL partition 2.
+     */
+    @Test
+    public void issueCertificateWithCrlPartition() throws Exception {
+        log.trace(">issueCertificateWithCrlPartition");
+        // Given:
+        final String profileName = "issueCertificateWithCrlPartition";
+        CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        profile.setUseCRLDistributionPoint(true);
+        profile.setUseDefaultCRLDistributionPoint(true);
+        int certificateProfileId = certProfileSession.addCertificateProfile(alwaysAllowToken, profileName, profile);
+        BigInteger certSerialNumber = null;
+        try {
+            final X509CAInfo caInfo = (X509CAInfo) testx509ca.getCAInfo();
+            caInfo.setUsePartitionedCrl(true);
+            caInfo.setCrlPartitions(2);
+            caInfo.setRetiredCrlPartitions(1);
+            caInfo.setDefaultCRLDistPoint("http://example.com/CA*.crl");
+            caAdminSession.editCA(alwaysAllowToken, caInfo);
+            final String username = "issueCertificateWithCrlPartition";
+            EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, testx509ca.getCAId(), null, null, new EndEntityType(
+                    EndEntityTypes.ENDUSER), 0, certificateProfileId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            endEntity.setStatus(EndEntityConstants.STATUS_NEW);
+            endEntity.setPassword("foo123");
+            // When:
+            // Issue certificate
+            SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), endEntity.getUsername(), endEntity.getPassword());
+            X509ResponseMessage responseMessage = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntity, req,
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
+            certSerialNumber = CertTools.getSerialNumber(responseMessage.getCertificate());
+            // Then:
+            final CertificateData certData = internalCertStoreSession.getCertificateData(CertTools.getFingerprintAsString(responseMessage.getCertificate()));
+            assertNotNull("Certificate could not be found after issuance", certData);
+            final String crlDistPoint = CertTools.getCrlDistributionPoint(responseMessage.getCertificate());
+            log.debug("CRL Distribution Point: " + crlDistPoint);
+            assertEquals("Wrong CRL Partition Index.", 2, (int) certData.getCrlPartitionIndex()); // Partition 1 is retired. Partition 2 is the only one in use.
+            assertEquals("Wrong CRL Distribution Point.", "http://example.com/CA2.crl", crlDistPoint);
+        } finally {
+            certProfileSession.removeCertificateProfile(alwaysAllowToken, profileName);
+            internalCertStoreSession.removeCertificate(certSerialNumber);
+            final X509CAInfo caInfo = (X509CAInfo) testx509ca.getCAInfo();
+            caInfo.setUsePartitionedCrl(false);
+            caInfo.setCrlPartitions(0);
+            caInfo.setRetiredCrlPartitions(0);
+            caAdminSession.editCA(alwaysAllowToken, caInfo);
+            log.trace("<issueCertificateWithCrlPartition");
         }
     }
 
