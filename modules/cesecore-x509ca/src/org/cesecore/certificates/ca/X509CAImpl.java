@@ -316,6 +316,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setAcceptRevocationNonExistingEntry(isAcceptRevocationNonExistingEntry())
                 .setCmpRaAuthSecret(getCmpRaAuthSecret())
                 .setKeepExpiredCertsOnCRL(getKeepExpiredCertsOnCRL())
+                .setUsePartitionedCrl(getUsePartitionedCrl())
+                .setCrlPartitions(getCrlPartitions())
+                .setRetiredCrlPartitions(getRetiredCrlPartitions())
                 .build();
         info.setExternalCdp(getExternalCdp());
         info.setNameChanged(getNameChanged());
@@ -572,7 +575,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
     @Override
     public int getRetiredCrlPartitions() {
-        if (data.containsKey(CRLPARTITIONS)) {
+        if (data.containsKey(RETIREDCRLPARTITIONS)) {
             return (Integer) data.get(RETIREDCRLPARTITIONS);
         } else {
             return 0;
@@ -745,9 +748,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setExternalCdp(info.getExternalCdp());
         setSubjectAltName(info.getSubjectAltName());
         setCaSerialNumberOctetSize(info.getCaSerialNumberOctetSize());
-        setUsePartitionedCrl(((X509CAInfo) cainfo).getUsePartitionedCrl());
-        setCrlPartitions(((X509CAInfo) cainfo).getCrlPartitions());
-        setRetiredCrlPartitions(((X509CAInfo) cainfo).getRetiredCrlPartitions());
+        setUsePartitionedCrl(info.getUsePartitionedCrl());
+        setCrlPartitions(info.getCrlPartitions());
+        setRetiredCrlPartitions(info.getRetiredCrlPartitions());
     }
 
     /* (non-Javadoc)
