@@ -1436,7 +1436,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="admin-gui" />
     </target>
 	
-    <target name="raweb.war" if="variant.ra.enabled">
+    <target name="raweb.war" if="${variant.ra.enabled}">
     	<ant dir="modules" target="ra-gui" />
     </target>
 
