@@ -542,7 +542,14 @@
     <condition property="variant.ra.enabled">
         <available file="${mod.peerconnector.path}/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java"/>
     </condition>
-    	
+    
+    <condition property="status.war.enabled" value="true">
+        <and>
+            <istrue value="${ocsp.enabled}"/>
+            <istrue value="${variant.va.enabled}"/>
+        </and>
+    </condition>
+    
     <condition property="swagger-ui.exists">
         <and>
         	<available file="${swagger-ui.war}"/>
