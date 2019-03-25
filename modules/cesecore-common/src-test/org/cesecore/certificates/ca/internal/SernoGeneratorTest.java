@@ -12,6 +12,12 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -23,13 +29,6 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -252,7 +251,9 @@ public class SernoGeneratorTest {
         no5.join();
         long end = new Date().getTime();
         log.info("Time consumed: "+(end-start));
-        assertNull(threadException != null?threadException.getMessage():"null", threadException);
+        if (threadException != null) {
+            throw new IllegalStateException(threadException);
+        }
     }
 
     private static class SernoTester implements Runnable { // NOPMD, this is not a JEE app, only a test
