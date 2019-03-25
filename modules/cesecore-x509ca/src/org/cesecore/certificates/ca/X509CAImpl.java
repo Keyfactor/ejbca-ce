@@ -196,9 +196,15 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     protected static final String CRLPARTITIONS = "crlpartitions";
     protected static final String RETIREDCRLPARTITIONS = "retiredcrlpartitions";
 
-
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
+    /** Buffer size used for BufferingContentSigner, this is the max buffer is collect before making a "sign" call. 
+     * This is important in order to not make several calls to a network attached HSM for example, as that slows signing down a lot
+     * due to network round-trips. As long as the object to sign is smaller than this buffer a single round-trip is done.
+     * Size is selected as certificates are almost never this big, and this is a reasonable size to do round-tripping on for CRLs. 
+     */
+    private static final int SIGN_BUFFER_SIZE = 20480;
+    
     /** Dummy constructor to allow ServiceLoader to instantiate the class */
     public X509CAImpl() {
     }
@@ -1496,7 +1502,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     if (presignKey == null) {
                         throw new CertificateCreateException("No pre-sign key exist usable with algorithm " + sigAlg + ", PRESIGN_CERTIFICATE_VALIDATION is not possible with this CA.");
                     }
-                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(presignKey), 20480);
+                    ContentSigner presignSigner = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(presignKey), X509CAImpl.SIGN_BUFFER_SIZE);
                     // Since this certificate may be written to file through the validator we want to ensure it's not a real certificate
                     // We do that by signing with a hard coded fake key, and set authorityKeyIdentifier accordingly, so the cert can
                     // not be verified even accidentally by someone
@@ -1549,7 +1555,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                  *  and should not have any other key usages.
                  */
                 final ContentSigner signer = new BufferingContentSigner(
-                        new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
+                        new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
                 // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
                 final X509CertificateHolder certHolder = precertbuilder.build(signer);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
@@ -1618,7 +1624,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if (log.isTraceEnabled()) {
             log.trace(">certgen.generate");
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         X509Certificate cert;
         try {
@@ -1978,7 +1984,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
         try {
-            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias)), 20480);
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias)), X509CAImpl.SIGN_BUFFER_SIZE);
             crl = crlgen.build(signer);
         } catch (OperatorCreationException e) {
             // Very fatal error
