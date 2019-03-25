@@ -121,7 +121,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     }
 
     /** preferred digest algorithm to use in replies, if applicable */
-    private String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
+    private String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA256;
 
     public CrmfRequestMessage() { }
 
