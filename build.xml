@@ -346,13 +346,6 @@
     ]]> </script>
     </target>
     
-	<condition property="status.war.enabled" value="true">
-        <and>
-        	<istrue value="${ocsp.enabled}"/>
-        	<istrue value="${variant.va.enabled}"/>
-        </and>
-    </condition> 
-	
 	<target name="va_replacings_in_application.xml">
 		<war-replacement-in-module
 			replacement-tag="!--@status.war@-->"
