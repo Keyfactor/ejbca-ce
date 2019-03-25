@@ -203,6 +203,15 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			CrmfRequestMessage crmfreq = null;
 			if (cmpRequestMessage instanceof CrmfRequestMessage) {
 				crmfreq = (CrmfRequestMessage) cmpRequestMessage;
+                // If message was signed, use the same signature alg in response
+                if(crmfreq.getHeader().getProtectionAlg() != null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("CRMF request message header has protection alg: " + crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId());
+                    }
+                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug("CRMF request message header has no protection alg, using default alg in response.");
+                }
 
                 // If we have usernameGeneratorParams we want to generate usernames automagically for requests
                 // If we are not in RA mode, usernameGeneratorParams will be null
@@ -231,9 +240,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						}
 						
 						crmfreq.setPassword(authenticationModule.getAuthenticationString());
-		                if(crmfreq.getHeader().getProtectionAlg() != null) {
-		                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
-		                }
 		                // Do we have a public key in the request? If not we may be trying to do server generated keys
 		                enrichWithServerGeneratedKeyOrThrow(crmfreq, endEntityInformation.getCertificateProfileId());
 		                resp = signSession.createCertificate(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, endEntityInformation);
@@ -425,9 +431,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			// Username and pwd in the EndEntityInformation and the IRequestMessage must match
 			crmfreq.setUsername(username);
 			crmfreq.setPassword(pwd);
-            if(crmfreq.getHeader().getProtectionAlg() != null) {			
-                crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
-            }
 			// Set all protection parameters
 			CmpPbeVerifyer verifyer = null;
 			if(StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {

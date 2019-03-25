@@ -263,7 +263,12 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        final String aliasCertSign = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
 		        rresp.setSignKeyInfo(ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
                 if(msg.getHeader().getProtectionAlg() != null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("RevReq request message header has protection alg: " + msg.getHeader().getProtectionAlg().getAlgorithm().getId());
+                    }
                     rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug("RevReq request message header has no protection alg, using default alg in response.");
                 }
 		    } catch (CryptoTokenOfflineException e) {
 		        LOG.error(e.getLocalizedMessage(), e);

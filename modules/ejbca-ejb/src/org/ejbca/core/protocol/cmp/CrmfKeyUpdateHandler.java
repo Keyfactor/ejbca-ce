@@ -130,6 +130,15 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
             if (cmpRequestMessage instanceof CrmfRequestMessage) {
                 crmfreq = (CrmfRequestMessage) cmpRequestMessage;
                 crmfreq.getMessage();
+                // If message was signed, use the same signature alg in response
+                if(crmfreq.getHeader().getProtectionAlg() != null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("CRMF request message (update) header has protection alg: " + crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId());
+                    }
+                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug("CRMF request message (update) header has no protection alg, using default alg in response.");
+                }
 
                 EndEntityCertificateAuthenticationModule eecmodule = null;
                 X509Certificate oldCert = null;
@@ -281,9 +290,6 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 // Set the appropriate parameters in the request
                 crmfreq.setUsername(endEntityInformation.getUsername());
                 crmfreq.setPassword(password);
-                if(crmfreq.getHeader().getProtectionAlg() != null) {
-                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
-                }
 
                 // Check the public key, whether it is allowed to use the old keys or not.
                 if(!this.cmpConfiguration.getKurAllowSameKey(this.confAlias)) {
