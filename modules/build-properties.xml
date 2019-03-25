@@ -491,10 +491,6 @@
     <condition property="mod.va.exists">
         <available file="${mod.va.path}/build.xml" />
     </condition>
-
-    <condition property="mod.ra.exists">
-        <available file="${mod.ra-gui.path}/build.xml" />
-    </condition>
         
 	<condition property="mod.externalra.exists">
 		<available file="${mod.externalra.path}/build.xml" />
@@ -538,7 +534,15 @@
     <condition property="mod.acme.exists">
     	<available file="${mod.acme.path}/build.xml"/>
     </condition>
-	
+    
+    <condition property="variant.va.enabled">
+        <available file="${mod.va.path}/src-war/org/ejbca/ui/web/protocol/OCSPServlet.java"/>
+    </condition>
+    
+    <condition property="variant.ra.enabled">
+        <available file="${mod.peerconnector.path}/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java"/>
+    </condition>
+    	
     <condition property="swagger-ui.exists">
         <and>
         	<available file="${swagger-ui.war}"/>
