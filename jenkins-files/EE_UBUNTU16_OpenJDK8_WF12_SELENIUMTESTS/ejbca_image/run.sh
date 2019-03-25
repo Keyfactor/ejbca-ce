@@ -44,7 +44,6 @@ echo '=================== should be started now ========================'
 ant deploy-keystore
 echo '=================== deploy-keystore done ========================'
 
-export JAVA_OPTS="$CLI_OPTS"
 /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 echo '=================== waiting 30... ========================'
 sleep 30
