@@ -51,7 +51,7 @@ public class CRLData extends ProtectedData implements Serializable {
 
     private int cRLNumber;
     private int deltaCRLIndicator;
-    private int crlPartitionIndex; // Since EJBCA 7.1.0
+    private Integer crlPartitionIndex; // Since EJBCA 7.1.0
     private String issuerDN;
     private String fingerprint;
     private String cAFingerprint;
@@ -115,11 +115,11 @@ public class CRLData extends ProtectedData implements Serializable {
     /** @since EJBCA 7.1.0 */
     // @Column
     public int getCrlPartitionIndex() {
-        return crlPartitionIndex;
+        return crlPartitionIndex != null ? crlPartitionIndex : 0;
     }
 
     /** @since EJBCA 7.1.0 */
-    public void setCrlPartitionIndex(final int crlPartitionIndex) {
+    public void setCrlPartitionIndex(final Integer crlPartitionIndex) {
         this.crlPartitionIndex = crlPartitionIndex;
     }
 
