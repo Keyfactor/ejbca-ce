@@ -345,12 +345,19 @@
 		    }
     ]]> </script>
     </target>
-
+    
+	<condition property="status.war.enabled" value="true">
+        <and>
+        	<istrue value="${ocsp.enabled}"/>
+        	<istrue value="${variant.va.enabled}"/>
+        </and>
+    </condition> 
+	
 	<target name="va_replacings_in_application.xml">
 		<war-replacement-in-module
 			replacement-tag="!--@status.war@-->"
 			replacement-file="${application.xml}"
-			replacement-enabled="${ocsp.enabled} and ${build.contains.va}"
+			replacement-enabled="${status.war.enabled}"
 			replacement-web-uri="status.war"
 			replacement-context-root="${ocsp.contextroot}"
 		/>
@@ -483,7 +490,7 @@
 		<war-replacement-in-module
 			replacement-tag="!--@ra-gui.war@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${build.contains.ra}"
+			replacement-enabled="${variant.ra.enabled}"
 			replacement-web-uri="ra-gui.war"
 			replacement-context-root="/ejbca/ra"
 		/>
@@ -1432,7 +1439,7 @@ SHA-256 checksum: ${cesecorebinSHA256}
     	<ant dir="modules" target="admin-gui" />
     </target>
 	
-    <target name="raweb.war" if="build.contains.ra">
+    <target name="raweb.war" if="variant.ra.enabled">
     	<ant dir="modules" target="ra-gui" />
     </target>
 
