@@ -192,6 +192,7 @@ public interface CACommon extends IUpgradeableData {
      *
      * @deprecated since 6.8.0, see getApprovals()
      */
+    @Deprecated
     Collection<Integer> getApprovalSettings();
 
     /**
@@ -199,6 +200,7 @@ public interface CACommon extends IUpgradeableData {
      *
      * @deprecated since 6.8.0, see setApprovals()
      */
+    @Deprecated
     void setApprovalSettings(Collection<Integer> approvalSettings);
 
     /**
@@ -206,6 +208,7 @@ public interface CACommon extends IUpgradeableData {
      * @deprecated since 6.6.0, use the appropriate approval profile instead.
      * Needed in order to be able to upgrade from 6.5 and earlier
      */
+    @Deprecated
     int getNumOfRequiredApprovals();
 
     /**
@@ -213,6 +216,7 @@ public interface CACommon extends IUpgradeableData {
      * @deprecated since 6.6.0, use the appropriate approval profile instead.
      * Needed in order to be able to upgrade from 6.5 and earlier
      */
+    @Deprecated
     void setNumOfRequiredApprovals(int numOfReqApprovals);
 
     /**
@@ -220,6 +224,7 @@ public interface CACommon extends IUpgradeableData {
      *
      * @deprecated since 6.8.0, see getApprovals()
      */
+    @Deprecated
     int getApprovalProfile();
 
     /**
@@ -227,6 +232,7 @@ public interface CACommon extends IUpgradeableData {
      *
      * @deprecated since 6.8.0, see setApprovals()
      */
+    @Deprecated
     void setApprovalProfile(int approvalProfileID);
     
     void updateCA(CryptoToken cryptoToken, CAInfo cainfo, AvailableCustomCertificateExtensionsConfiguration cceConfig)
