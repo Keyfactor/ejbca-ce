@@ -59,7 +59,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	private static final Logger log = Logger.getLogger(CmpConfirmResponseMessage.class);
 	
     /** Default digest algorithm for CMP response message, can be overridden */
-	private String digestAlg = CMSSignedGenerator.DIGEST_SHA1;
+	private String digestAlg = CMSSignedGenerator.DIGEST_SHA256;
 	/** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
 	private String provider = "BC";
 	/** Certificate for the signer of the response message (CA) */

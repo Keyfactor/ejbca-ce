@@ -182,7 +182,7 @@ public class AlgorithmToolsTest {
         assertEquals(AlgorithmConstants.SIGALG_SHA3_384_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(NISTObjectIdentifiers.id_sha3_384.getId(), AlgorithmConstants.KEYALGORITHM_EC));
         assertEquals(AlgorithmConstants.SIGALG_SHA3_512_WITH_ECDSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey(NISTObjectIdentifiers.id_sha3_512.getId(), AlgorithmConstants.KEYALGORITHM_EC));
         // Default is SHA1 with RSA
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey("Foobar", "Foo"));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getAlgorithmNameFromDigestAndKey("Foobar", "Foo"));
     }
 
     @Test

@@ -174,7 +174,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
-            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             if (sFailMessage == null) {
             	ret = checkCmpCertRepMessage(userDN, this.cacert, resp, reqId);
                 // verify if custom cert serial number was used

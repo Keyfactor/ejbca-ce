@@ -47,6 +47,7 @@ import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
+import org.bouncycastle.asn1.ua.UAObjectIdentifiers;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jcajce.util.MessageDigestUtils;
@@ -713,54 +714,60 @@ public abstract class AlgorithmTools {
     } // getSignatureAlgorithm
 
     /**
-     * Get the digest algorithm corresponding to the signature algorithm. This is used for the creation of
-     * PKCS7 file. SHA1 shall always be used, but it is not working with GOST which needs GOST3411 digest.
+     * Returns the OID of the digest algorithm corresponding to the signature algorithm. Does not handle RSA-SSA (MGF1) since the Hash algo in MGF1
+     * if hidden in the parameters, which is not visible in the sigAlg
+     * @param OID of a signatureAlgorithm, for example PKCSObjectIdentifiers.sha256WithRSAEncryption.getId() (1.2.840.113549.1.1.11)
+     * @return Digest OID, CMSSignedGenerator.DIGEST_SHA256, CMSSignedGenerator.DIGEST_GOST3411, etc, default to SHA256 if nothing else fits
      */
-    public static String getDigestFromSigAlg(String sigAlg) {
-        if (sigAlg.toUpperCase().contains("GOST") || sigAlg.toUpperCase().contains("DSTU")) {
+    public static String getDigestFromSigAlg(String sigAlgOid) {
+        if (sigAlgOid.startsWith(CryptoProObjectIdentifiers.GOST_id.getId()) || sigAlgOid.startsWith(UAObjectIdentifiers.UaOid.getId())) {
             return CMSSignedGenerator.DIGEST_GOST3411;
         }
-        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA1.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId())) {
+        
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA1.getId()) || sigAlgOid.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_SHA1;
         }
-        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA224.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha224WithRSAEncryption.getId())) {
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA224.getId()) || sigAlgOid.equals(PKCSObjectIdentifiers.sha224WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_SHA224;
         }
-        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA256.getId()) ||
-                sigAlg.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId())) {
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA256.getId()) || sigAlgOid.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_SHA256;
         }
-        if (sigAlg.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256.getId())) {
-            return NISTObjectIdentifiers.id_sha3_256.getId();
-        }
-        if (sigAlg.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_384.getId())) {
-            return NISTObjectIdentifiers.id_sha3_384.getId();
-        }
-        if (sigAlg.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512.getId())) {
-            return NISTObjectIdentifiers.id_sha3_512.getId();
-        }
-        if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_256.getId())) {
-            return NISTObjectIdentifiers.id_sha3_256.getId();
-        }
-        if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_384.getId())) {
-            return NISTObjectIdentifiers.id_sha3_384.getId();
-        }
-        if (sigAlg.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId())) {
-            return NISTObjectIdentifiers.id_sha3_512.getId();
-        }
-        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA384.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha384WithRSAEncryption.getId())) {
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA384.getId()) || sigAlgOid.equals(PKCSObjectIdentifiers.sha384WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_SHA384;
         }
-        if(sigAlg.equals(X9ObjectIdentifiers.ecdsa_with_SHA512.getId()) || sigAlg.equals(PKCSObjectIdentifiers.sha512WithRSAEncryption.getId())) {
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA512.getId()) || sigAlgOid.equals(PKCSObjectIdentifiers.sha512WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_SHA512;
         }
-        if(sigAlg.equals(PKCSObjectIdentifiers.md5WithRSAEncryption.getId())) {
+        
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256.getId())) {
+            return NISTObjectIdentifiers.id_sha3_256.getId();
+        }
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_384.getId())) {
+            return NISTObjectIdentifiers.id_sha3_384.getId();
+        }
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512.getId())) {
+            return NISTObjectIdentifiers.id_sha3_512.getId();
+        }
+        
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_256.getId())) {
+            return NISTObjectIdentifiers.id_sha3_256.getId();
+        }
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_384.getId())) {
+            return NISTObjectIdentifiers.id_sha3_384.getId();
+        }
+        if (sigAlgOid.equals(NISTObjectIdentifiers.id_ecdsa_with_sha3_512.getId())) {
+            return NISTObjectIdentifiers.id_sha3_512.getId();
+        }
+        
+        if(sigAlgOid.equals(PKCSObjectIdentifiers.md5WithRSAEncryption.getId())) {
             return CMSSignedGenerator.DIGEST_MD5;
         }
-        if(sigAlg.equals(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001.getId()) ) {
+        
+        if(sigAlgOid.equals(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001.getId()) ) {
             return CMSSignedGenerator.DIGEST_GOST3411;
         }
-        return CMSSignedGenerator.DIGEST_SHA1;
+        return CMSSignedGenerator.DIGEST_SHA256;
     }
 
     /**
@@ -774,19 +781,21 @@ public abstract class AlgorithmTools {
         if (log.isTraceEnabled()) {
             log.trace(">getSignAlg("+digestAlg+","+keyAlg+")");
         }
-        // Default to SHA1WithRSA if everything else fails
-        ASN1ObjectIdentifier oid = PKCSObjectIdentifiers.sha1WithRSAEncryption;
+        // Default to SHA256WithRSA if everything else fails
+        ASN1ObjectIdentifier oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;
         if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-            oid = X9ObjectIdentifiers.ecdsa_with_SHA1;
+            oid = X9ObjectIdentifiers.ecdsa_with_SHA256;
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
-            oid = X9ObjectIdentifiers.id_dsa_with_sha1;
+            oid = NISTObjectIdentifiers.dsa_with_sha256;
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
             oid = CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001;
         } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
             oid = new ASN1ObjectIdentifier(CesecoreConfiguration.getOidDstu4145());
         }
         if (digestAlg != null) {
-            if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA1) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
+                oid = PKCSObjectIdentifiers.sha1WithRSAEncryption;
+            } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA384) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
                     oid = PKCSObjectIdentifiers.sha384WithRSAEncryption;
@@ -794,6 +803,8 @@ public abstract class AlgorithmTools {
                 oid = PKCSObjectIdentifiers.sha512WithRSAEncryption;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_MD5) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 oid = PKCSObjectIdentifiers.md5WithRSAEncryption;
+            } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA1) && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC)) ) {
+                oid = X9ObjectIdentifiers.ecdsa_with_SHA1;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256) && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC)) ) {
                 oid = X9ObjectIdentifiers.ecdsa_with_SHA256;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA224) && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC)) ) {
@@ -802,6 +813,8 @@ public abstract class AlgorithmTools {
                 oid = X9ObjectIdentifiers.ecdsa_with_SHA384;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA512) && (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA) || keyAlg.equals(AlgorithmConstants.KEYALGORITHM_EC)) ) {
                 oid = X9ObjectIdentifiers.ecdsa_with_SHA512;
+            } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA1) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
+                oid = X9ObjectIdentifiers.id_dsa_with_sha1;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
                 oid = NISTObjectIdentifiers.dsa_with_sha256;
             } else if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA512) && keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {

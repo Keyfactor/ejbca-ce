@@ -52,6 +52,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -74,6 +75,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -434,7 +436,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             assertNotNull("Generating CrmfRequest failed.", msg);
 
             CMPCertificate[] extraCert = getCMPCert(ra1admincert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed", msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
@@ -477,7 +480,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             assertNotNull("Generating CrmfRequest failed.", msg);
 
             CMPCertificate[] extraCert = getCMPCert(ra2admincert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed.", msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
@@ -521,7 +525,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
             // First
             CMPCertificate[] extraCert = getCMPCert(ra3admincert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed.", msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
@@ -565,7 +570,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             CMPCertificate[] extraCert = new CMPCertificate[2];
             extraCert[0] = getCMPCert(ra3admincert)[0];
             extraCert[1] = getCMPCert(adminsubca.getCertificateChain().iterator().next())[0];
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed.", msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
@@ -609,7 +615,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             CMPCertificate[] extraCert = new CMPCertificate[2];
             extraCert[0] = getCMPCert(adminsubca.getCertificateChain().iterator().next())[0];
             extraCert[1] = getCMPCert(ra3admincert)[0];
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed.", msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
@@ -655,7 +662,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             extraCert[0] = getCMPCert(subcacerts.next())[0];
             extraCert[1] = getCMPCert(ra3admincert)[0];
             extraCert[2] = getCMPCert(subcacerts.next())[0];
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra3adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed.", msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
@@ -709,7 +717,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         assertNotNull("Generating CrmfRequest failed.", msg);
             
         CMPCertificate[] extraCert = getCMPCert(ra2admincert);
-        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), 
+                AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull("Signing CMP message failed.", msg);
         //******************************************''''''
         Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
@@ -755,7 +764,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
         assertNotNull("Generating CrmfRequest failed.", msg);
         
         extraCert = getCMPCert(ra1admincert);
-        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), 
+                AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull("Signing CMP message failed.", msg);
         //******************************************''''''
         sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
@@ -818,7 +828,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
             // Sign the revocation request with RA2 Admin
             CMPCertificate[] extraCert = getCMPCert(ra2admincert);
-            PKIMessage protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            PKIMessage protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed.", protectedMsg);
 
             // Send the CMP request to RA1. Expected: Fail
@@ -848,7 +859,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
             
             // Sign the revocation request with RA1 Admin
             extraCert = getCMPCert(ra1admincert);
-            protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra1adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed.", protectedMsg);
 
             // Send the CMP request to RA1. Expected: Success
@@ -897,7 +909,8 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
 
             // Sign the revocation request with RA2 Admin
             CMPCertificate[] extraCert = getCMPCert(ra2admincert);
-            PKIMessage protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            PKIMessage protectedMsg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, ra2adminkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull("Signing CMP message failed", protectedMsg);
 
             // Send the CMP request to RA2. Expected: Fail
