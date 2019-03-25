@@ -277,7 +277,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, USER_DN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         final CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         final Certificate cert1 = checkCmpCertRepMessage(USER_DN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
@@ -322,7 +322,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, revUserDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
             Assert.assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
@@ -361,7 +361,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
             fingerprint = CertTools.getFingerprintAsString(admCert);
 
             CMPCertificate[] extraCert = getCMPCert(admCert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(msg);
             //******************************************''''''
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
@@ -421,7 +422,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Certificate admCert = getCertFromCredentials(adminToken);
         CMPCertificate[] extraCert = getCMPCert(admCert);
-        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull(msg);
         final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(msg);
         // Send request and receive response
@@ -473,7 +475,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             Certificate admCert = getCertFromCredentials(adminToken);
             CMPCertificate[] extraCert = getCMPCert(admCert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(msg);
             final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(msg);
             // Send request and receive response
@@ -519,11 +522,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Certificate admCert = getCertFromCredentials(adminToken);
         CMPCertificate[] extraCert = getCMPCert(admCert);
-        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull(msg);
 
         //********************************************
-        final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+        final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
         sig.initVerify(admCert.getPublicKey());
         sig.update(CmpMessageHelper.getProtectedBytes(msg));
         boolean verified = sig.verify(msg.getProtection().getBytes());
@@ -625,7 +629,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("512", "RSA");
         Certificate admCert = this.signSession.createCertificate(ADMIN, adminName, "foo123", new PublicKeyWrapper(admkeys.getPublic()));
         CMPCertificate[] extraCert = getCMPCert(admCert);
-        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull(msg);
         final byte[] ba = CmpMessageHelper.pkiMessageToByteArray(msg);
         // Send request and receive response
@@ -662,11 +667,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         Certificate admCert = getCertFromCredentials(adminToken);
         CMPCertificate[] extraCert = getCMPCert(admCert);
-        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+        msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
         assertNotNull(msg);
 
         //********************************************
-        final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+        final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
         sig.initVerify(admCert.getPublicKey());
         sig.update(CmpMessageHelper.getProtectedBytes(msg));
         boolean verified = sig.verify(msg.getProtection().getBytes());
@@ -718,7 +724,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
         checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         ir = (CertReqMessages) req.getBody().getContent();
         Certificate cert1 = checkCmpCertRepMessage(clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                 .intValue());
@@ -829,7 +835,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             Certificate cert1 = checkCmpCertRepMessage(clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                     .intValue());
@@ -862,7 +868,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, clientDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert1 = checkCmpCertRepMessage(clientDN, this.cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue()
                     .intValue());
@@ -964,10 +970,11 @@ public class AuthenticationModulesTest extends CmpTestCase {
                         null);
                 assertNotNull("Generating CrmfRequest failed.", msg);
                 CMPCertificate[] extraCert = getCMPCert(fakeCert);
-                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, fakeKeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, fakeKeys.getPrivate(), 
+                        AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
                 assertNotNull(msg);
                 //******************************************''''''
-                final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+                final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
                 sig.initVerify(fakeCert.getPublicKey());
                 sig.update(CmpMessageHelper.getProtectedBytes(msg));
                 boolean verified = sig.verify(msg.getProtection().getBytes());
@@ -990,21 +997,22 @@ public class AuthenticationModulesTest extends CmpTestCase {
             }
             // Step 2, sign the request with a certificate that does not belong to the user
             {
-                KeyPair otherKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+                KeyPair otherKeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 createUser(otherUsername, otherUserDN, "foo123", true, this.caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
                 // A real certificate that can be used to sign the message
                 Certificate othercert = this.signSession.createCertificate(ADMIN, otherUsername, "foo123", new PublicKeyWrapper(otherKeys.getPublic()));
                 fingerprint2 = CertTools.getFingerprintAsString(cert);
-                AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+                AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha384WithRSAEncryption);
                 PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, pAlg,
                         null);
                 assertNotNull("Generating CrmfRequest failed.", msg);
                 CMPCertificate[] extraCert = getCMPCert(othercert);
-                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, otherKeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, otherKeys.getPrivate(), 
+                        AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
                 assertNotNull(msg);
                 //******************************************''''''
-                final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+                final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
                 sig.initVerify(othercert.getPublicKey());
                 sig.update(CmpMessageHelper.getProtectedBytes(msg));
                 boolean verified = sig.verify(msg.getProtection().getBytes());
@@ -1015,7 +1023,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
                 // This should have failed
                 checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                        .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                        .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha384WithRSAEncryption.getId());
                 PKIMessage respObject = PKIMessage.getInstance(resp);
                 assertNotNull(respObject);
                 PKIBody body = respObject.getBody();
@@ -1027,14 +1035,15 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 assertEquals(expectedErrMsg, errMsg);
             }
             // Step 3 sign with the real certificate, but user status is not NEW
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);
             PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, pAlg, null);
             assertNotNull("Generating CrmfRequest failed.", msg);
             CMPCertificate[] extraCert = getCMPCert(cert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, keys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(msg);
             //******************************************''''''
-            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             sig.initVerify(cert.getPublicKey());
             sig.update(CmpMessageHelper.getProtectedBytes(msg));
             boolean verified = sig.verify(msg.getProtection().getBytes());
@@ -1044,7 +1053,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, this.cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
-                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             // This should have failed
             PKIMessage respObject = PKIMessage.getInstance(resp);
             assertNotNull(respObject);
@@ -1192,10 +1201,11 @@ public class AuthenticationModulesTest extends CmpTestCase {
             PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, this.cacert, this.nonce, this.transid, false, null, null, null, null, pAlg, null);
             assertNotNull("Generating CrmfRequest failed.", msg);
             CMPCertificate[] extraCert = getCMPCert(cert);
-            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, keys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(msg);
             //******************************************''''''
-            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
             sig.initVerify(cert.getPublicKey());
             sig.update(CmpMessageHelper.getProtectedBytes(msg));
             boolean verified = sig.verify(msg.getProtection().getBytes());
@@ -1347,7 +1357,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
             CMPCertificate[] extraCert = getCMPCert(admCert);
             req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(),
-                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), "BC");//CMSSignedGenerator.DIGEST_SHA256
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);//CMSSignedGenerator.DIGEST_SHA256
             assertNotNull(req);
 
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -1377,7 +1387,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             PKIMessage rev = genRevReq(ecdsaCaInfo.getSubjectDN(), userDN, cert.getSerialNumber(), ecdsaCaCert, _nonce, _transid, false, pAlg, null);
             assertNotNull(rev);
             rev = CmpMessageHelper.buildCertBasedPKIProtection(rev, extraCert, admkeys.getPrivate(),
-                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), "BC");
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(rev);
             final byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
             // Send request and receive response
@@ -1451,7 +1461,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
             fp = CertTools.getFingerprintAsString(admCert);
 
             CMPCertificate[] extraCert = getCMPCert(admCert);
-            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), 
+                    CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(req);
 
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
