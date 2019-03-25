@@ -61,6 +61,7 @@ pipeline {
 	}
 	post {
 		always {
+			sh "chown -R 1001:1001 $env.WORKSPACE"
 			sh "docker stop --time=1 ${params.DOCKER_NAME_BASE} || true"
 			sh "docker rm -f ${params.DOCKER_NAME_BASE} || true"
 			sh "docker stop --time=1 ${params.DOCKER_NAME_DB} || true"

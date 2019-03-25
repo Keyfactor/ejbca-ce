@@ -78,7 +78,3 @@ echo '=================== Deployment is done ===================================
 echo '=================== Starting system tests =================================='
 ant test:runsys -Dtests.jvmargs="$TEST_OPTS"
 echo '=================== System tests are done =================================='
-
-
-echo '=================== fixing permissions ================================='
-chown -R 1001:1001 .
