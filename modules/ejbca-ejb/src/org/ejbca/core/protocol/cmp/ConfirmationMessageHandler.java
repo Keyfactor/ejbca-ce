@@ -151,7 +151,12 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                     cryptoToken.getSignProviderName());
             final AlgorithmIdentifier protectionAlgorithm = cmpRequestMessage.getHeader().getProtectionAlg();
             if (protectionAlgorithm != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Confirm request message (update) header has protection alg: " + protectionAlgorithm.getAlgorithm().getId());
+                }
                 cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(protectionAlgorithm.getAlgorithm().getId()));
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("CMP Confirm message header has no protection alg, using default alg in response.");
             }
         } catch (CADoesntExistsException | CryptoTokenOfflineException e) {
             LOG.error("Exception during CMP response signing: " + e.getMessage(), e);            
