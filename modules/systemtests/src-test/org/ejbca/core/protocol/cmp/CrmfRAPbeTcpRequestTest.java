@@ -170,7 +170,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();

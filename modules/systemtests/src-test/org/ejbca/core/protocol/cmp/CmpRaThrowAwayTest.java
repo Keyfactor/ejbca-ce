@@ -250,7 +250,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(subjectDN, this.caCertificate, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(subjectDN, this.caCertificate, nonce, transid, hash, reqId, null);
         assertNotNull("Could not create confirmation message.", confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBE_SECRET, "unusedKeyId", 567);
         bao = new ByteArrayOutputStream();

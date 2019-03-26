@@ -121,7 +121,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0, null);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -129,7 +129,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test01ConfRespSignedByRecepient");
@@ -154,7 +154,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         // Send a confirm message to the CA
         String hash = "foo123";
         // the parameter 'null' is to  generate a confirm request for a recipient that does not exist
-        PKIMessage confirm = genCertConfirm(userDN, null, nonce, transid, hash, 0);
+        PKIMessage confirm = genCertConfirm(userDN, null, nonce, transid, hash, 0, PKCSObjectIdentifiers.sha1WithRSAEncryption);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -191,7 +191,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0, null);
         confirm = protectPKIMessage(confirm, false, "password", 567);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -200,7 +200,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "password", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "password", null /*response is not signed*/);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");
@@ -228,7 +228,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, 0, null);
         confirm = protectPKIMessage(confirm, false, "foo123", 567);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -237,7 +237,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "foo123", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpResponseGeneral(resp, this.testx509ca.getSubjectDN(), userDN, this.cacert, nonce, transid, false, "foo123", null /*response is not signed*/);
         checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
 
         log.trace("<test03ConfRespPbeProtected");

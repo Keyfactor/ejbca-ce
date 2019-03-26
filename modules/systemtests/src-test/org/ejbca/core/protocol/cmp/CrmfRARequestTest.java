@@ -204,7 +204,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         {
             // Send a confirm message to the CA
             final String hash = "foo123";
-            final PKIMessage con = genCertConfirm(userDN, caCert, nonce, transid, hash, reqId);
+            final PKIMessage con = genCertConfirm(userDN, caCert, nonce, transid, hash, reqId, null);
             Assert.assertNotNull(con);
             PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD, 567);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();

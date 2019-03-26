@@ -61,6 +61,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -572,7 +573,7 @@ public class DefaultProfileTest extends CmpTestCase {
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
         
         final String admUsername = "cmpAdminUsername";
-        final KeyPair admkeys = KeyTools.genKeys("512", "RSA");
+        final KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         final AuthenticationToken admToken = createAdminToken(admkeys, admUsername, "CN="+admUsername+",C=SE", caid1, EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         final Certificate admCert = getCertFromCredentials(admToken);
@@ -587,12 +588,13 @@ public class DefaultProfileTest extends CmpTestCase {
             assertNotNull("Failed to create a test certificate", certificate);
             fp1 = CertTools.getFingerprintAsString(certificate);
     
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha384WithRSAEncryption);
             PKIMessage req = genRenewalReq(USERDN, cacert2, nonce, transid, keys, false, USERDN, ca2.getSubjectDN(), pAlg, new DEROctetString(nonce));
             assertNotNull("Failed to generate a CMP renewal request", req);
             CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
             final int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), 
+                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(req);
             
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -602,7 +604,7 @@ public class DefaultProfileTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, ALIAS);
             
-            checkCmpResponseGeneral(resp, ca2.getSubjectDN(), USERDN, cacert2, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, ca2.getSubjectDN(), USERDN, cacert2, nonce, transid, true, null, PKCSObjectIdentifiers.sha384WithRSAEncryption.getId());
             X509Certificate cert = checkKurCertRepMessage(USERDN, cacert2, resp, reqId);
             assertNotNull("Failed to renew the certificate", cert);
             fp2 = CertTools.getFingerprintAsString(cert);
@@ -621,12 +623,6 @@ public class DefaultProfileTest extends CmpTestCase {
         }
 
     }
-
-    
-    
-    
-    
-    
     
     private String getCertFpFromCMPResponse(final PKIMessage respMsg, final byte[] response, final X509Certificate cacert) throws Exception {
         CertReqMessages ir = (CertReqMessages) respMsg.getBody().getContent();

@@ -277,7 +277,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             
             // Send a confirm message to the CA
             String hash = "foo123";
-            PKIMessage confirm = genCertConfirm(subjectDN, caCertificate, nonce, transid, hash, reqId);
+            PKIMessage confirm = genCertConfirm(subjectDN, caCertificate, nonce, transid, hash, reqId, null);
             assertNotNull("Could not create confirmation message.", confirm);
             PKIMessage req1 = protectPKIMessage(confirm, false, pbeSecret, keyId, 567);
             bao = new ByteArrayOutputStream();
