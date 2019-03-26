@@ -36,13 +36,11 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -128,6 +126,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     
     private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<>();
 
+    @Override
     public void init(CAInfo cainfo) {
         data = new LinkedHashMap<>();
         this.cainfo = cainfo;
@@ -140,29 +139,35 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
 
     }
-    
+
     /** Constructor used when retrieving existing CA from database. */
+    @Override
     public void init(HashMap<Object, Object> data) {
         loadData(data);
         extendedcaservicemap = new HashMap<>();
     }
-    
+
+    @Override
     public void setCAInfo(CAInfo cainfo) {
         this.cainfo = cainfo;
     }
 
+    @Override
     public CAInfo getCAInfo() {
         return this.cainfo;
     }
-    
+
+    @Override
     public int getCertificateProfileId() {
         return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();
     }
-    
+
+    @Override
     public String getSubjectDN() {
         return cainfo.getSubjectDN();
     }
 
+    @Override
     public void setSubjectDN(String subjectDn) {
         cainfo.subjectdn = subjectDn;
     }
@@ -182,40 +187,49 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     public void setSubjectAltName(final String altName) {
         data.put(SUBJECTALTNAME, altName);
     }
-    
+
+    @Override
     public int getCAId() {
         return cainfo.getCAId();
     }
 
+    @Override
     public void setCAId(int caid) {
         cainfo.caid = caid;
     }
-    
+
+    @Override
     public String getName() {
         return cainfo.getName();
     }
 
+    @Override
     public void setName(String caname) {
         cainfo.name = caname;
     }
 
+    @Override
     public int getStatus() {
         return cainfo.getStatus();
     }
 
+    @Override
     public void setStatus(int status) {
         cainfo.status = status;
     }
     
+    @Override
     @SuppressWarnings("unchecked")
     public Collection<Integer> getValidators() {
         return ((Collection<Integer>) data.get(VALIDATORS));
     }
 
+    @Override
     public void setValidators(Collection<Integer> validators) {
         data.put(VALIDATORS, validators);
     }
     
+    @Override
     @Deprecated
     public long getValidity() {
         return ((Number) data.get(VALIDITY)).longValue();
@@ -226,6 +240,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      * @return the validity as ISO8601 date or relative time.
      * @See {@link org.cesecore.util.ValidityDate ValidityDate}
      */
+    @Override
     @SuppressWarnings("deprecation")
     public String getEncodedValidity() {
         String result = (String) data.get(ENCODED_VALIDITY);
@@ -241,6 +256,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      *
      * @param encodedValidity
      */
+    @Override
     public void setEncodedValidity(String encodedValidity) {
         data.put(ENCODED_VALIDITY, encodedValidity);
     }
@@ -272,51 +288,63 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     /**
      * @return one of CAInfo.CATYPE_CVC or CATYPE_X509
      */
+    @Override
     public int getCAType() {
         return ((Integer) data.get(CATYPE)).intValue();
     }
 
+    @Override
     public Date getExpireTime() {
         return ((Date) data.get(EXPIRETIME));
     }
 
+    @Override
     public void setExpireTime(Date expiretime) {
         data.put(EXPIRETIME, expiretime);
     }
 
+    @Override
     public int getSignedBy() {
         return ((Integer) data.get(SIGNEDBY)).intValue();
     }
 
+    @Override
     public void setSignedBy(int signedby) {
         data.put(SIGNEDBY, Integer.valueOf(signedby));
     }
 
+    @Override
     public String getDescription() {
         return ((String) data.get(DESCRIPTION));
     }
 
+    @Override
     public void setDescription(String description) {
         data.put(DESCRIPTION, description);
     }
 
+    @Override
     public int getRevocationReason() {
         return ((Integer) data.get(REVOCATIONREASON)).intValue();
     }
 
+    @Override
     public void setRevocationReason(int reason) {
         data.put(REVOCATIONREASON, Integer.valueOf(reason));
     }
 
+    @Override
     public Date getRevocationDate() {
         return (Date) data.get(REVOCATIONDATE);
     }
 
+    @Override
     public void setRevocationDate(Date date) {
         data.put(REVOCATIONDATE, date);
     }
 
     /** @return the CAs token reference. */
+    @Override
     public CAToken getCAToken() {
         if (caToken == null) {
             @SuppressWarnings("unchecked")
@@ -345,6 +373,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     }
 
     /** Sets the CA token. */
+    @Override
     public void setCAToken(CAToken catoken) throws InvalidAlgorithmException {
         // Check that the signature algorithm is one of the allowed ones, only check if there is a sigAlg though
         // things like a NulLCryptoToken does not have signature algorithms
@@ -365,8 +394,9 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         data.put(CATOKENDATA, catoken.saveData());
         this.caToken = catoken;
     }
-    
+
     /** Returns a collection of CA certificates, or null if no request certificate chain exists */
+    @Override
     public Collection<Certificate> getRequestCertificateChain() {
         if (requestcertchain == null) {
             @SuppressWarnings("unchecked")
@@ -386,6 +416,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         return requestcertchain;
     }
 
+    @Override
     public void setRequestCertificateChain(Collection<Certificate> requestcertificatechain) {
         final ArrayList<String> storechain = new ArrayList<>();
         for (final Certificate cert : requestcertificatechain) {
@@ -399,13 +430,14 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         this.requestcertchain = new ArrayList<>();
         this.requestcertchain.addAll(requestcertificatechain);
     }
-    
+
     /**
      * Returns a collection of CA-certificates, with this CAs cert i position 0, or null if no CA-certificates exist. The root CA certificate will
      * thus be in the last position.
      *
      * @return Collection of Certificate
      */
+    @Override
     public List<Certificate> getCertificateChain() {
         if (certificatechain == null) {
             @SuppressWarnings("unchecked")
@@ -435,6 +467,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         return certificatechain;
     }
 
+    @Override
     public void setCertificateChain(final List<Certificate> certificatechain) {
         final ArrayList<String> storechain = new ArrayList<>();
         for (final Certificate cert : certificatechain) {
@@ -448,10 +481,11 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         this.certificatechain = new ArrayList<>(certificatechain);
         this.cainfo.setCertificateChain(certificatechain);
     }
-    
+
     /**
      * @return the list of renewed CA certificates in order from the oldest as first to the newest as the last one
      */
+    @Override
     public List<Certificate> getRenewedCertificateChain() {
         if (renewedcertificatechain == null) {
             @SuppressWarnings("unchecked")
@@ -481,6 +515,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      * Make sure to respect the order of renewed CA certificates in the collection: from the oldest as first to the newest as the last one
      * @param certificatechain collection of the renewed CA certificates to be stored
      */
+    @Override
     public void setRenewedCertificateChain(final List<Certificate> certificatechain) {
         ArrayList<String> storechain = new ArrayList<>();
         for (Certificate cert : certificatechain) {
@@ -497,7 +532,8 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         renewedcertificatechain.addAll(certificatechain);
         cainfo.setRenewedCertificateChain(certificatechain);
     }
-    
+
+    @Override
     public void setRolloverCertificateChain(Collection<Certificate> certificatechain) {
         Iterator<Certificate> iter = certificatechain.iterator();
         ArrayList<String> storechain = new ArrayList<>();
@@ -513,6 +549,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         data.put(ROLLOVERCERTIFICATECHAIN, storechain);
     }
 
+    @Override
     public List<Certificate> getRolloverCertificateChain() {
         final List<?> storechain = (List<?>)data.get(ROLLOVERCERTIFICATECHAIN);
         if (storechain == null) {
@@ -534,11 +571,13 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         return chain;
     }
 
+    @Override
     public void clearRolloverCertificateChain() {
         data.remove(ROLLOVERCERTIFICATECHAIN);
     }
-    
+
     /** Returns the CAs certificate, or null if no CA-certificates exist. */
+    @Override
     public Certificate getCACertificate() {
         if (certificatechain == null) {
             getCertificateChain();
@@ -560,6 +599,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     }
 
     /** Returns true if we should use the next CA certificate for rollover, instead of the current CA certificate. */
+    @Override
     public boolean getUseNextCACert(final RequestMessage request) {
         final Certificate currentCert = getCACertificate();
         if (request == null) {
@@ -613,7 +653,8 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
         Boolean v = ((Boolean) data.get(NAMECHANGED));
         return (v == null) ? false : v;
     }
-    
+
+    @Override
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         data.put(APPROVALS, cainfo.getApprovals());
         data.put(DESCRIPTION, cainfo.getDescription());
@@ -643,16 +684,13 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      *
      * A few more values are also set in the overridden method in X509CA.
      */
+    @Override
     public void updateUninitializedCA(CAInfo cainfo) {
         setSignedBy(cainfo.getSignedBy());
     }
 
-    /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
-    public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
-            AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException;
-        
-    
     /** @return the CA latest link certificate or null */
+    @Override
     public byte[] getLatestLinkCertificate() {
         if (data.get(LATESTLINKCERTIFICATE) == null) {
             return null;
@@ -676,12 +714,14 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
             }
         }
     }
-    
+
+    @Override
     @SuppressWarnings("unchecked")
     public Collection<Integer> getCRLPublishers() {
         return ((Collection<Integer>) data.get(CRLPUBLISHERS));
     }
-    
+
+    @Override
     public void setCRLPublishers(Collection<Integer> crlpublishers) {
         data.put(CRLPUBLISHERS, crlpublishers);
     }
@@ -691,6 +731,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      * @deprecated since 6.6.0, use the appropriate approval profile instead.
      * Needed in order to be able to upgrade from 6.5 and earlier
      */
+    @Override
     @Deprecated
     public void setNumOfRequiredApprovals(int numOfReqApprovals) {
         data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
@@ -703,6 +744,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      *
      * @deprecated since 6.8.0, see getApprovals()
      */
+    @Override
     @Deprecated
     @SuppressWarnings("unchecked")
     public Collection<Integer> getApprovalSettings() {
@@ -717,6 +759,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      *
      * @deprecated since 6.8.0, see setApprovals()
      */
+    @Override
     @Deprecated
     public void setApprovalSettings(Collection<Integer> approvalSettings) {
         data.put(APPROVALSETTINGS, approvalSettings);
@@ -727,6 +770,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      * @deprecated since 6.6.0, use the appropriate approval profile instead.
      * Needed in order to be able to upgrade from 6.5 and earlier
      */
+    @Override
     @Deprecated
     public int getNumOfRequiredApprovals() {
         if (data.get(NUMBEROFREQAPPROVALS) == null) {
@@ -738,11 +782,13 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     /**
      * @return A 1:1 mapping between Approval Action:Approval Profile ID
      */
+    @Override
     @SuppressWarnings("unchecked")
     public Map<ApprovalRequestType, Integer> getApprovals() {
         return (Map<ApprovalRequestType, Integer>) data.get(APPROVALS);
     }
 
+    @Override
     public void setApprovals(Map<ApprovalRequestType, Integer> approvals) {
         // We must store this as a predictable order map in the database, in order for databaseprotection to work
         data.put(APPROVALS, approvals != null ? new LinkedHashMap<>(approvals) : new LinkedHashMap<>());
@@ -753,6 +799,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      *
      * @deprecated since 6.8.0, see getApprovals()
      */
+    @Override
     @Deprecated
     public int getApprovalProfile() {
         if (data.get(APPROVALPROFILE) == null) {
@@ -766,6 +813,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
      *
      * @deprecated since 6.8.0, see setApprovals()
      */
+    @Override
     @Deprecated
     public void setApprovalProfile(final int approvalProfileID) {
         data.put(APPROVALPROFILE, Integer.valueOf(approvalProfileID));
