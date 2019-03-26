@@ -276,7 +276,13 @@ public class CRLData extends ProtectedData implements Serializable {
      * @return the found entity instance or null if the entity does not exist
      */
     public static CRLData findByIssuerDNAndCRLNumber(EntityManager entityManager, String issuerDN, int crlPartitionIndex, int crlNumber) {
-        final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND a.crlPartitionIndex=:crlPartitionIndex");
+        StringBuilder builder = new StringBuilder("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber AND ");
+        if (crlPartitionIndex != 0) {
+            builder.append("a.crlPartitionIndex=:crlPartitionIndex");
+        } else {
+            builder.append("(a.crlPartitionIndex=:crlPartitionIndex or a.crlPartitionIndex is NULL)");
+        }
+        final Query query = entityManager.createQuery(builder.toString());
         query.setParameter("issuerDN", issuerDN);
         query.setParameter("crlNumber", crlNumber);
         query.setParameter("crlPartitionIndex", crlPartitionIndex);
