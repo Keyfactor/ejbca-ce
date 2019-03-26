@@ -52,6 +52,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	/* (non-Javadoc)
      * @see org.cesecore.certificates.ca.CvcCAInterface#init(org.cesecore.certificates.ca.CVCCAInfo)
      */
+	@Override
     public void init(CVCCAInfo cainfo) {
 	    super.init(cainfo);
         data.put(CABase.CATYPE, Integer.valueOf(CAInfo.CATYPE_CVC));
@@ -99,6 +100,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	/* (non-Javadoc)
      * @see org.cesecore.certificates.ca.CvcCAInterface#init(java.util.HashMap, int, java.lang.String, java.lang.String, int, java.util.Date, java.util.Date)
      */
+    @Override
     @SuppressWarnings("deprecation")
     public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
 		super.init(data);
@@ -128,11 +130,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 		super.setCAInfo(info);
         setCAId(caId);        
 	}
-
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#getCvcType()
-     */
-    public abstract String getCvcType();
 	
 	/* (non-Javadoc)
      * @see org.cesecore.certificates.ca.CvcCAInterface#createPKCS7(org.cesecore.keys.token.CryptoToken, java.security.cert.X509Certificate, boolean)
@@ -156,7 +153,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
      * @see org.cesecore.certificates.ca.CvcCAInterface#generateCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int)
      */
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber) {
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
@@ -166,7 +163,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
      * @see org.cesecore.certificates.ca.CvcCAInterface#generateDeltaCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int, int)
      */
     @Override
-    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
@@ -238,7 +235,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
      * @see org.cesecore.certificates.ca.CvcCAInterface#decryptData(org.cesecore.keys.token.CryptoToken, byte[], int)
      */
 	@Override
-	public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) {
+	public byte[] decryptData(CryptoToken cryptoToken, byte[] encryptedData, int cAKeyPurpose) {
 		throw new IllegalArgumentException("decryptData not implemented for CVC CA");
 	}
 
@@ -246,7 +243,7 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
      * @see org.cesecore.certificates.ca.CvcCAInterface#encryptData(org.cesecore.keys.token.CryptoToken, byte[], int)
      */
     @Override
-	public byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) {
+	public byte[] encryptData(CryptoToken cryptoToken, byte[] dataToEncrypt, int keyPurpose) {
 		throw new IllegalArgumentException("encryptData not implemented for CVC CA");
 	}
 }

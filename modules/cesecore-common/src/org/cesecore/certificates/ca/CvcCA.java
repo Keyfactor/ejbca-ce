@@ -12,14 +12,8 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca;
 
-import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-
-import org.bouncycastle.cert.X509CRLHolder;
-import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.keys.token.CryptoToken;
 
 /**
  * 
@@ -35,27 +29,5 @@ public interface CvcCA extends CA {
     void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime);
 
     String getCvcType();
-
-    byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain);
-
-    byte[] createPKCS7Rollover(CryptoToken cryptoToken);
-
-    X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber);
-
-    X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber);
-
-    /** Implementation of UpgradableDataHashMap function getLatestVersion */
-    float getLatestVersion();
-
-    /**
-     * Method to upgrade new (or existing external caservices)
-     * This method needs to be called outside the regular upgrade
-     * since the CA isn't instantiated in the regular upgrade.
-     */
-    boolean upgradeExtendedCAServices();
-
-    byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose);
-
-    byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose);
 
 }

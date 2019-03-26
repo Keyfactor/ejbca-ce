@@ -126,7 +126,7 @@ public abstract class CAInfo implements Serializable {
 
     /**
      * Returns the Subject DN of the CA, that will be used for issuing the CA certificate.
-     * To get the Subject DN of the latest issued CA certificate, use {@link getLatestSubjectDN}
+     * To get the Subject DN of the latest issued CA certificate, use {@link #getLatestSubjectDN}
      */
     public String getSubjectDN() {
         return subjectdn;
@@ -137,7 +137,7 @@ public abstract class CAInfo implements Serializable {
     }
     
     /**
-     * Use issuer DN from the latest CA certificate. Might differ from the value from {@link getSubjectDN}.
+     * Use issuer DN from the latest CA certificate. Might differ from the value from {@link #getSubjectDN}.
      */
     public String getLatestSubjectDN() { 
         final Collection<Certificate> certs = getCertificateChain();
