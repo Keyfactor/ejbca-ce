@@ -1715,19 +1715,19 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @see org.cesecore.certificates.ca.X509CA#generateCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int)
      */
     @Override
-    public X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
             IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, certs, getCRLPeriod(), crlnumber, false, 0);
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getCRLPeriod(), crlnumber, false, 0);
     }
 
     /* (non-Javadoc)
      * @see org.cesecore.certificates.ca.X509CA#generateDeltaCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int, int)
      */
     @Override
-    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws CryptoTokenOfflineException,
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws CryptoTokenOfflineException,
             IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException,
             NoSuchAlgorithmException {
-        return generateCRL(cryptoToken, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
+        return generateCRL(cryptoToken, crlPartitionIndex, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
     }
 
     @Override
@@ -1833,7 +1833,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @throws CRLException
      * @throws NoSuchAlgorithmException
      */
-    private X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber)
+    private X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber)
             throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException,
             InvalidKeyException, CRLException, NoSuchAlgorithmException {
         final String sigAlg = getCAInfo().getCAToken().getSignatureAlgorithm();
@@ -1950,7 +1950,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         // CRL Distribution point URI and Freshest CRL DP
         if (getUseCrlDistributionPointOnCrl()) {
             String crldistpoint = getDefaultCRLDistPoint();
-            List<DistributionPoint> distpoints = generateDistributionPoints(crldistpoint);
+            List<DistributionPoint> distpoints = generateDistributionPoints(crldistpoint, crlPartitionIndex);
 
             if (distpoints.size() > 0) {
                 IssuingDistributionPoint idp = new IssuingDistributionPoint(distpoints.get(0).getDistributionPoint(), false, false, null, false,
@@ -1964,7 +1964,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
             if (!isDeltaCRL) {
                 String crlFreshestDP = getCADefinedFreshestCRL();
-                List<DistributionPoint> freshestDistPoints = generateDistributionPoints(crlFreshestDP);
+                List<DistributionPoint> freshestDistPoints = generateDistributionPoints(crlFreshestDP, crlPartitionIndex);
                 if (freshestDistPoints.size() > 0) {
                     CRLDistPoint ext = new CRLDistPoint(freshestDistPoints.toArray(new DistributionPoint[freshestDistPoints.size()]));
 
@@ -2033,10 +2033,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      *            distribution points as String in semi column (';') separated format.
      * @return list of distribution points.
      */
-    private List<DistributionPoint> generateDistributionPoints(String distPoints) {
+    private List<DistributionPoint> generateDistributionPoints(final String distPoints, final int crlPartitionIndex) {
         // Multiple CDPs are separated with the ';' sign
         ArrayList<DistributionPoint> result = new ArrayList<>();
-        for (final String uri : StringTools.splitURIs(StringUtils.defaultString(distPoints))) {
+        for (final String uriTemplate : StringTools.splitURIs(StringUtils.defaultString(distPoints))) {
+            final String uri = ((X509CAInfo) getCAInfo()).getCrlPartitionUrl(uriTemplate, crlPartitionIndex);
             GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
             if (log.isDebugEnabled()) {
                 log.debug("Added CRL distpoint: " + uri);
@@ -2157,8 +2158,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @see org.cesecore.certificates.ca.X509CA#decryptData(org.cesecore.keys.token.CryptoToken, byte[], int)
      */
     @Override
-    public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws CMSException, CryptoTokenOfflineException {
-        CMSEnvelopedData ed = new CMSEnvelopedData(data);
+    public byte[] decryptData(CryptoToken cryptoToken, byte[] encryptedData, int cAKeyPurpose) throws CMSException, CryptoTokenOfflineException {
+        CMSEnvelopedData ed = new CMSEnvelopedData(encryptedData);
         RecipientInformationStore recipients = ed.getRecipientInfos();
         RecipientInformation recipient = recipients.getRecipients().iterator().next();
         final String keyAlias = getCAToken().getAliasFromPurpose(cAKeyPurpose);
@@ -2178,7 +2179,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @see org.cesecore.certificates.ca.X509CA#encryptData(org.cesecore.keys.token.CryptoToken, byte[], int)
      */
     @Override
-    public byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws IOException, CMSException, CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException {
+    public byte[] encryptData(CryptoToken cryptoToken, byte[] dataToEncrypt, int keyPurpose) throws IOException, CMSException, CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException {
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
         CMSEnvelopedData ed;
         final String keyAlias = getCAToken().getAliasFromPurpose(keyPurpose);
@@ -2186,7 +2187,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(keyId, pk));
         JceCMSContentEncryptorBuilder jceCMSContentEncryptorBuilder = new JceCMSContentEncryptorBuilder(NISTObjectIdentifiers.id_aes256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        ed = edGen.generate(new CMSProcessableByteArray(data), jceCMSContentEncryptorBuilder.build());
+        ed = edGen.generate(new CMSProcessableByteArray(dataToEncrypt), jceCMSContentEncryptorBuilder.build());
         log.info("Encrypted data using key alias '"+keyAlias+"' from Crypto Token "+cryptoToken.getId());
         return ed.getEncoded();
     }

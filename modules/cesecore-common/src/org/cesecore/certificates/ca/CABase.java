@@ -19,19 +19,15 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
@@ -47,11 +43,9 @@ import org.cesecore.certificates.certificate.certextensions.AvailableCustomCerti
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 
 /**
@@ -126,6 +120,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         init(cainfo);
     }
 
+    @Override
     public void init(CAInfo cainfo) {
         data = new LinkedHashMap<>();
         super.init(cainfo);
@@ -161,10 +156,12 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
     }
 
     /** Constructor used when retrieving existing CA from database. */
+    @Override
     public void init(HashMap<Object, Object> data) {
         super.init(data);
     }
-    
+
+    @Override
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         super.updateCA(cryptoToken, cainfo, cceConfig);
         data.put(CRLPERIOD, Long.valueOf(cainfo.getCRLPeriod()));
@@ -205,7 +202,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
                     if (log.isDebugEnabled()) {
                         log.debug("Updating extended CA service of type: "+info.getType());
                     }
-                    service.update(cryptoToken, info, (CABase)this, cceConfig); // the service's signing certificate might get created at this point!
+                    service.update(cryptoToken, info, this, cceConfig); // the service's signing certificate might get created at this point!
                     setExtendedCAService(service);
 
                     // Now read back the info object from the service.
@@ -219,15 +216,18 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
             data.put(EXTENDEDCASERVICES, extendedservicetypes);
         }
     }
-    
+
+    @Override
     public long getCRLPeriod() {
         return ((Long) data.get(CRLPERIOD)).longValue();
     }
 
+    @Override
     public void setCRLPeriod(long crlperiod) {
         data.put(CRLPERIOD, Long.valueOf(crlperiod));
     }
 
+    @Override
     public long getDeltaCRLPeriod() {
         if (data.containsKey(DELTACRLPERIOD)) {
             return ((Long) data.get(DELTACRLPERIOD)).longValue();
@@ -236,27 +236,32 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
     }
 
+    @Override
     public void setDeltaCRLPeriod(long deltacrlperiod) {
         data.put(DELTACRLPERIOD, Long.valueOf(deltacrlperiod));
     }
 
-    
+    @Override
     public long getCRLIssueInterval() {
         return ((Long) data.get(CRLISSUEINTERVAL)).longValue();
     }
 
+    @Override
     public void setCRLIssueInterval(long crlIssueInterval) {
         data.put(CRLISSUEINTERVAL, Long.valueOf(crlIssueInterval));
     }
 
+    @Override
     public long getCRLOverlapTime() {
         return ((Long) data.get(CRLOVERLAPTIME)).longValue();
     }
 
+    @Override
     public void setCRLOverlapTime(long crlOverlapTime) {
         data.put(CRLOVERLAPTIME, Long.valueOf(crlOverlapTime));
     }
-    
+
+    @Override
     public int getDefaultCertificateProfileId() {
         Integer defaultCertificateProfileId = (Integer) data.get(DEFAULTCERTIFICATEPROFILEID);
         if (defaultCertificateProfileId != null) {
@@ -296,6 +301,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      * @throws CertificateException
      * @throws CertificateEncodingException
      */
+    @Override
     public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
             IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException, OperatorCreationException {
         ExtendedCAService service = getExtendedCAService(request.getServiceType());
@@ -305,7 +311,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
             throw new IllegalExtendedCAServiceRequestException();
         }
         // Enrich request with CA in order for the service to be able to use CA keys and certificates
-        service.setCA((CABase)this);
+        service.setCA(this);
         return service.extendedService(cryptoToken, request);
     }
     
@@ -376,14 +382,17 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         return getBoolean(INCLUDEINHEALTHCHECK, true);
     }
 
+    @Override
     public boolean isDoEnforceUniquePublicKeys() {
         return getBoolean(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, false);
     }
 
+    @Override
     public boolean isDoEnforceUniqueDistinguishedName() {
         return getBoolean(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, false);
     }
 
+    @Override
     public boolean isDoEnforceUniqueSubjectDNSerialnumber() {
         return getBoolean(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, false);
     }
@@ -394,20 +403,24 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      * old CAs since it was not configurable and always enabled before 3.10.4.
      * For new CAs the default value is set in the web or CLI code and is false since 6.0.0.
      */
+    @Override
     public boolean isUseCertReqHistory() {
         return getBoolean(USE_CERTREQ_HISTORY, true);
     }
-    
+
+    @Override
     /** whether issued certificates should be stored or not, default true as was the case before 3.10.x */
     public boolean isUseCertificateStorage() {
         return getBoolean(USE_CERTIFICATE_STORAGE, true);
     }
-    
+
+    @Override
     /** whether revocations for non existing entry accepted */
     public boolean isAcceptRevocationNonExistingEntry() {
         return getBoolean(ACCEPT_REVOCATION_NONEXISTING_ENTRY, false);
     }
 
+    @Override
     public boolean getKeepExpiredCertsOnCRL() {
         if(data.containsKey(KEEPEXPIREDCERTSONCRL)) {
             return ((Boolean)data.get(KEEPEXPIREDCERTSONCRL)).booleanValue();
@@ -416,11 +429,13 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         }
     }
 
+    @Override
     public void setKeepExpiredCertsOnCRL(boolean keepexpiredcertsoncrl) {
         data.put(KEEPEXPIREDCERTSONCRL, Boolean.valueOf(keepexpiredcertsoncrl));
     }
     
     /** whether users should be stored or not, default true as was the case before 3.10.x */
+    @Override
     public boolean isUseUserStorage() {
         return getBoolean(USE_USER_STORAGE, true);
     }
@@ -440,6 +455,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      * @return The newly created certificate
      * @throws Exception
      */
+    @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore,
             String encodedValidity, CertificateProfile certProfile, String sequence, AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws Exception {
@@ -459,49 +475,13 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     /**
      *
-     * @param cryptoToken
-     * @param request provided request message containing optional information, and will be set with the signing key and provider.
-     * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if
-     * publicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
-     * @param publicKey provided public key which will have precedence over public key from the provided RequestMessage but not over subject.extendedInformation.certificateRequest
-     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
-     * @param keyusage BouncyCastle key usage {@link X509KeyUsage}, e.g. X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment
-     * @param notBefore
-     * @param notAfter
-     * @param certProfile
-     * @param extensions an optional set of extensions to set in the created certificate, if the profile allows extension override, null if the
-     *            profile default extensions should be used.
-     * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
-     *            CVC CAs for sequence field. Can be set to null.
-     * @param certGenParams Extra parameters for certificate generation, e.g. for the CT extension. May contain references to session beans.
-     * @param cceConfig containing a list of available custom certificate extensions
-     * @return the generated certificate
-     *
-     * @throws CryptoTokenOfflineException if the crypto token was unavailable
-     * @throws CertificateExtensionException  if any of the certificate extensions were invalid
-     * @throws CertificateCreateException if an error occurred when trying to create a certificate.
-     * @throws OperatorCreationException  if CA's private key contained an unknown algorithm or provider
-     * @throws IllegalNameException if the name specified in the certificate request contains illegal characters
-     * @throws IllegalValidityException  if validity was invalid
-     * @throws InvalidAlgorithmException  if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
-     * @throws CAOfflineException if the CA wasn't active
-     * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
-     * @throws IllegalKeyException if the using public key is not allowed to be used by specified certProfile
-     */
-    public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request,
-            PublicKey publicKey, int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
-            CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
-            OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException;
-
-    /**
-     *
      * @param request provided request message containing optional information, and will be set with the signing key and provider.
      * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Can be null. Its public key is going to be used if
      * publicKey == null && subject.extendedInformation.certificateRequest == null
      * @param publicKey provided public key which will have precedence over public key from the provided RequestMessage but not over subject.extendedInformation.certificateRequest
      * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
      */
+    @Override
     public final Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
             final Extensions extensions, final String sequence, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
@@ -510,51 +490,5 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
         return generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, null,
                 cceConfig);
     }
-
-    public abstract X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
-
-    public abstract X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber)
-            throws Exception;
-
-    /**
-     * Create a signed PKCS#7 / CMS message.
-     *
-     * @param cryptoToken
-     * @param cert
-     * @param includeChain
-     * @return A DER-encoded PKCS#7
-     * @throws SignRequestSignatureException if the certificate doesn't seem to be signed by this CA
-     * @see CertTools#createCertsOnlyCMS(List) for how to craete a certs-only PKCS7/CMS
-     */
-    public abstract byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException;
-
-    /**
-     * Creates a roll over PKCS7 for the next CA certificate, signed with the current CA key. Used by ScepServlet.
-     *
-     * @return Encoded signed certificate chain, suitable for use in SCEP.
-     */
-    public abstract byte[] createPKCS7Rollover(CryptoToken cryptoToken) throws SignRequestSignatureException;
-
-    /**
-     * Creates a certificate signature request (CSR), that can be sent to an external Root CA. Request format can vary depending on the type of CA. For
-     * X509 CAs PKCS#10 requests are created, for CVC CAs CVC requests are created.
-     *
-     * @param attributes PKCS10 attributes to be included in the request, a Collection of ASN1Encodable objects, ready to put in the request. Can be
-     *            null.
-     * @param signAlg the signature algorithm used by the CA
-     * @param cacert the CAcertficate the request is targeted for, may be used or ignored by implementation depending on the request type created.
-     * @param signatureKeyPurpose which CA token key pair should be used to create the request, normally SecConst.CAKEYPURPOSE_CERTSIGN but can also
-     *            be SecConst.CAKEYPURPOSE_CERTSIGN_NEXT.
-     * @param certificateProfile Certificate profile to use for CA-type specific purposes, such as CV Certificate Extensions.
-     * @param cceConfig containing a list of available custom certificate extensions
-     * @return byte array with binary encoded request
-     * @throws CryptoTokenOfflineException if the crypto token is offline
-     * @throws CertificateExtensionException if there was a problem constructing a certificate extension.
-     */
-    public abstract byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert,
-            int signatureKeyPurpose, CertificateProfile certificateProfile, AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws CryptoTokenOfflineException, CertificateExtensionException;
-
-    public abstract byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
 
 }
