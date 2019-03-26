@@ -167,8 +167,6 @@ public final class CAConstants {
             reader = new StringReader(CAConstants.PRESIGN_VALIDATION_KEY_RSA_PRIV);
             break;
         case AlgorithmConstants.KEYALGORITHM_EC:
-            reader = new StringReader(CAConstants.PRESIGN_VALIDATION_KEY_EC_PRIV);
-            break;
         case AlgorithmConstants.KEYALGORITHM_ECDSA:
             reader = new StringReader(CAConstants.PRESIGN_VALIDATION_KEY_EC_PRIV);
             break;
