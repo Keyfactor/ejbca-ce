@@ -303,7 +303,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN1, this.cacert1, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN1, this.cacert1, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -386,7 +386,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN1, this.cacert1, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN1, this.cacert1, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -440,7 +440,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -494,7 +494,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();
@@ -568,7 +568,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN2, this.cacert2, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
         bao = new ByteArrayOutputStream();

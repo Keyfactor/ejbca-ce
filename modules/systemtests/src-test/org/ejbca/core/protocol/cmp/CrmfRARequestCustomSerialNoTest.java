@@ -188,7 +188,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         {
             // Send a confirm message to the CA
             final String hash = "foo123";
-            final PKIMessage con = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId);
+            final PKIMessage con = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId, null);
             assertNotNull(con);
             PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD, 567);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
