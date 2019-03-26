@@ -743,7 +743,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send request and receive response
             byte[] respNoIssuer = sendCmpHttp(ba2, 200, ALIAS);
             checkCmpResponseGeneral(respNoIssuer, issuerDN, clientDN, this.cacert, reqNoIssuer.getHeader().getSenderNonce().getOctets(), reqNoIssuer
-                    .getHeader().getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    .getHeader().getTransactionID().getOctets(), true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             ir = (CertReqMessages) reqNoIssuer.getBody().getContent();
             Certificate cert2 = checkCmpCertRepMessage(clientDN, this.cacert, respNoIssuer, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -752,14 +752,14 @@ public class AuthenticationModulesTest extends CmpTestCase {
             // Send a confirm message to the CA
             String hash = CertTools.getFingerprintAsString(cert2);
             int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            PKIMessage confirm = genCertConfirm(USER_DN, this.cacert, this.nonce, this.transid, hash, reqId);
+            PKIMessage confirm = genCertConfirm(USER_DN, this.cacert, this.nonce, this.transid, hash, reqId, null);
             PKIMessage protectedConfirm = protectPKIMessage(confirm, false, clientPassword, null, 567);
             assertNotNull(protectedConfirm);
             final byte[] ba3 = CmpMessageHelper.pkiMessageToByteArray(protectedConfirm);
             // Send request and receive response
             byte[] resp3 = sendCmpHttp(ba3, 200, ALIAS);
             checkCmpResponseGeneral(resp3, issuerDN, USER_DN, this.cacert, this.nonce, this.transid, true, null,
-                    PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             checkCmpPKIConfirmMessage(USER_DN, this.cacert, resp3);
         } finally {
             this.endEntityManagementSession.deleteUser(ADMIN, clientUsername);
@@ -1372,7 +1372,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
             // ------------------- Send a CMP confirm message
             String hash = "foo123";
-            PKIMessage confirm = genCertConfirm(userDN, ecdsaCaCert, _nonce, _transid, hash, reqId);
+            PKIMessage confirm = genCertConfirm(userDN, ecdsaCaCert, _nonce, _transid, hash, reqId, null);
             assertNotNull(confirm);
             final byte[] baConfirm = CmpMessageHelper.pkiMessageToByteArray(confirm);
             // Send request and receive response
@@ -1380,7 +1380,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
             //Since pAlg was not set in the ConfirmationRequest, the default DigestAlgorithm (SHA1) will be used
             checkCmpResponseGeneral(resp, ecdsaCaInfo.getSubjectDN(), userDN, ecdsaCaCert, _nonce, _transid, true, null,
-                    X9ObjectIdentifiers.ecdsa_with_SHA1.getId());
+                    X9ObjectIdentifiers.ecdsa_with_SHA256.getId());
             checkCmpPKIConfirmMessage(userDN, ecdsaCaCert, resp);
 
             //-------------------------  Send a CMP revocation request

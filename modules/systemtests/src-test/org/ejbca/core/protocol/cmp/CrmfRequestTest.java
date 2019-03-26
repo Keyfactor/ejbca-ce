@@ -246,7 +246,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId, null);
         ba = CmpMessageHelper.pkiMessageToByteArray(confirm);
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, cmpAlias);
@@ -389,7 +389,7 @@ public class CrmfRequestTest extends CmpTestCase {
             byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-            checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             X509Certificate cert = checkCmpCertRepMessage(userDN1, this.cacert, resp, reqId);
 
             // Now revoke the certificate!
@@ -400,7 +400,7 @@ public class CrmfRequestTest extends CmpTestCase {
             byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
             // Send request and receive response
             resp = sendCmpHttp(barev, 200,cmpAlias);
-            checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, ISSUER_DN, userDN1, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             int revStatus = checkRevokeStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
             assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
 
@@ -415,7 +415,7 @@ public class CrmfRequestTest extends CmpTestCase {
             ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
-            checkCmpResponseGeneral(resp, ISSUER_DN, userDN2, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, ISSUER_DN, userDN2, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             cert = checkCmpCertRepMessage(userDN2, this.cacert, resp, reqId);
 
             // Now revoke this certificate too
@@ -426,7 +426,7 @@ public class CrmfRequestTest extends CmpTestCase {
             barev = CmpMessageHelper.pkiMessageToByteArray(rev);
             // Send request and receive response
             resp = sendCmpHttp(barev, 200, cmpAlias);
-            checkCmpResponseGeneral(resp, ISSUER_DN, userDN2, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, ISSUER_DN, userDN2, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             revStatus = checkRevokeStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
             assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
@@ -518,7 +518,7 @@ public class CrmfRequestTest extends CmpTestCase {
             byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-            checkCmpResponseGeneral(resp, ISSUER_DN, dn, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, ISSUER_DN, dn, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             X509Certificate cert = checkCmpCertRepMessage(dn, this.cacert, resp, reqId);
             assertNotNull(cert);
 
@@ -529,7 +529,7 @@ public class CrmfRequestTest extends CmpTestCase {
             byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
             // Send request and receive response
             resp = sendCmpHttp(barev, 200, cmpAlias);
-            checkCmpResponseGeneral(resp, ISSUER_DN, dn, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, ISSUER_DN, dn, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
             int revStatus = checkRevokeStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
             assertNotEquals("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
