@@ -202,7 +202,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
             // Send a confirm message to the CA
             String hash = "foo123";
-            PKIMessage confirm = genCertConfirm(dn, this.cacert, nonce, transid, hash, reqId);
+            PKIMessage confirm = genCertConfirm(dn, this.cacert, nonce, transid, hash, reqId, null);
             assertNotNull(confirm);
             bao = new ByteArrayOutputStream();
             out = new DEROutputStream(bao);
@@ -295,7 +295,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(subjectDN, this.cacert, nonce, transid, hash, reqId);
+        PKIMessage confirm = genCertConfirm(subjectDN, this.cacert, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         bao = new ByteArrayOutputStream();
         out = new DEROutputStream(bao);
