@@ -301,7 +301,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         {
             // Send a confirm message to the CA
             final String hash = "foo123";
-            final PKIMessage confirm = genCertConfirm(SUBJECT_DN, this.cacert, nonce, transid, hash, reqId);
+            final PKIMessage confirm = genCertConfirm(SUBJECT_DN, this.cacert, nonce, transid, hash, reqId, null);
             assertNotNull(confirm);
             final PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, CPNAME, 567);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
