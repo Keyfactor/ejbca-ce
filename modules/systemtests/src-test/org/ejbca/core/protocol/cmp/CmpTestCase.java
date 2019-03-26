@@ -528,7 +528,18 @@ public abstract class CmpTestCase extends CaTestCase {
         return pkiMessage;
     }
 
-    protected static PKIMessage genCertConfirm(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId) {
+    /**
+     * 
+     * @param userDN the subjectDN to in the PKIHeader
+     * @param cacert CA certificate to get the issuerDN to put in the PKIHeader (subjectDN from CA certificate)
+     * @param nonce random nonce, senderNonce in the PKIHeader
+     * @param transid random transaction ID, transactionID in the PKIHeader
+     * @param hash certHash of certificate to confirm (CertStatus in CMP msg)
+     * @param certReqId certReqId of certificate to confirm (CertStatus in CMP msg)
+     * @param protectionAlg signatureAlgorithm to put in protectionAlg in PKIHeader, or null if not protectionAlg should be added
+     * @return
+     */
+    protected static PKIMessage genCertConfirm(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId, ASN1ObjectIdentifier protectionAlg) {
         String issuerDN = "CN=foobarNoCA";
         if(cacert != null) {
             issuerDN = ((X509Certificate) cacert).getSubjectDN().getName();
@@ -537,6 +548,9 @@ public abstract class CmpTestCase extends CaTestCase {
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
+        if (protectionAlg != null) {
+            pkiHeaderBuilder.setProtectionAlg(new AlgorithmIdentifier(protectionAlg, DERNull.INSTANCE));
+        } 
         CertStatus certStatus = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(certReqId)));
         ASN1EncodableVector v = new ASN1EncodableVector();
         v.add(certStatus);
