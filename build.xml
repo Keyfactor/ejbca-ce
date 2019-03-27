@@ -940,23 +940,13 @@
         </condition>
 		
         <condition property="build.contains.cesecore-x509ca" value="true">
-        	<not>
-        	    <or>
-        		    <equals arg1="${variant}" arg2="ra" casesensitive="false"/>
-        			<equals arg1="${variant}" arg2="va" casesensitive="false"/>
-    	        </or>
-    		</not>
+        	<istrue value="${running.full.ejbca}" />
         </condition>
         
         <condition property="build.contains.cesecore-cvcca" value="true">
         	<and>
         		<equals arg1="${edition}" arg2="ee" casesensitive="true"/>
-                <not>
-                    <or>
-                        <equals arg1="${variant}" arg2="ra" casesensitive="false"/>
-                        <equals arg1="${variant}" arg2="va" casesensitive="false"/>
-                    </or>
-                </not>
+        		<istrue value="${running.full.ejbca}" />
         	</and>	
         </condition>
 		
