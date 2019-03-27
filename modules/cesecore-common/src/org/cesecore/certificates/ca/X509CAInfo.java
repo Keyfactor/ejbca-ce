@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -391,7 +392,7 @@ public class X509CAInfo extends CAInfo {
    * @return a list of CDP URLs with index numbers for currently used CRL partitions for this CA 
    */
   public List<String> getAllCrlPartitionUrls(final String crlUrl) {
-      List<String> crlUrlsReturned = new ArrayList<String>();
+      List<String> crlUrlsReturned = new ArrayList<>();
       if (getUsePartitionedCrl()) {
           int partitionUrlsToGenerate = (getCrlPartitions() - getRetiredCrlPartitions());
           crlUrlsReturned.add(crlUrl.replace("*", ""));
@@ -507,6 +508,14 @@ public class X509CAInfo extends CAInfo {
           log.info(msg);
           return CertificateConstants.NO_CRL_PARTITION;
       }
+  }
+
+  @Override
+  public IntRange getActiveCrlPartitionIndexes() {
+      if (!getUsePartitionedCrl()) {
+          return null;
+      }
+      return new IntRange(getRetiredCrlPartitions() + 1, getCrlPartitions());
   }
 
   public String getDefaultCRLIssuer(){ return defaultcrlissuer; }
@@ -702,8 +711,8 @@ public class X509CAInfo extends CAInfo {
         private long crlIssueInterval = 0L;
         private long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
         private long deltaCrlPeriod = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
-        private Collection<Integer> crlPublishers = new ArrayList<Integer>();
-        private Collection<Integer> validators = new ArrayList<Integer>();
+        private Collection<Integer> crlPublishers = new ArrayList<>();
+        private Collection<Integer> validators = new ArrayList<>();
         private boolean useAuthorityKeyIdentifier = true;
         private boolean authorityKeyIdentifierCritical = false;
         private boolean useCrlNumber = true;
@@ -717,9 +726,9 @@ public class X509CAInfo extends CAInfo {
         private List<String> nameConstraintsExcluded = null;
         private String caDefinedFreshestCrl = null;
         private boolean finishUser = true;
-        private Collection<ExtendedCAServiceInfo> extendedCaServiceInfos = new ArrayList<ExtendedCAServiceInfo>();
+        private Collection<ExtendedCAServiceInfo> extendedCaServiceInfos = new ArrayList<>();
         private boolean useUtf8PolicyText = false;
-        private Map<ApprovalRequestType, Integer> approvals = new HashMap<ApprovalRequestType, Integer>();
+        private Map<ApprovalRequestType, Integer> approvals = new HashMap<>();
         private boolean usePrintableStringSubjectDN = false;
         private boolean useLdapDnOrder = true;
         private boolean useCrlDistributionPointOnCrl = false;

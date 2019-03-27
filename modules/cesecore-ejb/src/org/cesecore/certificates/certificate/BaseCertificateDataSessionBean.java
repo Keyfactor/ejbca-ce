@@ -44,16 +44,21 @@ public abstract class BaseCertificateDataSessionBean {
      * Returns a list with information about revoked certificates. Depending on the table, the result can
      * either contain at most one entry per certificate, or it may contain duplicates.
      */
-    protected Collection<RevokedCertInfo> getRevokedCertInfosInternal(final String issuerDN, final long lastbasecrldate, final boolean forceGetAll) {
+    protected Collection<RevokedCertInfo> getRevokedCertInfosInternal(final String issuerDN, final int crlPartitionIndex, final long lastbasecrldate, final boolean forceGetAll) {
         final String tableName = getTableName();
+        final String crlPartitionExpression;
         final Query query;
+        if (crlPartitionIndex != 0) {
+            crlPartitionExpression = " AND crlPartitionIndex = :crlPartitionIndex";
+        } else {
+            crlPartitionExpression = " AND (crlPartitionIndex = :crlPartitionIndex OR crlPartitionIndex IS NULL)";
+        }
         if (lastbasecrldate > 0) {
             // Delta CRL
             query = getEntityManager().createNativeQuery(
                     "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)",
+                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)" + crlPartitionExpression,
                     "RevokedCertInfoSubset");
-            query.setParameter("issuerDN", issuerDN);
             query.setParameter("revocationDate", lastbasecrldate);
             query.setParameter("status1", CertificateConstants.CERT_REVOKED);
             query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
@@ -62,9 +67,8 @@ public abstract class BaseCertificateDataSessionBean {
             // Base CRL
             query = getEntityManager().createNativeQuery(
                     "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
-                            + "a.issuerDN=:issuerDN AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)",
+                            + "a.issuerDN=:issuerDN AND (a.status=:status1 OR a.status=:status2 OR a.status=:status3)" + crlPartitionExpression,
                     "RevokedCertInfoSubset");
-            query.setParameter("issuerDN", issuerDN);
             query.setParameter("status1", CertificateConstants.CERT_REVOKED);
             query.setParameter("status2", CertificateConstants.CERT_ACTIVE); // in case the certificate has been changed from on hold, we need to include it as "removeFromCRL" in the Delta CRL
             query.setParameter("status3", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION); // could happen if a cert is re-activated just before expiration
@@ -72,11 +76,12 @@ public abstract class BaseCertificateDataSessionBean {
             // Base CRL
             query = getEntityManager().createNativeQuery(
                     "SELECT a.fingerprint as fingerprint, a.serialNumber as serialNumber, a.expireDate as expireDate, a.revocationDate as revocationDate, a.revocationReason as revocationReason FROM " + tableName + " a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.status=:status",
+                            + "a.issuerDN=:issuerDN AND a.status=:status" + crlPartitionExpression,
                     "RevokedCertInfoSubset");
-            query.setParameter("issuerDN", issuerDN);
             query.setParameter("status", CertificateConstants.CERT_REVOKED);
         }
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("crlPartitionIndex", crlPartitionIndex);
         return getRevokedCertInfosInternal(query);
     }
     
