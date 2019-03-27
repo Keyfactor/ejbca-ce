@@ -90,6 +90,11 @@ public class InternalResourcesTest {
         assertEquals("Test      message  ", intres.getLocalizedMessageCs("raadmin.testparams").toString());
     }
 
+    /**
+     * Tests the effects of adding extra parameters onto a resource, i.e where the messages says "I am a {0}" and the parameters are "beaver" and 
+     * "badger", the resulting output is "I am a beaver, badger", taking care to not lose any information from the output. 
+     * 
+     */
     @Test
     public void testMessageStringWithExtraParameter() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
@@ -106,9 +111,9 @@ public class InternalResourcesTest {
         assertEquals("Extra params were not correctly handled.", testMessage + " " + param + ", " + extraParam, intres.getLocalizedMessage(testMessageKey, param, extraParam).toString());
     }
 
-    /** Test that we don't allow unlimited recursion in the language strings 
-     * @throws SecurityException 
-     * @throws NoSuchFieldException */
+    /** Test that we don't allow unlimited recursion in the language strings. Recursion will occur when the message is "foo {0}" and the parameter is 
+     * "bar {0}". The resulting output will be "foo bar bar bar bar ...", limited by the hard coded limit, which is 20. 
+     */
     @Test
     public void testMessageStringWithRecursive() throws NoSuchFieldException, SecurityException {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
