@@ -273,6 +273,9 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #cryptotoken.p11.lib.113.file=/home/liquidsec_bin/lib/libliquidsec_pkcs11.so
 #cryptotoken.p11.lib.114.name=AWS CloudHSM
 #cryptotoken.p11.lib.114.file=/opt/PrimeKey/cloudhsm/lib/libliquidsec_pkcs11.so
+#cryptotoken.p11.lib.120.name=YubiHSM2
+#cryptotoken.p11.lib.120.file=/usr/lib/x86_64-linux-gnu/pkcs11/yubihsm_pkcs11.so
+
 
 #
 # You can add your own values with an available number, or override numbers from defaults...
