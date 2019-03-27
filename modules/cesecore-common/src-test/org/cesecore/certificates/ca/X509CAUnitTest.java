@@ -70,16 +70,12 @@ import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
-import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLReason;
-import org.bouncycastle.asn1.x509.DistributionPoint;
-import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.PolicyQualifierId;
@@ -106,7 +102,6 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -126,17 +121,13 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.SoftCryptoToken;
-import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.keys.validation.CertificateValidationDomainService;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
 
@@ -144,21 +135,12 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public class X509CAUnitTest {
+public class X509CAUnitTest extends X509CAUnitTestBase {
 
     private static final Logger log = Logger.getLogger(X509CAUnitTest.class);
 
-    public static final String CADN = "CN=TEST";
-
-    // This will be an empty list of custom certificate extensions
-    private final AvailableCustomCertificateExtensionsConfiguration cceConfig = new AvailableCustomCertificateExtensionsConfiguration();
-
     // We define this here for compilation, since CT jar is not always available. This is the same as org.certificatetransparency.ctlog.serialization.CTConstants.POISON_EXTENSION_OID
     final private static String POISON_EXTENSION_OID = "1.3.6.1.4.1.11129.2.4.3";
-
-    public X509CAUnitTest() {
-        CryptoProviderTools.installBCProvider();
-    }
 
     @Test
     public void testX509CABasicOperationsRSA() throws Exception {
@@ -351,128 +333,6 @@ public class X509CAUnitTest {
         obj = aIn.readObject();
         reason = CRLReason.getInstance(obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
-    }
-
-
-
-    /**
-     * Tests the extension CRL Distribution Point on CRLs
-     *
-     */
-    @Test
-    public void testCRLDistPointOnCRL() throws Exception {
-        final CryptoToken cryptoToken = getNewCryptoToken();
-        final X509CA ca = createTestCA(cryptoToken, CADN);
-
-        final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
-        X509CAInfo cainfo = (X509CAInfo) ca.getCAInfo();
-
-        cainfo.setUseCrlDistributionPointOnCrl(true);
-        cainfo.setDefaultCRLDistPoint(cdpURL);
-        ca.updateCA(cryptoToken, cainfo, cceConfig);
-
-        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
-        assertNotNull(crl);
-        X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-
-        byte[] cdpDER = xcrl.getExtensionValue(Extension.issuingDistributionPoint.getId());
-        assertNotNull("CRL has no distribution points", cdpDER);
-
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
-        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance(aIn.readObject());
-        DistributionPointName distpoint = cdp.getDistributionPoint();
-
-        assertEquals("CRL distribution point is different", cdpURL, ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
-
-        cainfo.setUseCrlDistributionPointOnCrl(false);
-        cainfo.setDefaultCRLDistPoint(null);
-        ca.updateCA(cryptoToken, cainfo, cceConfig);
-        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
-        assertNotNull(crl);
-        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-        assertNull("CRL has distribution points", xcrl.getExtensionValue(Extension.cRLDistributionPoints.getId()));
-    }
-
-    /**
-     * Tests the extension Freshest CRL DP.
-     *
-     * @throws Exception
-     *             in case of error.
-     */
-    @Test
-    public void testCRLFreshestCRL() throws Exception {
-        final CryptoToken cryptoToken = getNewCryptoToken();
-        final X509CA ca = createTestCA(cryptoToken, CADN);
-        final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
-        final String freshestCdpURL = "http://www.ejbca.org/foo/delta.crl";
-        X509CAInfo cainfo = (X509CAInfo) ca.getCAInfo();
-
-        cainfo.setUseCrlDistributionPointOnCrl(true);
-        cainfo.setDefaultCRLDistPoint(cdpURL);
-        cainfo.setCADefinedFreshestCRL(freshestCdpURL);
-        ca.updateCA(cryptoToken, cainfo, cceConfig);
-
-        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
-        assertNotNull(crl);
-        X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-
-        byte[] cFreshestDpDER = xcrl.getExtensionValue(Extension.freshestCRL.getId());
-        assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
-
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
-        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = CRLDistPoint.getInstance(aIn.readObject());
-        DistributionPoint[] distpoints = cdp.getDistributionPoints();
-
-        assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
-        assertEquals("Freshest CRL distribution point is different", freshestCdpURL, ((DERIA5String) ((GeneralNames) distpoints[0].getDistributionPoint()
-                .getName()).getNames()[0].getName()).getString());
-
-        cainfo.setUseCrlDistributionPointOnCrl(false);
-        cainfo.setDefaultCRLDistPoint(null);
-        cainfo.setCADefinedFreshestCRL(null);
-        ca.updateCA(cryptoToken, cainfo, cceConfig);
-
-        crl = ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1);
-        assertNotNull(crl);
-        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-        assertNull("CRL has freshest crl extension", xcrl.getExtensionValue(Extension.freshestCRL.getId()));
-    }
-
-    /**
-     * Tests the extension CRL Distribution Point on a partitioned CRL
-     */
-    @Test
-    public void testPartitionedCRLDistPointOnCRL() throws Exception {
-        final CryptoToken cryptoToken = getNewCryptoToken();
-        final X509CA ca = createTestCA(cryptoToken, CADN);
-
-        final String cdpTemplateUrl = "http://www.ejbca.org/Foo*/Bar*.crl";
-        final String cdpExpectedUrl = "http://www.ejbca.org/Foo12345/Bar12345.crl";
-        X509CAInfo cainfo = (X509CAInfo) ca.getCAInfo();
-
-        cainfo.setUseCrlDistributionPointOnCrl(true);
-        cainfo.setUsePartitionedCrl(true);
-        cainfo.setCrlPartitions(23456);
-        cainfo.setDefaultCRLDistPoint(cdpTemplateUrl);
-        ca.updateCA(cryptoToken, cainfo, cceConfig);
-
-        Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        X509CRLHolder crl = ca.generateCRL(cryptoToken, 12345, revcerts, 1);
-        assertNotNull(crl);
-        X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-
-        assertEquals("CRL distribution point is different", Arrays.asList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
-
-        crl = ca.generateDeltaCRL(cryptoToken, 12345, revcerts, 2, 1);
-        assertNotNull(crl);
-        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-        assertEquals("CRL distribution point is different", Arrays.asList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
     }
 
     @Test
@@ -1091,7 +951,7 @@ public class X509CAUnitTest {
         }
     }
 
-    /** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
+    /** Test implementation of Authority Information Access Extension for OCSP andd CRL according to RFC 4325 */
     @Test
     public void testAuthorityInformationAccessCertificateExtension() throws Exception {
         // test data for CA - level
@@ -1165,201 +1025,6 @@ public class X509CAUnitTest {
         assertTrue("Certificate CA issuer URIs " + Arrays.toString(caIssuerUris.toArray()) + " expected but was " + Arrays.toString(testList.toArray()), caIssuerUris.equals(testList));
         testList = CertTools.getAuthorityInformationAccessOcspUrls(certificate);
         assertTrue("Certificate OCSP service locators " + Arrays.toString(ocspUrls.toArray()) + " expected but was " + Arrays.toString(testList.toArray()), ocspUrls.equals(testList));
-    }
-
-
-    /** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
-    @Test
-    public void testAuthorityInformationAccessCrlExtension() throws Exception {
-        final CryptoToken cryptoToken = getNewCryptoToken();
-        X509CA testCa = createTestCA(cryptoToken, "CN=foo");
-        List<String> authorityInformationAccess = new ArrayList<String>();
-        authorityInformationAccess.add("http://example.com/0");
-        authorityInformationAccess.add("http://example.com/1");
-        authorityInformationAccess.add("http://example.com/2");
-        authorityInformationAccess.add("http://example.com/3");
-        testCa.setAuthorityInformationAccess(authorityInformationAccess);
-        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
-        assertNotNull(testCrl);
-        X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
-        Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
-        assertEquals("Number of URLs do not match", authorityInformationAccess.size(), result.size());
-        for(String url : authorityInformationAccess) {
-            if(!result.contains(url)) {
-                fail("URL " + url + " was not found.");
-            }
-        }
-    }
-    
-    /** Test implementation of Authority Information Access CRL Extension according to RFC 4325 */
-    @Test
-    public void testAuthorityInformationAccessCrlExtensionWithEmptyList() throws Exception{
-        final CryptoToken cryptoToken = getNewCryptoToken();
-        X509CA testCa = createTestCA(cryptoToken, "CN=foo");
-        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        X509CRLHolder testCrl = testCa.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 0);
-        assertNotNull(testCrl);
-        X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
-        Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
-        assertEquals("A list was returned without any values present.", 0, result.size());
-    }
-    
-    /**
-     * Test that CRL CDP URLs generated for this CA are correct when using partitioned CRLs  
-     */
-    @Test
-    public void shouldGenerateIndexedCrlPartitionUrls() throws Exception {
-        // Given:
-        final CryptoToken partitionedCrlCryptoToken = getNewCryptoToken();
-        X509CA partitionedCrlCa = createTestCA(partitionedCrlCryptoToken, "CN=PartitionedCrlCa");
-        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
-        //Setting use partitioned crl
-        caInfo.setUsePartitionedCrl(true);
-        caInfo.setCrlPartitions(15);
-        //We make sure to have 11 non-retired crl partitions left in use by retiring 4 partitions 
-        caInfo.setRetiredCrlPartitions(4);
-        // When:
-        //We use a template URL with the asterisk operator to generate our indexed URLs
-        List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
-        int actualUrlListSize = actualCdpUrl.size();
-        // Then:
-        //The list should contain a minimum of one CRL CDP URL, as we always have a base URL
-        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
-        //We should have 12 entries in the list of URLs
-        assertEquals("Number of CRL partition URLs is incorrect.", 12, actualUrlListSize);
-        //This URL should be modified without added index number (representing the base url)
-        assertEquals("CRL CDP URL is incorrect.", "http://example.com/CA.crl", actualCdpUrl.get(0));
-        //This URL should be modified with the index number '5' (representing the lowest used partition number)
-        assertEquals("CRL partition index in URL is incorrect.", "http://example.com/CA5.crl", actualCdpUrl.get(1));
-        //This URL should be modified with the index number '15' (representing the highest used partition number)
-        assertEquals("CRL partition index in URL is incorrect.", "http://example.com/CA15.crl", actualCdpUrl.get(11));
-    }
-
-    /**
-     * Test that one non-indexed CRL CDP URL is generated if not using partitioned CRLs configuration  
-     */
-    @Test
-    public void shouldNotGenerateIndexedCrlPartitionUrlsIfFalse() throws Exception {
-        // Given:
-        final CryptoToken nonPartitionedCrlCaCryptoToken = getNewCryptoToken();
-        X509CA nonPartitionedCrlCa = createTestCA(nonPartitionedCrlCaCryptoToken, "CN=NonPartitionedCrlCa");
-        X509CAInfo caInfo = (X509CAInfo) nonPartitionedCrlCa.getCAInfo();
-        //Setting use partitioned crl to false
-        caInfo.setUsePartitionedCrl(false);
-        //We add some partitions
-        caInfo.setCrlPartitions(10);
-        caInfo.setRetiredCrlPartitions(5);
-        // When:
-        //We use a template URL with the asterisk operator to generate our indexed URLs
-        List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
-        int actualUrlListSize = actualCdpUrl.size();
-        // Then:
-        //The list should not be null, as we have a base url
-        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
-        //We should have 1 entry in the list of URLs, this is the base URL
-        assertEquals("Number of CRL partition URLs should be 1.", 1, actualUrlListSize);
-        //This URL should not have an index number, it is the base URL
-        assertEquals("The URL should not contain a partition index.", "http://example.com/CA.crl", actualCdpUrl.get(0));
-    }
-    
-    /**
-     * Test that only one non-indexed CRL CDP URL is generated if all partitions are retired  
-     */
-    @Test
-    public void shouldNotGenerateIndexedCrlPartitionUrlsIfAllRetired() throws Exception {
-     // Given:
-        final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
-        X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
-        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
-        //Setting use partitioned crl to true
-        caInfo.setUsePartitionedCrl(true);
-        //We add some partitions
-        caInfo.setCrlPartitions(10);
-        //We retire all partitions
-        caInfo.setRetiredCrlPartitions(10);
-        // When:
-        //We use a template URL with the asterisk operator to generate our indexed URLs
-        List<String> actualCdpUrl = caInfo.getAllCrlPartitionUrls("http://example.com/CA*.crl");
-        int actualUrlListSize = actualCdpUrl.size();
-        // Then:
-        //The list should not be null, as we have a base url
-        assertNotNull("Returned list of CRL CDP URLs was null.", actualUrlListSize);
-        //We should have 1 entry in the list of URLs, this is the base URL
-        assertEquals("Number of CRL partition URLs should be 1.", 1, actualUrlListSize);
-        //This URL should not have an index number, it is the base URL
-        assertEquals("The URL should not contain a partition index.", "http://example.com/CA.crl", actualCdpUrl.get(0));
-    }
-    
-    /**
-     * Test that a correct CRL CDP URL is generated when a partition index is provided  
-     */
-    @Test
-    public void shouldGenerateCrlUrlBasedOnIndex() throws Exception {
-        // Given:
-        final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
-        X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
-        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
-        caInfo.setUsePartitionedCrl(true);
-        // When:
-        //We use a template URL with the asterisk operator to generate our indexed and non indexed URLs
-        String actualCdpUrlforIndex0 = caInfo.getCrlPartitionUrl("http://example.com/CA*.crl", 0);
-        String actualCdpUrlforIndex1 = caInfo.getCrlPartitionUrl("http://example.com/CA*.crl", 1);
-        // Then:
-        //We should have a URL without partition number for actualCdpUrlforIndex0
-        assertEquals("CRL URL is wrong, should not contain partition index.", "http://example.com/CA.crl", actualCdpUrlforIndex0);
-        //We should have a URL with a partition number '1' for actualCdpUrlforIndex1
-        assertEquals("CRL URL is wrong, should contain correct partition index.", "http://example.com/CA1.crl", actualCdpUrlforIndex1);
-    }
-
-    /**
-     * Tests the determineCrlPartitionIndex method, with one Default CRL DP configured.
-     */
-    @Test
-    public void determineCrlPartitionIndex() throws Exception {
-        log.trace(">determineCrlPartitionIndex");
-        final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
-        X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
-        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
-        caInfo.setUsePartitionedCrl(true);
-        // Test with no partition
-        caInfo.setDefaultCRLDistPoint("http://example.com/CA1.crl");
-        assertEquals("With no asterisk in URL there should be no partitioning.", CertificateConstants.NO_CRL_PARTITION, caInfo.determineCrlPartitionIndex("http://example.com/CA1.crl"));
-        // Test with default partition
-        caInfo.setDefaultCRLDistPoint("http://example.com/CA*.crl");
-        assertEquals("Test with default partition failed.", CertificateConstants.NO_CRL_PARTITION, caInfo.determineCrlPartitionIndex("http://example.com/CA.crl"));
-        // Test with partition index in one place
-        caInfo.setDefaultCRLDistPoint("http://example.com/CA*.crl");
-        assertEquals("Test with one partition index failed.", 234, caInfo.determineCrlPartitionIndex("http://example.com/CA234.crl"));
-        // Test with partition index in two places
-        caInfo.setDefaultCRLDistPoint("http://part*.crl.example.com/CA*.crl");
-        assertEquals("Test with two partition indexes failed.", 3456, caInfo.determineCrlPartitionIndex("http://part3456.crl.example.com/CA3456.crl"));
-        // Test with partition index in two places, with mismatch
-        caInfo.setDefaultCRLDistPoint("http://part*.crl.example.com/CA*.crl");
-        assertEquals("Test with mismatch should return 0 partition.", CertificateConstants.NO_CRL_PARTITION, caInfo.determineCrlPartitionIndex("http://part123.crl.example.com/CA456.crl"));
-        // Test with strange characters. Should work
-        caInfo.setDefaultCRLDistPoint("http://part*.crl.example.com/strange\\xx\\\"test\\E++TEST*.crl");
-        assertEquals("Test with two partition indexes failed.", 987, caInfo.determineCrlPartitionIndex("http://part987.crl.example.com/strange\\xx\\\"test\\E++TEST987.crl"));
-        log.trace("<determineCrlPartitionIndex");
-    }
-
-    /**
-     * Tests the determineCrlPartitionIndex method, with multiple CRL DPs configured.
-     */
-    @Test
-    public void determineCrlPartitionIndexMultipleDistributionPoints() throws Exception {
-        log.trace(">determineCrlPartitionIndexMultipleDistributionPoints");
-        final CryptoToken partitionedCrlCaCryptoToken = getNewCryptoToken();
-        X509CA partitionedCrlCa = createTestCA(partitionedCrlCaCryptoToken, "CN=PartitionedCrlCa");
-        X509CAInfo caInfo = (X509CAInfo) partitionedCrlCa.getCAInfo();
-        caInfo.setUsePartitionedCrl(true);
-        // Test with no partition
-        caInfo.setDefaultCRLDistPoint(" http://example.com/CA1.crl ; http://example.com/CA2.crl ");
-        assertEquals("With no asterisk in URL there should be no partitioning.", CertificateConstants.NO_CRL_PARTITION, caInfo.determineCrlPartitionIndex("http://example.com/CA1.crl"));
-        // Test with partitions
-        caInfo.setDefaultCRLDistPoint(" http://example.com/CA*.crl ; http://crl*.example.net/CA*.crl ");
-        assertEquals("Test with multiple CRL DPs with CRL partitioning failed.", 5, caInfo.determineCrlPartitionIndex("http://crl5.example.net/CA5.crl"));
-        log.trace("<determineCrlPartitionIndexMultipleDistributionPoints");
     }
 
     /**
@@ -1854,58 +1519,8 @@ public class X509CAUnitTest {
         return rdn.getTypesAndValues()[0].getValue();
     }
 
-    private static X509CA createTestCA(CryptoToken cryptoToken, final String cadn) throws Exception {
-        return createTestCA(cryptoToken, cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null);
-    }
 
-    private static X509CA createTestCA(CryptoToken cryptoToken, final String cadn, final String sigAlg, Date notBefore, Date notAfter) throws Exception {
-        cryptoToken.generateKeyPair(getTestKeySpec(sigAlg), CAToken.SOFTPRIVATESIGNKEYALIAS);
-        cryptoToken.generateKeyPair(getTestKeySpec(sigAlg), CAToken.SOFTPRIVATEDECKEYALIAS);
-        // Create CAToken
-        Properties caTokenProperties = new Properties();
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        CAToken caToken = new CAToken(cryptoToken.getId(), caTokenProperties);
-        // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
-        caToken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        caToken.setSignatureAlgorithm(sigAlg);
-        caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        // No extended services
-        X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
-        cainfo.setDescription("JUnit RSA CA");
-        X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
-        x509ca.setCAToken(caToken);
-        // A CA certificate
-        final PublicKey publicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        final PrivateKey privateKey = cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        X509Certificate cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigAlg, true, keyusage, notBefore, notAfter, BouncyCastleProvider.PROVIDER_NAME);
-        assertNotNull(cacert);
-        List<Certificate> cachain = new ArrayList<Certificate>();
-        cachain.add(cacert);
-        x509ca.setCertificateChain(cachain);
-        // Now our CA should be operational
-        return x509ca;
-    }
-
-    /** @return a new empty soft auto-activated CryptoToken */
-    private CryptoToken getNewCryptoToken() {
-        final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
-        CryptoToken cryptoToken;
-        try {
-            cryptoToken = CryptoTokenFactory.createCryptoToken(
-                    SoftCryptoToken.class.getName(), cryptoTokenProperties, null, 17, "CryptoToken's name");
-        } catch (NoSuchSlotException e) {
-            throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
-        }
-        return cryptoToken;
-    }
-
-    private static KeyPair genTestKeyPair(String algName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    private static KeyPair genTestKeyPair(String algName) throws InvalidAlgorithmParameterException {
         if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
             final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
             if (keyspec != null) {
@@ -1926,41 +1541,6 @@ public class X509CAUnitTest {
             return KeyTools.genKeys("brainpoolp224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         } else {
             return KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        }
-    }
-
-    /** @return Algorithm name for test key pair */
-    private static String getTestKeyPairAlgName(String algName) {
-        if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
-            algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ||
-            algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
-            algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA) ||
-            algName.equals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA) ||
-            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1) ||
-            algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {
-            return algName;
-        } else {
-            return "SHA256withRSA";
-        }
-    }
-
-    private static String getTestKeySpec(String algName) {
-        if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
-            return CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-        } else if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
-            return CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-        } else if (algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
-            return "brainpoolp224r1";
-        } else if (algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)) {
-            return "prime256v1";
-        } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)) {
-            return "2048"; // RSA-PSS required at least 2014 bits
-        } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {
-            return "2048"; // RSA-PSS required at least 2014 bits
-        } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA1_WITH_DSA)) {
-            return "DSA1024";
-        } else {
-            return "1024"; // Assume RSA
         }
     }
 
