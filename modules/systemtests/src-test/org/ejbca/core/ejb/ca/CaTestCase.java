@@ -376,7 +376,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         int cryptoTokenId = 0;
-        CA ca = caTestSession.getCA(internalAdmin, caName);
+        CA ca = (CA)caTestSession.getCA(internalAdmin, caName);
         if (ca != null) {
             cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, ca.getCAId());
@@ -392,7 +392,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         int cryptoTokenId = 0;
-        CA ca = caTestSession.getCA(internalAdmin, caId);
+        CA ca = (CA)caTestSession.getCA(internalAdmin, caId);
         if (ca != null) {
             cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, ca.getCAId());

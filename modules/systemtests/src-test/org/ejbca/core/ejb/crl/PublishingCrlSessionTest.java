@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -85,6 +79,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests CRL create session.
@@ -534,7 +534,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         CAInfo cainfo = testx509ca.getCAInfo();
         cainfo.setStatus(CAConstants.CA_OFFLINE);
         caSession.editCA(roleMgmgToken, cainfo);
-        CA ca = caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
+        CA ca = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
         assertEquals(CAConstants.CA_OFFLINE, ca.getStatus());
         assertEquals(CAConstants.CA_OFFLINE, ca.getCAInfo().getStatus());
         try {
