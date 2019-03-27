@@ -53,7 +53,7 @@ public interface NoConflictCertificateStoreSession  {
     String generateDummyFingerprint(String issuerdn, BigInteger certserno);
 
     /** @see CertificateStoreSession#listRevokedCertInfo */
-    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, long lastbasecrldate);
+    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, int crlPartitionIndex, long lastbasecrldate);
     
     /** @see CertificateStoreSession#setStatus */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;

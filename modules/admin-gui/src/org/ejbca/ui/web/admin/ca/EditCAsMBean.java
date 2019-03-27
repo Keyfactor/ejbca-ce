@@ -2003,10 +2003,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      */
     public String publishCA() {
         try {
-            cadatahandler.publishCA(caid);
+            caAdminSession.publishCA(getAdmin(), caid);
             addInfoMessage(getEjbcaWebBean().getText("CACERTPUBLISHINGQUEUED"));
             return EditCaUtil.MANAGE_CA_NAV;
-        } catch (CADoesntExistsException | AuthorizationDeniedException e) {
+        } catch (AuthorizationDeniedException e) {
             addNonTranslatedErrorMessage(e);
             return "";
         }

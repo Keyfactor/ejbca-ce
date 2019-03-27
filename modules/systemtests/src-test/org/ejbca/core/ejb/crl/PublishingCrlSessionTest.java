@@ -197,7 +197,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
          */
 
         // Get number of last CRL
-        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), -1);
+        Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(testx509ca.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, -1);
         log.debug("Number of revoked certificates=" + revfp.size());
         crl = getLastCrl(testx509ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);

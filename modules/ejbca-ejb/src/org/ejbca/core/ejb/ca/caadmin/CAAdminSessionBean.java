@@ -62,6 +62,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -3038,6 +3039,32 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
+    public void publishCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
+        log.debug("Storing CA in publishers");
+        final CAInfo cainfo = caSession.getCAInfo(admin, caid);
+        final Collection<Integer> publishers = cainfo.getCRLPublishers();
+        // Publish ExtendedCAServices certificates as well
+        for (final ExtendedCAServiceInfo extendedService : cainfo.getExtendedCAServiceInfos()) {
+            // Only publish certificates for active services
+            if (extendedService.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+                // The OCSP certificate is the same as the CA signing certificate
+                if (extendedService instanceof BaseSigningCAServiceInfo){
+                    final List<Certificate> signingcert = ((BaseSigningCAServiceInfo) extendedService).getCertificatePath();
+                    if (signingcert != null) {
+                        publishCACertificate(admin, signingcert, publishers, cainfo.getSubjectDN());
+                    }
+                }
+            }
+        }  
+        final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
+        // A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
+        // (which there is probably not) 
+        publishers.addAll(certprofile.getPublisherList());
+        publishCACertificate(admin, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
+        publishCrl(admin, cainfo, publishers);
+    }
+
+    @Override
     public void publishCACertificate(AuthenticationToken admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers,
             String caDataDN) throws AuthorizationDeniedException {
         publishCACertificate(admin, certificatechain, usedpublishers, caDataDN, false);
@@ -3138,29 +3165,42 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN,
-            boolean doPublishDeltaCRL) throws AuthorizationDeniedException {
-        if (usedpublishers == null) {
+    public void publishCrl(final AuthenticationToken admin, final int caId, final Collection<Integer> publisherIds) throws AuthorizationDeniedException {
+        publishCrl(admin, caSession.getCAInfo(admin, caId), publisherIds);
+    }
+
+    private void publishCrl(final AuthenticationToken admin, final CAInfo caInfo, final Collection<Integer> publisherIds) throws AuthorizationDeniedException {
+        if (publisherIds == null) {
             return;
         }
-        // Store crl in ca CRL publishers.
-        if (log.isDebugEnabled()) {
-            log.debug("Storing CRL in publishers");
-        }
-        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO add support for partitioned CRLs (ECA-7939)
-        final String issuerDN = CertTools.getSubjectDN(caCert);
+        log.debug("Storing CRL in publishers");
+        final Certificate caCert = caInfo.getCertificateChain().iterator().next();
+        final String caCertDn = CertTools.getSubjectDN(caCert);
         final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
-        final byte crl[] = crlStoreSession.getLastCRL(issuerDN, crlPartitionIndex, false);
+        final String caDataDn = caInfo.getSubjectDN();
+        final boolean doPublishDeltaCRL = caInfo.getDeltaCRLPeriod() > 0;
+        publishCrlPartition(admin, caCertFingerprint, caCertDn, CertificateConstants.NO_CRL_PARTITION, publisherIds, caDataDn, doPublishDeltaCRL);
+        final IntRange crlPartitions = caInfo.getActiveCrlPartitionIndexes();
+        if (crlPartitions != null) {
+            for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+                publishCrlPartition(admin, caCertFingerprint, caCertDn, crlPartitionIndex, publisherIds, caDataDn, doPublishDeltaCRL);
+            }
+        }
+    }
+
+    private void publishCrlPartition(final AuthenticationToken admin, final String caCertFingerprint, final String issuerDn, final int crlPartitionIndex, Collection<Integer> usedpublishers, String caDataDN,
+            boolean doPublishDeltaCRL) throws AuthorizationDeniedException {
+        final byte crl[] = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false);
         if (crl != null) {
-            final int nr = crlStoreSession.getLastCRLInfo(issuerDN, crlPartitionIndex, false).getLastCRLNumber();
+            final int nr = crlStoreSession.getLastCRLInfo(issuerDn, crlPartitionIndex, false).getLastCRLNumber();
             publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
         }
         if (!doPublishDeltaCRL) {
             return;
         }
-        final byte deltaCrl[] = crlStoreSession.getLastCRL(issuerDN, crlPartitionIndex, true);
+        final byte deltaCrl[] = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, true);
         if (deltaCrl != null) {
-            final int nr = crlStoreSession.getLastCRLInfo(issuerDN, crlPartitionIndex, true).getLastCRLNumber();
+            final int nr = crlStoreSession.getLastCRLInfo(issuerDn, crlPartitionIndex, true).getLastCRLNumber();
             publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
         }
     }

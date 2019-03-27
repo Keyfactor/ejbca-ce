@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.math.IntRange;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -350,7 +351,7 @@ public abstract class CAInfo implements Serializable {
     public Collection<Integer> getValidators() {
         if (validators == null) {
         	// Make sure we never return null for upgraded CAs, avoiding possible NPE
-            return new ArrayList<Integer>();
+            return new ArrayList<>();
         }
         return validators;
     }
@@ -572,5 +573,12 @@ public abstract class CAInfo implements Serializable {
     public int determineCrlPartitionIndex(final X509CRL crl) {
         // Overridden in X509CAInfo
         return CertificateConstants.NO_CRL_PARTITION;
+    }
+
+    /**
+     * Returns the active CRL partitions' indexes for a given CA, or null if the CRL is not partitioned or the CA type does not support CRLs (e.g. CVC CA)
+     */
+    public IntRange getActiveCrlPartitionIndexes() {
+        return null;
     }
 }

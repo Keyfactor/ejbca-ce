@@ -328,11 +328,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, long lastbasecrldate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, int crlPartitionIndex, long lastbasecrldate) {
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo()");
         }
-        return certificateDataSession.getRevokedCertInfos(CertTools.stringToBCDNString(StringTools.strip(issuerdn)), lastbasecrldate);
+        return certificateDataSession.getRevokedCertInfos(CertTools.stringToBCDNString(StringTools.strip(issuerdn)), crlPartitionIndex, lastbasecrldate);
     }
 
     @Override

@@ -21,7 +21,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -37,9 +36,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.keybind.CertificateImportException;
@@ -56,7 +53,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
@@ -277,35 +273,6 @@ public class CADataHandler implements Serializable {
           caadminsession.renewCANewSubjectDn(administrator, caid, nextSignKeyAlias, null, createLinkCertificate, newSubjectDn);
       }
   }
-
-  /**
-   *  @throws CADoesntExistsException 
-   */  
- public void publishCA(int caid) throws AuthorizationDeniedException, CADoesntExistsException {
- 	CAInfo cainfo = caSession.getCAInfo(administrator, caid);
- 	Collection<Integer> publishers = cainfo.getCRLPublishers();
- 	// Publish ExtendedCAServices certificates as well
-	Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
-	while(iter.hasNext()){
-		ExtendedCAServiceInfo next = iter.next();	
-		// Only publish certificates for active services
-		if (next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
-			// The OCSP certificate is the same as the CA signing certificate
-			if (next instanceof BaseSigningCAServiceInfo){
-				List<Certificate> signingcert = ((BaseSigningCAServiceInfo) next).getCertificatePath();
-				if (signingcert != null) {
-					caadminsession.publishCACertificate(administrator, signingcert, publishers, cainfo.getSubjectDN());
-				}
-			}
-		}
-	}  
-    CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
-    // A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
-    // (which there is probably not) 
-    publishers.addAll(certprofile.getPublisherList());
-    caadminsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
-    caadminsession.publishCRL(administrator, cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
- }
 
  public boolean isCARevoked(CAInfo cainfo){
 	 boolean retval = false;

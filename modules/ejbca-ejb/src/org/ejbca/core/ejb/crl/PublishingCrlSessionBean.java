@@ -33,6 +33,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventStatus;
@@ -401,19 +402,35 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         return ret;
     }
 
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean forceCRL(final AuthenticationToken admin, final int caid) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
-//        final CA ca = caSession.getCA(admin, caid);
-        // TODO loop over all partitions here (ECA-7939)
-        return forceCRL(admin, caid, CertificateConstants.NO_CRL_PARTITION);
+    /** Returns the active CRL partitions' indexes for a given CA, or null if the CRL is not partitioned. */
+    private IntRange getActiveCrlPartitionIndexes(final AuthenticationToken admin, final int caId) throws AuthorizationDeniedException {
+        final CAInfo caInfo = caSession.getCAInfo(admin, caId);
+        return caInfo != null ? caInfo.getActiveCrlPartitionIndexes() : null;
     }
 
     @Override
-    public boolean forceDeltaCRL(final AuthenticationToken admin, final int caid) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
-//        final CA ca = caSession.getCA(admin, caid);
-        // TODO loop over all partitions here (ECA-7939)
-        return forceDeltaCRL(admin, caid, CertificateConstants.NO_CRL_PARTITION);
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean forceCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
+        boolean result = true;
+        result &= forceCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
+        final IntRange crlPartitions = getActiveCrlPartitionIndexes(admin, caId);
+        if (crlPartitions != null) {
+            for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+                result &= forceCRL(admin, caId, crlPartitionIndex);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean forceDeltaCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
+        boolean result = true;
+        result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
+        final IntRange crlPartitions = getActiveCrlPartitionIndexes(admin, caId);
+        for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+            result &= forceDeltaCRL(admin, caId, crlPartitionIndex);
+        }
+        return result;
     }
 
     /**
@@ -450,7 +467,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     final long freeMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
                     log.debug("Listing revoked certificates. Free memory=" + freeMemory);
                 }
-                revokedCertificates = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
+                revokedCertificates = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, crlPartitionIndex, -1);
 
                 //if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
@@ -465,7 +482,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                             if(!differentSubjectDNs.contains(renewedCertificateSubjectDN)){
                                 log.info("Collecting revocation information for " + renewedCertificateSubjectDN + " and merging them with ones for " + caCertSubjectDN);
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
-                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
+                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, crlPartitionIndex, -1);
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
@@ -605,7 +622,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             // We can not create a CRL for a CA that is waiting for certificate response
             if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE ) {
                 // Find all revoked certificates
-                revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, lastBaseCrlInfo.getCreateDate().getTime());
+                revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, crlPartitionIndex, lastBaseCrlInfo.getCreateDate().getTime());
 
                 // if X509 CA is marked as it has gone through Name Change add certificates revoked with old names
                 if(ca.getCAType()==CAInfo.CATYPE_X509 && ((X509CA)ca).getNameChanged()){
@@ -625,7 +642,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                     log.debug("Collecting revocation information for renewed certificate '" + renewedCertificateSubjectDN + "' and merging them with ones for " + caCertSubjectDN);
                                 }
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
-                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, -1);
+                                Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, crlPartitionIndex, -1);
                                 for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
