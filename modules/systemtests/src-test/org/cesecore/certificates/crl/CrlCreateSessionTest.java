@@ -133,7 +133,7 @@ public class CrlCreateSessionTest {
         int caid = caSession.getCAInfo(authenticationToken, className).getCAId();
         CA ca = (CA)caTestSessionRemote.getCA(authenticationToken, caid);
         final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-        Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, -1);
+        Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(certSubjectDN, CertificateConstants.NO_CRL_PARTITION, -1);
         int fullnumber = getLastCrlNumber(certSubjectDN, false);
         int deltanumber = getLastCrlNumber(certSubjectDN, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
@@ -454,7 +454,7 @@ public class CrlCreateSessionTest {
             long crlperiod = cainfo.getCRLPeriod();
             // Find all revoked certificates for a complete CRL
 
-            Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
+            Collection<RevokedCertInfo> revcerts = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, CertificateConstants.NO_CRL_PARTITION, -1);
             Date now = new Date();
             Date check = new Date(now.getTime() - crlperiod);
             AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
@@ -505,7 +505,7 @@ public class CrlCreateSessionTest {
             baseCrlNumber = basecrlinfo.getLastCRLNumber();
         }
         // Find all revoked certificates
-        Collection<RevokedCertInfo> revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, baseCrlCreateTime);
+        Collection<RevokedCertInfo> revcertinfos = noConflictCertificateStoreSession.listRevokedCertInfo(caCertSubjectDN, CertificateConstants.NO_CRL_PARTITION, baseCrlCreateTime);
         if (log.isDebugEnabled()) {
             log.debug("Found " + revcertinfos.size() + " revoked certificates.");
         }
