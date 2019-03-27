@@ -1550,9 +1550,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
                 // Sign CT pre-certificate
                 /*
-                 *  TODO: Should be able to use a special CT signing certificate.
-                 *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID,
-                 *  and should not have any other key usages.
+                 *  TODO: It would be nice to be able to do the SCT fetching on a separate proxy node (ECA-4732).
+                 *  The proxy node would then use a special CT pre-certifcate signing certificate.
+                 *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID
+                 *  and should not have any other key usages (see RFC 6962, section 3.1)
                  */
                 final ContentSigner signer = new BufferingContentSigner(
                         new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);

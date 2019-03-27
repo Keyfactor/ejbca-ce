@@ -3222,21 +3222,18 @@ public abstract class CertTools {
      * @param crl CRL
      * @return A list of URIs
      */
-    public static Collection<String> getCrlDistributionPoints(final X509CRL crl) {
-        final ArrayList<String> uris = new ArrayList<>();
+    public static List<String> getCrlDistributionPoints(final X509CRL crl) {
         try {
             final ASN1Primitive extensionValue = getExtensionValue(crl, Extension.issuingDistributionPoint.getId());
             if (extensionValue == null) {
-                return uris;
+                return Collections.emptyList();
             }
             final IssuingDistributionPoint idp = IssuingDistributionPoint.getInstance(extensionValue);
-            if (idp == null) {
-                return uris;
-            }
             final DistributionPointName dpName = idp.getDistributionPoint();
             if (dpName == null || dpName.getType() != DistributionPointName.FULL_NAME) { // Relative names are not implemented
-                return uris;
+                return Collections.emptyList();
             }
+            final ArrayList<String> uris = new ArrayList<>();
             final GeneralNames generalNames = GeneralNames.getInstance(dpName.getName());
             for (final GeneralName generalName : generalNames.getNames()) {
                 if (generalName.getTagNo() == GeneralName.uniformResourceIdentifier) {
@@ -3244,10 +3241,11 @@ public abstract class CertTools {
                     uris.add(asn1Value.getString());
                 }
             }
+            return uris;
         } catch (IllegalArgumentException e) {
             log.debug("Malformed CRL Issuance Distribution Point", e);
+            return Collections.emptyList();
         }
-        return uris;
     }
 
     

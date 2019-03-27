@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -68,7 +69,7 @@ public class CrlDistributionPointsUnitTest {
                 .build();
         final byte[] encoded = ext.getValueEncoded(endEntity, new X509CAImpl(caInfo), certProfile, null, null, null);
         assertNotNull("Should return a CRL DP extension", encoded);
-        assertEquals(Arrays.asList(TEST_URL), getCrlDistPoints(encoded));
+        assertEquals(Collections.singletonList(TEST_URL), getCrlDistPoints(encoded));
         log.trace("<basicTest");
     }
 
