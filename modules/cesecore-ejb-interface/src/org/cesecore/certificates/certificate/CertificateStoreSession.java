@@ -55,11 +55,12 @@ public interface CertificateStoreSession {
      * used for testing purposes.
      * 
      * @param issuerdn the dn of the certificates issuer.
+     * @param crlPartitionIndex the CRL Partition Index, or CertificateConstants.NO_CRL_PARTITION if not using a partitioned CRL.
      * @param lastbasecrldate a date (Date.getTime()) of last base CRL or -1 for a complete CRL
      * @return Collection of RevokedCertInfo, reverse ordered by expireDate
      *         where last expireDate is first in array.
      */
-    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, long lastbasecrldate);
+    Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, int crlPartitionIndex, long lastbasecrldate);
 
     /**
      * Lists certificates for a given subject signed by the given issuer.

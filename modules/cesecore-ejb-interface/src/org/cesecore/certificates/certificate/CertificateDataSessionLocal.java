@@ -72,7 +72,7 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     List<String> findFingerprintsByIssuerDN(String issuerDN);
     
     /** @return return the query results as a Collection<RevokedCertInfo>. */
-    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, long lastbasecrldate);
+    Collection<RevokedCertInfo> getRevokedCertInfos(String issuerDN, int crlPartitionIndex, long lastbasecrldate);
     
     /** @return return the query results as a List. */
     List<CertificateData> findByExpireDateWithLimit(long expireDate, int maxNumberOfResults);
