@@ -196,12 +196,12 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
     }
     
     @Override
-    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, long lastbasecrldate) {
+    public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, int crlPartitionIndex, long lastbasecrldate) {
         if (log.isTraceEnabled()) {
-            log.trace(">listRevokedCertInfo('" + issuerdn + "', " + lastbasecrldate + ")");
+            log.trace(">listRevokedCertInfo('" + issuerdn + "', " + crlPartitionIndex + ", " + lastbasecrldate + ")");
         }
-        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerdn, lastbasecrldate);
-        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerdn, lastbasecrldate);
+        final Collection<RevokedCertInfo> revokedInCertData = certificateStoreSession.listRevokedCertInfo(issuerdn, crlPartitionIndex, lastbasecrldate);
+        final Collection<RevokedCertInfo> revokedInNoConflictData = noConflictCertificateDataSession.getRevokedCertInfosWithDuplicates(issuerdn, crlPartitionIndex, lastbasecrldate);
         if (log.isDebugEnabled()) {
             log.debug("listRevokedCertInfo: Got " + revokedInCertData.size() + " entries from CertificateData and " + revokedInNoConflictData.size() + " entries from NoConflictCertificateData");
         }
