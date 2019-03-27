@@ -35,6 +35,7 @@
 	<ui:define name="content">
 		<h2>
 			<h:outputText value="#{web.text.IMPORTCA_KEYSTORE}" />
+                <h:outputText value=" #{web.ejbcaWebBean.getHelpReference('/Managing_CAs.html')}" escape="false"/>
 		</h2>
 
 		<h:form id="recievefile" enctype="multipart/form-data">

@@ -74,8 +74,8 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
     public void init() {
         EditCaUtil.navigateToManageCaPageIfNotPostBack();
         // Set the defaults
-        importSigAlias = "signKey";
-        importEncAlias = "encryptKey";
+        importSigAlias = "SignatureKeyAlias";
+        importEncAlias = "EncryptionKeyAlias";
     }
 
     public String getImportCaName() {
