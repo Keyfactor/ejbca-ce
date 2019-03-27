@@ -244,12 +244,13 @@ public class InternalResources implements Serializable {
         int index = sb.indexOf(placeHolder);
         final String to = (replacementObject == null ? "" :  replacementObject.toString());
         int recursionLimit = 20; // never allow more than 20 placeholders to avoid recursion
+        int indexLength = ("{" + Integer.valueOf(placeHolderIndex) + "}").length();
         if(index == -1) {
             //There were more parameters than available indexes
             return false;
         } else {
             while (index != -1 && recursionLimit > 0) {
-                sb.replace(index, index + 3, to);
+                sb.replace(index, index + indexLength, to);
                 if(index == sb.indexOf(placeHolder)){
                     index = -1;
                 } else {
