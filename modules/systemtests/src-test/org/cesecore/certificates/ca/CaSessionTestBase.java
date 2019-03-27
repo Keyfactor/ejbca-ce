@@ -135,8 +135,8 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         } catch (CAExistsException e) {
             // NOPMD
         }
-        CA ca1 = caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
-        CA ca2 = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
+        CA ca1 = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
+        CA ca2 = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getName());
         assertEquals(ca1.getCAId(), ca2.getCAId());
         assertEquals(ca1.getName(), ca2.getName());
         assertEquals(ca1.getSubjectDN(), ca2.getSubjectDN());
@@ -170,7 +170,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         caSession.renameCA(roleMgmgToken, testx509ca.getName(), "TEST1");
         assertNull("CA by name of " +  oldname + " shouldn't exist.", caTestSession.getCA(roleMgmgToken, oldname));
 
-        ca1 = caTestSession.getCA(roleMgmgToken, "TEST1");
+        ca1 = (CA)caTestSession.getCA(roleMgmgToken, "TEST1");
         assertEquals(testx509ca.getCAId(), ca1.getCAId());
         try {
             caSession.renameCA(roleMgmgToken, "TEST1", "TEST1");
@@ -191,7 +191,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertNull("CA by name of " +  "TEST1" + " shouldn't exist.", caTestSession.getCA(roleMgmgToken, "TEST1"));
         
         // Test edit
-        CA ca = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
+        CA ca = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getName());
         CAInfo cainfo = ca.getCAInfo();
         assertEquals(testx509ca.getCAId(), ca2.getCAId());
         assertEquals(0, cainfo.getCRLIssueInterval());
@@ -201,7 +201,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         cainfo.getCAToken().setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC);
         cainfo.getCAToken().setKeySequence("SE002");
         caSession.editCA(roleMgmgToken, cainfo);
-        ca = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
+        ca = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getName());
         assertEquals(50, ca.getCRLIssueInterval());
         assertEquals(50, ca.getCAInfo().getCRLIssueInterval());
         assertEquals(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC, ca.getCAInfo().getCAToken().getKeySequenceFormat());
@@ -218,7 +218,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         newinfo.setSubjectDN(cainfo.getSubjectDN());
         newinfo.setName(cainfo.getName());
         caSession.editCA(roleMgmgToken, newinfo);
-        ca = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
+        ca = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getName());
         assertEquals("new description", ca.getDescription());
         
         // Remove
@@ -231,7 +231,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     public void addAndGetCAWithDifferentCaid() throws Exception {
         cleanUpAnyExistingCa(testx509ca.getCAId(), testx509ca.getName());
         caSession.addCA(roleMgmgToken, testx509ca);
-        CA ca1 = caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
+        CA ca1 = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
         Certificate cert = testx509ca.getCACertificate();
         assertEquals(ca1.getCAId(), testx509ca.getCAId());
         // CA certificate subjectDN gives the correct caid here
@@ -249,7 +249,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         cainfo.setCertificateChain(cachain);
         caSession.editCA(roleMgmgToken, cainfo);
         // Now get the CA and verify that the certificate was changed
-        CA ca2 = caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
+        CA ca2 = (CA)caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
         Certificate cert2 = ca2.getCACertificate();
         assertEquals(ca2.getCAId(), testx509ca.getCAId());
         // CA certificate subjectDN gives the correct caid here
@@ -258,10 +258,10 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         // See if we can get the CA using the "bad" ca id as well
         // First time should find it, and it should add an entry to the "cache" of CAIds in CaSessionBean
         // Second time uses this cache, therefore we will try two times to make sure that both lookup and cache works
-        CA ca3 = caTestSession.getCA(roleMgmgToken, certcaid);
+        CA ca3 = (CA)caTestSession.getCA(roleMgmgToken, certcaid);
         assertNotNull(ca3);
         assertEquals(ca3.getCAId(), testx509ca.getCAId());
-        CA ca4 = caTestSession.getCA(roleMgmgToken, certcaid);
+        CA ca4 = (CA)caTestSession.getCA(roleMgmgToken, certcaid);
         assertNotNull(ca4);
         assertEquals(ca4.getCAId(), testx509ca.getCAId());
     } // testAddAndGetCAWithDifferentCaid
@@ -468,7 +468,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             SimpleRequestMessage req = new SimpleRequestMessage(pubK, user.getUsername(), user.getPassword());
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, user, req,
                     org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
-            cert = (X509Certificate) resp.getCertificate();
+            cert = resp.getCertificate();
             assertNotNull("Failed to create certificate", cert);
             // Verifies with CA token?
             cert.verify(pubK);
