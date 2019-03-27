@@ -73,4 +73,15 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * @return a Set of IDs of authorized key validators. 
      */
     Set<Integer> getAuthorizedKeyValidatorIds(AuthenticationToken admin);
+
+    /**
+     * (Re-)Publishes the following information:
+     * <ul>
+     * <li>The active CA certificate
+     * <li>The extended services certificates, if any
+     * <li>The most recent CRL
+     * <li>The most recent Delta CRL
+     * </ul>
+     */
+    void publishCA(AuthenticationToken admin, int caId) throws AuthorizationDeniedException;
 }

@@ -39,6 +39,6 @@ public interface NoConflictCertificateDataSessionLocal extends NoConflictCertifi
      * Returns a list with information about revoked certificates. Since the NoConflictCertificateData table is append-only, the result
      * may contain duplicate entries, that should be filtered by date and revocation status.
      */
-    Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(String issuerDN, long lastbasecrldate);
+    Collection<RevokedCertInfo> getRevokedCertInfosWithDuplicates(String issuerDN, int crlPartitionIndex, long lastbasecrldate);
     
 }
