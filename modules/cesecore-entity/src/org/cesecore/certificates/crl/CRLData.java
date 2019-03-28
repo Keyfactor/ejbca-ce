@@ -304,15 +304,18 @@ public class CRLData extends ProtectedData implements Serializable {
      * @return the highest CRL number or null if no CRL for the specified issuer exists.
      */
     public static Integer findHighestCRLNumber(EntityManager entityManager, String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
+        final String crlPartitionCondition = crlPartitionIndex != 0 ?
+                " AND a.crlPartitionIndex=:crlPartitionIndex" :
+                " AND (a.crlPartitionIndex=:crlPartitionIndex OR a.crlPartitionIndex IS NULL)";
         if (deltaCRL) {
             final Query query = entityManager
-                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlPartitionIndex=:crlPartitionIndex AND a.deltaCRLIndicator>0");
+                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 " + crlPartitionCondition);
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
             return (Integer) QueryResultWrapper.getSingleResult(query);
         } else {
             final Query query = entityManager
-                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlPartitionIndex=:crlPartitionIndex AND a.deltaCRLIndicator=-1");
+                    .createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1" + crlPartitionCondition);
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("crlPartitionIndex", crlPartitionIndex);
             return (Integer) QueryResultWrapper.getSingleResult(query);
