@@ -237,6 +237,7 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
                 "cp");
     }
     
+    /** @return true if we are running EJBCA build that has CA functionality enabled. */
     public boolean isRunningBuildWithCA() {
         return getEjbcaWebBean().isRunningBuildWithCA();
     }
