@@ -20,7 +20,7 @@ java -version
 cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
 
-ant ziprelease -Dedition=ee -Dvariant=ra
+ant ziprelease -Dedition=ee -Dvariant=ra -Ddoc.update=false
 
 find . -name "ejbca*.zip" | xargs unzip
 
@@ -85,22 +85,22 @@ wait_for_deployment
 
 echo '=================== verify that VA and the X509CA and CVCCA implementation classes are missing ================================='
 
-if [-f ./modules/va/src-war/org/ejbca/ui/web/protocol/OCSPServlet.java ]; then
+if [ -f ./modules/va/src-war/org/ejbca/ui/web/protocol/OCSPServlet.java ]; then
     echo "RA-only build should not contain OCSPServlet.java"
     exit 1;
 fi
 
-if [-f ./modules/va/resources/WEB-INF/web-status-ejbca.xml ]; then
+if [ -f ./modules/va/resources/WEB-INF/web-status-ejbca.xml ]; then
     echo "RA-only build should not contain web-status-ejbca.xml"
     exit 1;
 fi
 
-if [-d ./modules/cesecore-cvcca ]; then
+if [ -d ./modules/cesecore-cvcca ]; then
     echo "RA-only build should not contain cesecore-cvcca module"
     exit 1;
 fi
 
-if [-d ./modules/cesecore-x509ca ]; then
+if [ -d ./modules/cesecore-x509ca ]; then
     echo "RA-only build should not contain cesecore-x509ca module"
     exit 1;
 fi
