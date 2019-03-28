@@ -63,7 +63,8 @@
 				<h:panelGroup id="currentCryptoTokenName">
 					<h:inputText value="#{cryptoTokenMBean.currentCryptoToken.name}"
 						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-						size="45" title="#{web.text.FORMAT_ID_STR}" />
+						size="45" title="#{web.text.FORMAT_ID_STR}" 
+						id="currentCryptoTokenNameText"/>
 					<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.name}"
 						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
 				</h:panelGroup>
@@ -269,11 +270,13 @@
 					<h:commandButton
 						action="#{cryptoTokenMBean.saveCurrentCryptoTokenWithCheck}"
 						value="#{web.text.CRYPTOTOKEN_SAVE}"
-						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed}" />
+						rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and !cryptoTokenMBean.p11SlotUsed}" 
+						onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
                     <h:commandButton
                         action="#{cryptoTokenMBean.saveCurrentCryptoToken}"
                         value="#{web.text.CRYPTOTOKEN_SAVE_CONFIRM}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.p11SlotUsed}" />
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode and cryptoTokenMBean.p11SlotUsed}" 
+                        onclick="return checkFieldNotEmpty(document.getElementById('currentCryptoTokenForm:currentCryptoTokenNameText'),'The name of crypto token is mandatory!');"/>
 				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>
