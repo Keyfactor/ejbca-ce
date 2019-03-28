@@ -8,7 +8,7 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 # Function that is always run at exit
 cleanup() {
         echo '=================== cleanup. fixing permissions ================================='
-        chown -R 1001:1001 .
+        sudo -E env "PATH=$PATH" chown -R 1001:1001 .
 }
 trap cleanup EXIT
 
