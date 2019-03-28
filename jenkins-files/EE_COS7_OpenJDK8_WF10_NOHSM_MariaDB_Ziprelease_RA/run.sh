@@ -7,6 +7,13 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 # Options for the CLI tools that require little memory, like the JBoss CLI
 export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx128m"
 
+# Function that is always run at exit
+cleanup() {
+        echo '=================== cleanup. fixing permissions ================================='
+        chown -R 1001:1001 .
+}
+trap cleanup EXIT
+
 echo '=================== CHECKING JAVA VERSION: ================================='
 java -version
 
@@ -97,7 +104,3 @@ if [-d ./modules/cesecore-x509ca ]; then
     echo "RA-only build should not contain cesecore-x509ca module"
     exit 1;
 fi
-
-
-echo '=================== fixing permissions in unzipped ziprlease folder ================================='
-chown -R 1001:1001 .
