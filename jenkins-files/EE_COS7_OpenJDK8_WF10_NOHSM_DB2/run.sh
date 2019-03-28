@@ -16,9 +16,10 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx128m"
 
 # Function that is always run at exit
+workspacesubdir=$(pwd)
 cleanup() {
         echo '=================== cleanup. fixing permissions ================================='
-        chown -R 1001:1001 .
+        chown -R 1001:1001 "$workspacesubdir"
 }
 trap cleanup EXIT
 
