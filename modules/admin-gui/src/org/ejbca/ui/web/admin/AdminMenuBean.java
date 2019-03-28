@@ -201,6 +201,11 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
                 && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
     }
     
+    public boolean isAuthorizedToViewScepConfiguration() {
+        return getEjbcaErrorWebBean().isRunningBuildWithCA()
+                && authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
+    }
+    
     public boolean isAuthorizedToConfigureSystem() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_VIEW.resource()) 
                 || authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.EKUCONFIGURATION_VIEW.resource()) 
