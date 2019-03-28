@@ -105,8 +105,8 @@ import com.novell.ldap.LDAPDN;
  * 
  * @version $Id$
  */
-public class CertToolsTest {
-    private static Logger log = Logger.getLogger(CertToolsTest.class);
+public class CertToolsUnitTest {
+    private static Logger log = Logger.getLogger(CertToolsUnitTest.class);
     private static byte[] testcert = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky" + "NDA2NDgwNFoXDTA1MDkyMzA2NTgwNFowMzEQMA4GA1UEAxMHcDEydGVzdDESMBAG"
             + "A1UEChMJUHJpbWVUZXN0MQswCQYDVQQGEwJTRTCBnTANBgkqhkiG9w0BAQEFAAOB" + "iwAwgYcCgYEAnPAtfpU63/0h6InBmesN8FYS47hMvq/sliSBOMU0VqzlNNXuhD8a"
@@ -715,15 +715,15 @@ public class CertToolsTest {
 
         String dn13 = "C=SE, O=PrimeKey, EmailAddress=foo@primekey.se";
         ArrayList<String> emails = CertTools.getEmailFromDN(dn13);
-        assertEquals((String) emails.get(0), "foo@primekey.se");
+        assertEquals(emails.get(0), "foo@primekey.se");
 
         String dn14 = "C=SE, E=foo@primekey.se, O=PrimeKey";
         emails = CertTools.getEmailFromDN(dn14);
-        assertEquals((String) emails.get(0), "foo@primekey.se");
+        assertEquals(emails.get(0), "foo@primekey.se");
 
         String dn15 = "C=SE, E=foo@primekey.se, O=PrimeKey, EmailAddress=bar@primekey.se";
         emails = CertTools.getEmailFromDN(dn15);
-        assertEquals((String) emails.get(0), "bar@primekey.se");
+        assertEquals(emails.get(0), "bar@primekey.se");
 
         log.trace("<test01GetPartFromDN()");
     }
@@ -965,9 +965,9 @@ public class CertToolsTest {
         customAlt = "rfc822Name=foo@bar.com, 1.1.1.1.2=foobar, 1.2.2.2.2=barfoo";
         oids = CertTools.getCustomOids(customAlt);
         assertEquals(2, oids.size());
-        String oid1 = (String) oids.get(0);
+        String oid1 = oids.get(0);
         assertEquals("1.1.1.1.2", oid1);
-        String oid2 = (String) oids.get(1);
+        String oid2 = oids.get(1);
         assertEquals("1.2.2.2.2", oid2);
         String val1 = CertTools.getPartFromDN(customAlt, oid1);
         assertEquals("foobar", val1);
@@ -977,13 +977,13 @@ public class CertToolsTest {
         customAlt = "rfc822Name=foo@bar.com, 1.1.1.1.2=foobar, 1.1.1.1.2=barfoo";
         oids = CertTools.getCustomOids(customAlt);
         assertEquals(1, oids.size());
-        oid1 = (String) oids.get(0);
+        oid1 = oids.get(0);
         assertEquals("1.1.1.1.2", oid1);
         List<String> list = CertTools.getPartsFromDN(customAlt, oid1);
         assertEquals(2, list.size());
-        val1 = (String) list.get(0);
+        val1 = list.get(0);
         assertEquals("foobar", val1);
-        val2 = (String) list.get(1);
+        val2 =list.get(1);
         assertEquals("barfoo", val2);
 
         log.trace("<test03AltNames()");
@@ -1691,15 +1691,15 @@ public class CertToolsTest {
         assertTrue(CertTools.isCA(cvccertsub)); // DV is a CA also
         assertTrue(CertTools.isCA(cvccertroot));
 
-        ArrayList<Certificate> certlist = new ArrayList<Certificate>();
+        ArrayList<Certificate> certlist = new ArrayList<>();
         certlist.add(cvccertsub);
         certlist.add(cvccertroot);
         Collection<Certificate> col = CertTools.createCertChain(certlist);
         assertEquals(2, col.size());
         Iterator<Certificate> iter = col.iterator();
-        Certificate certsub = (Certificate) iter.next();
+        Certificate certsub = iter.next();
         assertEquals("CN=RPS,C=SE", CertTools.getSubjectDN(certsub));
-        Certificate certroot = (Certificate) iter.next();
+        Certificate certroot = iter.next();
         assertEquals("CN=HSMCVCA,C=SE", CertTools.getSubjectDN(certroot));
 
         // Test creating a certificate chain for X509CAs
@@ -1709,18 +1709,18 @@ public class CertToolsTest {
         assertTrue(CertTools.isCA(x509certsub));
         Certificate x509certroot = CertTools.getCertfromByteArray(x509certchainroot, Certificate.class);
         assertTrue(CertTools.isCA(x509certroot));
-        certlist = new ArrayList<Certificate>();
+        certlist = new ArrayList<>();
         certlist.add(x509certsub);
         certlist.add(x509certroot);
         certlist.add(x509certsubsub);
         col = CertTools.createCertChain(certlist);
         assertEquals(3, col.size());
         iter = col.iterator();
-        Certificate certsubsub = (Certificate) iter.next();
+        Certificate certsubsub = iter.next();
         assertEquals("CN=SubSubCA", CertTools.getSubjectDN(certsubsub));
-        certsub = (Certificate) iter.next();
+        certsub = iter.next();
         assertEquals("CN=SubCA", CertTools.getSubjectDN(certsub));
-        certroot = (Certificate) iter.next();
+        certroot = iter.next();
         assertEquals("CN=RootCA", CertTools.getSubjectDN(certroot));
 
     }
@@ -2209,9 +2209,9 @@ public class CertToolsTest {
     /**
      * Tests the following methods:
      * <ul>
-     * <li>{@link CertTools.checkNameConstraints}</li>
-     * <li>{@link NameConstraint.parseNameConstraintsList}</li>
-     * <li>{@link NameConstraint.toGeneralSubtrees}</li>
+     * <li>{@link CertTools#checkNameConstraints}</li>
+     * <li>{@link NameConstraint#parseNameConstraintsList}</li>
+     * <li>{@link NameConstraint#toGeneralSubtrees}</li>
      * </ul>
      */
     @Test
@@ -2227,7 +2227,7 @@ public class CertToolsTest {
                                 "10.1.0.0/16\n" +
                                 "::/0"; // IPv6
         
-        final List<Extension> extensions = new ArrayList<Extension>();
+        final List<Extension> extensions = new ArrayList<>();
         GeneralSubtree[] permittedSubtrees = NameConstraint.toGeneralSubtrees(NameConstraint.parseNameConstraintsList(permitted));
         GeneralSubtree[] excludedSubtrees = NameConstraint.toGeneralSubtrees(NameConstraint.parseNameConstraintsList(excluded));
         byte[] extdata = new NameConstraints(permittedSubtrees, excludedSubtrees).toASN1Primitive().getEncoded();
@@ -2379,7 +2379,6 @@ public class CertToolsTest {
     public void testPreventingHeapOverflowDuringGetCertsFromPEM() throws Exception {
         log.trace(">testPreventingHeapOverflowDuringGetCertsFromPEM()");
         
-        ObjectInputStream objectInputStream = null;
         ByteArrayOutputStream byteArrayOutputStream = null;
         try {
             byteArrayOutputStream = new ByteArrayOutputStream();
@@ -2396,9 +2395,6 @@ public class CertToolsTest {
             if (byteArrayOutputStream != null) {
                 byteArrayOutputStream.close();
             }
-            if (objectInputStream != null) {
-                objectInputStream.close();
-            }
         }
         
         log.trace("<testPreventingHeapOverflowDuringGetCertsFromPEM()");
@@ -2411,7 +2407,6 @@ public class CertToolsTest {
     public void testPreventingHeapOverflowDuringGetCertsFromByteArray() throws Exception {
         log.trace(">testPreventingHeapOverflowDuringgetCertsFromByteArray()");
         
-        ObjectInputStream objectInputStream = null;
         ByteArrayOutputStream byteArrayOutputStream = null;
         try {
             byteArrayOutputStream = new ByteArrayOutputStream();
@@ -2427,9 +2422,6 @@ public class CertToolsTest {
         }finally {
             if (byteArrayOutputStream != null) {
                 byteArrayOutputStream.close();
-            }
-            if (objectInputStream != null) {
-                objectInputStream.close();
             }
         }
         
@@ -2544,7 +2536,7 @@ public class CertToolsTest {
         X509Certificate sub = CertTools.getCertfromByteArray(chainSubCA, X509Certificate.class);
         X509Certificate ee = CertTools.getCertfromByteArray(chainUser, X509Certificate.class);
         // Try different orders...and see that we get the right things back
-        List<X509Certificate> order1 = new ArrayList<X509Certificate>();
+        List<X509Certificate> order1 = new ArrayList<>();
         order1.add(ee);
         order1.add(sub);
         order1.add(root);
@@ -2554,7 +2546,7 @@ public class CertToolsTest {
         assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
         assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
 
-        List<X509Certificate> order2 = new ArrayList<X509Certificate>();
+        List<X509Certificate> order2 = new ArrayList<>();
         order2.add(sub);
         order2.add(root);
         order2.add(ee);
@@ -2564,7 +2556,7 @@ public class CertToolsTest {
         assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
         assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
         
-        List<X509Certificate> order3 = new ArrayList<X509Certificate>();
+        List<X509Certificate> order3 = new ArrayList<>();
         order3.add(sub);
         order3.add(ee);
         order3.add(root);
@@ -2575,7 +2567,7 @@ public class CertToolsTest {
         assertEquals("RootCA cert should be third", CertTools.getSubjectDN(root), CertTools.getSubjectDN(list.get(2)));
         
         // Skip root, should order anyway up to sub
-        List<X509Certificate> order4 = new ArrayList<X509Certificate>();
+        List<X509Certificate> order4 = new ArrayList<>();
         order4.add(sub);
         order4.add(ee);
         list = CertTools.orderX509CertificateChain(order4);
@@ -2583,7 +2575,7 @@ public class CertToolsTest {
         assertEquals("EE cert should be first", CertTools.getSubjectDN(ee), CertTools.getSubjectDN(list.get(0)));
         assertEquals("SubCA cert should be second", CertTools.getSubjectDN(sub), CertTools.getSubjectDN(list.get(1)));
 
-        List<X509Certificate> order5 = new ArrayList<X509Certificate>();
+        List<X509Certificate> order5 = new ArrayList<>();
         order5.add(ee);
         order5.add(sub);
         list = CertTools.orderX509CertificateChain(order5);
@@ -2770,12 +2762,12 @@ public class CertToolsTest {
             log.debug(infoMessage, e);
         }
         try {
-            CertTools.verify(null, new ArrayList<X509Certificate>(Arrays.asList((X509Certificate)null)));
+            CertTools.verify(null, new ArrayList<>(Arrays.asList((X509Certificate)null)));
             fail(errorMessage);
         } catch (NullPointerException e) {
             log.debug(infoMessage, e);
         }
-        final X509Certificate x509Certificate = CertTools.getCertfromByteArray(CertToolsTest.testcert, X509Certificate.class);
+        final X509Certificate x509Certificate = CertTools.getCertfromByteArray(CertToolsUnitTest.testcert, X509Certificate.class);
         try {
             CertTools.verify(x509Certificate, null);
             fail(errorMessage);
@@ -2789,7 +2781,7 @@ public class CertToolsTest {
             log.debug(infoMessage, e);
         }
         try {
-            CertTools.verify(x509Certificate, new ArrayList<X509Certificate>(Arrays.asList((X509Certificate)null)));
+            CertTools.verify(x509Certificate, new ArrayList<>(Arrays.asList((X509Certificate)null)));
             fail(errorMessage);
         } catch (NullPointerException e) {
             log.debug(infoMessage, e);
