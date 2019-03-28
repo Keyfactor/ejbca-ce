@@ -22,16 +22,14 @@ cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.x
 
 ant ziprelease -Dedition=ee -Dvariant=ra -Ddoc.update=false -Drelease.revision=12345
 
+cd ..
+
 find . -name "ejbca*.zip" | xargs unzip
 
 echo '=================== fixing permissions in the original source folder ================================='
 chown -R 1001:1001 .
 
-cd ../ejbca_ee*
-
-
-# TODO try to exclude the documentation building part ?
-
+cd ejbca_ee*
 
 cp /opt/conf/* ./conf/
 
