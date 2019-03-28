@@ -26,7 +26,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * The model holds additional data needed to be able to republish a certificate or CRL after publishing have failed.
- * This data will be stored in PublicFailQueueData. 
+ * This data will be stored in PublisherQueueData. 
  *
  * @version $Id$
  */
