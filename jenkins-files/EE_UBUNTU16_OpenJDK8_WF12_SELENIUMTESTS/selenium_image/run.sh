@@ -5,6 +5,13 @@ export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='ki
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
 export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m"
 
+# Function that is always run at exit
+cleanup() {
+        echo '=================== cleanup. fixing permissions ================================='
+        chown -R 1001:1001 .
+}
+trap cleanup EXIT
+
 # try those with sudo
 # add the seluser guy to root group
 sudo -E env "PATH=$PATH" cp /opt/ejbca_conf/* /app/ejbca/conf/
@@ -27,6 +34,3 @@ ls -la /app/ejbca/modules/ejbca-webtest/resources
 
 ant test:webtest -Dtests.jvmargs="$TEST_OPTS"
 
-
-echo '=================== fixing permissions ================================='
-sudo -E env "PATH=$PATH" chown -R 1001:1001 .
