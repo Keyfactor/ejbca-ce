@@ -15,7 +15,13 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 # Options for the CLI tools that require little memory, like the JBoss CLI
 export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx128m"
 
-# Functions
+# Function that is always run at exit
+cleanup() {
+        echo '=================== cleanup. fixing permissions ================================='
+        chown -R 1001:1001 .
+}
+trap cleanup EXIT
+
 wait_for_deployment() {
 	DEPLOY_SUCCESSFUL=0
 	# Wait for up to 180 seconds for app to start up
@@ -78,7 +84,3 @@ echo '=================== Deployment is done ===================================
 echo '=================== Starting system tests =================================='
 ant test:runsys -Dtests.jvmargs="$TEST_OPTS"
 echo '=================== System tests are done =================================='
-
-
-echo '=================== fixing permissions ================================='
-chown -R 1001:1001 .
