@@ -390,7 +390,7 @@ org.ejbca.util.HTMLTools
 
 <%
    // If authorized to edit SCEP configuration then display related links.
-     if(ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){
+     if(ejbcawebbean.isRunningBuildWithCA() && ejbcawebbean.isAuthorizedNoLogSilent(SYSTEMCONFIGURATION_RESOURCE)){
        if(!configheaderprinted){
          out.write("<li id=\"cat5\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION")+"</strong><ul>"); 
          configheaderprinted=true;

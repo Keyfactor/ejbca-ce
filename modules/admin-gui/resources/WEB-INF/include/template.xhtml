@@ -117,7 +117,7 @@
           <h:outputLink id="sysConfigAcme" value="#{adminMenuBean.adminWebUrl}/sysconfig/acmeconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToViewAcmeConfiguration}"><h:outputText value="#{web.text.NAV_ACMECONFIGURATION}"/></h:outputLink> 
           <h:outputLink id="sysConfigCmp" value="#{adminMenuBean.adminWebUrl}/sysconfig/cmpaliases.xhtml" rendered="#{adminMenuBean.authorizedToViewCmpConfiguration}"><h:outputText value="#{web.text.NAV_CMPCONFIGURATION}"/></h:outputLink>
           <h:outputLink id="sysConfigEst" value="#{adminMenuBean.adminWebUrl}/sysconfig/estconfigurations.xhtml" rendered="#{adminMenuBean.authorizedToViewEstConfiguration}"><h:outputText value="#{web.text.NAV_ESTCONFIGURATION}"/></h:outputLink>
-          <h:outputLink id="sysConfigScep" value="#{adminMenuBean.adminWebUrl}/sysconfig/scepconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToViewSystemConfiguration}"><h:outputText value="#{web.text.NAV_SCEPCONFIGURATION}"/></h:outputLink>
+          <h:outputLink id="sysConfigScep" value="#{adminMenuBean.adminWebUrl}/sysconfig/scepconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToViewScepConfiguration}"><h:outputText value="#{web.text.NAV_SCEPCONFIGURATION}"/></h:outputLink>
           <h:outputLink id="sysConfigGlobal" value="#{adminMenuBean.adminWebUrl}/sysconfig/systemconfiguration.xhtml" rendered="#{adminMenuBean.authorizedToConfigureSystem}"><h:outputText value="#{web.text.NAV_SYSTEMCONFIGURATION}"/></h:outputLink>
           <h:outputLink id="sysConfigUpgrade" value="#{adminMenuBean.adminWebUrl}/upgrade.xhtml" rendered="#{adminMenuBean.authorizedToConfigureSystem and adminMenuBean.upgradeRequired}"><h:outputText value="#{web.text.NAV_SYSTEMUPGRADE}"/></h:outputLink>
         </h:panelGroup>
