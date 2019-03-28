@@ -20,7 +20,7 @@ java -version
 cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
 
-ant ziprelease -Dedition=ee -Dvariant=ra -Ddoc.update=false
+ant ziprelease -Dedition=ee -Dvariant=ra -Ddoc.update=false -Drelease.revision=12345
 
 find . -name "ejbca*.zip" | xargs unzip
 
