@@ -899,12 +899,19 @@
          </and>
     </condition>	
 	
+	<!-- Allows overruling the documentation generation for ziprelease. This is needed for Jenkins jobs, because confluence is not accessible from inside Jenkins. 
+	     Default value (when you don't specify the -Ddoc.update flag at all) is TRUE -->
+	<condition property="doc.update.ziprelease" value="true">
+		   <not><equals arg1="${doc.update}" arg2="false"/></not>
+	</condition>
+	
 	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release. -Dedition=ee or ce (default) -Dvariant=ra or va">
 		<antcall target="clean" />
 		<!-- Always retrieve current version from Confluence -->
 		<antcall target="doc" inheritAll="true">
-			<param name="update.from.confluence" value="true"/>	
-            <param name="doc.update" value="true"/> 
+			
+			<param name="update.from.confluence" value="${doc.update.ziprelease}"/>	
+            <param name="doc.update" value="${doc.update.ziprelease}"/> 
 		</antcall>
 		<!-- Copy the retrieved documentation from the tmp/docs directory into doc/dist for the sake of this release-->
 		<copy todir="doc/dist" overwrite="true">
