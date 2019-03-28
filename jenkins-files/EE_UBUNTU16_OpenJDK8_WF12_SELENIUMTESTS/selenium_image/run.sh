@@ -6,9 +6,10 @@ export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='ki
 export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx1536m"
 
 # Function that is always run at exit
+workspacesubdir=$(pwd)
 cleanup() {
         echo '=================== cleanup. fixing permissions ================================='
-        sudo -E env "PATH=$PATH" chown -R 1001:1001 .
+        chown -R 1001:1001 "$workspacesubdir"
 }
 trap cleanup EXIT
 
