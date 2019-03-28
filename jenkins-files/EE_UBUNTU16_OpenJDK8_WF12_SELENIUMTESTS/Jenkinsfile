@@ -85,7 +85,6 @@ pipeline {
     }
     post {
         always {
-            sh "chown -R 1001:1001 $env.WORKSPACE"
             junit "ejbca/**/reports/**/TEST-*.xml"
             
             sh "docker stop --time=1 seleniumtests || true"
