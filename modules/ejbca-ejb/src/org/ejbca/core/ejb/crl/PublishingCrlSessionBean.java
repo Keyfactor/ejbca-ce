@@ -427,8 +427,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         boolean result = true;
         result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
         final IntRange crlPartitions = getActiveCrlPartitionIndexes(admin, caId);
-        for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
-            result &= forceDeltaCRL(admin, caId, crlPartitionIndex);
+        if (crlPartitions != null) {
+            for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
+                result &= forceDeltaCRL(admin, caId, crlPartitionIndex);
+            }
         }
         return result;
     }
