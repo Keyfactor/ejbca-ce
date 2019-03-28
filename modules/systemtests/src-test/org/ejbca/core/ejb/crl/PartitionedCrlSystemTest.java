@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
@@ -29,13 +30,13 @@ import java.util.Date;
 import java.util.HashSet;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
@@ -49,6 +50,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -59,7 +61,9 @@ import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
@@ -81,7 +85,6 @@ public class PartitionedCrlSystemTest {
 
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    private static final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private static final CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -92,7 +95,8 @@ public class PartitionedCrlSystemTest {
     private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private static final String TEST_CA = TEST_NAME + "_CA";
-    private static final String TEST_PUBLISHER = TEST_NAME + "_PUBLISHER";
+    private static final String TEST_CRL_PUBLISHER = TEST_NAME + "_CRL_PUBLISHER";
+    private static final String TEST_CERTIFICATE_PUBLISHER = TEST_NAME + "_CERTIFICATE_PUBLISHER";
     private static final String TEST_ENDENTITY = TEST_NAME + "_ENDENTITY";
     private static final String TEST_CERTPROFILE = TEST_NAME + "_CP";
     private static final String TEST_EEPROFILE = TEST_NAME + "_EEP";
@@ -119,18 +123,15 @@ public class PartitionedCrlSystemTest {
         cleanupClass();
         CaTestCase.createTestCA(TEST_CA, 1024, CA_DN, CAInfo.SELFSIGNED, null);
         caId = caSession.getCAInfo(admin, TEST_CA).getCAId();
-        final GeneralPurposeCustomPublisher publisher = new GeneralPurposeCustomPublisher();
-        publisher.setDescription("Used in system test");
-        publisher.setName(TEST_PUBLISHER);
-        publisher.setOnlyUseQueue(true);
-        publisher.setUseQueueForCertificates(true);
-        publisher.setUseQueueForCRLs(true);
-        publisher.setKeepPublishedInQueue(false);
-        final int publisherId = publisherSession.addPublisher(admin, TEST_PUBLISHER, publisher);
+        // Publishers. These will never run, but will accept CRLs/certificates in the queue.
+        final int crlPublisherId = addPublisher(TEST_CRL_PUBLISHER);
+        final int certPublisherId = addPublisher(TEST_CERTIFICATE_PUBLISHER);
+        // Key pair and profiles for user certificates
         userKeyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         final CertificateProfile certProf = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certProf.setUseCRLDistributionPoint(true);
         certProf.setUseDefaultCRLDistributionPoint(true);
+        certProf.setPublisherList(new ArrayList<>(Collections.singleton(certPublisherId)));
         certificateProfileId = certificateProfileSession.addCertificateProfile(admin, TEST_CERTPROFILE, certProf);
         final EndEntityProfile eeProf = new EndEntityProfile(false);
         eeProf.setAvailableCAs(new ArrayList<>(Collections.singleton(caId)));
@@ -143,9 +144,22 @@ public class PartitionedCrlSystemTest {
         caInfo.setUseCRLNumber(true);
         caInfo.setCRLIssueInterval(20);
         caInfo.setDeltaCRLPeriod(10);
-        caInfo.setCRLPublishers(new ArrayList<>(Collections.singleton(publisherId)));
+        caInfo.setCRLPublishers(new ArrayList<>(Collections.singleton(crlPublisherId)));
+        caInfo.setUseUserStorage(false); // avoid having to create end entities
         caAdminSession.editCA(admin, caInfo);
         log.trace("<beforeClass");
+    }
+
+    private static int addPublisher(final String name) throws PublisherExistsException, AuthorizationDeniedException {
+        final CustomPublisherContainer publisher = new CustomPublisherContainer();
+        publisher.setClassPath(DummyCustomPublisher.class.getName());
+        publisher.setDescription("CRL publisher. Used in system test");
+        publisher.setName(TEST_CRL_PUBLISHER);
+        publisher.setOnlyUseQueue(true);
+        publisher.setUseQueueForCertificates(true);
+        publisher.setUseQueueForCRLs(true);
+        publisher.setKeepPublishedInQueue(false);
+        return publisherSession.addPublisher(admin, name, publisher);
     }
 
     @AfterClass
@@ -161,14 +175,20 @@ public class PartitionedCrlSystemTest {
         CaTestCase.removeTestCA(TEST_CA);
         endEntityProfileSession.removeEndEntityProfile(admin, TEST_EEPROFILE);
         certificateProfileSession.removeCertificateProfile(admin, TEST_CERTPROFILE);
-        publisherSession.removePublisherInternal(admin, TEST_PUBLISHER);
+        publisherSession.removePublisherInternal(admin, TEST_CRL_PUBLISHER);
+        publisherSession.removePublisherInternal(admin, TEST_CERTIFICATE_PUBLISHER);
         log.trace("<cleanup");
     }
 
     private static void cleanupTestCase() throws AuthorizationDeniedException {
         internalCertificateSessionSession.removeCertificatesBySubject(CERT_DN);
         internalCertificateSessionSession.removeCRLs(admin, CA_DN);
-        final int publisherId = publisherSession.getPublisherId(TEST_PUBLISHER);
+        removePublisherQueueEntries(TEST_CRL_PUBLISHER);
+        removePublisherQueueEntries(TEST_CERTIFICATE_PUBLISHER);
+    }
+
+    private static void removePublisherQueueEntries(final String publisherName) {
+        final int publisherId = publisherSession.getPublisherId(publisherName);
         if (publisherId != 0) {
             for (final PublisherQueueData queueEntry : publisherQueueSession.getPendingEntriesForPublisher(publisherId)) {
                 publisherQueueSession.removeQueueData(queueEntry.getPk());
@@ -181,6 +201,15 @@ public class PartitionedCrlSystemTest {
         cleanupTestCase();
     }
 
+    /**
+     * Test CRL generation and publisher queuing without CRL partitioning. The following steps are performed:
+     * <ol>
+     * <li>Issue certificate, revoke, create Base CRL.
+     * <li>Issue another certificate, revoke, create Delta CRL
+     * </ol>
+     * For both steps, we expect a CRL with the correct contents, and that the CRLs and certificates are placed in the publisher queue.
+     * @throws Exception
+     */
     @Test
     public void basicTest() throws Exception {
         log.trace(">basicTest");
@@ -202,19 +231,17 @@ public class PartitionedCrlSystemTest {
         // Then
         assertEquals("Wrong CRL DP in first certificate.", CRLDP_MAIN_URI, CertTools.getCrlDistributionPoint(cert));
         assertEquals("Wrong CRL DP in second certificate.", CRLDP_MAIN_URI, CertTools.getCrlDistributionPoint(deltaCert));
-        final X509CRL crl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, false);
-        final X509CRL deltaCrl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, true);
+        final X509CRL crl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, false, 3); // base and delta CRLs are created at CA creation.
+        final X509CRL deltaCrl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, true, 4);
         assertEquals("Wrong Issuing Distribution Point in CRL.", Collections.singletonList(CRLDP_MAIN_URI), CertTools.getCrlDistributionPoints(crl));
         assertEquals("Wrong Issuing Distribution Point in Delta CRL.", Collections.singletonList(CRLDP_MAIN_URI), CertTools.getCrlDistributionPoints(deltaCrl));
         assertInclusionOnCrl(crl, deltaCrl, cert, deltaCert);
-        assertPublisherQueueData(Arrays.asList(crl, deltaCrl));
+        assertCrlPublisherQueueData(Arrays.asList(crl, deltaCrl));
+        assertCertificatePublisherQueueData(Arrays.asList(cert, deltaCert));
         log.trace("<basicTest");
     }
 
-    private void revokeCertificate(final Certificate cert, final Date revocationDate) throws CertificateRevokeException, AuthorizationDeniedException {
-        internalCertificateSessionSession.setRevokeStatus(admin, cert, revocationDate, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
-    }
-
+    /** Issues a certificate with the CRL Distribution Point URI from the CA */
     private Certificate issueCertificate() throws Exception {
         final EndEntityInformation endEntity = new EndEntityInformation();
         endEntity.setType(EndEntityTypes.ENDUSER.toEndEntityType());
@@ -230,21 +257,32 @@ public class PartitionedCrlSystemTest {
         req.setIssuerDN(CA_DN);
         req.setRequestDN(CERT_DN);
 
-        final X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(admin, endEntity, req,
-                org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
+        final X509ResponseMessage resp = (X509ResponseMessage) signSession.createCertificate(admin, req,
+                org.cesecore.certificates.certificate.request.X509ResponseMessage.class, endEntity);
         assertNotNull("Failed to get response", resp);
         assertNotNull("No certificate was returned. " + resp.getFailText(), resp.getCertificate());
         return resp.getCertificate();
     }
 
-    private X509CRL getLatestCrl(final int crlPartitionIndex, final boolean deltaCrl) throws CRLException {
-        final byte[] crl = crlStoreSession.getLastCRL(CA_DN, crlPartitionIndex, deltaCrl);
-        final String crlDescription = (deltaCrl ? "Delta CRL" : "Base CRL") + " for partition " + crlPartitionIndex;
-        assertNotNull(crlDescription + " was not created", crl);
-        log.debug("Fingerprint for " + crlDescription + " is: " + CertTools.getFingerprintAsString(crl));
-        return CertTools.getCRLfromByteArray(crl);
+    /** Revokes a certificate. Supports backdated revocation. */
+    private void revokeCertificate(final Certificate cert, final Date revocationDate) throws CertificateRevokeException, AuthorizationDeniedException {
+        internalCertificateSessionSession.setRevokeStatus(admin, cert, revocationDate, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
     }
 
+    /** Retrieves the latest Base or Delta CRL from database, and checks that it is the correct CRL */ 
+    private X509CRL getLatestCrl(final int crlPartitionIndex, final boolean deltaCrl, final int expectedCrlNumber) throws CRLException {
+        final byte[] crlBytes = crlStoreSession.getLastCRL(CA_DN, crlPartitionIndex, deltaCrl);
+        final String crlDescription = (deltaCrl ? "Delta CRL" : "Base CRL") + " for partition " + crlPartitionIndex;
+        assertNotNull(crlDescription + " was not created", crlBytes);
+        log.debug("Fingerprint for " + crlDescription + " is: " + CertTools.getFingerprintAsString(crlBytes));
+        final X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
+        // Check that the CRL is correct
+        assertEquals("deltaCRLIndicator extension precense is wrong.", deltaCrl, crl.getExtensionValue(Extension.deltaCRLIndicator.getId()) != null);
+        assertEquals("Wrong CRL Number", BigInteger.valueOf(expectedCrlNumber), CrlExtensions.getCrlNumber(crl));
+        return crl;
+    }
+
+    /** Asserts that the correct certificates are in the correct CRLs */
     private void assertInclusionOnCrl(final X509CRL crl, final X509CRL deltaCrl, final Certificate cert, final Certificate deltaCert) {
         assertTrue("First certificate should be revoked on Base CRL", crl.isRevoked(cert));
         assertFalse("Second certificate should NOT be revoked on Base CRL", crl.isRevoked(deltaCert));
@@ -252,18 +290,33 @@ public class PartitionedCrlSystemTest {
         assertTrue("Second certificate should be revoked on Delta CRL", deltaCrl.isRevoked(deltaCert));
     }
 
-    private void assertPublisherQueueData(final Collection<X509CRL> crls) {
-        final int publisherId = publisherSession.getPublisherId(TEST_PUBLISHER);
-        final Collection<PublisherQueueData> queue = publisherQueueSession.getPendingEntriesForPublisher(publisherId);
-        assertEquals("Wrong number of entries in publisher queue.", crls.size(), queue.size());
-        final HashSet<String> remainingFingerprints = new HashSet<>();
+    /** Asserts that the given CRLs, and nothing else, have been queued in the CRL publisher */
+    private void assertCrlPublisherQueueData(final Collection<X509CRL> crls) {
+        final HashSet<String> fingerprints = new HashSet<>();
         for (final X509CRL crl : crls) {
-            remainingFingerprints.add(CertTools.getFingerprintAsString(crl));
+            fingerprints.add(CertTools.getFingerprintAsString(crl));
         }
+        assertPublisherQueueData(TEST_CRL_PUBLISHER, "CRL", fingerprints);
+    }
+
+    /** Asserts that the given certificates, and nothing else, have been queued in the certificate publisher */
+    private void assertCertificatePublisherQueueData(final Collection<Certificate> certificates) {
+        final HashSet<String> fingerprints = new HashSet<>();
+        for (final Certificate cert : certificates) {
+            fingerprints.add(CertTools.getFingerprintAsString(cert));
+        }
+        assertPublisherQueueData(TEST_CERTIFICATE_PUBLISHER, "certificate", fingerprints);
+    }
+
+    private void assertPublisherQueueData(final String publisherName, final String type, final Collection<String> fingerprints) {
+        final int publisherId = publisherSession.getPublisherId(publisherName);
+        final Collection<PublisherQueueData> queue = publisherQueueSession.getPendingEntriesForPublisher(publisherId);
+        final HashSet<String> remainingFingerprints = new HashSet<>(fingerprints);
         for (final PublisherQueueData queueEntry : queue) {
             final String fingerprint = queueEntry.getFingerprint();
-            assertTrue("Missing publisher queue entry for CRL with fingerprint " + fingerprint,remainingFingerprints.remove(fingerprint));
+            assertTrue("Missing publisher queue entry for " + type + " with fingerprint " + fingerprint, remainingFingerprints.remove(fingerprint));
         }
-        assertEquals("Some CRLs were not found in the publisher queue.", 0, remainingFingerprints.size()); // this should never happen
+        assertEquals("Some " + type + " entries were not found in the publisher queue.", 0, remainingFingerprints.size());
+        assertEquals("Wrong number of " + type + " entries in publisher queue.", fingerprints.size(), queue.size()); // this should never fail at this point
     }
 }
