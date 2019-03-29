@@ -30,7 +30,10 @@ chown -R 1001:1001 .
 cd ejbca_ee*
 
 cp /opt/conf/* ./conf/
+
+mkdir -p p12
 cp /opt/p12/* ./p12/
+
 cp /opt/ManagementCA.pem ./ManagementCA.pem
 
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
