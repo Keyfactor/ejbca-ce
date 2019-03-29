@@ -83,8 +83,9 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     /**
      * Matches XML filenames in uploaded ZIP files.
      * The accepted format is: entityprofile_<profile name>-<profile id>.xml
+     * The files may also be stored inside a directory
      */
-    private static final Pattern xmlFilenamePattern = Pattern.compile("entityprofile_(.*)-(.*)\\.xml");
+    private static final Pattern xmlFilenamePattern = Pattern.compile("(?:.*/)entityprofile_(.*)-(.*)\\.xml"); // (?:.*/) matches a directory, without capturing it into a match group
     private static final int XML_FILENAME_NAME_INDEX = 1;
     private static final int XML_FILENAME_ID_INDEX = 2;
 
