@@ -91,7 +91,7 @@ public class EcaQa12_CPManagement extends WebTestBase {
         certificateProfileHelper.openPage(getAdminWebUrl());
         certificateProfileHelper.openEditCertificateProfilePage(TestData.CERTIFICATE_PROFILE_NAME);
         // Set validity
-        certificateProfileHelper.editCertificateProfile("720d");
+        certificateProfileHelper.fillValidity("720d");
         // Save
         certificateProfileHelper.saveCertificateProfile();
         // Verify Audit Log

@@ -103,7 +103,27 @@ public class ValidatorsHelper extends BaseHelper {
             return By.xpath("//tr/td[contains(text(), '" + text + "')]");
         }
     }
-    
+
+    /**
+     * Selector's switch to select an option by name or value.
+     */
+    public enum ValidatorType {
+        CAA_VALIDATOR("CAA Validator"),
+        ECC_KEY_VALIDATOR("ECC Key Validator"),
+        PUBLIC_KEY_BLACKLIST_KEY_VALIDATOR("Public Key Blacklist Key Validator"),
+        RSA_KEY_VALIDATOR("RSA Key Validator"),
+        DOMAIN_BLACKLIST_VALIDATOR("Domain Blacklist Validator");
+
+        private final String type;
+
+        ValidatorType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+    }
     
     /**
      * Opens the page 'Validators' by clicking menu link on home page and asserts the correctness of resulting URI.
@@ -220,8 +240,8 @@ public class ValidatorsHelper extends BaseHelper {
      * Changes the Validator type to validatorType by selecting from the drop-down list of Validators.
      * @param validatorType
      */
-    public void setValidatorType(final String validatorType) {
-        selectOptionByName(Page.SELECT_VALIDATOR_TYPE, validatorType);
+    public void setValidatorType(final ValidatorType validatorType) {
+        selectOptionByName(Page.SELECT_VALIDATOR_TYPE, validatorType.getType());
     }
 
     /**
@@ -353,10 +373,7 @@ public class ValidatorsHelper extends BaseHelper {
 
     public void assertBlackListResultsIsCorrect(final String resultMessage) {
         final WebElement validatorResults = findElement(Page.INPUT_BLACKLIST_RESULT);
-        if (!validatorResults.getText().contains(resultMessage)) {
-            fail("Blacklist validator results is incorrect");
-        }
-        assertEquals(resultMessage,
+        assertEquals("Blacklist validator results is incorrect", resultMessage,
                 validatorResults.getText());
     }
 }

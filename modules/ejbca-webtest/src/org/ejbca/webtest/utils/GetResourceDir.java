@@ -10,7 +10,7 @@ public class GetResourceDir {
      *
      * @return Folder location.
      */
-    public String getResourceFolder() {
+    public static String getResourceFolder() {
         String cwd = Paths.get("").toAbsolutePath().toString();
         if (!cwd.contains("ejbca-webtest")) {
             return Paths.get("").toAbsolutePath().toString() + "/modules/ejbca-webtest/resources";

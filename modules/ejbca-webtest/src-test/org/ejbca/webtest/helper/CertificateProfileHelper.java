@@ -441,8 +441,8 @@ public class CertificateProfileHelper extends BaseHelper {
      *
      * @param validityInput validity value.
      */
-    public void editCertificateProfile(final String validityInput) {
-        editCertificateProfile(null, null, null, null, validityInput);
+    public void fillValidity(final String validityInput) {
+        fillInput(Page.INPUT_VALIDITY, validityInput);
     }
 
     /**
@@ -488,7 +488,7 @@ public class CertificateProfileHelper extends BaseHelper {
         if(selectedSignatureAlgorithm != null) {
             selectOptionByName(Page.SELECT_SIGNATURE_ALGORITHM, selectedSignatureAlgorithm);
         }
-        if(validityInput != null) {
+        if (validityInput != null) {
             fillInput(Page.INPUT_VALIDITY, validityInput);
         }
     }
