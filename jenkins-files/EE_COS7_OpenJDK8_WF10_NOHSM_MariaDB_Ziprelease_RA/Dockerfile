@@ -27,6 +27,7 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=2
 #Setting Ant Params
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 
+RUN yum install -y which
 
 # copy WildFly conf
 ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
