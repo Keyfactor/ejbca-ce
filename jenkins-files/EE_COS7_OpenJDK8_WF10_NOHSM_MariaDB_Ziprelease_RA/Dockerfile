@@ -30,6 +30,8 @@ ENV ANT_OPTS="-Xms256M -Xmx512M"
 
 # copy WildFly conf
 ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
+
+# TODO: can the following 2 be removed??
 ADD application-roles.properties /opt/jboss/wildfly/standalone/configuration/application-roles.properties
 ADD application-users.properties /opt/jboss/wildfly/standalone/configuration/application-users.properties
 
@@ -52,6 +54,7 @@ ADD conf /opt/conf
 RUN chmod 777 /opt/conf
 
 # copy ManagementCA.pem to /opt in the container for runtime-usage
+# TODO: one of the ManagementCA.pem is obsolete. remove!
 ADD ManagementCA.pem /opt/ManagementCA.pem
 RUN chmod 777 /opt/ManagementCA.pem
 
