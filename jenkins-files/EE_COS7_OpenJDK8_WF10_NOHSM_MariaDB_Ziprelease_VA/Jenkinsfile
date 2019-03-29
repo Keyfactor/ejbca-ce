@@ -1,0 +1,44 @@
+pipeline {
+	agent {
+		label "docker"
+	}
+    stages {
+		stage('verify that space is clean') {
+            steps {
+                sh "docker container rm mariadb_3 -f || true"
+                sh "docker container rm ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_va -f || true"
+                sh "docker network rm bridge my_isolated_bridge_network || true"
+                sh "rm -rf ear"
+            }
+        }
+        stage('network') {
+            steps {
+                sh "docker network create --driver bridge my_isolated_bridge_network || true"
+            }
+        }
+		stage('database') {
+            steps {
+                sh "docker run --name mariadb_3 -e MYSQL_ROOT_PASSWORD=foo123 -e MYSQL_DATABASE=ejbca -e MYSQL_USER=ejbca -e MYSQL_PASSWORD=ejbca --net=my_isolated_bridge_network -d mariadb:10.2.17"
+            }
+        }
+        stage('deploy and run system tests') {
+            steps {
+                sh "mkdir ear || true"
+                dir ('ejbca/jenkins-files/EE_COS7_OpenJDK8_WF10_NOHSM_MariaDB_Ziprelease_VA') {
+                    sh "docker build -t ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_va -m 2GB ."
+                    sh "docker run --name ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_va --net=my_isolated_bridge_network -v " + "$env.WORKSPACE" + ":/app ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_va"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            sh "docker stop --time=1 ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_va || true"
+            sh "docker rm -f ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_va || true"
+            sh "docker stop --time=1 mariadb_3"
+            sh "docker rm -f mariadb_3"
+            sh "docker network rm bridge my_isolated_bridge_network || true"
+            cleanWs()
+        }
+    }
+}
