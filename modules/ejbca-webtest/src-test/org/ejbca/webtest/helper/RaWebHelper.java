@@ -190,6 +190,13 @@ public class RaWebHelper extends BaseHelper {
         assertTrue("Error message does not match.", errorMessageWebElement.getText().contains("The key algorithm 'RSA_2048' is not available"));
     }
 
+
+    public void assertErrorMessageExists(final String noErrorMessage, final String errorMessage) {
+        final WebElement errorMessageWebElement = findElement(Page.TEXT_ERROR_MESSAGE);
+        assertNotNull(noErrorMessage, errorMessageWebElement);
+        assertEquals("Error message does not match.", errorMessageWebElement.getText(), errorMessage);
+    }
+
     /**
      * Returns a row of request (array of WebElements containing row cells) identified by caName (cell 3), actionType (cell 4),
      * endEntityName (cell 5) and status (cell 7) or null if the row is not found.
