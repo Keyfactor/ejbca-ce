@@ -7,7 +7,7 @@ export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kil
 # Options for the CLI tools that require little memory, like the JBoss CLI
 export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx128m"
 
-# Function that is always run at exit
+# Set an exit handler, that sets privileges for cleanup for the initial source folder
 workspacesubdir=$(pwd)
 cleanup() {
         echo '=================== cleanup. fixing permissions ================================='
@@ -106,3 +106,10 @@ fi
 
 echo "=================== All the files, that should be missing, are indeed properly missing ================================="
 
+# Set an exit handler, that sets privileges for cleanup for the ziprelease package folder
+workspacesubdir2=$(pwd)
+cleanup() {
+        echo '=================== cleanup. fixing permissions ================================='
+        chown -R 1001:1001 "$workspacesubdir2"
+}
+trap cleanup EXIT
