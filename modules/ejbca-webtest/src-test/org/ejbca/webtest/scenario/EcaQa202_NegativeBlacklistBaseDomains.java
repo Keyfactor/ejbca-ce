@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -28,9 +27,6 @@ import java.util.Date;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
-
-    private static String currentDateString;
-    private static String oneMonthsFromNowString;
 
     // Helpers
     private static ValidatorsHelper validatorsHelper;
@@ -66,8 +62,6 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
         Calendar oneMonthsFromNow = Calendar.getInstance();
         oneMonthsFromNow.setTime(currentDate);
         oneMonthsFromNow.add(Calendar.MONTH, 1);
-        currentDateString = new SimpleDateFormat("yyyy-MM-dd").format(currentDate);
-        oneMonthsFromNowString = new SimpleDateFormat("yyyy-MM-dd").format(oneMonthsFromNow.getTime());
         WebDriver webDriver = getWebDriver();
 
         // Init helpers
@@ -199,25 +193,8 @@ public class EcaQa202_NegativeBlacklistBaseDomains extends WebTestBase {
     public void stepN_EditEndEntityProfile() {
         eeProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_NAME);
         eeProfileHelper.selectDefaultCa(this.getCaName());
-        eeProfileHelper.triggerMaximumNumberOfFailedLoginAttempts();
-        eeProfileHelper.triggerCertificateValidityStartTime();
-        eeProfileHelper.triggerCertificateValidityEndTime();
-        eeProfileHelper.setCertificateValidityStartTime(currentDateString);
-        eeProfileHelper.setCertificateValidityEndTime(oneMonthsFromNowString);
-        eeProfileHelper.triggerNameConstraints();
-        eeProfileHelper.triggerExtensionData();
-        eeProfileHelper.triggerNumberOfAllowedRequests();
-        eeProfileHelper.triggerKeyRecoverable();
-        eeProfileHelper.triggerIssuanceRevocationReason();
-        eeProfileHelper.triggerSendNotification();
-
         //Add DNS Name
         eeProfileHelper.setSubjectAlternativeName("DNS Name");
-
-        eeProfileHelper.addNotification();
-        eeProfileHelper.setNotificationSender(0, "sender@example.com");
-        eeProfileHelper.setNotificationSubject(0, "Web Tester");
-        eeProfileHelper.setNotificationMessage(0, "test message");
     }
 
     @Test
