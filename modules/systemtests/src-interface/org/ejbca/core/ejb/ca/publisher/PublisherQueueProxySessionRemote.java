@@ -46,4 +46,6 @@ public interface PublisherQueueProxySessionRemote {
     
     void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher);
 
+    /** Removes all entries in PublisherQueueData for a given publishers. Used in tests only */
+    void removePublisherQueueEntries(String publisherName);
 }

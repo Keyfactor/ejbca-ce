@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.crl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
@@ -37,6 +38,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
@@ -44,6 +46,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -104,15 +107,18 @@ public class PartitionedCrlSystemTest {
     private static final String CA_DN = "CN=TestCA with CRL Partitioning,OU=QA,O=TEST,C=SE";
     private static final String CERT_DN = "CN=Partitioned CRL User,OU=QA,O=TEST,C=SE";
 
+    /** CRL Number of the first generated CRL. This will always be a Base CRL */
+    private static final int FIRST_CRL_NUMBER = 1;
+    /** CRL Number of the second CRL. This will be a Delt CRL in all cases in this test */
+    private static final int SECOND_CRL_NUMBER = 2;
+
     private static final String CRLDP_TEMPLATE_URI = "http://crl*.example.com/TestCRL*.crl";
     private static final String CRLDP_MAIN_URI = "http://crl.example.com/TestCRL.crl";
     private static final String CRLDP_PARTITION1_URI = "http://crl1.example.com/TestCRL1.crl";
-    private static final String CRLDP_PARTITION2_URI = "http://crl2.example.com/TestCRL2.crl";
 
     private static final String DELTACRLDP_TEMPLATE_URI = "http://crl*.example.com/TestDeltaCRL*.crl";
     private static final String DELTACRLDP_MAIN_URI = "http://crl.example.com/TestDeltaCRL.crl";
     private static final String DELTACRLDP_PARTITION1_URI = "http://crl1.example.com/TestDeltaCRL1.crl";
-    private static final String DELTACRLDP_PARTITION2_URI = "http://crl2.example.com/TestDeltaCRL2.crl";
 
     private static KeyPair userKeyPair;
     private static int caId, certificateProfileId, endEntityProfileId;
@@ -147,6 +153,7 @@ public class PartitionedCrlSystemTest {
         caInfo.setCRLPublishers(new ArrayList<>(Collections.singleton(crlPublisherId)));
         caInfo.setUseUserStorage(false); // avoid having to create end entities
         caAdminSession.editCA(admin, caInfo);
+        internalCertificateSessionSession.removeCRLs(admin, CA_DN); // remove initial CRLs
         log.trace("<beforeClass");
     }
 
@@ -183,17 +190,8 @@ public class PartitionedCrlSystemTest {
     private static void cleanupTestCase() throws AuthorizationDeniedException {
         internalCertificateSessionSession.removeCertificatesBySubject(CERT_DN);
         internalCertificateSessionSession.removeCRLs(admin, CA_DN);
-        removePublisherQueueEntries(TEST_CRL_PUBLISHER);
-        removePublisherQueueEntries(TEST_CERTIFICATE_PUBLISHER);
-    }
-
-    private static void removePublisherQueueEntries(final String publisherName) {
-        final int publisherId = publisherSession.getPublisherId(publisherName);
-        if (publisherId != 0) {
-            for (final PublisherQueueData queueEntry : publisherQueueSession.getPendingEntriesForPublisher(publisherId)) {
-                publisherQueueSession.removeQueueData(queueEntry.getPk());
-            }
-        }
+        publisherQueueSession.removePublisherQueueEntries(TEST_CRL_PUBLISHER);
+        publisherQueueSession.removePublisherQueueEntries(TEST_CERTIFICATE_PUBLISHER);
     }
 
     @After
@@ -208,11 +206,10 @@ public class PartitionedCrlSystemTest {
      * <li>Issue another certificate, revoke, create Delta CRL
      * </ol>
      * For both steps, we expect a CRL with the correct contents, and that the CRLs and certificates are placed in the publisher queue.
-     * @throws Exception
      */
     @Test
-    public void basicTest() throws Exception {
-        log.trace(">basicTest");
+    public void generateAndPublishPlainCrl() throws Exception {
+        log.trace(">generateAndPublishPlainCrl");
         // Given
         final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, TEST_CA);
         caInfo.setUsePartitionedCrl(false);
@@ -231,14 +228,71 @@ public class PartitionedCrlSystemTest {
         // Then
         assertEquals("Wrong CRL DP in first certificate.", CRLDP_MAIN_URI, CertTools.getCrlDistributionPoint(cert));
         assertEquals("Wrong CRL DP in second certificate.", CRLDP_MAIN_URI, CertTools.getCrlDistributionPoint(deltaCert));
-        final X509CRL crl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, false, 3); // base and delta CRLs are created at CA creation.
-        final X509CRL deltaCrl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, true, 4);
+        final X509CRL crl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, false, FIRST_CRL_NUMBER);
+        final X509CRL deltaCrl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, true, SECOND_CRL_NUMBER);
+        assertEquals("Wrong Base CRL number on Delta CRL.", BigInteger.valueOf(FIRST_CRL_NUMBER), CrlExtensions.getDeltaCRLIndicator(deltaCrl));
         assertEquals("Wrong Issuing Distribution Point in CRL.", Collections.singletonList(CRLDP_MAIN_URI), CertTools.getCrlDistributionPoints(crl));
+        assertEquals("Wrong Freshest CRL DP in CRL.", Collections.singletonList(DELTACRLDP_MAIN_URI), CrlExtensions.extractFreshestCrlDistributionPoints(crl));
         assertEquals("Wrong Issuing Distribution Point in Delta CRL.", Collections.singletonList(CRLDP_MAIN_URI), CertTools.getCrlDistributionPoints(deltaCrl));
         assertInclusionOnCrl(crl, deltaCrl, cert, deltaCert);
+        assertCorrectPartitionIndexInCertData(cert, CertificateConstants.NO_CRL_PARTITION);
+        assertCorrectPartitionIndexInCertData(deltaCert, CertificateConstants.NO_CRL_PARTITION);
         assertCrlPublisherQueueData(Arrays.asList(crl, deltaCrl));
         assertCertificatePublisherQueueData(Arrays.asList(cert, deltaCert));
-        log.trace("<basicTest");
+        log.trace("<generateAndPublishPlainCrl");
+    }
+    
+    /**
+     * Test CRL generation and publisher queuing with CRL partitioning. The following steps are performed:
+     * <ol>
+     * <li>Issue certificate, revoke, create Base CRL.
+     * <li>Issue another certificate, revoke, create Delta CRL
+     * </ol>
+     * For both steps, we expect a CRL with the correct contents, and that the CRLs and certificates are placed in the publisher queue.
+     */
+    @Test
+    public void generateAndPublishPartitionedCrl() throws Exception {
+        log.trace(">generateAndPublishPartitionedCrl");
+        // Given
+        final int partitionIndex = 1;
+        final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, TEST_CA);
+        caInfo.setUsePartitionedCrl(true);
+        caInfo.setDefaultCRLDistPoint(CRLDP_TEMPLATE_URI);
+        caInfo.setCADefinedFreshestCRL(DELTACRLDP_TEMPLATE_URI);
+        caInfo.setCrlPartitions(1);
+        caInfo.setRetiredCrlPartitions(0);
+        caAdminSession.editCA(admin, caInfo);
+        // When
+        final Certificate cert = issueCertificate(); // should appear on CRL
+        final Certificate deltaCert = issueCertificate(); // should appear on Delta CRL
+        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000)); // backdate revocation by 5 minutes
+        assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
+        revokeCertificate(deltaCert, new Date());
+        assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, caId));
+        // Then
+        assertEquals("Wrong CRL DP in first certificate.", CRLDP_PARTITION1_URI, CertTools.getCrlDistributionPoint(cert));
+        assertEquals("Wrong CRL DP in second certificate.", CRLDP_PARTITION1_URI, CertTools.getCrlDistributionPoint(deltaCert));
+        // Legacy CRL (partition 0), always created
+        final X509CRL legacyCrl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, false, FIRST_CRL_NUMBER);
+        final X509CRL legacyDeltaCrl = getLatestCrl(CertificateConstants.NO_CRL_PARTITION, true, SECOND_CRL_NUMBER);
+        assertEquals("Wrong Issuing Distribution Point in CRL (partition 0).", Collections.singletonList(CRLDP_MAIN_URI), CertTools.getCrlDistributionPoints(legacyCrl));
+        assertEquals("Wrong Freshest CRL DP in CRL (partition 0).", Collections.singletonList(DELTACRLDP_MAIN_URI), CrlExtensions.extractFreshestCrlDistributionPoints(legacyCrl));
+        assertEquals("Wrong Issuing Distribution Point in Delta CRL (partition 0).", Collections.singletonList(CRLDP_MAIN_URI), CertTools.getCrlDistributionPoints(legacyDeltaCrl));
+        // Partition 1
+        final X509CRL crl = getLatestCrl(partitionIndex, false, FIRST_CRL_NUMBER);
+        final X509CRL deltaCrl = getLatestCrl(partitionIndex, true, SECOND_CRL_NUMBER);
+        assertEquals("Wrong Base CRL number on Delta CRL (partition 1).", BigInteger.valueOf(FIRST_CRL_NUMBER), CrlExtensions.getDeltaCRLIndicator(deltaCrl));
+        assertEquals("Wrong Issuing Distribution Point in CRL (partition 1).", Collections.singletonList(CRLDP_PARTITION1_URI), CertTools.getCrlDistributionPoints(crl));
+        assertEquals("Wrong Freshest CRL DP in CRL (partition 1).", Collections.singletonList(DELTACRLDP_PARTITION1_URI), CrlExtensions.extractFreshestCrlDistributionPoints(crl));
+        assertEquals("Wrong Issuing Distribution Point in Delta CRL (partition 1).", Collections.singletonList(CRLDP_PARTITION1_URI), CertTools.getCrlDistributionPoints(deltaCrl));
+        assertInclusionOnCrl(crl, deltaCrl, cert, deltaCert);
+        assertNull("Legacy CRL (partition 0) should be empty.", legacyCrl.getRevokedCertificates());
+        assertNull("Legacy Delta CRL (partition 0) should be empty.", legacyDeltaCrl.getRevokedCertificates());
+        assertCorrectPartitionIndexInCertData(cert, partitionIndex);
+        assertCorrectPartitionIndexInCertData(deltaCert, partitionIndex);
+        assertCrlPublisherQueueData(Arrays.asList(legacyCrl, legacyDeltaCrl, crl, deltaCrl));
+        assertCertificatePublisherQueueData(Arrays.asList(cert, deltaCert));
+        log.trace("<generateAndPublishPartitionedCrl");
     }
 
     /** Issues a certificate with the CRL Distribution Point URI from the CA */
@@ -261,12 +315,14 @@ public class PartitionedCrlSystemTest {
                 org.cesecore.certificates.certificate.request.X509ResponseMessage.class, endEntity);
         assertNotNull("Failed to get response", resp);
         assertNotNull("No certificate was returned. " + resp.getFailText(), resp.getCertificate());
+        log.debug("Issued certificate with fingerprint " + CertTools.getFingerprintAsString(resp.getCertificate()));
         return resp.getCertificate();
     }
 
     /** Revokes a certificate. Supports backdated revocation. */
     private void revokeCertificate(final Certificate cert, final Date revocationDate) throws CertificateRevokeException, AuthorizationDeniedException {
         internalCertificateSessionSession.setRevokeStatus(admin, cert, revocationDate, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+        log.debug("Revoked certificate with fingerprint " + CertTools.getFingerprintAsString(cert));
     }
 
     /** Retrieves the latest Base or Delta CRL from database, and checks that it is the correct CRL */ 
@@ -290,6 +346,12 @@ public class PartitionedCrlSystemTest {
         assertTrue("Second certificate should be revoked on Delta CRL", deltaCrl.isRevoked(deltaCert));
     }
 
+    private void assertCorrectPartitionIndexInCertData(final Certificate cert, final int expectedCrlPartitionIndex) {
+        final String fingerprint = CertTools.getFingerprintAsString(cert);
+        final CertificateData certData = internalCertificateSessionSession.getCertificateData(fingerprint);
+        assertEquals("Wrong CRL partition index in CertificateData for cert with fingerprint " + fingerprint, Integer.valueOf(expectedCrlPartitionIndex), certData.getCrlPartitionIndex());
+    }
+
     /** Asserts that the given CRLs, and nothing else, have been queued in the CRL publisher */
     private void assertCrlPublisherQueueData(final Collection<X509CRL> crls) {
         final HashSet<String> fingerprints = new HashSet<>();
@@ -311,12 +373,29 @@ public class PartitionedCrlSystemTest {
     private void assertPublisherQueueData(final String publisherName, final String type, final Collection<String> fingerprints) {
         final int publisherId = publisherSession.getPublisherId(publisherName);
         final Collection<PublisherQueueData> queue = publisherQueueSession.getPendingEntriesForPublisher(publisherId);
+        traceLogPublisherData(type, queue, fingerprints);
+        assertEquals("Wrong number of " + type + " entries in publisher queue.", fingerprints.size(), queue.size());
         final HashSet<String> remainingFingerprints = new HashSet<>(fingerprints);
         for (final PublisherQueueData queueEntry : queue) {
             final String fingerprint = queueEntry.getFingerprint();
-            assertTrue("Missing publisher queue entry for " + type + " with fingerprint " + fingerprint, remainingFingerprints.remove(fingerprint));
+            assertTrue("Unexpected " + type + " publisher queue entry with fingerprint " + fingerprint, remainingFingerprints.remove(fingerprint));
         }
-        assertEquals("Some " + type + " entries were not found in the publisher queue.", 0, remainingFingerprints.size());
-        assertEquals("Wrong number of " + type + " entries in publisher queue.", fingerprints.size(), queue.size()); // this should never fail at this point
+        assertEquals("Some " + type + " entries were not found in the publisher queue.", 0, remainingFingerprints.size()); // this should never fail at this point
+    }
+
+    private void traceLogPublisherData(final String type, final Collection<PublisherQueueData> queue, final Collection<String> fingerprints) {
+        log.trace("Expected " + type + " queue entries: " + fingerprints);
+        for (final PublisherQueueData queueEntry : queue) {
+            final String fingerprint = queueEntry.getFingerprint();
+            log.trace("Queue entry fingerprint: " + fingerprint);
+            final CRLInfo crlInfo = crlStoreSession.getCRLInfo(fingerprint);
+            if (crlInfo != null) {
+                log.trace("CRL '" + crlInfo.getSubjectDN() + "', number " + crlInfo.getLastCRLNumber() + ", partition " + crlInfo.getCrlPartitionIndex());
+            }
+            final CertificateData certData = internalCertificateSessionSession.getCertificateData(fingerprint);
+            if (certData != null) {
+                log.trace("Certificate '" + certData.getSubjectDN() + "', partition number " + certData.getCrlPartitionIndex());
+            }
+        }
     }
 }
