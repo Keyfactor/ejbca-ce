@@ -29,10 +29,10 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
- * @version $Id$
+ * Contains proxy and test cleanup methods.
  *
+ * @version $Id$
  */
-
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherQueueProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublisherQueueProxySessionBean implements PublisherQueueProxySessionRemote {
@@ -41,6 +41,8 @@ public class PublisherQueueProxySessionBean implements PublisherQueueProxySessio
     private EntityManager entityManager;
 
 
+    @EJB
+    private PublisherSessionLocal publisherSession;
     @EJB
     private PublisherQueueSessionLocal queueSession;
     
@@ -84,7 +86,14 @@ public class PublisherQueueProxySessionBean implements PublisherQueueProxySessio
     public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
         queueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(admin, publisherId, publisher);
     }
-    
 
-    
+    @Override
+    public void removePublisherQueueEntries(final String publisherName) {
+        final int publisherId = publisherSession.getPublisherId(publisherName);
+        if (publisherId != 0) {
+            for (final PublisherQueueData queueEntry : queueSession.getPendingEntriesForPublisher(publisherId)) {
+                queueSession.removeQueueData(queueEntry.getPk());
+            }
+        }
+    }
 }
