@@ -3,7 +3,12 @@ package org.ejbca.webtest.scenario;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.webtest.WebTestBase;
-import org.ejbca.webtest.helper.*;
+import org.ejbca.webtest.helper.ApprovalProfilesHelper;
+import org.ejbca.webtest.helper.CaHelper;
+import org.ejbca.webtest.helper.CertificateProfileHelper;
+import org.ejbca.webtest.helper.EndEntityProfileHelper;
+import org.ejbca.webtest.helper.RaWebHelper;
+import org.ejbca.webtest.helper.ValidatorsHelper;
 import org.ejbca.webtest.utils.GetResourceDir;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -11,7 +16,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-import java.text.SimpleDateFormat;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -22,9 +27,6 @@ import java.util.Date;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
-
-    private static String currentDateString;
-    private static String oneMonthsFromNowString;
 
     // Helpers
     private static ValidatorsHelper validatorsHelper;
@@ -60,8 +62,6 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
         Calendar oneMonthsFromNow = Calendar.getInstance();
         oneMonthsFromNow.setTime(currentDate);
         oneMonthsFromNow.add(Calendar.MONTH, 1);
-        currentDateString = new SimpleDateFormat("yyyy-MM-dd").format(currentDate);
-        oneMonthsFromNowString = new SimpleDateFormat("yyyy-MM-dd").format(oneMonthsFromNow.getTime());
         WebDriver webDriver = getWebDriver();
 
         // Init helpers
@@ -196,25 +196,10 @@ public class EcaQa201_PositiveBlacklistDomainComponents extends WebTestBase {
     public void stepO_EditEntityProfile() {
         eeProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_NAME);
         eeProfileHelper.selectDefaultCa(this.getCaName());
-        eeProfileHelper.triggerMaximumNumberOfFailedLoginAttempts();
-        eeProfileHelper.triggerCertificateValidityStartTime();
-        eeProfileHelper.triggerCertificateValidityEndTime();
-        eeProfileHelper.setCertificateValidityStartTime(currentDateString);
-        eeProfileHelper.setCertificateValidityEndTime(oneMonthsFromNowString);
-        eeProfileHelper.triggerNameConstraints();
-        eeProfileHelper.triggerExtensionData();
-        eeProfileHelper.triggerNumberOfAllowedRequests();
-        eeProfileHelper.triggerKeyRecoverable();
-        eeProfileHelper.triggerIssuanceRevocationReason();
-        eeProfileHelper.triggerSendNotification();
 
         //Add DNS Name
         eeProfileHelper.setSubjectAlternativeName("DNS Name");
 
-        eeProfileHelper.addNotification();
-        eeProfileHelper.setNotificationSender(0, "sender@example.com");
-        eeProfileHelper.setNotificationSubject(0, "Web Tester");
-        eeProfileHelper.setNotificationMessage(0, "test message");
     }
 
     @Test
