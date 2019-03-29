@@ -201,25 +201,8 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
     public void stepO_EditEntityProfile() {
         eeProfileHelper.openEditEndEntityProfilePage(TestData.ENTITY_NAME);
         eeProfileHelper.selectDefaultCa(this.getCaName());
-        eeProfileHelper.triggerMaximumNumberOfFailedLoginAttempts();
-        eeProfileHelper.triggerCertificateValidityStartTime();
-        eeProfileHelper.triggerCertificateValidityEndTime();
-        eeProfileHelper.setCertificateValidityStartTime(currentDateString);
-        eeProfileHelper.setCertificateValidityEndTime(oneMonthsFromNowString);
-        eeProfileHelper.triggerNameConstraints();
-        eeProfileHelper.triggerExtensionData();
-        eeProfileHelper.triggerNumberOfAllowedRequests();
-        eeProfileHelper.triggerKeyRecoverable();
-        eeProfileHelper.triggerIssuanceRevocationReason();
-        eeProfileHelper.triggerSendNotification();
-
         //Add DNS Name
         eeProfileHelper.setSubjectAlternativeName("DNS Name");
-
-        eeProfileHelper.addNotification();
-        eeProfileHelper.setNotificationSender(0, "sender@example.com");
-        eeProfileHelper.setNotificationSubject(0, "Web Tester");
-        eeProfileHelper.setNotificationMessage(0, "test message");
     }
 
     @Test
