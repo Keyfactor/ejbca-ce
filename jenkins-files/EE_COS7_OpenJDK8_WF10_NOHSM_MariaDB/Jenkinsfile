@@ -18,7 +18,7 @@ pipeline {
         }
 		stage('database') {
             steps {
-                sh "docker run --name mariadb_1 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=foo123 -e MYSQL_DATABASE=ejbca -e MYSQL_USER=ejbca -e MYSQL_PASSWORD=ejbca --net=my_isolated_bridge_network -d mariadb:10.2.17"
+                sh "docker run --name mariadb_1 -e MYSQL_ROOT_PASSWORD=foo123 -e MYSQL_DATABASE=ejbca -e MYSQL_USER=ejbca -e MYSQL_PASSWORD=ejbca --net=my_isolated_bridge_network -d mariadb:10.2.17"
             }
         }
         stage('deploy and run system tests') {
