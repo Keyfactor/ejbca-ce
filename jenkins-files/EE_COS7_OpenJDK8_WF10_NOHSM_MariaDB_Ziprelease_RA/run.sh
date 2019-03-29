@@ -106,5 +106,3 @@ fi
 
 echo "=================== All the files, that should be missing, are indeed properly missing ================================="
 
-echo "=================== Running unit tests ================================="
-ant test:runsa

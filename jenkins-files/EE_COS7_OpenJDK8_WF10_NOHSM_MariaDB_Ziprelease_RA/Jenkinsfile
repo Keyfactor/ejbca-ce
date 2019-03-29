@@ -33,7 +33,6 @@ pipeline {
     }
     post {
         always {
-            junit "ejbca/**/reports/**/TEST-*.xml"
             sh "docker stop --time=1 ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra || true"
             sh "docker rm -f ee_cos7_openjdk8_wf10_nohsm_mariadb_ziprelease_ra || true"
             sh "docker stop --time=1 mariadb_2"
