@@ -20,8 +20,8 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.security.cert.X509CRL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -171,12 +171,12 @@ public class X509CACrlUnitTest extends X509CAUnitTestBase {
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
-        assertEquals("CRL distribution point is different", Arrays.asList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
+        assertEquals("CRL distribution point is different", Collections.singletonList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
 
         crl = ca.generateDeltaCRL(cryptoToken, 12345, revcerts, 2, 1);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-        assertEquals("CRL distribution point is different", Arrays.asList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
+        assertEquals("CRL distribution point is different", Collections.singletonList(cdpExpectedUrl), CertTools.getCrlDistributionPoints(xcrl));
     }
 
     /**
