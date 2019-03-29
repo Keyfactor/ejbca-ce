@@ -104,5 +104,5 @@ if [ -d ./modules/cesecore-x509ca ]; then
     exit 1;
 fi
 
-echo "====== All the files, that should be missing, seem to be properly missing ======"
+echo "=================== All the files, that should be missing, are indeed properly missing ================================="
 
