@@ -67,10 +67,10 @@ wait_for_deployment
 
 echo '=================== ant deployear done and successfully deployed! ================================='
 
-ant runinstall
+#ant runinstall
 echo '=================== ant runinstall done! ================================='
 
-ant deploy-keystore
+#ant deploy-keystore
 echo '=================== ant deploy-keystore done! ================================='
 
 # load the final version of Wildfly conf and restart wildfly
