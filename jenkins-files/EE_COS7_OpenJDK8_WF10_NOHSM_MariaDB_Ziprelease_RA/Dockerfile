@@ -27,25 +27,35 @@ ENV JAVA_OPTS="-Xms2048m -Xmx2048m -XX:MetaspaceSize=192M -XX:MaxMetaspaceSize=2
 #Setting Ant Params
 ENV ANT_OPTS="-Xms256M -Xmx512M"
 
-#Copy the run script and set execution privileges to it
-ADD run.sh /opt/
-RUN chmod +x /opt/run.sh
+
+# copy WildFly conf
+ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
+ADD application-roles.properties /opt/jboss/wildfly/standalone/configuration/application-roles.properties
+ADD application-users.properties /opt/jboss/wildfly/standalone/configuration/application-users.properties
+
+# copy keystore file to WildFly
+#ADD keystore /opt/jboss/wildfly/standalone/configuration/keystore
+
+# add mariadb driver to deploy folder
+ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
+
+
+# Set the working directory to EJBCA rource root folder
+WORKDIR /app/ejbca
+
+# copy p12 folder to /opt in the container for runtime-usage
+ADD p12 /opt/p12
+RUN chmod 777 /opt/p12
 
 # copy ejbca conf to /opt in the container for runtime-usage
 ADD conf /opt/conf
 RUN chmod 777 /opt/conf
 
+# copy ManagementCA.pem to /opt in the container for runtime-usage
+ADD ManagementCA.pem /opt/ManagementCA.pem
+RUN chmod 777 /opt/ManagementCA.pem
 
-#copy two stages of standalone.xml file (WildFly config file). They are both needed for different stages of installation
-ADD standalone1.xml /opt/standalone1.xml
-ADD standalone2.xml /opt/standalone2.xml
-
-
-# add mariadb driver to deploy folder
-ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
-
-# Set the working directory to /app
-WORKDIR /app/ejbca
-
+ADD run.sh /opt/
+RUN chmod +x /opt/run.sh
 
 CMD ["/opt/run.sh"]
