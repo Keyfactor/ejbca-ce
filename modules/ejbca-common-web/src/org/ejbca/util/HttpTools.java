@@ -120,12 +120,12 @@ public class HttpTools {
      * @return Decoded string or null on error.
      */
     public static String decodeRfc5987(final String encoded) {
-        if (encoded == null) {
+        if (StringUtils.isEmpty(encoded)) {
             return null;
         }
         final String[] pieces = encoded.split("'", 3); // format is:  charset'language'data
         if (pieces.length != 3) {
-            log.trace("HTTP header parameter is not RFC 5987 encoded.");
+            log.debug("Too few ' characters in RFC 5987 encoded HTTP header parameter.");
             return null;
         }
         final String charset = pieces[0];
