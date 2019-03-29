@@ -38,7 +38,7 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
     // Test Data
     private static class TestData {
         private static final String VALIDATOR_NAME = "EcaQa202BL_Blacklist";
-        private static final String VALIDATOR_BLACKLIST_FILENAME = GetResourceDir.getResourceFolder() + "/blacklist.txt";
+        private static final String VALIDATOR_BLACKLIST_FILENAME = GetResourceDir.getResourceFolder() + "/Blacklist.txt";
         private static final String VALIDATOR_BLACKLIST_SITE = "bank.com";
         private static final String VALIDATOR_PERFORM_TYPE = "Domain components";
         private static final String CA_NAME = "EcaQa202B_CA";
@@ -232,7 +232,7 @@ public class EcaQa202_NegativeBlacklistDomainComponents extends WebTestBase {
     }
 
 
-    @Test()
+    @Test
     public void stepP_MakeNewCertificate() {
         raWebHelper.openPage(this.getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();

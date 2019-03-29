@@ -38,7 +38,7 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
     // Test Data
     private static class TestData {
         private static final String VALIDATOR_NAME = "EcaQa201C_Blacklist";
-        private static final String VALIDATOR_BLACKLIST_FILENAME = new GetResourceDir().getResourceFolder() + "/blacklist.txt";
+        private static final String VALIDATOR_BLACKLIST_FILENAME = GetResourceDir.getResourceFolder() + "/Blacklist.txt";
         private static final String VALIDATOR_BLACKLIST_SITE = "www.yahoo.com";
         private static final String VALIDATOR_PERFORM_TYPE = "Exact match";
         private static final String CA_NAME = "EcaQa201C_CA";
@@ -220,7 +220,7 @@ public class EcaQa201_PositiveBlacklistExactMatch extends WebTestBase {
         eeProfileHelper.assertEndEntityProfileNameExists(TestData.ENTITY_NAME);
     }
 
-    @Test()
+    @Test
     public void stepP_MakeNewCertificate() {
         raWebHelper.openPage(this.getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
