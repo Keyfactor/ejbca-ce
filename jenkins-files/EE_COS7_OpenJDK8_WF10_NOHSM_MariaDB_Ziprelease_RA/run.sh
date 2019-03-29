@@ -74,8 +74,8 @@ echo '=================== ant runinstall done! =================================
 echo '=================== ant deploy-keystore done! ================================='
 
 # load the final version of Wildfly conf and restart wildfly
-cp /opt/standalone2.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
-JAVA_OPTS="$CLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
+#cp /opt/standalone2.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
+#JAVA_OPTS="$CLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 
 # wait for reload to kick in and start undeploying and drop ejbca.ear.deployed file (otherwise we'd detect ejbca.ear.deployed file immediately again)
 sleep 10
@@ -103,3 +103,6 @@ if [ -d ./modules/cesecore-x509ca ]; then
     echo "RA-only build should not contain cesecore-x509ca module"
     exit 1;
 fi
+
+echo "====== All the files, that should be missing, seem to be properly missing ======"
+
