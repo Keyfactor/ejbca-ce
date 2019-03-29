@@ -125,7 +125,7 @@ public class HttpTools {
         }
         final String[] pieces = encoded.split("'", 3); // format is:  charset'language'data
         if (pieces.length != 3) {
-            log.debug("Too few ' characters in RFC 5987 encoded HTTP header parameter.");
+            log.trace("HTTP header parameter is not RFC 5987 encoded.");
             return null;
         }
         final String charset = pieces[0];
