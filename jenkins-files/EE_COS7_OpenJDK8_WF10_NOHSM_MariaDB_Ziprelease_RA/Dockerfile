@@ -31,10 +31,6 @@ ENV ANT_OPTS="-Xms256M -Xmx512M"
 # copy WildFly conf
 ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 
-# TODO: can the following 2 be removed??
-#ADD application-roles.properties /opt/jboss/wildfly/standalone/configuration/application-roles.properties
-#ADD application-users.properties /opt/jboss/wildfly/standalone/configuration/application-users.properties
-
 # add mariadb driver to deploy folder
 ADD mariadb-java-client.jar /opt/jboss/wildfly/standalone/deployments/mariadb-java-client.jar
 
