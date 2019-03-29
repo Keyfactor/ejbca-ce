@@ -18,9 +18,6 @@ trap cleanup EXIT
 echo '=================== CHECKING JAVA VERSION: ================================='
 java -version
 
-cp /opt/standalone1.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
-
-
 ant ziprelease -Dedition=ee -Dvariant=ra -Ddoc.update=false -Drelease.revision=12345
 
 cd ..
@@ -33,7 +30,8 @@ chown -R 1001:1001 .
 cd ejbca_ee*
 
 cp /opt/conf/* ./conf/
-
+cp /opt/p12/* ./p12/
+cp /opt/ManagementCA.pem ./ManagementCA.pem
 
 /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0 &
 
@@ -65,22 +63,21 @@ wait_for_deployment() {
 echo '=================== Waiting for deploy ================================='
 wait_for_deployment
 
-echo '=================== ant deployear done and successfully deployed! ================================='
+echo '=================== should be started now ========================'
 
-#ant runinstall
-echo '=================== ant runinstall done! ================================='
+ant deploy-keystore
+echo '=================== deploy-keystore done ========================'
 
-#ant deploy-keystore
-echo '=================== ant deploy-keystore done! ================================='
-
-# load the final version of Wildfly conf and restart wildfly
-#cp /opt/standalone2.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
-#JAVA_OPTS="$CLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
-
-# wait for reload to kick in and start undeploying and drop ejbca.ear.deployed file (otherwise we'd detect ejbca.ear.deployed file immediately again)
-sleep 10
-
+/opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
+echo '=================== waiting 30... ========================'
+sleep 30
 wait_for_deployment
+echo '=================== Wildfly restarted after deploy-keystore ========================'
+
+bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem
+bin/ejbca.sh roles addrolemember --role "Super Administrator Role" --caname ManagementCA --with WITH_COMMONNAME --value SuperAdmin
+echo '=================== import cert commands done ========================'
+
 
 echo '=================== verify that VA and the X509CA and CVCCA implementation classes are missing ================================='
 
@@ -106,3 +103,5 @@ fi
 
 echo "=================== All the files, that should be missing, are indeed properly missing ================================="
 
+echo "=================== Running unit tests ================================="
+ant test:runsa
