@@ -36,7 +36,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
 
     // Test Data
     private static class TestData {
-        private static final String VALIDATOR_BLACKLIST_FILENAME = GetResourceDir.getResourceFolder() + "/blacklist.txt";
+        private static final String VALIDATOR_BLACKLIST_FILENAME = GetResourceDir.getResourceFolder() + "/Blacklist.txt";
         private static final String VALIDATOR_NAME = "EcaQa201-2A_Blacklist";
         private static final String VALIDATOR_BLACKLIST_SITE = "www.yahoo.com";
         private static final String VALIDATOR_PERFORM_TYPE = "Base domains";
@@ -227,7 +227,7 @@ public class EcaQa201_PositiveBlacklistBaseDomains extends WebTestBase {
         eeProfileHelper.saveEndEntityProfile(true);
     }
 
-    @Test()
+    @Test
     public void stepQ_MakeNewCertificate() {
         raWebHelper.openPage(this.getRaWebUrl());
         raWebHelper.makeNewCertificateRequest();
