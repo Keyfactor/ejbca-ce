@@ -4,8 +4,10 @@
 export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
 export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
-# Options for the CLI tools that require little memory, like the JBoss CLI
-export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx128m"
+# Options for the CLI tools. These require very little memory.
+# Note that the Wildfly CLI does not do escaping properly, so we can't use option values with spaces.
+export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
+export EJBCACLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms32m -Xmx128m"
 
 # Set an exit handler, that sets privileges for cleanup for the initial source folder
 workspacesubdir=$(pwd)
@@ -71,14 +73,14 @@ echo '=================== should be started now ========================'
 ant deploy-keystore
 echo '=================== deploy-keystore done ========================'
 
-/opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 echo '=================== waiting 30... ========================'
 sleep 30
 wait_for_deployment
 echo '=================== Wildfly restarted after deploy-keystore ========================'
 
-bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem
-bin/ejbca.sh roles addrolemember --role "Super Administrator Role" --caname ManagementCA --with WITH_COMMONNAME --value SuperAdmin
+JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem
+JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh roles addrolemember --role "Super Administrator Role" --caname ManagementCA --with WITH_COMMONNAME --value SuperAdmin
 echo '=================== import cert commands done ========================'
 
 
