@@ -76,9 +76,6 @@ public class X509ExternalCAImpl extends CABaseCommon {
     public X509ExternalCAImpl() {
     }
     
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#updateCA(org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
-     */
     @Override
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo, final AvailableCustomCertificateExtensionsConfiguration cceConfig) throws InvalidAlgorithmException {
         super.updateCA(cryptoToken, cainfo, cceConfig);
