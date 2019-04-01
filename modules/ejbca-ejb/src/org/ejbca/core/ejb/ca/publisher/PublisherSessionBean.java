@@ -16,6 +16,8 @@ package org.ejbca.core.ejb.ca.publisher;
 import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.cert.CRLException;
+import java.security.cert.X509CRL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,12 +49,15 @@ import org.cesecore.certificates.certificate.BaseCertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ProfileID;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -319,6 +324,31 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             log.trace("<storeCRL");
         }
         return returnval;
+    }
+
+    @Override
+    public boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn) throws AuthorizationDeniedException {
+        boolean result = false;
+        final CertificateDataWrapper certificateDataWrapper = certificateStoreSession.getCertificateData(caFingerprint);
+        Integer crlPartitionIndex = certificateDataWrapper.getCertificateData().getCrlPartitionIndex();
+        final byte[] crlbytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerDn,
+                crlPartitionIndex, false);
+        // Get the CRLnumber
+        X509CRL crl;
+        try {
+            crl = CertTools.getCRLfromByteArray(crlbytes);
+        } catch (CRLException e) {
+            throw new IllegalStateException("Couldn't deserialize CRL", e);
+        }
+        int crlNumber = CrlExtensions.getCrlNumber(crl).intValue();
+        if (crlbytes != null && crlbytes.length > 0 && crlNumber > 0) {
+            log.info("Publishing CRL to CA publishers.");
+            result = storeCRL(admin, publisherids, crlbytes, caFingerprint, crlNumber, issuerDn);
+            log.info("CRL with number " + crlNumber + " published.");
+        } else {
+            log.info("CRL not published, no CRL exists for CA.");
+        }
+        return result;
     }
 
     @Override

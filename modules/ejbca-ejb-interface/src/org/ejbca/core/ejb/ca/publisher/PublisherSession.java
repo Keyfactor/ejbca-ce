@@ -171,4 +171,16 @@ public interface PublisherSession {
      */
     boolean storeCRL(AuthenticationToken admin, Collection<Integer> publisherids, byte[] incrl, String cafp,
             int number, String issuerDn) throws AuthorizationDeniedException;
+
+    /**
+     * Republishes the CRL to the given collection of publishers.
+     *
+     * @param publisherids a Collection (Integer) of publisherids.
+     * @param caFingerprint Fingerprint (hex) of the CAs certificate.
+     * @param issuerDn the issuer of this CRL
+     * @return true if successful result on all given publishers
+     * @throws AuthorizationDeniedException if access was denied to the CA matching userDN
+     * @see org.ejbca.core.model.ca.publisher.BasePublisher
+     */
+    boolean republishCrl(AuthenticationToken admin, Collection<Integer> publisherids, String caFingerprint, String issuerDn) throws AuthorizationDeniedException;
 }
