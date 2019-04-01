@@ -931,10 +931,8 @@
 	    </scriptdef>
 		<antcall target="update-svnrev" /> <!-- update svn revision version property -->
 		<antcall target="update-edition" />
-		<convertdot/> <!-- convert dots to underscores in version string -->
-        <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
-		<property name="basezipfile" value="ejbca_${edition}_${ejbca.zipversion}"/>
-        <condition property="edition.is.ee" value="true">
+        
+		<condition property="edition.is.ee" value="true">
             <equals arg1="${edition}" arg2="ee" casesensitive="true"/>
         </condition>
 		
@@ -956,6 +954,22 @@
         		<istrue value="${running.full.ejbca}" />
         	</and>	
         </condition>
+		
+		<condition property="variant.suffix" value="_RA">
+            <equals arg1="${variant}" arg2="ra" casesensitive="false"/>
+        </condition>
+        
+        <condition property="variant.suffix" value="_VA">
+            <equals arg1="${variant}" arg2="va" casesensitive="false"/>
+        </condition>
+		
+		<condition property="variant.suffix" value="">
+			<istrue value="${running.full.ejbca}" />
+        </condition>
+		
+		<convertdot/> <!-- convert dots to underscores in version string -->
+        <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
+		<property name="basezipfile" value="ejbca_${edition}_${ejbca.zipversion}${variant.suffix}"/>
 		
 		<zip destfile="../${basezipfile}.zip">
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700" > 
