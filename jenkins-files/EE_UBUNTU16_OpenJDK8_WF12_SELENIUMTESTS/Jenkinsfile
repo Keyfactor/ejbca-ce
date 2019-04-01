@@ -51,6 +51,10 @@ pipeline {
                             }
                         }
                     }
+
+                    // Since the container is running in the background, Jenkins will not see its output.
+                    // Print the container output here to make it available to Jenkins.
+                    sh "docker logs mypeer"
                 }
             }
         }
