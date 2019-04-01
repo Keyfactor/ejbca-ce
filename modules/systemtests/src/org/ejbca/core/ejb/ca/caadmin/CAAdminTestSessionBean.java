@@ -70,7 +70,7 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
     @Override
     public String getKeyFingerPrint(String caname) throws CADoesntExistsException, UnsupportedEncodingException, IllegalCryptoTokenException, CryptoTokenOfflineException, NoSuchAlgorithmException {
     	CAData cadata = caSession.findByNameOrThrow(caname);
-    	CACommon thisCa = cadata.getCA();//getCAFromDatabase(cadata.getCaId());
+    	CACommon thisCa = cadata.getCA();
     	// Fetch keys
     	CAToken thisCAToken = thisCa.getCAToken();
     	final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(thisCAToken.getCryptoTokenId());

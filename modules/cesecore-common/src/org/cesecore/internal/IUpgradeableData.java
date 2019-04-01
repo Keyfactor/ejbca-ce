@@ -56,5 +56,16 @@ public interface IUpgradeableData {
      */
     void upgrade();
 
+    /** Create a Map with the differences between the current object and the parameter object.
+     * Puts the result in a new Map with keys:
+     * <pre>
+     * changed:key, changedvalue
+     * remove:key, removedvalue
+     * added:key, addedvalue
+     * </pre>
+     *
+     * @param newobj The "changed" object for which we want to get the changes compared to this object
+     * @return Map object with difference as described above
+     */
     Map<Object, Object> diff(UpgradeableDataHashMap newobj);
 }

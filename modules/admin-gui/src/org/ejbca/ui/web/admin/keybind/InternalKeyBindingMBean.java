@@ -101,7 +101,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  */
 public class InternalKeyBindingMBean extends BaseManagedBean implements Serializable {
 
-    public static final String OCSP_KEY_BINDING = "OcspKeyBinding";
+    private static final String OCSP_KEY_BINDING = "OcspKeyBinding";
     protected static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
 
     @EJB(description = "Used to reload ocsp signing cache when user disables the internal ocsp key binding.")

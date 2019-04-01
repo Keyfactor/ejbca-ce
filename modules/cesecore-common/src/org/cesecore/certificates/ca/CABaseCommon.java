@@ -863,19 +863,9 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                     log.error("Servicedata is null for extended CA service of type: "+type);
                 }
             }
-        } catch (ClassNotFoundException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (IllegalArgumentException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (SecurityException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (InstantiationException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (IllegalAccessException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (InvocationTargetException e) {
-            log.warn("Extended CA service of type " + type + " can not get created: ", e);
-        } catch (NoSuchMethodException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | 
+                IllegalArgumentException | InvocationTargetException | NoSuchMethodException | 
+                SecurityException e) {
             log.warn("Extended CA service of type " + type + " can not get created: ", e);
         }
         return returnval;
