@@ -9,17 +9,17 @@
 #
 
 # ------------ Administrative CA configuration ---------------------
-# This installation will create a first administrative CA. This CA will be used to create the first
+# This installation will create a first Management CA. This CA will be used to create the first
 # superadministrator and for the SSL server certificate of administrative web server.
 # When the administrative web server have been setup you can create other CA:s and administrators.
 # This is only used for administrative purposes,
-# Enter a short name for the administrative CA.
+# Enter a short name for the Management CA.
 ca.name=ManagementCA
 
-# The Distinguished Name of the administrative CA. 
+# The Distinguished Name of the Management CA. 
 # This is used in the CA certificate to distinguish the CA.
 # Note, you can not use DC components for the initial CA, you can create CAs 
-# using DC components later on once the admin GUI is up and running.
+# using DC components later on once the CA GU is up and running.
 ca.dn=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # The token type the administrative CA will use.
@@ -36,14 +36,14 @@ ca.dn=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Default: soft
 ca.tokentype=soft
 
-# Password for the administrative CA token.
+# Password for the Management CA token.
 # With soft token, use password null.
 # To prompt for the password on the terminal, don't set, i.e. comment out the line below.
 # If no password should be used (for example nCipher module protected), use password '' (nothing).
 ca.tokenpassword=null
 
 # Configuration file were you define key name, password and key alias for the HSM used 
-# by the administrative CA. Same as the Hard CA Token Properties in Admin gui.
+# by the Management CA. Same as the Hard CA Token Properties in CA UI.
 # Remove everything in the file and add your own configuration.
 # Note that this must be a full path.
 # On windows use / instead of \
@@ -54,19 +54,19 @@ ca.tokenpassword=null
 # Keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.
 ca.keyspec=2048
 
-# The keytype for the administrative CA, can be RSA, ECDSA or DSA
+# The keytype for the Management CA, can be RSA, ECDSA or DSA
 # For the key to be generated in soft keystore.
 ca.keytype=RSA
 
-# Default signing algorithm for the administrative CA.
+# Default signing algorithm for the Management CA.
 # Available algorithms are:
 # SHA1WithRSA, SHA1withECDSA, SHA256WithRSA, SHA256withECDSA.
 ca.signaturealgorithm=SHA256WithRSA
 
-# The validity in days for the administrative CA, only digits.
+# The validity in days for the Management CA, only digits.
 ca.validity=3650
 
-# The policy id of the administrative CA. Policy id determines which PKI policy the CA uses.
+# The policy id of the Management CA. Policy id determines which PKI policy the CA uses.
 # Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc5280) or 'null' for no policy at all.
 ca.policy=null
 
