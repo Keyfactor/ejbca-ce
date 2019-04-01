@@ -1080,13 +1080,17 @@
 				<!-- List of subcommands for ejbca.sh script that must be hidden when we are running on limited ejbca (va/ra) installation. -->
 		    	<!-- The excluded parts are listed in the ticket ECA-7904 and could be updated accordingly if needed.   -->
 				<exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/hardtoken/**/*.java" unless="running.full.ejbca"/>
-	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/config/est/**/*.java" unless="running.full.ejbca"/>
-	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/config/cmp/**/*.java" unless="running.full.ejbca"/>
+	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/config/**/*.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaEditCaCommand.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaRenewCACommand.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaDeactivateCACommand.java" unless="running.full.ejbca"/>
 	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaInitCommand.java" unless="running.full.ejbca"/>
-	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CARepublishCommand.java.java" unless="running.full.ejbca"/>
+	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CARepublishCommand.java" unless="running.full.ejbca"/>
+	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaEditCertificateProfileCommand.java" unless="running.full.ejbca"/>
+	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaCreateCrlCommand.java" unless="running.full.ejbca"/>
+	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaExportProfilesCommand.java" unless="running.full.ejbca"/>
+	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/ca/**/CaImportProfilesCommand.java" unless="running.full.ejbca"/>
+	            <exclude name="modules/ejbca-ejb-cli/src/org/ejbca/ui/cli/CreateCertCommand.java" unless="running.full.ejbca"/>
 				<!-- End of the list of subcommands of ejbca.sh that must be hidden when we are running on limited ejbca (va/ra) installation -->
 		    	
 		    </zipfileset>
