@@ -12,8 +12,10 @@ JBOSS_STANDALONE_DEPLOYMENTS=$JBOSS_STANDALONE/deployments
 export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
 export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
-# Options for the CLI tools that require little memory, like the JBoss CLI
-export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx128m"
+# Options for the CLI tools. These require very little memory.
+# Note that the Wildfly CLI does not do escaping properly, so we can't use option values with spaces.
+export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
+export EJBCACLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms32m -Xmx128m"
 
 # Function that is always run at exit
 workspacesubdir=$(pwd)
@@ -73,7 +75,7 @@ echo '=================== ant deploy-keystore done! ============================
 
 echo '=================== Replacing Configuration and Reloading =================='
 cp /opt/standalone2.xml $JBOSS_STANDALONE_CONF/standalone.xml
-JAVA_OPTS="$CLI_OPTS" $JBOSS_CLI -c --command=:reload
+JAVA_OPTS="$JBOSSCLI_OPTS" $JBOSS_CLI -c --command=:reload
 
 # wait for reload to kick in and start undeploying and drop ejbca.ear.deployed file (otherwise we'd detect ejbca.ear.deployed file immediately again)
 sleep 10
