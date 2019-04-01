@@ -306,7 +306,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     pqvd.setUserDN(issuerDn);
                     String fp = CertTools.getFingerprintAsString(incrl);
                     try {
-                        publisherQueueSession.addQueueData(id.intValue(), PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, PublisherConst.STATUS_PENDING);
+                        publisherQueueSession.addQueueData(id, PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, PublisherConst.STATUS_PENDING);
                         String msg = intres.getLocalizedMessage("publisher.storequeue", name, fp, "CRL");
                         log.info(msg);
                     } catch (CreateException e) {
@@ -356,7 +356,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + publisherid + ")");
         }
-        PublisherData pdl = PublisherData.findById(entityManager, Integer.valueOf(publisherid));
+        PublisherData pdl = PublisherData.findById(entityManager, publisherid);
         if (pdl != null) {
             String name = pdl.getName();
             try {
@@ -369,7 +369,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 throw new PublisherConnectionException(pe.getMessage());
             }
         } else {
-            String msg = intres.getLocalizedMessage("publisher.nopublisher", Integer.valueOf(publisherid));
+            String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherid);
             log.info(msg);
         }
         if (log.isTraceEnabled()) {
@@ -411,7 +411,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public void addPublisherFromData(AuthenticationToken admin, int id, String name, Map<?, ?> data) throws PublisherExistsException,
             AuthorizationDeniedException {
-        final BasePublisher publisher = constructPublisher(((Integer) (data.get(BasePublisher.TYPE))).intValue());
+        final BasePublisher publisher = constructPublisher((Integer) (data.get(BasePublisher.TYPE)));
         if (publisher != null) {
             publisher.setPublisherId(id);
             publisher.setName(name);
@@ -424,8 +424,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             PublisherExistsException {
         authorizedToEditPublishers(admin);
         if (PublisherData.findByName(entityManager, name) == null) {
-            if (PublisherData.findById(entityManager, Integer.valueOf(id)) == null) {
-                entityManager.persist(new PublisherData(Integer.valueOf(id), name, publisher));
+            if (PublisherData.findById(entityManager, id) == null) {
+                entityManager.persist(new PublisherData(id, name, publisher));
             } else {
                 final String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", id);
                 log.info(msg);
@@ -682,7 +682,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public int getPublisherUpdateCount(int publisherid) {
         int returnval = 0;
-        PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(publisherid));
+        PublisherData pd = PublisherData.findById(entityManager, publisherid);
         if (pd != null) {
             returnval = pd.getUpdateCounter();
         }
@@ -780,7 +780,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherInternal: " + id + ", " + name);
         }
-        Integer idValue = Integer.valueOf(id);
+        Integer idValue = id;
         if (id == -1) {
             idValue = PublisherCache.INSTANCE.getNameToIdMap().get(name);
         }
@@ -837,7 +837,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             // Handle Base64 encoded string values
             HashMap<?, ?> data = new Base64GetHashMap(h);
 
-            publisher = constructPublisher(((Integer) (data.get(BasePublisher.TYPE))).intValue());
+            publisher = constructPublisher((Integer) (data.get(BasePublisher.TYPE)));
             if (publisher != null) {
                 publisher.setPublisherId(pData.getId());
                 publisher.setName(pData.getName());
@@ -902,7 +902,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             // Handle Base64 encoded string values
             @SuppressWarnings("unchecked")
             HashMap<Object, Object> data = new Base64GetHashMap(h);
-            if (PublisherConst.TYPE_VAPUBLISHER == ((Integer) data.get(BasePublisher.TYPE)).intValue()) {
+            if (PublisherConst.TYPE_VAPUBLISHER == (Integer) data.get(BasePublisher.TYPE)) {
                 numberOfUpgradedPublishers++;
                 publisherData.setPublisher(new LegacyValidationAuthorityPublisher(data));
                 //Purge the entry from the cache
@@ -929,7 +929,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             // Handle Base64 encoded string values
             @SuppressWarnings("unchecked")
             HashMap<Object, Object> data = new Base64GetHashMap(h);
-            if (PublisherConst.TYPE_VAPUBLISHER == ((Integer) data.get(BasePublisher.TYPE)).intValue()) {
+            if (PublisherConst.TYPE_VAPUBLISHER == (Integer) data.get(BasePublisher.TYPE)) {
                 return true;
             }           
         }
