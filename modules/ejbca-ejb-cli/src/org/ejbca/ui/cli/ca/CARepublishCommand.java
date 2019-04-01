@@ -13,9 +13,8 @@
 
 package org.ejbca.ui.cli.ca;
 
-import java.security.cert.CRLException;
+
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,13 +26,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EJBTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -101,17 +97,6 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             Iterator<Certificate> caiter = cachain.iterator();
             if (caiter.hasNext()) {
                 final X509Certificate cacert = (X509Certificate) caiter.next();
-                // TODO Add support for partitioned CRLs (ECA-7962)
-                final byte[] crlbytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(cainfo.getSubjectDN(),
-                        CertificateConstants.NO_CRL_PARTITION, false);
-                // Get the CRLnumber
-                X509CRL crl;
-                try {
-                    crl = CertTools.getCRLfromByteArray(crlbytes);
-                } catch (CRLException e) {
-                    throw new IllegalStateException("Couldn't deserialize CRL", e);
-                }
-                int crlNumber = CrlExtensions.getCrlNumber(crl).intValue();
                 final Collection<Integer> capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
                 if (capublishers != null) {
@@ -123,14 +108,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                         getLogger().info("Certificate published for " + caname);
                     }
                     if (cacrlmode) {
-                        if (crlbytes != null && crlbytes.length > 0 && crlNumber > 0) {
-                            getLogger().info("Publishing CRL to CA publishers.");
-                            EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).storeCRL(getAuthenticationToken(), capublishers,
-                                    crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
-                            getLogger().info("CRL with number " + crlNumber + " published for " + caname);
-                        } else {
-                            getLogger().info("CRL not published, no CRL exists for CA.");
-                        }
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).republishCrl(getAuthenticationToken(), capublishers,
+                                fingerprint, cainfo.getSubjectDN());
                     }
                 } else {
                     getLogger().info("No publishers configured for the CA, no CA certificate or CRL published.");
