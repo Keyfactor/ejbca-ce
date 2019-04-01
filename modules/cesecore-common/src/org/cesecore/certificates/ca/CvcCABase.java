@@ -49,9 +49,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
 	public static final float LATEST_VERSION = 4;
 
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#init(org.cesecore.certificates.ca.CVCCAInfo)
-     */
 	@Override
     public void init(CVCCAInfo cainfo) {
 	    super.init(cainfo);
@@ -97,9 +94,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
         return null;
     }
 
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#init(java.util.HashMap, int, java.lang.String, java.lang.String, int, java.util.Date, java.util.Date)
-     */
     @Override
     @SuppressWarnings("deprecation")
     public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) {
@@ -131,27 +125,18 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
         setCAId(caId);        
 	}
 	
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#createPKCS7(org.cesecore.keys.token.CryptoToken, java.security.cert.X509Certificate, boolean)
-     */
 	@Override
 	public byte[] createPKCS7(CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) {
         log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
         return null;
 	}
 	
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#createPKCS7Rollover(org.cesecore.keys.token.CryptoToken)
-     */
 	@Override
 	public byte[] createPKCS7Rollover(CryptoToken cryptoToken) {
 	    log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
         return null;
 	}
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#generateCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int)
-     */
     @Override
     public X509CRLHolder generateCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
@@ -159,9 +144,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#generateDeltaCRL(org.cesecore.keys.token.CryptoToken, java.util.Collection, int, int)
-     */
     @Override
     public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, int crlPartitionIndex, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
@@ -169,17 +151,11 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
         return null;
     }
 
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#getLatestVersion()
-     */
     @Override
 	public float getLatestVersion(){
 		return LATEST_VERSION;
 	}
 
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#upgrade()
-     */
     @SuppressWarnings("deprecation")
     @Override
 	public void upgrade(){
@@ -214,9 +190,6 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 		}  
 	}
 
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCA#upgradeExtendedCAServices()
-     */
     @Override
 	@SuppressWarnings("deprecation")
     public boolean upgradeExtendedCAServices() {
@@ -231,17 +204,11 @@ public abstract class CvcCABase extends CABase implements Serializable, CvcCA {
 		return retval;
 	}
 
-	/* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#decryptData(org.cesecore.keys.token.CryptoToken, byte[], int)
-     */
 	@Override
 	public byte[] decryptData(CryptoToken cryptoToken, byte[] encryptedData, int cAKeyPurpose) {
 		throw new IllegalArgumentException("decryptData not implemented for CVC CA");
 	}
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.CvcCAInterface#encryptData(org.cesecore.keys.token.CryptoToken, byte[], int)
-     */
     @Override
 	public byte[] encryptData(CryptoToken cryptoToken, byte[] dataToEncrypt, int keyPurpose) {
 		throw new IllegalArgumentException("encryptData not implemented for CVC CA");
