@@ -2,8 +2,10 @@
 
 # Options for ant itself. Report building is done in selenium_image, so this shouldn't require much memory
 export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
-# Options for the CLI tools that require little memory, like the JBoss CLI
-export CLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms32m -Xmx256m"
+# Options for the CLI tools. These require very little memory.
+# Note that the Wildfly CLI does not do escaping properly, so we can't use option values with spaces.
+export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
+export EJBCACLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms32m -Xmx128m"
 
 cp /opt/conf/* /app/ejbca/conf/
 cp /opt/p12/* /app/ejbca/p12/
@@ -44,14 +46,14 @@ echo '=================== should be started now ========================'
 ant deploy-keystore
 echo '=================== deploy-keystore done ========================'
 
-JAVA_OPTS=$CLI_OPTS /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
+JAVA_OPTS="$JBOSSCLI_OPTS" /opt/jboss/wildfly/bin/jboss-cli.sh -c --command=:reload
 echo '=================== waiting 30... ========================'
 sleep 30
 wait_for_deployment
 echo '=================== Wildfly restarted after deploy-keystore ========================'
 
-JAVA_OPTS=$CLI_OPTS bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem
-JAVA_OPTS=$CLI_OPTS bin/ejbca.sh roles addrolemember --role "Super Administrator Role" --caname ManagementCA --with WITH_COMMONNAME --value SuperAdmin
+JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem
+JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh roles addrolemember --role "Super Administrator Role" --caname ManagementCA --with WITH_COMMONNAME --value SuperAdmin
 echo '=================== import cert commands done ========================'
 
 # stay alive until UI tests finish. otherwise the container would just be closed and UI tests would not be able to use it anymore
