@@ -11,7 +11,7 @@ JBOSS_STANDALONE_DEPLOYMENTS=$JBOSS_STANDALONE/deployments
 # Options for JUnit JVM
 export TEST_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
 # Options for ant itself. The report building can be memory heavy, otherwise it shouldn't need much memory
-export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx512m"
+export ANT_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -XX:OnOutOfMemoryError='kill -9 %p' -Xms64m -Xmx768m"
 # Options for the CLI tools. These require very little memory.
 # Note that the Wildfly CLI does not do escaping properly, so we can't use option values with spaces.
 export JBOSSCLI_OPTS="-XX:+UseG1GC -XX:+UseCompressedOops -Xms32m -Xmx128m"
