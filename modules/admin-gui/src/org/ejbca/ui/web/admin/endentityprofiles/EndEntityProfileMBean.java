@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -728,15 +729,20 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         profiledata.setAvailableCertificateProfileIds(certProfileIds);
     }
 
-    public List<SelectItem> getAllCas() {
-        final List<SelectItem> list = new ArrayList<>();
+    public Collection<SelectItem> getAllCas() {
+        TreeMap<String, SelectItem> sortedCas = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
         final Map<Integer, String> caidtonamemap = caSession.getCAIdToNameMap();
         final List<Integer> authorizedcas = caSession.getAuthorizedCaIds(getAdmin());
         for (Integer caid : authorizedcas) {
             final String caname = caidtonamemap.get(caid);
-            list.add(new SelectItem(caid, caname));
+            sortedCas.put(caname, new SelectItem(caid, caname));
         }
-        return list;
+        return sortedCas.values();
     }
 
     public List<SelectItem> getAllCasWithAnyCaOption() {
@@ -747,7 +753,17 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public Collection<Integer> getAvailableCas() {
-        return profiledata.getAvailableCAs();
+        TreeMap<String, Integer> sortedCas = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        });
+        for (Integer caId : profiledata.getAvailableCAs()) {
+            sortedCas.put(caSession.getCAInfoInternal(caId).getName(), caId);
+        }        
+        return sortedCas.values();
+                
     }
 
     public void setAvailableCas(final Collection<Integer> availableCas) {
