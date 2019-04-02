@@ -16,6 +16,7 @@ package org.cesecore.util;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -217,8 +218,10 @@ public abstract class FileTools {
      * @throws StreamSizeLimitExceededException If more than maxBytes are read.
      */
     public static long streamCopyWithLimit(final InputStream input, final OutputStream output, final long maxBytes) throws IOException, StreamSizeLimitExceededException {
-        if (maxBytes <= 0) {
+        if (maxBytes < 0 || (maxBytes == 0 && input.read() != -1)) {
             throw new StreamSizeLimitExceededException("Size limit was reached");
+        } else if (maxBytes == 0) {
+            return 0;
         }
 
         final byte[] buff = new byte[16*1024];
@@ -234,6 +237,30 @@ public abstract class FileTools {
         }
         
         return bytesCopied;
+    }
+
+    /**
+     * Copies the data from an input stream to a byte array. A limit on the size is imposed.
+     * More data than expectedSize or maxSize may be read from the stream.
+     *
+     * @param inputStream Input stream.
+     * @param expectedSize Desired number of bytes to read, or -1 to read until end.
+     * @param maxSize Maximum number of bytes to read, or -1 for no limit.
+     * @return Byte array.
+     * @throws StreamSizeLimitExceededException If the stream contained more bytes than maxSize or expectedSize.
+     * @throws EOFException If there are not enough bytes in the stream.
+     * @throws IOException If reading from the stream fails.
+     */
+    public static byte[] readStreamToByteArray(final InputStream inputStream, final int expectedSize, final int maxSize) throws StreamSizeLimitExceededException, IOException {
+        final int expectedSizeBytes = expectedSize != -1 ? expectedSize : Integer.MAX_VALUE;
+        final int maxSizeBytes = maxSize != -1 ? maxSize : Integer.MAX_VALUE;
+        final int maxBytes = Math.min(expectedSizeBytes, maxSizeBytes);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream(expectedSize != -1 ? expectedSize : 1024);
+        final long bytesCopied = streamCopyWithLimit(inputStream, baos, maxBytes);
+        if (bytesCopied < expectedSize) {
+            throw new EOFException("Less file data than expected. Was " + bytesCopied + " but expected " + expectedSize);
+        }
+        return baos.toByteArray();
     }
 
     /**
