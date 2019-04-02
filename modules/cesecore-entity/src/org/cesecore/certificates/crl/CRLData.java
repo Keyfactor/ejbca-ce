@@ -81,7 +81,7 @@ public class CRLData extends ProtectedData implements Serializable {
         String issuer = CertTools.stringToBCDNString(issuerDN);
         setIssuerDN(issuer);
         if (log.isDebugEnabled()) {
-            log.debug("Creating crldata, fp=" + fp + ", issuer=" + issuer + ", crlNumber=" + number + ", deltaCRLIndicator=" + deltaCRLIndicator);
+            log.debug("Creating crldata, fp=" + fp + ", issuer=" + issuer + ", crlNumber=" + number + ", crlPartitionIndex=" + crlPartitionIndex + ", deltaCRLIndicator=" + deltaCRLIndicator);
         }
         setCaFingerprint(cafingerprint);
         setCrlNumber(number);
