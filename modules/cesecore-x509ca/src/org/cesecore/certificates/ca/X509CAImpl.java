@@ -1840,7 +1840,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final String sigAlg = getCAInfo().getCAToken().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
-            log.debug("generateCRL(crlPartitionIndex" + crlPartitionIndex + ", certs.size=" + certs.size() + ", crlPeriod=" + crlPeriod + ", crlNumber=" + crlnumber + ", isDeltaCRL=" + isDeltaCRL + ", baseCRLNumber=" + basecrlnumber);
+            log.debug("generateCRL(crlPartitionIndex=" + crlPartitionIndex + ", certs.size=" + certs.size() + ", crlPeriod=" + crlPeriod + ", crlNumber=" + crlnumber + ", isDeltaCRL=" + isDeltaCRL + ", baseCRLNumber=" + basecrlnumber);
         }
 
         // Make DNs
