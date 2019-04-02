@@ -45,6 +45,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SecureXMLDecoder;
+import org.cesecore.util.StreamSizeLimitExceededException;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -362,7 +363,15 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
                 log.warn("End Entity Profile ID '" + profileId + "' already exist in database. Adding with a new profile ID instead.");
                 profileId = -1; // create a new id when adding the profile
             }
-            final byte[] filebytes = IOUtils.readFully(zipInputStream, Math.min((int) zipEntry.getSize(), MAX_PROFILE_XML_SIZE));
+            byte[] filebytes;
+            try {
+                filebytes = FileTools.readStreamToByteArray(zipInputStream, (int) zipEntry.getSize(), MAX_PROFILE_XML_SIZE);
+            } catch (StreamSizeLimitExceededException e) {
+                final String msg = "XML file '" + filename + "' is too large.";
+                log.info(msg + " Ignoring file.");
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+                continue;
+            }
             final EndEntityProfile eeProfile = getEndEntityProfileFromByteArray(filebytes);
             if (eeProfile == null) {
                 final String msg = "Faulty XML file '" + filename + "'. Failed to read end entity Profile.";

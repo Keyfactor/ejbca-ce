@@ -20,9 +20,11 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StreamSizeLimitExceededException;
@@ -97,7 +99,14 @@ public class FileToolsTest {
         assertEquals("Wrong return value", array1MB.length, ret);
         assertEquals("Wrong number of bytes written to output stream", array1MB.length, out.size());
         
-        // Test with zero and negative parameters. This is allowed but should throw
+        // Test with empty stream and limit = 0
+        in = new ByteArrayInputStream(ArrayUtils.EMPTY_BYTE_ARRAY);
+        out = new ByteArrayOutputStream();
+        ret = FileTools.streamCopyWithLimit(in, out, 0);
+        assertEquals("Wrong return value for empty stream with limit 0", 0, ret);
+        assertEquals("Should not output any data.", 0, out.size());
+
+        // Test with zero and negative parameters. This should throw
         in = new ByteArrayInputStream(array4);
         out = new ByteArrayOutputStream();
         try {
@@ -117,6 +126,69 @@ public class FileToolsTest {
         }
         
         log.trace("<testStreamCopyWithLimit");
+    }
+
+    /** Reads an empty stream with 0 or unspecified size, with and without a limit. Should work. */
+    @Test
+    public void readEmptyStreamToByteArray() throws StreamSizeLimitExceededException, IOException {
+        log.trace(">readEmptyStreamToByteArray");
+        final byte[] empty = new byte[0];
+        assertArrayEquals("Reading empty stream gave non-empty result", empty, FileTools.readStreamToByteArray(new ByteArrayInputStream(empty), -1, -1));
+        assertArrayEquals("Reading empty stream gave non-empty result", empty, FileTools.readStreamToByteArray(new ByteArrayInputStream(empty), -1, 0));
+        assertArrayEquals("Reading empty stream gave non-empty result", empty, FileTools.readStreamToByteArray(new ByteArrayInputStream(empty), -1, 10));
+        assertArrayEquals("Reading empty stream gave non-empty result", empty, FileTools.readStreamToByteArray(new ByteArrayInputStream(empty), 0, -1));
+        assertArrayEquals("Reading empty stream gave non-empty result", empty, FileTools.readStreamToByteArray(new ByteArrayInputStream(empty), 0, 0));
+        assertArrayEquals("Reading empty stream gave non-empty result", empty, FileTools.readStreamToByteArray(new ByteArrayInputStream(empty), 0, 10));
+        log.trace("<readEmptyStreamToByteArray");
+    }
+
+    /** Reads a stream of 3 bytes with same or unspecified size. Should work. */
+    @Test
+    public void readCorrectlySizedStreamToByteArray() throws StreamSizeLimitExceededException, IOException {
+        log.trace(">readCorrectlySizedStreamToByteArray");
+        final byte[] data = new byte[] { 1, 2, 3 };
+        assertArrayEquals("Reading byte array without limits should work", data, FileTools.readStreamToByteArray(new ByteArrayInputStream(data), -1, -1));
+        assertArrayEquals("Reading byte array of correct size should work", data, FileTools.readStreamToByteArray(new ByteArrayInputStream(data), -1, 3));
+        assertArrayEquals("Reading byte array of correct size should work", data, FileTools.readStreamToByteArray(new ByteArrayInputStream(data), 3, -1));
+        assertArrayEquals("Reading byte array of correct size should work", data, FileTools.readStreamToByteArray(new ByteArrayInputStream(data), 3, 3));
+        log.trace("<readCorrectlySizedStreamToByteArray");
+    }
+
+    /** Reads a stream of 3 bytes with a maximum limit of 4. Should work. */
+    @Test
+    public void readShorterStreamToByteArray() throws StreamSizeLimitExceededException, IOException {
+        log.trace(">readShorterStreamToByteArray");
+        final byte[] data = new byte[] { 1, 2, 3 };
+        assertArrayEquals("Reading byte array of smaller size should work", data, FileTools.readStreamToByteArray(new ByteArrayInputStream(data), 3, 4));
+        assertArrayEquals("Reading byte array of smaller size should work", data, FileTools.readStreamToByteArray(new ByteArrayInputStream(data), -1, 4));
+        log.trace("<readShorterStreamToByteArray");
+    }
+    
+    /** Reads a stream of 3 bytes when the expected size is 4 bytes. Should fail. */
+    @Test(expected = EOFException.class)
+    public void readShorterStreamThanExpectedToByteArray() throws StreamSizeLimitExceededException, IOException {
+        log.trace(">readShorterStreamThanExpectedToByteArray");
+        final byte[] data = new byte[] { 1, 2, 3 };
+        FileTools.readStreamToByteArray(new ByteArrayInputStream(data), 4, -1);
+        log.trace("<readShorterStreamThanExpectedToByteArray");
+    }
+
+    /** Reads a stream of 3 bytes when the expected size is 2 bytes. Should fail. */
+    @Test(expected = StreamSizeLimitExceededException.class)
+    public void readLongerStreamThanExpectedToByteArray() throws StreamSizeLimitExceededException, IOException {
+        log.trace(">readLongerStreamThanExpectedToByteArray");
+        final byte[] data = new byte[] { 1, 2, 3 };
+        FileTools.readStreamToByteArray(new ByteArrayInputStream(data), 2, -1);
+        log.trace("<readLongerStreamThanExpectedToByteArray");
+    }
+
+    /** Reads a stream of 3 bytes when the maximum is 2 bytes. Should fail. */
+    @Test(expected = StreamSizeLimitExceededException.class)
+    public void readLongerStreamThanMaxToByteArray() throws StreamSizeLimitExceededException, IOException {
+        log.trace(">readLongerStreamThanMaxToByteArray");
+        final byte[] data = new byte[] { 1, 2, 3 };
+        FileTools.readStreamToByteArray(new ByteArrayInputStream(data), -1, 2);
+        log.trace("<readLongerStreamThanMaxToByteArray");
     }
 
     @Test
