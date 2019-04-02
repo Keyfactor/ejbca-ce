@@ -705,7 +705,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     private byte[] generateAndStoreCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final Collection<RevokedCertInfo> certs, final CRLInfo lastBaseCrlInfo, final boolean delta) throws CryptoTokenOfflineException, AuthorizationDeniedException {
          // Hard and error-prone to do that.
         if (log.isDebugEnabled()) {
-            log.debug("Storing CRL in publishers");
+            log.debug("Storing CRL in database and publishers. CA Subject DN '" + ca.getSubjectDN() + "'." +
+                    (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION ? " CRL Partition: " + crlPartitionIndex : ""));
         }
         final String cafp = CertTools.getFingerprintAsString(ca.getCACertificate());
         String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
