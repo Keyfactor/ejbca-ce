@@ -1334,7 +1334,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
             final String name = component.getName();
             // empty value + non-modifiable + required = invalid
             // empty value + non-modifiable = could make sense in theory, but most likely a user error, so disallow it as well (consistent with 6.15.x behavior)
-            if (StringUtils.isBlank(component.getValue()) && !component.isModifiable() && !component.isUsed() && !component.isCopy()) {
+            if (StringUtils.isBlank(component.getValue()) && !component.isModifiable() && !component.isDnsField() && !component.isCopy()) {
                 if (component.isEmailField()) {
                     editerrors.add(ejbcaWebBean.getText("SUBJECTDNEMAILEMPTY"));
                 } else {
