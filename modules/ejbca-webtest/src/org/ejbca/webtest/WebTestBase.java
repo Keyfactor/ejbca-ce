@@ -125,7 +125,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
         }
         
         final WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-        webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+        webDriver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
         // Add to array
         webDrivers.add(webDriver);
         ExtentReportCreator.setBrowser(getWebDriver());
@@ -192,9 +192,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
     }
 
     public String getRaWebUrl() {
-        String raWebUrl = "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
-        log.warn("The RA Web URL is " + raWebUrl);
-        return raWebUrl;
+        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
     }
 
     public String getDownloadDir() {
