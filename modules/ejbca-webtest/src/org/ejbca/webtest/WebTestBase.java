@@ -192,7 +192,9 @@ public abstract class WebTestBase extends ExtentReportCreator {
     }
 
     public String getRaWebUrl() {
-        return "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
+        String raWebUrl = "https://" + ejbcaDomain + ":" + ejbcaSslPort + "/ejbca/ra/";
+        log.warn("The RA Web URL is " + raWebUrl);
+        return raWebUrl;
     }
 
     public String getDownloadDir() {
