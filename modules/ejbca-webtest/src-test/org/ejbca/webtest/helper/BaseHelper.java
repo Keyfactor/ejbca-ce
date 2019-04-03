@@ -52,7 +52,7 @@ public class BaseHelper {
     /**
      * Built-in timeout for WebElement find.
      */
-    public static final int DEFAULT_WAIT_TIMEOUT_SECONDS = 30;
+    public static final int DEFAULT_WAIT_TIMEOUT_SECONDS = 10;
 
     /**
      * Selector's switch to select an option by name or value.

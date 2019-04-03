@@ -125,7 +125,7 @@ public abstract class WebTestBase extends ExtentReportCreator {
         }
         
         final WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-        webDriver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
+        webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         // Add to array
         webDrivers.add(webDriver);
         ExtentReportCreator.setBrowser(getWebDriver());
