@@ -114,6 +114,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String MOZILLA_PROPERTY = "moz";
     private static final String FORMAT_PROPERTY = "format";
     private static final String CRLNUMBER_PROPERTY = "crlnumber";
+    private static final String PARTITION_PROPERTY = "partition";
 
     private static final String INSTALLTOBROWSER_PROPERTY = "installtobrowser";
 
@@ -189,7 +190,8 @@ public class CertDistServlet extends HttpServlet {
             try {
                 // Do we have a CRL number parameters?
                 final String crlNumber = req.getParameter(CRLNUMBER_PROPERTY);
-                final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO Add partitioned CRL support (ECA-7961)
+                final String partitionString = req.getParameter(PARTITION_PROPERTY);
+                final int crlPartitionIndex = partitionString != null ? Integer.valueOf(partitionString) : CertificateConstants.NO_CRL_PARTITION;
                 byte[] crl = null;
                 if (StringUtils.isNotEmpty(crlNumber)) {
                     // Using CRLNumber then we don't care if it's delta or full, it's what it is specified by the number
