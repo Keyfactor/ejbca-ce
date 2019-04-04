@@ -221,7 +221,7 @@ public class EcaQa202_NegativeBlacklistExactMatch extends WebTestBase {
     @Test
     public void stepR_SelectRequestTemplate() {
         raWebHelper.selectCertificateTypeByEndEntityName(TestData.ENTITY_NAME);
-        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME);
+        raWebHelper.selectCertificationAuthorityByName(TestData.CA_NAME + " (default)");
         raWebHelper.selectKeyPairGenerationProvided();
     }
 
