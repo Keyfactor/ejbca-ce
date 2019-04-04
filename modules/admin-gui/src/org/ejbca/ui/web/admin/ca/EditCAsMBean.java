@@ -1086,11 +1086,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }       
     
     public void genDefaultCrlDistPoint() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(globalconfiguration.getStandardCRLDistributionPointURINoDN());
         if (!isEditCA) {
-            this.defaultCRLDistPoint = globalconfiguration.getStandardCRLDistributionPointURINoDN() + encode(this.caSubjectDN); 
+            sb.append(encode(this.caSubjectDN));
         } else {
-            this.defaultCRLDistPoint = globalconfiguration.getStandardCRLDistributionPointURINoDN() + encode(cainfo.getSubjectDN());
+            sb.append(encode(cainfo.getSubjectDN()));
         }
+        if (isUsePartitionedCrl()) {
+            sb.append("&partition=*");
+        }
+        this.defaultCRLDistPoint = sb.toString();
     }
     
     private String encode(final String text) {
@@ -1127,11 +1133,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     }
     
     public void genCaDefinedFreshestCrl() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN());
         if (!isEditCA) {
-            this.caDefinedFreshestCRL = globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN() + encode(this.caSubjectDN); 
+            sb.append(encode(this.caSubjectDN));
         } else {
-            this.caDefinedFreshestCRL = globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN() + encode(cainfo.getSubjectDN());
+            sb.append(encode(cainfo.getSubjectDN()));
         }
+        if (isUsePartitionedCrl()) {
+            sb.append("&partition=*");
+        }
+        this.caDefinedFreshestCRL = sb.toString();
     } 
     
     public void genDefaultOcspLocator() {
