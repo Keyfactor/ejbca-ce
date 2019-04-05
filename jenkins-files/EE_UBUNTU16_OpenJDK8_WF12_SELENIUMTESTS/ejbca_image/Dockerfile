@@ -24,6 +24,8 @@ ENV APPSRV_HOME ="/opt/jboss/wildfly/"
 
 RUN yum install -y which
 
+RUN yum install -y mysql
+
 # copy WildFly conf
 ADD standalone.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
 ADD application-roles.properties /opt/jboss/wildfly/standalone/configuration/application-roles.properties
