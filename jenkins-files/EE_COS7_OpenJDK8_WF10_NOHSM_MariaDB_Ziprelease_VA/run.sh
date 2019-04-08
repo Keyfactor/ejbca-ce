@@ -86,17 +86,17 @@ echo '=================== import cert commands done ========================'
 
 echo '=================== verify that RA and the X509CA and CVCCA implementation classes are missing ================================='
 
-if [ -f .modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java ]; then
+if [ -f ./modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerImpl.java ]; then
     echo "VA-only build should not contain RaMasterApiPeerImpl.java"
     exit 1;
 fi
 
-if [ -f .modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerDownstreamImpl.java ]; then
+if [ -f ./modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerDownstreamImpl.java ]; then
     echo "VA-only build should not contain RaMasterApiPeerDownstreamImpl"
     exit 1;
 fi
 
-if [ -f .modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerUpstreamImpl.java ]; then
+if [ -f ./modules/peerconnector/src-ra/org/ejbca/peerconnector/ra/RaMasterApiPeerUpstreamImpl.java ]; then
     echo "VA-only build should not contain RaMasterApiPeerUpstreamImpl"
     exit 1;
 fi
