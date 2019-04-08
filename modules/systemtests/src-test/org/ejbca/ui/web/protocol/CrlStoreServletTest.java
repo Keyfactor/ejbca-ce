@@ -94,6 +94,7 @@ public class CrlStoreServletTest extends CaTestCase {
         caInfo.setRetiredCrlPartitions(0);
         caAdminSession.editCA(admin, caInfo);
         assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, getTestCAId()));
+        assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, getTestCAId()));
         final X509Certificate cacert = (X509Certificate)getTestCACert();
         // When
         final String result = testCRLStore(cacert, 1);
@@ -169,6 +170,7 @@ public class CrlStoreServletTest extends CaTestCase {
         if ( !aliasTest ) {
             return;
         }
+        // The code below needs to be commented out if you run the test against a remote host (i.e. different container/VM)
         final String alias = "alias";
         {
             final String sURI = getBaseUrl(true) + "?setAlias="+alias+"="+id.getB64url();
@@ -190,6 +192,7 @@ public class CrlStoreServletTest extends CaTestCase {
         final int responseCode = connection.getResponseCode();
         if ( HttpURLConnection.HTTP_OK!=responseCode ) {
             pw.println(" Fetching CRL with '"+sURI+"' is not working. responseCode="+responseCode);
+            log.debug("Response code " + responseCode + " with message " + connection.getResponseMessage());
             return;
         }
 
