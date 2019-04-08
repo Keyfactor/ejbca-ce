@@ -15,6 +15,7 @@ package org.cesecore;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -67,6 +68,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -203,6 +205,7 @@ public final class WebTestUtils {
      * @param testName Name that will be used for the role name, end entity name and CN attribute.
      */
     public static X509Certificate setUpClientCertificate(final String testName, final PublicKey publicKey) {
+        log.trace(">setUpClientCertificate");
         final RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(testName);
@@ -214,11 +217,17 @@ public final class WebTestUtils {
         user.setPassword("foo123");
         final RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());
         try {
-            final X509Certificate clientCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(
-                    admin, user, req, X509ResponseMessage.class, new CertificateGenerationParams())).getCertificate());
+            final X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(
+                    admin, user, req, X509ResponseMessage.class, new CertificateGenerationParams());
+            if (!ResponseStatus.SUCCESS.equals(resp.getStatus())) {
+                fail("Failed to issue client certificate: " + resp.getFailText());
+            }
+            final X509Certificate clientCertificate = (X509Certificate) resp.getCertificate();
+            assertNotNull("Returned client certificate was null", clientCertificate);
             // Add authorization rules for this client SSL certificate
             roleInitSession.initializeAccessWithCert(admin, testName, clientCertificate);
             roleInitSession.createRoleAndAddCertificateAsRoleMember(clientCertificate, null, testName, null, null);
+            log.trace("<setUpClientCertificate");
             return clientCertificate;
         } catch (RoleExistsException | CustomCertificateSerialNumberException | IllegalKeyException | CADoesntExistsException | CertificateCreateException |
                 CryptoTokenOfflineException | SignRequestSignatureException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException |
