@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -29,6 +30,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.ui.web.admin.configuration.EjbcaWebBeanImpl;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 
@@ -54,6 +56,7 @@ public class GetCRLServlet extends HttpServlet {
     private static final String COMMAND_CRL = "crl";
     private static final String COMMAND_DELTACRL = "deltacrl";
     private static final String ISSUER_PROPERTY = "issuer";
+    private static final String PARTITION_PROPERTY = "partition";
 
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
@@ -66,84 +69,91 @@ public class GetCRLServlet extends HttpServlet {
     }
 
     @Override
-    public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
+    public void doGet(final HttpServletRequest req,  final HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doGet()");
 
         // Check if authorized
         EjbcaWebBean ejbcawebbean = (EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
         if ( ejbcawebbean == null ){
           try {
-            ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBean.class.getName());
+            ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBeanImpl.class.getName());
            } catch (ClassNotFoundException exc) {
-               throw new ServletException(exc.getMessage());
+               throw new ServletException(exc.getMessage(), exc);
            }catch (Exception exc) {
-               throw new ServletException (" Cannot create bean of class "+ EjbcaWebBean.class.getName(), exc);
+               throw new ServletException (" Cannot create bean of class "+ EjbcaWebBeanImpl.class.getName(), exc);
            }
            req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
         }
 
-        try{
-          ejbcawebbean.initialize(req, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
-        } catch(Exception e){
-           throw new java.io.IOException("Authorization Denied");
+        try {
+            ejbcawebbean.initialize(req, AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
+        } catch (Exception e) {
+            final String fullMsg = "Access denied to " + AccessRulesConstants.REGULAR_VIEWCERTIFICATE + " for client " + req.getRemoteAddr();
+            if (log.isDebugEnabled()) {
+                log.warn(fullMsg, e);
+            } else {
+                log.warn(fullMsg);
+            }
+            res.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization denied");
+            return;
         }
 
         RequestHelper.setDefaultCharacterEncoding(req);
-        String issuerdn = null; 
-        if(req.getParameter(ISSUER_PROPERTY) != null){
-            // HttpServetRequets.getParameter URLDecodes the value for you
-            // No need to do it manually, that will cause problems with + characters
-            issuerdn = req.getParameter(ISSUER_PROPERTY);
-            issuerdn = CertTools.stringToBCDNString(issuerdn);
+        String issuerDn = req.getParameter(ISSUER_PROPERTY);
+        if (issuerDn == null) {
+            log.warn("Missing 'issuer' parameter from client " + req.getRemoteAddr());
+            res.sendError(HttpServletResponse.SC_NOT_FOUND, "Missing 'issuer' parameter.");
+            return;
         }
-        
-        String command;
+        issuerDn = CertTools.stringToBCDNString(issuerDn);
+        final String partitionString = req.getParameter(PARTITION_PROPERTY);
+        final int crlPartitionIndex = StringUtils.isNotBlank(partitionString) ? Integer.valueOf(partitionString) : CertificateConstants.NO_CRL_PARTITION;
+        final String command = StringUtils.defaultString(req.getParameter(COMMAND_PROPERTY_NAME));
+
+        if (command.equalsIgnoreCase(COMMAND_CRL) && issuerDn != null) {
+            sendLatestCrl(req, res, issuerDn, crlPartitionIndex, false);
+        } else if (command.equalsIgnoreCase(COMMAND_DELTACRL) && issuerDn != null) {
+            sendLatestCrl(req, res, issuerDn, crlPartitionIndex, true);
+        }
+        log.trace("<doGet()");
+    } // doGet
+
+    private void sendLatestCrl(final HttpServletRequest req, final HttpServletResponse res, final String issuerDn, final int crlPartitionIndex, final boolean deltaCrl) throws IOException {
         // Keep this for logging.
-        String remoteAddr = req.getRemoteAddr();
-        command = req.getParameter(COMMAND_PROPERTY_NAME);
-        if (command == null) {
-            command = "";
-        }
-        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO add partitioned CRL support (ECA-7961) 
-        if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
-            try {
-                byte[] crl = crlStoreSession.getLastCRL(issuerdn, crlPartitionIndex, false);
-                String basename = getBaseFileName(issuerdn);
-                String filename = basename+".crl";
-                // We must remove cache headers for IE
-                ServletUtils.removeCacheHeaders(res);
-                res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename) + "\"");
-                res.setContentType("application/pkix-crl");
-                res.setContentLength(crl.length);
-                res.getOutputStream().write(crl);
-                String iMsg = intres.getLocalizedMessage("certreq.sentlatestcrl", remoteAddr);
-                log.info(iMsg);
-            } catch (Exception e) {
-                String errMsg = intres.getLocalizedMessage("certreq.errorsendcrl", remoteAddr, e.getMessage());
-                log.error(errMsg, e);
+        final String remoteAddr = req.getRemoteAddr();
+        try {
+            final byte[] crl = crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false);
+            if (crl == null) {
+                String errMsg = intres.getLocalizedMessage("certreq.errorsendcrl", remoteAddr, "CRL does not exist for CA");
+                log.info(errMsg);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
                 return;
             }
+            final StringBuilder sb = new StringBuilder();
+            sb.append(getBaseFileName(issuerDn));
+            if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
+                sb.append("_partition" + crlPartitionIndex);
+            }
+            if (deltaCrl) {
+                sb.append("_delta");
+            }
+            sb.append(".crl");
+            final String filename = sb.toString();
+            // We must remove cache headers for IE
+            ServletUtils.removeCacheHeaders(res);
+            res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename) + "\"");
+            res.setContentType("application/pkix-crl");
+            res.setContentLength(crl.length);
+            res.getOutputStream().write(crl);
+            final String infoMsg = intres.getLocalizedMessage(deltaCrl ? "certreq.sentlatestdeltacrl" : "certreq.sentlatestcrl", remoteAddr);
+            log.info(infoMsg);
+        } catch (Exception e) {
+            final String errMsg = intres.getLocalizedMessage(deltaCrl ? "certreq.errorsenddeltacrl" : "certreq.errorsendcrl", remoteAddr, e.getMessage());
+            log.error(errMsg, e);
+            res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errMsg);
+            return;
         }
-        if (command.equalsIgnoreCase(COMMAND_DELTACRL) && issuerdn != null) {
-        	try {
-        		byte[] crl = crlStoreSession.getLastCRL(issuerdn, crlPartitionIndex, true);
-                String basename = getBaseFileName(issuerdn);
-        		String filename = basename+"_delta.crl";
-        		// We must remove cache headers for IE
-        		ServletUtils.removeCacheHeaders(res);
-        		res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");
-        		res.setContentType("application/pkix-crl");
-        		res.setContentLength(crl.length);
-        		res.getOutputStream().write(crl);
-        		log.info("Sent latest delta CRL to client at " + remoteAddr);
-        	} catch (Exception e) {
-        		log.error("Error sending latest delta CRL to " + remoteAddr, e);
-        		res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest delta CRL.");
-        		return;
-        	}
-        }
-    } // doGet
+    }
 
 	/**
 	 * @param dn

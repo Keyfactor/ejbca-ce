@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,10 +20,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.security.KeyPair;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,8 +33,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
+import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.WebTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -104,7 +110,8 @@ public class PartitionedCrlSystemTest {
     private static final String TEST_CERTPROFILE = TEST_NAME + "_CP";
     private static final String TEST_EEPROFILE = TEST_NAME + "_EEP";
 
-    private static final String CA_DN = "CN=TestCA with CRL Partitioning,OU=QA,O=TEST,C=SE";
+    private static final String CA_COMMONNAME = "TestCA with CRL Partitioning";
+    private static final String CA_DN = "CN=" + CA_COMMONNAME + ",OU=QA,O=TEST,C=SE";
     private static final String CERT_DN = "CN=Partitioned CRL User,OU=QA,O=TEST,C=SE";
 
     /** CRL Number of the first generated CRL. This will always be a Base CRL */
@@ -122,6 +129,9 @@ public class PartitionedCrlSystemTest {
 
     private static KeyPair userKeyPair;
     private static int caId, certificateProfileId, endEntityProfileId;
+
+    // Used for CRL download tests
+    private byte[] downloadExpectedCrlPart0, downloadExpectedCrlPart1;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -293,6 +303,71 @@ public class PartitionedCrlSystemTest {
         assertCrlPublisherQueueData(Arrays.asList(legacyCrl, legacyDeltaCrl, crl, deltaCrl));
         assertCertificatePublisherQueueData(Arrays.asList(cert, deltaCert));
         log.trace("<generateAndPublishPartitionedCrl");
+    }
+
+    private void prepareForDownloadTestCase(final String crlUrl) throws Exception {
+        log.trace("Prepaing CRLs for download");
+        final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, TEST_CA);
+        caInfo.setUsePartitionedCrl(true);
+        caInfo.setDefaultCRLDistPoint(crlUrl + "&partition=*");
+        caInfo.setCrlPartitions(1);
+        caInfo.setRetiredCrlPartitions(0);
+        caAdminSession.editCA(admin, caInfo);
+        final Certificate cert = issueCertificate(); // should appear on CRL, under partition 1 after revocation
+        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000)); // backdate revocation by 5 minutes
+        assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
+        final X509CRL expectedCrl0 = getLatestCrl(0, false, FIRST_CRL_NUMBER);
+        final X509CRL expectedCrl1 = getLatestCrl(1, false, FIRST_CRL_NUMBER);
+        assertNotNull("Failed to get CRL for partition 0", expectedCrl0);
+        assertNotNull("Failed to get CRL for partition 1", expectedCrl1);
+        downloadExpectedCrlPart0 = expectedCrl0.getEncoded();
+        downloadExpectedCrlPart1 = expectedCrl1.getEncoded();
+        log.trace("Prepared CRLs for download");
+    }
+
+    @Test
+    public void downloadViaCertDistServlet() throws Exception {
+        log.trace(">downloadViaCertDistServlet");
+        // Given
+        final String crlUrl = "http://"+SystemTestsConfiguration.getRemoteHost("127.0.0.1")+":" + SystemTestsConfiguration.getRemotePortHttp("8080") + "/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=" + URLEncoder.encode(CA_DN, "UTF-8");
+        prepareForDownloadTestCase(crlUrl);
+        // When
+        final HttpResponse respPart0 = WebTestUtils.sendGetRequest(crlUrl + "&partition="); // should not include our certificate
+        final HttpResponse respPart1 = WebTestUtils.sendGetRequest(crlUrl + "&partition=1"); // should include our certificate
+        // Then
+        WebTestUtils.assertValidDownloadResponse(respPart0, "application/pkix-crl", CA_COMMONNAME + ".crl");
+        WebTestUtils.assertValidDownloadResponse(respPart1, "application/pkix-crl", CA_COMMONNAME + "_partition1.crl");
+        final byte[] bytesPart0 = WebTestUtils.getBytesFromResponse(respPart0);
+        final byte[] bytesPart1 = WebTestUtils.getBytesFromResponse(respPart1);
+        assertArrayEquals("Wrong contents in CRL from CertDistServlet (partition 0)", downloadExpectedCrlPart0, bytesPart0);
+        assertArrayEquals("Wrong contents in CRL from CertDistServlet (partition 1)", downloadExpectedCrlPart1, bytesPart1);
+        log.trace("<downloadViaCertDistServlet");
+    }
+
+    @Test
+    public void downloadViaGetCrlServlet() throws Exception {
+        log.trace(">downloadViaGetCrlServlet");
+        final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        final X509Certificate serverCert = WebTestUtils.getServerCertificate();
+        try {
+            final X509Certificate clientCert = WebTestUtils.setUpClientCertificate("PartitionedCrlSystemTest_downloadViaGetCrlServlet", keyPair.getPublic());
+            // Given
+            final String crlUrl = "https://"+SystemTestsConfiguration.getRemoteHost("127.0.0.1")+":" + SystemTestsConfiguration.getRemotePortHttps("8443") + "/ejbca/adminweb/ca/getcrl/getcrl?cmd=crl&issuer=" + URLEncoder.encode(CA_DN, "UTF-8");
+            prepareForDownloadTestCase(crlUrl);
+            // When
+            final HttpResponse respPart0 = WebTestUtils.sendGetRequest(crlUrl + "&partition=", serverCert, clientCert, keyPair); // should not include our certificate
+            final HttpResponse respPart1 = WebTestUtils.sendGetRequest(crlUrl + "&partition=1", serverCert, clientCert, keyPair); // should include our certificate
+            // Then
+            WebTestUtils.assertValidDownloadResponse(respPart0, "application/pkix-crl", "TestCAwithCRLPartitioning.crl");
+            WebTestUtils.assertValidDownloadResponse(respPart1, "application/pkix-crl", "TestCAwithCRLPartitioning_partition1.crl");
+            final byte[] bytesPart0 = WebTestUtils.getBytesFromResponse(respPart0);
+            final byte[] bytesPart1 = WebTestUtils.getBytesFromResponse(respPart1);
+            assertArrayEquals("Wrong contents in CRL from GetCRLServlet (partition 0)", downloadExpectedCrlPart0, bytesPart0);
+            assertArrayEquals("Wrong contents in CRL from GetCRLServlet (partition 1)", downloadExpectedCrlPart1, bytesPart1);
+        } finally {
+            WebTestUtils.cleanUpClientCertificate("PartitionedCrlSystemTest_downloadViaGetCrlServlet");
+        }
+        log.trace("<downloadViaGetCrlServlet");
     }
 
     /** Issues a certificate with the CRL Distribution Point URI from the CA */

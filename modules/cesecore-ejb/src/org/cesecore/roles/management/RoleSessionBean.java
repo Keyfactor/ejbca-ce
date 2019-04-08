@@ -195,7 +195,19 @@ public class RoleSessionBean implements RoleSessionLocal, RoleSessionRemote {
         }
         return ret;
     }
-    
+
+    @Override
+    public boolean deleteRoleIdempotent(final AuthenticationToken authenticationToken, final String nameSpace, final String roleName) throws AuthorizationDeniedException {
+        boolean roleDeleted = false;
+        while (true) {
+            final Role role = getRole(authenticationToken, nameSpace, roleName);
+            if (role == null) {
+                return roleDeleted;
+            }
+            roleDeleted |= deleteRoleIdempotent(authenticationToken, role.getRoleId());
+        }
+    }
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void assertAuthorizedToRoleMembers(final AuthenticationToken authenticationToken, final int roleId, final boolean requireEditAccess) throws AuthorizationDeniedException {

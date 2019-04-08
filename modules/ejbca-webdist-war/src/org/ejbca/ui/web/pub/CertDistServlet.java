@@ -191,7 +191,7 @@ public class CertDistServlet extends HttpServlet {
                 // Do we have a CRL number parameters?
                 final String crlNumber = req.getParameter(CRLNUMBER_PROPERTY);
                 final String partitionString = req.getParameter(PARTITION_PROPERTY);
-                final int crlPartitionIndex = partitionString != null ? Integer.valueOf(partitionString) : CertificateConstants.NO_CRL_PARTITION;
+                final int crlPartitionIndex = StringUtils.isNotBlank(partitionString) ? Integer.valueOf(partitionString) : CertificateConstants.NO_CRL_PARTITION;
                 byte[] crl = null;
                 if (StringUtils.isNotEmpty(crlNumber)) {
                     // Using CRLNumber then we don't care if it's delta or full, it's what it is specified by the number
@@ -213,10 +213,7 @@ public class CertDistServlet extends HttpServlet {
                 ServletUtils.removeCacheHeaders(res);
                 // moz is only kept for backwards compatibility, can be removed in EJBCA 6.4 or 6.5
                 String moz = req.getParameter(MOZILLA_PROPERTY);
-                String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
-                if (command.equalsIgnoreCase(COMMAND_DELTACRL)) {
-                	filename = "delta_"+filename;
-                }
+                final String filename = getCrlFilename(dn, crlPartitionIndex, command.equalsIgnoreCase(COMMAND_DELTACRL));
                 if ((moz == null) || !moz.equalsIgnoreCase("y")) {
                     res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");
                 }
@@ -518,6 +515,21 @@ public class CertDistServlet extends HttpServlet {
             return;
         }
 
+    }
+
+    /** Makes a CRL file name bsed on the Subject DN commonName attribute, such as "Some CA.crl", "delta_Some CA.crl", "Some CA_partition1.crl" etc. */
+    private String getCrlFilename(final String dn, final int crlPartitionIndex, final boolean deltaCrl) {
+        final StringBuilder sb = new StringBuilder();
+        if (deltaCrl) {
+            sb.append("delta_");
+        }
+        sb.append(CertTools.getPartFromDN(dn,"CN"));
+        if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
+            sb.append("_partition");
+            sb.append(crlPartitionIndex);
+        }
+        sb.append(".crl");
+        return sb.toString();
     }
 
     /** Sends a certificate for download to a client */

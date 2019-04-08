@@ -402,10 +402,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         return ret;
     }
 
-    /** Returns the active CRL partitions' indexes for a given CA, or null if the CRL is not partitioned. */
-    private IntRange getActiveCrlPartitionIndexes(final AuthenticationToken admin, final int caId) throws AuthorizationDeniedException {
+    /** Returns the CRL partitions' indexes for a given CA, or null if the CRL is not partitioned. */
+    private IntRange getAllCrlPartitionIndexes(final AuthenticationToken admin, final int caId) throws AuthorizationDeniedException {
         final CAInfo caInfo = caSession.getCAInfo(admin, caId);
-        return caInfo != null ? caInfo.getActiveCrlPartitionIndexes() : null;
+        return caInfo != null ? caInfo.getAllCrlPartitionIndexes() : null;
     }
 
     @Override
@@ -413,7 +413,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     public boolean forceCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         boolean result = true;
         result &= forceCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
-        final IntRange crlPartitions = getActiveCrlPartitionIndexes(admin, caId);
+        final IntRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
         if (crlPartitions != null) {
             for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
                 result &= forceCRL(admin, caId, crlPartitionIndex);
@@ -423,10 +423,11 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean forceDeltaCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         boolean result = true;
         result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
-        final IntRange crlPartitions = getActiveCrlPartitionIndexes(admin, caId);
+        final IntRange crlPartitions = getAllCrlPartitionIndexes(admin, caId);
         if (crlPartitions != null) {
             for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
                 result &= forceDeltaCRL(admin, caId, crlPartitionIndex);

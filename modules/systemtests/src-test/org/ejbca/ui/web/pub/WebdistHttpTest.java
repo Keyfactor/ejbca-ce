@@ -14,11 +14,7 @@
 package org.ejbca.ui.web.pub;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -99,7 +95,7 @@ public class WebdistHttpTest {
         }
         log.trace("<testPublicWeb");
     }
-    
+
     @Test
     public void testPublicWebChainDownload() throws Exception {
         log.trace(">testPublicWebChainDownload");
@@ -107,22 +103,10 @@ public class WebdistHttpTest {
         String httpReqPathJks = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=jks";
 
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPathPem);
-        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
-        assertNotNull("No response body was sent", resp.getEntity());
-        String ctype = resp.getEntity().getContentType().getValue();
-        assertTrue("Wrong content type: " + ctype, StringUtils.startsWith(ctype, "application/octet-stream"));
-        Header header = resp.getFirstHeader("Content-disposition");
-        assertNotNull("Missing Content-disposition header.", header);
-        assertEquals("attachment; filename=\"TestCA-chain.pem\"", header.getValue());
+        WebTestUtils.assertValidDownloadResponse(resp, "application/octet-stream", "TestCA-chain.pem");
 
         resp = WebTestUtils.sendGetRequest(httpReqPathJks);
-        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
-        assertNotNull("No response body was sent", resp.getEntity());
-        ctype = resp.getEntity().getContentType().getValue();
-        assertTrue("Wrong content type: " + ctype, StringUtils.startsWith(ctype, "application/octet-stream"));
-        header = resp.getFirstHeader("Content-disposition");
-        assertNotNull("Missing Content-disposition header.", header);
-        assertEquals("attachment; filename=\"TestCA-chain.jks\"", header.getValue());
+        WebTestUtils.assertValidDownloadResponse(resp, "application/octet-stream", "TestCA-chain.jks");
         log.trace("<testPublicWebChainDownload");
     }
 
@@ -133,22 +117,10 @@ public class WebdistHttpTest {
         String httpReqPathDer = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=crl&issuer=" + testx509ca.getSubjectDN();        
 
         HttpResponse resp = WebTestUtils.sendGetRequest(httpReqPathPem);
-        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
-        assertNotNull("No response body was sent", resp.getEntity());
-        String ctype = resp.getEntity().getContentType().getValue();
-        assertTrue("Wrong content type: " + ctype, StringUtils.startsWith(ctype, "application/octet-stream"));
-        Header header = resp.getFirstHeader("Content-disposition");
-        assertNotNull("Missing Content-disposition header.", header);
-        assertEquals("filename=\"TestCA.crl\"", header.getValue());
+        WebTestUtils.assertValidDownloadResponse(resp, "application/octet-stream", "TestCA.crl");
 
         resp = WebTestUtils.sendGetRequest(httpReqPathDer);
-        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
-        assertNotNull("No response body was sent", resp.getEntity());
-        ctype = resp.getEntity().getContentType().getValue();
-        assertTrue("Wrong content type: " + ctype, StringUtils.startsWith(ctype, "application/pkix-crl"));
-        header = resp.getFirstHeader("Content-disposition");
-        assertNotNull("Missing Content-disposition header.", header);
-        assertEquals("attachment; filename=\"TestCA.crl\"", header.getValue());
+        WebTestUtils.assertValidDownloadResponse(resp, "application/pkix-crl", "TestCA.crl");
         log.trace("<testPublicWebCrlDownload");
     }
 

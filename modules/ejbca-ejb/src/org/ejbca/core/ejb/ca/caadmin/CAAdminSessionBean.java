@@ -2113,8 +2113,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Publish the new CA certificate
             publishCACertificate(authenticationToken, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
-            publishingCrlSession.forceCRL(authenticationToken, caid);
-            publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
+            // Generate a new CRL, but not partitions, which could take very long time.
+            publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
+            publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
 
             if (subjectDNWillBeChanged) {
                 // If CA has gone through Name Change, add new caid to available CAs for every certificate profile
@@ -3180,7 +3181,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final String caDataDn = caInfo.getSubjectDN();
         final boolean doPublishDeltaCRL = caInfo.getDeltaCRLPeriod() > 0;
         publishCrlPartition(admin, caCertFingerprint, caCertDn, CertificateConstants.NO_CRL_PARTITION, publisherIds, caDataDn, doPublishDeltaCRL);
-        final IntRange crlPartitions = caInfo.getActiveCrlPartitionIndexes();
+        final IntRange crlPartitions = caInfo.getAllCrlPartitionIndexes();
         if (crlPartitions != null) {
             for (int crlPartitionIndex = crlPartitions.getMinimumInteger(); crlPartitionIndex <= crlPartitions.getMaximumInteger(); crlPartitionIndex++) {
                 publishCrlPartition(admin, caCertFingerprint, caCertDn, crlPartitionIndex, publisherIds, caDataDn, doPublishDeltaCRL);

@@ -511,11 +511,11 @@ public class X509CAInfo extends CAInfo {
   }
 
   @Override
-  public IntRange getActiveCrlPartitionIndexes() {
+  public IntRange getAllCrlPartitionIndexes() {
       if (!getUsePartitionedCrl()) {
           return null;
       }
-      return new IntRange(getRetiredCrlPartitions() + 1, getCrlPartitions());
+      return new IntRange(1, getCrlPartitions());
   }
 
   public String getDefaultCRLIssuer(){ return defaultcrlissuer; }
