@@ -469,7 +469,7 @@ public class RequestHelper {
 
         // Set content-type to general file
         out.setContentType("application/octet-stream");        
-        out.setHeader("Content-disposition", "filename=\""+StringTools.stripFilename(filename)+"\"");
+        out.setHeader("Content-disposition", "attachment; filename=\""+StringTools.stripFilename(filename)+"\"");
 
         out.setContentLength(b64cert.length + beginKey.length() + endKey.length());
 
