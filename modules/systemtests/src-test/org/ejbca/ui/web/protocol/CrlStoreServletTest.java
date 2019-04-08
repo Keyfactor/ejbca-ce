@@ -89,7 +89,7 @@ public class CrlStoreServletTest extends CaTestCase {
         final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, getTestCAId());
         caInfo.setUseCrlDistributionPointOnCrl(true);
         caInfo.setUsePartitionedCrl(true);
-        caInfo.setDefaultCRLDistPoint(getBaseUrl(false) + "&partition=*");
+        caInfo.setDefaultCRLDistPoint("http://frontend.example.com/search.cgi?abc=xyz&partition=*");
         caInfo.setCrlPartitions(1);
         caInfo.setRetiredCrlPartitions(0);
         caAdminSession.editCA(admin, caInfo);
@@ -163,7 +163,7 @@ public class CrlStoreServletTest extends CaTestCase {
         }
         final String caSubjectDN = caCert.getSubjectDN().getName();
         {
-            final String sURI = urlType.appendQueryToURL(getBaseUrl(false), id, isDelta);
+            final String sURI = urlType.appendQueryToURL(getBaseUrl(false), id, crlPartitionIndex, isDelta);
             testUri(pw, sURI, caSubjectDN, crlPartitionIndex, isDelta);
         }
         if ( !aliasTest ) {

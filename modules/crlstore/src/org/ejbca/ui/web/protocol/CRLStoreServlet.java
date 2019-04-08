@@ -36,7 +36,7 @@ import org.ejbca.util.HTMLTools;
  * For a detailed description see RFC 4387.
  * Addition to RFC 4387 is the ability to specify delta CRL with the parameter "delta="
  * Addition to RFC 4387 is the ability to specify download of a specific CRL by crlNumber with the parameter "crlnumber=<number>"
- * Addition to RFC 4387 is the ability to specify a CRL partition number.
+ * Addition to RFC 4387 is the ability to specify a CRL partition number with the parameter "partition=<number>"
  * 
  * 
  * @version  $Id$
@@ -112,11 +112,11 @@ public class CRLStoreServlet extends StoreServletBase {
 	}
 	
 	private int getCrlPartitionIndex(final HttpServletRequest req) {
-        final String crlNumber = req.getParameter(PARAM_PARTITION);
-        if (StringUtils.isNumeric(crlNumber) && (Integer.valueOf(crlNumber) >= 0) ) {
-            return Integer.valueOf(crlNumber);
+        final String partition = req.getParameter(PARAM_PARTITION);
+        if (StringUtils.isNumeric(partition) && (Integer.valueOf(partition) >= 0) ) {
+            return Integer.valueOf(partition);
         }
-        return -1;
+        return CertificateConstants.NO_CRL_PARTITION;
     }
 
 	private void returnCrl( byte crl[], HttpServletResponse resp, String name, final int crlPartitionIndex, boolean isDelta) throws IOException {
