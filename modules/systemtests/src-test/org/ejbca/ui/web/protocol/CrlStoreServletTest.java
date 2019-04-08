@@ -15,6 +15,7 @@
 package org.ejbca.ui.web.protocol;
 
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -26,13 +27,19 @@ import java.security.cert.X509Certificate;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.SystemTestsConfiguration;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,8 +53,14 @@ import org.junit.Test;
 public class CrlStoreServletTest extends CaTestCase {
 	private final static Logger log = Logger.getLogger(CrlStoreServletTest.class);
 
+	private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+	private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 	private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 	private final CrlStoreSessionRemote crlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+	private final PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
+
+	private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken("CrlStoreServletTest");
+
 	@Override
 	@Before
 	public void setUp() throws Exception{
@@ -64,10 +77,30 @@ public class CrlStoreServletTest extends CaTestCase {
 	public void testCRLStore() throws Exception {
 		log.trace(">testCRLStore()");
 		final X509Certificate cacert = (X509Certificate)getTestCACert();
-		final String result = testCRLStore(cacert, CertificateConstants.NO_CRL_PARTITION); // TODO add partitioned CRL testing (ECA-7961)
+		final String result = testCRLStore(cacert, CertificateConstants.NO_CRL_PARTITION);
 		assertNull(result, result);
 		log.trace("<testCRLStore()");
 	}
+	
+	@Test
+    public void testCRLStoreWithPartitions() throws Exception {
+        log.trace(">testCRLStore()");
+        // Given
+        final X509CAInfo caInfo = (X509CAInfo) caSession.getCAInfo(admin, getTestCAId());
+        caInfo.setUseCrlDistributionPointOnCrl(true);
+        caInfo.setUsePartitionedCrl(true);
+        caInfo.setDefaultCRLDistPoint(getBaseUrl(false) + "&partition=*");
+        caInfo.setCrlPartitions(1);
+        caInfo.setRetiredCrlPartitions(0);
+        caAdminSession.editCA(admin, caInfo);
+        assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, getTestCAId()));
+        final X509Certificate cacert = (X509Certificate)getTestCACert();
+        // When
+        final String result = testCRLStore(cacert, 1);
+        // Then
+        assertNull(result, result);
+        log.trace("<testCRLStore()");
+    }
 
 	@Override
     public String getRoleName() {
@@ -126,7 +159,7 @@ public class CrlStoreServletTest extends CaTestCase {
             aliasTest = false;
             break;
         default:
-            throw new Error("this should never happen");
+            throw new IllegalStateException("this should never happen");
         }
         final String caSubjectDN = caCert.getSubjectDN().getName();
         {

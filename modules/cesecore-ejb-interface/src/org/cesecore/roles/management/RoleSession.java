@@ -57,6 +57,12 @@ public interface RoleSession {
     boolean deleteRoleIdempotent(AuthenticationToken authenticationToken, int roleId) throws AuthorizationDeniedException;
 
     /**
+     * Deletes roles by name
+     * @see #deleteRoleIdempotent
+     */
+    boolean deleteRoleIdempotent(AuthenticationToken authenticationToken, String nameSpace, String roleName) throws AuthorizationDeniedException;
+
+    /**
      * @return the Role for the specified id or null if no such role exists
      * @throws AuthorizationDeniedException the caller is not authorized to see this role (leaks that a role with this id exists)
      */
