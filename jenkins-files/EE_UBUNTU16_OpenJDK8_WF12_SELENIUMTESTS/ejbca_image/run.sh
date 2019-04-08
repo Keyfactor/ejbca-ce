@@ -58,6 +58,7 @@ echo '=================== Wildfly restarted after deploy-keystore ==============
 
 JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem
 JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh roles addrolemember --role "Super Administrator Role" --caname ManagementCA --with WITH_COMMONNAME --value SuperAdmin
+ant ejbca:setup:selenium
 echo '=================== import cert commands done ========================'
 
 # manually change the "status" of CA from external -> active
