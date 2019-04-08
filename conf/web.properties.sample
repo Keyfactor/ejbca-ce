@@ -159,7 +159,7 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default = false
 #web.renewalenabled=false
 
-# Wether it should be possible to manually specify a custom class name in
+# Whether it should be possible to manually specify a custom class name in
 # the admin web (e.g. for a custom Publisher or Service), or if the choice
 # of class should be constrained to auto-detected classes only.
 # If you are using classes made for EJBCA 5.0 or earlier you must enable
