@@ -80,7 +80,12 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
                     throwable = throwable.getCause();
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug("Adding throwable " + throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
+                    final String msg = "Adding throwable " + throwable.getClass().getSimpleName() + ": " + throwable.getMessage();
+                    if (throwable instanceof ViewExpiredException) {
+                        log.debug(msg); // don't fill up the logs with stack traces when sessions expire
+                    } else {
+                        log.debug(msg, throwable);
+                    }
                 }
                 throwables.add(throwable);
                 iterator.remove();
@@ -109,9 +114,7 @@ public class CaExceptionHandlerFactory extends ExceptionHandlerFactory {
                     }
                     for (final Throwable throwable : (List<Throwable>) externalContext.getRequestMap().get(REQUESTMAP_KEY)) {
                         if (hasViewExpiredException && throwable instanceof ViewExpiredException) {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Skipping add of another ViewExpiredException.");
-                            }
+                            log.debug("Skipping add of another ViewExpiredException.");
                         } else {
                             throwables.add(throwable);
                         }
