@@ -65,15 +65,27 @@ public class CaErrorBean extends BaseManagedBean implements Serializable {
     public String getErrorMessage() {
         return errorMessage;
     }
-    
+
     /** 
      * without access to template, we have to fetch the CSS manually
      * @return path to admin web CSS file
      **/
     public String getCssFile() {
-        return ejbcaWebBean.getBaseUrl() + "/" +ejbcaWebBean.getCssFile();
+        try {
+            return ejbcaWebBean.getBaseUrl() + "/" +ejbcaWebBean.getCssFile();
+        } catch (Exception e) {
+            // This happens when EjbcaWebBeanImpl fails to initialize.
+            // That is already logged in EjbcaWebBeanImpl.getText, so log at debug level here.
+            final String msg = "Caught exception when trying to get stylesheet URL, most likely EjbcaWebBean failed to initialized";
+            if (log.isTraceEnabled()) {
+                log.debug(msg, e);
+            } else {
+                log.debug(msg);
+            }
+            return "exception_in_getCssFile";
+        }
     }
-    
+
     /** Invoked when error.xhtml is rendered. Add all errors using the current localization. 
      * @throws Exception 
      */
