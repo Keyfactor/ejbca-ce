@@ -637,8 +637,26 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return adminsweblanguage.getAvailableLanguages();
     }
 
+    /** Returns a fallback text to be used if the session was not initialized properly */
+    private String fallbackText(final String template, final Object... params) {
+        final String msg = "Language was not initialized for this session";
+        if (log.isDebugEnabled()) {
+            log.warn(msg, new Exception("Stack trace")); // Included for stack trace
+        } else {
+            log.warn(msg);
+        }
+        if (params.length == 0) {
+            return template;
+        } else {
+            return template + " (" + StringUtils.join(params, ", ") + ")";
+        }
+    }
+
     @Override
     public String getText(final String template) {
+        if (adminsweblanguage == null) {
+            return fallbackText(template);
+        }
         return adminsweblanguage.getText(template);
     }
 
@@ -655,6 +673,9 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
      */
     @Override
     public String getText(final String template, final boolean unescape, final Object... params) {
+        if (adminsweblanguage == null) {
+            return fallbackText(template, params);
+        }
         String str = adminsweblanguage.getText(template, params);
         if (unescape) {
             str = HTMLTools.htmlunescape(str);
