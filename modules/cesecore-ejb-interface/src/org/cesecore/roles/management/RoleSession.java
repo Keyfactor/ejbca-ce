@@ -58,7 +58,7 @@ public interface RoleSession {
 
     /**
      * Deletes roles by name
-     * @see #deleteRoleIdempotent
+     * @see #deleteRoleIdempotent(AuthenticationToken, int)
      */
     boolean deleteRoleIdempotent(AuthenticationToken authenticationToken, String nameSpace, String roleName) throws AuthorizationDeniedException;
 
