@@ -25,6 +25,7 @@ RUN cd $HOME \
 # install JDK instead of JRE
 RUN apt-get update
 RUN apt-get install -y openjdk-8-jdk
+RUN apt-get install -y libnss3-tools
 
 # Set the working directory to EJBCA rource root folder
 WORKDIR /app/ejbca
