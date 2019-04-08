@@ -21,7 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -41,8 +40,8 @@ public class CRLCache {
 	
 	private final CrlStoreSessionLocal crlSession;
 	private final CaCertificateCache certCache;
-	final private Map<Integer, CRLEntity> crls = new HashMap<Integer, CRLEntity>();
-	final private Map<Integer, CRLEntity> deltaCrls = new HashMap<Integer, CRLEntity>();
+	final private Map<Integer, CRLEntity> crls = new HashMap<>();
+	final private Map<Integer, CRLEntity> deltaCrls = new HashMap<>();
 	private class CRLEntity {
 		final CRLInfo crlInfo;
 		final byte encoded[];
@@ -96,8 +95,8 @@ public class CRLCache {
      * @param crlNumber specific crlNumber of the CRL to be retrieved, when not the latest, or -1 for the latest
      * @return CRL or null if the CRL does not exist in the cache.
      */
-	public byte[] findBySubjectKeyIdentifier(HashID id, boolean isDelta, int crlNumber) {
-		return findCRL(certCache.findBySubjectKeyIdentifier(id), isDelta, crlNumber);
+	public byte[] findBySubjectKeyIdentifier(HashID id, int crlPartitionIndex, boolean isDelta, int crlNumber) {
+		return findCRL(certCache.findBySubjectKeyIdentifier(id), crlPartitionIndex, isDelta, crlNumber);
 	}
 
 	/**
@@ -106,11 +105,11 @@ public class CRLCache {
      * @param crlNumber specific crlNumber of the CRL to be retrieved, when not the latest, or -1 for the latest
      * @return CRL or null if the CRL does not exist in the cache.
      */
-	public byte[] findByIssuerDN(HashID id, boolean isDelta, int crlNumber) {
-		return findCRL(certCache.findLatestBySubjectDN(id), isDelta, crlNumber);
+	public byte[] findByIssuerDN(HashID id, int crlPartitionIndex, boolean isDelta, int crlNumber) {
+		return findCRL(certCache.findLatestBySubjectDN(id), crlPartitionIndex, isDelta, crlNumber);
 	}
 
-	private byte[] findCRL(X509Certificate caCert, boolean isDelta, int crlNumber) {
+	private byte[] findCRL(final X509Certificate caCert, final int crlPartitionIndex, final boolean isDelta, final int crlNumber) {
 		if ( caCert==null ) {
 			if (log.isDebugEnabled()) {
 				log.debug("No CA certificate, returning null.");
@@ -121,7 +120,6 @@ public class CRLCache {
 		final String issuerDN = CertTools.getSubjectDN(caCert);
 		this.rebuildlock.lock();
 		try {
-		    final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO Add support for partitioned CRLs (ECA-7961)
 			final CRLInfo crlInfo = this.crlSession.getLastCRLInfo(issuerDN, crlPartitionIndex, isDelta);
 			if ( crlInfo==null ) {
 				if (log.isDebugEnabled()) {
