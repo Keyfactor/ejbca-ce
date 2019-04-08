@@ -730,19 +730,20 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public Collection<SelectItem> getAllCas() {
-        TreeMap<String, SelectItem> sortedCas = new TreeMap<>(new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return o1.compareToIgnoreCase(o2);
-            }
-        });
+        List<SelectItem> sortedCas = new ArrayList<>();
         final Map<Integer, String> caidtonamemap = caSession.getCAIdToNameMap();
         final List<Integer> authorizedcas = caSession.getAuthorizedCaIds(getAdmin());
         for (Integer caid : authorizedcas) {
             final String caname = caidtonamemap.get(caid);
-            sortedCas.put(caname, new SelectItem(caid, caname));
+            sortedCas.add(new SelectItem(caid, caname));
         }
-        return sortedCas.values();
+        Collections.sort(sortedCas, new Comparator<SelectItem>() {
+            @Override
+            public int compare(SelectItem o1, SelectItem o2) {
+                return o1.getLabel().compareToIgnoreCase(o2.getLabel());
+            }
+        });
+        return sortedCas;
     }
 
     public List<SelectItem> getAllCasWithAnyCaOption() {
@@ -752,17 +753,8 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
         return list;
     }
 
-    public Collection<Integer> getAvailableCas() {
-        TreeMap<String, Integer> sortedCas = new TreeMap<>(new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                return o1.compareToIgnoreCase(o2);
-            }
-        });
-        for (Integer caId : profiledata.getAvailableCAs()) {
-            sortedCas.put(caSession.getCAInfoInternal(caId).getName(), caId);
-        }        
-        return sortedCas.values();
+    public Collection<Integer> getAvailableCas() {    
+        return profiledata.getAvailableCAs();
                 
     }
 
