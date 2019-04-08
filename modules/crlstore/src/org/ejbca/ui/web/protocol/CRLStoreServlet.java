@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.StringTools;
@@ -35,6 +36,7 @@ import org.ejbca.util.HTMLTools;
  * For a detailed description see RFC 4387.
  * Addition to RFC 4387 is the ability to specify delta CRL with the parameter "delta="
  * Addition to RFC 4387 is the ability to specify download of a specific CRL by crlNumber with the parameter "crlnumber=<number>"
+ * Addition to RFC 4387 is the ability to specify a CRL partition number.
  * 
  * 
  * @version  $Id$
@@ -42,6 +44,10 @@ import org.ejbca.util.HTMLTools;
 public class CRLStoreServlet extends StoreServletBase {
 
 	private static final long serialVersionUID = 1L;
+	
+	private static final String PARAM_DELTACRL = "delta";
+	private static final String PARAM_CRLNUMBER = "crlnumber";
+	private static final String PARAM_PARTITION = "partition";
 
 	@EJB
 	private CrlStoreSessionLocal crlSession;
@@ -61,7 +67,9 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	public void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-		returnCrl( this.crlCache.findByIssuerDN(HashID.getFromB64(iHash), isDelta(req), getCrlNumber(req, resp)), resp, iHash, isDelta(req) );		
+	    final int crlPartitionIndex = getCrlPartitionIndex(req);
+	    final byte[] crlBytes = crlCache.findByIssuerDN(HashID.getFromB64(iHash), crlPartitionIndex, isDelta(req), getCrlNumber(req));
+		returnCrl(crlBytes, resp, iHash, crlPartitionIndex, isDelta(req));
 	}
 
 	@Override
@@ -71,7 +79,9 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	public void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
-		returnCrl( this.crlCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash), isDelta(req), getCrlNumber(req, resp)), resp, name, isDelta(req) );
+	    final int crlPartitionIndex = getCrlPartitionIndex(req);
+	    final byte[] crlBytes = crlCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash), crlPartitionIndex, isDelta(req), getCrlNumber(req));
+		returnCrl(crlBytes, resp, name, crlPartitionIndex, isDelta(req));
 	}
 
 	@Override
@@ -89,25 +99,37 @@ public class CRLStoreServlet extends StoreServletBase {
 		return "CRLs";
 	}
 
-	private boolean isDelta(HttpServletRequest req) {
-		return req.getParameterMap().get("delta")!=null;
+	private boolean isDelta(final HttpServletRequest req) {
+		return req.getParameterMap().get(PARAM_DELTACRL)!=null;
 	}
 
-	private int getCrlNumber(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-	    final String crlNumber = req.getParameter("crlnumber");
+	private int getCrlNumber(final HttpServletRequest req) {
+	    final String crlNumber = req.getParameter(PARAM_CRLNUMBER);
         if (StringUtils.isNumeric(crlNumber) && (Integer.valueOf(crlNumber) >= 0) ) {
             return Integer.valueOf(crlNumber);
         }
         return -1;
 	}
+	
+	private int getCrlPartitionIndex(final HttpServletRequest req) {
+        final String crlNumber = req.getParameter(PARAM_PARTITION);
+        if (StringUtils.isNumeric(crlNumber) && (Integer.valueOf(crlNumber) >= 0) ) {
+            return Integer.valueOf(crlNumber);
+        }
+        return -1;
+    }
 
-	private void returnCrl( byte crl[], HttpServletResponse resp, String name, boolean isDelta ) throws IOException {
+	private void returnCrl( byte crl[], HttpServletResponse resp, String name, final int crlPartitionIndex, boolean isDelta) throws IOException {
 		if ( crl==null || crl.length<1 ) {
 			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No CRL with hash: "+HTMLTools.htmlescape(name));
 			return;
 		}
 		resp.setContentType("application/pkix-crl");
-		resp.setHeader("Content-disposition", "attachment; filename=\""+(isDelta?"delta":"") + StringTools.stripFilename(name) + ".crl\"");
+		resp.setHeader("Content-disposition", "attachment; filename=\"" + 
+		        (isDelta?"delta":"") +
+		        StringTools.stripFilename(name) +
+		        (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION ? "_partition" + crlPartitionIndex : "") +
+		        ".crl\"");
 		resp.setContentLength(crl.length);
 		resp.getOutputStream().write(crl);
 	}
