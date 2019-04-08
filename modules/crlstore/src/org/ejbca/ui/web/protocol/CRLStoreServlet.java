@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.HashID;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -44,6 +45,8 @@ import org.ejbca.util.HTMLTools;
 public class CRLStoreServlet extends StoreServletBase {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final Logger log = Logger.getLogger(CRLStoreServlet.class);
 	
 	private static final String PARAM_DELTACRL = "delta";
 	private static final String PARAM_CRLNUMBER = "crlnumber";
@@ -121,6 +124,9 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	private void returnCrl( byte crl[], HttpServletResponse resp, String name, final int crlPartitionIndex, boolean isDelta) throws IOException {
 		if ( crl==null || crl.length<1 ) {
+		    if (log.isDebugEnabled()) {
+		        log.debug("CRL was not found. Hash=" + name + ", DeltaCRL=" + isDelta + ", Partition=" + crlPartitionIndex);
+		    }
 			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No CRL with hash: "+HTMLTools.htmlescape(name));
 			return;
 		}
