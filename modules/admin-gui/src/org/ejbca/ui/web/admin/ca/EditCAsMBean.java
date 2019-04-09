@@ -1967,6 +1967,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             if (cadatahandler.getCAInfo(caid).getCAInfo().getCAType()==CAInfo.CATYPE_X509) {
                 final X509CAInfo x509caInfo = (X509CAInfo)cadatahandler.getCAInfo(caid).getCAInfo();
                 x509caInfo.setExternalCdp(crlCaCRLDPExternal.trim());
+                x509caInfo.setUsePartitionedCrl(usePartitionedCrl);
+                x509caInfo.setCrlPartitions(crlPartitions);
                 cadatahandler.editCA(x509caInfo);
                 return EditCaUtil.MANAGE_CA_NAV;
             }
