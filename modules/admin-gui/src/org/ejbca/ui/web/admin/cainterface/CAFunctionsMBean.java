@@ -284,7 +284,8 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             } else if (!StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
                 addNonTranslatedErrorMessage("Error: The CRL in the file in not issued by " + crlImportCaName);
             } else {
-                importCrlSession.importCrl(getAdmin(), cainfo, bytes);
+                final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO partitioned CRL import (partition auto-detection) could be added as part of ECA-7961
+                importCrlSession.importCrl(getAdmin(), cainfo, bytes, crlPartitionIndex);
                 addNonTranslatedInfoMessage("CRL imported successfully or a newer version is already in the database");
                 refreshCaGuiInfos();
             }

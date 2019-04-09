@@ -917,9 +917,9 @@
 					<h:selectBooleanCheckbox id="checkboxusecrlnumber"
 						value="#{editCAsMBean.checkboxUseCrlNumber}"
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
-					<f:ajax render="checkboxcrlnumbercritical"/>	
+					<f:ajax render="checkboxcrlnumbercritical"/>
 					</h:selectBooleanCheckbox>
-					<h:outputLabel for="checkboxusecrlnumber" value="#{web.text.USE}" />	
+					<h:outputLabel for="checkboxusecrlnumber" value="#{web.text.USE}" />
 					&nbsp;
 					<h:selectBooleanCheckbox id="checkboxcrlnumbercritical"
 						value="#{editCAsMBean.checkboxCrlNumberCritical}"
@@ -934,14 +934,14 @@
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Issuing_Distribution_Point_on_CRLs')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
-				
+
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
 					<h:selectBooleanCheckbox id="checkboxusecrldistributionpointoncrl"
 						value="#{editCAsMBean.checkboxUseCrlDistributiOnPointOnCrl}"
 						disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}">
 						<f:ajax render="checkboxcrldistributionpointoncrlcritical"/>
 					</h:selectBooleanCheckbox>
-					
+
 					<h:outputLabel for="checkboxusecrldistributionpointoncrl"
 						value="#{web.text.USE}" />
 					&nbsp;
@@ -960,15 +960,16 @@
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#CRL_CA_Issuer_URI')}"
 						escape="false" styleClass="helpReference"/>
 				</h:panelGroup>
-
-				<h:panelGroup>
-					<h:outputText value="#{editCAsMBean.authorityInformationAccess}"
-						rendered="#{editCAsMBean.caExternal}" />
+				<h:panelGroup rendered="#{not editCAsMBean.caExternal}" >
 					<h:inputText size="40" maxlength="256"
 						name="textfieldauthorityinformationaccess"
 						value="#{editCAsMBean.authorityInformationAccess}"
-						disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"
-						rendered="#{not editCAsMBean.caExternal}" />
+						disabled="#{editCAsMBean.editCA and not editCAsMBean.hasEditRight}"	/>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{editCAsMBean.caExternal}"></h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caExternal}">
+					<h:outputText value="#{editCAsMBean.authorityInformationAccess}" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
@@ -986,25 +987,25 @@
 						value="#{web.text.USE}" />
 				</h:panelGroup>
 
-				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+				<h:panelGroup>
 					<h:outputText value="#{web.text.USECRLPARTITIONS}" />
 				</h:panelGroup>
-				<h:panelGroup rendered="#{not editCAsMBean.caExternal}">
+				<h:panelGroup>
 					<h:selectBooleanCheckbox id="checkboxusecrlpartitions"
 											 value="#{editCAsMBean.usePartitionedCrl}"
-											 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
+											 disabled="#{not editCAsMBean.hasEditRight}" >
 						<f:ajax render=":editcapage:crlSpecificData"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="crlpartitions"
 								   value="#{web.text.USE}" />
 				</h:panelGroup>
-				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.usePartitionedCrl}">
+				<h:panelGroup rendered="#{editCAsMBean.usePartitionedCrl}">
 					<h:outputText value="#{web.text.CRLPARTITIONNUMBER}" />
 				</h:panelGroup>
-				<h:panelGroup rendered="#{not editCAsMBean.caExternal and editCAsMBean.usePartitionedCrl}">
+				<h:panelGroup rendered="#{editCAsMBean.usePartitionedCrl}">
 					<h:inputText id="crlpartitions"  value="#{editCAsMBean.crlPartitions}" size="2" maxlength="2" title="#{web.text.FORMAT_INTEGER}"
 								 converterMessage="#{web.text.ONLYDECINCRLPARTITIONS}" validatorMessage="#{web.text.ONLYDECINCRLPARTITIONS}"
-								 disabled="#{not editCAsMBean.hasEditRight or editCAsMBean.caExternal}" >
+								 disabled="#{not editCAsMBean.hasEditRight}" >
 						<f:validateLength minimum="1" maximum="2"/>
 						<f:validateLongRange minimum="0" maximum="99"/>
 					</h:inputText>

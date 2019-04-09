@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
@@ -43,11 +44,11 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  * Worker used for downloading external CRLs and populating the local database with limited CertificateData entries,
  * that can be used to service OCSP responses and stores the CRL locally, so it could be served for example through
  * the public web.
- * 
+ *
  * If the freshest CRL extension is present in a full CRL, the delta CRL will be downloaded and processed as well.
- * 
+ *
  * The worker can be configured to not respect the nextUpdate
- * 
+ *
  * @version $Id$
  */
 public class CRLDownloadWorker extends BaseWorker {
@@ -65,107 +66,119 @@ public class CRLDownloadWorker extends BaseWorker {
         final ImportCrlSessionLocal importCrlSession = (ImportCrlSessionLocal) ejbs.get(ImportCrlSessionLocal.class);
         // Parse worker configuration
         Collection<Integer> caIdsToCheck = getCAIdsToCheck(true);
-        if (caIdsToCheck!=null && caIdsToCheck.contains(Integer.valueOf(CAConstants.ALLCAS))) {
+        if (caIdsToCheck != null && caIdsToCheck.contains(CAConstants.ALLCAS)) {
             caIdsToCheck = caSession.getAllCaIds();
         }
-        final boolean ignoreNextUpdate = Boolean.valueOf(properties.getProperty(PROP_IGNORE_NEXT_UPDATE, Boolean.FALSE.toString()));
-        final int maxDownloadSize = Integer.parseInt(properties.getProperty(PROP_MAX_DOWNLOAD_SIZE, String.valueOf(DEFAULT_MAX_DOWNLOAD_SIZE)));
         // Process all the configured CAs
         for (final int caId : caIdsToCheck) {
             if (log.isTraceEnabled()) {
                 log.trace("Processing CA with Id " + caId);
             }
-            try {
-                final CAInfo caInfo = caSession.getCAInfoInternal(caId);
-                if (caInfo != null && caInfo.getCAType() == CAInfo.CATYPE_X509 && caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
-                    final X509Certificate caCertificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-                    // Parse the configured external CDP into a URL
-                    final String cdp = ((X509CAInfo)caInfo).getExternalCdp();
-                    if (cdp==null || cdp.length()==0) {
-                        log.info("No external CDP configured for CA '" + caInfo.getName() + "'. Ignoring CA.");
-                        continue;
-                    }
-                    final URL url = NetworkTools.getValidHttpUrl(cdp);
-                    if (url==null) {
-                        log.info("Invalid HTTP URL '" + cdp + "' in external CDP configured for CA '" + caInfo.getName() + "'. Ignoring CA.");
-                        continue;
-                    }
-                    final String issuerDn = CertTools.getSubjectDN(caCertificate);
-                    final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO add support for partioning for CRLs (ECA-7963). Should probably loop over all partitions?
-                    // Get last known CRL (if any) and check when the next update will be
-                    final Date now = new Date();
-                    final X509CRL lastFullCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false));
-                    final X509CRL newestFullCrl;
-                    if (!ignoreNextUpdate && lastFullCrl!=null && now.before(lastFullCrl.getNextUpdate())) {
-                        log.info("Next full CRL update for CA '" + caInfo.getName() + "' will be " + ValidityDate.formatAsISO8601(lastFullCrl.getNextUpdate(), null) + ". Skipping download.");
-                        newestFullCrl = lastFullCrl;
-                    } else {
-                        final X509CRL downloadedFullCrl = getAndProcessCrl(url, maxDownloadSize, caCertificate, caInfo, importCrlSession);
-                        if (downloadedFullCrl==null) {
-                            newestFullCrl = lastFullCrl;
-                        } else {
-                            newestFullCrl = downloadedFullCrl;
-                        }
-                    }
-                    if (newestFullCrl!=null) {
-                        final List<String> freshestCdps = CrlExtensions.extractFreshestCrlDistributionPoints(newestFullCrl);
-                        if (!freshestCdps.isEmpty()) {
-                            // Delta CRLs are used and we might already have a valid one stored
-                            X509CRL lastDeltaCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, true));
-                            if (lastDeltaCrl!=null && lastDeltaCrl.getThisUpdate().before(newestFullCrl.getThisUpdate())) {
-                                // The last known delta CRL info is already included in the latest full CRL, so treat the last delta as non-existent
-                                lastDeltaCrl = null;
-                            }
-                            if (!ignoreNextUpdate && lastDeltaCrl!=null && now.before(lastDeltaCrl.getNextUpdate())) {
-                                log.info("Next delta CRL update for CA '" + caInfo.getName() + "' will be " + ValidityDate.formatAsISO8601(lastDeltaCrl.getNextUpdate(), null) + ". Skipping download.");
-                            } else {
-                                // Check for and process first delta CRL that can be reached over HTTP (if any)
-                                for (final String freshestCdp : freshestCdps) {
-                                    final URL freshestCdpUrl = NetworkTools.getValidHttpUrl(freshestCdp);
-                                    if (freshestCdpUrl==null) {
-                                        log.info("Unusable Freshest CDP HTTP URL '" + freshestCdpUrl + "' in CRL. Skipping download.");
-                                        continue;
-                                    }
-                                    final X509CRL newDeltaCrl = getAndProcessCrl(freshestCdpUrl, maxDownloadSize, caCertificate, caInfo, importCrlSession);
-                                    if (newDeltaCrl!=null) {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    log.info("'" + caInfo.getName() + "' is not an external X509 CA. Ignoring.");
+            final CAInfo caInfo = caSession.getCAInfoInternal(caId);
+            if (caInfo != null && caInfo.getCAType() == CAInfo.CATYPE_X509 && caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                final X509Certificate caCertificate = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+                // Parse the configured external CDP into a URL
+                final String cdp = ((X509CAInfo) caInfo).getExternalCdp();
+                if (cdp == null || cdp.length() == 0) {
+                    log.info("No external CDP configured for CA '" + caInfo.getName() + "'. Ignoring CA.");
+                    continue;
                 }
-            } catch (CRLException e) {
-                log.error("Last known CRL read from the database for CA Id " + caId + " has encoding problems.", e);
-            } catch (CrlStoreException e) {
-                log.error("Failed to store the downloaded CRL in the database for CA Id " + caId + ".", e);
-            } catch (CrlImportException e) {
-                log.error("Failed to import the downloaded CRL in the database for CA Id " + caId + ".", e);
-            } catch (AuthorizationDeniedException e) {
-                throw new ServiceExecutionFailedException("Service should always be authorized to any CA.", e);
+                final URL url = NetworkTools.getValidHttpUrl(cdp);
+                if (url == null) {
+                    log.info("Invalid HTTP URL '" + cdp + "' in external CDP configured for CA '" + caInfo.getName() + "'. Ignoring CA.");
+                    continue;
+                }
+                final Date now = new Date();
+                IntRange crlPartitionIndexes = caInfo.getAllCrlPartitionIndexes();
+                if (crlPartitionIndexes == null) {
+                    getCrlAndUpdateIfNeeded(caInfo, caCertificate, url, CertificateConstants.NO_CRL_PARTITION, now, crlStoreSession, importCrlSession);
+                } else {
+                    for (int i = crlPartitionIndexes.getMinimumInteger(); i <= crlPartitionIndexes.getMaximumInteger(); i++) {
+                        final URL partitionUrl = NetworkTools.getValidHttpUrl(((X509CAInfo) caInfo).getCrlPartitionUrl(cdp, i));
+                        getCrlAndUpdateIfNeeded(caInfo, caCertificate, partitionUrl, i, now, crlStoreSession, importCrlSession);
+                    }
+                }
+            } else {
+                log.info("'" + (caInfo != null ? caInfo.getName() : caId) + "' is not an external X509 CA. Ignoring.");
             }
         }
     }
-    
+
+    private void getCrlAndUpdateIfNeeded(final CAInfo caInfo, final X509Certificate caCertificate, final URL url, final int crlPartitionIndex, final Date now,
+                                         final CrlStoreSessionLocal crlStoreSession, final ImportCrlSessionLocal importCrlSession) throws ServiceExecutionFailedException {
+        try {
+            final String issuerDn = CertTools.getSubjectDN(caCertificate);
+            final boolean ignoreNextUpdate = Boolean.valueOf(properties.getProperty(PROP_IGNORE_NEXT_UPDATE, Boolean.FALSE.toString()));
+            // Get last known CRL (if any) and check when the next update will be
+            final X509CRL lastFullCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, false));
+            final X509CRL newestFullCrl;
+            if (!ignoreNextUpdate && lastFullCrl != null && now.before(lastFullCrl.getNextUpdate())) {
+                log.info("Next full CRL update for CA '" + caInfo.getName() + "' will be " + ValidityDate.formatAsISO8601(lastFullCrl.getNextUpdate(), null) + ". Skipping download.");
+                newestFullCrl = lastFullCrl;
+            } else {
+                final X509CRL downloadedFullCrl = getAndProcessCrl(url, caCertificate, caInfo, importCrlSession, crlPartitionIndex);
+                if (downloadedFullCrl == null) {
+                    newestFullCrl = lastFullCrl;
+                } else {
+                    newestFullCrl = downloadedFullCrl;
+                }
+            }
+            if (newestFullCrl != null) {
+                final List<String> freshestCdps = CrlExtensions.extractFreshestCrlDistributionPoints(newestFullCrl);
+                if (!freshestCdps.isEmpty()) {
+                    // Delta CRLs are used and we might already have a valid one stored
+                    X509CRL lastDeltaCrl = getCRLFromBytes(crlStoreSession.getLastCRL(issuerDn, crlPartitionIndex, true));
+                    if (lastDeltaCrl != null && lastDeltaCrl.getThisUpdate().before(newestFullCrl.getThisUpdate())) {
+                        // The last known delta CRL info is already included in the latest full CRL, so treat the last delta as non-existent
+                        lastDeltaCrl = null;
+                    }
+                    if (!ignoreNextUpdate && lastDeltaCrl != null && now.before(lastDeltaCrl.getNextUpdate())) {
+                        log.info("Next delta CRL update for CA '" + caInfo.getName() + "' will be " + ValidityDate.formatAsISO8601(lastDeltaCrl.getNextUpdate(), null) + ". Skipping download.");
+                    } else {
+                        // Check for and process first delta CRL that can be reached over HTTP (if any)
+                        for (final String freshestCdp : freshestCdps) {
+                            final URL freshestCdpUrl = NetworkTools.getValidHttpUrl(freshestCdp);
+                            if (freshestCdpUrl == null) {
+                                log.info("Unusable Freshest CDP HTTP URL '" + freshestCdp + "' in CRL. Skipping download.");
+                                continue;
+                            }
+                            final X509CRL newDeltaCrl = getAndProcessCrl(freshestCdpUrl, caCertificate, caInfo, importCrlSession, crlPartitionIndex);
+                            if (newDeltaCrl != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (CRLException e) {
+            log.error("Last known CRL read from the database for CA Id " + caInfo.getCAId() + " has encoding problems.", e);
+        } catch (CrlStoreException e) {
+            log.error("Failed to store the downloaded CRL in the database for CA Id " + caInfo.getCAId() + ".", e);
+        } catch (CrlImportException e) {
+            log.error("Failed to import the downloaded CRL in the database for CA Id " + caInfo.getCAId() + ".", e);
+        } catch (AuthorizationDeniedException e) {
+            throw new ServiceExecutionFailedException("Service should always be authorized to any CA.", e);
+        }
+    }
+
     private X509CRL getCRLFromBytes(final byte[] crlBytes) throws CRLException {
         if (crlBytes != null) {
             return CertTools.getCRLfromByteArray(crlBytes);
         }
         return null;
     }
-    
-    private X509CRL getAndProcessCrl(final URL cdpUrl, final int maxSize, final X509Certificate caCertificate, final CAInfo caInfo,
-            final ImportCrlSessionLocal importCrlSession) throws CrlStoreException, AuthorizationDeniedException, CrlImportException {
+
+    private X509CRL getAndProcessCrl(final URL cdpUrl, final X509Certificate caCertificate, final CAInfo caInfo,
+            final ImportCrlSessionLocal importCrlSession, final int crlPartitionIndex) throws CrlStoreException, AuthorizationDeniedException, CrlImportException {
+        final int maxSize = Integer.parseInt(properties.getProperty(PROP_MAX_DOWNLOAD_SIZE, String.valueOf(DEFAULT_MAX_DOWNLOAD_SIZE)));
         X509CRL newCrl = null;
         final byte[] crlBytesNew = NetworkTools.downloadDataFromUrl(cdpUrl, maxSize);
         if (crlBytesNew==null) {
-            log.warn("Unable to download CRL for " + CertTools.getSubjectDN(caCertificate));
+            log.warn("Unable to download CRL for " + CertTools.getSubjectDN(caCertificate) + "  with url: "+ cdpUrl);
         } else {
             try {
                 newCrl = CertTools.getCRLfromByteArray(crlBytesNew);
-                importCrlSession.importCrl(admin, caInfo, crlBytesNew);
+                importCrlSession.importCrl(admin, caInfo, crlBytesNew, crlPartitionIndex);
             } catch (CRLException e) {
                 log.warn("Unable to decode downloaded CRL for '" + caInfo.getSubjectDN() + "'.");
                 return null;
