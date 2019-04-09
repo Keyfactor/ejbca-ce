@@ -603,22 +603,12 @@
 
     if (userdata != null && profile != null) {
         if (globalconfiguration.getIssueHardwareTokens()) {
-    TreeMap<String, Integer> hardtokenprofiles = ejbcawebbean.getHardTokenProfiles();
-
-    tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
-    tokenids = new int[tokentexts.length];
-    for (int i = 0; i < RAInterfaceBean.tokentexts.length; i++) {
-        tokentexts[i] = RAInterfaceBean.tokentexts[i];
-        tokenids[i] = RAInterfaceBean.tokenids[i];
-    }
-    Iterator<String> iter = hardtokenprofiles.keySet().iterator();
-    int index = 0;
-    while (iter.hasNext()) {
-        String name = (String) iter.next();
-        tokentexts[index + RAInterfaceBean.tokentexts.length] = name;
-        tokenids[index + RAInterfaceBean.tokentexts.length] = ((Integer) hardtokenprofiles.get(name)).intValue();
-        index++;
-    }
+            tokentexts = new String[RAInterfaceBean.tokentexts.length];
+		    tokenids = new int[tokentexts.length];
+		    for (int i = 0; i < RAInterfaceBean.tokentexts.length; i++) {
+		        tokentexts[i] = RAInterfaceBean.tokentexts[i];
+		        tokenids[i] = RAInterfaceBean.tokenids[i];
+		    }
         }
 
         availabletokens = profile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
@@ -635,11 +625,7 @@
                 HardTokenIssuerInformation issuerdata = tokenbean.getHardTokenIssuerInformation(Integer
                         .parseInt(availablehardtokenissuers[j]));
                 if (issuerdata != null) {
-                    Iterator<Integer> iter = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles().iterator();
-                    while (iter.hasNext()) {
-                        if (Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
-                            tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
-                    }
+                    tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
                 }
             }
         }

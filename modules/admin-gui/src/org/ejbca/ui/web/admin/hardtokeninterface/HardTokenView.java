@@ -101,10 +101,6 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
       return tokendata.getCopies();	
     }
     
-    public Integer getHardTokenProfileId(){    	
-    	  return Integer.valueOf(tokendata.getHardToken().getTokenProfileId());
-    }
-
     public Object getField(int index) {
         HardToken token = tokendata.getHardToken();
 

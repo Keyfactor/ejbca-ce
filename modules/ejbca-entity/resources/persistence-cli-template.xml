@@ -50,7 +50,6 @@
         <class>org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenIssuerData</class>
-        <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
         <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
         <class>org.ejbca.core.ejb.ca.validation.BlacklistData</class>
@@ -104,7 +103,6 @@
         <class>org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenIssuerData</class>
-        <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
         <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
         <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
         <class>org.ejbca.core.ejb.ca.validation.BlacklistData</class>

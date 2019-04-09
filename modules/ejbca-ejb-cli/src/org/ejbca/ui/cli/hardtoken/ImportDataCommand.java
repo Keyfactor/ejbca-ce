@@ -118,8 +118,7 @@ public class ImportDataCommand extends EjbcaCliUserCommandBase {
                 while ((htd = importer.readHardTokenData()) != null) {
                     try {
                         EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class).addHardToken(getAuthenticationToken(),
-                                htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null,
-                                htd.getCopyOf());
+                                htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getHardToken(), null, htd.getCopyOf());
                         getLogger().info("Token with SN " + htd.getTokenSN() + " were added to the database.");
                     } catch (HardTokenExistsException e) {
                         if (force) {
@@ -131,7 +130,7 @@ public class ImportDataCommand extends EjbcaCliUserCommandBase {
                             }
                             try {
                                 EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class).addHardToken(getAuthenticationToken(),
-                                        htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null,
+                                        htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getHardToken(), null,
                                         htd.getCopyOf());
                             } catch (HardTokenExistsException e1) {
                                 throw new IllegalStateException("Hard token that shouldn't exist apparently does.", e);
@@ -162,6 +161,7 @@ public class ImportDataCommand extends EjbcaCliUserCommandBase {
         return getCommandDescription();
     }
 
+    @Override
     protected Logger getLogger() {
         return log;
     }
