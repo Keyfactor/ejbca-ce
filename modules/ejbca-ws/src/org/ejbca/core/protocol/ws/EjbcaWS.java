@@ -147,6 +147,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
@@ -2232,6 +2233,27 @@ public class EjbcaWS implements IEjbcaWS {
             final AuthenticationToken admin = getAdmin(true);
             logAdminName(admin,logger);
             return raMasterApiProxyBean.getLatestCrl(admin, caname, deltaCRL);
+        } catch (AuthorizationDeniedException e) {
+            throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+        } catch (RuntimeException e) {  // EJBException, ...
+            throw getInternalException(e, logger);
+        } finally {
+            logger.writeln();
+            logger.flush();
+        }
+    }
+
+    @Override
+    public byte[] getLatestCRLPartition(String caName, boolean deltaCRL, int crlPartitionIndex) throws CADoesntExistsException, EjbcaException {
+        final IPatternLogger logger = TransactionLogger.getPatternLogger();
+        try {
+            final AuthenticationToken admin = getAdmin(true);
+            logAdminName(admin,logger);
+            RaCrlSearchRequest request = new RaCrlSearchRequest();
+            request.setCaName(caName);
+            request.setCrlPartitionIndex(crlPartitionIndex);
+            request.setDeltaCRL(deltaCRL);
+            return raMasterApiProxyBean.getLatestCrl(admin, request);
         } catch (AuthorizationDeniedException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {  // EJBException, ...

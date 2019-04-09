@@ -334,9 +334,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>2<td>=<td>6.11.0
      * <tr><th>3<td>=<td>6.12.0
      * <tr><th>4<td>=<td>6.14.0
-     * <tr><th>4<td>=<td>6.15.0
+     * <tr><th>5<td>=<td>6.15.0
+     * <tr><th>6<td>=<td>7.0.0
+     * <tr><th>7<td>=<td>7.1.0
      */
-    private static final int RA_MASTER_API_VERSION = 6; // v5 = 6.15.0, v6 = 7.0.0
+    private static final int RA_MASTER_API_VERSION = 7;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -2434,6 +2436,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         // This method is used from the EjbcaWS.getLatestCRL Web Service method, and it does not allow specifying a partition.
         return crlStoreSession.getLastCRL(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, deltaCRL);
+    }
+
+    @Override
+    public byte[] getLatestCrl(AuthenticationToken authenticationToken, RaCrlSearchRequest request) throws AuthorizationDeniedException, CADoesntExistsException {
+        String issuerDn;
+        if (StringUtils.isNotEmpty(request.getIssuerDn())) {
+            issuerDn = request.getIssuerDn();
+        } else {
+            final CAInfo cainfo = caSession.getCAInfo(authenticationToken, request.getCaName());
+            if (cainfo == null) {
+                throw new CADoesntExistsException("CA with name " + request.getCaName() + " doesn't exist.");
+            }
+            issuerDn = cainfo.getSubjectDN();
+        }
+        return crlStoreSession.getLastCRL(issuerDn, request.getCrlPartitionIndex(), request.isDeltaCRL());
     }
 
     @Override

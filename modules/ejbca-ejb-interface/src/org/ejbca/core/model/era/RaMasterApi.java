@@ -1082,6 +1082,22 @@ public interface RaMasterApi {
     byte[] getLatestCrl(AuthenticationToken authenticationToken, String caName, boolean deltaCRL) throws AuthorizationDeniedException, CADoesntExistsException;
 
     /**
+     * Fetches the latest CRL issued by the given CA. This method is used by the Web Service.
+     *
+     * Authorization requirements:<pre>
+     * - /ca/&lt;caid&gt;
+     * </pre>
+     *
+     * @param authenticationToken the administrator performing the action.
+     * @param request the name in EJBCA of the CA that issued the desired CRL.
+     * @return the latest CRL issued for the CA as a DER encoded byte array.
+     * @throws AuthorizationDeniedException if client isn't authorized to request.
+     * @throws CADoesntExistsException if a referenced CA does not exist.
+     * @since RA Master API version 4 (EJBCA 6.14.0)
+     */
+    byte[] getLatestCrl(AuthenticationToken authenticationToken, RaCrlSearchRequest request) throws AuthorizationDeniedException, CADoesntExistsException;
+
+    /**
      * Fetches the latest CRL by issuerDn. This method is used by the REST API.
      *
      * Authorization requirements:<pre>

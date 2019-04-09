@@ -79,6 +79,7 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
@@ -2409,6 +2410,44 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 } catch (CADoesntExistsException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("CA with name " + caName + " for proxied request on CA could not be found. " + e.getMessage());
+                    }
+                    if (caDoesntExistsException == null) {
+                        caDoesntExistsException = e;
+                    }
+                }
+            }
+        }
+        if (caDoesntExistsException != null) {
+            throw caDoesntExistsException;
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] getLatestCrl(AuthenticationToken authenticationToken, RaCrlSearchRequest request) throws AuthorizationDeniedException, CADoesntExistsException {
+        CADoesntExistsException caDoesntExistsException = null;
+        byte[] result = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.getApiVersion() >= 7) {
+
+                        // If there is a CA, there should be an initial CRL as well, assuming its not about an external CA.
+                        result = raMasterApi.getLatestCrl(authenticationToken, request);
+                        if (result != null) {
+                            return result;
+                        }
+                    } else if (raMasterApi.getApiVersion() >= 4 && request.getCrlPartitionIndex() == CertificateConstants.NO_CRL_PARTITION) {
+                        result = raMasterApi.getLatestCrl(authenticationToken, request.getCaName(), request.isDeltaCRL());
+                        if (result != null) {
+                            return result;
+                        }
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("CA with name " + request.getCaName() + " for proxied request on CA could not be found. " + e.getMessage());
                     }
                     if (caDoesntExistsException == null) {
                         caDoesntExistsException = e;

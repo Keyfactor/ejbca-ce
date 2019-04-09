@@ -10,13 +10,7 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
-import static org.easymock.EasyMock.anyBoolean;
-import static org.easymock.EasyMock.anyInt;
-import static org.easymock.EasyMock.anyString;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.*;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
@@ -48,6 +42,7 @@ import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.config.JsonDateSerializer;
@@ -224,7 +219,7 @@ public class CaRestResourceUnitTest {
         final String expectedCertificate = "Certificate";
 
         // when
-        expect(raMasterApiProxy.getLatestCrlByIssuerDn(eq(authenticationToken), anyString(), anyBoolean())).andReturn(expectedCertificate.getBytes());
+        expect(raMasterApiProxy.getLatestCrl(eq(authenticationToken), anyObject(RaCrlSearchRequest.class))).andReturn(expectedCertificate.getBytes());
         replay(raMasterApiProxy);
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
         final String actualString = actualResponse.getEntity(String.class);
@@ -247,7 +242,7 @@ public class CaRestResourceUnitTest {
         final String expectedMessage = "CA doesn't exist";
         final long expectedCode = Response.Status.NOT_FOUND.getStatusCode();
         // when
-        expect(raMasterApiProxy.getLatestCrlByIssuerDn(eq(authenticationToken), anyString(), anyBoolean())).andThrow(new CADoesntExistsException(expectedMessage));
+        expect(raMasterApiProxy.getLatestCrl(eq(authenticationToken), anyObject(RaCrlSearchRequest.class))).andThrow(new CADoesntExistsException(expectedMessage));
         replay(raMasterApiProxy);
         final ClientResponse<?> actualResponse = server.newRequest("/v1/ca/Ca name/getLatestCrl").get();
         final String actualJsonString = actualResponse.getEntity(String.class);

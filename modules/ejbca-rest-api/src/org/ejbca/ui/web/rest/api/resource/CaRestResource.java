@@ -37,6 +37,7 @@ import org.cesecore.util.EJBTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
+import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.CaInfoRestResponse;
@@ -123,9 +124,16 @@ public class CaRestResource extends BaseRestResource {
     public Response getLatestCrl(@Context HttpServletRequest httpServletRequest,
                                  @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
                                  @ApiParam(value = "true to get the latest deltaCRL, false to get the latest complete CRL", required = false, defaultValue = "false")
-                                     @QueryParam("deltaCrl") boolean deltaCrl) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
+                                 @QueryParam("deltaCrl") boolean deltaCrl,
+                                 @ApiParam(value = "the CRL partition index", required = false, defaultValue = "0")
+                                 @QueryParam("crlPartitionIndex") int crlPartitionIndex
+    ) throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, true);
-        byte[] latestCrl = raMasterApiProxy.getLatestCrlByIssuerDn(adminToken, issuerDn, deltaCrl);
+        RaCrlSearchRequest request = new RaCrlSearchRequest();
+        request.setIssuerDn(issuerDn);
+        request.setCrlPartitionIndex(crlPartitionIndex);
+        request.setDeltaCRL(deltaCrl);
+        byte[] latestCrl = raMasterApiProxy.getLatestCrl(adminToken, request);
         CrlRestResponse restResponse = CrlRestResponse.builder().setCrl(latestCrl).setResponseFormat("DER").build();
         return Response.ok(restResponse).build();
     }

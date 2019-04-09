@@ -1210,6 +1210,25 @@ public interface IEjbcaWS {
      */
     byte[] getLatestCRL(String caname, boolean deltaCRL) throws CADoesntExistsException, EjbcaException;
 
+    /**
+     * Retrieves the latest CRL issued by the given CA.
+     *
+     * Authorization requirements:<pre>
+     * - /ca/&lt;caid&gt;
+     * </pre>
+     *
+     * <p>If the CA does not exist on the local system, then the request will be forwarded
+     *    to upstream peer systems (if any).</p>
+     *
+     * @param caname the name in EJBCA of the CA that issued the desired CRL
+     * @param deltaCRL false to fetch a full CRL, true to fetch a deltaCRL (if issued)
+	 * @param crlPartitionIndex a CRL partition index. 0 if CRL has no partitions
+     * @return the latest CRL issued for the CA as a DER encoded byte array
+     * @throws CADoesntExistsException if a referenced CA does not exist
+     * @throws EjbcaException if an error occured, for example authorization denied
+     */
+    byte[] getLatestCRLPartition(String caname, boolean deltaCRL, int crlPartitionIndex) throws CADoesntExistsException, EjbcaException;
+
 	/**
 	 * Returns the version of the EJBCA server.
 	 *
