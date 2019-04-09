@@ -17,11 +17,9 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
 
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
-import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 
 /**
  * The standard file hard token importer, reading the a textfile line by line.
@@ -73,9 +71,9 @@ public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
 	
 	private String columnSeparator;
 	private int[] columns = null;
-	private String hardTokenType = null;
 	
-	public void startImport(Properties props) throws IOException {		
+	@Override
+    public void startImport(Properties props) throws IOException {		
 		super.startImport(props);		
 		
 		getColumns(props);
@@ -87,10 +85,6 @@ public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
 		
 		if(props.getProperty(PROPERTY_TOKENTYPE) == null){
 			throw new IOException("Error property " + PROPERTY_TOKENTYPE + " not set.");
-		}		
-		hardTokenType = props.getProperty(PROPERTY_TOKENTYPE);
-		if(!hardTokenType.equalsIgnoreCase("enhancedeid") && !hardTokenType.equalsIgnoreCase("swedisheid")){
-			throw new IOException("Error property " + PROPERTY_TOKENTYPE + " must have either the value 'enhancedeid' or 'swedisheid'.");
 		}
 	}
 
@@ -135,7 +129,8 @@ public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
 	/**
 	 * @see org.ejbca.ui.cli.hardtoken.importer.FileReadHardTokenImporter#readHardTokenData()
 	 */
-	public HardTokenInformation readHardTokenData() throws IOException {
+	@Override
+    public HardTokenInformation readHardTokenData() throws IOException {
 		HardTokenInformation retval = null;
 		
 		
@@ -179,24 +174,17 @@ public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
 					throw new IOException("Error reading column + " + i + " of hard token import data.");
 				}
 			}
-			int tokenType = SecConst.TOKEN_SWEDISHEID;
-			if(hardTokenType.equalsIgnoreCase("enhancedeid")){
-				tokenType = SecConst.TOKEN_ENHANCEDEID;				
-			}
+			
 			HardToken ht = getHardTokenType(basicPIN, basicPUK, signaturePIN, signaturePUK);
-			retval = new HardTokenInformation(tokenSN,null,new Date(),new Date(), tokenType,null, ht,null,null);
+			retval = new HardTokenInformation(tokenSN, null, new Date(), new Date(), null, ht,null,null);
 		}
-		
 		
 		return retval;
 	}
 	
 	
 	private HardToken getHardTokenType(String basicPIN, String basicPUK, String signaturePIN, String signaturePUK){
-		if(hardTokenType.equalsIgnoreCase("enhancedeid")){
-			return new EnhancedEIDHardToken(signaturePIN,signaturePUK,basicPIN,basicPUK,false,0);
-		}
-		return new SwedishEIDHardToken(basicPIN,basicPUK,signaturePIN,signaturePUK,0);
+		return new EnhancedEIDHardToken(signaturePIN, signaturePUK, basicPIN, basicPUK, false);
 	}
 
 }

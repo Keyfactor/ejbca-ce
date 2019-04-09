@@ -88,18 +88,6 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     public void setField(String field, Object value) {
         data.put(field, value);
     }
-
-    
-    public int getTokenProfileId() {
-    	if(data.get(HardToken.TOKENPROFILE) == null) {
-    		return 0;
-    	}
-        return ((Integer) data.get(HardToken.TOKENPROFILE)).intValue();
-    }
-    
-	public void setTokenProfileId(int hardtokenprofileid) {
-	  data.put(HardToken.TOKENPROFILE, Integer.valueOf(hardtokenprofileid));
-	}
 	
 	/**
 	 * 
@@ -121,6 +109,7 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
      * Implementation of UpgradableDataHashMap function getLatestVersion
      *
      */
+    @Override
     public float getLatestVersion() {
         return LATEST_VERSION;
     }
@@ -128,6 +117,7 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     /**
      * Implementation of UpgradableDataHashMap function upgrade.
      */
+    @Override
     public void upgrade() {
     }
     
