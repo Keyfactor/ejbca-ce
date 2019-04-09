@@ -373,7 +373,6 @@ GlobalConfigurationData
 HardTokenCertificateMap
 HardTokenData
 HardTokenIssuerData
-HardTokenProfileData
 HardTokenPropertyData
 KeyRecoveryData
 LogConfigurationData

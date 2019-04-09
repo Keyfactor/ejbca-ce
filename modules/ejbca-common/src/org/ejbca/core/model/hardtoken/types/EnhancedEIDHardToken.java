@@ -52,15 +52,13 @@ public class EnhancedEIDHardToken extends HardToken {
                                 String signaturepuk,
 	                            String initialauthencpin,
 								String authencpuk,
-								boolean enckeyrecoverable, 
-                                int hardtokenprofileid) {
+								boolean enckeyrecoverable) {
     	super(true);
         setInitialSignaturePIN(initialsignaturepin);
 		setSignaturePUK(signaturepuk);
         setInitialAuthPIN(initialauthencpin);
         setAuthPUK(authencpuk);
 		setEncKeyRecoverable(enckeyrecoverable);
-        setTokenProfileId(hardtokenprofileid);     
         
         data.put(TOKENTYPE, Integer.valueOf(THIS_TOKENTYPE));
     }
@@ -124,21 +122,24 @@ public class EnhancedEIDHardToken extends HardToken {
 
 
 	
-	public int[] getDataTypes(boolean includePUK) {
+	@Override
+    public int[] getDataTypes(boolean includePUK) {
 		if(includePUK){
 			return DATATYPESWITHPUK;	
 		}
 		return DATATYPESWITHOUTPUK;
 	}
 
-	public String[] getFieldTexts(boolean includePUK) {
+	@Override
+    public String[] getFieldTexts(boolean includePUK) {
 		if(includePUK){
 			return FIELDTEXTSWITHPUK;	
 		}
 		return FIELDTEXTSWITHOUTPUK;
 	}
 
-	public String[] getFields(boolean includePUK) {
+	@Override
+    public String[] getFields(boolean includePUK) {
 		if(includePUK){
 			return FIELDSWITHPUK;	
 		}

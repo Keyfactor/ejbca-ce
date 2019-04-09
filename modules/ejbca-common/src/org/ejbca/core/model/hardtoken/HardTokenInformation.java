@@ -40,7 +40,6 @@ public class HardTokenInformation implements Serializable, Comparable<HardTokenI
 	 * @param username the username owning the token
 	 * @param createtime time the token was created
 	 * @param modifytime time whem token was modified or a copy was made.
-	 * @param tokentype the hardtokenprofile used to create the token
 	 * @param significantIssuerDN of the CA that the card belongs to
 	 * @param hardtoken the actual hardtoken data
 	 * @param copyof tokenSN of original or null of this is an original
@@ -48,13 +47,11 @@ public class HardTokenInformation implements Serializable, Comparable<HardTokenI
 	 * 
 	 */
     public HardTokenInformation(String tokensn, String username, Date createtime,  Date modifytime, 
-                         int tokentype, String significantIssuerDN, HardToken hardtoken, String copyof,
-                         Collection<String> copies){
+                         String significantIssuerDN, HardToken hardtoken, String copyof, Collection<String> copies) {
       this.tokensn=tokensn;
       this.username=StringTools.stripUsername(username);
       this.createtime=createtime;
       this.modifytime=modifytime;
-      this.tokentype=tokentype;
       this.significantIssuerDN = significantIssuerDN;
       this.hardtoken=hardtoken;
       this.copyof=copyof;
@@ -77,10 +74,7 @@ public class HardTokenInformation implements Serializable, Comparable<HardTokenI
 
     public Date getModifyTime(){ return this.modifytime; }
     public void setModifyTime(Date modifytime){ this.modifytime=modifytime; }
-
-    public int getTokenType(){ return this.tokentype; }
-    public void setTokenType(int tokentype){ this.tokentype=tokentype; }
-
+    
     public HardToken getHardToken(){ return this.hardtoken; }
     public void setHardToken(HardToken hardtoken){ this.hardtoken=hardtoken; }
     
@@ -111,7 +105,6 @@ public class HardTokenInformation implements Serializable, Comparable<HardTokenI
     private    String          username;
     private    Date            createtime;
     private    Date            modifytime;
-    private    int             tokentype;
     private    String          significantIssuerDN;
     private    HardToken       hardtoken;
     private    String          copyof;

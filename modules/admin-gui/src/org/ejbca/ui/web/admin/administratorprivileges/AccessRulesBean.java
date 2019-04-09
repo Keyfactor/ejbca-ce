@@ -245,7 +245,6 @@ public class AccessRulesBean extends BaseManagedBean implements Serializable {
                     new AccessRule(AccessRulesConstants.ENDENTITYPROFILEBASE, Role.STATE_ALLOW),
                     //new AccessRule(AccessRulesConstants.REGULAR_VIEWENDENTITYPROFILES, Role.STATE_ALLOW),
                     new AccessRule(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, Role.STATE_ALLOW),
-                    new AccessRule(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, Role.STATE_ALLOW),
                     new AccessRule(CryptoTokenRules.VIEW.resource(), Role.STATE_ALLOW),
                     /*
                      * Note:

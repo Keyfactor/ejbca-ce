@@ -202,8 +202,6 @@ public interface EjbcaWebBean extends Serializable {
 
     public void reloadEstConfiguration();
 
-    public TreeMap<String,Integer> getHardTokenProfiles();
-
     // TODO ECA-7823 Refactor EjbcaWebBean's deprecated methods
     /** @deprecated Since EJBCA 7.0.0. Use HardTokenSession.getHardTokenIssuers instead. */
     @Deprecated
