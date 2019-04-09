@@ -79,9 +79,6 @@ public interface EndEntityAccessSessionLocal extends EndEntityAccessSession {
     /** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
     long countByHardTokenIssuerId(int hardTokenIssuerId);
     
-    /** @return return a count of UserDatas with the specified Hard Token Profile. */
-    long countByHardTokenProfileId(int hardTokenProfileId);
-    
     /** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
     long countNewOrKeyrecByHardTokenIssuerId(int hardTokenIssuerId);
     

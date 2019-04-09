@@ -815,16 +815,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         estconfiguration = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
     }
 
-    @Override
-    public TreeMap<String,Integer> getHardTokenProfiles() {
-        final TreeMap<String,Integer> hardtokenprofiles = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for (final Integer id : hardTokenSession.getAuthorizedHardTokenProfileIds(administrator)){
-            final String name = hardTokenSession.getHardTokenProfileName(id);
-            hardtokenprofiles.put(name, id);
-        }
-        return hardtokenprofiles;
-    }
-
     /** @deprecated Since EJBCA 7.0.0. Use HardTokenSession.getHardTokenIssuers instead. */
     @Override
     @Deprecated

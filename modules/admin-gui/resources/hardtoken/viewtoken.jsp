@@ -305,15 +305,6 @@ function viewcopies(link){
 	    <td>&nbsp;</td>
       </tr>
       
-      <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENPROFILE") %></td>        
-	<td><% if(token.getHardTokenProfileId().intValue() != 0){
-                  out.write((String) tokenbean.getHardTokenProfileName(token.getHardTokenProfileId()));
-                }else
-                  out.write(ejbcawebbean.getText("NONE"));%>
-        </td>
-      </tr>
-      
       <% if(token.getLabel() != null){ %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("LABEL") %></td>        

@@ -31,7 +31,6 @@ import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 
 /**
  * Used by hardtoken batch clients to retrieve users to generate from EJBCA RA.
@@ -59,7 +58,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     private HardTokenSessionLocal hardTokenSession;
 
     @Override
-    public EndEntityInformation getNextHardTokenToGenerate(String alias) throws UnavailableTokenException{
+    public EndEntityInformation getNextHardTokenToGenerate(String alias) {
     	log.trace(">getNextHardTokenToGenerate()");
     	EndEntityInformation returnval = null;
     	if (log.isDebugEnabled()) {
@@ -77,7 +76,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     				if (log.isDebugEnabled()) {    					
     					log.debug("found user" + returnval.getUsername());
     				}
-    				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(hardTokenIssuerId, returnval);
     				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);
     				log.info(msg);
     			}
@@ -92,7 +90,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     }
 
     @Override
-    public Collection<EndEntityInformation> getNextHardTokensToGenerate(String alias) throws UnavailableTokenException {
+    public Collection<EndEntityInformation> getNextHardTokensToGenerate(String alias) {
     	log.trace(">getNextHardTokensToGenerate()");
     	List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(alias);
@@ -101,7 +99,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     			List<UserData> userDataList = endEntityAccessSession.findNewOrKeyrecByHardTokenIssuerId( hardTokenIssuerId, MAX_RETURNED_QUEUE_SIZE);
     			for (UserData userData : userDataList) {
     				EndEntityInformation endEntityInformation = userData.toEndEntityInformation();
-    				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(hardTokenIssuerId, endEntityInformation);
     				returnval.add(endEntityInformation);
     				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);
     				log.info(msg);
@@ -121,7 +118,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
 
     // TODO: Since there is no guarantee that the database query always will return entries in the same order, this functionality might be broken!
     @Override
-    public EndEntityInformation getNextHardTokenToGenerateInQueue(String alias, int index) throws UnavailableTokenException {
+    public EndEntityInformation getNextHardTokenToGenerateInQueue(String alias, int index) {
     	log.trace(">getNextHardTokenToGenerateInQueue()");
     	EndEntityInformation returnval = null;
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(alias);
@@ -130,7 +127,6 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     			List<UserData> userDataList = endEntityAccessSession.findNewOrKeyrecByHardTokenIssuerId(hardTokenIssuerId, 0);
     			if (userDataList.size()>(index-1)) {
     				returnval = userDataList.get(index-1).toEndEntityInformation();
-    				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(hardTokenIssuerId, returnval);
     				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);
     				log.info(msg);
     			}
