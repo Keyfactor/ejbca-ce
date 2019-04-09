@@ -55,8 +55,9 @@ RUN chown -R 1001:1001 /opt/jboss-ejb-client.properties
 RUN userdel default || true
 RUN groupadd -g 1001 jenkins
 RUN useradd -d /home/jenkins -g jenkins -m -u 1001 jenkins
-RUN chown -R 1001:1001 /opt/jboss
+RUN chown -R jenkins:jenkins /opt/jboss
 
-USER 1001:1001
+ENV HOME /home/jenkins
+USER jenkins:jenkins
 
 CMD ["/opt/run.sh"]
