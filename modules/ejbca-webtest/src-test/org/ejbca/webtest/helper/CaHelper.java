@@ -47,6 +47,8 @@ public class CaHelper extends BaseHelper {
         //Edit CAs
         static final By BUTTON_CREATE = By.id("editcapage:buttoncreate");
         static final By BUTTON_SAVE = By.id("editcapage:buttonsave");
+        static final By BUTTON_SAVE_INITIALIZE = By.id("editcapage:buttoninitialize");;
+
         /**
          * CA Life Cycle / Renew Ca
          */
@@ -206,6 +208,11 @@ public class CaHelper extends BaseHelper {
         selectOptionByName(Page.SELECT_CA, caName + ", (Active)");
         clickLink(Page.BUTTON_EDIT);
     }
+    
+    public void edit(final String caName, final String status) {
+        selectOptionByName(Page.SELECT_CA, caName + ", (" + status + ")");
+        clickLink(Page.BUTTON_EDIT);
+    }
 
     /**
      * Creates the CA
@@ -219,6 +226,10 @@ public class CaHelper extends BaseHelper {
      */
     public void saveCa() {
         clickLink(Page.BUTTON_SAVE);
+    }
+    
+    public void saveAndInitializeCa() {
+        clickLink(Page.BUTTON_SAVE_INITIALIZE);
     }
 
     /**
@@ -378,14 +389,13 @@ public class CaHelper extends BaseHelper {
      * @param expectedTitle        expected title message in of confirmed.
      * @param caName               CA name.
      */
-    public void deleteCaAndAssert(final String expectedAlertMessage, final boolean isConfirmed, final String expectedTitle, final String caName) {
+    public void deleteCaAndAssert(final String expectedAlertMessage, final boolean isConfirmed, final boolean assertTitle, final String expectedTitle, final String caName) {
         selectOptionByName(Page.SELECT_CA, caName + ", (Active)");
         clickLink(Page.BUTTON_DELETE_CA);
         assertAndConfirmAlertPopUp(expectedAlertMessage, isConfirmed);
-        if (isConfirmed) {
+        if (assertTitle) {
             assertTitleExists(expectedTitle);
         }
-        assertExists(caName);
     }
 
     private void assertTitleExists(final String titleText) {

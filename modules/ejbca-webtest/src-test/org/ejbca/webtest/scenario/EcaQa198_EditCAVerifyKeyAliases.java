@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.webtest.scenario;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -28,14 +40,14 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     private static CaHelper caHelper;
     private static CryptoTokenHelper cryptoTokenHelper;
     private static CommandLineHelper commandLineHelper = new CommandLineHelper();
-    private static final String deleteAlert = "Are you sure you want to delete the CA " + EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME + "? You should revoke the CA instead if you already have used it to issue certificates.";
+    private static final String deleteAlert = "Are you sure you want to delete the CA " + TestData.CA_NAME + "? You should revoke the CA instead if you already have used it to issue certificates.";
 
 
     // Test Data
     private static class TestData {
-        private static final String EJBCA_HOME = System.getenv("EJBCA_HOME");
-        static final String CA_NAME = "StatedumpExportTest";
+        private static final String CA_NAME = "StatedumpExportTest";
         private static final String CA_VALIDITY = "1y";
+        private static final String STATUS_UNINITIALIZED = "Uninitialized";
     }
 
     @BeforeClass
@@ -66,19 +78,16 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         cryptoTokenHelper.assertTokenExists("ManagementCA");
     }
 
-
-
     @Test
     public void stepB_createCAUsingCryptoToken() {
         //Verify CA using cryptotoken exists
         caHelper.openPage(getAdminWebUrl());
         caHelper.addCa(TestData.CA_NAME);
-        caHelper.setValidity(EcaQa198_EditCAVerifyKeyAliases.TestData.CA_VALIDITY);
+        caHelper.setValidity(TestData.CA_VALIDITY);
         caHelper.createCa();
-        caHelper.assertExists(EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
+        caHelper.assertExists(TestData.CA_NAME);
 
     }
-
 
     @Test(timeout=30000)
     public void stepC_buildStatedump() {
@@ -95,7 +104,6 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh lockdown --unlock");
     }
 
-
     @Test(timeout=30000)
     public void stepE_exportCAssertStatedumpCmdLine() {
         //Export the CA
@@ -106,12 +114,11 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         Assert.assertTrue(dumpCaDir.exists());
     }
 
-
     @Test
     public void stepF_deleteCA() {
         //Remove the CA
         caHelper.openPage(getAdminWebUrl());
-        caHelper.deleteCaAndAssert(deleteAlert, false, null, EcaQa198_EditCAVerifyKeyAliases.TestData.CA_NAME);
+        caHelper.deleteCaAndAssert(deleteAlert, true, false, null, TestData.CA_NAME);
     }
 
     @Test(timeout=30000)
@@ -127,20 +134,20 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
     }
 
     @Test
-    public void stepI_editCA() {
+    public void stepI_editCA_Initialize() {
         //Edit the reimported CA
         caHelper.openPage(getAdminWebUrl());
-        caHelper.edit(TestData.CA_NAME);
+        caHelper.edit(TestData.CA_NAME, TestData.STATUS_UNINITIALIZED);
+        caHelper.saveAndInitializeCa();
     }
-
 
     @Test
     public void stepJ_assertKeyAliasesRestored() {
         //Assert Key values are restored.
+        caHelper.openPage(getAdminWebUrl());
+        caHelper.edit(TestData.CA_NAME);
         caHelper.assertCrlSignKeyValue("signKey");
         caHelper.assertDefaultKeyValue("defaultKey");
         caHelper.assertTestKeyValue("testKey");
     }
-
-
 }

@@ -115,7 +115,7 @@ public class EcaQa76_AuditLogSearch extends WebTestBase {
         caHelper.createCa();
         caHelper.assertExists(TestData.CA_NAME);
         // Select the CA, click 'Delete CA' and then 'Cancel'
-        caHelper.deleteCaAndAssert(deleteAlert, false, null, TestData.CA_NAME);
+        caHelper.deleteCaAndAssert(deleteAlert, false, false, null, TestData.CA_NAME);
     }
 
    @Test
