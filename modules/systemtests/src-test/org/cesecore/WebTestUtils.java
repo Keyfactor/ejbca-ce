@@ -15,7 +15,6 @@ package org.cesecore;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,38 +50,25 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.CertificateGenerationParams;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.IllegalValidityException;
-import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
-import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
-import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
-import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * Utility methods to send HTTP requests
@@ -191,7 +177,7 @@ public final class WebTestUtils {
      * @param expectedFilename Expected filename of download
      */
     public static void assertValidDownloadResponse(final HttpResponse resp, final String expectedContentType, final String expectedFilename) {
-        assertEquals("Response code", 200, resp.getStatusLine().getStatusCode());
+        assertEquals("Wrong response code (Message is: " + resp.getStatusLine().getReasonPhrase() + ")", 200, resp.getStatusLine().getStatusCode());
         assertNotNull("No response body was sent", resp.getEntity());
         final String contentType = resp.getEntity().getContentType().getValue();
         assertTrue("Wrong content type: " + contentType, StringUtils.startsWith(contentType, expectedContentType));
@@ -206,8 +192,9 @@ public final class WebTestUtils {
      */
     public static X509Certificate setUpClientCertificate(final String testName, final PublicKey publicKey) {
         log.trace(">setUpClientCertificate");
+        final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         final RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+        final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(testName);
         final CAInfo caInfo = CaTestUtils.getClientCertCaInfo(admin);
         log.debug("Issuing client certificate using CA '" + caInfo.getName() + "'");
@@ -215,24 +202,17 @@ public final class WebTestUtils {
                 EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
-        final RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());
         try {
-            final X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(
-                    admin, user, req, X509ResponseMessage.class, new CertificateGenerationParams());
-            if (!ResponseStatus.SUCCESS.equals(resp.getStatus())) {
-                fail("Failed to issue client certificate: " + resp.getFailText());
-            }
-            final X509Certificate clientCertificate = (X509Certificate) resp.getCertificate();
+            endEntityManagementSession.addUser(admin, user, false);
+            final X509Certificate clientCertificate = (X509Certificate) signSession.createCertificate(admin, testName, "foo123", new PublicKeyWrapper(publicKey));
             assertNotNull("Returned client certificate was null", clientCertificate);
             // Add authorization rules for this client SSL certificate
             roleInitSession.initializeAccessWithCert(admin, testName, clientCertificate);
             roleInitSession.createRoleAndAddCertificateAsRoleMember(clientCertificate, null, testName, null, null);
             log.trace("<setUpClientCertificate");
             return clientCertificate;
-        } catch (RoleExistsException | CustomCertificateSerialNumberException | IllegalKeyException | CADoesntExistsException | CertificateCreateException |
-                CryptoTokenOfflineException | SignRequestSignatureException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException |
-                IllegalValidityException | CAOfflineException | InvalidAlgorithmException | AuthorizationDeniedException | CertificateExtensionException |
-                RoleNotFoundException e) {
+        } catch (EjbcaException | CesecoreException | AuthorizationDeniedException | EndEntityProfileValidationException |
+                WaitingForApprovalException | RoleExistsException | RoleNotFoundException e) {
             throw new IllegalStateException(e);
         }
     }
@@ -245,17 +225,17 @@ public final class WebTestUtils {
         try {
             roleSession.deleteRoleIdempotent(admin, null, testName);
         } catch (Exception e) {
-            log.debug(e.getMessage());
+            log.debug("Failed to clean up role: " + e.getMessage());
         }
         try {
             endEntityManagementSession.deleteUser(admin, testName);
         } catch (Exception e) {
-            log.debug(e.getMessage());
+            log.debug("Failed to clean up end entity: " + e.getMessage());
         }
         try {
             internalCertificateStoreSession.removeCertificatesByUsername(testName);
         } catch (Exception e) {
-            log.debug(e.getMessage());
+            log.debug("Failed to clean up certificate: " + e.getMessage());
         }
     }
 
