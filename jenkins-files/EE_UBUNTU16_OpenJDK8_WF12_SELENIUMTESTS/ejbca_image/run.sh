@@ -43,7 +43,6 @@ ant clean deployear
 wait_for_deployment
 echo '=================== should be started now ========================'
 
-ant runinstall
 ant deploy-keystore
 echo '=================== deploy-keystore done ========================'
 
