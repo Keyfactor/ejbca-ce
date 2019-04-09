@@ -58,11 +58,11 @@ echo '=================== Wildfly restarted after deploy-keystore ==============
 
 JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh ca importcacert ManagementCA ManagementCA.pem
 JAVA_OPTS="$EJBCACLI_OPTS" bin/ejbca.sh roles addrolemember --role "Super Administrator Role" --caname ManagementCA --with WITH_COMMONNAME --value SuperAdmin
-ant ejbca:setup:selenium
 echo '=================== import cert commands done ========================'
 
 # manually change the "status" of CA from external -> active
 mysql -u ejbca -pejbca -hmariadb_selenium -e 'use ejbca; update CAData set status = 1 where status = 6;'
+ant ejbca:setup:selenium
 
 # stay alive until UI tests finish. otherwise the container would just be closed and UI tests would not be able to use it anymore
 sleep 10000000
