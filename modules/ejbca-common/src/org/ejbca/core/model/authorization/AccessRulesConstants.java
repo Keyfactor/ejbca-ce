@@ -104,7 +104,6 @@ public abstract class AccessRulesConstants {
     
     public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY           = "/hardtoken_functionality";
     public static final String HARDTOKEN_EDITHARDTOKENISSUERS             = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/edit_hardtoken_issuers";
-    public static final String HARDTOKEN_EDITHARDTOKENPROFILES            = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/edit_hardtoken_profiles";
     public static final String HARDTOKEN_ISSUEHARDTOKENS                  = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/issue_hardtokens";
     public static final String HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS     = HARDTOKEN_HARDTOKENFUNCTIONALITY + "/issue_hardtoken_administrators";
     
@@ -163,8 +162,7 @@ public abstract class AccessRulesConstants {
     // Hard Token specific accessrules used in authorization module.
     public static final String[] HARDTOKENACCESSRULES = 
        	  {HARDTOKEN_HARDTOKENFUNCTIONALITY,
-    		HARDTOKEN_EDITHARDTOKENISSUERS,
-			HARDTOKEN_EDITHARDTOKENPROFILES,     
+    		HARDTOKEN_EDITHARDTOKENISSUERS,     
 			HARDTOKEN_ISSUEHARDTOKENS,
 			HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS};
 }

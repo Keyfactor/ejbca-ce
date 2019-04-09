@@ -34,8 +34,7 @@ public class ApprovalRequestHelper {
             retval = new ApprovalDataText("TOKEN", SecConst.TOKENTEXTS[tokenindex], true, true);
 
         } else {
-            String name = hardTokenSession.getHardTokenProfileName(tokenid);
-            retval = new ApprovalDataText("TOKEN", name, true, false);
+            retval = new ApprovalDataText("TOKEN", "", true, false);
         }
         return retval;
     }
