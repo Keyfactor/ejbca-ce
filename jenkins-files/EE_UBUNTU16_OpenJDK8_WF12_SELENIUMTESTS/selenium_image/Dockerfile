@@ -51,6 +51,10 @@ RUN chown -R 1001:1001 /opt/ejbca_webtest_conf
 ADD configuration/jboss-ejb-client.properties /opt/
 RUN chown -R 1001:1001 /opt/jboss-ejb-client.properties
 
+# Create jenkins user & group and make sure everything is owned by this user
+RUN userdel default
+RUN groupadd -g 1001 jenkins
+RUN useradd -d /home/jenkins -g jenkins -m -u 1001 jenkins
 RUN chown -R 1001:1001 /opt/jboss
 
 USER 1001:1001
