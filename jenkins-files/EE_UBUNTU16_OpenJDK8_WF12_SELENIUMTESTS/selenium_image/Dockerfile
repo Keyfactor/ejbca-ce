@@ -34,10 +34,7 @@ ADD run.sh /opt/
 RUN chmod +x /opt/run.sh
 
 ADD configuration/firefox_conf/svq3ko35.default /home/jenkins/.mozilla/firefox/svq3ko35.default
-RUN chown -R 1001:1001 /home/jenkins/.mozilla/firefox/svq3ko35.default
-
 ADD configuration/firefox_conf/profiles.ini /home/jenkins/.mozilla/firefox/profiles.ini
-RUN chown -R 1001:1001 /home/jenkins/.mozilla/firefox/profiles.ini
 
 # copy ejbca conf to /opt in the container for runtime-usage
 ADD configuration/ejbca_conf /opt/ejbca_conf
@@ -61,6 +58,7 @@ RUN userdel default || true
 RUN groupadd -g 1001 jenkins
 RUN useradd -d /home/jenkins -g jenkins -m -u 1001 jenkins
 RUN chown -R jenkins:jenkins /opt/jboss
+RUN chown -R jenkins:jenkins /home/jenkins
 
 ENV HOME /home/jenkins
 USER jenkins:jenkins
