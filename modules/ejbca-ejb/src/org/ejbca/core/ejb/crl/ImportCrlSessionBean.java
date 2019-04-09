@@ -66,7 +66,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
     private EndEntityManagementSessionLocal endentityManagementSession;
     
     @Override
-    public void importCrl(AuthenticationToken authenticationToken, CAInfo cainfo, byte[] crlbytes)
+    public void importCrl(final AuthenticationToken authenticationToken, final CAInfo cainfo, final byte[] crlbytes, final int crlPartitionIndex)
             throws CrlImportException, CrlStoreException, CRLException, AuthorizationDeniedException {
 
         X509CRL x509crl = CertTools.getCRLfromByteArray(crlbytes);
@@ -80,15 +80,13 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
         // Check if the CRL is already stored locally
         final boolean isDeltaCrl = CrlExtensions.getDeltaCRLIndicator(x509crl).intValue() != -1;
         final int downloadedCrlNumber = CrlExtensions.getCrlNumber(x509crl).intValue();
-        final int crlPartitionIndex = CertificateConstants.NO_CRL_PARTITION; // TODO partitioned CRL import (partition auto-detection) could be added as part of ECA-7961
         if (log.isTraceEnabled()) {
             log.trace("Delta CRL:  " + isDeltaCrl);
             log.trace("IssuerDn:   " + issuerDn);
             log.trace("CRL Number: " + downloadedCrlNumber);
-            // TODO uncomment in ECA-7961
-//            if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
-//                log.trace("CRL Partition: " + crlPartitionIndex);
-//            }
+            if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
+                log.trace("CRL Partition: " + crlPartitionIndex);
+            }
         }
         
         X509CRL lastCrlOfSameType = getLastCrlOfSameType(x509crl, isDeltaCrl, issuerDn, crlPartitionIndex);
