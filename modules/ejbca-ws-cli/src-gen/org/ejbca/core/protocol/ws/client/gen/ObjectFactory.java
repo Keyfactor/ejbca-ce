@@ -8,18 +8,18 @@ import javax.xml.namespace.QName;
 
 
 /**
- * This object contains factory methods for each 
- * Java content interface and Java element interface 
- * generated in the org.ejbca.core.protocol.ws.client.gen package. 
- * <p>An ObjectFactory allows you to programatically 
- * construct new instances of the Java representation 
- * for XML content. The Java representation of XML 
- * content can consist of schema derived interfaces 
- * and classes representing the binding of schema 
- * type definitions, element declarations and model 
- * groups.  Factory methods for each of these are 
+ * This object contains factory methods for each
+ * Java content interface and Java element interface
+ * generated in the org.ejbca.core.protocol.ws.client.gen package.
+ * <p>An ObjectFactory allows you to programatically
+ * construct new instances of the Java representation
+ * for XML content. The Java representation of XML
+ * content can consist of schema derived interfaces
+ * and classes representing the binding of schema
+ * type definitions, element declarations and model
+ * groups.  Factory methods for each of these are
  * provided in this class.
- * 
+ *
  */
 @XmlRegistry
 public class ObjectFactory {
@@ -160,17 +160,25 @@ public class ObjectFactory {
     private final static QName _CreateCRL_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "createCRL");
     private final static QName _GetProfileResponseReturn_QNAME = new QName("", "return");
     private final static QName _UpdateCaCertArg1_QNAME = new QName("", "arg1");
+    private final static QName _KeyRecoverEnroll_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverEnroll");
+    private final static QName _KeyRecoverEnrollResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "keyRecoverEnrollResponse");
+    private final static QName _CertificateProfileDoesNotExistException_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "CertificateProfileDoesNotExistException");
+    private final static QName _RevokeCertWithMetadata_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeCertWithMetadata");
+    private final static QName _RevokeCertWithMetadataResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "revokeCertWithMetadataResponse");
+    private final static QName _GetLatestCRLPartition_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLatestCRLPartition");
+    private final static QName _CrlRequestResponseReturn_QNAME = new QName("", "return");
+    private final static QName _GetLatestCRLPartitionResponse_QNAME = new QName("http://ws.protocol.core.ejbca.org/", "getLatestCRLPartitionResponse");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.ejbca.core.protocol.ws.client.gen
-     * 
+     *
      */
     public ObjectFactory() {
     }
 
     /**
      * Create an instance of {@link GetEjbcaVersion }
-     * 
+     *
      */
     public GetEjbcaVersion createGetEjbcaVersion() {
         return new GetEjbcaVersion();
@@ -178,7 +186,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link AddSubjectToRoleResponse }
-     * 
+     *
      */
     public AddSubjectToRoleResponse createAddSubjectToRoleResponse() {
         return new AddSubjectToRoleResponse();
@@ -186,7 +194,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetCertificatesByExpirationTimeAndTypeResponse }
-     * 
+     *
      */
     public GetCertificatesByExpirationTimeAndTypeResponse createGetCertificatesByExpirationTimeAndTypeResponse() {
         return new GetCertificatesByExpirationTimeAndTypeResponse();
@@ -194,7 +202,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ImportCaCertResponse }
-     * 
+     *
      */
     public ImportCaCertResponse createImportCaCertResponse() {
         return new ImportCaCertResponse();
@@ -202,7 +210,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GenTokenCertificatesResponse }
-     * 
+     *
      */
     public GenTokenCertificatesResponse createGenTokenCertificatesResponse() {
         return new GenTokenCertificatesResponse();
@@ -210,7 +218,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FindCerts }
-     * 
+     *
      */
     public FindCerts createFindCerts() {
         return new FindCerts();
@@ -218,7 +226,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GenerateCryptoTokenKeys }
-     * 
+     *
      */
     public GenerateCryptoTokenKeys createGenerateCryptoTokenKeys() {
         return new GenerateCryptoTokenKeys();
@@ -226,7 +234,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GenerateCryptoTokenKeysResponse }
-     * 
+     *
      */
     public GenerateCryptoTokenKeysResponse createGenerateCryptoTokenKeysResponse() {
         return new GenerateCryptoTokenKeysResponse();
@@ -234,7 +242,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link DeleteUserDataFromSourceResponse }
-     * 
+     *
      */
     public DeleteUserDataFromSourceResponse createDeleteUserDataFromSourceResponse() {
         return new DeleteUserDataFromSourceResponse();
@@ -242,7 +250,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CreateCryptoTokenResponse }
-     * 
+     *
      */
     public CreateCryptoTokenResponse createCreateCryptoTokenResponse() {
         return new CreateCryptoTokenResponse();
@@ -250,7 +258,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetAuthorizedEndEntityProfilesResponse }
-     * 
+     *
      */
     public GetAuthorizedEndEntityProfilesResponse createGetAuthorizedEndEntityProfilesResponse() {
         return new GetAuthorizedEndEntityProfilesResponse();
@@ -258,7 +266,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FindUser }
-     * 
+     *
      */
     public FindUser createFindUser() {
         return new FindUser();
@@ -266,7 +274,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CesecoreException }
-     * 
+     *
      */
     public CesecoreException createCesecoreException() {
         return new CesecoreException();
@@ -274,7 +282,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FetchUserDataResponse }
-     * 
+     *
      */
     public FetchUserDataResponse createFetchUserDataResponse() {
         return new FetchUserDataResponse();
@@ -282,7 +290,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeCertResponse }
-     * 
+     *
      */
     public RevokeCertResponse createRevokeCertResponse() {
         return new RevokeCertResponse();
@@ -290,7 +298,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link IsApprovedResponse }
-     * 
+     *
      */
     public IsApprovedResponse createIsApprovedResponse() {
         return new IsApprovedResponse();
@@ -298,7 +306,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeTokenResponse }
-     * 
+     *
      */
     public RevokeTokenResponse createRevokeTokenResponse() {
         return new RevokeTokenResponse();
@@ -306,7 +314,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetAvailableCAsResponse }
-     * 
+     *
      */
     public GetAvailableCAsResponse createGetAvailableCAsResponse() {
         return new GetAvailableCAsResponse();
@@ -314,7 +322,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SpkacRequestResponse }
-     * 
+     *
      */
     public SpkacRequestResponse createSpkacRequestResponse() {
         return new SpkacRequestResponse();
@@ -322,7 +330,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RepublishCertificate }
-     * 
+     *
      */
     public RepublishCertificate createRepublishCertificate() {
         return new RepublishCertificate();
@@ -330,7 +338,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RemoveSubjectFromRoleResponse }
-     * 
+     *
      */
     public RemoveSubjectFromRoleResponse createRemoveSubjectFromRoleResponse() {
         return new RemoveSubjectFromRoleResponse();
@@ -338,7 +346,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link EndEntityProfileNotFoundException }
-     * 
+     *
      */
     public EndEntityProfileNotFoundException createEndEntityProfileNotFoundException() {
         return new EndEntityProfileNotFoundException();
@@ -346,7 +354,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link UserDataSourceException }
-     * 
+     *
      */
     public UserDataSourceException createUserDataSourceException() {
         return new UserDataSourceException();
@@ -354,7 +362,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link WaitingForApprovalException }
-     * 
+     *
      */
     public WaitingForApprovalException createWaitingForApprovalException() {
         return new WaitingForApprovalException();
@@ -362,7 +370,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Pkcs12Req }
-     * 
+     *
      */
     public Pkcs12Req createPkcs12Req() {
         return new Pkcs12Req();
@@ -370,7 +378,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetCertificatesByExpirationTimeResponse }
-     * 
+     *
      */
     public GetCertificatesByExpirationTimeResponse createGetCertificatesByExpirationTimeResponse() {
         return new GetCertificatesByExpirationTimeResponse();
@@ -378,7 +386,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link AuthorizationDeniedException }
-     * 
+     *
      */
     public AuthorizationDeniedException createAuthorizationDeniedException() {
         return new AuthorizationDeniedException();
@@ -386,7 +394,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetHardTokenDatas }
-     * 
+     *
      */
     public GetHardTokenDatas createGetHardTokenDatas() {
         return new GetHardTokenDatas();
@@ -394,7 +402,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExistsHardTokenResponse }
-     * 
+     *
      */
     public ExistsHardTokenResponse createExistsHardTokenResponse() {
         return new ExistsHardTokenResponse();
@@ -402,7 +410,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeCertBackdated }
-     * 
+     *
      */
     public RevokeCertBackdated createRevokeCertBackdated() {
         return new RevokeCertBackdated();
@@ -410,7 +418,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetProfileResponse }
-     * 
+     *
      */
     public GetProfileResponse createGetProfileResponse() {
         return new GetProfileResponse();
@@ -418,7 +426,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetRemainingNumberOfApprovalsResponse }
-     * 
+     *
      */
     public GetRemainingNumberOfApprovalsResponse createGetRemainingNumberOfApprovalsResponse() {
         return new GetRemainingNumberOfApprovalsResponse();
@@ -426,7 +434,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetAvailableCAsInProfile }
-     * 
+     *
      */
     public GetAvailableCAsInProfile createGetAvailableCAsInProfile() {
         return new GetAvailableCAsInProfile();
@@ -434,7 +442,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeUser }
-     * 
+     *
      */
     public RevokeUser createRevokeUser() {
         return new RevokeUser();
@@ -442,7 +450,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CryptoTokenOfflineException }
-     * 
+     *
      */
     public CryptoTokenOfflineException createCryptoTokenOfflineException() {
         return new CryptoTokenOfflineException();
@@ -450,7 +458,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CaCertResponseForRollover }
-     * 
+     *
      */
     public CaCertResponseForRollover createCaCertResponseForRollover() {
         return new CaCertResponseForRollover();
@@ -458,7 +466,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link KeyRecoverNewestResponse }
-     * 
+     *
      */
     public KeyRecoverNewestResponse createKeyRecoverNewestResponse() {
         return new KeyRecoverNewestResponse();
@@ -466,7 +474,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CheckRevokationStatus }
-     * 
+     *
      */
     public CheckRevokationStatus createCheckRevokationStatus() {
         return new CheckRevokationStatus();
@@ -474,7 +482,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Pkcs10RequestResponse }
-     * 
+     *
      */
     public Pkcs10RequestResponse createPkcs10RequestResponse() {
         return new Pkcs10RequestResponse();
@@ -482,7 +490,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link IllegalQueryException }
-     * 
+     *
      */
     public IllegalQueryException createIllegalQueryException() {
         return new IllegalQueryException();
@@ -490,7 +498,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetAuthorizedEndEntityProfiles }
-     * 
+     *
      */
     public GetAuthorizedEndEntityProfiles createGetAuthorizedEndEntityProfiles() {
         return new GetAuthorizedEndEntityProfiles();
@@ -498,7 +506,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CreateCAResponse }
-     * 
+     *
      */
     public CreateCAResponse createCreateCAResponse() {
         return new CreateCAResponse();
@@ -506,7 +514,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CertificateRequest }
-     * 
+     *
      */
     public CertificateRequest createCertificateRequest() {
         return new CertificateRequest();
@@ -514,7 +522,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetHardTokenData }
-     * 
+     *
      */
     public GetHardTokenData createGetHardTokenData() {
         return new GetHardTokenData();
@@ -522,7 +530,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CustomLog }
-     * 
+     *
      */
     public CustomLog createCustomLog() {
         return new CustomLog();
@@ -530,7 +538,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link KeyRecoverNewest }
-     * 
+     *
      */
     public KeyRecoverNewest createKeyRecoverNewest() {
         return new KeyRecoverNewest();
@@ -538,7 +546,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetAvailableCertificateProfilesResponse }
-     * 
+     *
      */
     public GetAvailableCertificateProfilesResponse createGetAvailableCertificateProfilesResponse() {
         return new GetAvailableCertificateProfilesResponse();
@@ -546,7 +554,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RemoveSubjectFromRole }
-     * 
+     *
      */
     public RemoveSubjectFromRole createRemoveSubjectFromRole() {
         return new RemoveSubjectFromRole();
@@ -554,7 +562,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link EditUserResponse }
-     * 
+     *
      */
     public EditUserResponse createEditUserResponse() {
         return new EditUserResponse();
@@ -562,7 +570,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SoftTokenRequestResponse }
-     * 
+     *
      */
     public SoftTokenRequestResponse createSoftTokenRequestResponse() {
         return new SoftTokenRequestResponse();
@@ -570,7 +578,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetAvailableCAsInProfileResponse }
-     * 
+     *
      */
     public GetAvailableCAsInProfileResponse createGetAvailableCAsInProfileResponse() {
         return new GetAvailableCAsInProfileResponse();
@@ -578,7 +586,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link MultipleMatchException }
-     * 
+     *
      */
     public MultipleMatchException createMultipleMatchException() {
         return new MultipleMatchException();
@@ -586,7 +594,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link NotFoundException }
-     * 
+     *
      */
     public NotFoundException createNotFoundException() {
         return new NotFoundException();
@@ -594,7 +602,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SpkacRequest }
-     * 
+     *
      */
     public SpkacRequest createSpkacRequest() {
         return new SpkacRequest();
@@ -602,7 +610,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link HardTokenExistsException }
-     * 
+     *
      */
     public HardTokenExistsException createHardTokenExistsException() {
         return new HardTokenExistsException();
@@ -610,7 +618,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetLastCertChain }
-     * 
+     *
      */
     public GetLastCertChain createGetLastCertChain() {
         return new GetLastCertChain();
@@ -618,7 +626,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ApprovalRequestExpiredException }
-     * 
+     *
      */
     public ApprovalRequestExpiredException createApprovalRequestExpiredException() {
         return new ApprovalRequestExpiredException();
@@ -626,7 +634,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetPublisherQueueLength }
-     * 
+     *
      */
     public GetPublisherQueueLength createGetPublisherQueueLength() {
         return new GetPublisherQueueLength();
@@ -634,7 +642,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeUserResponse }
-     * 
+     *
      */
     public RevokeUserResponse createRevokeUserResponse() {
         return new RevokeUserResponse();
@@ -642,7 +650,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CrmfRequestResponse }
-     * 
+     *
      */
     public CrmfRequestResponse createCrmfRequestResponse() {
         return new CrmfRequestResponse();
@@ -650,7 +658,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetLatestCRLResponse }
-     * 
+     *
      */
     public GetLatestCRLResponse createGetLatestCRLResponse() {
         return new GetLatestCRLResponse();
@@ -658,7 +666,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RolloverCACert }
-     * 
+     *
      */
     public RolloverCACert createRolloverCACert() {
         return new RolloverCACert();
@@ -666,7 +674,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CaCertResponse }
-     * 
+     *
      */
     public CaCertResponse createCaCertResponse() {
         return new CaCertResponse();
@@ -674,7 +682,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CheckRevokationStatusResponse }
-     * 
+     *
      */
     public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
         return new CheckRevokationStatusResponse();
@@ -682,7 +690,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RepublishCertificateResponse }
-     * 
+     *
      */
     public RepublishCertificateResponse createRepublishCertificateResponse() {
         return new RepublishCertificateResponse();
@@ -690,7 +698,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FindCertsResponse }
-     * 
+     *
      */
     public FindCertsResponse createFindCertsResponse() {
         return new FindCertsResponse();
@@ -698,7 +706,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CreateCRLResponse }
-     * 
+     *
      */
     public CreateCRLResponse createCreateCRLResponse() {
         return new CreateCRLResponse();
@@ -706,7 +714,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link PublisherException }
-     * 
+     *
      */
     public PublisherException createPublisherException() {
         return new PublisherException();
@@ -714,7 +722,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ApprovalException }
-     * 
+     *
      */
     public ApprovalException createApprovalException() {
         return new ApprovalException();
@@ -722,7 +730,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetLastCertChainResponse }
-     * 
+     *
      */
     public GetLastCertChainResponse createGetLastCertChainResponse() {
         return new GetLastCertChainResponse();
@@ -730,7 +738,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link UserDoesntFullfillEndEntityProfile }
-     * 
+     *
      */
     public UserDoesntFullfillEndEntityProfile createUserDoesntFullfillEndEntityProfile() {
         return new UserDoesntFullfillEndEntityProfile();
@@ -738,7 +746,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link HardTokenDoesntExistsException }
-     * 
+     *
      */
     public HardTokenDoesntExistsException createHardTokenDoesntExistsException() {
         return new HardTokenDoesntExistsException();
@@ -746,7 +754,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeCertBackdatedResponse }
-     * 
+     *
      */
     public RevokeCertBackdatedResponse createRevokeCertBackdatedResponse() {
         return new RevokeCertBackdatedResponse();
@@ -754,7 +762,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FindUserResponse }
-     * 
+     *
      */
     public FindUserResponse createFindUserResponse() {
         return new FindUserResponse();
@@ -762,7 +770,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CertificateExpiredException }
-     * 
+     *
      */
     public CertificateExpiredException createCertificateExpiredException() {
         return new CertificateExpiredException();
@@ -770,7 +778,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CaRenewCertRequest }
-     * 
+     *
      */
     public CaRenewCertRequest createCaRenewCertRequest() {
         return new CaRenewCertRequest();
@@ -778,7 +786,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RolloverCACertResponse }
-     * 
+     *
      */
     public RolloverCACertResponse createRolloverCACertResponse() {
         return new RolloverCACertResponse();
@@ -786,7 +794,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetPublisherQueueLengthResponse }
-     * 
+     *
      */
     public GetPublisherQueueLengthResponse createGetPublisherQueueLengthResponse() {
         return new GetPublisherQueueLengthResponse();
@@ -794,7 +802,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link IsAuthorized }
-     * 
+     *
      */
     public IsAuthorized createIsAuthorized() {
         return new IsAuthorized();
@@ -802,7 +810,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link IsAuthorizedResponse }
-     * 
+     *
      */
     public IsAuthorizedResponse createIsAuthorizedResponse() {
         return new IsAuthorizedResponse();
@@ -810,7 +818,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetAvailableCertificateProfiles }
-     * 
+     *
      */
     public GetAvailableCertificateProfiles createGetAvailableCertificateProfiles() {
         return new GetAvailableCertificateProfiles();
@@ -818,7 +826,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeBackDateNotAllowedForProfileException }
-     * 
+     *
      */
     public RevokeBackDateNotAllowedForProfileException createRevokeBackDateNotAllowedForProfileException() {
         return new RevokeBackDateNotAllowedForProfileException();
@@ -826,7 +834,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetCertificatesByExpirationTimeAndIssuer }
-     * 
+     *
      */
     public GetCertificatesByExpirationTimeAndIssuer createGetCertificatesByExpirationTimeAndIssuer() {
         return new GetCertificatesByExpirationTimeAndIssuer();
@@ -834,7 +842,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link AlreadyRevokedException }
-     * 
+     *
      */
     public AlreadyRevokedException createAlreadyRevokedException() {
         return new AlreadyRevokedException();
@@ -842,7 +850,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link AddSubjectToRole }
-     * 
+     *
      */
     public AddSubjectToRole createAddSubjectToRole() {
         return new AddSubjectToRole();
@@ -850,7 +858,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link DateNotValidException }
-     * 
+     *
      */
     public DateNotValidException createDateNotValidException() {
         return new DateNotValidException();
@@ -858,7 +866,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CvcRequest }
-     * 
+     *
      */
     public CvcRequest createCvcRequest() {
         return new CvcRequest();
@@ -866,7 +874,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetCertificatesByExpirationTimeAndIssuerResponse }
-     * 
+     *
      */
     public GetCertificatesByExpirationTimeAndIssuerResponse createGetCertificatesByExpirationTimeAndIssuerResponse() {
         return new GetCertificatesByExpirationTimeAndIssuerResponse();
@@ -874,7 +882,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SoftTokenRequest }
-     * 
+     *
      */
     public SoftTokenRequest createSoftTokenRequest() {
         return new SoftTokenRequest();
@@ -882,7 +890,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CAExistsException }
-     * 
+     *
      */
     public CAExistsException createCAExistsException() {
         return new CAExistsException();
@@ -890,7 +898,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetCertificatesByExpirationTimeAndType }
-     * 
+     *
      */
     public GetCertificatesByExpirationTimeAndType createGetCertificatesByExpirationTimeAndType() {
         return new GetCertificatesByExpirationTimeAndType();
@@ -898,7 +906,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link UpdateCaCert }
-     * 
+     *
      */
     public UpdateCaCert createUpdateCaCert() {
         return new UpdateCaCert();
@@ -906,7 +914,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CertificateRequestResponse }
-     * 
+     *
      */
     public CertificateRequestResponse createCertificateRequestResponse() {
         return new CertificateRequestResponse();
@@ -914,7 +922,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetCertificatesByExpirationTime }
-     * 
+     *
      */
     public GetCertificatesByExpirationTime createGetCertificatesByExpirationTime() {
         return new GetCertificatesByExpirationTime();
@@ -922,7 +930,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link SignRequestException }
-     * 
+     *
      */
     public SignRequestException createSignRequestException() {
         return new SignRequestException();
@@ -930,7 +938,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetCertificateResponse }
-     * 
+     *
      */
     public GetCertificateResponse createGetCertificateResponse() {
         return new GetCertificateResponse();
@@ -938,7 +946,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CrmfRequest }
-     * 
+     *
      */
     public CrmfRequest createCrmfRequest() {
         return new CrmfRequest();
@@ -946,7 +954,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetHardTokenDatasResponse }
-     * 
+     *
      */
     public GetHardTokenDatasResponse createGetHardTokenDatasResponse() {
         return new GetHardTokenDatasResponse();
@@ -954,7 +962,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExistsHardToken }
-     * 
+     *
      */
     public ExistsHardToken createExistsHardToken() {
         return new ExistsHardToken();
@@ -962,7 +970,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ImportCaCert }
-     * 
+     *
      */
     public ImportCaCert createImportCaCert() {
         return new ImportCaCert();
@@ -970,7 +978,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Pkcs12ReqResponse }
-     * 
+     *
      */
     public Pkcs12ReqResponse createPkcs12ReqResponse() {
         return new Pkcs12ReqResponse();
@@ -978,7 +986,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CvcRequestResponse }
-     * 
+     *
      */
     public CvcRequestResponse createCvcRequestResponse() {
         return new CvcRequestResponse();
@@ -986,7 +994,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeToken }
-     * 
+     *
      */
     public RevokeToken createRevokeToken() {
         return new RevokeToken();
@@ -994,7 +1002,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link UnknownProfileTypeException }
-     * 
+     *
      */
     public UnknownProfileTypeException createUnknownProfileTypeException() {
         return new UnknownProfileTypeException();
@@ -1002,7 +1010,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetProfile }
-     * 
+     *
      */
     public GetProfile createGetProfile() {
         return new GetProfile();
@@ -1010,7 +1018,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetRemainingNumberOfApprovals }
-     * 
+     *
      */
     public GetRemainingNumberOfApprovals createGetRemainingNumberOfApprovals() {
         return new GetRemainingNumberOfApprovals();
@@ -1018,7 +1026,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CAOfflineException }
-     * 
+     *
      */
     public CAOfflineException createCAOfflineException() {
         return new CAOfflineException();
@@ -1026,7 +1034,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CreateCRL }
-     * 
+     *
      */
     public CreateCRL createCreateCRL() {
         return new CreateCRL();
@@ -1034,7 +1042,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link EjbcaException }
-     * 
+     *
      */
     public EjbcaException createEjbcaException() {
         return new EjbcaException();
@@ -1042,7 +1050,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetLatestCRL }
-     * 
+     *
      */
     public GetLatestCRL createGetLatestCRL() {
         return new GetLatestCRL();
@@ -1050,7 +1058,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CaRenewCertRequestResponse }
-     * 
+     *
      */
     public CaRenewCertRequestResponse createCaRenewCertRequestResponse() {
         return new CaRenewCertRequestResponse();
@@ -1058,7 +1066,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link FetchUserData }
-     * 
+     *
      */
     public FetchUserData createFetchUserData() {
         return new FetchUserData();
@@ -1066,7 +1074,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetEjbcaVersionResponse }
-     * 
+     *
      */
     public GetEjbcaVersionResponse createGetEjbcaVersionResponse() {
         return new GetEjbcaVersionResponse();
@@ -1074,7 +1082,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CaCertResponseResponse }
-     * 
+     *
      */
     public CaCertResponseResponse createCaCertResponseResponse() {
         return new CaCertResponseResponse();
@@ -1082,7 +1090,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetLastCAChain }
-     * 
+     *
      */
     public GetLastCAChain createGetLastCAChain() {
         return new GetLastCAChain();
@@ -1090,7 +1098,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeCert }
-     * 
+     *
      */
     public RevokeCert createRevokeCert() {
         return new RevokeCert();
@@ -1098,7 +1106,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ApprovalRequestExecutionException }
-     * 
+     *
      */
     public ApprovalRequestExecutionException createApprovalRequestExecutionException() {
         return new ApprovalRequestExecutionException();
@@ -1106,7 +1114,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link EditUser }
-     * 
+     *
      */
     public EditUser createEditUser() {
         return new EditUser();
@@ -1114,7 +1122,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link UpdateCaCertResponse }
-     * 
+     *
      */
     public UpdateCaCertResponse createUpdateCaCertResponse() {
         return new UpdateCaCertResponse();
@@ -1122,7 +1130,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CreateCA }
-     * 
+     *
      */
     public CreateCA createCreateCA() {
         return new CreateCA();
@@ -1130,7 +1138,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetAvailableCAs }
-     * 
+     *
      */
     public GetAvailableCAs createGetAvailableCAs() {
         return new GetAvailableCAs();
@@ -1138,7 +1146,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetLastCAChainResponse }
-     * 
+     *
      */
     public GetLastCAChainResponse createGetLastCAChainResponse() {
         return new GetLastCAChainResponse();
@@ -1146,7 +1154,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CustomLogResponse }
-     * 
+     *
      */
     public CustomLogResponse createCustomLogResponse() {
         return new CustomLogResponse();
@@ -1154,7 +1162,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CADoesntExistsException }
-     * 
+     *
      */
     public CADoesntExistsException createCADoesntExistsException() {
         return new CADoesntExistsException();
@@ -1162,7 +1170,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link DeleteUserDataFromSource }
-     * 
+     *
      */
     public DeleteUserDataFromSource createDeleteUserDataFromSource() {
         return new DeleteUserDataFromSource();
@@ -1170,7 +1178,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link KeyRecover }
-     * 
+     *
      */
     public KeyRecover createKeyRecover() {
         return new KeyRecover();
@@ -1178,7 +1186,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetHardTokenDataResponse }
-     * 
+     *
      */
     public GetHardTokenDataResponse createGetHardTokenDataResponse() {
         return new GetHardTokenDataResponse();
@@ -1186,7 +1194,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GetCertificate }
-     * 
+     *
      */
     public GetCertificate createGetCertificate() {
         return new GetCertificate();
@@ -1194,7 +1202,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link IsApproved }
-     * 
+     *
      */
     public IsApproved createIsApproved() {
         return new IsApproved();
@@ -1202,7 +1210,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CreateCryptoToken }
-     * 
+     *
      */
     public CreateCryptoToken createCreateCryptoToken() {
         return new CreateCryptoToken();
@@ -1210,7 +1218,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link GenTokenCertificates }
-     * 
+     *
      */
     public GenTokenCertificates createGenTokenCertificates() {
         return new GenTokenCertificates();
@@ -1218,7 +1226,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CaCertResponseForRolloverResponse }
-     * 
+     *
      */
     public CaCertResponseForRolloverResponse createCaCertResponseForRolloverResponse() {
         return new CaCertResponseForRolloverResponse();
@@ -1226,7 +1234,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Pkcs10Request }
-     * 
+     *
      */
     public Pkcs10Request createPkcs10Request() {
         return new Pkcs10Request();
@@ -1234,7 +1242,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link KeyRecoverResponse }
-     * 
+     *
      */
     public KeyRecoverResponse createKeyRecoverResponse() {
         return new KeyRecoverResponse();
@@ -1242,7 +1250,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link KeyStore }
-     * 
+     *
      */
     public KeyStore createKeyStore() {
         return new KeyStore();
@@ -1250,7 +1258,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TokenCertificateRequestWS }
-     * 
+     *
      */
     public TokenCertificateRequestWS createTokenCertificateRequestWS() {
         return new TokenCertificateRequestWS();
@@ -1258,7 +1266,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Certificate }
-     * 
+     *
      */
     public Certificate createCertificate() {
         return new Certificate();
@@ -1266,7 +1274,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link HardTokenDataWS }
-     * 
+     *
      */
     public HardTokenDataWS createHardTokenDataWS() {
         return new HardTokenDataWS();
@@ -1274,7 +1282,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link TokenCertificateResponseWS }
-     * 
+     *
      */
     public TokenCertificateResponseWS createTokenCertificateResponseWS() {
         return new TokenCertificateResponseWS();
@@ -1282,7 +1290,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ExtendedInformationWS }
-     * 
+     *
      */
     public ExtendedInformationWS createExtendedInformationWS() {
         return new ExtendedInformationWS();
@@ -1290,7 +1298,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link KeyValuePair }
-     * 
+     *
      */
     public KeyValuePair createKeyValuePair() {
         return new KeyValuePair();
@@ -1298,7 +1306,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link ErrorCode }
-     * 
+     *
      */
     public ErrorCode createErrorCode() {
         return new ErrorCode();
@@ -1306,7 +1314,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link UserDataVOWS }
-     * 
+     *
      */
     public UserDataVOWS createUserDataVOWS() {
         return new UserDataVOWS();
@@ -1314,7 +1322,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link UserMatch }
-     * 
+     *
      */
     public UserMatch createUserMatch() {
         return new UserMatch();
@@ -1322,7 +1330,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link UserDataSourceVOWS }
-     * 
+     *
      */
     public UserDataSourceVOWS createUserDataSourceVOWS() {
         return new UserDataSourceVOWS();
@@ -1330,7 +1338,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link CertificateResponse }
-     * 
+     *
      */
     public CertificateResponse createCertificateResponse() {
         return new CertificateResponse();
@@ -1338,7 +1346,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link RevokeStatus }
-     * 
+     *
      */
     public RevokeStatus createRevokeStatus() {
         return new RevokeStatus();
@@ -1346,7 +1354,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link PinDataWS }
-     * 
+     *
      */
     public PinDataWS createPinDataWS() {
         return new PinDataWS();
@@ -1354,7 +1362,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link NameAndId }
-     * 
+     *
      */
     public NameAndId createNameAndId() {
         return new NameAndId();
@@ -1362,7 +1370,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ExistsHardTokenResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "existsHardTokenResponse")
     public JAXBElement<ExistsHardTokenResponse> createExistsHardTokenResponse(ExistsHardTokenResponse value) {
@@ -1371,7 +1379,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetProfileResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getProfileResponse")
     public JAXBElement<GetProfileResponse> createGetProfileResponse(GetProfileResponse value) {
@@ -1380,7 +1388,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertBackdated }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCertBackdated")
     public JAXBElement<RevokeCertBackdated> createRevokeCertBackdated(RevokeCertBackdated value) {
@@ -1389,7 +1397,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetRemainingNumberOfApprovalsResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getRemainingNumberOfApprovalsResponse")
     public JAXBElement<GetRemainingNumberOfApprovalsResponse> createGetRemainingNumberOfApprovalsResponse(GetRemainingNumberOfApprovalsResponse value) {
@@ -1398,7 +1406,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeResponse")
     public JAXBElement<GetCertificatesByExpirationTimeResponse> createGetCertificatesByExpirationTimeResponse(GetCertificatesByExpirationTimeResponse value) {
@@ -1407,7 +1415,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDatas }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDatas")
     public JAXBElement<GetHardTokenDatas> createGetHardTokenDatas(GetHardTokenDatas value) {
@@ -1416,7 +1424,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AuthorizationDeniedException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "AuthorizationDeniedException")
     public JAXBElement<AuthorizationDeniedException> createAuthorizationDeniedException(AuthorizationDeniedException value) {
@@ -1425,7 +1433,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CaCertResponseForRollover }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caCertResponseForRollover")
     public JAXBElement<CaCertResponseForRollover> createCaCertResponseForRollover(CaCertResponseForRollover value) {
@@ -1434,7 +1442,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCAsInProfile }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCAsInProfile")
     public JAXBElement<GetAvailableCAsInProfile> createGetAvailableCAsInProfile(GetAvailableCAsInProfile value) {
@@ -1443,7 +1451,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CryptoTokenOfflineException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "CryptoTokenOfflineException")
     public JAXBElement<CryptoTokenOfflineException> createCryptoTokenOfflineException(CryptoTokenOfflineException value) {
@@ -1452,7 +1460,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeUser }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeUser")
     public JAXBElement<RevokeUser> createRevokeUser(RevokeUser value) {
@@ -1461,7 +1469,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCertResponse")
     public JAXBElement<RevokeCertResponse> createRevokeCertResponse(RevokeCertResponse value) {
@@ -1470,7 +1478,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link IsApprovedResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "isApprovedResponse")
     public JAXBElement<IsApprovedResponse> createIsApprovedResponse(IsApprovedResponse value) {
@@ -1479,7 +1487,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeTokenResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeTokenResponse")
     public JAXBElement<RevokeTokenResponse> createRevokeTokenResponse(RevokeTokenResponse value) {
@@ -1488,7 +1496,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCAsResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCAsResponse")
     public JAXBElement<GetAvailableCAsResponse> createGetAvailableCAsResponse(GetAvailableCAsResponse value) {
@@ -1497,7 +1505,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link UserDataSourceException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UserDataSourceException")
     public JAXBElement<UserDataSourceException> createUserDataSourceException(UserDataSourceException value) {
@@ -1506,7 +1514,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link WaitingForApprovalException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "WaitingForApprovalException")
     public JAXBElement<WaitingForApprovalException> createWaitingForApprovalException(WaitingForApprovalException value) {
@@ -1515,7 +1523,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs12Req }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "pkcs12Req")
     public JAXBElement<Pkcs12Req> createPkcs12Req(Pkcs12Req value) {
@@ -1524,7 +1532,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SpkacRequestResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "spkacRequestResponse")
     public JAXBElement<SpkacRequestResponse> createSpkacRequestResponse(SpkacRequestResponse value) {
@@ -1533,7 +1541,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RepublishCertificate }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "republishCertificate")
     public JAXBElement<RepublishCertificate> createRepublishCertificate(RepublishCertificate value) {
@@ -1542,7 +1550,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RemoveSubjectFromRoleResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "removeSubjectFromRoleResponse")
     public JAXBElement<RemoveSubjectFromRoleResponse> createRemoveSubjectFromRoleResponse(RemoveSubjectFromRoleResponse value) {
@@ -1551,7 +1559,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link EndEntityProfileNotFoundException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "EndEntityProfileNotFoundException")
     public JAXBElement<EndEntityProfileNotFoundException> createEndEntityProfileNotFoundException(EndEntityProfileNotFoundException value) {
@@ -1560,7 +1568,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link DeleteUserDataFromSourceResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "deleteUserDataFromSourceResponse")
     public JAXBElement<DeleteUserDataFromSourceResponse> createDeleteUserDataFromSourceResponse(DeleteUserDataFromSourceResponse value) {
@@ -1569,7 +1577,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAuthorizedEndEntityProfilesResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAuthorizedEndEntityProfilesResponse")
     public JAXBElement<GetAuthorizedEndEntityProfilesResponse> createGetAuthorizedEndEntityProfilesResponse(GetAuthorizedEndEntityProfilesResponse value) {
@@ -1578,7 +1586,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CreateCryptoTokenResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoTokenResponse")
     public JAXBElement<CreateCryptoTokenResponse> createCreateCryptoTokenResponse(CreateCryptoTokenResponse value) {
@@ -1587,7 +1595,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenerateCryptoTokenKeys }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeys")
     public JAXBElement<GenerateCryptoTokenKeys> createGenerateCryptoTokenKeys(GenerateCryptoTokenKeys value) {
@@ -1596,7 +1604,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenerateCryptoTokenKeysResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "generateCryptoTokenKeysResponse")
     public JAXBElement<GenerateCryptoTokenKeysResponse> createGenerateCryptoTokenKeysResponse(GenerateCryptoTokenKeysResponse value) {
@@ -1605,7 +1613,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CesecoreException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "CesecoreException")
     public JAXBElement<CesecoreException> createCesecoreException(CesecoreException value) {
@@ -1614,7 +1622,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link FetchUserDataResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "fetchUserDataResponse")
     public JAXBElement<FetchUserDataResponse> createFetchUserDataResponse(FetchUserDataResponse value) {
@@ -1623,7 +1631,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link FindUser }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findUser")
     public JAXBElement<FindUser> createFindUser(FindUser value) {
@@ -1632,7 +1640,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AddSubjectToRoleResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRoleResponse")
     public JAXBElement<AddSubjectToRoleResponse> createAddSubjectToRoleResponse(AddSubjectToRoleResponse value) {
@@ -1641,7 +1649,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetEjbcaVersion }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getEjbcaVersion")
     public JAXBElement<GetEjbcaVersion> createGetEjbcaVersion(GetEjbcaVersion value) {
@@ -1650,7 +1658,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenTokenCertificatesResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "genTokenCertificatesResponse")
     public JAXBElement<GenTokenCertificatesResponse> createGenTokenCertificatesResponse(GenTokenCertificatesResponse value) {
@@ -1659,7 +1667,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link FindCerts }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findCerts")
     public JAXBElement<FindCerts> createFindCerts(FindCerts value) {
@@ -1668,7 +1676,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndTypeResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndTypeResponse")
     public JAXBElement<GetCertificatesByExpirationTimeAndTypeResponse> createGetCertificatesByExpirationTimeAndTypeResponse(GetCertificatesByExpirationTimeAndTypeResponse value) {
@@ -1677,7 +1685,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ImportCaCertResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "importCaCertResponse")
     public JAXBElement<ImportCaCertResponse> createImportCaCertResponse(ImportCaCertResponse value) {
@@ -1686,7 +1694,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link FindCertsResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findCertsResponse")
     public JAXBElement<FindCertsResponse> createFindCertsResponse(FindCertsResponse value) {
@@ -1695,7 +1703,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CreateCRLResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCRLResponse")
     public JAXBElement<CreateCRLResponse> createCreateCRLResponse(CreateCRLResponse value) {
@@ -1704,7 +1712,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link PublisherException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "PublisherException")
     public JAXBElement<PublisherException> createPublisherException(PublisherException value) {
@@ -1713,7 +1721,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RepublishCertificateResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "republishCertificateResponse")
     public JAXBElement<RepublishCertificateResponse> createRepublishCertificateResponse(RepublishCertificateResponse value) {
@@ -1722,7 +1730,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link HardTokenDoesntExistsException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "HardTokenDoesntExistsException")
     public JAXBElement<HardTokenDoesntExistsException> createHardTokenDoesntExistsException(HardTokenDoesntExistsException value) {
@@ -1731,7 +1739,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertBackdatedResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCertBackdatedResponse")
     public JAXBElement<RevokeCertBackdatedResponse> createRevokeCertBackdatedResponse(RevokeCertBackdatedResponse value) {
@@ -1740,7 +1748,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link FindUserResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "findUserResponse")
     public JAXBElement<FindUserResponse> createFindUserResponse(FindUserResponse value) {
@@ -1749,7 +1757,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ApprovalException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "ApprovalException")
     public JAXBElement<ApprovalException> createApprovalException(ApprovalException value) {
@@ -1758,7 +1766,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetLastCertChainResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLastCertChainResponse")
     public JAXBElement<GetLastCertChainResponse> createGetLastCertChainResponse(GetLastCertChainResponse value) {
@@ -1767,7 +1775,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link UserDoesntFullfillEndEntityProfile }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UserDoesntFullfillEndEntityProfile")
     public JAXBElement<UserDoesntFullfillEndEntityProfile> createUserDoesntFullfillEndEntityProfile(UserDoesntFullfillEndEntityProfile value) {
@@ -1776,7 +1784,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ApprovalRequestExpiredException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "ApprovalRequestExpiredException")
     public JAXBElement<ApprovalRequestExpiredException> createApprovalRequestExpiredException(ApprovalRequestExpiredException value) {
@@ -1785,7 +1793,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetPublisherQueueLength }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getPublisherQueueLength")
     public JAXBElement<GetPublisherQueueLength> createGetPublisherQueueLength(GetPublisherQueueLength value) {
@@ -1794,7 +1802,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SpkacRequest }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "spkacRequest")
     public JAXBElement<SpkacRequest> createSpkacRequest(SpkacRequest value) {
@@ -1803,7 +1811,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link HardTokenExistsException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "HardTokenExistsException")
     public JAXBElement<HardTokenExistsException> createHardTokenExistsException(HardTokenExistsException value) {
@@ -1812,7 +1820,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetLastCertChain }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLastCertChain")
     public JAXBElement<GetLastCertChain> createGetLastCertChain(GetLastCertChain value) {
@@ -1821,7 +1829,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RolloverCACert }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "rolloverCACert")
     public JAXBElement<RolloverCACert> createRolloverCACert(RolloverCACert value) {
@@ -1830,7 +1838,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CaCertResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caCertResponse")
     public JAXBElement<CaCertResponse> createCaCertResponse(CaCertResponse value) {
@@ -1839,7 +1847,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatusResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatusResponse")
     public JAXBElement<CheckRevokationStatusResponse> createCheckRevokationStatusResponse(CheckRevokationStatusResponse value) {
@@ -1848,7 +1856,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeUserResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeUserResponse")
     public JAXBElement<RevokeUserResponse> createRevokeUserResponse(RevokeUserResponse value) {
@@ -1857,7 +1865,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CrmfRequestResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "crmfRequestResponse")
     public JAXBElement<CrmfRequestResponse> createCrmfRequestResponse(CrmfRequestResponse value) {
@@ -1866,7 +1874,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetLatestCRLResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLatestCRLResponse")
     public JAXBElement<GetLatestCRLResponse> createGetLatestCRLResponse(GetLatestCRLResponse value) {
@@ -1875,7 +1883,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SoftTokenRequestResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "softTokenRequestResponse")
     public JAXBElement<SoftTokenRequestResponse> createSoftTokenRequestResponse(SoftTokenRequestResponse value) {
@@ -1884,7 +1892,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCertificateProfilesResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCertificateProfilesResponse")
     public JAXBElement<GetAvailableCertificateProfilesResponse> createGetAvailableCertificateProfilesResponse(GetAvailableCertificateProfilesResponse value) {
@@ -1893,7 +1901,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RemoveSubjectFromRole }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "removeSubjectFromRole")
     public JAXBElement<RemoveSubjectFromRole> createRemoveSubjectFromRole(RemoveSubjectFromRole value) {
@@ -1902,7 +1910,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link EditUserResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "editUserResponse")
     public JAXBElement<EditUserResponse> createEditUserResponse(EditUserResponse value) {
@@ -1911,7 +1919,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCAsInProfileResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCAsInProfileResponse")
     public JAXBElement<GetAvailableCAsInProfileResponse> createGetAvailableCAsInProfileResponse(GetAvailableCAsInProfileResponse value) {
@@ -1920,7 +1928,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link MultipleMatchException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "MultipleMatchException")
     public JAXBElement<MultipleMatchException> createMultipleMatchException(MultipleMatchException value) {
@@ -1929,7 +1937,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link NotFoundException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "NotFoundException")
     public JAXBElement<NotFoundException> createNotFoundException(NotFoundException value) {
@@ -1938,7 +1946,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAuthorizedEndEntityProfiles }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAuthorizedEndEntityProfiles")
     public JAXBElement<GetAuthorizedEndEntityProfiles> createGetAuthorizedEndEntityProfiles(GetAuthorizedEndEntityProfiles value) {
@@ -1947,7 +1955,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CheckRevokationStatus }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "checkRevokationStatus")
     public JAXBElement<CheckRevokationStatus> createCheckRevokationStatus(CheckRevokationStatus value) {
@@ -1956,7 +1964,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverNewestResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverNewestResponse")
     public JAXBElement<KeyRecoverNewestResponse> createKeyRecoverNewestResponse(KeyRecoverNewestResponse value) {
@@ -1965,7 +1973,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link IllegalQueryException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "IllegalQueryException")
     public JAXBElement<IllegalQueryException> createIllegalQueryException(IllegalQueryException value) {
@@ -1974,7 +1982,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs10RequestResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "pkcs10RequestResponse")
     public JAXBElement<Pkcs10RequestResponse> createPkcs10RequestResponse(Pkcs10RequestResponse value) {
@@ -1983,7 +1991,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CustomLog }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "customLog")
     public JAXBElement<CustomLog> createCustomLog(CustomLog value) {
@@ -1992,7 +2000,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverNewest }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverNewest")
     public JAXBElement<KeyRecoverNewest> createKeyRecoverNewest(KeyRecoverNewest value) {
@@ -2001,7 +2009,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CreateCAResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCAResponse")
     public JAXBElement<CreateCAResponse> createCreateCAResponse(CreateCAResponse value) {
@@ -2010,7 +2018,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenData }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenData")
     public JAXBElement<GetHardTokenData> createGetHardTokenData(GetHardTokenData value) {
@@ -2019,7 +2027,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CertificateRequest }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "certificateRequest")
     public JAXBElement<CertificateRequest> createCertificateRequest(CertificateRequest value) {
@@ -2028,7 +2036,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ImportCaCert }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "importCaCert")
     public JAXBElement<ImportCaCert> createImportCaCert(ImportCaCert value) {
@@ -2037,7 +2045,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CvcRequestResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "cvcRequestResponse")
     public JAXBElement<CvcRequestResponse> createCvcRequestResponse(CvcRequestResponse value) {
@@ -2046,7 +2054,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs12ReqResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "pkcs12ReqResponse")
     public JAXBElement<Pkcs12ReqResponse> createPkcs12ReqResponse(Pkcs12ReqResponse value) {
@@ -2055,7 +2063,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ExistsHardToken }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "existsHardToken")
     public JAXBElement<ExistsHardToken> createExistsHardToken(ExistsHardToken value) {
@@ -2064,7 +2072,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetRemainingNumberOfApprovals }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getRemainingNumberOfApprovals")
     public JAXBElement<GetRemainingNumberOfApprovals> createGetRemainingNumberOfApprovals(GetRemainingNumberOfApprovals value) {
@@ -2073,7 +2081,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link UnknownProfileTypeException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "UnknownProfileTypeException")
     public JAXBElement<UnknownProfileTypeException> createUnknownProfileTypeException(UnknownProfileTypeException value) {
@@ -2082,7 +2090,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeToken }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeToken")
     public JAXBElement<RevokeToken> createRevokeToken(RevokeToken value) {
@@ -2091,7 +2099,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetProfile }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getProfile")
     public JAXBElement<GetProfile> createGetProfile(GetProfile value) {
@@ -2100,7 +2108,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SoftTokenRequest }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "softTokenRequest")
     public JAXBElement<SoftTokenRequest> createSoftTokenRequest(SoftTokenRequest value) {
@@ -2109,7 +2117,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CAExistsException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "CAExistsException")
     public JAXBElement<CAExistsException> createCAExistsException(CAExistsException value) {
@@ -2118,7 +2126,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CrmfRequest }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "crmfRequest")
     public JAXBElement<CrmfRequest> createCrmfRequest(CrmfRequest value) {
@@ -2127,7 +2135,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDatasResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDatasResponse")
     public JAXBElement<GetHardTokenDatasResponse> createGetHardTokenDatasResponse(GetHardTokenDatasResponse value) {
@@ -2136,7 +2144,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndType }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndType")
     public JAXBElement<GetCertificatesByExpirationTimeAndType> createGetCertificatesByExpirationTimeAndType(GetCertificatesByExpirationTimeAndType value) {
@@ -2145,7 +2153,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link UpdateCaCert }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "updateCaCert")
     public JAXBElement<UpdateCaCert> createUpdateCaCert(UpdateCaCert value) {
@@ -2154,7 +2162,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CertificateRequestResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "certificateRequestResponse")
     public JAXBElement<CertificateRequestResponse> createCertificateRequestResponse(CertificateRequestResponse value) {
@@ -2163,7 +2171,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTime }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTime")
     public JAXBElement<GetCertificatesByExpirationTime> createGetCertificatesByExpirationTime(GetCertificatesByExpirationTime value) {
@@ -2172,7 +2180,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SignRequestException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "SignRequestException")
     public JAXBElement<SignRequestException> createSignRequestException(SignRequestException value) {
@@ -2181,7 +2189,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificateResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificateResponse")
     public JAXBElement<GetCertificateResponse> createGetCertificateResponse(GetCertificateResponse value) {
@@ -2190,7 +2198,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AddSubjectToRole }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "addSubjectToRole")
     public JAXBElement<AddSubjectToRole> createAddSubjectToRole(AddSubjectToRole value) {
@@ -2199,7 +2207,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link IsAuthorizedResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "isAuthorizedResponse")
     public JAXBElement<IsAuthorizedResponse> createIsAuthorizedResponse(IsAuthorizedResponse value) {
@@ -2208,7 +2216,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCertificateProfiles }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCertificateProfiles")
     public JAXBElement<GetAvailableCertificateProfiles> createGetAvailableCertificateProfiles(GetAvailableCertificateProfiles value) {
@@ -2217,7 +2225,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeBackDateNotAllowedForProfileException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "RevokeBackDateNotAllowedForProfileException")
     public JAXBElement<RevokeBackDateNotAllowedForProfileException> createRevokeBackDateNotAllowedForProfileException(RevokeBackDateNotAllowedForProfileException value) {
@@ -2226,7 +2234,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndIssuer }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndIssuer")
     public JAXBElement<GetCertificatesByExpirationTimeAndIssuer> createGetCertificatesByExpirationTimeAndIssuer(GetCertificatesByExpirationTimeAndIssuer value) {
@@ -2235,7 +2243,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link AlreadyRevokedException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "AlreadyRevokedException")
     public JAXBElement<AlreadyRevokedException> createAlreadyRevokedException(AlreadyRevokedException value) {
@@ -2244,7 +2252,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CvcRequest }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "cvcRequest")
     public JAXBElement<CvcRequest> createCvcRequest(CvcRequest value) {
@@ -2253,7 +2261,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificatesByExpirationTimeAndIssuerResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificatesByExpirationTimeAndIssuerResponse")
     public JAXBElement<GetCertificatesByExpirationTimeAndIssuerResponse> createGetCertificatesByExpirationTimeAndIssuerResponse(GetCertificatesByExpirationTimeAndIssuerResponse value) {
@@ -2262,7 +2270,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link DateNotValidException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "DateNotValidException")
     public JAXBElement<DateNotValidException> createDateNotValidException(DateNotValidException value) {
@@ -2271,7 +2279,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RolloverCACertResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "rolloverCACertResponse")
     public JAXBElement<RolloverCACertResponse> createRolloverCACertResponse(RolloverCACertResponse value) {
@@ -2280,7 +2288,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CertificateExpiredException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "CertificateExpiredException")
     public JAXBElement<CertificateExpiredException> createCertificateExpiredException(CertificateExpiredException value) {
@@ -2289,7 +2297,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CaRenewCertRequest }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caRenewCertRequest")
     public JAXBElement<CaRenewCertRequest> createCaRenewCertRequest(CaRenewCertRequest value) {
@@ -2298,7 +2306,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link IsAuthorized }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "isAuthorized")
     public JAXBElement<IsAuthorized> createIsAuthorized(IsAuthorized value) {
@@ -2307,7 +2315,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetPublisherQueueLengthResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getPublisherQueueLengthResponse")
     public JAXBElement<GetPublisherQueueLengthResponse> createGetPublisherQueueLengthResponse(GetPublisherQueueLengthResponse value) {
@@ -2316,7 +2324,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetHardTokenDataResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getHardTokenDataResponse")
     public JAXBElement<GetHardTokenDataResponse> createGetHardTokenDataResponse(GetHardTokenDataResponse value) {
@@ -2325,7 +2333,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecover }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecover")
     public JAXBElement<KeyRecover> createKeyRecover(KeyRecover value) {
@@ -2334,7 +2342,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenTokenCertificates }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "genTokenCertificates")
     public JAXBElement<GenTokenCertificates> createGenTokenCertificates(GenTokenCertificates value) {
@@ -2343,7 +2351,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CaCertResponseForRolloverResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caCertResponseForRolloverResponse")
     public JAXBElement<CaCertResponseForRolloverResponse> createCaCertResponseForRolloverResponse(CaCertResponseForRolloverResponse value) {
@@ -2352,7 +2360,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverResponse")
     public JAXBElement<KeyRecoverResponse> createKeyRecoverResponse(KeyRecoverResponse value) {
@@ -2361,7 +2369,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Pkcs10Request }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "pkcs10Request")
     public JAXBElement<Pkcs10Request> createPkcs10Request(Pkcs10Request value) {
@@ -2370,7 +2378,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetCertificate }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getCertificate")
     public JAXBElement<GetCertificate> createGetCertificate(GetCertificate value) {
@@ -2379,7 +2387,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CreateCryptoToken }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCryptoToken")
     public JAXBElement<CreateCryptoToken> createCreateCryptoToken(CreateCryptoToken value) {
@@ -2388,7 +2396,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link IsApproved }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "isApproved")
     public JAXBElement<IsApproved> createIsApproved(IsApproved value) {
@@ -2397,7 +2405,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetAvailableCAs }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getAvailableCAs")
     public JAXBElement<GetAvailableCAs> createGetAvailableCAs(GetAvailableCAs value) {
@@ -2406,7 +2414,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CreateCA }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCA")
     public JAXBElement<CreateCA> createCreateCA(CreateCA value) {
@@ -2415,7 +2423,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link UpdateCaCertResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "updateCaCertResponse")
     public JAXBElement<UpdateCaCertResponse> createUpdateCaCertResponse(UpdateCaCertResponse value) {
@@ -2424,7 +2432,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link EditUser }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "editUser")
     public JAXBElement<EditUser> createEditUser(EditUser value) {
@@ -2433,7 +2441,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link DeleteUserDataFromSource }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "deleteUserDataFromSource")
     public JAXBElement<DeleteUserDataFromSource> createDeleteUserDataFromSource(DeleteUserDataFromSource value) {
@@ -2442,7 +2450,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CADoesntExistsException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "CADoesntExistsException")
     public JAXBElement<CADoesntExistsException> createCADoesntExistsException(CADoesntExistsException value) {
@@ -2451,7 +2459,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetLastCAChainResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLastCAChainResponse")
     public JAXBElement<GetLastCAChainResponse> createGetLastCAChainResponse(GetLastCAChainResponse value) {
@@ -2460,7 +2468,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CustomLogResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "customLogResponse")
     public JAXBElement<CustomLogResponse> createCustomLogResponse(CustomLogResponse value) {
@@ -2469,7 +2477,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CaRenewCertRequestResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caRenewCertRequestResponse")
     public JAXBElement<CaRenewCertRequestResponse> createCaRenewCertRequestResponse(CaRenewCertRequestResponse value) {
@@ -2478,7 +2486,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetLatestCRL }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLatestCRL")
     public JAXBElement<GetLatestCRL> createGetLatestCRL(GetLatestCRL value) {
@@ -2487,7 +2495,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link EjbcaException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "EjbcaException")
     public JAXBElement<EjbcaException> createEjbcaException(EjbcaException value) {
@@ -2496,7 +2504,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetLastCAChain }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLastCAChain")
     public JAXBElement<GetLastCAChain> createGetLastCAChain(GetLastCAChain value) {
@@ -2505,7 +2513,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ApprovalRequestExecutionException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "ApprovalRequestExecutionException")
     public JAXBElement<ApprovalRequestExecutionException> createApprovalRequestExecutionException(ApprovalRequestExecutionException value) {
@@ -2514,7 +2522,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCert }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCert")
     public JAXBElement<RevokeCert> createRevokeCert(RevokeCert value) {
@@ -2523,7 +2531,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link FetchUserData }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "fetchUserData")
     public JAXBElement<FetchUserData> createFetchUserData(FetchUserData value) {
@@ -2532,7 +2540,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetEjbcaVersionResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getEjbcaVersionResponse")
     public JAXBElement<GetEjbcaVersionResponse> createGetEjbcaVersionResponse(GetEjbcaVersionResponse value) {
@@ -2541,7 +2549,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CaCertResponseResponse }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "caCertResponseResponse")
     public JAXBElement<CaCertResponseResponse> createCaCertResponseResponse(CaCertResponseResponse value) {
@@ -2550,7 +2558,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CAOfflineException }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "CAOfflineException")
     public JAXBElement<CAOfflineException> createCAOfflineException(CAOfflineException value) {
@@ -2559,7 +2567,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CreateCRL }{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "createCRL")
     public JAXBElement<CreateCRL> createCreateCRL(CreateCRL value) {
@@ -2568,7 +2576,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "", name = "return", scope = GetProfileResponse.class)
     public JAXBElement<byte[]> createGetProfileResponseReturn(byte[] value) {
@@ -2577,7 +2585,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLResponse.class)
     public JAXBElement<byte[]> createGetLatestCRLResponseReturn(byte[] value) {
@@ -2586,7 +2594,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "", name = "return", scope = CaRenewCertRequestResponse.class)
     public JAXBElement<byte[]> createCaRenewCertRequestResponseReturn(byte[] value) {
@@ -2595,7 +2603,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "", name = "arg1", scope = UpdateCaCert.class)
     public JAXBElement<byte[]> createUpdateCaCertArg1(byte[] value) {
@@ -2604,7 +2612,7 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
+     *
      */
     @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponseForRollover.class)
     public JAXBElement<byte[]> createCaCertResponseForRolloverArg1(byte[] value) {
@@ -2613,7 +2621,16 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
+     *
+     */
+    @XmlElementDecl(namespace = "", name = "arg1", scope = ImportCaCert.class)
+    public JAXBElement<byte[]> createImportCaCertArg1(byte[] value) {
+        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, ImportCaCert.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     *
      */
     @XmlElementDecl(namespace = "", name = "arg1", scope = CaCertResponse.class)
     public JAXBElement<byte[]> createCaCertResponseArg1(byte[] value) {
@@ -2621,12 +2638,75 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
-     * 
+     * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverEnroll }{@code >}}
+     *
      */
-    @XmlElementDecl(namespace = "", name = "arg1", scope = ImportCaCert.class)
-    public JAXBElement<byte[]> createImportCaCertArg1(byte[] value) {
-        return new JAXBElement<byte[]>(_UpdateCaCertArg1_QNAME, byte[].class, ImportCaCert.class, ((byte[]) value));
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverEnroll")
+    public JAXBElement<KeyRecoverEnroll> createKeyRecoverEnroll(KeyRecoverEnroll value) {
+        return new JAXBElement<KeyRecoverEnroll>(_KeyRecoverEnroll_QNAME, KeyRecoverEnroll.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link KeyRecoverEnrollResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "keyRecoverEnrollResponse")
+    public JAXBElement<KeyRecoverEnrollResponse> createKeyRecoverEnrollResponse(KeyRecoverEnrollResponse value) {
+        return new JAXBElement<KeyRecoverEnrollResponse>(_KeyRecoverEnrollResponse_QNAME, KeyRecoverEnrollResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CertificateProfileDoesNotExistException }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "CertificateProfileDoesNotExistException")
+    public JAXBElement<CertificateProfileDoesNotExistException> createCertificateProfileDoesNotExistException(CertificateProfileDoesNotExistException value) {
+        return new JAXBElement<CertificateProfileDoesNotExistException>(_CertificateProfileDoesNotExistException_QNAME, CertificateProfileDoesNotExistException.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertWithMetadata }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCertWithMetadata")
+    public JAXBElement<RevokeCertWithMetadata> createRevokeCertWithMetadata(RevokeCertWithMetadata value) {
+        return new JAXBElement<RevokeCertWithMetadata>(_RevokeCertWithMetadata_QNAME, RevokeCertWithMetadata.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link RevokeCertWithMetadataResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "revokeCertWithMetadataResponse")
+    public JAXBElement<RevokeCertWithMetadataResponse> createRevokeCertWithMetadataResponse(RevokeCertWithMetadataResponse value) {
+        return new JAXBElement<RevokeCertWithMetadataResponse>(_RevokeCertWithMetadataResponse_QNAME, RevokeCertWithMetadataResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetLatestCRLPartition }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLatestCRLPartition")
+    public JAXBElement<GetLatestCRLPartition> createGetLatestCRLPartition(GetLatestCRLPartition value) {
+        return new JAXBElement<GetLatestCRLPartition>(_GetLatestCRLPartition_QNAME, GetLatestCRLPartition.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link byte[]}{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "", name = "return", scope = GetLatestCRLPartitionResponse.class)
+    public JAXBElement<byte[]> createGetLatestCRLPartitionResponseReturn(byte[] value) {
+        return new JAXBElement<byte[]>(_CrlRequestResponseReturn_QNAME, byte[].class, GetLatestCRLPartitionResponse.class, ((byte[]) value));
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetLatestCRLPartitionResponse }{@code >}}
+     *
+     */
+    @XmlElementDecl(namespace = "http://ws.protocol.core.ejbca.org/", name = "getLatestCRLPartitionResponse")
+    public JAXBElement<GetLatestCRLPartitionResponse> createGetLatestCRLPartitionResponse(GetLatestCRLPartitionResponse value) {
+        return new JAXBElement<GetLatestCRLPartitionResponse>(_GetLatestCRLPartitionResponse_QNAME, GetLatestCRLPartitionResponse.class, null, value);
     }
 
 }

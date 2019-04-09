@@ -1268,6 +1268,30 @@ public interface EjbcaWS {
     ;
 
     /**
+     *
+     * @param arg2
+     * @param arg1
+     * @param arg0
+     * @return
+     *     returns byte[]
+     * @throws CADoesntExistsException_Exception
+     * @throws EjbcaException_Exception
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "getLatestCRLPartition", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetLatestCRLPartition")
+    @ResponseWrapper(localName = "getLatestCRLPartitionResponse", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.GetLatestCRLPartitionResponse")
+    public byte[] getLatestCRLPartition(
+            @WebParam(name = "arg0", targetNamespace = "")
+                    String arg0,
+            @WebParam(name = "arg1", targetNamespace = "")
+                    boolean arg1,
+            @WebParam(name = "arg2", targetNamespace = "")
+                    int arg2)
+            throws CADoesntExistsException_Exception, EjbcaException_Exception
+    ;
+
+    /**
      * 
      * @return
      *     returns java.lang.String

@@ -37,14 +37,14 @@ public class KeyStore extends TokenCertificateResponseWS {
 	}
 
 	public KeyStore(java.security.KeyStore keystore, String password) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException{
-		
+
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		keystore.store(baos,password.toCharArray());
 		keystoreData = Base64.encode(baos.toByteArray());
 	}
 
 
-	
+
 	/**
 	 * Returns the keystoreData in Base64 format
 	 * @return Returns the keystoreData, in Base64 encoded format.

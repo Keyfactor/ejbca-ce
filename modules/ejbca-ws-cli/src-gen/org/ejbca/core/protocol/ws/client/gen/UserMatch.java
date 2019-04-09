@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.client.gen;
 
+import java.io.Serializable;
+
 import org.ejbca.util.query.BasicMatch;
 
 /**
@@ -19,8 +21,9 @@ import org.ejbca.util.query.BasicMatch;
  * 
  * @version $Id$
  */
-public class UserMatch {
+public class UserMatch implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     public static final int MATCH_WITH_USERNAME            = org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME;
     public static final int MATCH_WITH_EMAIL               = org.ejbca.util.query.UserMatch.MATCH_WITH_EMAIL;
     public static final int MATCH_WITH_STATUS              = org.ejbca.util.query.UserMatch.MATCH_WITH_STATUS; // Value must the number representation.
