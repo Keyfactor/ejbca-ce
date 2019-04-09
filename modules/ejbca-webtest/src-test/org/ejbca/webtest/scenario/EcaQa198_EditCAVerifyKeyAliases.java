@@ -18,23 +18,30 @@ import org.ejbca.webtest.helper.CaHelper;
 import org.ejbca.webtest.helper.CryptoTokenHelper;
 import org.ejbca.webtest.utils.CommandLineHelper;
 import org.ejbca.webtest.utils.RemoveDir;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 /**
  * The CA can be both edited and restored.  When a CA is restored,
  * the key alias values should restore correctly.
  *
- * @version $Id: EcaQa198_EditCAVerifyKeyAliases.java 30836 2019-02-22 09:09:09Z margaret_d_thomas $
+ * @version $Id$
  */
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
+    private static final int TIMEOUT = 30000;
     private static WebDriver webDriver;
     // Helpers
     private static CaHelper caHelper;
@@ -95,23 +102,23 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         Assert.assertTrue(commandLineHelper.runCommand("ant statedump"));
 
         //Verify statedump directory created
-        File statedumpDir = new File("dist/statedump");
-        Assert.assertTrue(statedumpDir.exists());
+        final Path path = Paths.get("dist/statedump");
+        Assert.assertTrue(Files.exists(path));
     }
 
-    @Test(timeout=30000)
+    @Test(timeout=TIMEOUT)
     public void stepD_unlockStatedump() {
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh lockdown --unlock");
     }
 
-    @Test(timeout=30000)
+    @Test(timeout=TIMEOUT)
     public void stepE_exportCAssertStatedumpCmdLine() {
         //Export the CA
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh export -l test-statedump --exclude '*:*' --include='CA:StatedumpExportTest'");
 
         //Verify exported CA directory created
-        File dumpCaDir = new File("test-statedump");
-        Assert.assertTrue(dumpCaDir.exists());
+        final Path path = Paths.get("test-statedump");
+        Assert.assertTrue(Files.exists(path));
     }
 
     @Test
@@ -121,13 +128,13 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
         caHelper.deleteCaAndAssert(deleteAlert, true, false, null, TestData.CA_NAME);
     }
 
-    @Test(timeout=30000)
+    @Test(timeout=TIMEOUT)
     public void stepG_unlockStatedumpBeforeImport() {
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh lockdown --unlock");
     }
 
 
-    @Test(timeout=30000)
+    @Test(timeout=TIMEOUT)
     public void stepH_importCACmdLine() {
         //Reimport the CA
         commandLineHelper.runCommand("sh dist/statedump/statedump.sh import -l test-statedump");
