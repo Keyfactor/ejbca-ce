@@ -185,7 +185,7 @@ public abstract class BaseWorker implements IWorker {
 					cAIdsToCheck.add(Integer.valueOf(caids[i]));
 				}				
 			} else if (includeAllCAsIfNull) {
-				cAIdsToCheck.add(Integer.valueOf(SecConst.ALLCAS));
+				cAIdsToCheck.add(SecConst.ALLCAS);
 			}
 		}
 		return cAIdsToCheck;

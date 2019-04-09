@@ -28,11 +28,12 @@ public interface ImportCrlSession {
      * @param authenticationToken The administrator performing the operation
      * @param cainfo of the CA that issued the CRL
      * @param crlbytes the CRL in bytes
+     * @param crlPartitionIndex CRL partition index. Should be 0 if partitions are not used
      * @throws CrlImportException If a problem occurs when processing the imported CRL
      * @throws CrlStoreException If a problem occurs when adding the imported CRL to the database
      * @throws CRLException If a problem occurs when parsing the CRL
      * @throws AuthorizationDeniedException If the administrator is not authorized to perform the required operations
      */
-    void importCrl(final AuthenticationToken authenticationToken, final CAInfo cainfo, final byte[] crlbytes) 
+    void importCrl(final AuthenticationToken authenticationToken, final CAInfo cainfo, final byte[] crlbytes, final int crlPartitionIndex)
             throws CrlImportException, CrlStoreException, CRLException, AuthorizationDeniedException;
 }
