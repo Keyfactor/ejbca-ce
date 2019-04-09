@@ -33,25 +33,26 @@ WORKDIR /app/ejbca
 ADD run.sh /opt/
 RUN chmod +x /opt/run.sh
 
-ADD configuration/firefox_conf/svq3ko35.default /home/seluser/.mozilla/firefox/svq3ko35.default
-RUN chmod -R 777 /home/seluser/.mozilla/firefox/svq3ko35.default
+ADD configuration/firefox_conf/svq3ko35.default /home/jenkins/.mozilla/firefox/svq3ko35.default
+RUN chown -R 1001:1001 /home/jenkins/.mozilla/firefox/svq3ko35.default
 
-ADD configuration/firefox_conf/profiles.ini /home/seluser/.mozilla/firefox/profiles.ini
-RUN chmod 777 /home/seluser/.mozilla/firefox/profiles.ini
+ADD configuration/firefox_conf/profiles.ini /home/jenkins/.mozilla/firefox/profiles.ini
+RUN chown -R 1001:1001 /home/jenkins/.mozilla/firefox/profiles.ini
 
 # copy ejbca conf to /opt in the container for runtime-usage
 ADD configuration/ejbca_conf /opt/ejbca_conf
-RUN chmod 777 /opt/ejbca_conf
+RUN chown -R 1001:1001 /opt/ejbca_conf
 
 # copy ejbca-webtest module conf to /opt in the container for runtime-usage
 ADD configuration/ejbca_webtest_conf /opt/ejbca_webtest_conf
-RUN chmod 777 /opt/ejbca_webtest_conf
+RUN chown -R 1001:1001 /opt/ejbca_webtest_conf
 
 # copy jboss-ejb-client.properties to /opt in the container for runtime-usage
 ADD configuration/jboss-ejb-client.properties /opt/
-RUN chmod 777 /opt/jboss-ejb-client.properties
+RUN chown -R 1001:1001 /opt/jboss-ejb-client.properties
 
-# need to run as seluser, because firefox needs to be run as seluser for the profile to work properly inside the container
-USER seluser
+RUN chown -R 1001:1001 /opt/jboss
+
+USER jenkins:jenkins
 
 CMD ["/opt/run.sh"]
