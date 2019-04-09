@@ -58,6 +58,6 @@ RUN chmod +x /opt/run.sh
 
 # Fix permissions (1001 is the jenkins user)
 RUN chown -R 1001:1001 /opt/jboss/wildfly
-USER jenkins:jenkins
+USER 1001:1001
 
 CMD ["/opt/run.sh"]
