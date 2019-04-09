@@ -51,6 +51,11 @@ RUN chown -R 1001:1001 /opt/ejbca_webtest_conf
 ADD configuration/jboss-ejb-client.properties /opt/
 RUN chown -R 1001:1001 /opt/jboss-ejb-client.properties
 
+# the docker image uses 'seluser' (UID 1000) for running Selenium, but we want to use the 'jenkins' user (UID 1001), so it matches the host.
+# copy VNC settings from 'seluser' to 'jenkins' user
+RUN cp -a /home/seluser/.vnc /home/jenkins/.vlc
+RUN chown -R 1001:1001 /home/jenkins/.vlc
+
 # Create jenkins user & group and make sure everything is owned by this user
 RUN userdel default || true
 RUN groupadd -g 1001 jenkins
