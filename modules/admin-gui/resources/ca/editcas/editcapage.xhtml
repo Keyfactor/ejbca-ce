@@ -1704,7 +1704,7 @@
 						rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
 						action="#{editCAsMBean.saveCa}" />
 												
-					<h:commandButton name="buttoninitialize"
+					<h:commandButton id="buttoninitialize"
 						value="#{web.text.SAVE_AND_INITIALIZE}"
 						rendered="#{editCAsMBean.editCaUninitializedHasEditRights and editCAsMBean.cryptoTokenIdParamNotNull}"
 						action="#{editCAsMBean.initializeCa}" />
