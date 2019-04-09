@@ -53,6 +53,6 @@ RUN chown -R 1001:1001 /opt/jboss-ejb-client.properties
 
 RUN chown -R 1001:1001 /opt/jboss
 
-USER jenkins:jenkins
+USER 1001:1001
 
 CMD ["/opt/run.sh"]
