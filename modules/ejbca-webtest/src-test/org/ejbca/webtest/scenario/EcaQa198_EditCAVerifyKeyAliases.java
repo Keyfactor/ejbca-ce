@@ -96,7 +96,7 @@ public class EcaQa198_EditCAVerifyKeyAliases extends WebTestBase {
 
     }
 
-    @Test(timeout=30000)
+    @Test(timeout=TIMEOUT)
     public void stepC_buildStatedump() {
         //Run the designated ant command
         Assert.assertTrue(commandLineHelper.runCommand("ant statedump"));
